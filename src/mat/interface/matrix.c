@@ -3127,6 +3127,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
        4) See if a good general converter is known for the current matrix.
        5) Use a really basic converter.
     */
+    /* 1) See if a specialized converter is known to the current matrix and the desired class */
     ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
     ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
     ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
@@ -3135,20 +3136,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
 
     if (!conv) {
+      /* 2)  See if a specialized converter is known to the desired matrix class. */
       ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
       ierr = MatSetSizes(B,mat->rmap.n,mat->cmap.n,mat->rmap.N,mat->cmap.N);CHKERRQ(ierr);
       ierr = MatSetType(B,newtype);CHKERRQ(ierr);
       ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
       ierr = MatDestroy(B);CHKERRQ(ierr);
       if (!conv) {
+        /* 3) See if a good general converter is registered for the desired class */
         if (!MatConvertRegisterAllCalled) {
           ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
         }
         ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)(void))&conv);CHKERRQ(ierr);
         if (!conv) {
+          /* 4) See if a good general converter is known for the current matrix */
           if (mat->ops->convert) {
             conv = mat->ops->convert;
           } else {
+            /* 5) Use a really basic converter. */
             conv = MatConvert_Basic;
           }
         }
