@@ -54,8 +54,8 @@ Warning: Using from command-line: %s, ignoring environment: %s''' % (str(self.fr
         self.arch = os.environ['PETSC_ARCH']
       else:
         self.arch = self.framework.host_os
-        # use opt/debug, c/c++/complex tags.
-        self.arch+= '-'+self.languages.clanguage.lower()+'-'+self.languages.scalartype
+        # use opt/debug, c/c++ tags.
+        self.arch+= '-'+self.languages.clanguage.lower()
         if self.compilerFlags.debugging:
           self.arch += '-debug'
         else:

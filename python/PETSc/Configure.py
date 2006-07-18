@@ -46,7 +46,7 @@ class Configure(config.base.Configure):
             setattr(self, utilityName.lower(), utilityObj)
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)
     self.blaslapack.archProvider      = self.arch
-    self.blaslapack.precisionProvider = self.languages
+    self.blaslapack.precisionProvider = self.scalartypes
     self.mpi           = framework.require('config.packages.MPI',        self)
     self.mpi.archProvider             = self.arch
     self.mpi.languageProvider         = self.languages
@@ -163,7 +163,7 @@ class Configure(config.base.Configure):
       self.addMakeMacro('PYTHON_LIB', ' '.join([self.libraries.getLibArgument(lib) for lib in self.python.python.lib]))
     
     # real or complex
-    self.addMakeMacro('PETSC_SCALAR',self.languages.scalartype)
+    self.addMakeMacro('PETSC_SCALAR',self.scalartypes.scalartype)
     # double or float
     self.addMakeMacro('PETSC_PRECISION',self.languages.precision)
 
