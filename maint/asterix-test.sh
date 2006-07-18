@@ -11,7 +11,7 @@ make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexam
 
 ./config/asterix.py --with-clanguage=cxx -PETSC_ARCH=asterix-cxx-opt --with-debugging=0
 make PETSC_ARCH=asterix-cxx-opt all test
-./config/asterix.py --with-scalar-type=complex -PETSC_ARCH=asterix-complex
+./config/asterix.py --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-complex
 make PETSC_ARCH=asterix-complex all test
 make PETSC_ARCH=asterix-complex testexamples testfortran 
 make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_X11
@@ -37,7 +37,7 @@ make PETSC_ARCH=asterix-intel-opt tree DATAFILESPATH=/home/balay/datafiles ACTIO
 
 ./config/asterix-intel.py --with-clanguage=cxx -PETSC_ARCH=asterix-intel-cxx
 make PETSC_ARCH=asterix-intel-cxx all test
-./config/asterix-intel.py --with-scalar-type=complex -PETSC_ARCH=asterix-intel-complex
+./config/asterix-intel.py --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-intel-complex
 make PETSC_ARCH=asterix-intel-complex all test
 
 ./config/asterix-intel.py --download-prometheus=1 --download-parmetis=1 --with-clanguage=cxx -PETSC_ARCH=asterix-intel-cxx-prometheus
@@ -59,7 +59,7 @@ make PETSC_ARCH=asterix-sun-dynamic all test
 make PETSC_ARCH=asterix-sun-cxx all
 make PETSC_ARCH=asterix-sun-cxx CLINKER=sun-cc shared
 make PETSC_ARCH=asterix-sun-cxx test
-./config/asterix-sun.py --with-shared=1 --with-dynamic=1 --with-scalar-type=complex -PETSC_ARCH=asterix-sun-complex-dynamic
+./config/asterix-sun.py --with-shared=1 --with-dynamic=1 --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-sun-complex-dynamic
 make PETSC_ARCH=asterix-sun-complex-dynamic all
 make PETSC_ARCH=asterix-sun-complex-dynamic CLINKER=sun-cc shared
 make PETSC_ARCH=asterix-sun-complex-dynamic test
@@ -69,6 +69,6 @@ make PETSC_ARCH=asterix-sun-complex-dynamic test
 make PETSC_ARCH=asterix-gcc4 all test
 #./config/asterix-gcc4.py --with-clanguage=cxx --with-sieve=1 -PETSC_ARCH=asterix-gcc4-cxx
 #make PETSC_ARCH=asterix-gcc4-cxx all test
-./config/asterix-gcc4.py --with-scalar-type=complex -PETSC_ARCH=asterix-gcc4-complex-opt --with-debugging=0
+./config/asterix-gcc4.py --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-gcc4-complex-opt --with-debugging=0
 make PETSC_ARCH=asterix-gcc4-complex-opt all test
 
