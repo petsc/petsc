@@ -581,7 +581,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   Vec            w1=coloring->w1,w2=coloring->w2,w3;
   void           *fctx = coloring->fctx;
   PetscTruth     flg;
-  PetscInt       ctype=coloring->ctype,N,col_start,col_end;
+  PetscInt       ctype=coloring->ctype,N,col_start=0,col_end=0;
   Vec            x1_tmp;
 
   PetscFunctionBegin;    

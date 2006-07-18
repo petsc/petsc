@@ -430,12 +430,14 @@
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,user%gys:user%gye)
+      PetscScalar  x(user%gxs:user%gxe,                                 &
+     &              user%gys:user%gye)
       integer ierr
 
 !  Local variables:
       integer  i,j,hxdhy,hydhx
-      PetscScalar   temp1,temp,hx,hy,sc,one
+      PetscScalar   temp1,temp,hx,hy
+      PetscScalar   sc,one
 
 !  Set parameters
 
@@ -486,8 +488,10 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar   x(user%gxs:user%gxe,user%gys:user%gye)
-      PetscScalar   f(user%xs:user%xe,user%ys:user%ye)
+      PetscScalar  x(user%gxs:user%gxe,                                 &
+     &              user%gys:user%gye)
+      PetscScalar  f(user%xs:user%xe,                                   &
+     &              user%ys:user%ye)
       integer  ierr
 
 !  Local variables:
@@ -706,13 +710,15 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar   x(user%gxs:user%gxe,user%gys:user%gye)
+      PetscScalar  x(user%gxs:user%gxe,                                 &
+     &              user%gys:user%gye)
       Mat      jac,jac_prec
       integer  ierr
 
 !  Local variables:
       integer  row,col(5),i,j
-      PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc,v(5)
+      PetscScalar   two,one,hx,hy,hxdhy
+      PetscScalar   hydhx,sc,v(5)
 
 !  Set parameters
 
