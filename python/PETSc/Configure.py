@@ -165,7 +165,7 @@ class Configure(config.base.Configure):
     # real or complex
     self.addMakeMacro('PETSC_SCALAR',self.scalartypes.scalartype)
     # double or float
-    self.addMakeMacro('PETSC_PRECISION',self.languages.precision)
+    self.addMakeMacro('PETSC_PRECISION',self.scalartypes.precision)
 
     if self.framework.argDB['with-batch']:
       self.addMakeMacro('PETSC_WITH_BATCH','1')
