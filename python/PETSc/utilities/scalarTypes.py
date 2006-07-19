@@ -32,6 +32,8 @@ class Configure(config.base.Configure):
     self.scalartype = self.framework.argDB['with-scalar-type'].lower()
     if self.scalartype == 'complex':
       self.addDefine('USE_COMPLEX', '1')
+      if self.languages.cSupport:
+        raise RuntimeError('Cannot use --with-c-support and --with-scalar-type=complex together')      
       if self.languages.clanguage == 'C' and not self.types.c99_complex:
         raise RuntimeError('C Compiler provided doest not support C99 complex')
       if self.languages.clanguage == 'Cxx' and not self.types.cxx_complex:

@@ -74,9 +74,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic c)
 PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 {
   Characteristic newC;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   PetscValidPointer(c, 2);
@@ -85,7 +83,7 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   ierr = CharacteristicInitializePackage(PETSC_NULL); CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_COOKIE, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);
+  ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_COOKIE, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
   ierr = PetscLogObjectCreate(newC);CHKERRQ(ierr);
   *c = newC;
 

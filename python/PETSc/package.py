@@ -71,6 +71,7 @@ class Package(config.base.Configure):
     self.libraries     = self.framework.require('config.libraries',self)
     self.programs      = self.framework.require('config.programs', self)
     self.languages     = self.framework.require('PETSc.utilities.languages',self)
+    self.scalartypes   = self.framework.require('PETSc.utilities.scalarTypes',self)
     self.arch          = self.framework.require('PETSc.utilities.arch',self)
     self.petscdir      = self.framework.require('PETSc.utilities.petscdir',self)
     self.sourceControl = self.framework.require('config.sourceControl',self)
@@ -358,9 +359,9 @@ class Package(config.base.Configure):
         raise RuntimeError('Cannot use '+self.name+' with MPIUNI, you need a real MPI')
       if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
-      if self.double and not self.languages.precision.lower() == 'double':
+      if self.double and not self.scalartypes.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
-      if not self.complex and self.languages.scalartype.lower() == 'complex':
+      if not self.complex and self.scalartypes.scalartype.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
       if self.cxx and not self.languages.clanguage == 'Cxx':
         raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=C++')    
@@ -387,6 +388,7 @@ class NewPackage(config.package.Package):
   def setupDependencies(self, framework):
     config.package.Package.setupDependencies(self, framework)
     self.languages      = framework.require('PETSc.utilities.languages', self)
+    self.scalartypes    = self.framework.require('PETSc.utilities.scalarTypes',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
     return
 
@@ -395,9 +397,9 @@ class NewPackage(config.package.Package):
     if self.framework.argDB['with-'+self.package]:
       if self.cxx and not self.languages.clanguage == 'Cxx':
         raise RuntimeError('Cannot use '+self.name+' without C++, run config/configure.py --with-clanguage=C++')    
-      if self.double and not self.languages.precision.lower() == 'double':
+      if self.double and not self.scalartypes.precision.lower() == 'double':
         raise RuntimeError('Cannot use '+self.name+' withOUT double precision numbers, it is not coded for this capability')    
-      if not self.complex and self.languages.scalartype.lower() == 'complex':
+      if not self.complex and self.scalartypes.scalartype.lower() == 'complex':
         raise RuntimeError('Cannot use '+self.name+' with complex numbers it is not coded for this capability')    
       if self.libraryOptions.integerSize == 64 and self.requires32bitint:
         raise RuntimeError('Cannot use '+self.name+' with 64 bit integers, it is not coded for this capability')    
