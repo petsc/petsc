@@ -63,8 +63,19 @@ namespace ALE {
       int         _maxHeight;
     public:
       Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1) {};
+    public: // Verifiers
+      void checkPatch(const patch_type& patch) {
+        if (this->_sheaf.find(patch) == this->_sheaf.end()) {
+          ostringstream msg;
+          msg << "Invalid topology patch: " << patch << std::endl;
+          throw ALE::Exception(msg.str().c_str());
+        }
+      };
     public:
-      const Obj<sieve_type>& getPatch(const patch_type& patch) {return this->_sheaf[patch];};
+      const Obj<sieve_type>& getPatch(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_sheaf[patch];
+      };
       void setPatch(const patch_type& patch, const Obj<sieve_type>& sieve) {
         this->_sheaf[patch] = sieve;
       };
@@ -144,6 +155,15 @@ namespace ALE {
       };
     public: // Accessors
       const Obj<topology_type>& getTopology() {return this->_topology;};
+    public: // Verifiers
+      void checkPatch(const patch_type& patch) {
+        this->_topology->checkPatch(patch);
+        if (this->_indices.find(patch) == this->_indices.end()) {
+          ostringstream msg;
+          msg << "Invalid atlas patch: " << patch << std::endl;
+          throw ALE::Exception(msg.str().c_str());
+        }
+      };
     public: // Sizes
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         this->_indices[patch][p].index = dim;
@@ -172,6 +192,7 @@ namespace ALE {
         return size;
       };
       int size(const patch_type& patch, const point_type& p) {
+        this->checkPatch(patch);
         Obj<typename sieve_type::coneSet>  closure = this->_topology->getPatch(patch)->closure(p);
         typename sieve_type::coneSet::iterator end = closure->end();
         int size = 0;
@@ -183,6 +204,7 @@ namespace ALE {
       };
     public: // Index retrieval
       const index_type& getIndex(const patch_type& patch, const point_type& p) {
+        this->checkPatch(patch);
         return this->_index[patch][p];
       };
       // Want to return a sequence
@@ -238,18 +260,31 @@ namespace ALE {
           a_iter->second = NULL;
         }
       };
+    public: // Verifiers
+      void checkPatch(const patch_type& patch) {
+        this->_atlas->checkPatch(patch);
+        if (this->_arrays.find(patch) == this->_arrays.end()) {
+          ostringstream msg;
+          msg << "Invalid section patch: " << patch << std::endl;
+          throw ALE::Exception(msg.str().c_str());
+        }
+      };
     public:
       const Obj<atlas_type>& getAtlas() {return this->_atlas;};
       // Return a smart pointer?
       const value_type *restrict(const patch_type& patch, const point_type& p) {
         static value_type                     *values = NULL;
         static int                             size = 0;
+
+        this->checkPatch(patch);
       };
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        this->checkPatch(patch);
         // Using the index structure explicitly
         return this->_arrays[patch][this->_atlas->getIndex(patch, p).first];
       };
       void update(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
         if (this->_topology->height() == 1) {
@@ -281,6 +316,7 @@ namespace ALE {
         }
       };
       void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->checkPatch(patch);
         const index_type& ind = this->_atlas->getIndex(patch, p);
         value_type       *a   = &(this->_arrays[patch][ind.first]);
 

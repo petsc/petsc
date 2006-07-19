@@ -3,37 +3,74 @@ static char help[] = "Sifter Performance Stress Tests.\n\n";
 #include <petsc.h>
 #include "sectionTest.hh"
 
-typedef ALE::Test::atlas_type   atlas_type;
-typedef ALE::Test::section_type section_type;
+using ALE::Obj;
+typedef ALE::Test::atlas_type     atlas_type;
+typedef ALE::Test::section_type   section_type;
+typedef atlas_type::topology_type topology_type;
+typedef topology_type::sieve_type sieve_type;
 
 typedef struct {
-  int debug; // The debugging level
+  int        debug;              // The debugging level
+  int        dim;                // The topological mesh dimension
+  char       baseFilename[2048]; // The base filename for mesh files
+  PetscTruth useZeroBase;        // Use zero-based indexing
+  PetscTruth interpolate;        // Construct missing elements of the mesh
 } Options;
 
 #undef __FUNCT__
 #define __FUNCT__ "LinearTest"
-PetscErrorCode LinearTest(const ALE::Obj<section_type>& section, Options *options)
+PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
 {
-  typedef section_type::atlas_type::topology_type topology_type;
-  const ALE::Obj<atlas_type>&    atlas    = section->getAtlas();
-  const ALE::Obj<topology_type>& topology = atlas->getTopology();
-  topology_type::patch_type patch;
+  const Obj<atlas_type>&    atlas    = section->getAtlas();
+  const Obj<topology_type>& topology = atlas->getTopology();
+  topology_type::patch_type patch    = 0;
 
   PetscFunctionBegin;
-  atlas->setFiberDimensionByDepth(patch, 1, 0);
-
+  topology->getPatch(patch)->view("Linear Sieve");
+  atlas->setFiberDimensionByDepth(patch, 0, 1);
   int numVertices = topology->getPatch(patch)->depthStratum(0)->size();
 
   if (atlas->size(patch) != numVertices) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid patch size %d should be %d", atlas->size(patch), numVertices);
+    SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid patch size %d should be %d", atlas->size(patch), numVertices);
   }
-  ALE::Obj<topology_type::sieve_type::traits::heightSequence> elements = topology->getPatch(patch)->heightStratum(0);
+  Obj<sieve_type::traits::heightSequence> elements = topology->getPatch(patch)->heightStratum(0);
 
-  for(topology_type::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+  for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     int numCorners = topology->getPatch(patch)->nCone(*elements->begin(), topology->getPatch(patch)->depth())->size();
 
     if (atlas->size(patch, *e_iter) != numCorners) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid element size %d should be %d", atlas->size(patch, *e_iter), numCorners);
+      SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid element size %d should be %d", atlas->size(patch, *e_iter), numCorners);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CubicTest"
+/* This only works for triangles right now */
+PetscErrorCode CubicTest(const Obj<section_type>& section, Options *options)
+{
+  const Obj<atlas_type>&    atlas    = section->getAtlas();
+  const Obj<topology_type>& topology = atlas->getTopology();
+  topology_type::patch_type patch    = 0;
+
+  PetscFunctionBegin;
+  atlas->setFiberDimensionByDepth(patch, 0, 1);
+  atlas->setFiberDimensionByDepth(patch, 1, 2);
+  atlas->setFiberDimensionByDepth(patch, 2, 1);
+  int numVertices = topology->getPatch(patch)->depthStratum(0)->size();
+  int numEdges    = topology->getPatch(patch)->depthStratum(1)->size();
+  int numFaces    = topology->getPatch(patch)->depthStratum(2)->size();
+  topology->getPatch(patch)->view("Cubic Sieve");
+
+  if (atlas->size(patch) != numVertices + numEdges*2 + numFaces) {
+    SETERRQ2(PETSC_ERR_ARG_SIZ, "CubicTest: Invalid patch size %d should be %d", atlas->size(patch), numVertices + numEdges*2 + numFaces);
+  }
+  Obj<sieve_type::traits::heightSequence> elements = topology->getPatch(patch)->heightStratum(0);
+
+  for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+    if (atlas->size(patch, *e_iter) != 3 + 3*2 + 1) {
+      SETERRQ2(PETSC_ERR_ARG_SIZ, "CubicTest: Invalid element size %d should be %d", atlas->size(patch, *e_iter), 3 + 3*2 + 1);
     }
   }
   PetscFunctionReturn(0);
@@ -46,10 +83,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug = 0;
+  options->debug       = 0;
+  options->dim         = 2;
+  ierr = PetscStrcpy(options->baseFilename, "../tutorials/data/ex1_2d");CHKERRQ(ierr);
+  options->useZeroBase = PETSC_TRUE;
+  options->interpolate = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for sifter stress test", "Sieve");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "sifter1.c", 0, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level",            "section1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "section1.c", options->dim, &options->dim,   PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "section1.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "section1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -58,18 +103,23 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
+  MPI_Comm       comm;
   Options        options;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
-  ierr = ProcessOptions(PETSC_COMM_WORLD, &options);CHKERRQ(ierr);
-  {
-    ALE::Obj<section_type> section = new section_type(PETSC_COMM_WORLD, options.debug);
-    topology_type::patch_type patch;
+  comm = PETSC_COMM_WORLD;
+  ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
+  try {
+    Obj<section_type> section = new section_type(comm, options.debug);
+    Obj<sieve_type>   sieve   = ALE::Test::SieveBuilder<sieve_type>::readSieve(comm, options.dim, options.baseFilename, options.useZeroBase, options.debug);
 
-    section->getAtlas()->getTopology()->setPatch(patch) = ;
+    section->getAtlas()->getTopology()->setPatch(0, sieve);
     ierr = LinearTest(section, &options);CHKERRQ(ierr);
+    ierr = CubicTest(section, &options);CHKERRQ(ierr);
+  } catch (ALE::Exception e) {
+    std::cout << e << std::endl;
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

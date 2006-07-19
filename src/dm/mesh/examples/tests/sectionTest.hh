@@ -1,4 +1,5 @@
 #include <CoSieve.hh>
+#include "sieveTest.hh"
 
 namespace ALE {
   namespace Test {

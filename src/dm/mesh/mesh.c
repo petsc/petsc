@@ -90,12 +90,12 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
     if (!isConnect) {
       SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid element connectivity filename: %s", filename);
     }
-    ierr = PCICEViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = ALE::PCICE::Viewer::writeElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscStrncpy(coordFilename, filename, len-5);CHKERRQ(ierr);
     coordFilename[len-5] = '\0';
     ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = PCICEViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = ALE::PCICE::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
   } else {
     int dim = mesh->getDimension();
 
@@ -1242,7 +1242,7 @@ PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PCICEViewer::writeVertices(m, viewer);
+  return ALE::PCICE::Viewer::writeVertices(m, viewer);
 }
 
 #undef __FUNCT__  
@@ -1253,7 +1253,7 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PCICEViewer::writeElements(m, viewer);
+  return ALE::PCICE::Viewer::writeElements(m, viewer);
 }
 
 #undef __FUNCT__  
