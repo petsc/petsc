@@ -224,16 +224,16 @@ namespace ALE {
         this->_indices[patch][p].index = dim;
       };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
-        Obj<typename sieve_type::traits::depthSequence> points = this->_topology->getPatch(patch)->depthStratum(depth);
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->depthStratum(patch, depth);
 
-        for(typename sieve_type::traits::depthSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        for(typename topology_type::label_sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
       void setFiberDimensionByHeight(const patch_type& patch, int height, int dim) {
-        Obj<typename sieve_type::traits::heightSequence> points = this->_topology->getPatch(patch)->heightStratum(height);
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->heightStratum(patch, height);
 
-        for(typename sieve_type::traits::heightSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        for(typename topology_type::label_sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
