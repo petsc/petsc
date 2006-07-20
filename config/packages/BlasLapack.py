@@ -110,13 +110,14 @@ class Configure(config.package.Package):
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
-    else:
-      self.framework.logPrint('Checking cblaslapack name-mangling')
-      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
-      if foundBlas:
-        self.framework.logPrint('Found cblaslapack')
+    elif not hasattr(self.compilers, 'FC'):
+      self.framework.logPrint('Checking cblaslapack')
+      foundcBlasLapack = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
+      if foundcBlasLapack:
+        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
         foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
-        if foundLapack:
+        if foundBlas and foundLapack:
+          self.framework.logPrint('Found cblaslapack')
           self.f2c = 1
     return (foundBlas, foundLapack)
 
