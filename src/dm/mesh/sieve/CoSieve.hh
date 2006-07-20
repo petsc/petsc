@@ -71,7 +71,7 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
-    public:
+    public: // Accessors
       const Obj<sieve_type>& getPatch(const patch_type& patch) {
         this->checkPatch(patch);
         return this->_sheaf[patch];
@@ -97,6 +97,10 @@ namespace ALE {
       void setValue(const Obj<patch_label_type>& label, const point_type& point, const int value) {
         label->setCone(value, point);
       };
+      const sheaf_type& getPatches() {
+        return this->_sheaf;
+      };
+    public:
       template<class InputPoints>
       void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
@@ -205,7 +209,7 @@ namespace ALE {
     public: // Index retrieval
       const index_type& getIndex(const patch_type& patch, const point_type& p) {
         this->checkPatch(patch);
-        return this->_index[patch][p];
+        return this->_indices[patch][p];
       };
       // Want to return a sequence
       const Obj<IndexArray>& getIndices(const patch_type& patch, const point_type& p, const int level = -1) {
@@ -213,7 +217,7 @@ namespace ALE {
 
         if (level == 0) {
           this->_array->push_back(this->getIndex(patch, p));
-        } else if ((level == 1) || (this->_topology->height() == 1)) {
+        } else if ((level == 1) || (this->_topology->getPatch(patch)->height() == 1)) {
           const Obj<typename sieve_type::coneSequence>& cone = this->_topology->getPatch(patch)->cone(p);
 
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
@@ -226,9 +230,9 @@ namespace ALE {
             this->_array->push_back(this->getIndex(patch, *p_iter));
           }
         } else {
-          Obj<typename sieve_type::coneSet> cone = this->_topology->getPatch(patch)->nCone(p, level);
+          Obj<typename sieve_type::coneArray> cone = this->_topology->getPatch(patch)->nCone(p, level);
 
-          for(typename sieve_type::coneSet::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          for(typename sieve_type::coneArray::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
             this->_array->push_back(this->getIndex(patch, *p_iter));
           }
         }
@@ -269,36 +273,41 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
-    public:
+    public: // Accessors
       const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+    public:
+      void allocate() {
+        const typename atlas_type::topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
+
+        for(typename atlas_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          this->_arrays[p_iter->first] = new value_type[this->_atlas->size(p_iter->first)];
+        }
+      };
       // Return a smart pointer?
       const value_type *restrict(const patch_type& patch, const point_type& p) {
-        static value_type                     *values = NULL;
-        static int                             size = 0;
+        this->checkPatch(patch);
+        const value_type  *a      = this->_arrays[patch];
+        static value_type *values = NULL;
+        static int         vSize  = 0;
+        int                size   = this->_atlas->size(patch, p);
 
-        this->checkPatch(patch);
-      };
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        this->checkPatch(patch);
-        // Using the index structure explicitly
-        return this->_arrays[patch][this->_atlas->getIndex(patch, p).first];
-      };
-      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
-        this->checkPatch(patch);
-        value_type *a = this->_arrays[patch];
-
-        if (this->_topology->height() == 1) {
+        if (size != vSize) {
+          vSize = size;
+          if (values) delete [] values;
+          values = new value_type[vSize];
+        };
+        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           int                                           j    = -1;
 
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
             const index_type& ind    = this->_atlas->getIndex(patch, p);
-            const int         start  = ind.first;
-            const int         length = ind.second;
+            const int         start  = ind.prefix;
+            const int         length = ind.index;
 
             for(int i = start; i < start + length; ++i) {
-              a[i] = v[++j];
+              values[++j] = a[i];
             }
           }
         } else {
@@ -306,11 +315,49 @@ namespace ALE {
           int                                         j   = -1;
 
           for(typename atlas_type::IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
-            const int start  = i_iter->first;
-            const int length = i_iter->second;
+            const int start  = i_iter->prefix;
+            const int length = i_iter->index;
 
             for(int i = start; i < start + length; ++i) {
-              a[i] = v[++j];
+              values[++j] = a[i];
+            }
+          }
+        }
+        return values;
+      };
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        this->checkPatch(patch);
+        // Using the index structure explicitly
+        return &(this->_arrays[patch][this->_atlas->getIndex(patch, p).prefix]);
+      };
+      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->checkPatch(patch);
+        value_type *a = this->_arrays[patch];
+
+        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+          // Only avoids the copy
+          const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
+          int                                           j    = -1;
+
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            const index_type& ind    = this->_atlas->getIndex(patch, p);
+            const int         start  = ind.prefix;
+            const int         length = ind.index;
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] += v[++j];
+            }
+          }
+        } else {
+          const Obj<typename atlas_type::IndexArray>& ind = this->_atlas->getIndices(patch, p);
+          int                                         j   = -1;
+
+          for(typename atlas_type::IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
+            const int start  = i_iter->prefix;
+            const int length = i_iter->index;
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] += v[++j];
             }
           }
         }

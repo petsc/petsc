@@ -33,8 +33,10 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
      - Collision resolution via Overlap/Fusion
    Section:
    --------
-   - Data preallocation and raw pointer extraction
-     - Linear and cubic Lagrange
+   - Data preallocation
+     - Linear and cubic Lagrange (section1)
+   - Raw pointer extraction
+     - Linear and cubic Lagrange (section1)
    - Performance stress tests
      - Many getIndex
      - Many restrict/update
