@@ -73,6 +73,8 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   if (PetscAbsScalar(dp) < symmlq->haptol) {
     ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol);CHKERRQ(ierr);
     dp = 0.0;
+    ksp->reason = KSP_CONVERGED_ITS;  /* bugfix proposed by Lourens (lourens.vanzanen@shell.com) */
+    PetscFunctionReturn(0);
   }
 
 #if !defined(PETSC_USE_COMPLEX)
