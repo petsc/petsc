@@ -9,6 +9,7 @@ externalpackages/*
 */ftn-auto/*
 lib/*
 make_log_*
+test_log_*
 src/python/*
 *.pyc
 *~
