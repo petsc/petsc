@@ -135,6 +135,9 @@ python:
 # Builds PETSc test examples for a given architecture
 #
 test: 
+	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
+	-@${OMAKE} test_build 2>&1 | tee test_log_${PETSC_ARCH}
+test_build:
 	-@echo "Running test examples to verify correct installation"
 	@cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex19
 	@if [ "${FC}" != "" ]; then cd src/snes/examples/tutorials; ${OMAKE} PETSC_ARCH=${PETSC_ARCH}  PETSC_DIR=${PETSC_DIR} testex5f; fi;
