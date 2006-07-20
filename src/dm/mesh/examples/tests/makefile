@@ -56,6 +56,10 @@ sifter1: sifter1.o chkopts
 	-${CLINKER} -o sifter1 sifter1.o ${PETSC_DM_LIB}
 	${RM} -f sifter1.o
 
+topology1: topology1.o chkopts
+	-${CLINKER} -o topology1 topology1.o ${PETSC_DM_LIB}
+	${RM} -f topology1.o
+
 section1: section1.o chkopts
 	-${CLINKER} -o section1 section1.o ${PETSC_DM_LIB}
 	${RM} -f section1.o

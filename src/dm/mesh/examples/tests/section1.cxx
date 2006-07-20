@@ -1,4 +1,4 @@
-static char help[] = "Sifter Performance Stress Tests.\n\n";
+static char help[] = "Section Tests.\n\n";
 
 #include <petsc.h>
 #include "sectionTest.hh"

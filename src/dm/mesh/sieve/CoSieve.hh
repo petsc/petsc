@@ -54,13 +54,15 @@ namespace ALE {
       typedef typename sieve_type::point_type                           point_type;
       typedef typename ALE::set<point_type>                             PointSet;
       typedef typename std::map<patch_type, Obj<sieve_type> >           sheaf_type;
-      typedef typename ALE::Sifter<point_type, int, int>                patch_label_type;
+      typedef typename ALE::Sifter<int, point_type, int>                patch_label_type;
       typedef typename std::map<patch_type, Obj<patch_label_type> >     label_type;
       typedef typename std::map<const typename std::string, label_type> labels_type;
+      typedef typename patch_label_type::supportSequence                label_sequence;
     protected:
       sheaf_type  _sheaf;
       labels_type _labels;
       int         _maxHeight;
+      int         _maxDepth;
     public:
       Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1) {};
     public: // Verifiers
@@ -97,6 +99,12 @@ namespace ALE {
       void setValue(const Obj<patch_label_type>& label, const point_type& point, const int value) {
         label->setCone(value, point);
       };
+      const Obj<patch_label_type>& getLabel(const patch_type& patch, const std::string& name) {
+        return this->_labels[name][patch];
+      };
+      const Obj<label_sequence>& getLabelStratum(const patch_type& patch, const std::string& name, int label) {
+        return this->_labels[name][patch]->support(label);
+      };
       const sheaf_type& getPatches() {
         return this->_sheaf;
       };
@@ -108,7 +116,7 @@ namespace ALE {
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max height of the points in the support of p, and add 1
           int h0 = this->getValue(height, *p_iter, -1);
-          int h1 = this->getMaxValue(height, this->support(*p_iter), -1) + 1;
+          int h1 = this->getMaxValue(height, sieve->support(*p_iter), -1) + 1;
 
           if(h1 != h0) {
             this->setValue(height, *p_iter, h1);
@@ -131,6 +139,49 @@ namespace ALE {
           this->computeHeight(label, s_iter->second, s_iter->second->leaves());
           this->_labels[name][s_iter->first] = label;
         }
+      };
+      int height() {return this->_maxHeight;};
+      const Obj<label_sequence>& heightStratum(const patch_type& patch, int height) {
+        return this->getLabelStratum(patch, "height", height);
+      };
+      template<class InputPoints>
+      void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points) {
+        Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+
+        for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          // Compute the max depth of the points in the cone of p, and add 1
+          int d0 = this->getValue(depth, *p_iter, -1);
+          int d1 = this->getMaxValue(depth, sieve->cone(*p_iter), -1) + 1;
+
+          if(d1 != d0) {
+            this->setValue(depth, *p_iter, d1);
+            if (d1 > this->_maxDepth) this->_maxDepth = d1;
+            modifiedPoints->insert(*p_iter);
+          }
+        }
+        // FIX: We would like to avoid the copy here with support()
+        if(modifiedPoints->size() > 0) {
+          this->computeDepth(depth, sieve, sieve->support(modifiedPoints));
+        }
+      };
+      void computeDepths() {
+        const std::string name("depth");
+
+        this->_maxDepth = -1;
+        for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
+          Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
+
+          this->computeDepth(label, s_iter->second, s_iter->second->roots());
+          this->_labels[name][s_iter->first] = label;
+        }
+      };
+      int depth() {return this->_maxDepth;};
+      const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
+        return this->getLabelStratum(patch, "depth", depth);
+      };
+      void stratify() {
+        this->computeHeights();
+        this->computeDepths();
       };
     };
 
