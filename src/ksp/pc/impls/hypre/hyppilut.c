@@ -139,6 +139,7 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
   /* error code of 1 in boomerAMG merely means convergence not achieved */
   if (hierr && (hierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
+  if (hierr) hypre__global_error = 0;
   
   HYPREReplacePointer(jac->b,sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
