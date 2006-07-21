@@ -273,7 +273,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int errnum,const char *text[],c
 {
   PetscFunctionBegin;
   if (text && errnum > PETSC_ERR_MIN_VALUE && errnum < PETSC_ERR_MAX_VALUE) {
-    *text = PetscErrorStrings[errnum-PETSC_ERR_MIN_VALUE];
+    *text = PetscErrorStrings[errnum-PETSC_ERR_MIN_VALUE-1];
   } else if (text) *text = 0;
 
   if (specific) {
