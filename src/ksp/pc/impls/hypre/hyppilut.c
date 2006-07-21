@@ -79,7 +79,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   HYPRE_ParCSRMatrix hmat;
   HYPRE_ParVector    bv,xv;
   int                hierr;
-  PetscInt           bs;
 
   PetscFunctionBegin;
   if (!jac->ij) { /* create the matrix the first time through */ 
@@ -96,8 +95,6 @@ static PetscErrorCode PCSetUp_HYPRE(PC pc)
   ierr = HYPRE_IJMatrixGetObject(jac->ij,(void**)&hmat);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&bv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&xv);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
-  ierr = HYPRE_BoomerAMGSetNumFunctions(jac->hsolver,bs);CHKERRQ(ierr);
   hierr = (*jac->setup)(jac->hsolver,hmat,bv,xv);
   if (hierr) SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE setup, error code %d",hierr);
   PetscFunctionReturn(0);
@@ -610,6 +607,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     flag;
+  PetscInt       bs;
 
   PetscFunctionBegin;
   if (pc->ops->setup) {
@@ -708,6 +706,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     ierr = HYPRE_BoomerAMGSetMaxRowSum(jac->hsolver,jac->maxrowsum);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
     ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
+    ierr = MatGetBlockSize(pc->pmat,&bs);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetNumFunctions(jac->hsolver,bs);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
