@@ -20,26 +20,7 @@ typedef struct {
 PetscErrorCode PrintMatrix(MPI_Comm comm, int rank, const int rows, const int cols, const section_type::value_type matrix[])
 {
   PetscFunctionBegin;
-  PetscSynchronizedPrintf(comm, "[%d]J = \n", rank);
-  for(int r = 0; r < rows; r++) {
-    if (r == 0) {
-      PetscSynchronizedPrintf(comm, "[%d] /", rank);
-    } else if (r == rows-1) {
-      PetscSynchronizedPrintf(comm, "[%d] \\", rank);
-    } else {
-      PetscSynchronizedPrintf(comm, "[%d] |", rank);
-    }
-    for(int c = 0; c < cols; c++) {
-      PetscSynchronizedPrintf(comm, " %g", matrix[r*cols+c]);
-    }
-    if (r == 0) {
-      PetscSynchronizedPrintf(comm, " \\\n");
-    } else if (r == rows-1) {
-      PetscSynchronizedPrintf(comm, " /\n");
-    } else {
-      PetscSynchronizedPrintf(comm, " |\n");
-    }
-  }
+  PetscSynchronizedPrintf(comm, "%s", ALE::Test::MeshProcessor::printMatrix(rows, cols, matrix, rank).c_str());
   PetscFunctionReturn(0);
 }
 
@@ -47,65 +28,13 @@ PetscErrorCode PrintMatrix(MPI_Comm comm, int rank, const int rows, const int co
 #define __FUNCT__ "ElementGeometry"
 PetscErrorCode ElementGeometry(const Obj<section_type>& coordinates, int dim, const sieve_type::point_type& e, section_type::value_type v0[], section_type::value_type J[], section_type::value_type invJ[], section_type::value_type& detJ)
 {
-  const int                       debug  = coordinates->debug();
-  const section_type::patch_type  patch  = 0;
-  const section_type::value_type *coords = coordinates->restrict(patch, e);
-  PetscReal                       invDet;
+  const int debug = coordinates->debug();
 
   PetscFunctionBegin;
-  if (debug) {
-    MPI_Comm comm = coordinates->comm();
-    int      rank = coordinates->commRank();
-
-    PetscSynchronizedPrintf(comm, "[%d]Element (%d, %d)\n", rank, e.prefix, e.index);
-    PetscSynchronizedPrintf(comm, "[%d]Coordinates:\n[%d]  ", rank, rank);
-    for(int f = 0; f <= dim; f++) {
-      PetscSynchronizedPrintf(comm, " (");
-      for(int d = 0; d < dim; d++) {
-        if (d > 0) PetscSynchronizedPrintf(comm, ", ");
-        PetscSynchronizedPrintf(comm, "%g", coords[f*dim+d]);
-      }
-      PetscSynchronizedPrintf(comm, ")");
-    }
-    PetscSynchronizedPrintf(comm, "\n");
-  }
-  for(int d = 0; d < dim; d++) {
-    v0[d] = coords[d];
-  }
-  for(int d = 0; d < dim; d++) {
-    for(int f = 0; f < dim; f++) {
-      J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
-    }
-  }
+  if (debug) {PetscSynchronizedPrintf(coordinates->comm(), "%s", ALE::Test::MeshProcessor::printElement(e, dim, coordinates->restrict(0, e), coordinates->commRank()).c_str());}
+  ALE::Test::MeshProcessor::computeElementGeometry(coordinates, dim, e, v0, J, invJ, detJ);
   if (debug) {PrintMatrix(coordinates->comm(), coordinates->commRank(), dim, dim, J);}
-  if (dim == 1) {
-    detJ = J[0];
-  } else if (dim == 2) {
-    detJ = J[0]*J[3] - J[1]*J[2];
-  } else if (dim == 3) {
-    detJ = J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
-           J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
-           J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
-  }
-  invDet = 1.0/detJ;
   if (detJ < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
-  if (dim == 2) {
-    invJ[0] =  invDet*J[3];
-    invJ[1] = -invDet*J[1];
-    invJ[2] = -invDet*J[2];
-    invJ[3] =  invDet*J[0];
-  } else if (dim == 3) {
-    // FIX: This may be wrong
-    invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
-    invJ[0*3+1] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
-    invJ[0*3+2] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
-    invJ[1*3+0] = invDet*(J[0*3+1]*J[2*3+2] - J[0*3+2]*J[2*3+1]);
-    invJ[1*3+1] = invDet*(J[0*3+2]*J[2*3+0] - J[0*3+0]*J[2*3+2]);
-    invJ[1*3+2] = invDet*(J[0*3+0]*J[2*3+1] - J[0*3+1]*J[2*3+0]);
-    invJ[2*3+0] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
-    invJ[2*3+1] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
-    invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-  }
   if (debug) {PrintMatrix(coordinates->comm(), coordinates->commRank(), dim, dim, invJ);}
   PetscFunctionReturn(0);
 }
