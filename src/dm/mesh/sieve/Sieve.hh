@@ -390,6 +390,7 @@ namespace ALE {
     private:
       template<class InputSequence> Obj<coneSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
       template<class pointSequence> void __nCone(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<coneArray> cone, Obj<coneSet> seen);
+      template<class pointSequence> void __nSupport(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<supportArray> cone, Obj<supportSet> seen);
     public:
       //
       // The basic Sieve interface (extensions to Sifter)
@@ -399,6 +400,8 @@ namespace ALE {
       template<class InputSequence> Obj<coneSet> nCone(const Obj<InputSequence>& points, int n);
       template<class InputSequence> Obj<coneSet> nCone(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
 
+      Obj<supportArray> nSupport(const Point_& p, int n);
+      Obj<supportArray> nSupport(const Point_& p, int n, const Color_& color, bool useColor = true);
       template<class InputSequence> Obj<supportSet> nSupport(const Obj<InputSequence>& points, int n);
       template<class InputSequence> Obj<supportSet> nSupport(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
     public:
@@ -682,6 +685,42 @@ namespace ALE {
         }
       }
       return cone;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::supportArray> Sieve<Point_,Marker_,Color_>::nSupport(const Point_& p, int n) {
+      return this->nSupport(p, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::supportArray> Sieve<Point_,Marker_,Color_>::nSupport(const Point_& p, int n, const Color_& color, bool useColor) {
+      Obj<supportArray> cone = new supportArray();
+      Obj<supportSet>   seen = new supportSet();
+
+      this->__nSupport(this->support(p), n-1, color, useColor, cone, seen);
+      return cone;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class pointSequence> 
+    void Sieve<Point_,Marker_,Color_>::__nSupport(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<supportArray> support, Obj<supportSet> seen) {
+      if (n == 0) {
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          if (seen->find(*p_itor) == seen->end()) {
+            support->push_back(*p_itor);
+            seen->insert(*p_itor);
+          }
+        }
+      } else {
+        typename pointSequence::iterator end = points->end();
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != end; ++p_itor) {
+          if (useColor) {
+            this->__nSupport(this->support(*p_itor, color), n-1, color, useColor, support, seen);
+          } else {
+            this->__nSupport(this->support(*p_itor), n-1, color, useColor, support, seen);
+          }
+        }
+      }
     };
 
     template <typename Point_, typename Marker_, typename Color_> 

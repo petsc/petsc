@@ -2,7 +2,7 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
    These should probably be documented with pictures and all, and done as a Tech Report. 
    This way we can test the feasibility of any design changes against this list.
    We should put common test components in a namespace so that we can build more complicated
-   tests on top of simpler ones.
+   tests on top of simpler ones. When a test is completed, it is added to the line in parentheses.
 
    Sifter:
    -------
@@ -18,7 +18,7 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
      - Many meet/joins
    - Distribution via Overlap/Fusion
    - Global numbering of points
-   - Stratification
+   - Stratification (topology1)
    Mesh (Topology + Coordinates):
    ------------------------------
    - Reading other mesh formats
@@ -31,12 +31,16 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
      - With and without intermediate elements
    - Independent mesh point insertion on different procs
      - Collision resolution via Overlap/Fusion
+   - Ordered data retrieval, or restrict
+     - Element Geometry Computation
    Section:
    --------
    - Data preallocation
      - Linear and cubic Lagrange (section1)
    - Raw pointer extraction
      - Linear and cubic Lagrange (section1)
+   - Ordered data retrieval, or restrict
+     - Linear and cubic Lagrange
    - Performance stress tests
      - Many getIndex
      - Many restrict/update
@@ -46,9 +50,6 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
    - Distribution via Overlap/Fusion
    - Multicomponent fields.
    - Faults a la Pylith via a suitable chart mechanism.
-   - Ordered data retrieval (restrict)
-     - Element Geometry Computation
-     - Linear and cubic Lagrange
    - Global numbering of dofs
 
 II. Coding guidelines

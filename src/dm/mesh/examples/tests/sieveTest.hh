@@ -190,7 +190,7 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
       static Obj<sieve_type> readSieve(MPI_Comm comm, const int dim, std::string basename, bool useZeroBase, const int debug = 0) {
-        ALE::Obj<sieve_type> sieve = new sieve_type(comm, debug);
+        Obj<sieve_type> sieve = new sieve_type(comm, debug);
         int    *cells;
         double *coordinates;
         int     numCells = 0, numVertices = 0, numCorners = dim+1;
