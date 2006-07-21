@@ -15,6 +15,7 @@ configure_options = [
   '--with-cxx=mpicxx.ibm-8.0',
   '--with-fc=mpif77.ibm-10.1 -qnosave',
   '--with-mpi-dir=/bgl/BlueLight/V1R2M1_020_2006-060110/ppc/bglsys',  # required by BLACS to get mpif.h
+  '--with-clanguage=cxx',
 
   '--with-is-color-value-type=short',
   '--with-shared=0',
