@@ -72,8 +72,8 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
   ierr = VecDot(R,Z,&dp);CHKERRQ(ierr);             /* dp = r'*z;      */
   if (PetscAbsScalar(dp) < symmlq->haptol) {
     ierr = PetscInfo2(ksp,"Detected happy breakdown %G tolerance %G\n",PetscAbsScalar(dp),symmlq->haptol);CHKERRQ(ierr);
-    dp = 0.0;
-    ksp->reason = KSP_CONVERGED_ITS;  /* bugfix proposed by Lourens (lourens.vanzanen@shell.com) */
+    ksp->rnorm  = 0.0;  /* what should we really put here? */
+    ksp->reason = KSP_CONVERGED_HAPPY_BREAKDOWN;  /* bugfix proposed by Lourens (lourens.vanzanen@shell.com) */
     PetscFunctionReturn(0);
   }
 
@@ -83,9 +83,9 @@ PetscErrorCode  KSPSolve_SYMMLQ(KSP ksp)
     PetscFunctionReturn(0);
   }
 #endif
-  dp = PetscSqrtScalar(dp); 
-  beta = dp;                         /*  beta <- sqrt(r'*z)  */
-  beta1 = beta;
+  dp     = PetscSqrtScalar(dp); 
+  beta   = dp;                         /*  beta <- sqrt(r'*z)  */
+  beta1  = beta;
   s_prod = PetscAbsScalar(beta1); 
 
   ierr = VecCopy(R,V);CHKERRQ(ierr);  /* v <- r; */

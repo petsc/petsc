@@ -54,6 +54,7 @@
       PetscEnum KSP_CONVERGED_QCG_NEG_CURVE
       PetscEnum KSP_CONVERGED_QCG_CONSTRAINED
       PetscEnum KSP_CONVERGED_STEP_LENGTH
+      PetscEnum KSP_CONVERGED_HAPPY_BREAKDOWN
       PetscEnum KSP_DIVERGED_BREAKDOWN_BICG
       PetscEnum KSP_DIVERGED_NONSYMMETRIC
       PetscEnum KSP_DIVERGED_INDEFINITE_PC
@@ -64,6 +65,7 @@
       parameter (KSP_CONVERGED_QCG_NEG_CURVE = 5)
       parameter (KSP_CONVERGED_QCG_CONSTRAINED = 6)
       parameter (KSP_CONVERGED_STEP_LENGTH = 7)
+      parameter (KSP_CONVERGED_HAPPY_BREAKDOWN = 8)
 
       parameter (KSP_DIVERGED_ITS        = -3)
       parameter (KSP_DIVERGED_DTOL       = -4)

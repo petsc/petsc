@@ -343,6 +343,7 @@ typedef enum {/* converged */
               KSP_CONVERGED_STCG_NEG_CURVE     =  5,
               KSP_CONVERGED_STCG_CONSTRAINED   =  6,
               KSP_CONVERGED_STEP_LENGTH        =  7,
+              KSP_CONVERGED_HAPPY_BREAKDOWN    =  8,
               /* diverged */
               KSP_DIVERGED_NULL                = -2,
               KSP_DIVERGED_ITS                 = -3,

@@ -51,6 +51,9 @@ int main(int argc,char **argv)
     /*
       Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
       for principal unknowns (x) and governing residuals (f)
+
+      The problem is actually not periodic; but we declare it as periodic so that we have
+      two ghost points at each end where we can put "ghost" boundary conditions.
     */
     ierr = DACreate1d(comm,DA_XPERIODIC,-6,2,2,0,&da);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
@@ -141,6 +144,22 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field *x,Field *f,void *ptr)
   */
   dhx = (PetscReal)(info->mx-1);
   hx = 1.0/dhx;                 
+
+  /* 
+     Put the ghost boundary conditions at the left and right end; we have the available space because
+     we declared the problem with periodic boundary conditions and two sets of ghost points.
+
+     This is actually a staggered grid with the h's living on cell vertices and uh on cell centers,
+     the "extra" x[mx-1].uh is set to zero.
+       
+  */
+  if (info->xs = 0) {
+    x[-2].uh  = x[-1].uh = 0.0;
+    x[-2].h   = x[-1].h  = x[0].h;  
+  } else if (info->xs+>info->xm == mx) {
+    x[mx+1].uh = x[mx].uh = x[mx-1].uh  = 0.0;
+    x[mx+1].h = x[mx].h  = x[mx-1].h;  
+  }
 
   for (i=info->xs; i<info->xs+info->xm; i++) {
     f[i].h   = x[i].h;
