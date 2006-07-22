@@ -4,10 +4,10 @@
 */
 #include "include/mpiuni/mpi.h"
 
-#if defined (MPIUNI_USE_STDCALL)
-#define MPIUNI_STDCALL __stdcall
+#if defined (PETSC_USE_STDCALL)
+#define PETSC_STDCALL __stdcall
 #else
-#define MPIUNI_STDCALL
+#define PETSC_STDCALL
 #endif
 
 #if defined(PETSC_HAVE_STDLIB_H)
@@ -186,60 +186,60 @@ int Petsc_MPI_Finalize(void)
 #define mpi_allgather_        mpi_allgather__
 #endif
 
-void MPIUNI_STDCALL  mpi_init_(int *ierr)
+void PETSC_STDCALL  mpi_init_(int *ierr)
 {
   MPI_was_initialized = 1;
   *ierr = MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL  mpi_finalize_(int *ierr)
+void PETSC_STDCALL  mpi_finalize_(int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
+void PETSC_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
 {
   *size = 1;
   *ierr = 0;
 }
 
-void MPIUNI_STDCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
+void PETSC_STDCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
 {
   *rank=0;
   *ierr=MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
+void PETSC_STDCALL mpi_abort_(MPI_Comm *comm,int *errorcode,int *ierr) 
 {
   abort();
   *ierr = MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
+void PETSC_STDCALL mpi_allreduce_(void *sendbuf,void *recvbuf,int *count,int *datatype,int *op,int *comm,int *ierr) 
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*count)*MPIUNI_DATASIZE[*datatype]);
   *ierr = MPI_SUCCESS;
 } 
 
-void MPIUNI_STDCALL mpi_barrier_(MPI_Comm *comm,int *ierr)
+void PETSC_STDCALL mpi_barrier_(MPI_Comm *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
-void MPIUNI_STDCALL mpi_bcast_(void *buf,int *count,int *datatype,int *root,int *comm,int *ierr)
+void PETSC_STDCALL mpi_bcast_(void *buf,int *count,int *datatype,int *root,int *comm,int *ierr)
 {
   *ierr = MPI_SUCCESS;
 }
 
 
-void MPIUNI_STDCALL mpi_gather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype, int *root,int *comm,int *ierr)
+void PETSC_STDCALL mpi_gather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype, int *root,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
   *ierr = MPI_SUCCESS;
 }
 
 
-void MPIUNI_STDCALL mpi_allgather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype,int *comm,int *ierr)
+void PETSC_STDCALL mpi_allgather_(void *sendbuf,int *scount,int *sdatatype, void* recvbuf, int* rcount, int* rdatatype,int *comm,int *ierr)
 {
   MPIUNI_Memcpy(recvbuf,sendbuf,(*scount)*MPIUNI_DATASIZE[*sdatatype]);
   *ierr = MPI_SUCCESS;
