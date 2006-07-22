@@ -193,8 +193,6 @@ class Configure(config.package.Package):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
     self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
-    if 'STDCALL' in self.compilers.defines:
-      self.framework.addDefine('MPIUNI_USE_STDCALL', 1)
     self.lib = [os.path.abspath(os.path.join('lib', self.arch, 'libmpiuni'))]
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
     self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
