@@ -4,12 +4,6 @@
 */
 #include "include/mpiuni/mpi.h"
 
-#if defined (PETSC_USE_STDCALL)
-#define PETSC_STDCALL __stdcall
-#else
-#define PETSC_STDCALL
-#endif
-
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
 #endif
