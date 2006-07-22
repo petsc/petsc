@@ -295,8 +295,9 @@ namespace ALE {
       void __orderCell(const Obj<order_type>& order, const patch_type& patch, const point_type& cell, int& offset, const OrderTest& tester) {
         // Set the prefix to the current offset (this won't kill the topology iterator)
         Obj<typename sieve_type::coneSequence> cone = this->_topology->cone(cell);
+        typename sieve_type::coneSequence::iterator end = cone->end();
 
-        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
           this->__orderCell(order, patch, *p_iter, offset, tester);
         }
 

@@ -136,7 +136,7 @@ PetscErrorCode VecView_Seq_File(Vec xin,PetscViewer viewer)
        state 4: Output both, CELL_DATA last 
     */
     static PetscInt stateId = -1;
-    int outputState;
+    int outputState = 0;
     PetscTruth hasState;
     int doOutput = 0;
     PetscInt bs, b;

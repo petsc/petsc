@@ -16,13 +16,14 @@ configure_options = [
   '--with-fc=mpif77.ibm-10.1 -qnosave',
   '--with-mpi-dir=/bgl/BlueLight/V1R2M1_020_2006-060110/ppc/bglsys',  # required by BLACS to get mpif.h
 
+
   '--with-is-color-value-type=short',
   '--with-shared=0',
   
-  '-COPTFLAGS=-O3 -qbgl -qarch=440d -qtune=440 -qmaxmem=-1',
-  '-CXXOPTFLAGS=-O3 -qbgl -qarch=440d -qtune=440 -qmaxmem=-1',
-  '-FOPTFLAGS=-O3 -qbgl -qarch=440d -qtune=440 -qmaxmem=-1',
-  '--with-debugging=0',
+  #'-COPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
+  #'-CXXOPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
+  #'-FOPTFLAGS=-O3 -qbgl -qarch=440 -qtune=440',
+  #'--with-debugging=0',
 
   # the following option gets automatically enabled on BGL/with IBM compilers.
   # '--with-fortran-kernels=bgl'

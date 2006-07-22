@@ -390,6 +390,7 @@ namespace ALE {
     private:
       template<class InputSequence> Obj<coneSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
       template<class pointSequence> void __nCone(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<coneArray> cone, Obj<coneSet> seen);
+      template<class pointSequence> void __nSupport(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<supportArray> cone, Obj<supportSet> seen);
     public:
       //
       // The basic Sieve interface (extensions to Sifter)
@@ -399,6 +400,8 @@ namespace ALE {
       template<class InputSequence> Obj<coneSet> nCone(const Obj<InputSequence>& points, int n);
       template<class InputSequence> Obj<coneSet> nCone(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
 
+      Obj<supportArray> nSupport(const Point_& p, int n);
+      Obj<supportArray> nSupport(const Point_& p, int n, const Color_& color, bool useColor = true);
       template<class InputSequence> Obj<supportSet> nSupport(const Obj<InputSequence>& points, int n);
       template<class InputSequence> Obj<supportSet> nSupport(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor = true);
     public:
@@ -618,8 +621,8 @@ namespace ALE {
 
     template <typename Point_, typename Marker_, typename Color_> 
     Obj<typename Sieve<Point_,Marker_,Color_>::coneArray> Sieve<Point_,Marker_,Color_>::nCone(const Point_& p, int n, const Color_& color, bool useColor) {
-      Obj<coneArray> cone = coneArray();
-      Obj<coneSet>   seen = coneSet();
+      Obj<coneArray> cone = new coneArray();
+      Obj<coneSet>   seen = new coneSet();
 
       this->__nCone(this->cone(p), n-1, color, useColor, cone, seen);
       return cone;
@@ -636,7 +639,8 @@ namespace ALE {
           }
         }
       } else {
-        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+        typename pointSequence::iterator end = points->end();
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != end; ++p_itor) {
           if (useColor) {
             this->__nCone(this->cone(*p_itor, color), n-1, color, useColor, cone, seen);
           } else {
@@ -655,7 +659,7 @@ namespace ALE {
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
     Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::nCone(const Obj<InputSequence>& points, int n, const Color_& color, bool useColor ) {
-      Obj<coneSet> cone = coneSet();
+      Obj<coneSet> cone = new coneSet();
       cone->insert(points->begin(), points->end());
       return this->__nCone(cone, n, color, useColor);
     };
@@ -663,7 +667,7 @@ namespace ALE {
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
     Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::__nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor) {
-      Obj<coneSet> base = coneSet();
+      Obj<coneSet> base = new coneSet();
 
       for(int i = 0; i < n; ++i) {
         Obj<coneSet> tmp = cone; cone = base; base = tmp;
@@ -681,6 +685,42 @@ namespace ALE {
         }
       }
       return cone;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::supportArray> Sieve<Point_,Marker_,Color_>::nSupport(const Point_& p, int n) {
+      return this->nSupport(p, n, Color_(), false);
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::supportArray> Sieve<Point_,Marker_,Color_>::nSupport(const Point_& p, int n, const Color_& color, bool useColor) {
+      Obj<supportArray> cone = new supportArray();
+      Obj<supportSet>   seen = new supportSet();
+
+      this->__nSupport(this->support(p), n-1, color, useColor, cone, seen);
+      return cone;
+    };
+
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class pointSequence> 
+    void Sieve<Point_,Marker_,Color_>::__nSupport(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<supportArray> support, Obj<supportSet> seen) {
+      if (n == 0) {
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != points->end(); ++p_itor) {
+          if (seen->find(*p_itor) == seen->end()) {
+            support->push_back(*p_itor);
+            seen->insert(*p_itor);
+          }
+        }
+      } else {
+        typename pointSequence::iterator end = points->end();
+        for(typename pointSequence::iterator p_itor = points->begin(); p_itor != end; ++p_itor) {
+          if (useColor) {
+            this->__nSupport(this->support(*p_itor, color), n-1, color, useColor, support, seen);
+          } else {
+            this->__nSupport(this->support(*p_itor), n-1, color, useColor, support, seen);
+          }
+        }
+      }
     };
 
     template <typename Point_, typename Marker_, typename Color_> 
@@ -1178,8 +1218,8 @@ namespace ALE {
           txt << "[" << this->commRank() << "]: empty" << std::endl; 
         }
         for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          typename traits::supportSequence supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+          const Obj<typename traits::supportSequence>& supp = this->support(*capi);
+          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); suppi++) {
             txt << "[" << this->commRank() << "]: " << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
@@ -1194,8 +1234,8 @@ namespace ALE {
           txt1 << "[" << this->commRank() << "]: empty" << std::endl; 
         }
         for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          typename traits::coneSequence cone = this->cone(*basei);
-          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
+          const Obj<typename traits::coneSequence>& cone = this->cone(*basei);
+          for(typename traits::coneSequence::iterator conei = cone->begin(); conei != cone->end(); conei++) {
             txt1 << "[" << this->commRank() << "]: " << *basei << "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }

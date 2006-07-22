@@ -638,9 +638,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   if (A->assembled == PETSC_TRUE) {
     ierr = SeqCSRPERM_create_perm(B);CHKERRQ(ierr);
   }
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcsrperm_C",
-                                           "MatConvert_SeqAIJ_SeqCSRPERM",MatConvert_SeqAIJ_SeqCSRPERM);CHKERRQ(ierr);
+ 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqcsrperm_seqaij_C",
                                            "MatConvert_SeqCSRPERM_SeqAIJ",MatConvert_SeqCSRPERM_SeqAIJ);CHKERRQ(ierr);
 

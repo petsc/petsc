@@ -1,4 +1,4 @@
-CPPFLAGS        = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_USE_DEBUGGING -DALE_LOGGING_USE_EVENTS #-DALE_LOGGING_USE_STAGES
+CPPFLAGS        = -DALE_HAVE_CXX_ABI -DALE_USE_LOGGING -DALE_USE_DEBUGGING -DALE_LOGGING_USE_EVENTS -DALE_LOGGING_LOG_MEM -DALE_LOGGING_VERBOSE #-DALE_LOGGING_USE_STAGES
 CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	        =
 FPPFLAGS        = 
@@ -51,6 +51,22 @@ ex08: ex08.o chkopts
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
+
+sifter1: sifter1.o chkopts
+	-${CLINKER} -o sifter1 sifter1.o ${PETSC_DM_LIB}
+	${RM} -f sifter1.o
+
+topology1: topology1.o chkopts
+	-${CLINKER} -o topology1 topology1.o ${PETSC_DM_LIB}
+	${RM} -f topology1.o
+
+section1: section1.o chkopts
+	-${CLINKER} -o section1 section1.o ${PETSC_DM_LIB}
+	${RM} -f section1.o
+
+mesh1: mesh1.o chkopts
+	-${CLINKER} -o mesh1 mesh1.o ${PETSC_DM_LIB}
+	${RM} -f mesh1.o
 
 #-----------------------------------------------------------------
 runex00:

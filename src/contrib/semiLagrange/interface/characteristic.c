@@ -64,7 +64,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic c)
   if (c->remoteOffsets) {ierr = PetscFree(c->remoteOffsets); CHKERRQ(ierr);}
   if (c->request)       {ierr = PetscFree(c->request); CHKERRQ(ierr);}
   if (c->status)        {ierr = PetscFree(c->status); CHKERRQ(ierr);}
-  PetscLogObjectDestroy(c);
+  ierr = PetscLogObjectDestroy(c);CHKERRQ(ierr);
   PetscHeaderDestroy(c);
   PetscFunctionReturn(0);
 }
@@ -74,9 +74,7 @@ PetscErrorCode CharacteristicDestroy(Characteristic c)
 PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
 {
   Characteristic newC;
-#ifndef PETSC_USE_DYNAMIC_LIBRARIES
   PetscErrorCode ierr;
-#endif
 
   PetscFunctionBegin;
   PetscValidPointer(c, 2);
@@ -85,8 +83,8 @@ PetscErrorCode CharacteristicCreate(MPI_Comm comm, Characteristic *c)
   ierr = CharacteristicInitializePackage(PETSC_NULL); CHKERRQ(ierr);
 #endif
 
-  PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_COOKIE, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);
-  PetscLogObjectCreate(newC);
+  ierr = PetscHeaderCreate(newC, _p_Characteristic, struct _CharacteristicOps, CHARACTERISTIC_COOKIE, -1, "Characteristic", comm, CharacteristicDestroy, CharacteristicView);CHKERRQ(ierr);
+  ierr = PetscLogObjectCreate(newC);CHKERRQ(ierr);
   *c = newC;
 
   newC->structured      = PETSC_TRUE;

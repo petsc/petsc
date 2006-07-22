@@ -59,8 +59,10 @@
       integer ierr,m,n,t,tmax,flg,i,j,Ntot
       integer size,rank
       double precision  enorm
-      PetscScalar,ALLOCATABLE :: userx(:,:),userb(:,:)
-      PetscScalar,ALLOCATABLE :: solution(:,:),rho(:,:)
+      PetscScalar,ALLOCATABLE :: userx(:,:)
+      PetscScalar,ALLOCATABLE :: userb(:,:)
+      PetscScalar,ALLOCATABLE :: solution(:,:)
+      PetscScalar,ALLOCATABLE :: rho(:,:)
 
       double precision hx2,hy2
       common /param/ hx2,hy2

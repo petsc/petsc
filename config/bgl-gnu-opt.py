@@ -10,7 +10,7 @@
 # without a minor manual hack to zstart.c sourcefile
 #
 configure_options = [
-  '-LIBS=-lc -lnss_files -lnss_dns -lresolv',
+  '-LIBS=-lc -lc -lnss_files -lnss_dns -lresolv',
   '--with-cc=mpicc',
   '--with-cxx=mpicxx',
   '--with-fc=mpif77',
@@ -22,6 +22,7 @@ configure_options = [
   '-FOPTFLAGS=-O3',
   '--with-debugging=0',
   '--with-fortran-kernels=generic',
+  '--with-x=0',
   
   '--with-batch=1',
   '--with-mpi-shared=0',

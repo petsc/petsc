@@ -57,7 +57,7 @@ class Configure(PETSc.package.Package):
       fd = file(os.path.join(spaiDir,'lib','Makefile.in'),'w')
       fd.write(args)
       fd.close()
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make ; mv libspai.a '+os.path.join(installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make clean; make ; mv libspai.a '+os.path.join(installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; cp *.h '+os.path.join(installDir,'lib'),timeout=250, log = self.framework.log)[0]      
       try:
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]

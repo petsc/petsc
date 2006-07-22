@@ -425,9 +425,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec,VecOption);
    call overhead on any 'native' Vecs.
 */
 
-PETSC_EXTERN_CXX_END
 #include "private/vecimpl.h"
-PETSC_EXTERN_CXX_BEGIN
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecContourScale(Vec,PetscReal,PetscReal);
 

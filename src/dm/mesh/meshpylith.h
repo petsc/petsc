@@ -226,7 +226,7 @@ class PyLithViewer {
   #define __FUNCT__ "PyLithWriteVerticesLocal"
   static PetscErrorCode writeVerticesLocal(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
     ALE::Obj<ALE::Mesh::field_type> coordinates = mesh->getCoordinates();
-    ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = ALE::Mesh::bundle_type(mesh->comm());
+    ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = new ALE::Mesh::bundle_type(mesh->comm());
     ALE::Mesh::bundle_type::patch_type patch;
     int            dim = mesh->getDimension();
     PetscErrorCode ierr;

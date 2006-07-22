@@ -11,9 +11,9 @@ class Configure(config.base.Configure):
     return
 
   def __str__(self):
-    if not hasattr(self, 'scalartype') or not hasattr(self, 'clanguage'):
+    if not hasattr(self, 'clanguage'):
       return ''
-    return '  Scalar type:' + self.scalartype + '\n  Clanguage: ' + self.clanguage +'\n'
+    return '  Clanguage: ' + self.clanguage +'\n'
     
   def setupHelp(self, help):
     import nargs
@@ -21,43 +21,10 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-c++-support', nargs.Arg(None, 0, 'When building C, compile C++ portions of external libraries (e.g. Prometheus)'))
     help.addArgument('PETSc', '-with-c-support', nargs.Arg(None, 0, 'When building with C++, compile so may be used directly from C'))
     help.addArgument('PETSc', '-with-fortran', nargs.ArgBool(None, 1, 'Create and install the Fortran wrappers'))
-    help.addArgument('PETSc', '-with-precision=<single,double,longdouble,int,matsingle>', nargs.Arg(None, 'double', 'Specify numerical precision'))    
-    help.addArgument('PETSc', '-with-scalar-type=<real or complex>', nargs.Arg(None, 'real', 'Specify real or complex numbers'))
     return
 
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
-    self.types = framework.require('config.types', self)
-    return
-
-  def configureScalarType(self):
-    '''Choose between real and complex numbers'''
-    self.scalartype = self.framework.argDB['with-scalar-type'].lower()
-    if self.scalartype == 'complex':
-      self.addDefine('USE_COMPLEX', '1')
-      if self.clanguage == 'C' and not self.types.c99_complex:
-        raise RuntimeError('C Compiler provided doest not support C99 complex')
-      if self.clanguage == 'Cxx' and not self.types.cxx_complex:
-        raise RuntimeError('Cxx compiler provided does not support std::complex')
-    elif not self.scalartype == 'real':
-      raise RuntimeError('--with-scalar-type must be real or complex')
-    self.framework.logPrint('Scalar type is '+str(self.scalartype))
-    return
-
-  def configurePrecision(self):
-    '''Set the default real number precision for PETSc objects'''
-    self.precision = self.framework.argDB['with-precision'].lower()
-    if self.precision == 'single':
-      self.addDefine('USE_SINGLE', '1')
-    elif self.precision == 'matsingle':
-      self.addDefine('USE_MAT_SINGLE', '1')
-    elif self.precision == 'longdouble':
-      self.addDefine('USE_LONG_DOUBLE', '1')
-    elif self.precision == 'int':
-      self.addDefine('USE_INT', '1')
-    elif not self.precision == 'double':
-      raise RuntimeError('--with-precision must be single, double, longdouble, int or matsingle')
-    self.framework.logPrint('Precision is '+str(self.precision))
     return
 
   def packagesHaveCxx(self):
@@ -81,8 +48,6 @@ class Configure(config.base.Configure):
       self.framework.argDB['with-cxx'] = '0'
       self.framework.logPrint('Turning off C++ support')
     if self.clanguage == 'Cxx' and self.framework.argDB['with-c-support']:
-      if self.scalartype == 'complex':
-        raise RuntimeError('Cannot use --with-c-support and --with-scalar-type=complex together')
       self.cSupport = 1
       self.addDefine('USE_EXTERN_CXX', '1')
       self.framework.logPrint('Turning off C++ name mangling')
@@ -111,8 +76,6 @@ class Configure(config.base.Configure):
 
   def configure(self):
     self.executeTest(self.configureCLanguage)
-    self.executeTest(self.configureScalarType)
-    self.executeTest(self.configurePrecision)
     self.executeTest(self.configureLanguageSupport)
     self.executeTest(self.configureExternC)
     self.executeTest(self.configureFortranLanguage)

@@ -297,7 +297,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetType(PC,PCCompositeType)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction(PC,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation(PC,Mat);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC,PetscReal*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC,PetscInt,PetscReal*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC,PetscInt,PetscReal *);
+
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCPC_H */

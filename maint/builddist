@@ -147,6 +147,8 @@ cd $tmpdir
 # create lite version
 /bin/rm -rf $tmpdir/petsc$version/docs
 find $tmpdir/petsc$version -type f -name "*.html" -exec rm {} \;
+# recreate EMACS-TAGS [after deletion]
+${PETSC_DIR}/maint/generateetags.py
 /bin/tar -czf ~/petsc-lite$version.tar.gz petsc$version
 
 #cleanup
