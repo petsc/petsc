@@ -206,7 +206,7 @@ void PETSC_STDCALL mpi_comm_rank_(MPI_Comm *comm,int *rank,int *ierr)
   *ierr=MPI_SUCCESS;
 }
 
-void PETSC_STDCALL mpi_comm_split(MPI_Comm *comm,int *color,int *key, MPI_Comm *newcomm, int *ierr)
+void PETSC_STDCALL mpi_comm_split_(MPI_Comm *comm,int *color,int *key, MPI_Comm *newcomm, int *ierr)
 {
   *newcomm = *comm;
   *ierr=MPI_SUCCESS;
