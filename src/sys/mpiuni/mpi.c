@@ -154,6 +154,7 @@ int Petsc_MPI_Finalize(void)
 #define mpi_bcast_            MPI_BCAST
 #define mpi_gather_           MPI_GATHER
 #define mpi_allgather_        MPI_ALLGATHER
+#define mpi_comm_split_       MPI_COMM_SPLIT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define mpi_init_             mpi_init
 #define mpi_finalize_         mpi_finalize
@@ -165,6 +166,7 @@ int Petsc_MPI_Finalize(void)
 #define mpi_bcast_            mpi_bcast
 #define mpi_gather_           mpi_gather
 #define mpi_allgather_        mpi_allgather
+#define mpi_comm_split_       mpi_comm_split
 #endif
 
 #if defined(PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE)
@@ -178,6 +180,7 @@ int Petsc_MPI_Finalize(void)
 #define mpi_bcast_            mpi_bcast__
 #define mpi_gather_           mpi_gather__
 #define mpi_allgather_        mpi_allgather__
+#define mpi_comm_split_       mpi_comm_split__
 #endif
 
 void PETSC_STDCALL  mpi_init_(int *ierr)
