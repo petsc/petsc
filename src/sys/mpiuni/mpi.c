@@ -3,6 +3,7 @@
     with C macros
 */
 #include "include/mpiuni/mpi.h"
+#include "petsc.h"
 
 #if defined(PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
