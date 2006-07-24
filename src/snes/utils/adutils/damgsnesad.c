@@ -1417,7 +1417,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
     /* Test for convergence */
     if (snes->converged) {
       ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
-      ierr = (*snes->converged)(snes,xnorm,1.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->converged)(snes,snes->iter,xnorm,1.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
       if (snes->reason) {
         break;
       }
