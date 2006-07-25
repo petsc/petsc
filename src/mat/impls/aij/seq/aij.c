@@ -3296,7 +3296,7 @@ PetscErrorCode MatSetValuesAdifor_SeqAIJ(Mat A,PetscInt nl,void *advalues)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "matsetvaluesseqaij_"
-void PETSCMAT_DLLEXPORT matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis)
+void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],PetscInt *nn,const PetscInt in[],const PetscScalar v[],InsertMode *isis, PetscErrorCode *_ierr)
 {
   Mat            A = *AA;
   PetscInt       m = *mm, n = *nn;

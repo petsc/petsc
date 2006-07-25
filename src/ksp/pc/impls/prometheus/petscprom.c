@@ -51,18 +51,7 @@
     -------------------------------------------------------------------- */
 
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
-
-EXTERN PetscErrorCode PCCreate_Prometheus_private( PC);
-EXTERN PetscErrorCode PCSetUp_Prometheus(PC);
-EXTERN PetscErrorCode PCSetCoordinates_Prometheus(PC, PetscInt, PetscReal*);
-EXTERN PetscErrorCode PCSetFromOptions_Prometheus(PC);
-EXTERN PetscErrorCode PCSetUp_Prometheus_Symmetric(PC);
-EXTERN PetscErrorCode PCSetUp_Prometheus_NonSymmetric(PC);
-EXTERN PetscErrorCode PCApply_Prometheus( PC, Vec, Vec );
-EXTERN PetscErrorCode PCApplySymmetricLeftOrRight_Prometheus(PC,Vec ,Vec );
-EXTERN PetscErrorCode PCDestroy_Prometheus(PC);
-EXTERN PetscErrorCode PCView_Prometheus( PC, PetscViewer);
-EXTERN PetscErrorCode PCSASetVectors_Prometheus( PC, PetscReal *, const int );
+#include "petscpromproto.h"
 
 /* -------------------------------------------------------------------------- */
 /*

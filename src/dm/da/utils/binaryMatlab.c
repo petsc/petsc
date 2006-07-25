@@ -39,7 +39,7 @@
   Level: beginner
 
   .seealso: PetscViewerBinaryMatlabDestroy()
-*/
+@*/
 PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
 {
   FILE          *info;
@@ -68,7 +68,7 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
 
   .seealso PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), 
            PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
-*/
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabDestroy"
 PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
@@ -99,7 +99,7 @@ PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
   Level: intermediate
 
   .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), PetscViewerBinaryMatlabOutputVecDA()
-*/
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputBag"
 PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char name[], PetscBag bag)
@@ -129,7 +129,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char n
   Level: intermediate
 
   .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVecDA()
-*/
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVec"
 PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char name[], Vec vec)
@@ -162,7 +162,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char n
   Note: This method requires dof names have been set using DASetFieldName().
 
   .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVec(), DASetFieldName()
-*/
+@*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVecDA"
 PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char name[], Vec vec, DA da)

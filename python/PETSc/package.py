@@ -323,7 +323,8 @@ class Package(config.base.Configure):
       elif not isinstance(lib, list): lib = [lib]
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
-      incl += self.compilers.fincs
+      # keep incl at the end so that ${SUNDIALS_INCLUDE}/sundials can be done
+      incl = self.compilers.fincs + incl
       self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')
       if self.executeTest(self.libraries.check,[lib,self.functions],{'otherLibs' : libs, 'fortranMangle' : self.functionsFortran, 'cxxMangle' : self.functionsCxx[0], 'prototype' : self.functionsCxx[1], 'call' : self.functionsCxx[2]}):
         self.lib = lib	
