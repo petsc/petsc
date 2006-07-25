@@ -388,6 +388,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
   ierr = PetscLogObjectMemory(ts,sizeof(TS_CN));CHKERRQ(ierr);
   ts->data = (void*)cn;
 
+  SETERRQ(PETSC_ERR_SUP,"The code for Crank-Nicholson is not complete\n         emai petsc-maint@mcs.anl.gov for more info");
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

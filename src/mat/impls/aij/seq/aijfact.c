@@ -19,8 +19,6 @@ PetscErrorCode MatOrdering_Flow_SeqAIJ(Mat mat,const MatOrderingType type,IS *ir
 }
 
 
-EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
-
 #if !defined(PETSC_AVOID_GNUCOPYRIGHT_CODE)
 EXTERN PetscErrorCode SPARSEKIT2dperm(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode SPARSEKIT2ilutp(PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscReal,PetscReal*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscInt*,PetscScalar*,PetscInt*,PetscInt*,PetscErrorCode*);
@@ -246,8 +244,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   ierr = MatMarkDiagonal_SeqAIJ(*fact);CHKERRQ(ierr);
   (*fact)->info.factor_mallocs = 0;
 
-  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
-
   af = ((double)b->nz)/((double)a->nz) + .001;
   ierr = PetscInfo2(A,"Fill ratio:given %G needed %G\n",info->fill,af);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Run with -pc_factor_fill %G or use \n",af);CHKERRQ(ierr);
@@ -462,9 +458,6 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   sctx.shift_lo   = 0;
   sctx.shift_hi   = 0;
 
-  if (!a->diag) {
-    ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
-  }
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
@@ -924,7 +917,7 @@ PetscErrorCode MatSolveTransposeAdd_SeqAIJ(Mat A,Vec bb,Vec zz,Vec xx)
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------------*/
-EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscTruth*,PetscInt*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqAIJ"
@@ -933,7 +926,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*b;
   IS                 isicol;
   PetscErrorCode     ierr;
-  PetscInt           *r,*ic,n=A->rmap.n,*ai=a->i,*aj=a->j;
+  PetscInt           *r,*ic,n=A->rmap.n,*ai=a->i,*aj=a->j,d;
   PetscInt           *bi,*cols,nnz,*cols_lvl;
   PetscInt           *bdiag,prow,fm,nzbd,len, reallocs=0,dcount=0;
   PetscInt           i,levels,diagonal_fill;
@@ -944,7 +937,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
   PetscInt           nzi,*bj,**bj_ptr,**bjlvl_ptr; 
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL; 
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL; 
- 
+  PetscTruth         missing;
+
   PetscFunctionBegin;
   f             = info->fill;
   levels        = (PetscInt)info->levels;
@@ -961,10 +955,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     (*fact)->info.fill_ratio_given  = info->fill;
     (*fact)->info.fill_ratio_needed = 1.0;
     b               = (Mat_SeqAIJ*)(*fact)->data;
-    if (!b->diag) {
-      ierr = MatMarkDiagonal_SeqAIJ(*fact);CHKERRQ(ierr);
-    }
-    ierr = MatMissingDiagonal_SeqAIJ(*fact);CHKERRQ(ierr);
+    ierr = MatMissingDiagonal_SeqAIJ(*fact,&missing,&d);CHKERRQ(ierr);
+    if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
     b->row              = isrow;
     b->col              = iscol;
     b->icol             = isicol;
@@ -1276,7 +1268,6 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
 
   /* special case that simply copies fill pattern */
   if (!levels && perm_identity) { 
-    ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
     for (i=0; i<am; i++) {
       ui[i+1] = ui[i] + ai[i+1] - a->diag[i]; 
     }

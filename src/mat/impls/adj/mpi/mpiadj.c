@@ -118,20 +118,19 @@ PetscErrorCode MatMarkDiagonal_MPIAdj(Mat A)
 {
   Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       i,j,*diag,m = A->rmap.n;
+  PetscInt       i,j,m = A->rmap.n;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&diag);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(A,m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<A->rmap.n; i++) {
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
-        diag[i] = j;
+        a->diag[i] = j;
         break;
       }
     }
   }
-  a->diag = diag;
   PetscFunctionReturn(0);
 }
 

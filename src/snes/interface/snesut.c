@@ -403,7 +403,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetConvergenceTestEW(SNES snes)
 -    threshold - threshold for imposing safeguard (0 < threshold < 1)
 
    Note:
-   Version 3 was contributed by .....
+   Version 3 was contributed by Luis Chacon, June 2006.
 
    Use PETSC_DEFAULT to retain the default for any of the parameters.
 
@@ -447,8 +447,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt v
   if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) {
     SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%G) <= 2.0\n",kctx->alpha);
   }
-  if (kctx->version != 1 && kctx->version !=2) {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1 and 2 are supported: %D",kctx->version);
+  if (kctx->version < 1 || kctx->version > 3) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 and 3 are supported: %D",kctx->version);
   }
   PetscFunctionReturn(0);
 }
