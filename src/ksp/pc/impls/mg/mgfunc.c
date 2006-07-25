@@ -5,7 +5,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGDefaultResidual"
-/*@
+/*@C
    PCMGDefaultResidual - Default routine to calculate the residual.
 
    Collective on Mat and Vec
@@ -433,11 +433,3 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetR(PC pc,PetscInt l,Vec c)
   ierr = PetscObjectReference((PetscObject)c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-

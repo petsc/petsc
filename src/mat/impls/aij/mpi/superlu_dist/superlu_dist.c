@@ -457,7 +457,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
-    lu->npcol = (PetscMPIInt)(sqrt(size)); /* Default num of process columns */
+    lu->npcol = (PetscMPIInt)(sqrt((PetscReal)size)); /* Default num of process columns */
     if (!lu->npcol) lu->npcol = 1;
     lu->nprow = (PetscMPIInt)(size/lu->npcol);        /* Default num of process rows */
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);

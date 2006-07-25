@@ -291,7 +291,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryCreate(MPI_Comm comm,PetscViewer
 -  type - type of file
 $    FILE_MODE_WRITE - create new file for binary output
 $    FILE_MODE_READ - open existing file for binary input
-$    FILE_MODE_WRITE - open existing file for binary output
+$    FILE_MODE_APPEND - open existing file for binary output
 
    Output Parameter:
 .  binv - PetscViewer for binary input/output to use with the specified file

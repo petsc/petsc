@@ -19,7 +19,10 @@ static PetscErrorCode ourresidualfunction(Mat mat,Vec b,Vec x,Vec R)
 }
 
 EXTERN_C_BEGIN
-extern void PETSC_STDCALL pcmgdefaultresidual_(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*);
+void pcmgdefaultresidual_(Mat *mat,Vec *b,Vec *x,Vec *r, PetscErrorCode *ierr)
+{
+  *ierr = PCMGDefaultResidual(*mat,*b,*x,*r);
+}
 
 void PETSC_STDCALL pcmgsetresidual_(PC *pc,PetscInt *l,PetscErrorCode (*residual)(Mat*,Vec*,Vec*,Vec*,PetscErrorCode*),Mat *mat, PetscErrorCode *ierr)
 {

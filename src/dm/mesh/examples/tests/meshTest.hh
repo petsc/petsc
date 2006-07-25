@@ -125,7 +125,7 @@ namespace ALE {
 
         ALE::PCICE::Builder::readConnectivity(comm, basename+".lcon", numCorners, useZeroBase, numCells, &cells);
         ALE::PCICE::Builder::readCoordinates(comm, basename+".nodes", dim, numVertices, &coordinates);
-        ALE::Test::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate);
+        ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate);
         sieve->stratify();
         sieve->view("Mesh");
         coords->getAtlas()->getTopology()->setPatch(0, sieve);

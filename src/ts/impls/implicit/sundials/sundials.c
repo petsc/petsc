@@ -219,7 +219,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
     ts->steps++;
     ierr = TSMonitor(ts,ts->steps,t,sol);CHKERRQ(ierr); 
   }
-  CVodeFree(mem);
+  CVodeFree(&mem);
   *steps += ts->steps;
   *time   = t;
   PetscFunctionReturn(0);

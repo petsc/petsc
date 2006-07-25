@@ -32,11 +32,11 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
     ierr = PetscStrcpy(connectFilename, filename);CHKERRQ(ierr);
     ierr = PetscStrcat(connectFilename, ".connect");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, connectFilename);CHKERRQ(ierr);
-    ierr = PyLithViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = ALE::PyLith::Viewer::writeElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscStrcpy(coordFilename, filename);CHKERRQ(ierr);
     ierr = PetscStrcat(coordFilename, ".coord");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
-    ierr = PyLithViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
+    ierr = ALE::PyLith::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);CHKERRQ(ierr);
     ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename), PETSC_ERR_FILE_OPEN);
     if (PetscExceptionValue(ierr)) {
@@ -58,7 +58,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
     ierr = PetscViewerSetType(connectViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(connectViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(connectViewer, localFilename);CHKERRQ(ierr);
-    ierr = PyLithViewer::writeElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
+    ierr = ALE::PyLith::Viewer::writeElementsLocal(mesh, connectViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(connectViewer);CHKERRQ(ierr);
 
     sprintf(localFilename, "%s.%d.coord", filename, rank);
@@ -66,7 +66,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
     ierr = PetscViewerSetType(coordViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(coordViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
-    ierr = PyLithViewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
+    ierr = ALE::PyLith::Viewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
 
     if (mesh->hasField("split")) {
@@ -75,7 +75,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
       ierr = PetscViewerSetType(splitViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(splitViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(splitViewer, localFilename);CHKERRQ(ierr);
-      ierr = PyLithViewer::writeSplitLocal(mesh, splitViewer);CHKERRQ(ierr);
+      ierr = ALE::PyLith::Viewer::writeSplitLocal(mesh, splitViewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(splitViewer);CHKERRQ(ierr);
     }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
@@ -1264,7 +1264,7 @@ PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PyLithViewer::writeVertices(m, viewer);
+  return ALE::PyLith::Viewer::writeVertices(m, viewer);
 }
 
 #undef __FUNCT__  
@@ -1275,7 +1275,7 @@ PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PyLithViewer::writeElements(m, viewer);
+  return ALE::PyLith::Viewer::writeElements(m, viewer);
 }
 
 #undef __FUNCT__  
@@ -1286,7 +1286,7 @@ PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PyLithViewer::writeVerticesLocal(m, viewer);
+  return ALE::PyLith::Viewer::writeVerticesLocal(m, viewer);
 }
 
 #undef __FUNCT__  
@@ -1297,7 +1297,7 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PyLithViewer::writeElementsLocal(m, viewer);
+  return ALE::PyLith::Viewer::writeElementsLocal(m, viewer);
 }
 
 #undef __FUNCT__  
@@ -1308,5 +1308,5 @@ PetscErrorCode WritePyLithSplitLocal(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return PyLithViewer::writeSplitLocal(m, viewer);
+  return ALE::PyLith::Viewer::writeSplitLocal(m, viewer);
 }
