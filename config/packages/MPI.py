@@ -17,6 +17,7 @@ class Configure(config.package.Package):
     self.liblist_mpich    = [['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                              ['libmpich.a'],
+                             ['libmpich.a','libpthread.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
