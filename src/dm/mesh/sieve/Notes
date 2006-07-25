@@ -32,7 +32,7 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
    - Independent mesh point insertion on different procs
      - Collision resolution via Overlap/Fusion
    - Ordered data retrieval, or restrict
-     - Element Geometry Computation
+     - Element Geometry Computation (mesh1 only for P1 w/o interpolation)
    Section:
    --------
    - Data preallocation
@@ -40,7 +40,7 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
    - Raw pointer extraction
      - Linear and cubic Lagrange (section1)
    - Ordered data retrieval, or restrict
-     - Linear and cubic Lagrange
+     - Linear and cubic Lagrange (section1)
    - Performance stress tests
      - Many getIndex
      - Many restrict/update

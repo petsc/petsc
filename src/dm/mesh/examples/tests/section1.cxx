@@ -54,6 +54,7 @@ PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
   for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const section_type::value_type *values = section->restrict(patch, *v_iter);
     int neighbors = topology->getPatch(patch)->nSupport(*v_iter, depth)->size();
+
     if (values[0] != neighbors*3.0) {
       SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid vertex value %g should be %g", values[0], neighbors*3.0);
     }
@@ -76,7 +77,7 @@ PetscErrorCode CubicTest(const Obj<section_type>& section, Options *options)
   atlas->clearIndices();
   // Creation
   const Obj<topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
-  int depth       = topology->getPatch(patch)->depth();
+  int depth       = topology->depth();
   int numVertices = vertices->size();
   int numEdges    = topology->heightStratum(patch, 1)->size();
   int numFaces    = topology->heightStratum(patch, 0)->size();
