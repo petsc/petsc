@@ -1083,7 +1083,6 @@ static PetscErrorCode MatView_MPIBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer vi
   PetscViewerFormat format;
 
   PetscFunctionBegin;
-  /* printf(" MatView_MPIBAIJ_ASCIIorDraworSocket is called ...\n"); */
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii) { 
