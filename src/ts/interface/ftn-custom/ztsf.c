@@ -2,7 +2,6 @@
 #include "petscts.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define tssetrhsboundaryconditions_          TSSETRHSBOUNDARYCONDITIONS
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
 #define tssetrhsmatrix_                      TSSETRHSMATRIX
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
@@ -15,7 +14,6 @@
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
 #define tsdefaultmonitor_                    TSDEFAULTMONITOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define tssetrhsboundaryconditions_          tssetrhsboundaryconditions
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tssetrhsmatrix_                      tssetrhsmatrix
 #define tssetrhsjacobian_                    tssetrhsjacobian
@@ -29,12 +27,6 @@
 #define tsdefaultmonitor_                    tsdefaultmonitor
 #endif
 
-static PetscErrorCode ourtsbcfunction(TS ts,PetscReal d,Vec x,void *ctx)
-{
-  PetscErrorCode ierr = 0;
-  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Vec*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[0]))(&ts,&d,&x,ctx,&ierr);
-  return 0;
-}
 static PetscErrorCode ourtsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
 {
   PetscErrorCode ierr = 0;
@@ -76,12 +68,6 @@ static PetscErrorCode ourtsmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void*ctx)
 
 EXTERN_C_BEGIN
 
-
-void PETSC_STDCALL tssetrhsboundaryconditions_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,void*,PetscErrorCode*),void *ctx,PetscErrorCode *ierr)
-{
-  ((PetscObject)*ts)->fortran_func_pointers[0] = (PetscVoidFunction)f;
-  *ierr = TSSetRHSBoundaryConditions(*ts,ourtsbcfunction,ctx);
-}
 
 void PETSC_STDCALL tssetrhsfunction_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {

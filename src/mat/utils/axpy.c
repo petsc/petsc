@@ -127,6 +127,30 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatDiagonalSet_Default"
+PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_Default(Mat Y,Vec D,InsertMode is)
+{
+  PetscErrorCode ierr;
+  PetscInt       i,start,end,vstart,vend;
+  PetscScalar    *v;
+
+  PetscFunctionBegin;
+  ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
+  if (vstart != start || vend != end) {
+    SETERRQ4(PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
+  }
+  ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+  for (i=start; i<end; i++) {
+    ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalSet"
 /*@
    MatDiagonalSet - Computes Y = Y + D, where D is a diagonal matrix
@@ -149,7 +173,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatShift(Mat Y,PetscScalar a)
 PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
-  PetscInt       i,start,end;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(Y,MAT_COOKIE,1);
@@ -157,20 +180,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
   if (Y->ops->diagonalset) {
     ierr = (*Y->ops->diagonalset)(Y,D,is);CHKERRQ(ierr);
   } else {
-    PetscInt    vstart,vend;
-    PetscScalar *v;
-    ierr = VecGetOwnershipRange(D,&vstart,&vend);CHKERRQ(ierr);
-    ierr = MatGetOwnershipRange(Y,&start,&end);CHKERRQ(ierr);
-    if (vstart != start || vend != end) {
-      SETERRQ4(PETSC_ERR_ARG_SIZ,"Vector ownership range not compatible with matrix: %D %D vec %D %D mat",vstart,vend,start,end);
-    }
-    ierr = VecGetArray(D,&v);CHKERRQ(ierr);
-    for (i=start; i<end; i++) {
-      ierr = MatSetValues(Y,1,&i,1,&i,v+i-start,is);CHKERRQ(ierr);
-    }
-    ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
-    ierr = MatAssemblyBegin(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(Y,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -195,9 +195,6 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
       nz=mat->nz;
     } else { /* SPOOLES_SYMMETRIC || SPOOLES_HERMITIAN */
       nz=(mat->nz + A->rmap.n)/2;
-      if (!mat->diag){
-        ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr); 
-      }
       diag=mat->diag;
     }
   } else { /* A is SBAIJ */

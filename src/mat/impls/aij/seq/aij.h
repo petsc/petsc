@@ -130,7 +130,7 @@ EXTERN PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat *);
 EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatDuplicate_SeqAIJ(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat,PetscTruth*,PetscInt*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat);
 
 EXTERN PetscErrorCode MatMult_SeqAIJ(Mat A,Vec,Vec);

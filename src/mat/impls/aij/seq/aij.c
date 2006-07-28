@@ -12,29 +12,34 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDiagonalSet_SeqAIJ"
-/*   only works if matrix has a full set of diagonal entries */
 PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode is)
 {
   PetscErrorCode ierr;
   Mat_SeqAIJ     *aij = (Mat_SeqAIJ*) Y->data;
   PetscInt       i,*diag, m = Y->rmap.n;
   PetscScalar    *v,*aa = aij->a;
+  PetscTruth     missing;
 
   PetscFunctionBegin;
-  if (!Y->assembled) SETERRQ(PETSC_ERR_SUP,"Requires matrix be already assembled");
-  ierr = MatMarkDiagonal_SeqAIJ(Y);CHKERRQ(ierr);
-  diag = aij->diag;
-  ierr = VecGetArray(D,&v);CHKERRQ(ierr);
-  if (is == INSERT_VALUES) {
-    for (i=0; i<m; i++) {
-      aa[diag[i]] = v[i];
-    }
-  } else {
-    for (i=0; i<m; i++) {
-      aa[diag[i]] += v[i];
+  if (Y->assembled) {
+    ierr = MatMissingDiagonal_SeqAIJ(Y,&missing,PETSC_NULL);CHKERRQ(ierr);
+    if (!missing) {
+      diag = aij->diag;
+      ierr = VecGetArray(D,&v);CHKERRQ(ierr);
+      if (is == INSERT_VALUES) {
+	for (i=0; i<m; i++) {
+	  aa[diag[i]] = v[i];
+	}
+      } else {
+	for (i=0; i<m; i++) {
+	  aa[diag[i]] += v[i];
+	}
+      }
+      ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
     }
   }
-  ierr = VecRestoreArray(D,&v);CHKERRQ(ierr);
+  ierr = MatDiagonalSet_Default(Y,D,is);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -635,12 +640,7 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   }
   a->nz = ai[m]; 
 
-  /* diagonals may have moved, so kill the diagonal pointers */
-  if (fshift && a->diag) {
-    ierr = PetscFree(a->diag);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(A,-(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
-    a->diag = 0;
-  } 
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
   ierr = PetscInfo4(A,"Matrix size: %D X %D; storage space: %D unneeded,%D used\n",m,A->cmap.n,fshift,a->nz);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Number of mallocs during MatSetValues() is %D\n",a->reallocs);CHKERRQ(ierr);
   ierr = PetscInfo1(A,"Maximum nonzeros in any row is %D\n",rmax);CHKERRQ(ierr);
@@ -1028,23 +1028,21 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       i,j,*diag,m = A->rmap.n;
+  PetscInt       i,j,m = A->rmap.n;
 
   PetscFunctionBegin;
-  if (a->diag) PetscFunctionReturn(0);
-
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&diag);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  if (!a->diag) {
+    ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+  }  
   for (i=0; i<A->rmap.n; i++) {
-    diag[i] = a->i[i+1];
+    a->diag[i] = a->i[i+1];
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
-        diag[i] = j;
+        a->diag[i] = j;
         break;
       }
     }
   }
-  a->diag = diag;
   PetscFunctionReturn(0);
 }
 
@@ -1053,19 +1051,25 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMissingDiagonal_SeqAIJ"
-PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A)
+PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscTruth *missing,PetscInt *d)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
-  PetscErrorCode ierr;
   PetscInt       *diag,*jj = a->j,i;
 
   PetscFunctionBegin;
-  if (A->rmap.n > 0 && !jj) SETERRQ(PETSC_ERR_PLIB,"Matrix has no entries therefor is missing diagonal");
-  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
-  diag = a->diag;
-  for (i=0; i<A->rmap.n; i++) {
-    if (jj[diag[i]] != i) {
-      SETERRQ1(PETSC_ERR_PLIB,"Matrix is missing diagonal number %D",i);
+  *missing = PETSC_FALSE;
+  if (A->rmap.n > 0 && !jj) {
+    *missing  = PETSC_TRUE;
+    if (d) *d = 0;
+    PetscInfo(A,"Matrix has no entries therefor is missing diagonal");
+  } else {
+    diag = a->diag;
+    for (i=0; i<A->rmap.n; i++) {
+      if (jj[diag[i]] != i) {
+	*missing = PETSC_TRUE;
+	if (d) *d = i;
+	PetscInfo1(A,"Matrix is missing diagonal number %D",i);
+      }
     }
   }
   PetscFunctionReturn(0);
@@ -1086,7 +1090,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   its = its*lits;
   if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
-  if (!a->diag) {ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);}
   diag = a->diag;
   if (!a->idiag) {
     ierr     = PetscMalloc(3*m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
@@ -1314,8 +1317,9 @@ PetscErrorCode MatGetInfo_SeqAIJ(Mat A,MatInfoType flag,MatInfo *info)
 PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscScalar diag)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
-  PetscInt       i,m = A->rmap.n - 1;
+  PetscInt       i,m = A->rmap.n - 1,d;
   PetscErrorCode ierr;
+  PetscTruth     missing;
 
   PetscFunctionBegin;
   if (a->keepzeroedrows) {
@@ -1324,8 +1328,8 @@ PetscErrorCode MatZeroRows_SeqAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
       ierr = PetscMemzero(&a->a[a->i[rows[i]]],a->ilen[rows[i]]*sizeof(PetscScalar));CHKERRQ(ierr);
     }
     if (diag != 0.0) {
-      ierr = MatMissingDiagonal_SeqAIJ(A);CHKERRQ(ierr);
-      ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
+      ierr = MatMissingDiagonal_SeqAIJ(A,&missing,&d);CHKERRQ(ierr);
+      if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",d);
       for (i=0; i<N; i++) {
         a->a[a->diag[rows[i]]] = diag;
       }
@@ -1759,9 +1763,7 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
      ierr = PetscMalloc((inA->rmap.n+1)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
   }
 
-  if (!a->diag) {
-    ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
-  }
+  ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
   ierr = MatLUFactorNumeric_SeqAIJ(inA,info,&outA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -36,14 +36,13 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       i,mbs = a->mbs;
+  PetscInt       i;
 
   PetscFunctionBegin;
-  if (a->diag) PetscFunctionReturn(0);
-
-  ierr = PetscMalloc((mbs+1)*sizeof(PetscInt),&a->diag);CHKERRQ(ierr); 
-  ierr = PetscLogObjectMemory(A,(mbs+1)*sizeof(PetscInt));CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) a->diag[i] = a->i[i];  
+  if (!a->diag) {
+    ierr = PetscMalloc(a->mbs*sizeof(PetscInt),&a->diag);CHKERRQ(ierr); 
+  }
+  for (i=0; i<a->mbs; i++) a->diag[i] = a->i[i];  
   PetscFunctionReturn(0);
 }
 
@@ -376,7 +375,7 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
               ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,PetscRealPart(a->a[bs2*k + l*bs + j]));CHKERRQ(ierr);
             }
 #else
-            ierr = PetscViewerASCIIPrintf(viewer," %D %G ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer," (%D, %G) ",bs*a->j[k]+l,a->a[bs2*k + l*bs + j]);CHKERRQ(ierr);
 #endif
           }
         }
@@ -954,9 +953,7 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
   outA          = inA; 
   inA->factor   = FACTOR_CHOLESKY;
   
-  if (!a->diag) {
-    ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
-  }
+  ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   /*
     Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
     for ILU(0) factorization with natural ordering

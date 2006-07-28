@@ -82,7 +82,6 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetTimeStep(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetRHSFunction(TS,PetscErrorCode (*)(TS,PetscReal,Vec,Vec,void*),void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetRHSMatrix(TS,Mat,Mat,PetscErrorCode (*)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetRHSJacobian(TS,Mat,Mat,PetscErrorCode (*)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetRHSBoundaryConditions(TS,PetscErrorCode (*)(TS,PetscReal,Vec,void*),void*);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultComputeJacobianColor(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultComputeJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*);
@@ -113,7 +112,6 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoSetTimeStepIncrement(TS,PetscRe
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSPseudoIncrementDtFromInitialDt(TS);
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSFunction(TS,PetscReal,Vec,Vec);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*);
 
 /* Dynamic creation and loading functions */

@@ -166,6 +166,7 @@ EXTERN PetscErrorCode MatHeaderCopy(Mat,Mat);
 EXTERN PetscErrorCode MatHeaderReplace(Mat,Mat);
 EXTERN PetscErrorCode MatAXPYGetxtoy_Private(PetscInt,PetscInt*,PetscInt*,PetscInt*, PetscInt*,PetscInt*,PetscInt*, PetscInt**);
 EXTERN PetscErrorCode MatPtAP_Basic(Mat,Mat,MatReuse,PetscReal,Mat*);
+EXTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
 
 /* 
   The stash is used to temporarily store inserted matrix values that 

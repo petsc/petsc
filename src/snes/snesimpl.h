@@ -12,9 +12,6 @@
 struct _p_SNES {
   PETSCHEADER(int);
 
-  /* Identifies this as a grid SNES structure */
-  PetscTruth  isGSNES;                          /* This problem arises from an underlying grid */
-
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		                        /* user-defined context */
 
@@ -35,10 +32,6 @@ struct _p_SNES {
   PetscErrorCode (*computescaling)(Vec,Vec,void*);       /* scaling routine */
   Vec            scaling;                                /* scaling vector */
   void           *scaP;                                  /* scaling context */
-
-  /* ------------------------Boundary conditions-----------------------------------*/
-  PetscErrorCode (*applyrhsbc)(SNES, Vec, void *);         /* Applies boundary conditions to the rhs */
-  PetscErrorCode (*applysolbc)(SNES, Vec, void *);         /* Applies boundary conditions to the solution */
 
   /* ------------------------Time stepping hooks-----------------------------------*/
   PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */

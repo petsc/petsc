@@ -753,23 +753,21 @@ PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat A)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data; 
   PetscErrorCode ierr;
-  PetscInt       i,j,*diag,m = a->mbs;
+  PetscInt       i,j,m = a->mbs;
 
   PetscFunctionBegin;
-  if (a->diag) PetscFunctionReturn(0);
-
-  ierr = PetscMalloc((m+1)*sizeof(PetscInt),&diag);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  if (!a->diag) {
+    ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+  }
   for (i=0; i<m; i++) {
-    diag[i] = a->i[i+1];
+    a->diag[i] = a->i[i+1];
     for (j=a->i[i]; j<a->i[i+1]; j++) {
       if (a->j[j] == i) {
-        diag[i] = j;
+        a->diag[i] = j;
         break;
       }
     }
   }
-  a->diag = diag;
   PetscFunctionReturn(0);
 }
 
@@ -1771,9 +1769,7 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   outA          = inA; 
   inA->factor   = FACTOR_LU;
 
-  if (!a->diag) {
-    ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
-  }
+  ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
 
   a->row        = row;
   a->col        = col;

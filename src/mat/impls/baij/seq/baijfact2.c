@@ -3091,9 +3091,6 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqBAIJ*)(*fact)->data;
-    if (!b->diag) {
-      ierr = MatMarkDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
-    }
     ierr = MatMissingDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
     b->row        = isrow;
     b->col        = iscol;

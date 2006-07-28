@@ -709,7 +709,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
   }
 
   if (isdraw) {
-    PetscDraw       draw;
+    PetscDraw  draw;
     PetscTruth isnull;
     ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
     ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
@@ -720,11 +720,11 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr = MatView(baij->A,viewer);CHKERRQ(ierr);
   } else {
     /* assemble the entire matrix onto first processor. */
-    Mat         A;
+    Mat          A;
     Mat_SeqSBAIJ *Aloc;
-    Mat_SeqBAIJ *Bloc;
-    PetscInt         M = mat->rmap.N,N = mat->cmap.N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
-    MatScalar   *a;
+    Mat_SeqBAIJ  *Bloc;
+    PetscInt     M = mat->rmap.N,N = mat->cmap.N,*ai,*aj,col,i,j,k,*rvals,mbs = baij->mbs;
+    MatScalar    *a;
 
     /* Should this be the same type as mat? */
     ierr = MatCreate(mat->comm,&A);CHKERRQ(ierr);
@@ -743,10 +743,10 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     ierr  = PetscMalloc(bs*sizeof(PetscInt),&rvals);CHKERRQ(ierr);
 
     for (i=0; i<mbs; i++) {
-      rvals[0] = mat->rmap.rstart + bs*i;
+      rvals[0] = bs*(baij->rstartbs + i);
       for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
       for (j=ai[i]; j<ai[i+1]; j++) {
-        col = mat->cmap.rstart+aj[j]*bs;
+        col = (baij->cstartbs+aj[j])*bs;
         for (k=0; k<bs; k++) {
           ierr = MatSetValues_MPISBAIJ_MatScalar(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
           col++; a += bs;
@@ -757,12 +757,13 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
     Bloc = (Mat_SeqBAIJ*)baij->B->data;
     ai = Bloc->i; aj = Bloc->j; a = Bloc->a;
     for (i=0; i<mbs; i++) {
-      rvals[0] = mat->rmap.rstart + bs;
+      
+      rvals[0] = bs*(baij->rstartbs + i);
       for (j=1; j<bs; j++) { rvals[j] = rvals[j-1] + 1; }
       for (j=ai[i]; j<ai[i+1]; j++) {
         col = baij->garray[aj[j]]*bs;
         for (k=0; k<bs; k++) {
-          ierr = MatSetValues_MPISBAIJ_MatScalar(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
           col++; a += bs;
         }
       }
