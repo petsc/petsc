@@ -45,7 +45,6 @@ struct _p_TS {
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
   /* Identifies this as a grid TS structure */
-  PetscTruth  isGTS;                                 /* This problem arises from an underlying grid */
   PetscTruth *isExplicit;                            /* Indicates which fields have explicit time dependence */
   PetscInt   *Iindex;                                /* The index of the identity for each time dependent field */
 
