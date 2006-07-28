@@ -2,7 +2,10 @@
 
 namespace ALE {
   namespace PCICE {
-    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[]) {
+    //
+    // Builder methods
+    //
+    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       numCells, cellCount = 0;
@@ -49,7 +52,7 @@ namespace ALE {
       numElements = numCells;
       *vertices = verts;
     };
-    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
+    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       numVerts, vertexCount = 0;
@@ -84,15 +87,34 @@ namespace ALE {
       numVertices = numVerts;
       *coordinates = coords;
     };
-    Obj<ALE::Mesh> Builder::createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, bool interpolate = true, int debug = 0) {
-      Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
-      int      *vertices;
-      double   *coordinates;
-      int       numElements = 0, numVertices = 0, numCorners = dim+1;
+    void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
+      const section_type::patch_type patch = 0;
+      const Obj<topology_type::label_sequence>& vertices = coords->getAtlas()->getTopology()->depthStratum(patch, 0);
+      const int numCells = coords->getAtlas()->getTopology()->heightStratum(patch, 0)->size();
 
-      readConnectivity(comm, baseFilename+".lcon", numCorners, useZeroBase, numElements, &vertices);
-      readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
-      mesh->populate(numElements, vertices, numVertices, coordinates, interpolate, numCorners);
+      coords->getAtlas()->setFiberDimensionByDepth(patch, 0, embedDim);
+      coords->getAtlas()->orderPatches();
+      coords->allocate();
+      for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        coords->update(patch, *v_iter, &(coordinates[((*v_iter).index - numCells)*embedDim]));
+      }
+    };
+    Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+      Obj<Mesh>          mesh     = Mesh(comm, dim, debug);
+      Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
+      Obj<topology_type> topology = new topology_type(comm, debug);
+      int    *cells;
+      double *coordinates;
+      int     numCells = 0, numVertices = 0, numCorners = dim+1;
+
+      ALE::PCICE::Builder::readConnectivity(comm, basename+".lcon", numCorners, useZeroBase, numCells, &cells);
+      ALE::PCICE::Builder::readCoordinates(comm, basename+".nodes", dim, numVertices, &coordinates);
+      ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+      sieve->stratify();
+      topology->setPatch(0, sieve);
+      topology->stratify();
+      mesh->setTopologyNew(topology);
+      buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       return mesh;
     };
     Obj<ALE::Mesh> Builder::createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {

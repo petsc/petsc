@@ -52,79 +52,70 @@ namespace ALE {
       typedef Sieve_                                       sieve_type;
       typedef std::vector<typename sieve_type::point_type> PointArray;
     public:
-#if 0
-      // For a hex, there are 2d faces
-      static void buildHexFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
-        PointArray *faces = NULL;
+      static void buildHexFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
+        int debug = sieve->debug;
 
-        if (debug > 1) {std::cout << "  Building hex faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
+        if (debug > 1) {std::cout << "  Building hex faces for boundary of " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;}
         if (dim > 3) {
           throw ALE::Exception("Cannot do hexes of dimension greater than three");
         } else if (dim > 2) {
           int nodes[24] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 5, 4,
                            1, 2, 6, 5, 2, 3, 7, 6, 3, 0, 4, 7};
-          faces = new PointArray();
 
           for(int b = 0; b < 6; b++) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
+            typename sieve_type::point_type face;
 
             for(int c = 0; c < 4; c++) {
-              faceBoundary.push_back((*boundary)[nodes[b*4+c]]);
+              bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*4+c]]);
             }
-            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
+            if (debug > 1) {std::cout << "    boundary hex face " << b << std::endl;}
+            buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
+            if (debug > 1) {std::cout << "    added face " << face << std::endl;}
+            faces[dim].push_back(face);
           }
         } else if (dim > 1) {
-          int boundarySize = (int) boundary->size();
-          faces = new PointArray();
+          int boundarySize = bdVertices[dim].size();
 
           for(int b = 0; b < boundarySize; b++) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
+            typename sieve_type::point_type face;
 
             for(int c = 0; c < 2; c++) {
-              faceBoundary.push_back((*boundary)[(b+c)%boundarySize]);
+              bdVertices[dim-1].push_back(bdVertices[dim][(b+c)%boundarySize]);
             }
-            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
+            if (debug > 1) {std::cout << "    boundary point " << bdVertices[dim][b] << std::endl;}
+            buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
+            if (debug > 1) {std::cout << "    added face " << face << std::endl;}
+            faces[dim].push_back(face);
           }
         } else {
           if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
-          faces = boundary;
+          faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
         }
         if (debug > 1) {
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            std::cout << "  face point " << *f_itor << std::endl;
+          for(typename PointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+            std::cout << "  face point " << *f_iter << std::endl;
           }
         }
         // We always create the toplevel, so we could short circuit somehow
         // Should not have to loop here since the meet of just 2 boundary elements is an element
-        PointArray::iterator f_itor = faces->begin();
-        point_type           start = *f_itor;
-        f_itor++;
-        point_type           next = *f_itor;
-        Obj<sieve_type::supportSet> preElement = this->topology->nJoin(start, next, 1);
+        typename PointArray::iterator   f_itor = faces[dim].begin();
+        typename sieve_type::point_type start  = *f_itor;
+        typename sieve_type::point_type next   = *(++f_itor);
+        Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
-          simplex = *preElement->begin();
-          if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
+          cell = *preElement->begin();
+          if (debug > 1) {std::cout << "  Found old cell " << cell << std::endl;}
         } else {
           int color = 0;
 
-          simplex = point_type(0, (*(*curSimplex)[dim])++);
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            this->topology->addArrow(*f_itor, simplex, color++);
+          cell = typename sieve_type::point_type(0, (*curElement[dim])++);
+          for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
+            sieve->addArrow(*f_itor, cell, color++);
           }
-          if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
-        }
-        if (dim > 1) {
-          delete faces;
+          if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
         }
       };
-#endif
       static void buildFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
         int debug = sieve->debug;
 
@@ -151,8 +142,8 @@ namespace ALE {
           faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
         }
         if (debug > 1) {
-          for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
-            std::cout << "  face point " << *f_itor << std::endl;
+          for(typename PointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+            std::cout << "  face point " << *f_iter << std::endl;
           }
         }
         // We always create the toplevel, so we could short circuit somehow
@@ -219,13 +210,21 @@ namespace ALE {
             if (debug) {std::cout << "cell " << cell << " num boundary vertices " << bdVertices[dim].size() << std::endl;}
 
             if (corners != dim+1) {
-              //buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
+              buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
             } else {
               buildFaces(sieve, dim, curElement, bdVertices, faces, cell);
             }
           } else {
             for(int b = 0; b < corners; b++) {
               sieve->addArrow(typename sieve_type::point_type(0, cells[c*corners+b]+numCells), cell, b);
+            }
+            if (debug) {
+              if (debug > 1) {
+                for(int b = 0; b < corners; b++) {
+                  std::cout << "  Adding vertex " << typename sieve_type::point_type(0, cells[c*corners+b]+numCells) << std::endl;
+                }
+              }
+              std::cout << "Adding cell " << cell << " dim " << dim << std::endl;
             }
           }
         }
@@ -236,15 +235,15 @@ namespace ALE {
     template<typename Patch_, typename Sieve_>
     class Topology : public ALE::ParallelObject {
     public:
-      typedef Patch_                                                    patch_type;
-      typedef Sieve_                                                    sieve_type;
-      typedef typename sieve_type::point_type                           point_type;
-      typedef typename ALE::set<point_type>                             PointSet;
-      typedef typename std::map<patch_type, Obj<sieve_type> >           sheaf_type;
-      typedef typename ALE::Sifter<int, point_type, int>                patch_label_type;
-      typedef typename std::map<patch_type, Obj<patch_label_type> >     label_type;
-      typedef typename std::map<const typename std::string, label_type> labels_type;
-      typedef typename patch_label_type::supportSequence                label_sequence;
+      typedef Patch_                                                patch_type;
+      typedef Sieve_                                                sieve_type;
+      typedef typename sieve_type::point_type                       point_type;
+      typedef typename ALE::set<point_type>                         PointSet;
+      typedef typename std::map<patch_type, Obj<sieve_type> >       sheaf_type;
+      typedef typename ALE::Sifter<int, point_type, int>            patch_label_type;
+      typedef typename std::map<patch_type, Obj<patch_label_type> > label_type;
+      typedef typename std::map<const std::string, label_type>      labels_type;
+      typedef typename patch_label_type::supportSequence            label_sequence;
     protected:
       sheaf_type  _sheaf;
       labels_type _labels;
@@ -396,7 +395,8 @@ namespace ALE {
         this->_array = new IndexArray();
       };
     public: // Accessors
-      const Obj<topology_type>& getTopology() {return this->_topology;};
+      const Obj<topology_type>& getTopology() const {return this->_topology;};
+      void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         this->_topology->checkPatch(patch);
@@ -407,6 +407,9 @@ namespace ALE {
         }
       };
     public: // Sizes
+      int const getFiberDimension(const patch_type& patch, const point_type& p) {
+        return this->_indices[patch][p].index;
+      };
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         this->_indices[patch][p].prefix = -1;
         this->_indices[patch][p].index  = dim;
@@ -451,10 +454,10 @@ namespace ALE {
 
         if (chart[point].prefix < 0) {
           for(typename sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
-            std::cout << "    Recursing to " << *c_iter << std::endl;
+            if (this->_debug) {std::cout << "    Recursing to " << *c_iter << std::endl;}
             this->orderPoint(chart, sieve, *c_iter, offset);
           }
-          std::cout << "  Ordering point " << point << " at " << offset << std::endl;
+          if (this->_debug) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
           chart[point].prefix = offset;
           offset += chart[point].index;
         }
@@ -463,7 +466,7 @@ namespace ALE {
         chart_type& chart = this->_indices[patch];
 
         for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-          std::cout << "Ordering closure of point " << p_iter->first << std::endl;
+          if (this->_debug) {std::cout << "Ordering closure of point " << p_iter->first << std::endl;}
           this->orderPoint(chart, this->_topology->getPatch(patch), p_iter->first, offset);
         }
       };
@@ -471,7 +474,7 @@ namespace ALE {
         int offset = 0;
 
         for(typename indices_type::iterator i_iter = this->_indices.begin(); i_iter != this->_indices.end(); ++i_iter) {
-          std::cout << "Ordering patch " << i_iter->first << std::endl;
+          if (this->_debug) {std::cout << "Ordering patch " << i_iter->first << std::endl;}
           this->orderPatch(i_iter->first, offset);
         }
       };
@@ -553,6 +556,7 @@ namespace ALE {
       };
     public: // Accessors
       const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+      void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     public:
       void allocate() {
         const typename atlas_type::topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
@@ -561,6 +565,10 @@ namespace ALE {
           this->_arrays[p_iter->first] = new value_type[this->_atlas->size(p_iter->first)];
           PetscMemzero(this->_arrays[p_iter->first], this->_atlas->size(p_iter->first) * sizeof(value_type));
         }
+      };
+      const value_type *restrict(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_arrays[patch];
       };
       // Return a smart pointer?
       const value_type *restrict(const patch_type& patch, const point_type& p) {

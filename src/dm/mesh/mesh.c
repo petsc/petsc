@@ -173,28 +173,24 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
       } else if (outputState == 4) {
         SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
+      ALE::Obj<ALE::Mesh::section_type> field = mesh->getSection(name);
       if (doOutput) {
-        ALE::Obj<ALE::Mesh::field_type>   field = mesh->getField(name);
-        ALE::Mesh::field_type::patch_type patch = *field->getPatches()->begin();
-        ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> vertices = mesh->getTopology()->depthStratum(0);
-        int                               N     = 0;
+        ALE::Mesh::section_type::patch_type patch = mesh->getTopologyNew()->getPatches().begin()->first;
+        int                                 N     = 0;
 
-        for(ALE::Mesh::sieve_type::traits::depthSequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-          int dim = field->getFiberDimension(patch, *v_iter);
-
-          if (dim > 0) {
-            fiberDim = dim;
-            break;
-          }
-        }
+        fiberDim = field->getAtlas()->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+#if 0
         if (field->getGlobalOffsets()) {
           N = field->getGlobalOffsets()[mesh->commSize()]/fiberDim;
         } else {
           N = field->getSize(*field->getPatches()->begin())/fiberDim;
         }
+#else
+        N = mesh->getTopologyNew()->depthStratum(patch, 0)->size();
+#endif
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
       }
-      VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(0)->getGlobalOrder(), viewer);
+      VTKViewer::writeField(mesh, field, name, fiberDim, viewer);
     } else {
       if (outputState == 0) {
         outputState = 2;
@@ -209,28 +205,24 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
       } else if (outputState == 4) {
         doOutput = 0;
       }
+      ALE::Obj<ALE::Mesh::section_type> field = mesh->getSection(name);
       if (doOutput) {
-        ALE::Obj<ALE::Mesh::field_type>   field = mesh->getField(name);
-        ALE::Mesh::field_type::patch_type patch = *field->getPatches()->begin();
-        ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> cells = mesh->getTopology()->heightStratum(0);
-        int                               N     = 0;
+        ALE::Mesh::section_type::patch_type patch = mesh->getTopologyNew()->getPatches().begin()->first;
+        int                                 N     = 0;
 
-        for(ALE::Mesh::sieve_type::traits::heightSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-          int dim = field->getFiberDimension(patch, *c_iter);
-
-          if (dim > 0) {
-            fiberDim = dim;
-            break;
-          }
-        }
+        fiberDim = field->getAtlas()->size(patch, *mesh->getTopologyNew()->heightStratum(patch, 0)->begin());
+#if 0
         if (field->getGlobalOffsets()) {
           N = field->getGlobalOffsets()[mesh->commSize()]/fiberDim;
         } else {
           N = field->getSize(*field->getPatches()->begin())/fiberDim;
         }
+#else
+        N = mesh->getTopologyNew()->heightStratum(patch, 0)->size();
+#endif
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", N);CHKERRQ(ierr);
       }
-      VTKViewer::writeField(mesh, mesh->getField(name), name, fiberDim, mesh->getBundle(mesh->getTopology()->depth())->getGlobalOrder(), viewer);
+      VTKViewer::writeField(mesh, field, name, fiberDim, viewer);
     }
     ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
   } else {
@@ -950,13 +942,16 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
-  ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
-  ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
-/*   if (mode == INSERT_VALUES) { */
-/*     ierr = VecCopy(g, l);CHKERRQ(ierr); */
-/*   } else { */
-/*     ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr); */
-/*   } */
+  if (injection) {
+    ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
+    ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
+  } else {
+    if (mode == INSERT_VALUES) {
+      ierr = VecCopy(g, l);CHKERRQ(ierr);
+    } else {
+      ierr = VecAXPY(l, 1.0, g);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscLogEventEnd(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -987,13 +982,16 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
-  ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-  ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-/*   if (mode == INSERT_VALUES) { */
-/*     ierr = VecCopy(l, g);CHKERRQ(ierr); */
-/*   } else { */
-/*     ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr); */
-/*   } */
+  if (injection) {
+    ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+    ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  } else {
+    if (mode == INSERT_VALUES) {
+      ierr = VecCopy(l, g);CHKERRQ(ierr);
+    } else {
+      ierr = VecAXPY(g, 1.0, l);CHKERRQ(ierr);
+    }
+  }
   ierr = PetscLogEventEnd(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1043,7 +1041,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::section_type> field, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
@@ -1051,16 +1049,16 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, cons
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> intervals = field->getPatch("element", e);
-  ALE::Obj<ALE::Mesh::bundle_type> globalOrder = field->getGlobalOrder();
-  ALE::Mesh::bundle_type::patch_type patch;
+  ALE::Mesh::section_type::patch_type patch = 0;
+  const ALE::Obj<ALE::Mesh::atlas_type::IndexArray> intervals = field->getAtlas()->getIndices(patch, e);
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (field->debug) {printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);}
-  for(ALE::Mesh::field_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
-    numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
-    if (field->debug) {
-      printf("[%d]mat interval (%d, %d)\n", field->commRank(), (*i_itor).prefix, (*i_itor).index);
+  if (field->debug()) {printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);}
+  for(ALE::Mesh::atlas_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    //numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_iter));
+    numIndices += i_iter->index;
+    if (field->debug()) {
+      printf("[%d]mat interval (%d, %d)\n", field->commRank(), i_iter->prefix, i_iter->index);
     }
   }
   if (indicesSize && (indicesSize != numIndices)) {
@@ -1071,9 +1069,9 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::field_type> field, cons
     indicesSize = numIndices;
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
-  //ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
-  if (field->debug) {
+  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
+  //ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
+  if (field->debug()) {
     for(int i = 0; i < numIndices; i++) {
       printf("[%d]mat indices[%d] = %d\n", field->commRank(), i, indices[i]);
     }
@@ -1114,7 +1112,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   static ALE::Mesh::field_type::patch_type patch;
   PetscObjectContainer  c;
   ALE::Mesh            *mesh;
-  ALE::Mesh::point_type order(e, 0);
+  //ALE::Mesh::point_type order(e, 0);
   PetscErrorCode        ierr;
 
   PetscFunctionBegin;
@@ -1122,8 +1120,9 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   try {
-    //ierr = updateOperator(A, mesh->getField("displacement"), ALE::Mesh::sieve_type::point_type(0, localElement), v, mode);CHKERRQ(ierr);
-    ierr = updateOperator(A, mesh->getField("displacement"), *mesh->getBundle(mesh->getTopology()->depth())->__getOrder()->cone(patch, order)->begin(), v, mode);CHKERRQ(ierr);
+    // Notice that we map the global element number to the point
+    //ierr = updateOperator(A, mesh->getField("displacement"), *mesh->getBundle(mesh->getTopology()->depth())->__getOrder()->cone(patch, order)->begin(), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, mesh->getSection("displacement"), ALE::Mesh::point_type(0, e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
