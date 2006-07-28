@@ -46,9 +46,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->bops->publish    = TSPublish_Petsc;
   t->type_name        = PETSC_NULL;
 
-  t->ops->applymatrixbc = TSDefaultSystemMatrixBC;
-  t->ops->applyrhsbc    = TSDefaultRhsBC;
-  t->ops->applysolbc    = TSDefaultSolutionBC;
   t->ops->prestep       = TSDefaultPreStep;
   t->ops->update        = TSDefaultUpdate;
   t->ops->poststep      = TSDefaultPostStep;
