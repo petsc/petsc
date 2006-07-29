@@ -632,13 +632,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberLinearIterations(SNES snes,Petsc
    Notes:
    The user can then directly manipulate the KSP context to set various
    options, etc.  Likewise, the user can then extract and manipulate the 
-   KSP and PC contexts as well.
+   PC contexts as well.
 
    Level: beginner
 
 .keywords: SNES, nonlinear, get, KSP, context
 
-.seealso: KSPGetPC()
+.seealso: KSPGetPC(), SNESCreate(), KSPCreate(), SNESSetKSP()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetKSP(SNES snes,KSP *ksp)
 {
@@ -646,6 +646,45 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetKSP(SNES snes,KSP *ksp)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidPointer(ksp,2);
   *ksp = snes->ksp;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSetKSP"
+/*@
+   SNESSetKSP - Sets a KSP context for the SNES object to use
+
+   Not Collective, but the SNES and KSP objects must live on the same MPI_Comm
+
+   Input Parameters:
++  snes - the SNES context
+-  ksp - the KSP context
+
+   Notes:
+   The SNES object already has its KSP object, you can obtain with SNESGetKSP()
+   so this routine is rarely needed.
+
+   The KSP object that is already in the SNES object has its reference count
+   decreased by one.
+
+   Level: developer
+
+.keywords: SNES, nonlinear, get, KSP, context
+
+.seealso: KSPGetPC(), SNESCreate(), KSPCreate(), SNESSetKSP()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetKSP(SNES snes,KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,2);
+  PetscCheckSameComm(snes,1,ksp,2);
+  if (snes->ksp) {
+    ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
+  }
+  snes->ksp = ksp;
   PetscFunctionReturn(0);
 }
 

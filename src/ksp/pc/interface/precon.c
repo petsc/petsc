@@ -84,6 +84,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
   if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
   if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
 
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1016,9 +1019,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
       }
     }
   }
-
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
   pc->mat  = Amat;
   pc->pmat = Pmat;
+  if (pc->mat) {ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);}
+  if (pc->pmat) {ierr = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);}
+
   if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
     pc->setupcalled = 1;
   }
