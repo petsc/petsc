@@ -68,6 +68,10 @@ mesh1: mesh1.o chkopts
 	-${CLINKER} -o mesh1 mesh1.o ${PETSC_DM_LIB}
 	${RM} -f mesh1.o
 
+overlap1: overlap1.o chkopts
+	-${CLINKER} -o overlap1 overlap1.o ${PETSC_DM_LIB}
+	${RM} -f overlap1.o
+
 #-----------------------------------------------------------------
 runex00:
 	-@${MPIRUN} -np ${NP} ./ex00 -log_summary ${EXTRA_ARGS}

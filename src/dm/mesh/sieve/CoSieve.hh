@@ -5,6 +5,11 @@
 #include <Sieve.hh>
 #endif
 
+int deleteTag(MPI_Comm comm, int keyval, void *attr_val, void *extra_state) {
+  delete (int *) attr_val;
+  return MPI_SUCCESS;
+}
+
 namespace ALE {
   class ParallelObject {
   protected:
@@ -527,6 +532,7 @@ namespace ALE {
       typedef Atlas_                             atlas_type;
       typedef typename atlas_type::patch_type    patch_type;
       typedef typename atlas_type::sieve_type    sieve_type;
+      typedef typename atlas_type::topology_type topology_type;
       typedef typename atlas_type::point_type    point_type;
       typedef typename atlas_type::index_type    index_type;
       typedef Value_                             value_type;
@@ -737,6 +743,138 @@ namespace ALE {
         }
         PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
         PetscSynchronizedFlush(this->comm());
+      };
+    };
+
+    template<typename Point_>
+    class DiscreteSieve {
+    public:
+      typedef Point_                  point_type;
+      typedef std::vector<point_type> coneSequence;
+      typedef std::vector<point_type> supportSequence;
+      typedef std::set<point_type>    points_type;
+      typedef points_type             baseSequence;
+      typedef points_type             capSequence;
+    protected:
+      Obj<points_type>  _points;
+      Obj<coneSequence> _empty;
+    public:
+      DiscreteSieve() {
+        this->_points = new points_type();
+        this->_empty  = new coneSequence();
+      };
+      virtual ~DiscreteSieve() {};
+    public:
+      template<typename Input>
+      void addPoints(const Obj<Input>& points) {
+        this->_points->insert(points->begin(), points->end());
+      };
+      const Obj<coneSequence>& cone(const point_type& p) {return this->_empty;};
+      template<typename Input>
+      const Obj<coneSequence>& cone(const Input& p) {return this->_empty;};
+      const Obj<supportSequence>& support(const point_type& p) {return this->_empty;};
+      template<typename Input>
+      const Obj<supportSequence>& support(const Input& p) {return this->_empty;};
+      const Obj<capSequence>& roots() {return this->_points;};
+      const Obj<baseSequence>& leaves() {return this->_points;};
+    };
+
+
+    template<typename Overlap_, typename Atlas_, typename Value_>
+    class OverlapValues : public Section<Atlas_, Value_> {
+    public:
+      typedef typename Section<Atlas_, Value_>::patch_type    patch_type;
+      typedef typename Section<Atlas_, Value_>::topology_type topology_type;
+      typedef Overlap_                            overlap_type;
+      typedef enum {SEND, RECEIVE}                request_type;
+      typedef std::map<patch_type, MPI_Request>   requests_type;
+    protected:
+      int           _tag;
+      MPI_Datatype  _datatype;
+      request_type  _type;
+      requests_type _requests;
+    public:
+      OverlapValues(MPI_Comm comm, const request_type type, const int debug = 0) : Section<Atlas_, Value_>(comm, debug) {
+        this->_type     = type;
+        this->_tag      = this->getNewTag();
+        this->_datatype = MPI_DOUBLE;
+      };
+      virtual ~OverlapValues() {};
+    protected:
+      int getNewTag() {
+        static int tagKeyval = MPI_KEYVAL_INVALID;
+        int *tagvalp = NULL, *maxval, flg;
+
+        if (tagKeyval == MPI_KEYVAL_INVALID) {
+          tagvalp = new int;
+          MPI_Keyval_create(MPI_NULL_COPY_FN, deleteTag, &tagKeyval, (void *) NULL);
+          MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
+        }
+        MPI_Attr_get(this->_comm, tagKeyval, (void **) &tagvalp, &flg);
+        if (tagvalp[0] < 1) {
+          MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &maxval, &flg);
+          tagvalp[0] = *maxval - 128; // hope that any still active tags were issued right at the beginning of the run
+        }
+        return tagvalp[0]--;
+      };
+    public:
+      template<typename Sizer>
+      void construct(const Obj<overlap_type>& overlap, const Sizer& sizer) {
+        if (this->_type == RECEIVE) {
+          Obj<typename overlap_type::baseSequence> base = overlap->base();
+
+          for(typename overlap_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const Obj<typename overlap_type::coneSequence>& ranks = overlap->cone(*b_iter);
+
+            for(typename overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *b_iter, sizer.size(r_iter.color()));
+            }
+          }
+        } else {
+          Obj<typename overlap_type::capSequence> cap = overlap->cap();
+
+          for(typename overlap_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+            const Obj<typename overlap_type::supportSequence>& ranks = overlap->support(*c_iter);
+
+            for(typename overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *c_iter, sizer.size(r_iter.color()));
+            }
+          }
+        }
+      };
+      void constructCommunication() {
+        const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const patch_type patch = p_iter->first;
+          MPI_Request request;
+
+          if (this->_type == RECEIVE) {
+            MPI_Recv_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
+          } else {
+            MPI_Send_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
+          }
+          this->_requests[patch] = request;
+        }
+      };
+      void startCommunication() {
+        const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          MPI_Request request = this->_requests[p_iter->first];
+
+          MPI_Start(&request);
+        }
+      };
+      void endCommunication() {
+        const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
+        MPI_Status status;
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          MPI_Request request = this->_requests[p_iter->first];
+
+          MPI_Wait(&request, &status);
+        }
       };
     };
   }
