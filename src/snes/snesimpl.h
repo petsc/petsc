@@ -4,13 +4,26 @@
 
 #include "petscsnes.h"
 
+struct _SNESOps {
+  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); 
+  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+  PetscErrorCode (*computescaling)(Vec,Vec,void*);       
+  PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
+  PetscErrorCode (*converged)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);
+  PetscErrorCode (*setup)(SNES);             /* routine to set up the nonlinear solver */
+  PetscErrorCode (*solve)(SNES);             /* actual nonlinear solver */
+  PetscErrorCode (*view)(SNES,PetscViewer);
+  PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
+  PetscErrorCode (*destroy)(SNES);
+};
+
 /*
    Nonlinear solver context
  */
 #define MAXSNESMONITORS 5
 
 struct _p_SNES {
-  PETSCHEADER(int);
+  PETSCHEADER(struct _SNESOps);
 
   /*  ------------------------ User-provided stuff -------------------------------*/
   void  *user;		                        /* user-defined context */
@@ -18,23 +31,20 @@ struct _p_SNES {
   Vec   vec_sol,vec_sol_always;                 /* pointer to solution */
   Vec   vec_sol_update_always;                  /* pointer to solution update */
 
-  PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); /* function routine */
   Vec            vec_func,vec_func_always;               /* pointer to function */
   Vec            afine;                                  /* If non-null solve F(x) = afine */
   void           *funP;                                  /* user-defined function context */
 
-  PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
+
   Mat            jacobian;                               /* Jacobian matrix */
   Mat            jacobian_pre;                           /* preconditioner matrix */
   void           *jacP;                                  /* user-defined Jacobian context */
   KSP            ksp;                                   /* linear solver context */
 
-  PetscErrorCode (*computescaling)(Vec,Vec,void*);       /* scaling routine */
   Vec            scaling;                                /* scaling vector */
   void           *scaP;                                  /* scaling context */
 
   /* ------------------------Time stepping hooks-----------------------------------*/
-  PetscErrorCode (*update)(SNES, PetscInt);                     /* General purpose function for update */
 
   /* ---------------- PETSc-provided (or user-provided) stuff ---------------------*/
 
@@ -42,17 +52,12 @@ struct _p_SNES {
   PetscErrorCode (*monitordestroy[MAXSNESMONITORS])(void*);          /* monitor context destroy routine */
   void           *monitorcontext[MAXSNESMONITORS];                   /* monitor context */
   PetscInt       numbermonitors;                                     /* number of monitors */
-  PetscErrorCode (*converged)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*);      /* convergence routine */
   void           *cnvP;	                                            /* convergence context */
   SNESConvergedReason reason;
 
   /* --- Routines and data that are unique to each particular solver --- */
 
-  PetscErrorCode (*setup)(SNES);             /* routine to set up the nonlinear solver */
   PetscTruth     setupcalled;                /* true if setup has been called */
-  PetscErrorCode (*solve)(SNES);             /* actual nonlinear solver */
-  PetscErrorCode (*setfromoptions)(SNES);    /* sets options from database */
-  PetscErrorCode (*printhelp)(SNES,char*);   /* prints help info */
   void           *data;                      /* implementation-specific data */
 
   /* --------------------------  Parameters -------------------------------------- */
@@ -100,8 +105,6 @@ struct _p_SNES {
 
   Vec             *vwork;            /* more work vectors for Jacobian approx */
   PetscInt        nvwork;
-  PetscErrorCode (*destroy)(SNES);
-  PetscErrorCode (*view)(SNES,PetscViewer);
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
