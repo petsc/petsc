@@ -212,7 +212,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   PetscInt       sn0 = 0,sn1 = 0,sn2 = 0,sn3 = 0,sn5 = 0,sn6 = 0,sn7 = 0;
   PetscInt       sn8 = 0,sn9 = 0,sn11 = 0,sn15 = 0,sn24 = 0,sn25 = 0,sn26 = 0;
   PetscInt       sn17 = 0,sn18 = 0,sn19 = 0,sn20 = 0,sn21 = 0,sn23 = 0,refine_x = 2, refine_y = 2, refine_z = 2;
-  PetscTruth     flg1;
   DA             da;
   Vec            local,global;
   VecScatter     ltog,gtol;
@@ -1727,14 +1726,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ly = fly;
   da->lz = flz;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
-  ierr = PetscPublishAll(da);CHKERRQ(ierr);
-
+  ierr = DAView_Private(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

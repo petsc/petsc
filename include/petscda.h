@@ -100,7 +100,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate3d(MPI_Comm,DAPeriodicType,DA
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DACreate(MPI_Comm,PetscInt,DAPeriodicType,DAStencilType,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,PetscInt*,PetscInt*,DA*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DADestroy(DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAView(DA,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAPrintHelp(DA);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToLocalBegin(DA,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT    DAGlobalToLocalEnd(DA,Vec,InsertMode,Vec);

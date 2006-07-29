@@ -266,7 +266,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   PetscInt       s_x,s_y; /* s proportionalized to w */
   PetscInt       *flx = 0,*fly = 0;
   PetscInt       sn0 = 0,sn2 = 0,sn6 = 0,sn8 = 0,refine_x = 2, refine_y = 2,tM = M,tN = N;
-  PetscTruth     flg1;
   DA             da;
   Vec            local,global;
   VecScatter     ltog,gtol;
@@ -788,52 +787,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   }
   da->lx = flx;
   da->ly = fly;
-
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
-
+  ierr = DAView_Private(da);CHKERRQ(ierr);
   ierr = PetscPublishAll(da);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "DAPrintHelp"
-/*@
-   DAPrintHelp - Prints command line options for DA.
-
-   Collective on DA
-
-   Input Parameters:
-.  da - the distributed array
-
-   Level: intermediate
-
-.seealso: DACreate1d(), DACreate2d(), DACreate3d()
-
-.keywords: DA, help
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DAPrintHelp(DA da)
-{
-  static PetscTruth called = PETSC_FALSE;
-  MPI_Comm          comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(da,DA_COOKIE,1);
-
-  comm = da->comm;
-  if (!called) {
-    ierr = (*PetscHelpPrintf)(comm,"General Distributed Array (DA) options:\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -da_view: print DA distribution to screen\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -da_view_draw: display DA in window\n");CHKERRQ(ierr);
-    called = PETSC_TRUE;
-  }
-  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
