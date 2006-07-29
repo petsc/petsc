@@ -1516,21 +1516,6 @@ PetscErrorCode MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_MPIAIJ"
-PetscErrorCode MatPrintHelp_MPIAIJ(Mat A)
-{
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!a->rank) {
-    ierr = MatPrintHelp_SeqAIJ(a->A);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize_MPIAIJ"
 PetscErrorCode MatSetBlockSize_MPIAIJ(Mat A,PetscInt bs)
@@ -1744,7 +1729,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatIncreaseOverlap_MPIAIJ,
        MatGetValues_MPIAIJ,
        MatCopy_MPIAIJ,
-/*45*/ MatPrintHelp_MPIAIJ,
+/*45*/ 0,
        MatScale_MPIAIJ,
        0,
        0,

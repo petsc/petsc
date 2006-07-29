@@ -3940,10 +3940,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat mat,MatAssemblyType type)
     }
   }
   inassm--;
-  ierr = PetscOptionsHasName(mat->prefix,"-help",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = MatPrintHelp(mat);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -4924,43 +4920,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIncreaseOverlap(Mat mat,PetscInt n,IS is[],
   ierr = PetscLogEventBegin(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->increaseoverlap)(mat,n,is,ov);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_IncreaseOverlap,mat,0,0,0);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp"
-/*@
-   MatPrintHelp - Prints all the options for the matrix.
-
-   Collective on Mat
-
-   Input Parameter:
-.  mat - the matrix 
-
-   Options Database Keys:
-+  -help - Prints matrix options
--  -h - Prints matrix options
-
-   Level: developer
-
-.seealso: MatCreate(), MatCreateXXX()
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatPrintHelp(Mat mat)
-{
-  static PetscTruth called = PETSC_FALSE;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
-  PetscValidType(mat,1);
-  ierr = MatPreallocated(mat);CHKERRQ(ierr);
-
-  if (!called) {
-    if (mat->ops->printhelp) {
-      ierr = (*mat->ops->printhelp)(mat);CHKERRQ(ierr);
-    }
-    called = PETSC_TRUE;
-  }
   PetscFunctionReturn(0);
 }
 

@@ -126,24 +126,6 @@ PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MatPrintHelp_Inode"
-PetscErrorCode MatPrintHelp_Inode(Mat A)
-{
-  static PetscTruth called=PETSC_FALSE;
-  MPI_Comm          comm=A->comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (!called) {
-    called = PETSC_TRUE;
-    ierr = (*PetscHelpPrintf)(comm," Inode related options (the defaults):\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_no_inode: Do not use inodes\n");CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_Inode"
 PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *C)
 {

@@ -11,7 +11,6 @@ EXTERN PetscErrorCode MatSetValues_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscIn
 EXTERN PetscErrorCode MatSetValuesBlocked_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode MatGetRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
 EXTERN PetscErrorCode MatRestoreRow_SeqBAIJ(Mat,PetscInt,PetscInt*,PetscInt*[],PetscScalar*[]);
-EXTERN PetscErrorCode MatPrintHelp_SeqBAIJ(Mat);
 EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,PetscInt,const PetscInt[],PetscScalar);
 
 /*  UGLY, ugly, ugly
@@ -1836,25 +1835,6 @@ MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCA
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_MPIBAIJ"
-PetscErrorCode MatPrintHelp_MPIBAIJ(Mat A)
-{
-  Mat_MPIBAIJ       *a   = (Mat_MPIBAIJ*)A->data;
-  MPI_Comm          comm = A->comm;
-  static PetscTruth called = PETSC_FALSE; 
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (!a->rank) {
-    ierr = MatPrintHelp_SeqBAIJ(a->A);CHKERRQ(ierr);
-  }
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATMPIBAIJ matrix format (the defaults):\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_use_hash_table <factor>: Use hashtable for efficient matrix assembly\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatSetUnfactored_MPIBAIJ"
 PetscErrorCode MatSetUnfactored_MPIBAIJ(Mat A)
 {
@@ -2019,7 +1999,7 @@ static struct _MatOps MatOps_Values = {
        MatIncreaseOverlap_MPIBAIJ,
        MatGetValues_MPIBAIJ,
        MatCopy_MPIBAIJ,
-/*45*/ MatPrintHelp_MPIBAIJ,
+/*45*/ 0,
        MatScale_MPIBAIJ,
        0,
        0,
@@ -2205,7 +2185,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIBAIJ(Mat B,Petsc
 
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-mat_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(B->comm,B->prefix,"Options for MPIBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatMPIBAIJSetPreallocation",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (bs < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size specified, must be positive");
   if (d_nz == PETSC_DEFAULT || d_nz == PETSC_DECIDE) d_nz = 5;
@@ -2270,7 +2252,9 @@ EXTERN_C_END
    MATMPIBAIJ - MATMPIBAIJ = "mpibaij" - A matrix type to be used for distributed block sparse matrices.
 
    Options Database Keys:
-. -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()
++ -mat_type mpibaij - sets the matrix type to "mpibaij" during a call to MatSetFromOptions()
+. -mat_block_size <bs> - set the blocksize used to store the matrix
+- -mat_use_hash_table <fact>
 
   Level: beginner
 
@@ -2337,15 +2321,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_use_hash_table",&flg);CHKERRQ(ierr);
-  if (flg) { 
-    PetscReal fact = 1.39;
-    ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
-    ierr = PetscOptionsGetReal(PETSC_NULL,"-mat_use_hash_table",&fact,PETSC_NULL);CHKERRQ(ierr);
-    if (fact <= 1.0) fact = 1.39;
-    ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"Hash table Factor used %5.2f\n",fact);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Options for loading MPIBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
+    if (flg) { 
+      PetscReal fact = 1.39;
+      ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
+      ierr = PetscOptionsReal("-mat_use_hash_table","Use hash table factor","MatMPIBAIJSetHashTableFactor",fact,&fact,PETSC_NULL);CHKERRQ(ierr);
+      if (fact <= 1.0) fact = 1.39;
+      ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
+      ierr = PetscInfo1(0,"Hash table Factor used %5.2f\n",fact);CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatStoreValues_C",
                                      "MatStoreValues_MPIBAIJ",
                                      MatStoreValues_MPIBAIJ);CHKERRQ(ierr);
@@ -2433,9 +2420,8 @@ EXTERN_C_END
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the 
-                     block calculations (much slower)
-.   -mat_block_size - size of the blocks to use
++   -mat_block_size - size of the blocks to use
+-   -mat_use_hash_table <fact>
 
    Notes:
    If PETSC_DECIDE or  PETSC_DETERMINE is used for a particular argument on one processor
@@ -2532,9 +2518,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation(Mat B,PetscInt bs,P
 .  A - the matrix 
 
    Options Database Keys:
-.   -mat_no_unroll - uses code that does not unroll the loops in the 
-                     block calculations (much slower)
-.   -mat_block_size - size of the blocks to use
++   -mat_block_size - size of the blocks to use
+-   -mat_use_hash_table <fact>
 
    Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
@@ -2716,9 +2701,11 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   PetscMPIInt    tag = ((PetscObject)viewer)->tag;
   PetscInt       *dlens = PETSC_NULL,*odlens = PETSC_NULL,*mask = PETSC_NULL,*masked1 = PETSC_NULL,*masked2 = PETSC_NULL,rowcount,odcount;
   PetscInt       dcount,kmax,k,nzcount,tmp,mend;
- 
+
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading MPIBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -2960,7 +2947,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
    Level: advanced
 
   Notes:
-   This can also be set by the command line option: -mat_use_hash_table fact
+   This can also be set by the command line option: -mat_use_hash_table <fact>
 
 .keywords: matrix, hashtable, factor, HT
 

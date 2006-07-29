@@ -54,7 +54,6 @@ EXTERN PetscErrorCode MatAssemblyEnd_Inode(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatDestroy_Inode(Mat);
 EXTERN PetscErrorCode MatCreate_Inode(Mat);
 EXTERN PetscErrorCode MatSetOption_Inode(Mat,MatOption);
-EXTERN PetscErrorCode MatPrintHelp_Inode(Mat);
 EXTERN PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *B);
 EXTERN PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact);
 EXTERN PetscErrorCode MatLUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact);
@@ -173,7 +172,6 @@ EXTERN PetscErrorCode MatMatMultTransposeNumeric_SeqAIJ_SeqAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_SeqAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
 EXTERN PetscErrorCode MatGetRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatRestoreRow_SeqAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
-EXTERN PetscErrorCode MatPrintHelp_SeqAIJ(Mat);
 EXTERN PetscErrorCode MatAXPY_SeqAIJ(Mat,PetscScalar,Mat,MatStructure);
 
 EXTERN_C_BEGIN

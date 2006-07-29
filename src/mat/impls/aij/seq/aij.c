@@ -1908,24 +1908,6 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_SeqAIJ"
-PetscErrorCode MatPrintHelp_SeqAIJ(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = MatPrintHelp_Inode(A);CHKERRQ(ierr);
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatCopy_SeqAIJ"
 PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 {
@@ -2270,7 +2252,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,
        MatCopy_SeqAIJ,
-/*45*/ MatPrintHelp_SeqAIJ,
+/*45*/ 0,
        MatScale_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,

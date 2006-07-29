@@ -128,23 +128,6 @@ PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_SeqBDiag"
-PetscErrorCode MatPrintHelp_SeqBDiag(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQBDIAG and MATMPIBDIAG matrix formats:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_bdiag_diags <d1,d2,d3,...> (diagonal numbers)\n");CHKERRQ(ierr); 
-  ierr = (*PetscHelpPrintf)(comm,"   (for example) -mat_bdiag_diags -5,-1,0,1,5\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatGetDiagonal_SeqBDiag_N"
 static PetscErrorCode MatGetDiagonal_SeqBDiag_N(Mat A,Vec v)
 {
@@ -446,7 +429,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBDiag_N,
        0,
        MatGetValues_SeqBDiag_N,
        0,
-/*45*/ MatPrintHelp_SeqBDiag,
+/*45*/ 0,
        MatScale_SeqBDiag,
        0,
        0,

@@ -257,8 +257,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat,VecScatter*
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPrintHelp(Mat);
-
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat);

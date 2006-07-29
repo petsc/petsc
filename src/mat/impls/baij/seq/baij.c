@@ -1797,20 +1797,6 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 
   PetscFunctionReturn(0);
 }
-#undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_SeqBAIJ"
-PetscErrorCode MatPrintHelp_SeqBAIJ(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQBAIJ and MATMPIBAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -2080,7 +2066,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        MatIncreaseOverlap_SeqBAIJ,
        MatGetValues_SeqBAIJ,
        MatCopy_SeqBAIJ,
-/*45*/ MatPrintHelp_SeqBAIJ,
+/*45*/ 0,
        MatScale_SeqBAIJ,
        0,
        0,
@@ -2214,7 +2200,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     skipallocation = PETSC_TRUE;
     nz             = 0;
   }
-  ierr = PetscOptionsGetInt(B->prefix,"-mat_block_size",&newbs,PETSC_NULL);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBegin(B->comm,B->prefix,"Options for SEQBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSeqBAIJSetPreallocation",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   if (nnz && newbs != bs) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot change blocksize from command line if setting nnz");
   }
@@ -2244,7 +2234,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   }
 
   b       = (Mat_SeqBAIJ*)B->data;
-  ierr    = PetscOptionsHasName(PETSC_NULL,"-mat_no_unroll",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Options for SEQBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
   B->ops->solve               = MatSolve_SeqBAIJ_Update;
   B->ops->solvetranspose      = MatSolveTranspose_SeqBAIJ_Update;
   if (!flg) {
@@ -2523,7 +2516,9 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer, MatType type,Mat *A)
   MPI_Comm       comm = ((PetscObject)viewer)->comm;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-matload_block_size",&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading SEQBAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   bs2  = bs*bs;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);

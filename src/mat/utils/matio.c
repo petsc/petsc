@@ -8,24 +8,6 @@
 #include "petscsys.h"
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatLoadPrintHelp_Private"
-static PetscErrorCode MatLoadPrintHelp_Private(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode ierr;
-  
-  PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MatLoad:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_type <type>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -matload_type <type>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -matload_block_size <block_size> :Used for MATBAIJ, MATBDIAG\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -matload_bdiag_diags <s1,s2,s3,...> : Used for MATBDIAG\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatLoad"
 /*@C
    MatLoad - Loads a matrix that has been stored in binary format
@@ -154,8 +136,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer viewer, MatType outtype,Ma
     ierr = MatSetOption(*newmat,MAT_SYMMETRIC);CHKERRQ(ierr);
     ierr = MatSetOption(*newmat,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = MatLoadPrintHelp_Private(*newmat);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }
 

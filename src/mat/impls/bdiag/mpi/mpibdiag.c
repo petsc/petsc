@@ -685,20 +685,6 @@ PetscErrorCode MatNorm_MPIBDiag(Mat A,NormType type,PetscReal *nrm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_MPIBDiag"
-PetscErrorCode MatPrintHelp_MPIBDiag(Mat A)
-{
-  Mat_MPIBDiag   *a = (Mat_MPIBDiag*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!a->rank) {
-    ierr = MatPrintHelp_SeqBDiag(a->A);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatScale_MPIBDiag"
 PetscErrorCode MatScale_MPIBDiag(Mat A,PetscScalar alpha)
 {
@@ -768,7 +754,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIBDiag,
        0,
        MatGetValues_MPIBDiag,
        0,
-/*45*/ MatPrintHelp_MPIBDiag,
+/*45*/ 0,
        MatScale_MPIBDiag,
        0,
        0,
