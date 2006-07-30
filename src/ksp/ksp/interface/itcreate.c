@@ -198,6 +198,43 @@ $      Pmat does not have the same nonzero structure.
 
     Level: beginner
 
+   Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
+      are created in PC and returned to the user. In this case, if both operators
+      mat and pmat are requested, two DIFFERENT operators will be returned. If
+      only one is requested both operators in the PC will be the same (i.e. as
+      if one had called KSP/PCSetOperators() with the same argument for both Mats).
+      The user must set the sizes of the returned matrices and their type etc just
+      as if the user created them with MatCreate(). For example,
+
+$         KSP/PCGetOperators(ksp/pc,&mat,PETSC_NULL,PETSC_NULL); is equivalent to
+$           set size, type, etc of mat
+
+$         MatCreate(comm,&mat);
+$         KSP/PCSetOperators(ksp/pc,mat,mat,SAME_NONZERO_PATTERN);
+$         PetscObjectDereference((PetscObject)mat);
+$           set size, type, etc of mat
+
+     and
+
+$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,PETSC_NULL); is equivalent to
+$           set size, type, etc of mat and pmat
+
+$         MatCreate(comm,&mat);
+$         MatCreate(comm,&pmat);
+$         KSP/PCSetOperators(ksp/pc,mat,pmat,SAME_NONZERO_PATTERN);
+$         PetscObjectDereference((PetscObject)mat);
+$         PetscObjectDereference((PetscObject)pmat);
+$           set size, type, etc of mat and pmat
+
+    The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
+    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely 
+    managed by the top most level object (i.e. the TS, SNES, or KSP). Another way to look
+    at this is when you create a SNES you do not NEED to create a KSP and attach it to 
+    the SNES object (the SNES object manages it for you). Similarly when you create a KSP
+    you do not need to attach a PC to it (the KSP object manages the PC object for you).
+    Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
+    it can be created for you?
+
 .keywords: KSP, set, operators, matrix, preconditioner, linear system
 
 .seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPGetOperators()
