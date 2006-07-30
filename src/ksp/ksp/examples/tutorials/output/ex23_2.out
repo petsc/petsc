@@ -15,7 +15,7 @@ PC Object:
   type: jacobi
   linear system matrix = precond matrix:
   Matrix Object:
-    type=aij, rows=10, cols=10
+    type=mpiaij, rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=70
       not using I-node (on process 0) routines
 Norm of error < 1.e-12, Iterations 5

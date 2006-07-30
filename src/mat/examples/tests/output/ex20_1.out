@@ -1,5 +1,5 @@
 Matrix Object:
-  type=aij, rows=20, cols=20
+  type=seqaij, rows=20, cols=20
   total: nonzeros=41, allocated nonzeros=100
     using I-node routines: found 15 nodes, limit used is 5
 row 0: (0, 4)  (1, -1)  (4, -1) 
