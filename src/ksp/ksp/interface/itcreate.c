@@ -241,7 +241,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP ksp,Mat Amat,Mat Pmat,MatS
 
 .keywords: KSP, set, get, operators, matrix, preconditioner, linear system
 
-.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators()
+.seealso: KSPSolve(), KSPGetPC(), PCGetOperators(), PCSetOperators(), KSPSetOperators(), KSPGetOperatorsSet()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,MatStructure *flag)
 {
@@ -250,6 +250,37 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP ksp,Mat *Amat,Mat *Pmat,Ma
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCGetOperators(ksp->pc,Amat,Pmat,flag);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPGetOperatorsSet"
+/*@C
+   KSPGetOperatorsSet - Determines if the matrix associated with the linear system and
+   possibly a different one associated with the preconditioner have been set in the KSP.
+
+   Not collective, though the results on all processes should be the same
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
++  mat - the matrix associated with the linear system was set
+-  pmat - matrix associated with the preconditioner was set, usually the same
+
+   Level: intermediate
+
+.keywords: KSP, get, operators, matrix, linear system
+
+.seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators(), PCGetOperatorsSet()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP ksp,PetscTruth *mat,PetscTruth *pmat)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ierr = PCGetOperatorsSet(ksp->pc,mat,pmat);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

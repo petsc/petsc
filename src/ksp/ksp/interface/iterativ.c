@@ -586,8 +586,8 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (ksp->vec_sol) vecr = ksp->vec_sol;
     else {
       Mat pmat;
-      ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
-      ierr = MatGetVecs(pmat,&vecr,0);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetVecs(pmat,&vecr,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = VecDuplicateVecs(vecr,rightn,right);CHKERRQ(ierr);
     if (!ksp->vec_sol) {
@@ -599,8 +599,8 @@ PetscErrorCode KSPGetVecs(KSP ksp,PetscInt rightn, Vec **right,PetscInt leftn,Ve
     if (ksp->vec_rhs) vecl = ksp->vec_rhs;
     else {
       Mat pmat;
-      ierr = PCGetOperators(ksp->pc,0,&pmat,0);CHKERRQ(ierr);
-      ierr = MatGetVecs(pmat,0,&vecl);CHKERRQ(ierr);
+      ierr = PCGetOperators(ksp->pc,PETSC_NULL,&pmat,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetVecs(pmat,PETSC_NULL,&vecl);CHKERRQ(ierr);
     }
     ierr = VecDuplicateVecs(vecl,leftn,left);CHKERRQ(ierr);
     if (!ksp->vec_rhs) {

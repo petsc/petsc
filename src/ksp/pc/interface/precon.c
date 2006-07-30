@@ -1019,12 +1019,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
       }
     }
   }
+
+  /* reference first in case the matrices are the same */
+  if (Amat) {ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);}
   if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+  if (Pmat) {ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);}
   if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
   pc->mat  = Amat;
   pc->pmat = Pmat;
-  if (pc->mat) {ierr = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr);}
-  if (pc->pmat) {ierr = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr);}
 
   if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
     pc->setupcalled = 1;
@@ -1055,7 +1057,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
 
 .keywords: PC, get, operators, matrix, linear system
 
-.seealso: PCSetOperators()
+.seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
@@ -1064,6 +1066,36 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStr
   if (mat)  *mat  = pc->mat;
   if (pmat) *pmat = pc->pmat;
   if (flag) *flag = pc->flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetOperatorsSet"
+/*@C
+   PCGetOperatorsSet - Determines if the matrix associated with the linear system and
+   possibly a different one associated with the preconditioner have been set in the PC.
+
+   Not collective, though the results on all processes should be the same
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
++  mat - the matrix associated with the linear system was set
+-  pmat - matrix associated with the preconditioner was set, usually the same
+
+   Level: intermediate
+
+.keywords: PC, get, operators, matrix, linear system
+
+.seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC pc,PetscTruth *mat,PetscTruth *pmat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (mat)  *mat  = (pc->mat)  ? PETSC_TRUE : PETSC_FALSE;
+  if (pmat) *pmat = (pc->pmat) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

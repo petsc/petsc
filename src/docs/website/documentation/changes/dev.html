@@ -378,9 +378,13 @@ in the PETSc Development Version</font></p>
       
       <p><u><b>PC:</b></u></p>
       <ul>
-        <li>Added PCGALERKIN and PCGalerkinSetRestriction/Interpolation() to allow easy creating of Galerkin-like preconditioners.<br>
+        <li>Added PCGALERKIN and PCGalerkinSetRestriction/Interpolation() to allow easy creating of Galerkin-like preconditioners. </li>
 
-      </li>
+       <li> Added PCGetOperatorsSet() </li>
+
+       <li> PCSetOperators()/KSPSetOperators() now do reference counting on the operators you pass in. Current usage will work, however this means you NO LONGER
+            need to keep a reference to the operators around until the KSP/PC object is destroyed.  </li>
+
       </ul>
 
 
@@ -408,9 +412,10 @@ in the PETSc Development Version</font></p>
       
       <ul>
 
-      Added KSPDefaultConvergedSetUIRNorm() and -ksp_default_converged_initial_residual_norm to go back to the
-      pre ETSc 2.3.1 of determing relative tolerance for convergence.
+       <li>Added KSPDefaultConvergedSetUIRNorm() and -ksp_default_converged_initial_residual_norm to go back to the
+      pre PETSc 2.3.1 of determing relative tolerance for convergence. </li>
       
+       <li> Added KSPGetOperatorsSet() </li>
       
       </ul>
 

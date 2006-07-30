@@ -681,9 +681,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetKSP(SNES snes,KSP ksp)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,2);
   PetscCheckSameComm(snes,1,ksp,2);
-  if (snes->ksp) {
-    ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
-  }
+  if (ksp)       {ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);}
+  if (snes->ksp) {ierr = PetscObjectDereference((PetscObject)snes->ksp);CHKERRQ(ierr);}
   snes->ksp = ksp;
   PetscFunctionReturn(0);
 }
@@ -705,7 +704,7 @@ static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
    Collective on MPI_Comm
 
    Input Parameters:
-+  comm - MPI communicator
+.  comm - MPI communicator
 
    Output Parameter:
 .  outsnes - the new SNES context

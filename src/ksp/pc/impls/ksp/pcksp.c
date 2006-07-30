@@ -45,14 +45,15 @@ static PetscErrorCode PCSetUp_KSP(PC pc)
 {
   PetscErrorCode ierr;
   PC_KSP         *jac = (PC_KSP*)pc->data;
-  Mat            mat,A;
+  Mat            mat;
+  PetscTruth     A;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(jac->ksp);CHKERRQ(ierr);
   if (jac->use_true_matrix) mat = pc->mat;
   else                      mat = pc->pmat;
 
-  ierr = KSPGetOperators(jac->ksp,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperatorsSet(jac->ksp,&A,PETSC_NULL);CHKERRQ(ierr);
   if (!A) {
     ierr = KSPSetOperators(jac->ksp,mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }

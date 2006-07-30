@@ -204,7 +204,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
     ierr = PCGetOperators(ksp->pc,&mat,&pmat,PETSC_NULL);CHKERRQ(ierr);
     if (mat == pmat) {
       PetscScalar  *xx;
-      PetscInt          i,n;
+      PetscInt     i,n;
       PetscTruth   zeroflag = PETSC_FALSE;
 
       if (!ksp->diagonal) { /* allocate vector to hold diagonal */
