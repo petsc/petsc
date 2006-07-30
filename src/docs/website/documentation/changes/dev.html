@@ -382,6 +382,9 @@ in the PETSc Development Version</font></p>
 
        <li> Added PCGetOperatorsSet() </li>
 
+       <li> Added support for the KSP/PC to auto-create the Mat(s) for you. (Which you usally set with KSP/PCSetOperators()). See manual page for
+            KSP/PCGetOperators(). Note this is slightly speculative code currently. </li>
+
        <li> PCSetOperators()/KSPSetOperators() now do reference counting on the operators you pass in. Current usage will work, however this means you NO LONGER
             need to keep a reference to the operators around until the KSP/PC object is destroyed.  </li>
 
