@@ -616,7 +616,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioni_C","MatSNESMFSetFunctioni_FD",MatSNESMFSetFunctioni_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetCheckh_C","MatSNESMFSetCheckh_FD",MatSNESMFSetCheckh_FD);CHKERRQ(ierr);
   mfctx->mat = A;
-
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

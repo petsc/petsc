@@ -347,6 +347,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   b->getdiagonal   = 0;
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSHELL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

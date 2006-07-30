@@ -3027,38 +3027,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
   PetscFunctionReturn(0);
 }
 
-#include "petscsys.h"
-PetscTruth MatConvertRegisterAllCalled = PETSC_FALSE;
-PetscFList MatConvertList              = 0;
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatConvertRegister"
-/*@C
-    MatConvertRegister - Allows one to register a routine that converts a sparse matrix
-        from one format to another.
-
-  Not Collective
-
-  Input Parameters:
-+   type - the type of matrix (defined in include/petscmat.h), for example, MATSEQAIJ.
--   Converter - the function that reads the matrix from the binary file.
-
-  Level: developer
-
-.seealso: MatConvertRegisterAll(), MatConvert()
-
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mat,MatType,MatReuse,Mat*))
-{
-  PetscErrorCode ierr;
-  char           fullname[PETSC_MAX_PATH_LEN];
-
-  PetscFunctionBegin;
-  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&MatConvertList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert"
 /*@C  
@@ -3112,12 +3080,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
   if ((reuse==MAT_REUSE_MATRIX) && (mat != *M)) {
-    SETERRQ(PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for inplace convertion currently");
+    SETERRQ(PETSC_ERR_SUP,"MAT_REUSE_MATRIX only supported for in-place conversion currently");
   }
   if ((sametype || issame) && (reuse==MAT_INITIAL_MATRIX) && mat->ops->duplicate) {
     ierr = (*mat->ops->duplicate)(mat,MAT_COPY_VALUES,M);CHKERRQ(ierr);
   } else {
     PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
+    const char     *prefix[3] = {"seq","mpi",""};
+    PetscInt       i;
+
     /* 
        Order of precedence:
        1) See if a specialized converter is known to the current matrix.
@@ -3127,38 +3098,39 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
        4) See if a good general converter is known for the current matrix.
        5) Use a really basic converter.
     */
-    /* 1) See if a specialized converter is known to the current matrix and the desired class */
-    ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
-    ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
-
-    if (!conv) {
-      /* 2)  See if a specialized converter is known to the desired matrix class. */
-      ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
-      ierr = MatSetSizes(B,mat->rmap.n,mat->cmap.n,mat->rmap.N,mat->cmap.N);CHKERRQ(ierr);
-      ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-      ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
-      ierr = MatDestroy(B);CHKERRQ(ierr);
-      if (!conv) {
-        /* 3) See if a good general converter is registered for the desired class */
-        if (!MatConvertRegisterAllCalled) {
-          ierr = MatConvertRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-        }
-        ierr = PetscFListFind(mat->comm,MatConvertList,newtype,(void(**)(void))&conv);CHKERRQ(ierr);
-        if (!conv) {
-          /* 4) See if a good general converter is known for the current matrix */
-          if (mat->ops->convert) {
-            conv = mat->ops->convert;
-          } else {
-            /* 5) Use a really basic converter. */
-            conv = MatConvert_Basic;
-          }
-        }
-      }
+    for (i=0; i<3; i++) {
+      /* 1) See if a specialized converter is known to the current matrix and the desired class */
+      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)mat,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+      if (conv) goto foundconv;
     }
+
+    /* 2)  See if a specialized converter is known to the desired matrix class. */
+    ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
+    ierr = MatSetSizes(B,mat->rmap.n,mat->cmap.n,mat->rmap.N,mat->cmap.N);CHKERRQ(ierr);
+    ierr = MatSetType(B,newtype);CHKERRQ(ierr);
+    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+
+    /* 3) See if a good general converter is registered for the desired class */
+    if (!conv) conv = B->ops->convert;
+    ierr = MatDestroy(B);CHKERRQ(ierr);
+    if (conv) goto foundconv;
+
+    /* 4) See if a good general converter is known for the current matrix */
+    if (mat->ops->convert) {
+      conv = mat->ops->convert;
+    }
+    if (conv) goto foundconv;
+
+    /* 5) Use a really basic converter. */
+    conv = MatConvert_Basic;
+
+    foundconv:
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
   }
   B = *M;

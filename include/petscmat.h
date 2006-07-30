@@ -409,16 +409,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat,Mat,Mat);
 E*/
 typedef enum {MAT_DO_NOT_COPY_VALUES,MAT_COPY_VALUES} MatDuplicateOption;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegister(const char[],const char[],const char[],PetscErrorCode (*)(Mat,MatType,MatReuse,Mat*));
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,0)
-#else
-#define MatConvertRegisterDynamic(a,b,c,d) MatConvertRegister(a,b,c,d)
-#endif
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegisterAll(const char[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvertRegisterDestroy(void);
-extern PetscTruth MatConvertRegisterAllCalled;
-extern PetscFList MatConvertList;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat,MatType,MatReuse,Mat*);
 PetscPolymorphicFunction(MatConvert,(Mat A,MatType t),(A,t,MAT_INITIAL_MATRIX,&a),Mat,a)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat,MatDuplicateOption,Mat*);

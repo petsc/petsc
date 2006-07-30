@@ -821,6 +821,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat B)
                                     "MatSeqBDiagSetPreallocation_SeqBDiag",
                                      MatSeqBDiagSetPreallocation_SeqBDiag);CHKERRQ(ierr);
 
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQBDIAG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

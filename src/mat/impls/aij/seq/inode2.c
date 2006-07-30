@@ -55,9 +55,7 @@ PetscErrorCode MatDestroy_Inode(Mat A)
   Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (a->inode.size) {
-    ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeAdjustForInodes_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeGetInodeSizes_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -72,7 +70,7 @@ PetscErrorCode MatDestroy_Inode(Mat A)
 #define __FUNCT__ "MatCreate_Inode"
 PetscErrorCode MatCreate_Inode(Mat B)
 {
-  Mat_SeqAIJ      *b=(Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

@@ -2837,6 +2837,10 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
@@ -2897,6 +2901,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcsrperm_C",
                                      "MatConvert_SeqAIJ_SeqCSRPERM",
                                       MatConvert_SeqAIJ_SeqCSRPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcrl_C",
+                                     "MatConvert_SeqAIJ_SeqCRL",
+                                      MatConvert_SeqAIJ_SeqCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
                                      "MatIsTranspose_SeqAIJ",
                                       MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
@@ -2910,6 +2917,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
                                      "MatReorderForNonzeroDiagonal_SeqAIJ",
                                       MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate_Inode(B);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

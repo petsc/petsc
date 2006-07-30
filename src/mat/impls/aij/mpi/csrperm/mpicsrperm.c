@@ -120,8 +120,6 @@ extern PetscErrorCode MatConvert_SeqAIJ_SeqCSRPERM(Mat,MatType,MatReuse,Mat*);
 #define __FUNCT__ "MatConvert_MPIAIJ_MPICSRPERM"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  /* This routine is only called to convert to MATMPICSRPERM
-   * from MATMPIAIJ, so we can ignore 'MatType Type'. */
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_MPIAIJ     *mpimat = (Mat_MPIAIJ *) B->data;
@@ -132,8 +130,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat A,MatType typ
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  /* I believe that all I need to do to convert from MPIAIJ to MPICSRPERM 
-   * is to change the typename to MPICSRPERM and convert the local 
+  /* Convert from MPIAIJ to MPICSRPERM by simply changing the typename to MPICSRPERM and convert the local 
    * submatrices from SEQAIJ to SEQCSRPERM. */
   ierr = PetscObjectChangeTypeName( (PetscObject) B, MATMPICSRPERM);CHKERRQ(ierr);
   localmat_A = mpimat->A;
@@ -154,10 +151,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICSRPERM(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Following the example of the SuperLU class, I change the type name 
-   * before calling MatSetType() to force proper construction of MPIAIJ 
-   * and MATMPICSRPERM types. */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPICSRPERM);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatConvert_MPIAIJ_MPICSRPERM(A,MATMPICSRPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -190,7 +183,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CSRPERM(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATCSRPERM);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQCSRPERM);CHKERRQ(ierr);

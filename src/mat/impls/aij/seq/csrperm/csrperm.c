@@ -604,8 +604,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqCSRPERM"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  /* This routine is only called to convert to MATSEQCSRPERM
-   * from MATSEQAIJ, so we can ignore 'MatType Type'. */
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_SeqCSRPERM *csrperm;
@@ -618,16 +616,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
   ierr = PetscNew(Mat_SeqCSRPERM,&csrperm);CHKERRQ(ierr);
   B->spptr = (void *) csrperm;
 
-  /* Save a pointer to the original SeqAIJ assembly end routine, because we 
-   * will want to use it later in the CSRPERM assembly end routine. 
-   * Also, save a pointer to the original SeqAIJ Destroy routine, because we 
-   * will want to use it in the CSRPERM destroy routine. */
   csrperm->AssemblyEnd_SeqAIJ  = A->ops->assemblyend;
   csrperm->MatDestroy_SeqAIJ   = A->ops->destroy;
   csrperm->MatDuplicate_SeqAIJ = A->ops->duplicate;
 
-  /* Set function pointers for methods that we inherit from AIJ but 
-   * override. */
+  /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_SeqCSRPERM;
   B->ops->assemblyend = MatAssemblyEnd_SeqCSRPERM;
   B->ops->destroy     = MatDestroy_SeqCSRPERM;
@@ -705,10 +698,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCSRPERM(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Following the example of the SuperLU class, I change the type name 
-   * before calling MatSetType() to force proper construction of SeqAIJ 
-   * and MATSEQCSRPERM types. */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQCSRPERM);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqCSRPERM(A,MATSEQCSRPERM,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

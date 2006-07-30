@@ -187,8 +187,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqAIJ_SeqCRL"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  /* This routine is only called to convert to MATSEQCRL
-   * from MATSEQAIJ, so we can ignore 'MatType Type'. */
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_CRL        *crl;
@@ -201,16 +199,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat A,MatType type,Ma
   ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
-  /* Save a pointer to the original SeqAIJ assembly end routine, because we 
-   * will want to use it later in the CRL assembly end routine. 
-   * Also, save a pointer to the original SeqAIJ Destroy routine, because we 
-   * will want to use it in the CRL destroy routine. */
   crl->AssemblyEnd  = A->ops->assemblyend;
   crl->MatDestroy   = A->ops->destroy;
   crl->MatDuplicate = A->ops->duplicate;
 
-  /* Set function pointers for methods that we inherit from AIJ but 
-   * override. */
+  /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_CRL;
   B->ops->assemblyend = MatAssemblyEnd_SeqCRL;
   B->ops->destroy     = MatDestroy_SeqCRL;
@@ -283,9 +276,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqCRL(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change the type name before calling MatSetType() to force proper construction of SeqAIJ 
-     and MATSEQCRL types. */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQCRL);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SeqCRL(A,MATSEQCRL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

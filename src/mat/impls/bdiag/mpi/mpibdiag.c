@@ -974,6 +974,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBDiagSetPreallocation_C",
                                      "MatMPIBDiagSetPreallocation_MPIBDiag",
                                       MatMPIBDiagSetPreallocation_MPIBDiag);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIBDIAG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -1001,7 +1002,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BDiag(Mat A)
   PetscMPIInt   size;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATBDIAG);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBDIAG);CHKERRQ(ierr);

@@ -525,8 +525,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_SuperLU    *lu=(Mat_SuperLU *)A->spptr;
@@ -556,8 +554,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert to MATSUPERLU */
-  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_SuperLU    *lu;
@@ -630,8 +626,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SUPERLU types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSUPERLU);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SuperLU(A,MATSUPERLU,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

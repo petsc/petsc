@@ -193,9 +193,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
   if (flg) {
     ierr = MatSetType(B,mtype);CHKERRQ(ierr);
   }
-  if (!B->type_name) {
-    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -225,10 +222,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetUpPreallocation(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (B->ops->setuppreallocation) {
+  if (!B->preallocated && B->ops->setuppreallocation) {
     ierr = PetscInfo(B,"Warning not preallocating matrix storage\n");CHKERRQ(ierr);
     ierr = (*B->ops->setuppreallocation)(B);CHKERRQ(ierr);
-    B->ops->setuppreallocation = 0;
   }
   B->preallocated = PETSC_TRUE;
   PetscFunctionReturn(0);
