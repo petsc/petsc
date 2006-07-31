@@ -20,7 +20,7 @@ PC Object:
     SOR: type = symmetric, iterations = 1, omega = 1
   linear system matrix = precond matrix:
   Matrix Object:
-    type=aij, rows=10, cols=10
+    type=seqaij, rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=50
       not using I-node routines
 Norm of error 3.28074e-09, Iterations 9
