@@ -713,7 +713,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
       if ((vbinary->fdes = open(fname,O_RDONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
-    } else if (type == FILE_MODE_WRITE) {
+    } else if (type == FILE_MODE_APPEND) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_BINARY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }
@@ -729,7 +729,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
       if ((vbinary->fdes = open(fname,O_RDONLY,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for reading",fname);
       }
-    } else if (type == FILE_MODE_WRITE) {
+    } else if (type == FILE_MODE_APPEND) {
       if ((vbinary->fdes = open(fname,O_WRONLY|O_APPEND,0)) == -1) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open file %s for writing",fname);
       }

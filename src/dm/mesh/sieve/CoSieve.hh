@@ -5,6 +5,11 @@
 #include <Sieve.hh>
 #endif
 
+int deleteTag(MPI_Comm comm, int keyval, void *attr_val, void *extra_state) {
+  delete (int *) attr_val;
+  return MPI_SUCCESS;
+}
+
 namespace ALE {
   class ParallelObject {
   protected:
@@ -52,79 +57,70 @@ namespace ALE {
       typedef Sieve_                                       sieve_type;
       typedef std::vector<typename sieve_type::point_type> PointArray;
     public:
-#if 0
-      // For a hex, there are 2d faces
-      static void buildHexFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
-        PointArray *faces = NULL;
+      static void buildHexFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
+        int debug = sieve->debug;
 
-        if (debug > 1) {std::cout << "  Building hex faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
+        if (debug > 1) {std::cout << "  Building hex faces for boundary of " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;}
         if (dim > 3) {
           throw ALE::Exception("Cannot do hexes of dimension greater than three");
         } else if (dim > 2) {
           int nodes[24] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 5, 4,
                            1, 2, 6, 5, 2, 3, 7, 6, 3, 0, 4, 7};
-          faces = new PointArray();
 
           for(int b = 0; b < 6; b++) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
+            typename sieve_type::point_type face;
 
             for(int c = 0; c < 4; c++) {
-              faceBoundary.push_back((*boundary)[nodes[b*4+c]]);
+              bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*4+c]]);
             }
-            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
+            if (debug > 1) {std::cout << "    boundary hex face " << b << std::endl;}
+            buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
+            if (debug > 1) {std::cout << "    added face " << face << std::endl;}
+            faces[dim].push_back(face);
           }
         } else if (dim > 1) {
-          int boundarySize = (int) boundary->size();
-          faces = new PointArray();
+          int boundarySize = bdVertices[dim].size();
 
           for(int b = 0; b < boundarySize; b++) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
+            typename sieve_type::point_type face;
 
             for(int c = 0; c < 2; c++) {
-              faceBoundary.push_back((*boundary)[(b+c)%boundarySize]);
+              bdVertices[dim-1].push_back(bdVertices[dim][(b+c)%boundarySize]);
             }
-            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
+            if (debug > 1) {std::cout << "    boundary point " << bdVertices[dim][b] << std::endl;}
+            buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
+            if (debug > 1) {std::cout << "    added face " << face << std::endl;}
+            faces[dim].push_back(face);
           }
         } else {
           if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
-          faces = boundary;
+          faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
         }
         if (debug > 1) {
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            std::cout << "  face point " << *f_itor << std::endl;
+          for(typename PointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+            std::cout << "  face point " << *f_iter << std::endl;
           }
         }
         // We always create the toplevel, so we could short circuit somehow
         // Should not have to loop here since the meet of just 2 boundary elements is an element
-        PointArray::iterator f_itor = faces->begin();
-        point_type           start = *f_itor;
-        f_itor++;
-        point_type           next = *f_itor;
-        Obj<sieve_type::supportSet> preElement = this->topology->nJoin(start, next, 1);
+        typename PointArray::iterator   f_itor = faces[dim].begin();
+        typename sieve_type::point_type start  = *f_itor;
+        typename sieve_type::point_type next   = *(++f_itor);
+        Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
-          simplex = *preElement->begin();
-          if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
+          cell = *preElement->begin();
+          if (debug > 1) {std::cout << "  Found old cell " << cell << std::endl;}
         } else {
           int color = 0;
 
-          simplex = point_type(0, (*(*curSimplex)[dim])++);
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            this->topology->addArrow(*f_itor, simplex, color++);
+          cell = typename sieve_type::point_type(0, (*curElement[dim])++);
+          for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
+            sieve->addArrow(*f_itor, cell, color++);
           }
-          if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
-        }
-        if (dim > 1) {
-          delete faces;
+          if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
         }
       };
-#endif
       static void buildFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
         int debug = sieve->debug;
 
@@ -151,8 +147,8 @@ namespace ALE {
           faces[dim].insert(faces[dim].end(), bdVertices[dim].begin(), bdVertices[dim].end());
         }
         if (debug > 1) {
-          for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
-            std::cout << "  face point " << *f_itor << std::endl;
+          for(typename PointArray::iterator f_iter = faces[dim].begin(); f_iter != faces[dim].end(); ++f_iter) {
+            std::cout << "  face point " << *f_iter << std::endl;
           }
         }
         // We always create the toplevel, so we could short circuit somehow
@@ -219,13 +215,21 @@ namespace ALE {
             if (debug) {std::cout << "cell " << cell << " num boundary vertices " << bdVertices[dim].size() << std::endl;}
 
             if (corners != dim+1) {
-              //buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
+              buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
             } else {
               buildFaces(sieve, dim, curElement, bdVertices, faces, cell);
             }
           } else {
             for(int b = 0; b < corners; b++) {
               sieve->addArrow(typename sieve_type::point_type(0, cells[c*corners+b]+numCells), cell, b);
+            }
+            if (debug) {
+              if (debug > 1) {
+                for(int b = 0; b < corners; b++) {
+                  std::cout << "  Adding vertex " << typename sieve_type::point_type(0, cells[c*corners+b]+numCells) << std::endl;
+                }
+              }
+              std::cout << "Adding cell " << cell << " dim " << dim << std::endl;
             }
           }
         }
@@ -236,22 +240,24 @@ namespace ALE {
     template<typename Patch_, typename Sieve_>
     class Topology : public ALE::ParallelObject {
     public:
-      typedef Patch_                                                    patch_type;
-      typedef Sieve_                                                    sieve_type;
-      typedef typename sieve_type::point_type                           point_type;
-      typedef typename ALE::set<point_type>                             PointSet;
-      typedef typename std::map<patch_type, Obj<sieve_type> >           sheaf_type;
-      typedef typename ALE::Sifter<int, point_type, int>                patch_label_type;
-      typedef typename std::map<patch_type, Obj<patch_label_type> >     label_type;
-      typedef typename std::map<const typename std::string, label_type> labels_type;
-      typedef typename patch_label_type::supportSequence                label_sequence;
+      typedef Patch_                                                patch_type;
+      typedef Sieve_                                                sieve_type;
+      typedef typename sieve_type::point_type                       point_type;
+      typedef typename std::map<patch_type, Obj<sieve_type> >       sheaf_type;
+      typedef typename ALE::Sifter<int, point_type, int>            patch_label_type;
+      typedef typename std::map<patch_type, Obj<patch_label_type> > label_type;
+      typedef typename std::map<patch_type, int>                    max_label_type;
+      typedef typename std::map<const std::string, label_type>      labels_type;
+      typedef typename patch_label_type::supportSequence            label_sequence;
     protected:
-      sheaf_type  _sheaf;
-      labels_type _labels;
-      int         _maxHeight;
-      int         _maxDepth;
+      sheaf_type     _sheaf;
+      labels_type    _labels;
+      int            _maxHeight;
+      max_label_type _maxHeights;
+      int            _maxDepth;
+      max_label_type _maxDepths;
     public:
-      Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1) {};
+      Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {};
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         if (this->_sheaf.find(patch) == this->_sheaf.end()) {
@@ -297,8 +303,9 @@ namespace ALE {
       };
     public:
       template<class InputPoints>
-      void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points) {
+      void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+        maxHeight = -1;
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max height of the points in the support of p, and add 1
@@ -307,13 +314,13 @@ namespace ALE {
 
           if(h1 != h0) {
             this->setValue(height, *p_iter, h1);
-            if (h1 > this->_maxHeight) this->_maxHeight = h1;
+            if (h1 > maxHeight) maxHeight = h1;
             modifiedPoints->insert(*p_iter);
           }
         }
         // FIX: We would like to avoid the copy here with cone()
         if(modifiedPoints->size() > 0) {
-          this->computeHeight(height, sieve, sieve->cone(modifiedPoints));
+          this->computeHeight(height, sieve, sieve->cone(modifiedPoints), maxHeight);
         }
       };
       void computeHeights() {
@@ -323,17 +330,23 @@ namespace ALE {
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
 
-          this->computeHeight(label, s_iter->second, s_iter->second->leaves());
+          this->computeHeight(label, s_iter->second, s_iter->second->leaves(), this->_maxHeights[s_iter->first]);
           this->_labels[name][s_iter->first] = label;
+          if (this->_maxHeights[s_iter->first] > this->_maxHeight) this->_maxHeight = this->_maxHeights[s_iter->first];
         }
       };
       int height() {return this->_maxHeight;};
+      int height(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_maxHeights[patch];
+      };
       const Obj<label_sequence>& heightStratum(const patch_type& patch, int height) {
         return this->getLabelStratum(patch, "height", height);
       };
       template<class InputPoints>
-      void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points) {
+      void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxDepth) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+        maxDepth = -1;
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max depth of the points in the cone of p, and add 1
@@ -342,13 +355,13 @@ namespace ALE {
 
           if(d1 != d0) {
             this->setValue(depth, *p_iter, d1);
-            if (d1 > this->_maxDepth) this->_maxDepth = d1;
+            if (d1 > maxDepth) maxDepth = d1;
             modifiedPoints->insert(*p_iter);
           }
         }
         // FIX: We would like to avoid the copy here with support()
         if(modifiedPoints->size() > 0) {
-          this->computeDepth(depth, sieve, sieve->support(modifiedPoints));
+          this->computeDepth(depth, sieve, sieve->support(modifiedPoints), maxDepth);
         }
       };
       void computeDepths() {
@@ -358,11 +371,16 @@ namespace ALE {
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
 
-          this->computeDepth(label, s_iter->second, s_iter->second->roots());
+          this->computeDepth(label, s_iter->second, s_iter->second->roots(), this->_maxDepths[s_iter->first]);
           this->_labels[name][s_iter->first] = label;
+          if (this->_maxDepths[s_iter->first] > this->_maxDepth) this->_maxDepth = this->_maxDepths[s_iter->first];
         }
       };
       int depth() {return this->_maxDepth;};
+      int depth(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_maxDepths[patch];
+      };
       const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
         return this->getLabelStratum(patch, "depth", depth);
       };
@@ -396,7 +414,8 @@ namespace ALE {
         this->_array = new IndexArray();
       };
     public: // Accessors
-      const Obj<topology_type>& getTopology() {return this->_topology;};
+      const Obj<topology_type>& getTopology() const {return this->_topology;};
+      void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         this->_topology->checkPatch(patch);
@@ -407,6 +426,9 @@ namespace ALE {
         }
       };
     public: // Sizes
+      int const getFiberDimension(const patch_type& patch, const point_type& p) {
+        return this->_indices[patch][p].index;
+      };
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         this->_indices[patch][p].prefix = -1;
         this->_indices[patch][p].index  = dim;
@@ -451,10 +473,10 @@ namespace ALE {
 
         if (chart[point].prefix < 0) {
           for(typename sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
-            std::cout << "    Recursing to " << *c_iter << std::endl;
+            if (this->_debug) {std::cout << "    Recursing to " << *c_iter << std::endl;}
             this->orderPoint(chart, sieve, *c_iter, offset);
           }
-          std::cout << "  Ordering point " << point << " at " << offset << std::endl;
+          if (this->_debug) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
           chart[point].prefix = offset;
           offset += chart[point].index;
         }
@@ -463,7 +485,7 @@ namespace ALE {
         chart_type& chart = this->_indices[patch];
 
         for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-          std::cout << "Ordering closure of point " << p_iter->first << std::endl;
+          if (this->_debug) {std::cout << "Ordering closure of point " << p_iter->first << std::endl;}
           this->orderPoint(chart, this->_topology->getPatch(patch), p_iter->first, offset);
         }
       };
@@ -471,7 +493,7 @@ namespace ALE {
         int offset = 0;
 
         for(typename indices_type::iterator i_iter = this->_indices.begin(); i_iter != this->_indices.end(); ++i_iter) {
-          std::cout << "Ordering patch " << i_iter->first << std::endl;
+          if (this->_debug) {std::cout << "Ordering patch " << i_iter->first << std::endl;}
           this->orderPatch(i_iter->first, offset);
         }
       };
@@ -491,7 +513,7 @@ namespace ALE {
 
         if (level == 0) {
           this->_array->push_back(this->getIndex(patch, p));
-        } else if ((level == 1) || (this->_topology->getPatch(patch)->height() == 1)) {
+        } else if ((level == 1) || (this->_topology->height(patch) == 1)) {
           const Obj<typename sieve_type::coneSequence>& cone = this->_topology->getPatch(patch)->cone(p);
 
           this->_array->push_back(this->getIndex(patch, p));
@@ -524,6 +546,7 @@ namespace ALE {
       typedef Atlas_                             atlas_type;
       typedef typename atlas_type::patch_type    patch_type;
       typedef typename atlas_type::sieve_type    sieve_type;
+      typedef typename atlas_type::topology_type topology_type;
       typedef typename atlas_type::point_type    point_type;
       typedef typename atlas_type::index_type    index_type;
       typedef Value_                             value_type;
@@ -553,6 +576,7 @@ namespace ALE {
       };
     public: // Accessors
       const Obj<atlas_type>& getAtlas() {return this->_atlas;};
+      void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     public:
       void allocate() {
         const typename atlas_type::topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
@@ -561,6 +585,10 @@ namespace ALE {
           this->_arrays[p_iter->first] = new value_type[this->_atlas->size(p_iter->first)];
           PetscMemzero(this->_arrays[p_iter->first], this->_atlas->size(p_iter->first) * sizeof(value_type));
         }
+      };
+      const value_type *restrict(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_arrays[patch];
       };
       // Return a smart pointer?
       const value_type *restrict(const patch_type& patch, const point_type& p) {
@@ -575,7 +603,7 @@ namespace ALE {
           if (values) delete [] values;
           values = new value_type[vSize];
         };
-        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+        if (this->_atlas->getTopology()->height(patch) == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           const index_type&                             pInd = this->_atlas->getIndex(patch, p);
@@ -617,7 +645,7 @@ namespace ALE {
         this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
-        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+        if (this->_atlas->getTopology()->height(patch) == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           const index_type&                             pInd = this->_atlas->getIndex(patch, p);
@@ -653,7 +681,7 @@ namespace ALE {
         this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
-        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+        if (this->_atlas->getTopology()->height(patch) == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           const index_type&                             pInd = this->_atlas->getIndex(patch, p);
@@ -695,6 +723,48 @@ namespace ALE {
           a[i] = v[i];
         }
       };
+      template<typename Input>
+      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
+        this->checkPatch(patch);
+        value_type *a = this->_arrays[patch];
+
+        if (this->_atlas->getTopology()->height(patch) == 1) {
+          // Only avoids the copy
+          const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
+          const index_type&                             pInd = this->_atlas->getIndex(patch, p);
+          typename Input::iterator v_iter = v->begin();
+          typename Input::iterator v_end  = v->end();
+
+          for(int i = pInd.prefix; i < pInd.prefix + pInd.index; ++i) {
+            a[i] = *v_iter;
+            ++v_iter;
+          }
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            const index_type& ind    = this->_atlas->getIndex(patch, *p_iter);
+            const int         start  = ind.prefix;
+            const int         length = ind.index;
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] = *v_iter;
+              ++v_iter;
+            }
+          }
+        } else {
+          const Obj<typename atlas_type::IndexArray>& ind = this->_atlas->getIndices(patch, p);
+          typename Input::iterator v_iter = v->begin();
+          typename Input::iterator v_end  = v->end();
+
+          for(typename atlas_type::IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
+            const int start  = i_iter->prefix;
+            const int length = i_iter->index;
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] = *v_iter;
+              ++v_iter;
+            }
+          }
+        }
+      };
     public:
       void view(const std::string& name) const {
         ostringstream txt;
@@ -729,6 +799,206 @@ namespace ALE {
         }
         PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
         PetscSynchronizedFlush(this->comm());
+      };
+    };
+
+    template<typename Point_>
+    class DiscreteSieve {
+    public:
+      typedef Point_                  point_type;
+      typedef std::vector<point_type> coneSequence;
+      typedef std::vector<point_type> coneSet;
+      typedef std::vector<point_type> coneArray;
+      typedef std::vector<point_type> supportSequence;
+      typedef std::vector<point_type> supportSet;
+      typedef std::vector<point_type> supportArray;
+      typedef std::set<point_type>    points_type;
+      typedef points_type             baseSequence;
+      typedef points_type             capSequence;
+    protected:
+      Obj<points_type>  _points;
+      Obj<coneSequence> _empty;
+      Obj<coneSequence> _return;
+    public:
+      DiscreteSieve() {
+        this->_points = new points_type();
+        this->_empty  = new coneSequence();
+        this->_return = new coneSequence();
+      };
+      virtual ~DiscreteSieve() {};
+    public:
+      template<typename Input>
+      void addPoints(const Obj<Input>& points) {
+        this->_points->insert(points->begin(), points->end());
+      };
+      const Obj<coneSequence>& cone(const point_type& p) {return this->_empty;};
+      template<typename Input>
+      const Obj<coneSequence>& cone(const Input& p) {return this->_empty;};
+      const Obj<coneSet>& nCone(const point_type& p, const int level) {
+        if (level == 0) {
+          return this->closure(p);
+        } else {
+          return this->_empty;
+        }
+      };
+      const Obj<coneArray>& closure(const point_type& p) {
+        this->_return->clear();
+        this->_return->push_back(p);
+        return this->_return;
+      };
+      const Obj<supportSequence>& support(const point_type& p) {return this->_empty;};
+      template<typename Input>
+      const Obj<supportSequence>& support(const Input& p) {return this->_empty;};
+      const Obj<supportSet>& nSupport(const point_type& p, const int level) {
+        if (level == 0) {
+          return this->star(p);
+        } else {
+          return this->_empty;
+        }
+      };
+      const Obj<supportArray>& star(const point_type& p) {
+        this->_return->clear();
+        this->_return->push_back(p);
+        return this->_return;
+      };
+      const Obj<capSequence>& roots() {return this->_points;};
+      const Obj<baseSequence>& leaves() {return this->_points;};
+    };
+
+
+    template<typename Overlap_, typename Atlas_, typename Value_>
+    class OverlapValues : public Section<Atlas_, Value_> {
+    public:
+      typedef typename Section<Atlas_, Value_>::patch_type    patch_type;
+      typedef typename Section<Atlas_, Value_>::topology_type topology_type;
+      typedef Overlap_                            overlap_type;
+      typedef Atlas_                              atlas_type;
+      typedef Value_                              value_type;
+      typedef enum {SEND, RECEIVE}                request_type;
+      typedef std::map<patch_type, MPI_Request>   requests_type;
+    protected:
+      request_type  _type;
+      int           _tag;
+      MPI_Datatype  _datatype;
+      requests_type _requests;
+    public:
+      OverlapValues(MPI_Comm comm, const request_type type, const int debug = 0) : Section<Atlas_, Value_>(comm, debug), _type(type) {
+        this->_tag = this->getNewTag();
+        this->_datatype = this->getMPIDatatype();
+      };
+      OverlapValues(MPI_Comm comm, const request_type type, const int tag, const int debug) : Section<Atlas_, Value_>(comm, debug), _type(type), _tag(tag) {
+        this->_datatype = this->getMPIDatatype();
+      };
+      virtual ~OverlapValues() {};
+    protected:
+      MPI_Datatype getMPIDatatype() {
+        if (sizeof(value_type) == 4) {
+          return MPI_INT;
+        } else if (sizeof(value_type) == 8) {
+          return MPI_DOUBLE;
+        }
+        throw ALE::Exception("Cannot determine MPI type for value type");
+      };
+      int getNewTag() {
+        static int tagKeyval = MPI_KEYVAL_INVALID;
+        int *tagvalp = NULL, *maxval, flg;
+
+        if (tagKeyval == MPI_KEYVAL_INVALID) {
+          tagvalp = new int;
+          MPI_Keyval_create(MPI_NULL_COPY_FN, deleteTag, &tagKeyval, (void *) NULL);
+          MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
+        }
+        MPI_Attr_get(this->_comm, tagKeyval, (void **) &tagvalp, &flg);
+        if (tagvalp[0] < 1) {
+          MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &maxval, &flg);
+          tagvalp[0] = *maxval - 128; // hope that any still active tags were issued right at the beginning of the run
+        }
+        return tagvalp[0]--;
+      };
+    public: // Accessors
+      int getTag() const {return this->_tag;};
+      void setTag(const int tag) {this->_tag = tag;};
+    public:
+      void construct(const Obj<overlap_type>& overlap, const int size) {
+        if (this->_type == RECEIVE) {
+          Obj<typename overlap_type::baseSequence> base = overlap->base();
+
+          for(typename overlap_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const Obj<typename overlap_type::coneSequence>& ranks = overlap->cone(*b_iter);
+
+            for(typename overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *b_iter, size);
+            }
+          }
+        } else {
+          Obj<typename overlap_type::capSequence> cap = overlap->cap();
+
+          for(typename overlap_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+            const Obj<typename overlap_type::supportSequence>& ranks = overlap->support(*c_iter);
+
+            for(typename overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *c_iter, size);
+            }
+          }
+        }
+      };
+      template<typename Sizer>
+      void construct(const Obj<overlap_type>& overlap, const Sizer& sizer) {
+        if (this->_type == RECEIVE) {
+          Obj<typename overlap_type::baseSequence> base = overlap->base();
+
+          for(typename overlap_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const Obj<typename overlap_type::coneSequence>& ranks = overlap->cone(*b_iter);
+
+            for(typename overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *b_iter, sizer.size(r_iter.color()));
+            }
+          }
+        } else {
+          Obj<typename overlap_type::capSequence> cap = overlap->cap();
+
+          for(typename overlap_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+            const Obj<typename overlap_type::supportSequence>& ranks = overlap->support(*c_iter);
+
+            for(typename overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *c_iter, sizer.size(r_iter.color()));
+            }
+          }
+        }
+      };
+      void constructCommunication() {
+        const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const patch_type patch = p_iter->first;
+          MPI_Request request;
+
+          if (this->_type == RECEIVE) {
+            MPI_Recv_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
+          } else {
+            MPI_Send_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
+          }
+          this->_requests[patch] = request;
+        }
+      };
+      void startCommunication() {
+        const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          MPI_Request request = this->_requests[p_iter->first];
+
+          MPI_Start(&request);
+        }
+      };
+      void endCommunication() {
+        const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
+        MPI_Status status;
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          MPI_Request request = this->_requests[p_iter->first];
+
+          MPI_Wait(&request, &status);
+        }
       };
     };
   }

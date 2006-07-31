@@ -99,8 +99,8 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->update) {
-      ierr = (*snes->update)(snes, snes->iter);CHKERRQ(ierr);
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
@@ -149,7 +149,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
-      ierr = (*snes->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         /* We're not progressing, so return with the current iterate */
         SNESMonitor(snes,i+1,fnorm);
@@ -172,7 +172,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
 
       /* Test for convergence */
       neP->itflag = PETSC_TRUE;
-      ierr = (*snes->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) {
         break;
       } 
@@ -370,13 +370,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->setup		= SNESSetUp_TR;
-  snes->solve		= SNESSolve_TR;
-  snes->destroy		= SNESDestroy_TR;
-  snes->converged	= SNESConverged_TR;
-  snes->setfromoptions  = SNESSetFromOptions_TR;
-  snes->view            = SNESView_TR;
-  snes->nwork           = 0;
+  snes->ops->setup	     = SNESSetUp_TR;
+  snes->ops->solve	     = SNESSolve_TR;
+  snes->ops->destroy	     = SNESDestroy_TR;
+  snes->ops->converged	     = SNESConverged_TR;
+  snes->ops->setfromoptions  = SNESSetFromOptions_TR;
+  snes->ops->view            = SNESView_TR;
+  snes->nwork                = 0;
   
   ierr			= PetscNew(SNES_TR,&neP);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(snes,sizeof(SNES_TR));CHKERRQ(ierr);

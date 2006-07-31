@@ -244,7 +244,6 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
 {
-  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -252,19 +251,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
 
   ierr = PetscOptionsBegin(rnd->comm, rnd->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
 
-  /* Handle generic options */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscRandomPrintHelp(rnd);CHKERRQ(ierr);
-  }
+    /* Handle PetscRandom type options */
+    ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
 
-  /* Handle PetscRandom type options */
-  ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
-
-  /* Handle specific random generator's options */
-  if (rnd->ops->setfromoptions) {
-    ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
-  }
+    /* Handle specific random generator's options */
+    if (rnd->ops->setfromoptions) {
+      ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
+    }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = PetscRandomViewFromOptions(rnd, rnd->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -371,29 +364,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscRandomPrintHelp"
-/*@
-  PetscRandomPrintHelp - Prints some options for the PetscRandom.
-
-  Input Parameter:
-. rnd - The random number generator context
-
-  Options Database Keys:
-$  -help, -h
-
-  Level: intermediate
-
-.keywords: PetscRandom, help
-.seealso: PetscRandomSetFromOptions()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom rnd)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(rnd, PETSC_RANDOM_COOKIE,1);
-  PetscFunctionReturn(0);
-}
-/*----------------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate" 

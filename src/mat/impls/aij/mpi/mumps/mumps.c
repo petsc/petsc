@@ -153,7 +153,7 @@ PetscErrorCode MatConvertToTriples(Mat A,int shift,PetscTruth valOnly,int *nnz,i
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_MUMPS_Base"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,MatType type,MatReuse reuse,Mat *newmat) \
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -171,6 +171,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MUMPS_Base(Mat A,MatType type,MatRe
   B->ops->choleskyfactorsymbolic = mumps->MatCholeskyFactorSymbolic;
   B->ops->destroy                = mumps->MatDestroy;
 
+  /* put back original composed preallocation function */
   ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C",(PetscVoidStarFunction)&f);CHKERRQ(ierr);
   if (f) {
     ierr = PetscObjectComposeFunction((PetscObject)B,"MatMPISBAIJSetPreallocation_C","",(PetscVoidFunction)mumps->MatPreallocate);CHKERRQ(ierr);
@@ -899,14 +900,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat A)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  MPI_Comm       comm;
   
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqAIJ or MPIAIJ */
-  /*   and AIJMUMPS types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATAIJMUMPS);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
@@ -1084,9 +1080,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ or MPISBAIJ */
-  /*   and SBAIJMUMPS types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJMUMPS);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);

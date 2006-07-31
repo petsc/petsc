@@ -47,7 +47,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP ksp,Vec vsoln,Vec vt1,V
   PetscValidHeaderSpecific(vsoln,VEC_COOKIE,2);
   PetscValidHeaderSpecific(vres,VEC_COOKIE,5);
   PetscValidHeaderSpecific(vb,VEC_COOKIE,6);
-  PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);
+  ierr = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   if (!ksp->guess_zero) {
     /* skip right scaling since current guess already has it */
     ierr = KSP_MatMult(ksp,Amat,vsoln,vt1);CHKERRQ(ierr);

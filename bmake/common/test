@@ -88,7 +88,9 @@ buildexamples_MPE:
 buildexamples_ESSL:
 	-@${OMAKE} testexamples_ESSL TESTEXAMPLES_ESSL=`echo ${TESTEXAMPLES_ESSL} | sed s/runex[0-9]*[a-z]*[f]*[9]*[0]*[_]*[0-9]*//g`
 
-
-
+alltests:
+	-@for i in ${TEST_RUNS} ; do \
+	  make ACTION=testexamples_$$i tree ; \
+	done
 
 

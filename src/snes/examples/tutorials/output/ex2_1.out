@@ -22,7 +22,7 @@ SNES Object:
     type: jacobi
     linear system matrix = precond matrix:
     Matrix Object:
-      type=aij, rows=5, cols=5
+      type=seqaij, rows=5, cols=5
       total: nonzeros=11, allocated nonzeros=25
         not using I-node routines
 number of Newton iterations = 3

@@ -1021,23 +1021,6 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
 }
 #endif
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_SeqSBAIJ"
-PetscErrorCode MatPrintHelp_SeqSBAIJ(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode    ierr;
-  
-  PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQSBAIJ and MATMPISBAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_block_size <block_size>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_ignore_lower_triangular: Ignore lower triangular values set by user\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_getrow_uppertriangular: Enable MatGetRow() for retrieving the upper triangular part of the row\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatSeqSBAIJSetColumnIndices_SeqSBAIJ"
@@ -1292,7 +1275,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatIncreaseOverlap_SeqSBAIJ,
        MatGetValues_SeqSBAIJ,
        MatCopy_SeqSBAIJ,
-/*45*/ MatPrintHelp_SeqSBAIJ,
+/*45*/ 0,
        MatScale_SeqSBAIJ,
        0,
        0,
@@ -1662,6 +1645,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   B->structurally_symmetric     = PETSC_TRUE;
   B->symmetric_set              = PETSC_TRUE;
   B->structurally_symmetric_set = PETSC_TRUE;
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQSBAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

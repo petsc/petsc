@@ -193,7 +193,7 @@ solved. <br>
 
 
 
-The TSC and the System component can be combined using a <a href="examples/c++/ex1/ex1.cc">traditional programming language</a>, a <a href="examples/c++/ex1/Ex1_rc">component scripting language</a> or a component GUI&nbsp;<a href="topsccafe.html">(see demo)</a> such as <a href="http://www.cca-forum.org/ccafe/">ccaffeine</a>. The TSC and the&nbsp;System component then collaborate
+The TSC and the System component can be combined using a <a href="examples/cxx/ex1/ex1.cc">traditional programming language</a>, a <a href="examples/cxx/ex1/Ex1_rc">component scripting language</a> or a component GUI&nbsp;<a href="topsccafe.html">(see demo)</a> such as <a href="http://www.cca-forum.org/ccafe/">ccaffeine</a>. The TSC and the&nbsp;System component then collaborate
 to solve one or more algebraic problems. Complex applications will likely
 also couple several additional CCA components, see the <a href="http://cca-forum.org/tutorials/">CCA tutorials</a> for more information on writing applications using CCA components. <br>
 
@@ -415,7 +415,7 @@ Then do <span style="font-family: monospace; color: rgb(51, 51, 255);">make all 
 
 <br>
 
-</span>To compile and run the first example: &nbsp;<span style="font-family: monospace; color: rgb(51, 51, 255);">cd&nbsp;src/tops/examples/c++/ex1</span> and do <span style="font-family: monospace; color: rgb(51, 51, 255);">make server-c++ test-cca<br>
+</span>To compile and run the first example: &nbsp;<span style="font-family: monospace; color: rgb(51, 51, 255);">cd&nbsp;src/tops/examples/cxx/ex1</span> and do <span style="font-family: monospace; color: rgb(51, 51, 255);">make server-c++ test-cca<br>
 
 <br>
 
@@ -451,7 +451,7 @@ The first is the classic Bratu problem&nbsp;discretized with
 finite differences on a regular grid in two dimensions. The application
 code consists of the SIDL definition of&nbsp;the&nbsp;System component
 
-  (in <a href="examples/c++/ex1/ex1.sidl.html">ex1.sidl</a>)<br>
+  (in <a href="examples/cxx/ex1/ex1.sidl.html">ex1.sidl</a>)<br>
 
 
 
@@ -505,7 +505,7 @@ package Ex1 version 0.0.0 {class System implements-all TOPS.System.System, TOPS.
 
 
 
-and the code that defines the nonlinear equation (in <a href="examples/c++/ex1/server/c++/Ex1_System_Impl.cc.html#Ex1.System.computeResidual">Ex1_System_Impl.cc</a>)<br>
+and the code that defines the nonlinear equation (in <a href="examples/cxx/ex1/server/cxx/Ex1_System_Impl.cc.html#Ex1.System.computeResidual">Ex1_System_Impl.cc</a>)<br>
 
 
 
@@ -958,7 +958,7 @@ multicomponent PDE again solved on a structured grid.&nbsp;<br>
 
 
 
-First tell the Tops.Solver that it is solving a multicomponent problem with four components (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl.cc.html#Ex2.System.initializeOnce">Ex2_System_Impl.cc</a>)<br>
+First tell the Tops.Solver that it is solving a multicomponent problem with four components (in <a href="examples/cxx/ex2/server/cxx/Ex2_System_Impl.cc.html#Ex2.System.initializeOnce">Ex2_System_Impl.cc</a>)<br>
 
 
 
@@ -1056,7 +1056,7 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
-&nbsp;and define several PDE parameters (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl.hh.html#Ex2.System._implementation">Ex2_System_Impl.hh</a>)<br>
+&nbsp;and define several PDE parameters (in <a href="examples/cxx/ex2/server/cxx/Ex2_System_Impl.hh.html#Ex2.System._implementation">Ex2_System_Impl.hh</a>)<br>
 
 
 
@@ -1146,7 +1146,7 @@ First tell the Tops.Solver that it is solving a multicomponent problem with four
 
 
 
-initialize them (</xs></ys></double></double>in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl.cc.html#Ex2.System._ctor">Ex2_System_Impl.cc</a>)<br>
+initialize them (</xs></ys></double></double>in <a href="examples/cxx/ex2/server/cxx/Ex2_System_Impl.cc.html#Ex2.System._ctor">Ex2_System_Impl.cc</a>)<br>
 
 
 
@@ -1236,7 +1236,7 @@ initialize them (</xs></ys></double></double>in <a href="examples/c++/ex2/server
 
 
 One can also provide a nonzero initial guess to the solver by
-inheriting from&nbsp;TOPS.SystemComputeInitialGuess using SIDL such as (in <a href="examples/c++/ex2/ex2.sidl.html">Ex2.sidl</a>)<br>
+inheriting from&nbsp;TOPS.SystemComputeInitialGuess using SIDL such as (in <a href="examples/cxx/ex2/ex2.sidl.html">Ex2.sidl</a>)<br>
 
 
 
@@ -1288,7 +1288,7 @@ TOPS.System.Compute.Residual, TOPS.System.Compute.InitialGuess {}}</span><span s
 
 
 
-and providing code like (in <a href="examples/c++/ex2/server/c++/Ex2_System_Impl.cc.html#Ex2.System.computeInitialGuess">Ex2_System_Impl.cc</a>)<br>
+and providing code like (in <a href="examples/cxx/ex2/server/cxx/Ex2_System_Impl.cc.html#Ex2.System.computeInitialGuess">Ex2_System_Impl.cc</a>)<br>
 
 
 
@@ -1636,7 +1636,7 @@ of local grid points in X and Y directions on this process</span><br style="colo
 
 A simple Poisson problem in 3 dimensions again on a
 structured grid, with zero Dirichlet boundary conditions. The SIDL code
-is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
+is (in <a href="examples/cxx/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
@@ -1680,7 +1680,7 @@ is (in <a href="examples/c++/ex3/ex3.sidl.html">ex3.sidl</a>)<br>
 
 
 
-</span></xs></ys></double></double>The code that defines the matrix is given by (in <a href="examples/c++/ex3/server/c++/Ex3_System_Impl.cc.html#Ex3.System.computeMatrix">Ex3_System_Impl.cc</a>)<br>
+</span></xs></ys></double></double>The code that defines the matrix is given by (in <a href="examples/cxx/ex3/server/cxx/Ex3_System_Impl.cc.html#Ex3.System.computeMatrix">Ex3_System_Impl.cc</a>)<br>
 
 
 
@@ -2204,7 +2204,7 @@ local grid points in X and Y directions on this process</span><br style="font-fa
 
 
 
-<span style="color: rgb(0, 0, 0);">The code that computes the right hand side is given by (in <a href="examples/c++/ex3/server/c++/Ex3_System_Impl.cc.html#Ex3.System.computeRightHandSide">Ex3_System_Impl.cc</a>)<br>
+<span style="color: rgb(0, 0, 0);">The code that computes the right hand side is given by (in <a href="examples/cxx/ex3/server/cxx/Ex3_System_Impl.cc.html#Ex3.System.computeRightHandSide">Ex3_System_Impl.cc</a>)<br>
 
 
 
@@ -2631,7 +2631,7 @@ Up front, the user indicates the ghost degrees of freedom needed by
 each process, then (as with the structured grid case) the solver
 requests local calculations from the TOPS.System interfaces. The needed
 ghost nodes is computed by the TSTT component then provided to the
-TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">(in <a href="examples/c++/ex4/server/c++/Ex4_System_Impl.cc.html#Ex4.System.initializeOnce">Ex4_System_Impl.cc</a>)</span></span><br>
+TOPS.Solver by, for example </span></span><span style="color: rgb(255, 0, 0);"><span style="color: rgb(0, 0, 0);">(in <a href="examples/cxx/ex4/server/cxx/Ex4_System_Impl.cc.html#Ex4.System.initializeOnce">Ex4_System_Impl.cc</a>)</span></span><br>
 
 
 

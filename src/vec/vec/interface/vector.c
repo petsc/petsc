@@ -1221,7 +1221,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetRandom(Vec x,PetscRandom rctx)
   Level: beginner
 
 .keywords: Vec, set, options, database
-.seealso: VecCreate(), VecPrintHelp(), VecSetOptionsPrefix(), VecSet(), VecSetValues()
+.seealso: VecCreate(),  VecSetOptionsPrefix(), VecSet(), VecSetValues()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries (Vec vec) 
 {
@@ -1298,7 +1298,7 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
   Concepts: vectors^setting type
 
 .keywords: Vec, set, options, database
-.seealso: VecCreate(), VecPrintHelp(), VecSetOptionsPrefix()
+.seealso: VecCreate(), VecSetOptionsPrefix()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
 {
@@ -1309,46 +1309,16 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
 
   ierr = PetscOptionsBegin(vec->comm, vec->prefix, "Vector options", "Vec");CHKERRQ(ierr);
+    /* Handle vector type options */
+    ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
 
-  /* Handle generic vector options */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-help", &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = VecPrintHelp(vec);CHKERRQ(ierr);
-  }
-
-  /* Handle vector type options */
-  ierr = VecSetTypeFromOptions_Private(vec);CHKERRQ(ierr);
-
-  /* Handle specific vector options */
-  if (vec->ops->setfromoptions) {
-    ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
-  }
+    /* Handle specific vector options */
+    if (vec->ops->setfromoptions) {
+      ierr = (*vec->ops->setfromoptions)(vec);CHKERRQ(ierr);
+    }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   ierr = VecViewFromOptions(vec, vec->name);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "VecPrintHelp"
-/*@
-  VecPrintHelp - Prints some options for the Vec.
-
-  Input Parameter:
-. vec - The vector
-
-  Options Database Keys:
-$  -help, -h
-
-  Level: intermediate
-
-.keywords: Vec, help
-.seealso: VecSetFromOptions()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecPrintHelp(Vec vec)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec, VEC_COOKIE,1);
   PetscFunctionReturn(0);
 }
 

@@ -143,8 +143,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_MPIAIJ_MPICRL"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  /* This routine is only called to convert to MATMPICRL
-   * from MATMPIAIJ, so we can ignore 'MatType Type'. */
   PetscErrorCode ierr;
   Mat            B = *newmat;
   Mat_CRL        *crl;
@@ -157,16 +155,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,MatType type,Ma
   ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
-  /* Save a pointer to the original MPIAIJ assembly end routine, because we 
-   * will want to use it later in the CRL assembly end routine. 
-   * Also, save a pointer to the original MPIAIJ Destroy routine, because we 
-   * will want to use it in the CRL destroy routine. */
   crl->AssemblyEnd  = A->ops->assemblyend;
   crl->MatDestroy   = A->ops->destroy;
   crl->MatDuplicate = A->ops->duplicate;
 
-  /* Set function pointers for methods that we inherit from AIJ but 
-   * override. */
+  /* Set function pointers for methods that we inherit from AIJ but override. */
   B->ops->duplicate   = MatDuplicate_CRL;
   B->ops->assemblyend = MatAssemblyEnd_MPICRL;
   B->ops->destroy     = MatDestroy_MPICRL;
@@ -239,9 +232,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPICRL(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change the type name before calling MatSetType() to force proper construction of MPIAIJ 
-     and MATMPICRL types. */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPICRL);CHKERRQ(ierr);
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatConvert_MPIAIJ_MPICRL(A,MATMPICRL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

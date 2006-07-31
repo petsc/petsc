@@ -24,8 +24,8 @@
 #include <CoSieve.hh>
 
 namespace ALE {
-    // Forward declaration
-    class Partitioner;
+  // Forward declaration
+  class Partitioner;
 
     class Mesh {
     public:
@@ -38,10 +38,11 @@ namespace ALE {
       typedef CoSifter<sieve_type, ALE::pair<patch_type,int>, point_type, double> foliation_type;
       typedef std::map<std::string, Obj<field_type> > FieldContainer;
       typedef std::map<int, Obj<bundle_type> > BundleContainer;
-      typedef ALE::New::Topology<int, sieve_type>       topology_type;
-      typedef ALE::New::Atlas<topology_type, Point>     atlas_type;
-      typedef ALE::New::Section<atlas_type, double>     section_type;
-      typedef std::map<std::string, Obj<section_type> > SectionContainer;
+      typedef ALE::New::Topology<int, sieve_type>        topology_type;
+      typedef ALE::New::Atlas<topology_type, point_type> atlas_type;
+      typedef ALE::New::Section<atlas_type, double>      section_type;
+      typedef std::map<std::string, Obj<section_type> >  SectionContainer;
+      typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
       int debug;
     private:
       Obj<sieve_type> topology;
@@ -50,7 +51,9 @@ namespace ALE {
       Obj<foliation_type> boundaries;
       FieldContainer  fields;
       BundleContainer bundles;
-      SectionContainer sections;
+      SectionContainer           sections;
+      Obj<topology_type>         _topology;
+      Obj<foliated_section_type> _boundaries;
       MPI_Comm        _comm;
       int             _commRank;
       int             _commSize;
@@ -65,6 +68,7 @@ namespace ALE {
         this->coordinates = new field_type(comm, debug);
         this->boundary    = new field_type(comm, debug);
         this->boundaries  = new foliation_type(comm, debug);
+        this->_boundaries = new foliated_section_type(comm, debug);
         this->distributed = false;
         this->coordinates->setTopology(this->topology);
         this->boundary->setTopology(this->topology);
@@ -84,6 +88,7 @@ namespace ALE {
       Obj<field_type> getBoundary() const {return this->boundary;};
       void            setBoundary(const Obj<field_type>& boundary) {this->boundary = boundary;};
       Obj<foliation_type> getBoundaries() const {return this->boundaries;};
+      const Obj<foliated_section_type>& getBoundariesNew() const {return this->_boundaries;};
       #undef __FUNCT__
       #define __FUNCT__ "Mesh::getBundle"
       Obj<bundle_type> getBundle(const int dim) {
@@ -133,15 +138,16 @@ namespace ALE {
       }
       Obj<section_type> getSection(const std::string& name) {
         if (this->sections.find(name) == this->sections.end()) {
-          Obj<section_type> section = new section_type(this->comm(), debug);
+          Obj<section_type> section = new section_type(this->_comm, this->debug);
+          section->getAtlas()->setTopology(this->_topology);
 
           std::cout << "Creating new section: " << name << std::endl;
-          section->getAtlas()->getTopology()->setPatch(0, this->topology);
-          section->getAtlas()->getTopology()->stratify();
           this->sections[name] = section;
         }
         return this->sections[name];
       };
+      const Obj<topology_type>& getTopologyNew() {return this->_topology;};
+      void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
       // For a hex, there are 2d faces
       void buildHexFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
         PointArray *faces = NULL;

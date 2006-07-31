@@ -20,10 +20,6 @@ struct _TSOps {
   PetscErrorCode (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *);
   PetscErrorCode (*rhsfunction)(TS, PetscReal, Vec, Vec, void *);
   PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
-  PetscErrorCode (*applymatrixbc)(TS, Mat, Mat, void *);
-  PetscErrorCode (*rhsbc)(TS, PetscReal, Vec, void *);
-  PetscErrorCode (*applyrhsbc)(TS, Vec, void *);
-  PetscErrorCode (*applysolbc)(TS, Vec, void *);
   PetscErrorCode (*prestep)(TS);
   PetscErrorCode (*update)(TS, PetscReal, PetscReal *);
   PetscErrorCode (*poststep)(TS);
@@ -32,7 +28,6 @@ struct _TSOps {
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS,PetscInt *, PetscReal *);
   PetscErrorCode (*setfromoptions)(TS);
-  PetscErrorCode (*printhelp)(TS, char *);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS, PetscViewer);
 };
@@ -49,7 +44,6 @@ struct _p_TS {
   PetscInt  numbermonitors;                                 /* to, for instance, print residual norm, etc. */
 
   /* Identifies this as a grid TS structure */
-  PetscTruth  isGTS;                                 /* This problem arises from an underlying grid */
   PetscTruth *isExplicit;                            /* Indicates which fields have explicit time dependence */
   PetscInt   *Iindex;                                /* The index of the identity for each time dependent field */
 
@@ -86,7 +80,6 @@ struct _p_TS {
 };
 
 EXTERN PetscErrorCode TSMonitor(TS,PetscInt,PetscReal,Vec);
-EXTERN PetscErrorCode TSComputeRHSBoundaryConditions(TS,PetscReal,Vec);
 EXTERN PetscErrorCode TSScaleShiftMatrices(TS,Mat,Mat,MatStructure);
 
 extern PetscEvent    TS_Step, TS_PseudoComputeTimeStep, TS_FunctionEval, TS_JacobianEval;

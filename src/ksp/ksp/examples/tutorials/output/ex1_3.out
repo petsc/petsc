@@ -21,7 +21,7 @@ PC Object:
   Eisenstat: Using diagonal scaling (default)
   linear system matrix = precond matrix:
   Matrix Object:
-    type=aij, rows=10, cols=10
+    type=seqaij, rows=10, cols=10
     total: nonzeros=28, allocated nonzeros=50
       not using I-node routines
 Norm of error 3.33781e-09, Iterations 9

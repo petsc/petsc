@@ -56,7 +56,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char[],const cha
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom, PetscRandomType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomPrintHelp(PetscRandom);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom, PetscRandomType*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom,char*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);

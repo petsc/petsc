@@ -101,11 +101,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  snes->setup		= 0;
-  snes->solve		= SNESSolve_Test;
-  snes->destroy		= SNESDestroy_Test;
-  snes->converged	= SNESConverged_LS;
-  snes->setfromoptions  = SNESSetFromOptions_Test;
+  snes->ops->setup	     = 0;
+  snes->ops->solve	     = SNESSolve_Test;
+  snes->ops->destroy	     = SNESDestroy_Test;
+  snes->ops->converged	     = SNESConverged_LS;
+  snes->ops->setfromoptions  = SNESSetFromOptions_Test;
 
   ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(snes,sizeof(SNES_Test));CHKERRQ(ierr);

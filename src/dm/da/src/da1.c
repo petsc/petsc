@@ -310,15 +310,32 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   da->ltol = PETSC_NULL;
   da->ao   = PETSC_NULL;
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-da_view_draw",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg1);CHKERRQ(ierr);
-  if (flg1) {ierr = DAPrintHelp(da);CHKERRQ(ierr);}
+  ierr = DAView_Private(da);CHKERRQ(ierr);
   *inra = da;
   ierr = PetscPublishAll(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAView_Private"
+/*
+    Processes command line options to determine if/how a DA
+  is to be viewed. Called by DACreateXX()
+*/
+PetscErrorCode DAView_Private(DA da)
+{
+  PetscErrorCode ierr;
+  PetscTruth     flg1;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsBegin(da->comm,da->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
+    ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 
 

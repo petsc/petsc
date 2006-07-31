@@ -1,11 +1,25 @@
 #define PETSCMAT_DLL
 
-/* 
-        Provides an interface to the SuperLU 3.0 sparse solver
+/*  -------------------------------------------------------------------- 
+
+     This file implements a subclass of the SeqAIJ matrix class that uses
+     the SuperLU 3.0 sparse solver. You can use this as a starting point for 
+     implementing your own subclass of a PETSc matrix class.
+
+     This demonstrates a way to make an implementation inheritence of a PETSc
+     matrix type. This means constructing a new matrix type (SuperLU) by changing some
+     of the methods of the previous type (SeqAIJ), adding additional data, and possibly
+     additional method. (See any book on object oriented programming).
 */
 
+/*
+     Defines the data structure for the base matrix type (SeqAIJ)
+*/
 #include "src/mat/impls/aij/seq/aij.h"
 
+/*
+     SuperLU include files
+*/
 EXTERN_C_BEGIN
 #if defined(PETSC_USE_COMPLEX)
 #include "slu_zdefs.h"
@@ -15,6 +29,9 @@ EXTERN_C_BEGIN
 #include "slu_util.h"
 EXTERN_C_END
 
+/*
+     This is the data we are "ADDING" to the SeqAIJ matrix type to get the SuperLU matrix type
+*/
 typedef struct {
   SuperMatrix       A,L,U,B,X;
   superlu_options_t options;
@@ -29,7 +46,10 @@ typedef struct {
   mem_usage_t       mem_usage;
   MatStructure      flg;
 
-  /* A few function pointers for inheritance */
+  /* 
+     This is where the methods for the superclass (SeqAIJ) are kept while we 
+     reset the pointers in the function table to the new (SuperLU) versions
+  */
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
   PetscErrorCode (*MatView)(Mat,PetscViewer);
   PetscErrorCode (*MatAssemblyEnd)(Mat,MatAssemblyType);
@@ -40,14 +60,203 @@ typedef struct {
   PetscTruth CleanUpSuperLU;
 } Mat_SuperLU;
 
+/*
+    Takes a SuperLU matrix (that is a SeqAIJ matrix with the additional SuperLU data-structures
+   and methods) and converts it back to a regular SeqAIJ matrix.
+*/
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+{
+  PetscErrorCode ierr;
+  Mat            B=*newmat;
+  Mat_SuperLU    *lu=(Mat_SuperLU *)A->spptr;
 
-EXTERN PetscErrorCode MatFactorInfo_SuperLU(Mat,PetscViewer);
-EXTERN PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo*,Mat*);
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+  /* Reset the original SeqAIJ function pointers */
+  B->ops->duplicate        = lu->MatDuplicate;
+  B->ops->view             = lu->MatView;
+  B->ops->assemblyend      = lu->MatAssemblyEnd;
+  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
+  B->ops->destroy          = lu->MatDestroy;
+
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
+
+  /* change the type name back to its original value */
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat,MatType,MatReuse,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat,MatType,MatReuse,Mat*);
+#undef __FUNCT__
+#define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+{
+  PetscErrorCode ierr;
+  Mat            B=*newmat;
+  Mat_SuperLU    *lu;
+
+  PetscFunctionBegin;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+  }
+
+  ierr = PetscNew(Mat_SuperLU,&lu);CHKERRQ(ierr);
+  /* save the original SeqAIJ methods that we are changing */
+  lu->MatDuplicate         = A->ops->duplicate;
+  lu->MatView              = A->ops->view;
+  lu->MatAssemblyEnd       = A->ops->assemblyend;
+  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+  lu->MatDestroy           = A->ops->destroy;
+  lu->CleanUpSuperLU       = PETSC_FALSE;
+
+  /* add to the matrix the location for all the SuperLU data is to be stored */
+  B->spptr                 = (void*)lu;
+
+  /* set the methods in the function table to the SuperLU versions */
+  B->ops->duplicate        = MatDuplicate_SuperLU;
+  B->ops->view             = MatView_SuperLU;
+  B->ops->assemblyend      = MatAssemblyEnd_SuperLU;
+  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
+  B->ops->choleskyfactorsymbolic = 0;
+  B->ops->destroy          = MatDestroy_SuperLU;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_C",
+                                           "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
+                                           "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
+  *newmat = B;
+  PetscFunctionReturn(0);
+}
 EXTERN_C_END
+
+/*
+    Utility function
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatFactorInfo_SuperLU"
+PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
+{
+  Mat_SuperLU       *lu= (Mat_SuperLU*)A->spptr;
+  PetscErrorCode    ierr;
+  superlu_options_t options;
+
+  PetscFunctionBegin;
+  /* check if matrix is superlu_dist type */
+  if (A->ops->solve != MatSolve_SuperLU) PetscFunctionReturn(0);
+
+  options = lu->options;
+  ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Equil: %s\n",(options.Equil != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ColPerm: %D\n",options.ColPerm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  IterRefine: %D\n",options.IterRefine);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  SymmetricMode: %s\n",(options.SymmetricMode != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  DiagPivotThresh: %g\n",options.DiagPivotThresh);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  PivotGrowth: %s\n",(options.PivotGrowth != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ConditionNumber: %s\n",(options.ConditionNumber != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  RowPerm: %D\n",options.RowPerm);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES": "NO");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  lwork: %D\n",lu->lwork);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+/*
+    These are the methods provided to REPLACE the corresponding methods of the 
+   SeqAIJ matrix class. Other methods of SeqAIJ are not replaced
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SuperLU"
+PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
+{
+  Mat_SeqAIJ     *aa = (Mat_SeqAIJ*)(A)->data;
+  Mat_SuperLU    *lu = (Mat_SuperLU*)(*F)->spptr;
+  PetscErrorCode ierr;
+  PetscInt       sinfo;
+  SuperLUStat_t  stat;
+  PetscReal      ferr, berr; 
+  NCformat       *Ustore;
+  SCformat       *Lstore;
+  
+  PetscFunctionBegin;
+  if (lu->flg == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
+    lu->options.Fact = SamePattern;
+    /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
+    Destroy_SuperMatrix_Store(&lu->A); 
+    if ( lu->lwork >= 0 ) { 
+      Destroy_SuperNode_Matrix(&lu->L);
+      Destroy_CompCol_Matrix(&lu->U);
+      lu->options.Fact = SamePattern;
+    }
+  }
+
+  /* Create the SuperMatrix for lu->A=A^T:
+       Since SuperLU likes column-oriented matrices,we pass it the transpose,
+       and then solve A^T X = B in MatSolve(). */
+#if defined(PETSC_USE_COMPLEX)
+  zCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
+                           SLU_NC,SLU_Z,SLU_GE);
+#else
+  dCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,aa->a,aa->j,aa->i,
+                           SLU_NC,SLU_D,SLU_GE);
+#endif
+  
+  /* Initialize the statistics variables. */
+  StatInit(&stat);
+
+  /* Numerical factorization */
+  lu->B.ncol = 0;  /* Indicate not to solve the system */
+#if defined(PETSC_USE_COMPLEX)
+   zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
+           &lu->mem_usage, &stat, &sinfo);
+#else
+  dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
+           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
+           &lu->mem_usage, &stat, &sinfo);
+#endif
+  if ( !sinfo || sinfo == lu->A.ncol+1 ) {
+    if ( lu->options.PivotGrowth ) 
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
+    if ( lu->options.ConditionNumber )
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
+  } else if ( sinfo > 0 ){
+    if ( lu->lwork == -1 ) {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
+    } else {
+      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",sinfo);
+    }
+  } else { /* sinfo < 0 */
+    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo); 
+  }
+
+  if ( lu->options.PrintStat ) {
+    ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");
+    StatPrint(&stat);
+    Lstore = (SCformat *) lu->L.Store;
+    Ustore = (NCformat *) lu->U.Store;
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %D\n", Lstore->nnz);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %D\n", Ustore->nnz);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %D\n", Lstore->nnz + Ustore->nnz - lu->A.ncol);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\texpansions %D\n",
+	       lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6,
+	       lu->mem_usage.expansions);
+  }
+  StatFree(&stat);
+
+  lu->flg = SAME_NONZERO_PATTERN;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatDestroy_SuperLU"
@@ -112,85 +321,6 @@ PetscErrorCode MatAssemblyEnd_SuperLU(Mat A,MatAssemblyType mode) {
   PetscFunctionReturn(0);
 }
 
-/* This function was written for SuperLU 2.0 by Matthew Knepley. Not tested for SuperLU 3.0! */
-#ifdef SuperLU2
-#include "src/mat/impls/dense/seq/dense.h"
-#undef __FUNCT__  
-#define __FUNCT__ "MatCreateNull_SuperLU"
-PetscErrorCode MatCreateNull_SuperLU(Mat A,Mat *nullMat)
-{
-  Mat_SuperLU   *lu = (Mat_SuperLU*)A->spptr;
-  PetscInt      numRows = A->rmap.n,numCols = A->cmap.n;
-  SCformat      *Lstore;
-  PetscInt      numNullCols,size;
-  SuperLUStat_t stat;
-#if defined(PETSC_USE_COMPLEX)
-  doublecomplex *nullVals,*workVals;
-#else
-  PetscScalar   *nullVals,*workVals;
-#endif
-  PetscInt           row,newRow,col,newCol,block,b;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Unfactored matrix");
-  numNullCols = numCols - numRows;
-  if (numNullCols < 0) SETERRQ(PETSC_ERR_ARG_WRONG,"Function only applies to underdetermined problems");
-  /* Create the null matrix using MATSEQDENSE explicitly */
-  ierr = MatCreate(A->comm,nullMat);CHKERRQ(ierr);
-  ierr = MatSetSizes(*nullMat,numRows,numNullCols,numRows,numNullCols);CHKERRQ(ierr);
-  ierr = MatSetType(*nullMat,MATSEQDENSE);CHKERRQ(ierr);
-  ierr = MatSeqDenseSetPreallocation(*nullMat,PETSC_NULL);CHKERRQ(ierr);
-  if (!numNullCols) {
-    ierr = MatAssemblyBegin(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-#if defined(PETSC_USE_COMPLEX)
-  nullVals = (doublecomplex*)((Mat_SeqDense*)(*nullMat)->data)->v;
-#else
-  nullVals = ((Mat_SeqDense*)(*nullMat)->data)->v;
-#endif
-  /* Copy in the columns */
-  Lstore = (SCformat*)lu->L.Store;
-  for(block = 0; block <= Lstore->nsuper; block++) {
-    newRow = Lstore->sup_to_col[block];
-    size   = Lstore->sup_to_col[block+1] - Lstore->sup_to_col[block];
-    for(col = Lstore->rowind_colptr[newRow]; col < Lstore->rowind_colptr[newRow+1]; col++) {
-      newCol = Lstore->rowind[col];
-      if (newCol >= numRows) {
-        for(b = 0; b < size; b++)
-#if defined(PETSC_USE_COMPLEX)
-          nullVals[(newCol-numRows)*numRows+newRow+b] = ((doublecomplex*)Lstore->nzval)[Lstore->nzval_colptr[newRow+b]+col];
-#else
-          nullVals[(newCol-numRows)*numRows+newRow+b] = ((double*)Lstore->nzval)[Lstore->nzval_colptr[newRow+b]+col];
-#endif
-      }
-    }
-  }
-  /* Permute rhs to form P^T_c B */
-  ierr = PetscMalloc(numRows*sizeof(PetscReal),&workVals);CHKERRQ(ierr);
-  for(b = 0; b < numNullCols; b++) {
-    for(row = 0; row < numRows; row++) workVals[lu->perm_c[row]] = nullVals[b*numRows+row];
-    for(row = 0; row < numRows; row++) nullVals[b*numRows+row]   = workVals[row];
-  }
-  /* Backward solve the upper triangle A x = b */
-  for(b = 0; b < numNullCols; b++) {
-#if defined(PETSC_USE_COMPLEX)
-    sp_ztrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&stat,&ierr);
-#else
-    sp_dtrsv("L","T","U",&lu->L,&lu->U,&nullVals[b*numRows],&stat,&ierr);
-#endif
-    if (ierr < 0)
-      SETERRQ1(PETSC_ERR_ARG_WRONG,"The argument %D was invalid",-ierr);
-  }
-  ierr = PetscFree(workVals);CHKERRQ(ierr);
-
-  ierr = MatAssemblyBegin(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(*nullMat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSolve_SuperLU_Private"
@@ -286,88 +416,6 @@ PetscErrorCode MatSolveTranspose_SuperLU(Mat A,Vec b,Vec x)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "MatLUFactorNumeric_SuperLU"
-PetscErrorCode MatLUFactorNumeric_SuperLU(Mat A,MatFactorInfo *info,Mat *F)
-{
-  Mat_SeqAIJ     *aa = (Mat_SeqAIJ*)(A)->data;
-  Mat_SuperLU    *lu = (Mat_SuperLU*)(*F)->spptr;
-  PetscErrorCode ierr;
-  PetscInt       sinfo;
-  SuperLUStat_t  stat;
-  PetscReal      ferr, berr; 
-  NCformat       *Ustore;
-  SCformat       *Lstore;
-  
-  PetscFunctionBegin;
-  if (lu->flg == SAME_NONZERO_PATTERN){ /* successing numerical factorization */
-    lu->options.Fact = SamePattern;
-    /* Ref: ~SuperLU_3.0/EXAMPLE/dlinsolx2.c */
-    Destroy_SuperMatrix_Store(&lu->A); 
-    if ( lu->lwork >= 0 ) { 
-      Destroy_SuperNode_Matrix(&lu->L);
-      Destroy_CompCol_Matrix(&lu->U);
-      lu->options.Fact = SamePattern;
-    }
-  }
-
-  /* Create the SuperMatrix for lu->A=A^T:
-       Since SuperLU likes column-oriented matrices,we pass it the transpose,
-       and then solve A^T X = B in MatSolve(). */
-#if defined(PETSC_USE_COMPLEX)
-  zCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,(doublecomplex*)aa->a,aa->j,aa->i,
-                           SLU_NC,SLU_Z,SLU_GE);
-#else
-  dCreate_CompCol_Matrix(&lu->A,A->cmap.n,A->rmap.n,aa->nz,aa->a,aa->j,aa->i,
-                           SLU_NC,SLU_D,SLU_GE);
-#endif
-  
-  /* Initialize the statistics variables. */
-  StatInit(&stat);
-
-  /* Numerical factorization */
-  lu->B.ncol = 0;  /* Indicate not to solve the system */
-#if defined(PETSC_USE_COMPLEX)
-   zgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
-           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-           &lu->mem_usage, &stat, &sinfo);
-#else
-  dgssvx(&lu->options, &lu->A, lu->perm_c, lu->perm_r, lu->etree, lu->equed, lu->R, lu->C,
-           &lu->L, &lu->U, lu->work, lu->lwork, &lu->B, &lu->X, &lu->rpg, &lu->rcond, &ferr, &berr,
-           &lu->mem_usage, &stat, &sinfo);
-#endif
-  if ( !sinfo || sinfo == lu->A.ncol+1 ) {
-    if ( lu->options.PivotGrowth ) 
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. pivot growth = %e\n", lu->rpg);
-    if ( lu->options.ConditionNumber )
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Recip. condition number = %e\n", lu->rcond);
-  } else if ( sinfo > 0 ){
-    if ( lu->lwork == -1 ) {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  ** Estimated memory: %D bytes\n", sinfo - lu->A.ncol);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF,"  Warning: gssvx() returns info %D\n",sinfo);
-    }
-  } else { /* sinfo < 0 */
-    SETERRQ2(PETSC_ERR_LIB, "info = %D, the %D-th argument in gssvx() had an illegal value", sinfo,-sinfo); 
-  }
-
-  if ( lu->options.PrintStat ) {
-    ierr = PetscPrintf(PETSC_COMM_SELF,"MatLUFactorNumeric_SuperLU():\n");
-    StatPrint(&stat);
-    Lstore = (SCformat *) lu->L.Store;
-    Ustore = (NCformat *) lu->U.Store;
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor L = %D\n", Lstore->nnz);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in factor U = %D\n", Ustore->nnz);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  No of nonzeros in L+U = %D\n", Lstore->nnz + Ustore->nnz - lu->A.ncol);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  L\\U MB %.3f\ttotal MB needed %.3f\texpansions %D\n",
-	       lu->mem_usage.for_lu/1e6, lu->mem_usage.total_needed/1e6,
-	       lu->mem_usage.expansions);
-  }
-  StatFree(&stat);
-
-  lu->flg = SAME_NONZERO_PATTERN;
-  PetscFunctionReturn(0);
-}
 
 /*
    Note the r permutation is ignored
@@ -478,35 +526,6 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   PetscFunctionReturn(0);
 }
 
-/* used by -ksp_view */
-#undef __FUNCT__  
-#define __FUNCT__ "MatFactorInfo_SuperLU"
-PetscErrorCode MatFactorInfo_SuperLU(Mat A,PetscViewer viewer)
-{
-  Mat_SuperLU       *lu= (Mat_SuperLU*)A->spptr;
-  PetscErrorCode    ierr;
-  superlu_options_t options;
-
-  PetscFunctionBegin;
-  /* check if matrix is superlu_dist type */
-  if (A->ops->solve != MatSolve_SuperLU) PetscFunctionReturn(0);
-
-  options = lu->options;
-  ierr = PetscViewerASCIIPrintf(viewer,"SuperLU run parameters:\n");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  Equil: %s\n",(options.Equil != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ColPerm: %D\n",options.ColPerm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  IterRefine: %D\n",options.IterRefine);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  SymmetricMode: %s\n",(options.SymmetricMode != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  DiagPivotThresh: %g\n",options.DiagPivotThresh);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  PivotGrowth: %s\n",(options.PivotGrowth != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ConditionNumber: %s\n",(options.ConditionNumber != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  RowPerm: %D\n",options.RowPerm);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  ReplaceTinyPivot: %s\n",(options.ReplaceTinyPivot != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  PrintStat: %s\n",(options.PrintStat != NO) ? "YES": "NO");CHKERRQ(ierr);
-  ierr = PetscViewerASCIIPrintf(viewer,"  lwork: %D\n",lu->lwork);CHKERRQ(ierr);
-
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_SuperLU"
@@ -520,79 +539,6 @@ PetscErrorCode MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SuperLU_SeqAIJ"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-  /* This routine is only called to convert an unfactored PETSc-SuperLU matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
-  PetscErrorCode ierr;
-  Mat            B=*newmat;
-  Mat_SuperLU    *lu=(Mat_SuperLU *)A->spptr;
-
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-  /* Reset the original function pointers */
-  B->ops->duplicate        = lu->MatDuplicate;
-  B->ops->view             = lu->MatView;
-  B->ops->assemblyend      = lu->MatAssemblyEnd;
-  B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
-  B->ops->destroy          = lu->MatDestroy;
-
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
-
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatConvert_SeqAIJ_SuperLU"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
-{
-  /* This routine is only called to convert to MATSUPERLU */
-  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
-  PetscErrorCode ierr;
-  Mat            B=*newmat;
-  Mat_SuperLU    *lu;
-
-  PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-
-  ierr = PetscNew(Mat_SuperLU,&lu);CHKERRQ(ierr);
-  lu->MatDuplicate         = A->ops->duplicate;
-  lu->MatView              = A->ops->view;
-  lu->MatAssemblyEnd       = A->ops->assemblyend;
-  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
-  lu->MatDestroy           = A->ops->destroy;
-  lu->CleanUpSuperLU       = PETSC_FALSE;
-
-  B->spptr                 = (void*)lu;
-  B->ops->duplicate        = MatDuplicate_SuperLU;
-  B->ops->view             = MatView_SuperLU;
-  B->ops->assemblyend      = MatAssemblyEnd_SuperLU;
-  B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU;
-  B->ops->choleskyfactorsymbolic = 0;
-  B->ops->destroy          = MatDestroy_SuperLU;
-
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_C",
-                                           "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
-                                           "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
-  *newmat = B;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 /*MC
   MATSUPERLU - MATSUPERLU = "superlu" - A matrix type providing direct solvers (LU) for sequential matrices 
@@ -622,6 +568,10 @@ EXTERN_C_END
 .seealso: PCLU
 M*/
 
+/*
+    Constructor for the new derived matrix class. It simply creates the base 
+   matrix class and then adds the additional information/methods needed by SuperLU.
+*/
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatCreate_SuperLU"
@@ -630,8 +580,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and SUPERLU types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSUPERLU);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_SuperLU(A,MATSUPERLU,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

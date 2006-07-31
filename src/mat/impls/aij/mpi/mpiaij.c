@@ -1516,21 +1516,6 @@ PetscErrorCode MatDiagonalScale_MPIAIJ(Mat mat,Vec ll,Vec rr)
   PetscFunctionReturn(0);
 }
 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_MPIAIJ"
-PetscErrorCode MatPrintHelp_MPIAIJ(Mat A)
-{
-  Mat_MPIAIJ     *a   = (Mat_MPIAIJ*)A->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (!a->rank) {
-    ierr = MatPrintHelp_SeqAIJ(a->A);CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetBlockSize_MPIAIJ"
 PetscErrorCode MatSetBlockSize_MPIAIJ(Mat A,PetscInt bs)
@@ -1744,7 +1729,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatIncreaseOverlap_MPIAIJ,
        MatGetValues_MPIAIJ,
        MatCopy_MPIAIJ,
-/*45*/ MatPrintHelp_MPIAIJ,
+/*45*/ 0,
        MatScale_MPIAIJ,
        0,
        0,
@@ -3929,6 +3914,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetCommunicationStructs(Mat A, Vec *lvec, P
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat,MatType,MatReuse,Mat*);
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICSRPERM(Mat,MatType,MatReuse,Mat*);
+EXTERN_C_END
+
 /*MC
    MATMPIAIJ - MATMPIAIJ = "mpiaij" - A matrix type to be used for parallel sparse matrices.
 
@@ -4002,6 +3992,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
 				     "MatDiagonalScaleLocal_MPIAIJ",
 				     MatDiagonalScaleLocal_MPIAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpicsrperm_C",
+                                     "MatConvert_MPIAIJ_MPICSRPERM",
+                                      MatConvert_MPIAIJ_MPICSRPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpiaij_mpicrl_C",
+                                     "MatConvert_MPIAIJ_MPICRL",
+                                      MatConvert_MPIAIJ_MPICRL);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

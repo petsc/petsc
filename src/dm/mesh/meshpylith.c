@@ -2,10 +2,14 @@
 
 namespace ALE {
   namespace PyLith {
+    using ALE::Mesh;
+    //
+    // Builder methods
+    //
     inline void Builder::ignoreComments(char *buf, PetscInt bufSize, FILE *f) {
       while((fgets(buf, bufSize, f) != NULL) && ((buf[0] == '#') || (buf[0] == '\0'))) {}
     };
-    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
+    void Builder::readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxCells = 1024, cellCount = 0;
@@ -77,7 +81,7 @@ namespace ALE {
       *vertices   = verts;
       *materials  = mats;
     };
-    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
+    void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxVerts = 1024, vertexCount = 0;
@@ -139,7 +143,7 @@ namespace ALE {
         *coordinates = coords;
       }
     };
-    void Builder::readSplit(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]) {
+    void Builder::readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxSplit = 1024, splitCount = 0;
@@ -208,18 +212,6 @@ namespace ALE {
       *splitInd    = splitId;
       *splitValues = splitVal;
     };
-    void Builder::createMaterialField(int numElements, int materials[], Obj<Mesh> mesh, Obj<Mesh::field_type> matField) {
-      Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
-      Mesh::field_type::patch_type patch;
-
-      matField->setPatch(elements, patch);
-      matField->setFiberDimensionByHeight(patch, 0, 1);
-      matField->orderPatches();
-      for(int e = 0; e < numElements; e++) {
-        double mat = (double) materials[e];
-        matField->update(patch, Mesh::point_type(0, e), &mat);
-      }
-    };
     void Builder::createSplitField(int numSplit, int splitInd[], double splitVals[], Obj<Mesh> mesh, Obj<Mesh::field_type> splitField) {
       Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
       std::map<Mesh::point_type, std::set<int> > elem2vertIndex;
@@ -249,33 +241,7 @@ namespace ALE {
         }
       }
     };
-    Obj<Mesh> Builder::createNew(MPI_Comm comm, const std::string& baseFilename, bool interpolate = true, int debug = 0) {
-      int       dim = 3;
-      bool      useZeroBase = false;
-      Obj<Mesh> mesh = Mesh(comm, dim);
-      int      *vertices = NULL;
-      int      *materials = NULL;
-      double   *coordinates = NULL;
-      int      *splitInd = NULL;
-      double   *splitValues = NULL;
-      int       numElements = 0, numVertices = 0, numCorners = dim+1, numSplit = 0, hasSplit;
-      PetscErrorCode ierr;
-
-      mesh->debug = debug;
-      readConnectivity(comm, baseFilename+".connect", numCorners, useZeroBase, numElements, &vertices, &materials);
-      readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
-      readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
-      mesh->populate(numElements, vertices, numVertices, coordinates, interpolate, numCorners);
-      createMaterialField(numElements, materials, mesh, mesh->getField("material"));
-      ierr = MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
-      if (hasSplit) {
-        createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
-      }
-      ierr = PetscFree2(vertices, materials);
-      ierr = PetscFree(coordinates);
-      return mesh;
-    };
-    void Builder::buildCoordinates(Obj<section_type> coords, const int embedDim, const double coordinates[]) {
+    void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
       const section_type::patch_type patch = 0;
       const Obj<topology_type::label_sequence>& vertices = coords->getAtlas()->getTopology()->depthStratum(patch, 0);
       const int numCells = coords->getAtlas()->getTopology()->heightStratum(patch, 0)->size();
@@ -287,7 +253,7 @@ namespace ALE {
         coords->update(patch, *v_iter, &(coordinates[((*v_iter).index - numCells)*embedDim]));
       }
     };
-    void Builder::buildMaterials(Obj<Mesh::section_type> matField, int materials[]) {
+    void Builder::buildMaterials(const Obj<Mesh::section_type>& matField, const int materials[]) {
       const section_type::patch_type patch = 0;
       const Obj<topology_type::label_sequence>& elements = matField->getAtlas()->getTopology()->heightStratum(patch, 0);
 
@@ -299,10 +265,10 @@ namespace ALE {
         matField->update(patch, *e_iter, &mat);
       }
     };
-    Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, std::string basename, bool useZeroBase = false, bool interpolate = false, const int debug = 0) {
-      Obj<Mesh>         mesh   = Mesh(comm, dim, debug);
-      Obj<sieve_type>   sieve  = new sieve_type(comm, debug);
-      Obj<section_type> coords = mesh->getSection("coordinates");
+    Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
+      Obj<Mesh>          mesh     = Mesh(comm, dim, debug);
+      Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
+      Obj<topology_type> topology = new topology_type(comm, debug);
       int    *cells, *materials;
       double *coordinates;
       int    *splitInd;
@@ -312,9 +278,12 @@ namespace ALE {
       ALE::PyLith::Builder::readConnectivity(comm, basename+".connect", numCorners, useZeroBase, numCells, &cells, &materials);
       ALE::PyLith::Builder::readCoordinates(comm, basename+".coord", dim, numVertices, &coordinates);
       ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
-      ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate);
+      ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
       sieve->stratify();
-      buildCoordinates(coords, dim, coordinates);
+      topology->setPatch(0, sieve);
+      topology->stratify();
+      mesh->setTopologyNew(topology);
+      buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       buildMaterials(mesh->getSection("material"), materials);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
       if (hasSplit) {
@@ -322,22 +291,9 @@ namespace ALE {
       }
       return mesh;
     };
-
-    static int vertexCount = 0;
-    vertexOutput::vertexOutput(PetscViewer viewer, Obj<ALE::Mesh::field_type> coordinates, int dim) : coordinates(coordinates), viewer(viewer), dim(dim) {vertexCount = 0;};
-    bool vertexOutput::operator()(const ALE::Mesh::point_type& p) const {
-      const double *array = coordinates->restrict(ALE::Mesh::field_type::patch_type(), p);
-
-      PetscViewerASCIIPrintf(this->viewer, "%7D ", 1 + vertexCount++);
-      for(int d = 0; d < dim; d++) {
-        if (d > 0) {
-          PetscViewerASCIIPrintf(this->viewer, " ");
-        }
-        PetscViewerASCIIPrintf(this->viewer, "% 16.8E", array[d]);
-      }
-      PetscViewerASCIIPrintf(this->viewer, "\n");
-      return true;
-    };
+    //
+    // Viewer methods
+    //
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteVertices"
     PetscErrorCode Viewer::writeVertices(Obj<ALE::Mesh> mesh, PetscViewer viewer) {
@@ -532,10 +488,12 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteVerticesLocal"
     PetscErrorCode Viewer::writeVerticesLocal(Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      Obj<ALE::Mesh::field_type> coordinates = mesh->getCoordinates();
-      Obj<ALE::Mesh::bundle_type> vertexBundle = new ALE::Mesh::bundle_type(mesh->comm());
-      ALE::Mesh::bundle_type::patch_type patch;
-      int            dim = mesh->getDimension();
+      const Mesh::section_type::patch_type            patch       = 0;
+      Obj<Mesh::section_type>                         coordinates = mesh->getSection("coordinates");
+      const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
+      int            embedDim    = coordinates->getAtlas()->getFiberDimension(patch, *vertices->begin());
+      int            numElements = topology->heightStratum(patch, 0)->size();
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -546,26 +504,34 @@ namespace ALE {
       ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
 
-      vertexBundle->setTopology(mesh->getTopology());
-      vertexBundle->setPatch(mesh->getTopology()->leaves(), patch);
-      vertexBundle->setFiberDimensionByDepth(patch, 0, 1);
-      vertexBundle->orderPatches(vertexOutput(viewer, coordinates, dim));
+      for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        const Mesh::section_type::value_type *array = coordinates->restrict(patch, *v_iter);
+
+        PetscViewerASCIIPrintf(viewer, "%7D ", (*v_iter).index+1-numElements);
+        for(int d = 0; d < embedDim; d++) {
+          if (d > 0) {
+            PetscViewerASCIIPrintf(viewer, " ");
+          }
+          PetscViewerASCIIPrintf(viewer, "% 16.8E", array[d]);
+        }
+        PetscViewerASCIIPrintf(viewer, "\n");
+      }
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteElementsLocal"
-    PetscErrorCode Viewer::writeElementsLocal(Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
-      Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-      Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
-      Obj<ALE::Mesh::field_type> material;
-      ALE::Mesh::bundle_type::patch_type patch;
-      std::string    orderName("element");
-      bool           hasMaterial = mesh->hasField("material");
-      int            dim  = mesh->getDimension();
-      int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
+    PetscErrorCode Viewer::writeElementsLocal(Obj<Mesh> mesh, PetscViewer viewer) {
+      const Mesh::topology_type::patch_type           patch    = 0;
+      const Obj<Mesh::topology_type>&                 topology = mesh->getTopologyNew();
+      const Obj<Mesh::sieve_type>&                    sieve    = topology->getPatch(patch);
+      const Obj<Mesh::topology_type::label_sequence>& elements = topology->heightStratum(patch, 0);
+      Obj<Mesh::field_type> material;
+      int            dim          = mesh->getDimension();
+      int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
+      int            numElements  = elements->size();
+      bool           hasMaterial  = false;
+      int            elementType  = -1;
       int            elementCount = 1;
-      int            elementType = -1;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -587,19 +553,20 @@ namespace ALE {
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-        Obj<ALE::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
+      for(Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        Obj<Mesh::sieve_type::traits::coneSequence> cone = sieve->cone(*e_iter);
 
         ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", elementCount++, elementType);CHKERRQ(ierr);
         if (hasMaterial) {
           // No infinite elements
-          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(patch, *e_itor)[0], 0);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(Mesh::field_type::patch_type(), *e_iter)[0], 0);CHKERRQ(ierr);
         } else {
           // No infinite elements
           ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", 1, 0);CHKERRQ(ierr);
         }
-        for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
-          ierr = PetscViewerASCIIPrintf(viewer, " %6d", vertexBundle->getIndex(patch, *c_itor).prefix+1);CHKERRQ(ierr);
+        for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          //FIX: Need a global ordering here
+          ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*c_iter).index+1-numElements);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }

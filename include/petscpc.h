@@ -155,6 +155,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC,PetscInt,const I
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC,Mat,Mat,MatStructure);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC,Mat*,Mat*,MatStructure*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC,PetscTruth*,PetscTruth*);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC,PetscViewer);
 

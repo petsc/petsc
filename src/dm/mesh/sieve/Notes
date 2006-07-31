@@ -51,6 +51,21 @@ I. Need to create a list of 'unit tests' -- cases that MUST be handled by any Si
    - Multicomponent fields.
    - Faults a la Pylith via a suitable chart mechanism.
    - Global numbering of dofs
+   Overlap & Fusion:
+   -----------------
+   - Identify shared points between two patches
+   - Identify dependent points between two patches
+   - Construct outgoing messages for receiving points
+     - sizes
+     - buffers?
+     - fillup
+   - Process incoming messages for sent points
+     - sizes
+     - buffers?
+     - update
+   - Distribute a sifter
+   - Distribute a sieve
+   - Distribute a section
 
 II. Coding guidelines
 

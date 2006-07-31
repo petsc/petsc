@@ -185,8 +185,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_LUSOL_SeqAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_LUSOL_SeqAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert an unfactored PETSc-LUSOL matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_LUSOL      *lusol=(Mat_LUSOL *)A->spptr;
@@ -215,7 +213,7 @@ EXTERN_C_END
 PetscErrorCode MatDestroy_LUSOL(Mat A) 
 {
   PetscErrorCode ierr;
-  Mat_LUSOL *lusol=(Mat_LUSOL *)A->spptr;
+  Mat_LUSOL      *lusol=(Mat_LUSOL *)A->spptr;
 
   PetscFunctionBegin;
   if (lusol->CleanUpLUSOL) {
@@ -560,8 +558,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_LUSOL(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and LUSOL types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATLUSOL);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_LUSOL(A,MATLUSOL,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -1,6 +1,6 @@
 original matrix:
 Matrix Object:
-  type=aij, rows=25, cols=25
+  type=seqaij, rows=25, cols=25
   total: nonzeros=113, allocated nonzeros=125
     not using I-node routines
 row 0: (0, 4)  (1, -1)  (5, -1) 
@@ -30,7 +30,7 @@ row 23: (18, -1)  (22, -1)  (23, 4)  (24, -1)
 row 24: (19, -1)  (23, -1)  (24, 4) 
 factored matrix:
 Matrix Object:
-  type=aij, rows=25, cols=25
+  type=seqaij, rows=25, cols=25
   total: nonzeros=113, allocated nonzeros=113
     not using I-node routines
 row 0: (0, 0.25)  (1, -1)  (2, -1) 

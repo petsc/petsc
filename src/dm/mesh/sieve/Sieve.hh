@@ -335,7 +335,7 @@ namespace ALE {
         typedef typename cap_container_type::traits::template TwoValueSequence<typename cap_container_type::traits::heightMarkerTag,int> heightSequence;
         typedef typename cap_container_type::traits::template ValueSequence<typename cap_container_type::traits::markerTag,marker_type> markerSequence;
       } traits;
-      typedef ALE::set<point_type>    pointSet;
+      typedef std::set<point_type>    pointSet;
       typedef ALE::array<point_type>  pointArray;
       typedef std::set<marker_type>   markerSet;
       typedef pointSet                coneSet;

@@ -127,11 +127,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_MPISBAIJ_MPISBAIJSpooles"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert a MATMPISBAIJ matrix */
-  /* to a MATMPISBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat         B=*newmat;
-  Mat_Spooles *lu;
+  Mat            B=*newmat;
+  Mat_Spooles    *lu;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -219,9 +217,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJSpooles(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of MPISBAIJ */
-  /*   and MPISBAIJSpooles types */
-  ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPISBAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPISBAIJ);CHKERRQ(ierr);
   ierr   = MatConvert_MPISBAIJ_MPISBAIJSpooles(A,MATMPISBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

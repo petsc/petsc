@@ -435,10 +435,19 @@ MPICH &amp; Intel MLK are already installed in the default locations]<br>
       <p>If fortran usage is not required - and you don't have Intel
 MLK - just use:<br>
       </p>
-      <p><font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py --with-cc='win32fe cl' --with-fc=0
 --download-c-blas-lapack=1<br>
-      </font></p>
+      </font>
+      <p>If fortran usage is required [with Digital/Compaq f90
+compiler] - and you don't have Intel
+MLK - just use the following [assuming the path to compaq fortran
+libraries is correct]:<br>
+      </p>
+      <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+./config/configure.py --with-cc='win32fe cl' --with-fc='win32fe f90'
+--download-f-blas-lapack=1 LIBS="-L/cygdrive/c/Program Files/Microsoft
+Visual Studio/DF98/LIB"</font><br>
       <p><font color="#551a8b"><b>Configure</b></font><font
  color="#551a8b"><b>:</b> </font>--download-package
 option does not

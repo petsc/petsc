@@ -2,6 +2,7 @@ static char help[] = "Mesh Tests.\n\n";
 
 #include <petsc.h>
 #include "meshTest.hh"
+#include "../../meshpcice.h"
 
 using ALE::Obj;
 typedef ALE::Test::section_type   section_type;
@@ -17,10 +18,10 @@ typedef struct {
   PetscTruth interpolate;        // Construct missing elements of the mesh
 } Options;
 
-PetscErrorCode PrintMatrix(MPI_Comm comm, int rank, const int rows, const int cols, const section_type::value_type matrix[])
+PetscErrorCode PrintMatrix(MPI_Comm comm, int rank, const std::string& name, const int rows, const int cols, const section_type::value_type matrix[])
 {
   PetscFunctionBegin;
-  PetscSynchronizedPrintf(comm, "%s", ALE::Test::MeshProcessor::printMatrix(rows, cols, matrix, rank).c_str());
+  PetscSynchronizedPrintf(comm, "%s", ALE::Test::MeshProcessor::printMatrix(name, rows, cols, matrix, rank).c_str());
   PetscFunctionReturn(0);
 }
 
@@ -33,9 +34,9 @@ PetscErrorCode ElementGeometry(const Obj<section_type>& coordinates, int dim, co
   PetscFunctionBegin;
   if (debug) {PetscSynchronizedPrintf(coordinates->comm(), "%s", ALE::Test::MeshProcessor::printElement(e, dim, coordinates->restrict(0, e), coordinates->commRank()).c_str());}
   ALE::Test::MeshProcessor::computeElementGeometry(coordinates, dim, e, v0, J, invJ, detJ);
-  if (debug) {PrintMatrix(coordinates->comm(), coordinates->commRank(), dim, dim, J);}
+  if (debug) {PrintMatrix(coordinates->comm(), coordinates->commRank(), "J", dim, dim, J);}
   if (detJ < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
-  if (debug) {PrintMatrix(coordinates->comm(), coordinates->commRank(), dim, dim, invJ);}
+  if (debug) {PrintMatrix(coordinates->comm(), coordinates->commRank(), "invJ", dim, dim, invJ);}
   PetscFunctionReturn(0);
 }
 
@@ -97,9 +98,12 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<section_type> coordinates = ALE::Test::MeshBuilder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug);
+    Obj<ALE::Mesh> mesh = ALE::PCICE::Builder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug);
 
-    ierr = GeometryTest(coordinates, &options);CHKERRQ(ierr);
+    if (options.debug) {
+      mesh->getTopologyNew()->getPatch(0)->view("Mesh");
+    }
+    ierr = GeometryTest(mesh->getSection("coordinates"), &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

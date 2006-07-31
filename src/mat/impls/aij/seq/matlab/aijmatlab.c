@@ -333,8 +333,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqAIJ_Matlab"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Matlab(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert to MATMATLAB */
-  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_Matlab     *lu;
@@ -413,7 +411,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMATLAB);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_Matlab(A,MATMATLAB,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

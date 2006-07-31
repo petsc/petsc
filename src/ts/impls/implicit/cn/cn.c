@@ -50,9 +50,6 @@ PetscErrorCode TSComputeRHSFunctionEuler(TS ts,PetscReal t,Vec x,Vec y)
   /* scale: y = y -2*x */
   ierr = VecScale(y,neg_mdt);CHKERRQ(ierr);
 
-  /* apply user-provided boundary conditions (only needed if these are time dependent) */
-  ierr = TSComputeRHSBoundaryConditions(ts,t,y);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -90,8 +87,6 @@ static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,PetscInt *steps,Pet
 
     /* phase 2 - implicit step */
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
-    /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
@@ -143,9 +138,6 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 
     /* phase 2 - implicit step */
     ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
-
-    /* apply user-provided boundary conditions (only needed if they are time dependent) */
-    ierr = TSComputeRHSBoundaryConditions(ts,ts->ptime,rhs);CHKERRQ(ierr);
 
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);

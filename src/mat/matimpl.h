@@ -70,7 +70,7 @@ struct _MatOps {
   PetscErrorCode (*getvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
   PetscErrorCode (*copy)(Mat,Mat,MatStructure);
   /*45*/
-  PetscErrorCode (*printhelp)(Mat);
+  PetscErrorCode (*dummy)(void);
   PetscErrorCode (*scale)(Mat,PetscScalar);
   PetscErrorCode (*shift)(Mat,PetscScalar);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
@@ -91,7 +91,7 @@ struct _MatOps {
   PetscErrorCode (*getsubmatrix)(Mat,IS,IS,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*destroy)(Mat);
   PetscErrorCode (*view)(Mat,PetscViewer);
-  PetscErrorCode (*dummy)();
+  PetscErrorCode (*convertfrom)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*usescaledform)(Mat,PetscTruth);
   /*65*/
   PetscErrorCode (*scalesystem)(Mat,Vec,Vec);

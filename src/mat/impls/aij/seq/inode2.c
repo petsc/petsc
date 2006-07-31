@@ -55,9 +55,7 @@ PetscErrorCode MatDestroy_Inode(Mat A)
   Mat_SeqAIJ      *a=(Mat_SeqAIJ*)A->data;
 
   PetscFunctionBegin;
-  if (a->inode.size) {
-    ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
-  }
+  ierr = PetscFree(a->inode.size);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeAdjustForInodes_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatInodeGetInodeSizes_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -72,7 +70,7 @@ PetscErrorCode MatDestroy_Inode(Mat A)
 #define __FUNCT__ "MatCreate_Inode"
 PetscErrorCode MatCreate_Inode(Mat B)
 {
-  Mat_SeqAIJ      *b=(Mat_SeqAIJ*)B->data;
+  Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -121,24 +119,6 @@ PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
       break;
     default:
       break;
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "MatPrintHelp_Inode"
-PetscErrorCode MatPrintHelp_Inode(Mat A)
-{
-  static PetscTruth called=PETSC_FALSE;
-  MPI_Comm          comm=A->comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  if (!called) {
-    called = PETSC_TRUE;
-    ierr = (*PetscHelpPrintf)(comm," Inode related options (the defaults):\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_inode_limit <limit>: Set inode limit (max limit=5)\n");CHKERRQ(ierr);
-    ierr = (*PetscHelpPrintf)(comm,"  -mat_no_inode: Do not use inodes\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
