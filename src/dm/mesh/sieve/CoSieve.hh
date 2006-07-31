@@ -247,15 +247,18 @@ namespace ALE {
       typedef typename std::map<patch_type, Obj<sieve_type> >       sheaf_type;
       typedef typename ALE::Sifter<int, point_type, int>            patch_label_type;
       typedef typename std::map<patch_type, Obj<patch_label_type> > label_type;
+      typedef typename std::map<patch_type, int>                    max_label_type;
       typedef typename std::map<const std::string, label_type>      labels_type;
       typedef typename patch_label_type::supportSequence            label_sequence;
     protected:
-      sheaf_type  _sheaf;
-      labels_type _labels;
-      int         _maxHeight;
-      int         _maxDepth;
+      sheaf_type     _sheaf;
+      labels_type    _labels;
+      int            _maxHeight;
+      max_label_type _maxHeights;
+      int            _maxDepth;
+      max_label_type _maxDepths;
     public:
-      Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1) {};
+      Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {};
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         if (this->_sheaf.find(patch) == this->_sheaf.end()) {
@@ -301,8 +304,9 @@ namespace ALE {
       };
     public:
       template<class InputPoints>
-      void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points) {
+      void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+        maxHeight = -1;
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max height of the points in the support of p, and add 1
@@ -311,13 +315,13 @@ namespace ALE {
 
           if(h1 != h0) {
             this->setValue(height, *p_iter, h1);
-            if (h1 > this->_maxHeight) this->_maxHeight = h1;
+            if (h1 > maxHeight) maxHeight = h1;
             modifiedPoints->insert(*p_iter);
           }
         }
         // FIX: We would like to avoid the copy here with cone()
         if(modifiedPoints->size() > 0) {
-          this->computeHeight(height, sieve, sieve->cone(modifiedPoints));
+          this->computeHeight(height, sieve, sieve->cone(modifiedPoints), maxHeight);
         }
       };
       void computeHeights() {
@@ -327,17 +331,23 @@ namespace ALE {
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
 
-          this->computeHeight(label, s_iter->second, s_iter->second->leaves());
+          this->computeHeight(label, s_iter->second, s_iter->second->leaves(), this->_maxHeights[s_iter->first]);
           this->_labels[name][s_iter->first] = label;
+          if (this->_maxHeights[s_iter->first] > this->_maxHeight) this->_maxHeight = this->_maxHeights[s_iter->first];
         }
       };
       int height() {return this->_maxHeight;};
+      int height(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_maxHeights[patch];
+      };
       const Obj<label_sequence>& heightStratum(const patch_type& patch, int height) {
         return this->getLabelStratum(patch, "height", height);
       };
       template<class InputPoints>
-      void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points) {
+      void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxDepth) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+        maxDepth = -1;
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max depth of the points in the cone of p, and add 1
@@ -346,13 +356,13 @@ namespace ALE {
 
           if(d1 != d0) {
             this->setValue(depth, *p_iter, d1);
-            if (d1 > this->_maxDepth) this->_maxDepth = d1;
+            if (d1 > maxDepth) maxDepth = d1;
             modifiedPoints->insert(*p_iter);
           }
         }
         // FIX: We would like to avoid the copy here with support()
         if(modifiedPoints->size() > 0) {
-          this->computeDepth(depth, sieve, sieve->support(modifiedPoints));
+          this->computeDepth(depth, sieve, sieve->support(modifiedPoints), maxDepth);
         }
       };
       void computeDepths() {
@@ -362,11 +372,16 @@ namespace ALE {
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
 
-          this->computeDepth(label, s_iter->second, s_iter->second->roots());
+          this->computeDepth(label, s_iter->second, s_iter->second->roots(), this->_maxDepths[s_iter->first]);
           this->_labels[name][s_iter->first] = label;
+          if (this->_maxDepths[s_iter->first] > this->_maxDepth) this->_maxDepth = this->_maxDepths[s_iter->first];
         }
       };
       int depth() {return this->_maxDepth;};
+      int depth(const patch_type& patch) {
+        this->checkPatch(patch);
+        return this->_maxDepths[patch];
+      };
       const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
         return this->getLabelStratum(patch, "depth", depth);
       };
@@ -499,7 +514,7 @@ namespace ALE {
 
         if (level == 0) {
           this->_array->push_back(this->getIndex(patch, p));
-        } else if ((level == 1) || (this->_topology->getPatch(patch)->height() == 1)) {
+        } else if ((level == 1) || (this->_topology->height(patch) == 1)) {
           const Obj<typename sieve_type::coneSequence>& cone = this->_topology->getPatch(patch)->cone(p);
 
           this->_array->push_back(this->getIndex(patch, p));
@@ -589,7 +604,7 @@ namespace ALE {
           if (values) delete [] values;
           values = new value_type[vSize];
         };
-        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+        if (this->_atlas->getTopology()->height(patch) == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           const index_type&                             pInd = this->_atlas->getIndex(patch, p);
@@ -631,7 +646,7 @@ namespace ALE {
         this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
-        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+        if (this->_atlas->getTopology()->height(patch) == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           const index_type&                             pInd = this->_atlas->getIndex(patch, p);
@@ -667,7 +682,7 @@ namespace ALE {
         this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
-        if (this->_atlas->getTopology()->getPatch(patch)->height() == 1) {
+        if (this->_atlas->getTopology()->height(patch) == 1) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
           const index_type&                             pInd = this->_atlas->getIndex(patch, p);
@@ -707,6 +722,48 @@ namespace ALE {
         // Using the index structure explicitly
         for(int i = 0; i < ind.second; ++i) {
           a[i] = v[i];
+        }
+      };
+      template<typename Input>
+      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
+        this->checkPatch(patch);
+        value_type *a = this->_arrays[patch];
+
+        if (this->_atlas->getTopology()->height(patch) == 1) {
+          // Only avoids the copy
+          const Obj<typename sieve_type::coneSequence>& cone = this->_atlas->getTopology()->getPatch(patch)->cone(p);
+          const index_type&                             pInd = this->_atlas->getIndex(patch, p);
+          typename Input::iterator v_iter = v->begin();
+          typename Input::iterator v_end  = v->end();
+
+          for(int i = pInd.prefix; i < pInd.prefix + pInd.index; ++i) {
+            a[i] = *v_iter;
+            ++v_iter;
+          }
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            const index_type& ind    = this->_atlas->getIndex(patch, *p_iter);
+            const int         start  = ind.prefix;
+            const int         length = ind.index;
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] = *v_iter;
+              ++v_iter;
+            }
+          }
+        } else {
+          const Obj<typename atlas_type::IndexArray>& ind = this->_atlas->getIndices(patch, p);
+          typename Input::iterator v_iter = v->begin();
+          typename Input::iterator v_end  = v->end();
+
+          for(typename atlas_type::IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
+            const int start  = i_iter->prefix;
+            const int length = i_iter->index;
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] = *v_iter;
+              ++v_iter;
+            }
+          }
         }
       };
     public:
@@ -751,17 +808,23 @@ namespace ALE {
     public:
       typedef Point_                  point_type;
       typedef std::vector<point_type> coneSequence;
+      typedef std::vector<point_type> coneSet;
+      typedef std::vector<point_type> coneArray;
       typedef std::vector<point_type> supportSequence;
+      typedef std::vector<point_type> supportSet;
+      typedef std::vector<point_type> supportArray;
       typedef std::set<point_type>    points_type;
       typedef points_type             baseSequence;
       typedef points_type             capSequence;
     protected:
       Obj<points_type>  _points;
       Obj<coneSequence> _empty;
+      Obj<coneSequence> _return;
     public:
       DiscreteSieve() {
         this->_points = new points_type();
         this->_empty  = new coneSequence();
+        this->_return = new coneSequence();
       };
       virtual ~DiscreteSieve() {};
     public:
@@ -772,9 +835,33 @@ namespace ALE {
       const Obj<coneSequence>& cone(const point_type& p) {return this->_empty;};
       template<typename Input>
       const Obj<coneSequence>& cone(const Input& p) {return this->_empty;};
+      const Obj<coneSet>& nCone(const point_type& p, const int level) {
+        if (level == 0) {
+          return this->closure(p);
+        } else {
+          return this->_empty;
+        }
+      };
+      const Obj<coneArray>& closure(const point_type& p) {
+        this->_return->clear();
+        this->_return->push_back(p);
+        return this->_return;
+      };
       const Obj<supportSequence>& support(const point_type& p) {return this->_empty;};
       template<typename Input>
       const Obj<supportSequence>& support(const Input& p) {return this->_empty;};
+      const Obj<supportSet>& nSupport(const point_type& p, const int level) {
+        if (level == 0) {
+          return this->star(p);
+        } else {
+          return this->_empty;
+        }
+      };
+      const Obj<supportArray>& star(const point_type& p) {
+        this->_return->clear();
+        this->_return->push_back(p);
+        return this->_return;
+      };
       const Obj<capSequence>& roots() {return this->_points;};
       const Obj<baseSequence>& leaves() {return this->_points;};
     };
@@ -786,21 +873,33 @@ namespace ALE {
       typedef typename Section<Atlas_, Value_>::patch_type    patch_type;
       typedef typename Section<Atlas_, Value_>::topology_type topology_type;
       typedef Overlap_                            overlap_type;
+      typedef Atlas_                              atlas_type;
+      typedef Value_                              value_type;
       typedef enum {SEND, RECEIVE}                request_type;
       typedef std::map<patch_type, MPI_Request>   requests_type;
     protected:
+      request_type  _type;
       int           _tag;
       MPI_Datatype  _datatype;
-      request_type  _type;
       requests_type _requests;
     public:
-      OverlapValues(MPI_Comm comm, const request_type type, const int debug = 0) : Section<Atlas_, Value_>(comm, debug) {
-        this->_type     = type;
-        this->_tag      = this->getNewTag();
-        this->_datatype = MPI_DOUBLE;
+      OverlapValues(MPI_Comm comm, const request_type type, const int debug = 0) : Section<Atlas_, Value_>(comm, debug), _type(type) {
+        this->_tag = this->getNewTag();
+        this->_datatype = this->getMPIDatatype();
+      };
+      OverlapValues(MPI_Comm comm, const request_type type, const int tag, const int debug) : Section<Atlas_, Value_>(comm, debug), _type(type), _tag(tag) {
+        this->_datatype = this->getMPIDatatype();
       };
       virtual ~OverlapValues() {};
     protected:
+      MPI_Datatype getMPIDatatype() {
+        if (sizeof(value_type) == 4) {
+          return MPI_INT;
+        } else if (sizeof(value_type) == 8) {
+          return MPI_DOUBLE;
+        }
+        throw ALE::Exception("Cannot determine MPI type for value type");
+      };
       int getNewTag() {
         static int tagKeyval = MPI_KEYVAL_INVALID;
         int *tagvalp = NULL, *maxval, flg;
@@ -817,6 +916,9 @@ namespace ALE {
         }
         return tagvalp[0]--;
       };
+    public: // Accessors
+      int getTag() const {return this->_tag;};
+      void setTag(const int tag) {this->_tag = tag;};
     public:
       template<typename Sizer>
       void construct(const Obj<overlap_type>& overlap, const Sizer& sizer) {
