@@ -26,17 +26,18 @@ PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh>);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
 PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh>, const char[], int depth, Vec *);
 PetscErrorCode CreateSpacingFunction(ALE::Obj<ALE::Mesh>);
+PetscErrorCode OneLevelCoarsening (ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh> coarserMesh, double i);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  Vec            partition, spacing;
+  Vec            partition, spacing, coarse;
   PetscViewer    viewer;
   char           baseFilename[2048];
   PetscInt       dim, debug;
-  PetscReal      refinementLimit;
+  PetscReal      refinementLimit, beta;
   PetscTruth     interpolate, readFile;
   PetscErrorCode ierr;
 
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
     refinementLimit = 0.0;
     ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-beta", "The coarsening constant beta", "ex2.c", 1.0, &beta, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", "ex2", baseFilename, 2048, &readFile);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -101,13 +103,16 @@ try {
     stage = ALE::LogStageRegister("Mesh Spacing");
     ALE::LogStagePush(stage);
     ierr = CreateSpacingFunction(mesh);CHKERRQ(ierr);
+    ierr = OneLevelCoarsening(mesh, beta);CHKERRQ(ierr);
     mesh->getField("spacing")->view("Mesh spacing");
+    mesh->getField("coarse")->view("Mesh coarse");
     ALE::LogStagePop(stage);
 
     stage = ALE::LogStageRegister("MeshOutput");
     //ALE::LogStagePush(stage);
     ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
     ierr = CreateFieldVector(mesh, "spacing", 0, &spacing);CHKERRQ(ierr);
+    ierr = CreateFieldVector(mesh, "coarse", 0, &coarse);CHKERRQ(ierr);
     ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
@@ -116,6 +121,9 @@ try {
     ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
     if (spacing) {
       ierr = VecView(spacing, viewer);CHKERRQ(ierr);
+    }
+    if (coarse) {
+      ierr = VecView(coarse, viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
     ierr = VecView(partition, viewer);CHKERRQ(ierr);
@@ -492,4 +500,56 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[
   ierr = VecDestroy(locField);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
+}
+
+//the basic gist of this is to generate the coarsest mesh, then go downward, hence the input of the coarser mesh to provide the most essential points.
+//"mesh" is the original mesh, oarserMesh is the output mesh, and boundaryMesh is the next coarser mesh (used to determine essential points and edges.
+
+//beta is the coarsening factor.
+
+PetscErrorCode OneLevelCoarsening (ALE::Obj<ALE::Mesh> mesh, ALE::Obj<ALE::Mesh> coarserMesh,  ALE::Obj<ALE::Mesh> boundaryMesh, double beta) {
+  
+//so basically what we're going to do here is decide which points from mesh get put in coarserMesh based upon the contents of coarserMesh.
+
+
+  PetscFunctionBegin;
+//grab the spacing field and create a new field to tell what vertices are going to be included in the next go.
+
+//get the associated properties for the mesh, and the coarser mesh.
+
+  ALE::Obj<ALE::Mesh::field_type> spacing  = mesh->getField("spacing");
+  ALE::Obj<ALE::Mesh::field_type> coords   = mesh->getCoordinates();
+  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+  ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> vertices = topology->depthStratum(0);
+
+//  ALE::Obj<ALE::Mesh::field_type> coarse_spacing = mesh->getField("spacing");
+//initialize? no we don't need to create the next spacing function.  Since all the points in the boundaryMesh points will be in mesh.
+//  coarse_spacing->setPatch(vertices, patch);
+//  coarse_spacing->setFiberDimensionByDepth(patch, 0, 1);
+//  coarse_spacing->orderPatches();
+//  coarse_spacing->createGlobalOrder();
+
+
+  ALE::Obj<ALE::Mesh::field_type> coarse_coords = coarserMesh->getCoordinates();
+  ALE::Obj<ALE::Mesh::sieve_type> coarse_topology = coarserMesh->getTopology();
+  ALE::Obj<ALE::Mesh::sieve_type::traits::depthSequence> coarse_vertices = coarse_topology->depthStratum(0);
+
+  ALE::Mesh::field_type::patch_type patch;
+
+  int dim = coords->getFiberDimension(patch, *vertices->begin());
+
+//get the bundle and declare a point array and array for current coordinates.
+
+  		ALE::Mesh::point_type
+		ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = coarserMesh->getBundle(0);
+		ALE::Obj<ALE::Mesh::bundle_type::PointArray> points = ALE::Mesh::bundle_type::PointArray();
+
+
+  for (ALE::Mesh::sieve_type::traits::depthSequence::iterator v_i = vertices->begin(); v_i != vertices->end(); ++v_i) {
+    	for (ALE::Mesh::sieve_type::traits::depthSequence::iterator v_j = coarse_vertices->begin(); v_j != coarse_vertices->end(); ++v_j) {
+	//ADD THE STUFF ABOUT THE COMPARISONS
+	}
+  }
+
+PetscFunctionReturn(0);
 }
