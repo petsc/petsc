@@ -356,9 +356,10 @@ in the PETSc Development Version</font></p>
       
       <p><u><b>Mat:</b></u></p>
       <ul>
-        <li>Added MatCreateScatter() and MATSCATTER to easily construct efficient "restriction operators"<br>
+        <li>Added MatCreateScatter() and MATSCATTER to easily construct efficient "restriction operators"</li>
+        <li>Removed MatConvertRegister() and friends, added (*convertfrom) to Mat function table to replace it      </li>
 
-      </li>
+
       </ul>
 
 
@@ -378,9 +379,16 @@ in the PETSc Development Version</font></p>
       
       <p><u><b>PC:</b></u></p>
       <ul>
-        <li>Added PCGALERKIN and PCGalerkinSetRestriction/Interpolation() to allow easy creating of Galerkin-like preconditioners.<br>
+        <li>Added PCGALERKIN and PCGalerkinSetRestriction/Interpolation() to allow easy creating of Galerkin-like preconditioners. </li>
 
-      </li>
+       <li> Added PCGetOperatorsSet() </li>
+
+       <li> Added support for the KSP/PC to auto-create the Mat(s) for you. (Which you usally set with KSP/PCSetOperators()). See manual page for
+            KSP/PCGetOperators(). Note this is slightly speculative code currently. </li>
+
+       <li> PCSetOperators()/KSPSetOperators() now do reference counting on the operators you pass in. Current usage will work, however this means you NO LONGER
+            need to keep a reference to the operators around until the KSP/PC object is destroyed.  </li>
+
       </ul>
 
 
@@ -408,9 +416,10 @@ in the PETSc Development Version</font></p>
       
       <ul>
 
-      Added KSPDefaultConvergedSetUIRNorm() and -ksp_default_converged_initial_residual_norm to go back to the
-      pre ETSc 2.3.1 of determing relative tolerance for convergence.
+       <li>Added KSPDefaultConvergedSetUIRNorm() and -ksp_default_converged_initial_residual_norm to go back to the
+      pre PETSc 2.3.1 of determing relative tolerance for convergence. </li>
       
+       <li> Added KSPGetOperatorsSet() </li>
       
       </ul>
 
@@ -445,7 +454,9 @@ in the PETSc Development Version</font></p>
         <li>The convergence test functions for SNES now pass the
 current iteration in as the second argument. Also the convergence test
 routine is called after the initial function evaluation in SNES but
-before the first Newton ste is computed. </li>
+before the first Newton step is computed. </li>
+
+        <li>Added SNESSetKSP(). </li>
 
       
       </ul>

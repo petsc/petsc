@@ -34,13 +34,18 @@ static PetscErrorCode PCSetUp_Galerkin(PC pc)
 {
   PetscErrorCode  ierr;
   PC_Galerkin     *jac = (PC_Galerkin*)pc->data;
-  Mat             a;
- 
+  PetscTruth      a;
+  Vec             *xx,*yy;
+
   PetscFunctionBegin;
   if (!jac->x) {
-    ierr = KSPGetOperators(jac->ksp,&a,0,0);CHKERRQ(ierr);
+    ierr = KSPGetOperatorsSet(jac->ksp,&a,PETSC_NULL);CHKERRQ(ierr);
     if (!a) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set operator of PCGALERKIN KSP with PCGalerkinGetKSP()/KSPSetOperators()");
-    ierr = MatGetVecs(a,&jac->x,&jac->b);CHKERRQ(ierr);
+    ierr   = KSPGetVecs(jac->ksp,1,&xx,1,&yy);CHKERRQ(ierr);    
+    jac->x = *xx;
+    jac->b = *yy;
+    ierr   = PetscFree(xx);CHKERRQ(ierr);
+    ierr   = PetscFree(yy);CHKERRQ(ierr);
   }
   if (!jac->R && !jac->P) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set restriction or interpolation of PCGALERKIN with PCGalerkinSetRestriction/Interpolation()");

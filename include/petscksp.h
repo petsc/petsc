@@ -135,6 +135,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualNorm(KSP,PetscReal*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP,PetscInt*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP,MatNullSpace);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNullSpace(KSP,MatNullSpace*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetVecs(KSP,PetscInt,Vec**,PetscInt,Vec**);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP,PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP,PC*);
@@ -257,6 +258,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPInitialResidual(KSP,Vec,Vec,Vec,Vec,
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOperators(KSP,Mat,Mat,MatStructure);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperators(KSP,Mat*,Mat*,MatStructure*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOperatorsSet(KSP,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAppendOptionsPrefix(KSP,const char[]);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP,const char*[]);

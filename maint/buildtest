@@ -79,18 +79,9 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
   # now configure
   ./config/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& test.log
   echo '****************************************************' >>& $nPETSC_DIR/test.log
-  set EJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/ejobs`
-  set JOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/jobs`
-  set RJOBS=`cat $nPETSC_DIR/bmake/$PETSC_ARCH/rjobs`
   tar cf buildoutput.tar configure.log bmake/$PETSC_ARCH/*
 
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR allfortranstubs >>& $nPETSC_DIR/test.log
-
-egrep '^#define PETSC_HAVE_COMPLEX' $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h  > /dev/null
-if ("$?" == "0") then
-  set EJOBS=""
-  set RJOBS=""
-endif
 
 make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& test.log
 echo '****************************************************' >>& test.log
@@ -101,10 +92,8 @@ tar rf buildoutput.tar test.log
 # Run examples
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
-foreach j ($JOBS $EJOBS $RJOBS)
-  $NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  ACTION=$TEST$j DATAFILESPATH=$DATAFILESPATH tree |& grep -v 'up to date' >>& examples.log
-  echo '******************************************************' >>& $nPETSC_DIR/examples.log
-end
+$NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests DATAFILESPATH=$DATAFILESPATH |& grep -v 'up to date' >>& examples.log
+echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h`
 if ( "${GCOV}" != "" ) then

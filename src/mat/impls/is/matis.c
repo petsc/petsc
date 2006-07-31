@@ -368,6 +368,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
   b->x          = 0;  
   b->y          = 0;  
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatISGetLocalMat_C","MatISGetLocalMat_IS",MatISGetLocalMat_IS);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATIS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

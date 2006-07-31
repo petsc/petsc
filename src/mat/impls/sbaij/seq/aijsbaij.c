@@ -18,7 +18,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   PetscScalar    *av,*bv;
 
   PetscFunctionBegin;
-
   /* compute rowlengths of newmat */
   ierr = PetscMalloc((2*m+1)*sizeof(PetscInt),&rowlengths);CHKERRQ(ierr);
   rowstart = rowlengths + m;

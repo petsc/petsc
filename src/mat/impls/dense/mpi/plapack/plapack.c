@@ -40,8 +40,8 @@ EXTERN PetscErrorCode MatDuplicate_Plapack(Mat,MatDuplicateOption,Mat*);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_Plapack_Base"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Base(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+#define __FUNCT__ "MatConvert_Plapack_Dense"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Dense(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
 
   PetscErrorCode   ierr;
@@ -92,9 +92,9 @@ PetscErrorCode MatDestroy_Plapack(Mat A)
   }
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatConvert_Plapack_Base(A,MATSEQDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert_Plapack_Dense(A,MATSEQDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_Plapack_Base(A,MATMPIDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert_Plapack_Dense(A,MATMPIDENSE,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -450,8 +450,8 @@ PetscErrorCode MatView_Plapack(Mat A,PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_Base_Plapack"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_Plapack(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+#define __FUNCT__ "MatConvert_Dense_Plapack"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATPLAPACK from MATDENSE, so we ignore 'MatType type'. */
   PetscErrorCode ierr;
@@ -483,14 +483,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_Plapack(Mat A,MatType type,Mat
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) { 
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqdense_plapack_C",
-                                             "MatConvert_Base_Plapack",MatConvert_Base_Plapack);CHKERRQ(ierr);
+                                             "MatConvert_Dense_Plapack",MatConvert_Dense_Plapack);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_plapack_seqdense_C",
-                                             "MatConvert_Plapack_Base",MatConvert_Plapack_Base);CHKERRQ(ierr);
+                                             "MatConvert_Plapack_Dense",MatConvert_Plapack_Dense);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpidense_plapack_C",
-                                             "MatConvert_Base_Plapack",MatConvert_Base_Plapack);CHKERRQ(ierr);
+                                             "MatConvert_Dense_Plapack",MatConvert_Dense_Plapack);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_plapack_mpidense_C",
-                                             "MatConvert_Plapack_Base",MatConvert_Plapack_Base);CHKERRQ(ierr);
+                                             "MatConvert_Plapack_Dense",MatConvert_Plapack_Dense);CHKERRQ(ierr);
   }   
   ierr = PetscInfo(0,"Using Plapack for dense LU factorization and solves.\n");CHKERRQ(ierr); 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATPLAPACK);CHKERRQ(ierr);
@@ -548,16 +548,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction */
-  /*   of SEQDENSE or MPIDENSE  and Plapack types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATPLAPACK);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQDENSE);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(A,MATMPIDENSE);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Base_Plapack(A,MATPLAPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr); 
+  ierr = MatConvert_Dense_Plapack(A,MATPLAPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

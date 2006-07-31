@@ -54,8 +54,8 @@ EXTERN PetscErrorCode MatDuplicate_SuperLU_DIST(Mat,MatDuplicateOption,Mat*);
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_SuperLU_DIST_Base"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_DIST_Base(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+#define __FUNCT__ "MatConvert_SuperLU_DIST_AIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_DIST_AIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode   ierr;
   Mat              B=*newmat;
@@ -118,9 +118,9 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    ierr = MatConvert_SuperLU_DIST_Base(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SuperLU_DIST_AIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_SuperLU_DIST_Base(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert_SuperLU_DIST_AIJ(A,MATMPIAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -624,8 +624,8 @@ PetscErrorCode MatView_SuperLU_DIST(Mat A,PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_Base_SuperLU_DIST"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_SuperLU_DIST(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+#define __FUNCT__ "MatConvert_AIJ_SuperLU_DIST"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATSUPERLU_DIST */
   /* from MATSEQAIJ if A has a single process communicator */
@@ -732,9 +732,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqAIJ or MPIAIJ */
-  /*   and SuperLU_DIST types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSUPERLU_DIST);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
@@ -745,7 +742,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
     ierr = MatConvert_Base_SuperLU_DIST(A_diag,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A_diag);CHKERRQ(ierr);
     */
   }
-  ierr = MatConvert_Base_SuperLU_DIST(A,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_AIJ_SuperLU_DIST(A,MATSUPERLU_DIST,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

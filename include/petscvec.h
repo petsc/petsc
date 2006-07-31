@@ -68,7 +68,6 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateMPIWithArray(MPI_Comm,PetscInt
 PetscPolymorphicSubroutine(VecCreateMPIWithArray,(PetscInt n,PetscInt N,PetscScalar s[],Vec *x),(PETSC_COMM_WORLD,n,N,s,x))
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreateShared(MPI_Comm,PetscInt,PetscInt,Vec*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecPrintHelp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDestroy(Vec);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecZeroEntries(Vec);

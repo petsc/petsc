@@ -1443,21 +1443,6 @@ PetscErrorCode MatRestoreRow_MPIRowbs(Mat A,int row,int *nz,int **idx,PetscScala
 /* ------------------------------------------------------------------ */
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_MPIRowbs"
-PetscErrorCode MatPrintHelp_MPIRowbs(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATMPIROWBS matrix format (needed for BlockSolve):\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_rowbs_no_inode  - Do not use inodes\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation_MPIRowbs"
 PetscErrorCode MatSetUpPreallocation_MPIRowbs(Mat A)
 {
@@ -1514,7 +1499,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIRowbs,
        0,
        0,
        0,
-/*45*/ MatPrintHelp_MPIRowbs,
+/*45*/ 0,
        MatScale_MPIRowbs,
        0,
        0,
@@ -1674,8 +1659,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
     BSctx_set_pr(bspinfo,1);CHKERRBS(0);
   }
 #endif
-  ierr = PetscOptionsHasName(PETSC_NULL,"-pc_factor_factorpointwise",&flg1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-mat_rowbs_no_inode",&flg3);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(A->comm,PETSC_NULL,"Options for MPIROWBS matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_factor_factorpointwise","Do not optimize for inodes (slow)",PETSC_NULL,PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_rowbs_no_inode","Do not optimize for inodes (slow)",PETSC_NULL,PETSC_FALSE,&flg3,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   if (flg1 || flg3) {
     BSctx_set_si(bspinfo,1);CHKERRBS(0);
   } else {
@@ -1706,6 +1693,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIRowbsSetPreallocation_C",
                                     "MatMPIRowbsSetPreallocation_MPIRowbs",
                                      MatMPIRowbsSetPreallocation_MPIRowbs);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIROWBS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

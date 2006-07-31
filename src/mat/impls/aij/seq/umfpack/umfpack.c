@@ -36,8 +36,6 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_UMFPACK_SeqAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_UMFPACK_SeqAIJ(Mat A,MatType type,MatReuse reuse,Mat *newmat)
 {
-  /* This routine is only called to convert an unfactored PETSc-UMFPACK matrix */
-  /* to its base PETSc type, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat         B=*newmat;
   Mat_UMFPACK *lu=(Mat_UMFPACK*)A->spptr;
@@ -340,11 +338,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_SeqAIJ_UMFPACK"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_UMFPACK(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert to MATUMFPACK */
-  /* from MATSEQAIJ, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
-  Mat         B=*newmat;
-  Mat_UMFPACK *lu;
+  Mat            B=*newmat;
+  Mat_UMFPACK    *lu;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -429,8 +425,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_UMFPACK(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqAIJ and UMFPACK types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATUMFPACK);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqAIJ_UMFPACK(A,MATUMFPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);

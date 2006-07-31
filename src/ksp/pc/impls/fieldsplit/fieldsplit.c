@@ -180,12 +180,16 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ierr = PetscMalloc2(nsplit,Vec,&jac->x,nsplit,Vec,&jac->y);CHKERRQ(ierr);
     ilink = jac->head;
     for (i=0; i<nsplit; i++) {
-      Mat A;
-      ierr      = KSPGetOperators(ilink->ksp,PETSC_NULL,&A,PETSC_NULL);CHKERRQ(ierr);
-      ierr      = MatGetVecs(A,&ilink->x,&ilink->y);CHKERRQ(ierr);
+      Vec *vl,*vr;
+
+      ierr      = KSPGetVecs(ilink->ksp,1,&vr,1,&vl);CHKERRQ(ierr);
+      ilink->x  = *vr;
+      ilink->y  = *vl;
+      ierr      = PetscFree(vr);CHKERRQ(ierr);
+      ierr      = PetscFree(vl);CHKERRQ(ierr);
       jac->x[i] = ilink->x;
       jac->y[i] = ilink->y;
-      ilink      = ilink->next;
+      ilink     = ilink->next;
     }
     /* compute scatter contexts needed by multiplicative versions and non-default splits */
     

@@ -163,14 +163,14 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
-  ierr = (*snes->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
 
     /* Call general purpose update function */
-    if (snes->update) {
-      ierr = (*snes->update)(snes, snes->iter);CHKERRQ(ierr);
+    if (snes->ops->update) {
+      ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
     /* Solve J Y = F, where J is Jacobian matrix */
@@ -230,9 +230,9 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     } 
 
     /* Test for convergence */
-    if (snes->converged) {
+    if (snes->ops->converged) {
       ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
-      ierr = (*snes->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
       if (snes->reason) {
         break;
       }
@@ -1073,29 +1073,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchSetPreCheck_LS(SNES snes,FCN3 f
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-/* -------------------------------------------------------------------------- */
-/*
-   SNESPrintHelp_LS - Prints all options for the SNES_LS method.
-
-   Input Parameter:
-.  snes - the SNES context
-
-   Application Interface Routine: SNESPrintHelp()
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "SNESPrintHelp_LS"
-static PetscErrorCode SNESPrintHelp_LS(SNES snes,char *p)
-{
-  SNES_LS *ls = (SNES_LS *)snes->data;
-
-  PetscFunctionBegin;
-  (*PetscHelpPrintf)(snes->comm," method SNES_LS (ls) for systems of nonlinear equations:\n");
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls [cubic,quadratic,basic,basicnonorms,...]\n",p);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_alpha <alpha> (default %G)\n",p,ls->alpha);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_maxstep <max> (default %G)\n",p,ls->maxstep);
-  (*PetscHelpPrintf)(snes->comm,"   %ssnes_ls_steptol <tol> (default %G)\n",p,ls->steptol);
-  PetscFunctionReturn(0);
-}
 
 /*
    SNESView_LS - Prints info from the SNESLS data structure.
@@ -1204,14 +1181,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES snes)
   SNES_LS        *neP;
 
   PetscFunctionBegin;
-  snes->setup		= SNESSetUp_LS;
-  snes->solve		= SNESSolve_LS;
-  snes->destroy		= SNESDestroy_LS;
-  snes->converged	= SNESConverged_LS;
-  snes->printhelp       = SNESPrintHelp_LS;
-  snes->setfromoptions  = SNESSetFromOptions_LS;
-  snes->view            = SNESView_LS;
-  snes->nwork           = 0;
+  snes->ops->setup	     = SNESSetUp_LS;
+  snes->ops->solve	     = SNESSolve_LS;
+  snes->ops->destroy	     = SNESDestroy_LS;
+  snes->ops->converged	     = SNESConverged_LS;
+  snes->ops->setfromoptions  = SNESSetFromOptions_LS;
+  snes->ops->view            = SNESView_LS;
+  snes->nwork                = 0;
 
   ierr                  = PetscNew(SNES_LS,&neP);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(snes,sizeof(SNES_LS));CHKERRQ(ierr);

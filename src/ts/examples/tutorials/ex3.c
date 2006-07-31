@@ -5,7 +5,6 @@ static char help[] ="Solves a simple time-dependent linear PDE (the heat equatio
 Input parameters include:\n\
   -m <points>, where <points> = number of grid points\n\
   -time_dependent_rhs : Treat the problem as having a time-dependent right-hand side\n\
-  -time_dependent_bc  : Treat the problem as having time-dependent boundary conditions\n\
   -debug              : Activate debugging printouts\n\
   -nox                : Deactivate x-window graphics\n\n";
 
@@ -177,12 +176,6 @@ int main(int argc,char **argv)
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
-  }
-
-  /* Treat the problem as having time-dependent boundary conditions */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-time_dependent_bc",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = TSSetRHSBoundaryConditions(ts,MyBCRoutine,&appctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

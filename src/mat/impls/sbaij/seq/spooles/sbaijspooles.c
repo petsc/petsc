@@ -96,12 +96,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInf
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "MatConvert_SeqSBAIJ_SeqSBAIJSpooles"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) {
-  /* This routine is only called to convert a MATSEQSBAIJ matrix */
-  /* to a MATSEQSBAIJSPOOLES matrix, so we will ignore 'MatType type'. */
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
+{
   PetscErrorCode ierr;
-  Mat         B=*newmat;
-  Mat_Spooles *lu;
+  Mat            B=*newmat;
+  Mat_Spooles    *lu;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
@@ -178,9 +177,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJSpooles(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqSBAIJ */
-  /*   and SeqSBAIJSpooles types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQSBAIJSPOOLES);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   ierr = MatConvert_SeqSBAIJ_SeqSBAIJSpooles(A,MATSEQSBAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -230,8 +226,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJSpooles(Mat A)
   int size;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqSBAIJSpooles or MPISBAIJSpooles */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATSBAIJSPOOLES);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);

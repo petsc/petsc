@@ -616,7 +616,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatCreate_MFFD(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetFunctioni_C","MatSNESMFSetFunctioni_FD",MatSNESMFSetFunctioni_FD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatSNESMFSetCheckh_C","MatSNESMFSetCheckh_FD",MatSNESMFSetCheckh_FD);CHKERRQ(ierr);
   mfctx->mat = A;
-
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -722,14 +722,29 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFGetH(Mat mat,PetscScalar *h)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSNESMFKSPMonitor"
-/*
-   MatSNESMFKSPMonitor - A KSP monitor for use with the default PETSc
-   SNES matrix free routines. Prints the differencing parameter used at 
-   each step.
-*/
+/*@C
+   MatSNESMFKSPMonitor - A KSP monitor for use with the  PETSc
+                SNES matrix free routines. Prints the differencing parameter used at 
+                each step.
+
+   Collective on KSP
+
+   Input Parameters:
++    ksp - the Krylov solver object
+.    n  - the current iteration
+.    rnorm  - the current residual norm (may be preconditioned or not depending on solver and options
+_    dummy  - unused argument
+
+  Options Database:
+.   -snes_mf_ksp_monitor - turn this monitor on
+
+   Notes: Use KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,PETSC_NULL); 
+
+.seealso:  KSPSetMonitor()
+
+@*/
 PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
-  PC             pc;
   MatSNESMFCtx   ctx;
   PetscErrorCode ierr;
   Mat            mat;
@@ -738,9 +753,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP ksp,PetscInt n,PetscR
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-  ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = KSPGetInitialGuessNonzero(ksp,&nonzeroinitialguess);CHKERRQ(ierr);
-  ierr = PCGetOperators(pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  ierr = KSPGetOperators(ksp,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ctx  = (MatSNESMFCtx)mat->data;
 
   if (n > 0 || nonzeroinitialguess) {

@@ -598,15 +598,12 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatConvert_MPIAIJ_MPIAIJSpooles"
 PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,MatType type,MatReuse reuse,Mat *newmat) 
 {
-  /* This routine is only called to convert a MATMPIAIJ matrix */
-  /* to a MATMPIAIJSPOOLES matrix, so we will ignore 'MatType type'. */
   PetscErrorCode ierr;
   Mat            B=*newmat;
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
   if (reuse == MAT_INITIAL_MATRIX) {
-    /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
@@ -683,8 +680,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJSpooles(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of MPIAIJ and MPIAIJSpooles types */
-  ierr   = PetscObjectChangeTypeName((PetscObject)A,MATMPIAIJSPOOLES);CHKERRQ(ierr);
   ierr   = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   /*
   Mat A_diag = ((Mat_MPIAIJ *)A->data)->A;

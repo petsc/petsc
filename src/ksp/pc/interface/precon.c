@@ -84,6 +84,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
   if (pc->diagonalscaleright) {ierr = VecDestroy(pc->diagonalscaleright);CHKERRQ(ierr);}
   if (pc->diagonalscaleleft)  {ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);}
 
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+
   ierr = PetscHeaderDestroy(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1017,8 +1020,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
     }
   }
 
+  /* reference first in case the matrices are the same */
+  if (Amat) {ierr = PetscObjectReference((PetscObject)Amat);CHKERRQ(ierr);}
+  if (pc->mat) {ierr = MatDestroy(pc->mat);CHKERRQ(ierr);}
+  if (Pmat) {ierr = PetscObjectReference((PetscObject)Pmat);CHKERRQ(ierr);}
+  if (pc->pmat) {ierr = MatDestroy(pc->pmat);CHKERRQ(ierr);}
   pc->mat  = Amat;
   pc->pmat = Pmat;
+
   if (pc->setupcalled == 2 && flag != SAME_PRECONDITIONER) {
     pc->setupcalled = 1;
   }
@@ -1046,17 +1055,105 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetOperators(PC pc,Mat Amat,Mat Pmat,MatStru
 
    Level: intermediate
 
+   Alternative usage: If the operators have NOT been set with KSP/PCSetOperators() then the operators
+      are created in PC and returned to the user. In this case, if both operators
+      mat and pmat are requested, two DIFFERENT operators will be returned. If
+      only one is requested both operators in the PC will be the same (i.e. as
+      if one had called KSP/PCSetOperators() with the same argument for both Mats).
+      The user must set the sizes of the returned matrices and their type etc just
+      as if the user created them with MatCreate(). For example,
+
+$         KSP/PCGetOperators(ksp/pc,&mat,PETSC_NULL,PETSC_NULL); is equivalent to
+$           set size, type, etc of mat
+
+$         MatCreate(comm,&mat);
+$         KSP/PCSetOperators(ksp/pc,mat,mat,SAME_NONZERO_PATTERN);
+$         PetscObjectDereference((PetscObject)mat);
+$           set size, type, etc of mat
+
+     and
+
+$         KSP/PCGetOperators(ksp/pc,&mat,&pmat,PETSC_NULL); is equivalent to
+$           set size, type, etc of mat and pmat
+
+$         MatCreate(comm,&mat);
+$         MatCreate(comm,&pmat);
+$         KSP/PCSetOperators(ksp/pc,mat,pmat,SAME_NONZERO_PATTERN);
+$         PetscObjectDereference((PetscObject)mat);
+$         PetscObjectDereference((PetscObject)pmat);
+$           set size, type, etc of mat and pmat
+
+    The rational for this support is so that when creating a TS, SNES, or KSP the hierarchy
+    of underlying objects (i.e. SNES, KSP, PC, Mat) and their livespans can be completely 
+    managed by the top most level object (i.e. the TS, SNES, or KSP). Another way to look
+    at this is when you create a SNES you do not NEED to create a KSP and attach it to 
+    the SNES object (the SNES object manages it for you). Similarly when you create a KSP
+    you do not need to attach a PC to it (the KSP object manages the PC object for you).
+    Thus, why should YOU have to create the Mat and attach it to the SNES/KSP/PC, when
+    it can be created for you?
+     
+
 .keywords: PC, get, operators, matrix, linear system
 
-.seealso: PCSetOperators()
+.seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperatorsSet()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStructure *flag)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (mat)  *mat  = pc->mat;
-  if (pmat) *pmat = pc->pmat;
+  if (mat) {
+    if (!pc->mat) {
+      ierr = MatCreate(pc->comm,&pc->mat);CHKERRQ(ierr);
+      if (!pc->pmat && !pmat) { /* user did NOT request pmat, so make same as mat */
+        pc->pmat = pc->mat;
+        ierr     = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr); 
+      } 
+    }
+    *mat  = pc->mat;
+  }  
+  if (pmat) {
+    if (!pc->pmat) {
+      ierr = MatCreate(pc->comm,&pc->mat);CHKERRQ(ierr);
+      if (!pc->mat && !mat) { /* user did NOT request mat, so make same as pmat */
+        pc->mat = pc->pmat;
+        ierr    = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr); 
+      } 
+    }
+    *pmat = pc->pmat;
+  }
   if (flag) *flag = pc->flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCGetOperatorsSet"
+/*@C
+   PCGetOperatorsSet - Determines if the matrix associated with the linear system and
+   possibly a different one associated with the preconditioner have been set in the PC.
+
+   Not collective, though the results on all processes should be the same
+
+   Input Parameter:
+.  pc - the preconditioner context
+
+   Output Parameters:
++  mat - the matrix associated with the linear system was set
+-  pmat - matrix associated with the preconditioner was set, usually the same
+
+   Level: intermediate
+
+.keywords: PC, get, operators, matrix, linear system
+
+.seealso: PCSetOperators(), KSPGetOperators(), KSPSetOperators(), PCGetOperators()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC pc,PetscTruth *mat,PetscTruth *pmat)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (mat)  *mat  = (pc->mat)  ? PETSC_TRUE : PETSC_FALSE;
+  if (pmat) *pmat = (pc->pmat) ? PETSC_TRUE : PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

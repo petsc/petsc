@@ -1908,24 +1908,6 @@ PetscErrorCode MatPermute_SeqAIJ(Mat A,IS rowp,IS colp,Mat *B)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatPrintHelp_SeqAIJ"
-PetscErrorCode MatPrintHelp_SeqAIJ(Mat A)
-{
-  static PetscTruth called = PETSC_FALSE; 
-  MPI_Comm          comm = A->comm;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = MatPrintHelp_Inode(A);CHKERRQ(ierr);
-  if (called) {PetscFunctionReturn(0);} else called = PETSC_TRUE;
-  ierr = (*PetscHelpPrintf)(comm," Options for MATSEQAIJ and MATMPIAIJ matrix formats (the defaults):\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_lu_pivotthreshold <threshold>: Set pivoting threshold\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_aij_oneindex: internal indices begin at 1 instead of the default 0.\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(comm,"  -mat_no_compressedrow: Do not use compressedrow\n");CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MatCopy_SeqAIJ"
 PetscErrorCode MatCopy_SeqAIJ(Mat A,Mat B,MatStructure str)
 {
@@ -2270,7 +2252,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,
        MatCopy_SeqAIJ,
-/*45*/ MatPrintHelp_SeqAIJ,
+/*45*/ 0,
        MatScale_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,
@@ -2855,6 +2837,10 @@ EXTERN_C_END
 M*/
 
 EXTERN_C_BEGIN
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCRL(Mat,MatType,MatReuse,Mat*);
+EXTERN_C_END
+
+EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate_SeqAIJ"
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
@@ -2915,6 +2901,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcsrperm_C",
                                      "MatConvert_SeqAIJ_SeqCSRPERM",
                                       MatConvert_SeqAIJ_SeqCSRPERM);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_seqcrl_C",
+                                     "MatConvert_SeqAIJ_SeqCRL",
+                                      MatConvert_SeqAIJ_SeqCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
                                      "MatIsTranspose_SeqAIJ",
                                       MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
@@ -2928,6 +2917,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
                                      "MatReorderForNonzeroDiagonal_SeqAIJ",
                                       MatReorderForNonzeroDiagonal_SeqAIJ);CHKERRQ(ierr);
   ierr = MatCreate_Inode(B);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATSEQAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

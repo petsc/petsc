@@ -164,6 +164,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
   b->OAIJ = 0;
   b->ctx  = 0;
   b->w    = 0;  
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMAIJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -318,24 +318,6 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSPrintHelp_Sundials" 
-PetscErrorCode TSPrintHelp_Sundials(TS ts,char *p)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ts->comm," Options for TSSUNDIALS integrater:\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_type <bdf,adams>: integration approach\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_atol aabs: absolute tolerance of ODE solution\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_rtol rel: relative tolerance of ODE solution\n",p);CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_gramschmidt_type <unmodified,modified>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_gmres_restart <restart_size> (also max. GMRES its)\n");CHKERRQ(ierr); 
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_linear_tolerance <tol>\n");CHKERRQ(ierr);
-  ierr = (*PetscHelpPrintf)(ts->comm," -ts_sundials_not_exact_final_time\n");CHKERRQ(ierr); 
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "TSView_Sundials" 
 PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 {

@@ -131,14 +131,6 @@ static PetscErrorCode PCDestroy_MG(PC pc)
   PetscInt       i,n = mg[0]->levels;
 
   PetscFunctionBegin;
-  if (mg[0]->galerkinused) {
-    Mat B;
-    for (i=0; i<n-1; i++) {
-      ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
-      ierr = MatDestroy(B);CHKERRQ(ierr);
-    }
-  }
-
   for (i=0; i<n-1; i++) {
     if (mg[i+1]->r) {ierr = VecDestroy(mg[i+1]->r);CHKERRQ(ierr);}
     if (mg[i]->b) {ierr = VecDestroy(mg[i]->b);CHKERRQ(ierr);}
@@ -346,7 +338,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   PetscErrorCode ierr;
   PetscInt       i,n = mg[0]->levels;
   PC             cpc;
-  PetscTruth     preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump;
+  PetscTruth     preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump,opsset;
   PetscViewer    ascii;
   MPI_Comm       comm;
   Mat            dA,dB;
@@ -358,8 +350,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   /* If user did not provide fine grid operators, use those from PC */
   /* BUG BUG BUG This will work ONLY the first time called: hence if the user changes
      the PC matrices between solves PCMG will continue to use first set provided */
-  ierr = KSPGetOperators(mg[n-1]->smoothd,&dA,&dB,&uflag);CHKERRQ(ierr);
-  if (!dA  && !dB) {
+  ierr = KSPGetOperatorsSet(mg[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
+  if (!opsset) {
     ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
     ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
   }
@@ -373,11 +365,13 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       for (i=n-2; i>-1; i--) {
         ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_INITIAL_MATRIX,1.0,&B);CHKERRQ(ierr);
         ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
+	if (i != n-2) {ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);} 
         dB   = B;
       }
+      ierr = PetscObjectDereference((PetscObject)dB);CHKERRQ(ierr);
     } else {
       for (i=n-2; i>-1; i--) {
-        ierr = KSPGetOperators(mg[i]->smoothd,0,&B,0);CHKERRQ(ierr);
+        ierr = KSPGetOperators(mg[i]->smoothd,PETSC_NULL,&B,PETSC_NULL);CHKERRQ(ierr);
         ierr = MatPtAP(dB,mg[i+1]->interpolate,MAT_REUSE_MATRIX,1.0,&B);CHKERRQ(ierr);
         ierr = KSPSetOperators(mg[i]->smoothd,B,B,uflag);CHKERRQ(ierr);
         dB   = B;
@@ -428,11 +422,10 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     }
     for (i=0; i<n-1; i++) {
       if (!mg[i]->b) {
-        Mat mat;
-        Vec vec;
-        ierr = KSPGetOperators(mg[i]->smoothd,PETSC_NULL,&mat,PETSC_NULL);CHKERRQ(ierr);
-        ierr = MatGetVecs(mat,&vec,PETSC_NULL);CHKERRQ(ierr);
-        ierr = PCMGSetRhs(pc,i,vec);CHKERRQ(ierr);
+        Vec *vec;
+        ierr = KSPGetVecs(mg[i]->smoothd,1,&vec,0,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PCMGSetRhs(pc,i,*vec);CHKERRQ(ierr);
+        ierr = PetscFree(vec);CHKERRQ(ierr);
       }
       if (!mg[i]->r && i) {
         ierr = VecDuplicate(mg[i]->b,&tvec);CHKERRQ(ierr);
@@ -459,16 +452,14 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   }
   for (i=1; i<n; i++) {
     if (mg[i]->smoothu && mg[i]->smoothu != mg[i]->smoothd) {
-      PC           uppc,downpc;
-      Mat          downmat,downpmat,upmat,uppmat;
+      Mat          downmat,downpmat;
       MatStructure matflag;
+      PetscTruth   opsset;
 
       /* check if operators have been set for up, if not use down operators to set them */
-      ierr = KSPGetPC(mg[i]->smoothu,&uppc);CHKERRQ(ierr);
-      ierr = PCGetOperators(uppc,&upmat,&uppmat,PETSC_NULL);CHKERRQ(ierr);
-      if (!upmat) {
-        ierr = KSPGetPC(mg[i]->smoothd,&downpc);CHKERRQ(ierr);
-        ierr = PCGetOperators(downpc,&downmat,&downpmat,&matflag);CHKERRQ(ierr);
+      ierr = KSPGetOperatorsSet(mg[i]->smoothu,&opsset,PETSC_NULL);CHKERRQ(ierr);
+      if (!opsset) {
+        ierr = KSPGetOperators(mg[i]->smoothd,&downmat,&downpmat,&matflag);CHKERRQ(ierr);
         ierr = KSPSetOperators(mg[i]->smoothu,downmat,downpmat,matflag);CHKERRQ(ierr);
       }
 

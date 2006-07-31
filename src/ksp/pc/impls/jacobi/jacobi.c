@@ -2,10 +2,10 @@
 
 /*  -------------------------------------------------------------------- 
 
-     This file implements a Jacobi preconditioner for matrices that use
-     the Mat interface (various matrix formats).  Actually, the only
-     matrix operation used here is MatGetDiagonal(), which extracts 
-     diagonal elements of the preconditioning matrix.
+     This file implements a Jacobi preconditioner in PETSc as part of PC.
+     You can use this as a starting point for implementing your own 
+     preconditioner that is not provided with PETSc. (You might also consider
+     just using PCSHELL)
 
      The following basic routines are required for each preconditioner.
           PCCreate_XXX()          - Creates a preconditioner context
@@ -343,7 +343,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 */
 
 /*MC
-     PCJacobi - Jacobi (i.e. diagonal scaling preconditioning)
+     PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
 +    -pc_jacobi_rowmax - use the maximum absolute value in each row as the scaling factor,

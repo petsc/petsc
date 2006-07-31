@@ -41,7 +41,7 @@ typedef struct {
 
 EXTERN PetscErrorCode MatDuplicate_DSCPACK(Mat,MatDuplicateOption,Mat*);
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_DSCPACK(Mat,const MatType,MatReuse,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_BAIJ_DSCPACK(Mat,const MatType,MatReuse,Mat*);
 EXTERN_C_END
 
 /* DSC function */
@@ -161,8 +161,8 @@ PetscErrorCode  BAIJtoMyANonz( PetscInt *AIndex, PetscInt *AStruct, PetscInt bs,
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_DSCPACK_Base"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_DSCPACK_Base(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+#define __FUNCT__ "MatConvert_DSCPACK_BAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_DSCPACK_BAIJ(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   PetscErrorCode ierr;
   Mat            B=*newmat;
@@ -200,7 +200,7 @@ EXTERN_C_END
 #define __FUNCT__ "MatDestroy_DSCPACK"
 PetscErrorCode MatDestroy_DSCPACK(Mat A) 
 {
-  Mat_DSC *lu=(Mat_DSC*)A->spptr;  
+  Mat_DSC        *lu=(Mat_DSC*)A->spptr;  
   PetscErrorCode ierr;
     
   PetscFunctionBegin;
@@ -223,9 +223,9 @@ PetscErrorCode MatDestroy_DSCPACK(Mat A)
     if (lu->size >1 && lu->iden) {ierr = ISDestroy(lu->iden);CHKERRQ(ierr);}
   }
   if (lu->size == 1) {
-    ierr = MatConvert_DSCPACK_Base(A,MATSEQBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert_DSCPACK_BAIJ(A,MATSEQBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert_DSCPACK_Base(A,MATMPIBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatConvert_DSCPACK_BAIJ(A,MATMPIBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   }
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -668,15 +668,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJSetPreallocation_MPIDSCPACK(Mat  B,P
   */
   ierr = (*lu->MatPreallocate)(B,bs,d_nz,d_nnz,o_nz,o_nnz);
   A    = ((Mat_MPIBAIJ *)B->data)->A;
-  ierr = MatConvert_Base_DSCPACK(A,MATDSCPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_BAIJ_DSCPACK(A,MATDSCPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
-#define __FUNCT__ "MatConvert_Base_DSCPACK"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_DSCPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
+#define __FUNCT__ "MatConvert_BAIJ_DSCPACK"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_BAIJ_DSCPACK(Mat A,const MatType type,MatReuse reuse,Mat *newmat) 
 {
   /* This routine is only called to convert to MATDSCPACK */
   /* from MATSEQBAIJ if A has a single process communicator */
@@ -713,9 +713,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_DSCPACK(Mat A,const MatType ty
   ierr = MPI_Comm_size(comm,&(lu->size));CHKERRQ(ierr);CHKERRQ(ierr);
   if (lu->size == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqbaij_dscpack_C",
-                                             "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
+                                             "MatConvert_BAIJ_DSCPACK",MatConvert_BAIJ_DSCPACK);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_seqbaij_C",
-                                             "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
+                                             "MatConvert_DSCPACK_BAIJ",MatConvert_DSCPACK_BAIJ);CHKERRQ(ierr);
   } else {
       /* I really don't like needing to know the tag: MatMPIBAIJSetPreallocation_C */
     ierr = PetscObjectQueryFunction((PetscObject)B,"MatMPIBAIJSetPreallocation_C",&f);CHKERRQ(ierr);
@@ -726,9 +726,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Base_DSCPACK(Mat A,const MatType ty
                                                MatMPIBAIJSetPreallocation_MPIDSCPACK);CHKERRQ(ierr);
     }
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpibaij_dscpack_C",
-                                             "MatConvert_Base_DSCPACK",MatConvert_Base_DSCPACK);CHKERRQ(ierr);
+                                             "MatConvert_BAIJ_DSCPACK",MatConvert_BAIJ_DSCPACK);CHKERRQ(ierr);
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_dscpack_mpibaij_C",
-                                             "MatConvert_DSCPACK_Base",MatConvert_DSCPACK_Base);CHKERRQ(ierr);
+                                             "MatConvert_DSCPACK_BAIJ",MatConvert_DSCPACK_BAIJ);CHKERRQ(ierr);
   }
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDSCPACK);CHKERRQ(ierr);
   *newmat = B;
@@ -789,16 +789,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  /* Change type name before calling MatSetType to force proper construction of SeqBAIJ or MPIBAIJ */
-  /*   and DSCPACK types */
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATDSCPACK);CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   } else {
     ierr = MatSetType(A,MATMPIBAIJ);CHKERRQ(ierr);
   }
-  ierr = MatConvert_Base_DSCPACK(A,MATDSCPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+  ierr = MatConvert_BAIJ_DSCPACK(A,MATDSCPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

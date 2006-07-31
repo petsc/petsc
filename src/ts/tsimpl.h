@@ -28,7 +28,6 @@ struct _TSOps {
   PetscErrorCode (*setup)(TS);
   PetscErrorCode (*step)(TS,PetscInt *, PetscReal *);
   PetscErrorCode (*setfromoptions)(TS);
-  PetscErrorCode (*printhelp)(TS, char *);
   PetscErrorCode (*destroy)(TS);
   PetscErrorCode (*view)(TS, PetscViewer);
 };

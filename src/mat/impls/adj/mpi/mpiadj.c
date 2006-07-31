@@ -234,6 +234,67 @@ PetscErrorCode MatRestoreRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatConvertFrom_MPIAdj"
+PetscErrorCode PETSCMAT_DLLEXPORT MatConvertFrom_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
+{
+  Mat               B;
+  PetscErrorCode    ierr;
+  PetscInt          i,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
+  const PetscInt    *rj;
+  const PetscScalar *ra;
+  MPI_Comm          comm;
+
+  PetscFunctionBegin;
+  ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
+  
+  /* count the number of nonzeros per row */
+  for (i=0; i<m; i++) {
+    ierr   = MatGetRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    for (j=0; j<len; j++) {
+      if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
+    }
+    ierr   = MatRestoreRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
+    nzeros += len;
+  }
+
+  /* malloc space for nonzeros */
+  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&a);CHKERRQ(ierr);
+  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
+  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
+
+  nzeros = 0;
+  ia[0]  = 0;
+  for (i=0; i<m; i++) {
+    ierr    = MatGetRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
+    cnt     = 0;
+    for (j=0; j<len; j++) {
+      if (rj[j] != i+rstart) { /* if not diagonal */
+        a[nzeros+cnt]    = (PetscInt) PetscAbsScalar(ra[j]);
+        ja[nzeros+cnt++] = rj[j];
+      } 
+    }
+    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
+    nzeros += cnt;
+    ia[i+1] = nzeros; 
+  }
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
+  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,m,N,PETSC_DETERMINE,N);CHKERRQ(ierr);
+  ierr = MatSetType(B,type);CHKERRQ(ierr);
+  ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
+
+  if (reuse == MAT_REUSE_MATRIX) {
+    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+  } else {
+    *newmat = B;
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {0,
        MatGetRow_MPIAdj,
@@ -298,7 +359,7 @@ static struct _MatOps MatOps_Values = {0,
 /*60*/ 0,
        MatDestroy_MPIAdj,
        MatView_MPIAdj,
-       0,
+       MatConvertFrom_MPIAdj,
        0,
 /*65*/ 0,
        0,
@@ -413,6 +474,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
                                     "MatMPIAdjSetPreallocation_MPIAdj",
                                      MatMPIAdjSetPreallocation_MPIAdj);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIADJ);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -496,68 +558,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAdj(MPI_Comm comm,PetscInt m,Petsc
   PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "MatConvertTo_MPIAdj"
-PetscErrorCode PETSCMAT_DLLEXPORT MatConvertTo_MPIAdj(Mat A,MatType type,MatReuse reuse,Mat *newmat)
-{
-  Mat               B;
-  PetscErrorCode    ierr;
-  PetscInt          i,m,N,nzeros = 0,*ia,*ja,len,rstart,cnt,j,*a;
-  const PetscInt    *rj;
-  const PetscScalar *ra;
-  MPI_Comm          comm;
 
-  PetscFunctionBegin;
-  ierr = MatGetSize(A,PETSC_NULL,&N);CHKERRQ(ierr);
-  ierr = MatGetLocalSize(A,&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  
-  /* count the number of nonzeros per row */
-  for (i=0; i<m; i++) {
-    ierr   = MatGetRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
-    for (j=0; j<len; j++) {
-      if (rj[j] == i+rstart) {len--; break;}    /* don't count diagonal */
-    }
-    ierr   = MatRestoreRow(A,i+rstart,&len,&rj,PETSC_NULL);CHKERRQ(ierr);
-    nzeros += len;
-  }
-
-  /* malloc space for nonzeros */
-  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&a);CHKERRQ(ierr);
-  ierr = PetscMalloc((N+1)*sizeof(PetscInt),&ia);CHKERRQ(ierr);
-  ierr = PetscMalloc((nzeros+1)*sizeof(PetscInt),&ja);CHKERRQ(ierr);
-
-  nzeros = 0;
-  ia[0]  = 0;
-  for (i=0; i<m; i++) {
-    ierr    = MatGetRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
-    cnt     = 0;
-    for (j=0; j<len; j++) {
-      if (rj[j] != i+rstart) { /* if not diagonal */
-        a[nzeros+cnt]    = (PetscInt) PetscAbsScalar(ra[j]);
-        ja[nzeros+cnt++] = rj[j];
-      } 
-    }
-    ierr    = MatRestoreRow(A,i+rstart,&len,&rj,&ra);CHKERRQ(ierr);
-    nzeros += cnt;
-    ia[i+1] = nzeros; 
-  }
-
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = MatCreate(comm,&B);CHKERRQ(ierr);
-  ierr = MatSetSizes(B,m,N,PETSC_DETERMINE,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,type);CHKERRQ(ierr);
-  ierr = MatMPIAdjSetPreallocation(B,ia,ja,a);CHKERRQ(ierr);
-
-  if (reuse == MAT_REUSE_MATRIX) {
-    ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
-  } else {
-    *newmat = B;
-  }
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
 
 
 
