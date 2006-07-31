@@ -151,8 +151,9 @@ version of MPI?</a></li>
 PETSc to not use X windows (either under Unix or Windows with gcc, the
 gnu compiler)?</a></li>
 
-      <li><a href="faq.html#use-mpi">Why do you use
-MPI?</a></li>
+      <li><a href="faq.html#use-mpi">Why do you use MPI</a>?</li>
+
+              <li><a href="faq.html#mpi-compilers">What do I do if my MPI compiler wrappers are invalid</a>?</li>
 
       </menu>
 
@@ -541,6 +542,15 @@ free implementations. Thus, one does not have to rely on the technical
 skills of one particular group to provide the message-passing
 libraries. Today, MPI is the only practical, portable approach to
 writing efficient parallel numerical software. </p>
+
+            <p><strong><font color="#ff0000"><a name="mpi-compilers">What do I do if my MPI compiler wrappers are invalid</a>?</font></strong></p>
+
+            <p>Most MPI implementations provide compiler wrappers (such as mpicc) which give the include and link
+              options necessary to use that verson of MPI to the underlying compilers . These wrappers are either absent
+              or broken in the MPI pointed to by --with-mpi-dir. You can rerun the configure with the additional option
+              --with-mpi-compilers=0, which will try to auto-detect working compilers; however, these compilers may be
+              incompatible with the particular MPI build. If this fix does not work, run with --with-cc=c_compiler where
+              you know c_compiler works with this particular MPI, and likewise for C++ and Fortran.</p>
 
       <p>&nbsp; </p>
 
