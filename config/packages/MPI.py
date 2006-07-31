@@ -10,16 +10,18 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.3.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/mpi/mpich2-1.0.4.tar.gz']
     self.download         = ['redefine']
     self.functions        = ['MPI_Init', 'MPI_Comm_create']
     self.includes         = ['mpi.h']
     self.liblist_mpich    = [['libmpich.a', 'libpmpich.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a'],
                              ['libmpich.a'],
+                             ['libmpich.a','libpthread.a'],
                              ['libfmpich.a','libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
+                             ['libmpich.a','libnsl.a','libsocket.a','librt.a','libnsl.a','libsocket.a'],
                              ['mpich2.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
                              ['mpich.lib']]
@@ -193,8 +195,6 @@ class Configure(config.package.Package):
     '''Setup MPIUNI, our uniprocessor version of MPI'''
     self.addDefine('HAVE_MPIUNI', 1)
     self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
-    if 'STDCALL' in self.compilers.defines:
-      self.framework.addDefine('MPIUNI_USE_STDCALL', 1)
     self.lib = [os.path.abspath(os.path.join('lib', self.arch, 'libmpiuni'))]
     self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
     self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
