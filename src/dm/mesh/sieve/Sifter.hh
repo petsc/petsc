@@ -624,9 +624,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
      
       typedef typename base_container_type::traits::PointSequence baseSequence;
       typedef typename cap_container_type::traits::PointSequence  capSequence;
-      typedef ALE::set<source_type>   coneSet;
+      typedef std::set<source_type>   coneSet;
       typedef ALE::array<source_type> coneArray;
-      typedef ALE::set<target_type>   supportSet;
+      typedef std::set<target_type>   supportSet;
       typedef ALE::array<target_type> supportArray;
     } traits;
 
@@ -699,6 +699,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     };
     Obj<typename traits::baseSequence> base() {
       return typename traits::baseSequence(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
+    };
+    bool capContains(const typename traits::source_type& p) {
+      typename traits::capSequence cap(::boost::multi_index::get<typename traits::capInd>(this->_cap.set));
+
+      //for(typename traits::capSequence::iterator c_iter = cap.begin(); c_iter != cap.end(); ++c_iter) {
+      //}
+      return cap.contains(p);
     };
     // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
     Obj<typename traits::arrowSequence> 

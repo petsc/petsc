@@ -72,6 +72,10 @@ overlap1: overlap1.o chkopts
 	-${CLINKER} -o overlap1 overlap1.o ${PETSC_DM_LIB}
 	${RM} -f overlap1.o
 
+overlap2: overlap2.o chkopts
+	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
+	${RM} -f overlap2.o
+
 #-----------------------------------------------------------------
 runex00:
 	-@${MPIRUN} -np ${NP} ./ex00 -log_summary ${EXTRA_ARGS}

@@ -243,7 +243,6 @@ namespace ALE {
       typedef Patch_                                                patch_type;
       typedef Sieve_                                                sieve_type;
       typedef typename sieve_type::point_type                       point_type;
-      typedef typename ALE::set<point_type>                         PointSet;
       typedef typename std::map<patch_type, Obj<sieve_type> >       sheaf_type;
       typedef typename ALE::Sifter<int, point_type, int>            patch_label_type;
       typedef typename std::map<patch_type, Obj<patch_label_type> > label_type;
@@ -920,6 +919,29 @@ namespace ALE {
       int getTag() const {return this->_tag;};
       void setTag(const int tag) {this->_tag = tag;};
     public:
+      void construct(const Obj<overlap_type>& overlap, const int size) {
+        if (this->_type == RECEIVE) {
+          Obj<typename overlap_type::baseSequence> base = overlap->base();
+
+          for(typename overlap_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const Obj<typename overlap_type::coneSequence>& ranks = overlap->cone(*b_iter);
+
+            for(typename overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *b_iter, size);
+            }
+          }
+        } else {
+          Obj<typename overlap_type::capSequence> cap = overlap->cap();
+
+          for(typename overlap_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+            const Obj<typename overlap_type::supportSequence>& ranks = overlap->support(*c_iter);
+
+            for(typename overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+              this->_atlas->setFiberDimension(*r_iter, *c_iter, size);
+            }
+          }
+        }
+      };
       template<typename Sizer>
       void construct(const Obj<overlap_type>& overlap, const Sizer& sizer) {
         if (this->_type == RECEIVE) {
