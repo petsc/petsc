@@ -37,6 +37,10 @@ ex6: ex6.o   chkopts
 	-${CLINKER} -o ex6 ex6.o  ${PETSC_DM_LIB}
 	${RM} -f ex6.o
 
+ex7: ex7.o   chkopts
+	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
+	${RM} -f ex7.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
