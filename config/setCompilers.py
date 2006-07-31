@@ -274,7 +274,7 @@ class Configure(config.base.Configure):
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'hcc')
       yield os.path.join(self.framework.argDB['with-mpi-dir'], 'bin', 'mpcc_r')
       self.usedMPICompilers = 0
-      raise RuntimeError('bin/<mpicc,hcc/mpcc_r> you provided with -with-mpi-dir='+self.framework.argDB['with-mpi-dir']+' does not work')
+      raise RuntimeError('MPI compiler wrappers in '+self.framework.argDB['with-mpi-dir']+'/bin do not work. See http://www.mcs.anl.gov/petsc/petsc-as/documentation/faq.html#mpi-compilers')
     else:
       if self.useMPICompilers():
         self.usedMPICompilers = 1
