@@ -1,19 +1,17 @@
 static char help[] = "Global Ordering Tests.\n\n";
 
 #include <petsc.h>
-#include "sectionTest.hh"
+#include "overlapTest.hh"
 
 using ALE::Obj;
-typedef int                                                                        point_type;
-typedef ALE::Sieve<point_type, int, int>                                           sieve_type;
-typedef ALE::New::Topology<int, sieve_type>                                        topology_type;
-typedef ALE::New::DiscreteSieve<point_type>                                        dsieve_type;
-typedef ALE::New::Topology<int, dsieve_type>                                       overlap_topology_type;
-typedef ALE::New::Atlas<overlap_topology_type, ALE::Point>                         overlap_atlas_type;
-typedef ALE::Sifter<int,point_type,point_type>                                     send_overlap_type;
-typedef ALE::New::OverlapValues<send_overlap_type, overlap_atlas_type, point_type> send_section_type;
-typedef ALE::Sifter<point_type,int,point_type>                                     recv_overlap_type;
-typedef ALE::New::OverlapValues<recv_overlap_type, overlap_atlas_type, point_type> recv_section_type;
+typedef ALE::Test::OverlapTest::sieve_type        sieve_type;
+typedef ALE::Test::OverlapTest::topology_type     topology_type;
+typedef ALE::Test::OverlapTest::dsieve_type       dsieve_type;
+typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
+typedef ALE::Test::OverlapTest::send_section_type send_section_type;
+typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
+typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
+
 
 typedef struct {
   int debug; // The debugging level
@@ -21,27 +19,11 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "DoubletTest"
-// The doublet is
-//
-//       2 | 2
-// p0     /|\      p1
-//     5 / | \ 4
-//      /  |  \     _
-//     /   |   \    _
-//  0 /   4|5   \ 1
-//    \    |    /
-//     \ 6 | 6 /
-//    3 \  |  / 3
-//       \ | /
-//        \|/
-//       1 | 0
-//
 // This test has
 //  - A mesh overlapping itself
 //  - Single points overlapping single points
 PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
 {
-  Obj<sieve_type>        sieve       = new sieve_type(sendSection->comm(), options->debug);
   Obj<topology_type>     topology    = new topology_type(sendSection->comm(), options->debug);
   Obj<send_overlap_type> sendOverlap = new send_overlap_type(sendSection->comm(), options->debug);
   Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(recvSection->comm(), options->debug);
@@ -51,18 +33,10 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
   std::map<sieve_type::point_type, int> globalOrder;
 
   PetscFunctionBegin;
-  if (sieve->commSize() != 2) SETERRQ(PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
+  if (sendSection->commSize() != 2) SETERRQ(PETSC_ERR_SUP, "DoubletTest can only be run with 2 processes");
   // Make the sieve and topology
-  cone->insert(3);cone->insert(4);cone->insert(5);
-  sieve->addCone(cone, 6);cone->clear();
-  cone->insert(0);cone->insert(1);
-  sieve->addCone(cone, 3);cone->clear();
-  cone->insert(1);cone->insert(2);
-  sieve->addCone(cone, 4);cone->clear();
-  cone->insert(2);cone->insert(0);
-  sieve->addCone(cone, 5);cone->clear();
-  topology->setPatch(0, sieve);
-  topology->stratify();
+  ALE::Test::OverlapTest::constructDoublet(topology);
+  Obj<sieve_type> sieve = topology->getPatch(0);
   // Make overlap
   if (sieve->commRank() == 0) {
     // Local point 1 is overlapped by remote point 0 from proc 1
@@ -193,6 +167,14 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "SectionTest"
+PetscErrorCode SectionTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
@@ -224,6 +206,7 @@ int main(int argc, char *argv[])
     Obj<recv_section_type> recvSection = new recv_section_type(comm, recv_section_type::RECEIVE, sendSection->getTag(), options.debug);
 
     ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
+    ierr = SectionTest(sendSection, recvSection, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
