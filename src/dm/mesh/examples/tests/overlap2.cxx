@@ -11,7 +11,7 @@ typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
 typedef ALE::Test::OverlapTest::send_section_type send_section_type;
 typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
 typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
-
+typedef ALE::New::Numbering<topology_type>        numbering_type;
 
 typedef struct {
   int debug; // The debugging level
@@ -38,21 +38,7 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
   ALE::Test::OverlapTest::constructDoublet(topology);
   Obj<sieve_type> sieve = topology->getPatch(0);
   // Make overlap
-  if (sieve->commRank() == 0) {
-    // Local point 1 is overlapped by remote point 0 from proc 1
-    sendOverlap->addArrow(1, 1, 0);
-    recvOverlap->addArrow(1, 1, 0);
-    // Local point 2 is overlapped by remote point 2 from proc 1
-    sendOverlap->addArrow(2, 1, 2);
-    recvOverlap->addArrow(1, 2, 2);
-  } else {
-    // Local point 0 is overlapped by remote point 1 from proc 0
-    sendOverlap->addArrow(0, 0, 1);
-    recvOverlap->addArrow(0, 0, 1);
-    // Local point 2 is overlapped by remote point 2 from proc 0
-    sendOverlap->addArrow(2, 0, 2);
-    recvOverlap->addArrow(0, 2, 2);
-  }
+  ALE::Test::OverlapTest::constructDoubletOverlap(sendOverlap, recvOverlap);
   // Make discrete sieve
   if (sieve->commRank() == 0) {
     cone->insert(0);cone->insert(2);
@@ -167,10 +153,22 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "SectionTest"
-PetscErrorCode SectionTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
+#define __FUNCT__ "NumberingTest"
+PetscErrorCode NumberingTest(const Obj<topology_type>& topology, Options *options)
 {
+  Obj<numbering_type> numbering = new numbering_type(topology, "depth", 0);
+
   PetscFunctionBegin;
+  ALE::Test::OverlapTest::constructDoublet(topology);
+
+  numbering->constructOverlap();
+  numbering->constructLocalOrder();
+  numbering->view("Local Vertex numbering");
+  numbering->constructCommunication();
+  numbering->fillSection();
+  numbering->communicate();
+  numbering->fillOrder();
+  numbering->view("Vertex numbering");
   PetscFunctionReturn(0);
 }
 
@@ -204,9 +202,10 @@ int main(int argc, char *argv[])
   try {
     Obj<send_section_type> sendSection = new send_section_type(comm, send_section_type::SEND, options.debug);
     Obj<recv_section_type> recvSection = new recv_section_type(comm, recv_section_type::RECEIVE, sendSection->getTag(), options.debug);
+    Obj<topology_type>     topology    = new topology_type(comm, options.debug);
 
     ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
-    ierr = SectionTest(sendSection, recvSection, &options);CHKERRQ(ierr);
+    ierr = NumberingTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

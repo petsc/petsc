@@ -35,6 +35,8 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 #include <Mesh.hh>
 #include "petscmesh.h"
 #include "petscviewer.h"
+#include "src/dm/mesh/meshpcice.h"
+#include "src/dm/mesh/meshpylith.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -57,7 +59,7 @@ typedef struct {
   Vec            material;           // Field over cells indicating material type
 } Options;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
 PetscErrorCode ProcessOptions(MPI_Comm, Options *);
 PetscErrorCode CreateMesh(MPI_Comm, ALE::Obj<ALE::Mesh>&, Options *);
 PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
@@ -83,23 +85,6 @@ int main(int argc, char *argv[])
 
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
-#if 0
-    ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-    if (options.inputFileType == PCICE) {
-      mesh = ALE::PCICEBuilder::createNew(comm, options.baseFilename, options.dim, options.useZeroBase, options.interpolate, options.debug);
-    } else if (options.inputFileType == PYLITH) {
-      mesh = ALE::PyLithBuilder::createNew(comm, options.baseFilename, options.interpolate, options.debug);
-    }
-    ALE::LogStagePop(stage);
-    ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
-    ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
-    if (options.debug) {
-      mesh->getTopology()->view("Serial topology");
-    }
-#endif
     ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
     ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
@@ -171,16 +156,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, ALE::Obj<ALE::Mesh>& mesh, Options *opt
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   if (options->inputFileType == PCICE) {
-    mesh = ALE::PCICEBuilder::createNew(comm, options->baseFilename, options->dim, options->useZeroBase, options->interpolate, options->debug);
+    mesh = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
   } else if (options->inputFileType == PYLITH) {
-    mesh = ALE::PyLithBuilder::createNew(comm, options->baseFilename, options->interpolate, options->debug);
+    mesh = ALE::PyLith::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
+  } else {
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
   }
   ALE::LogStagePop(stage);
-  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
-  ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
   if (options->debug) {
-    mesh->getTopology()->view("Serial topology");
+    mesh->getTopologyNew()->view("Serial topology");
   }
   PetscFunctionReturn(0);
 }
@@ -219,7 +206,7 @@ PetscErrorCode OutputVTK(const ALE::Obj<ALE::Mesh>& mesh, Options *options)
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
     if (options->partition) {
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
       ierr = VecView(options->partition, viewer);CHKERRQ(ierr);
@@ -276,7 +263,7 @@ PetscErrorCode OutputMesh(const ALE::Obj<ALE::Mesh>& mesh, Options *options)
         CHKERRQ(ierr);
       }
     }
-    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
+    ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     ALE::LogStagePop(stage);
   }

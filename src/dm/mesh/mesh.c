@@ -110,8 +110,8 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve_Newer"
-PetscErrorCode MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer)
+#define __FUNCT__ "MeshView_Sieve"
+PetscErrorCode MeshView_Sieve(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer)
 {
   PetscTruth     iascii, isbinary, isdraw;
   PetscErrorCode ierr;
@@ -255,30 +255,6 @@ PetscErrorCode FieldView_Sieve(ALE::Obj<ALE::Mesh> mesh, const std::string& name
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshView_Sieve"
-PetscErrorCode MeshView_Sieve(Mesh mesh, PetscViewer viewer)
-{
-  PetscTruth     iascii, isbinary, isdraw;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_BINARY, &isbinary);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
-
-  if (iascii){
-    SETERRQ(PETSC_ERR_SUP, "Ascii viewer not implemented for Mesh");
-  } else if (isbinary) {
-    SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Mesh");
-  } else if (isdraw){ 
-    SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
-  } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MeshView"
 /*@C
    MeshView - Views a Mesh object. 
@@ -332,7 +308,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscCheckSameComm(mesh, 1, viewer, 2);
 
   ierr = PetscLogEventBegin(Mesh_View,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*mesh->ops->view)(mesh, viewer);CHKERRQ(ierr);
+  ierr = (*mesh->ops->view)(mesh->m, viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mesh_View,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
