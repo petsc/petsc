@@ -668,6 +668,7 @@ PetscErrorCode MatAssemblyEnd_MPISBAIJ(Mat mat,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode MatSetValues_MPIBAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const MatScalar[],InsertMode);
 #undef __FUNCT__  
 #define __FUNCT__ "MatView_MPISBAIJ_ASCIIorDraworSocket"
 static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer viewer)
@@ -762,7 +763,7 @@ static PetscErrorCode MatView_MPISBAIJ_ASCIIorDraworSocket(Mat mat,PetscViewer v
       for (j=ai[i]; j<ai[i+1]; j++) {
         col = baij->garray[aj[j]]*bs;
         for (k=0; k<bs; k++) {
-          ierr = MatSetValues(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
+          ierr = MatSetValues_MPIBAIJ(A,bs,rvals,1,&col,a,INSERT_VALUES);CHKERRQ(ierr);
           col++; a += bs;
         }
       }
