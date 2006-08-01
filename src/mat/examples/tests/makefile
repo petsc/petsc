@@ -990,10 +990,11 @@ runex100:
 	for np in ${NPROCS}; do \
 	  for dof in ${DOF}; do \
 	    ${MPIRUN} -np $$np ./ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -viewer_binary_skip_info > ex100.tmp 2>&1; \
+	    if (${DIFF} output/ex100.out ex100.tmp) then true; \
+            else echo "Possible problem with ex100 with:";\
+	    echo ${MPIRUN} -np $$np ./ex100 -f ${DATAFILESPATH}/matrices/arco1 -dof $$dof -viewer_binary_skip_info; fi; \
 	  done; \
 	done; \
-	if (${DIFF} output/ex100.out ex100.tmp) then true; \
-	else echo "Possible problem with ex100, diffs above"; fi; \
 	${RM} -f ex100.tmp
 
 runex101:

@@ -1302,7 +1302,6 @@ static PetscErrorCode VecSetTypeFromOptions_Private(Vec vec)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetFromOptions(Vec vec)
 {
-  PetscTruth     opt;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
