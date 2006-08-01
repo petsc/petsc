@@ -193,6 +193,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
   if (flg) {
     ierr = MatSetType(B,mtype);CHKERRQ(ierr);
   }
+  if (!B->type_name) {
+    ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
