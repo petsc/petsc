@@ -80,6 +80,15 @@ PetscErrorCode MatCreate_Inode(Mat B)
   b->inode.limit       = 5;
   b->inode.max_limit   = 5;
 
+  ierr = PetscOptionsBegin(B->comm,B->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,b->inode.use,&b->inode.use,PETSC_NULL);CHKERRQ(ierr);
+    if (!b->inode.use) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,b->inode.use,&b->inode.use,PETSC_NULL);CHKERRQ(ierr);
+    if (!b->inode.use) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
+
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInodeAdjustForInodes_C",
                                      "MatInodeAdjustForInodes_Inode",
                                       MatInodeAdjustForInodes_Inode);CHKERRQ(ierr);
@@ -93,7 +102,9 @@ PetscErrorCode MatCreate_Inode(Mat B)
 #define __FUNCT__ "MatSetOption_Inode"
 PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
 {
-  Mat_SeqAIJ *a=(Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   switch(op) {
     case MAT_USE_INODES:
@@ -101,6 +112,7 @@ PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
       break;
     case MAT_DO_NOT_USE_INODES:
       a->inode.use         = PETSC_FALSE;
+      ierr = PetscInfo(A,"Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n");CHKERRQ(ierr);
       break;
     case MAT_INODE_LIMIT_1:
       a->inode.limit  = 1;
