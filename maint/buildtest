@@ -74,6 +74,8 @@ echo "Performing buildtest on " $MACH "with arch " $PETSC_ARCH " at " $nPETSC_DI
 # Run Configure
   #remove old logs
   /bin/rm -f configure.log*
+  # remove old bmakefiles
+  /bin/rm -rf bmake/${PETSC_ARCH}
   #remove external packages - so they get rebuilt again
   /bin/rm -rf externalpackages
   # now configure
