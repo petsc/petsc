@@ -251,7 +251,7 @@ namespace ALE {
     protected:
       //--------------------------------------------------------------------------------------------------------
       template <typename Sequence>
-      static void __determinePointOwners(const Obj<graph_type> _graph, const Obj<Sequence>& points, int32_t *LeaseData, Point__int& owner) {
+      static void __determinePointOwners(const Obj<graph_type> _graph, const Obj<Sequence>& points, int32_t *LeaseData, int__int& owner) {
         PetscErrorCode ierr;
         // The Sequence points will be referred to as 'base' throughout, although it may in fact represent a cap.
         MPI_Comm comm = _graph->comm();
@@ -345,7 +345,8 @@ namespace ALE {
             }
             proc = d;
           }
-          owner[p]     = proc;              
+          // FIX
+          owner[p.index]      = proc;
           LeaseData[2*proc+1] = 1;                 // processor owns at least one of ours (i.e., the number of leases from proc is 1)
           LeaseData[2*proc]++;                     // count of how many we lease from proc
         }
@@ -379,7 +380,7 @@ namespace ALE {
         ierr = PetscMalloc(2*size * sizeof(int), &BuyData);CHKERROR(ierr, "Error in PetscMalloc");
         ierr = PetscMemzero(BuyData, 2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
         // Map from points to the process managing its bin (seller)
-        Point__int owner;
+        int__int owner;
 
         // determine owners of each base node and save it in a map
         __determinePointOwners(_graph, points, BuyData, owner);
@@ -598,7 +599,7 @@ namespace ALE {
         ierr = PetscMemzero(BuyDataA, 2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
         ierr = PetscMemzero(BuyDataB, 2*size * sizeof(int));CHKERROR(ierr, "Error in PetscMemzero");
         // Map from points to the process managing its bin (seller)
-        Point__int ownerA, ownerB;
+        int__int ownerA, ownerB;
 
         // determine owners of each base node and save it in a map
         __determinePointOwners(_graphA, pointsA, BuyDataA, ownerA);
@@ -642,13 +643,13 @@ namespace ALE {
         int32_t *BuyPointsB; // (point, coneSize) for each B point boung from a seller
         ierr = PetscMalloc2(msgSize*pointsA->size(),int32_t,&BuyPointsA,msgSize*pointsB->size(),int32_t,&BuyPointsB);CHKERROR(ierr,"Error in PetscMalloc");
         for (typename Sequence::iterator p_itor = pointsA->begin(); p_itor != pointsA->end(); p_itor++) {
-          BuyPointsA[offsetsA[ownerA[*p_itor]]++] = (*p_itor).prefix;
-          BuyPointsA[offsetsA[ownerA[*p_itor]]++] = (*p_itor).index;      
+          BuyPointsA[offsetsA[ownerA[*p_itor]]++] = *p_itor;
+          BuyPointsA[offsetsA[ownerA[*p_itor]]++] = *p_itor;      
           BuyPointsA[offsetsA[ownerA[*p_itor]]++] = _graphA->cone(*p_itor)->size();
         }
         for (typename Sequence::iterator p_itor = pointsB->begin(); p_itor != pointsB->end(); p_itor++) {
-          BuyPointsB[offsetsB[ownerB[*p_itor]]++] = (*p_itor).prefix;
-          BuyPointsB[offsetsB[ownerB[*p_itor]]++] = (*p_itor).index;      
+          BuyPointsB[offsetsB[ownerB[*p_itor]]++] = *p_itor;
+          BuyPointsB[offsetsB[ownerB[*p_itor]]++] = *p_itor;      
           BuyPointsB[offsetsB[ownerB[*p_itor]]++] = _graphB->cone(*p_itor)->size();
         }
         for(int b = 0, o = 0; b < BuyCountA; ++b) {
@@ -2284,6 +2285,16 @@ namespace ALE {
       Obj<typename traits::coneSequence> 
       cone(const typename traits::target_type& p, const typename traits::color_type& color) {
         return this->_graph->support(p, color);
+      };
+
+      template<typename PointCheck>
+      bool coneContains(const typename traits::target_type& p, const PointCheck& checker) {
+        return this->_graph->supportContains(p, checker);
+      };
+
+      template<typename PointProcess>
+      void coneApply(const typename traits::target_type& p, const PointProcess& processor) {
+        this->_graph->supportApply(p, processor);
       };
       
       Obj<typename traits::supportSequence> 

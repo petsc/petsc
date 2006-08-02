@@ -169,8 +169,8 @@ namespace ALE {
       }
       // Remove partition points
       for(int p = 0; p < oldSifter->commSize(); ++p) {
-        oldSifter->removeBasePoint(typename sifter_type::traits::target_type(-1, p));
-        newSifter->removeBasePoint(typename sifter_type::traits::target_type(-1, p));
+        oldSifter->removeBasePoint(typename sifter_type::traits::target_type(-p));
+        newSifter->removeBasePoint(typename sifter_type::traits::target_type(-p));
       }
       // Support complete to build the local topology
       supportDelta_type::setDebug(oldSifter->debug);
@@ -360,11 +360,11 @@ namespace ALE {
       typename mesh_type::patch_type patch;
 
       for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        if ((*e_iter).prefix >= 0) {
-          oldSieve->addCone(oldSieve->closure(*e_iter), typename mesh_type::point_type(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]));
+        if (*e_iter >= 0) {
+          oldSieve->addCone(oldSieve->closure(*e_iter), typename mesh_type::point_type(-assignment[elementBundle->getIndex(patch, *e_iter).prefix]));
         }
       }
-      typename mesh_type::point_type partitionPoint(-1, newSieve->commRank());
+      typename mesh_type::point_type partitionPoint(-newSieve->commRank());
 
       newSieve->addBasePoint(partitionPoint);
       if (oldSieve->debug) {
@@ -382,9 +382,9 @@ namespace ALE {
       typename mesh_type::patch_type patch;
 
       for(typename sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        if ((*e_iter).prefix >= 0) {
+        if (*e_iter >= 0) {
           Obj<typename sieve_type::coneSet> closure = oldSieve->closure(*e_iter);
-          typename mesh_type::point_type partitionPoint(-1, assignment[elementBundle->getIndex(patch, *e_iter).prefix]);
+          typename mesh_type::point_type partitionPoint(-assignment[elementBundle->getIndex(patch, *e_iter).prefix]);
 
           for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != closure->end(); ++c_iter) {
             if (cap->contains(*c_iter)) {
@@ -417,7 +417,7 @@ namespace ALE {
         assignment = new short[numLeaves];
         for(int p = 0; p < size; p++) {
           for(int l = (numLeaves/size)*p + PetscMin(numLeaves%size, p); l < (numLeaves/size)*(p+1) + PetscMin(numLeaves%size, p+1); l++) {
-            assignment[elementBundle->getIndex(patch, point_type(0, l)).prefix] = p;
+            assignment[elementBundle->getIndex(patch, point_type(l)).prefix] = p;
           }
         }
       }
@@ -601,7 +601,7 @@ namespace ALE {
       Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
       short *assignment = NULL;
       bool useSimple = true;
-      bool hasBd = (serialBoundary->getPatches()->size() > 0);
+//       bool hasBd = (serialBoundary->getPatches()->size() > 0);
 
       parallelTopology->setStratification(false);
 #ifdef PETSC_HAVE_CHACO
@@ -613,67 +613,67 @@ namespace ALE {
       if (useSimple) {
         assignment = partition_Simple(serialMesh, serialTopology, parallelTopology);
       }
-      if (hasBd) {
-        partition_Induced(assignment, serialMesh, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
-      }
-      Obj<std::set<std::string> > fieldNames = serialMesh->getFields();
+//       if (hasBd) {
+//         partition_Induced(assignment, serialMesh, serialBoundary->__getOrder(), parallelBoundary->__getOrder());
+//       }
+//       Obj<std::set<std::string> > fieldNames = serialMesh->getFields();
 
-      for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
-        partition_Induced(assignment, serialMesh, serialMesh->getField(*f_iter)->__getOrder(), parallelMesh->getField(*f_iter)->__getOrder());
-      }
+//       for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
+//         partition_Induced(assignment, serialMesh, serialMesh->getField(*f_iter)->__getOrder(), parallelMesh->getField(*f_iter)->__getOrder());
+//       }
       delete [] assignment;
 
-      Obj<typename Distributer<sieve_type>::overlap_type> partitionOverlap = Distributer<sieve_type>::distribute(serialTopology, parallelTopology);
+//       Obj<typename Distributer<sieve_type>::overlap_type> partitionOverlap = Distributer<sieve_type>::distribute(serialTopology, parallelTopology);
       parallelTopology->stratify();
       parallelTopology->setStratification(true);
 
-      if (hasBd) {
-        Distributer<order_type>::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
-        parallelBoundary->reorderPatches();
-        parallelBoundary->allocatePatches();
-        parallelBoundary->createGlobalOrder();
+//       if (hasBd) {
+//         Distributer<order_type>::distribute(serialBoundary->__getOrder(), parallelBoundary->__getOrder(), false);
+//         parallelBoundary->reorderPatches();
+//         parallelBoundary->allocatePatches();
+//         parallelBoundary->createGlobalOrder();
 
-        VecScatter scatter = Distributer<order_type>::createMappingStoP(serialBoundary, parallelBoundary, partitionOverlap, true);
-        PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-      }
-      for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
-        {
-          ALE::LogStage stage = ALE::LogStageRegister((*f_iter).c_str());
-          ALE::LogStagePush(stage);
-        }
-        Obj<typename mesh_type::field_type> serialField   = serialMesh->getField(*f_iter);
-        Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
+//         VecScatter scatter = Distributer<order_type>::createMappingStoP(serialBoundary, parallelBoundary, partitionOverlap, true);
+//         PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+//       }
+//       for(typename std::set<std::string>::iterator f_iter = fieldNames->begin(); f_iter != fieldNames->end(); ++f_iter) {
+//         {
+//           ALE::LogStage stage = ALE::LogStageRegister((*f_iter).c_str());
+//           ALE::LogStagePush(stage);
+//         }
+//         Obj<typename mesh_type::field_type> serialField   = serialMesh->getField(*f_iter);
+//         Obj<typename mesh_type::field_type> parallelField = parallelMesh->getField(*f_iter);
 
-        if (serialMesh->debug) {
-          std::string msg = "Serial field ";
-          msg += *f_iter;
-          serialField->view(msg.c_str());
-        }
-        Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
-        if (parallelMesh->debug) {
-          std::string msg = "Serial order ";
-          msg += *f_iter;
-          serialField->__getOrder()->view(msg.c_str());
-          msg = "Parallel order ";
-          msg += *f_iter;
-          parallelField->__getOrder()->view(msg.c_str());
-        }
-        parallelField->reorderPatches();
-        parallelField->allocatePatches();
-        parallelField->createGlobalOrder();
+//         if (serialMesh->debug) {
+//           std::string msg = "Serial field ";
+//           msg += *f_iter;
+//           serialField->view(msg.c_str());
+//         }
+//         Distributer<order_type>::distribute(serialField->__getOrder(), parallelField->__getOrder(), false);
+//         if (parallelMesh->debug) {
+//           std::string msg = "Serial order ";
+//           msg += *f_iter;
+//           serialField->__getOrder()->view(msg.c_str());
+//           msg = "Parallel order ";
+//           msg += *f_iter;
+//           parallelField->__getOrder()->view(msg.c_str());
+//         }
+//         parallelField->reorderPatches();
+//         parallelField->allocatePatches();
+//         parallelField->createGlobalOrder();
 
-        VecScatter scatter = Distributer<order_type>::createMappingStoP(serialField, parallelField, partitionOverlap, true);
-        PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-        if (parallelMesh->debug) {
-          std::string msg = "Parallel field ";
-          msg += *f_iter;
-          parallelField->view(msg.c_str());
-        }
-        {
-          ALE::LogStage stage = ALE::LogStageRegister((*f_iter).c_str());
-          ALE::LogStagePop(stage);
-        }
-      }
+//         VecScatter scatter = Distributer<order_type>::createMappingStoP(serialField, parallelField, partitionOverlap, true);
+//         PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+//         if (parallelMesh->debug) {
+//           std::string msg = "Parallel field ";
+//           msg += *f_iter;
+//           parallelField->view(msg.c_str());
+//         }
+//         {
+//           ALE::LogStage stage = ALE::LogStageRegister((*f_iter).c_str());
+//           ALE::LogStagePop(stage);
+//         }
+//       }
     };
     static void unify(const Obj<mesh_type> parallelMesh, const Obj<mesh_type> serialMesh) {
       typedef typename mesh_type::field_type::order_type order_type;
@@ -681,22 +681,22 @@ namespace ALE {
       Obj<sieve_type>                     serialTopology = serialMesh->getTopology();
       Obj<typename mesh_type::field_type> parallelBoundary = parallelMesh->getBoundary();
       Obj<typename mesh_type::field_type> serialBoundary = serialMesh->getBoundary();
-      bool                                hasBd = (parallelBoundary->getPatches()->size() > 0);
-      typename mesh_type::point_type      partitionPoint(-1, 0);
+//       bool                                hasBd = (parallelBoundary->getPatches()->size() > 0);
+      typename mesh_type::point_type      partitionPoint(-1);
 
       parallelTopology->addCone(parallelTopology->cap(), partitionPoint);
       parallelTopology->addCone(parallelTopology->base(), partitionPoint);
       parallelTopology->removeCapPoint(partitionPoint);
-      parallelBoundary->__getOrder()->addCone(parallelBoundary->__getOrder()->cap(), partitionPoint);
-      if (serialTopology->commRank() == 0) {
-        serialTopology->addBasePoint(partitionPoint);
-        serialBoundary->__getOrder()->addBasePoint(partitionPoint);
-      }
-      Distributer<sieve_type>::distribute(parallelTopology, serialTopology);
-      if (hasBd) {
-        Distributer<order_type>::distribute(parallelBoundary->__getOrder(), serialBoundary->__getOrder(), false);
-        serialBoundary->allocatePatches();
-      }
+//       parallelBoundary->__getOrder()->addCone(parallelBoundary->__getOrder()->cap(), partitionPoint);
+//       if (serialTopology->commRank() == 0) {
+//         serialTopology->addBasePoint(partitionPoint);
+//         serialBoundary->__getOrder()->addBasePoint(partitionPoint);
+//       }
+//       Distributer<sieve_type>::distribute(parallelTopology, serialTopology);
+//       if (hasBd) {
+//         Distributer<order_type>::distribute(parallelBoundary->__getOrder(), serialBoundary->__getOrder(), false);
+//         serialBoundary->allocatePatches();
+//       }
     };
   };
 }
