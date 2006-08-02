@@ -353,7 +353,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   ierr = KSPGetOperatorsSet(mg[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
   if (!opsset) {
     ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
-    ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,uflag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
 
   if (mg[0]->galerkin) {
