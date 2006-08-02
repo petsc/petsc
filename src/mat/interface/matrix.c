@@ -3765,58 +3765,63 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat mat,PetscTruth *assembled)
 PetscErrorCode MatView_Private(Mat mat)
 {
   PetscErrorCode    ierr;
-  PetscTruth        flg;
+  PetscTruth        flg1,flg2,flg3,flg4,flg6,flg7,flg8;
   static PetscTruth incall = PETSC_FALSE;
+#if defined(PETSC_USE_SOCKET_VIEWER)
+  PetscTruth        flg5;
+#endif
 
   PetscFunctionBegin;
   if (incall) PetscFunctionReturn(0);
   incall = PETSC_TRUE;
   ierr = PetscOptionsBegin(mat->comm,mat->prefix,"Matrix Options","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-mat_view_info","Information on matrix size","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-mat_view_info_detailed","Nonzeros in the matrix","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
-      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-mat_view","Print matrix to stdout","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    }
-    ierr = PetscOptionsName("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-      ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsName("-mat_view_info","Information on matrix size","MatView",&flg1);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_view_info_detailed","Nonzeros in the matrix","MatView",&flg2);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_view","Print matrix to stdout","MatView",&flg3);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_view_matlab","Print matrix to stdout in a format Matlab can read","MatView",&flg4);CHKERRQ(ierr);
 #if defined(PETSC_USE_SOCKET_VIEWER)
-    ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsName("-mat_view_socket","Send matrix to socket (can be read from matlab)","MatView",&flg5);CHKERRQ(ierr);
 #endif
-    ierr = PetscOptionsName("-mat_view_binary","Save matrix to file in binary format","MatView",&flg);CHKERRQ(ierr);
-    if (flg) {
-      ierr = MatView(mat,PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
-      ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
-    }
+    ierr = PetscOptionsName("-mat_view_binary","Save matrix to file in binary format","MatView",&flg6);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-mat_view_draw","Draw the matrix nonzero structure","MatView",&flg7);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  /* cannot have inside PetscOptionsBegin() because uses PetscOptionsBegin() */
-  ierr = PetscOptionsHasName(mat->prefix,"-mat_view_draw",&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = PetscOptionsHasName(mat->prefix,"-mat_view_contour",&flg);CHKERRQ(ierr);
-    if (flg) {
+
+  if (flg1) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+  }
+  if (flg2) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+  }
+  if (flg3) {
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+  }
+  if (flg4) {
+    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+  }
+#if defined(PETSC_USE_SOCKET_VIEWER)
+  if (flg5) {
+    ierr = MatView(mat,PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_SOCKET_(mat->comm));CHKERRQ(ierr);
+  }
+#endif
+  if (flg6) {
+    ierr = MatView(mat,PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_BINARY_(mat->comm));CHKERRQ(ierr);
+  }
+  if (flg7) {
+    ierr = PetscOptionsHasName(mat->prefix,"-mat_view_contour",&flg8);CHKERRQ(ierr);
+    if (flg8) {
       PetscViewerPushFormat(PETSC_VIEWER_DRAW_(mat->comm),PETSC_VIEWER_DRAW_CONTOUR);CHKERRQ(ierr);
     }
     ierr = MatView(mat,PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
-    if (flg) {
+    if (flg8) {
       PetscViewerPopFormat(PETSC_VIEWER_DRAW_(mat->comm));CHKERRQ(ierr);
     }
   }

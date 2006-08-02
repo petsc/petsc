@@ -1624,27 +1624,15 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 #define __FUNCT__ "Mat_CheckInode"
 PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
 {
-  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,m,nzx,nzy,*idx,*idy,*ns,*ii,node_count,blk_size;
-  PetscTruth     flag,flg;
+  PetscTruth     flag;
 
   PetscFunctionBegin;
+  if (!a->inode.use)                     PetscFunctionReturn(0);
   if (a->inode.checked && samestructure) PetscFunctionReturn(0);
 
-  a->inode.checked = PETSC_TRUE;
-
-  /* Notes: We set a->inode.limit=5 in MatCreate_Inode(). */
-  if (!a->inode.use) {ierr = PetscInfo(A,"Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n");CHKERRQ(ierr); PetscFunctionReturn(0);}
-
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {ierr = PetscInfo(A,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);PetscFunctionReturn(0);}
-    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
-    if (flg) {ierr = PetscInfo(A,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);PetscFunctionReturn(0);}
-    ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,a->inode.limit,&a->inode.limit,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  if (a->inode.limit > a->inode.max_limit) a->inode.limit = a->inode.max_limit;
 
   m = A->rmap.n;    
   if (a->inode.size) {ns = a->inode.size;}

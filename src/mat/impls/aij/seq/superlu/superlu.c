@@ -60,6 +60,16 @@ typedef struct {
   PetscTruth CleanUpSuperLU;
 } Mat_SuperLU;
 
+extern PetscErrorCode MatFactorInfo_SuperLU(Mat,PetscViewer);
+extern PetscErrorCode MatLUFactorNumeric_SuperLU(Mat,MatFactorInfo *,Mat *);
+extern PetscErrorCode MatDestroy_SuperLU(Mat);
+extern PetscErrorCode MatView_SuperLU(Mat,PetscViewer);
+extern PetscErrorCode MatAssemblyEnd_SuperLU(Mat,MatAssemblyType);
+extern PetscErrorCode MatSolve_SuperLU(Mat,Vec,Vec);
+extern PetscErrorCode MatSolveTranspose_SuperLU(Mat,Vec,Vec);
+extern PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat,IS,IS,MatFactorInfo *,Mat *);
+extern PetscErrorCode MatDuplicate_SuperLU(Mat, MatDuplicateOption, Mat *);
+
 /*
     Takes a SuperLU matrix (that is a SeqAIJ matrix with the additional SuperLU data-structures
    and methods) and converts it back to a regular SeqAIJ matrix.
@@ -467,10 +477,6 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
-  /* 
-  ierr = PetscOptionsTruth("-mat_superlu_equil","Equil","None",PETSC_FALSE,&flg,0);CHKERRQ(ierr);
-  if (flg) lu->options.Equil = YES; -- not supported by the interface !!!
-  */
   ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
   if (flg) {lu->options.ColPerm = (colperm_t)indx;}
   ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);
