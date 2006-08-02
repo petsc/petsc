@@ -827,6 +827,23 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       }
       return supp;
     };
+    template<typename PointCheck>
+    bool supportContains(const typename traits::source_type& p, const PointCheck& checker) {
+      typename traits::supportSequence support(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
+
+      for(typename traits::supportSequence::iterator s_iter = support.begin(); s_iter != support.end(); ++s_iter) {
+        if (checker(*s_iter, p)) return true;
+      }
+      return false;
+    };
+    template<typename PointProcess>
+    void supportApply(const typename traits::source_type& p, PointProcess& processor) {
+      typename traits::supportSequence support(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), p);
+
+      for(typename traits::supportSequence::iterator s_iter = support.begin(); s_iter != support.end(); ++s_iter) {
+        processor(*s_iter, p);
+      }
+    };
 
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL, bool rawData = false){

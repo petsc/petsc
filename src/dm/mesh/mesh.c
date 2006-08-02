@@ -173,24 +173,16 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
       } else if (outputState == 4) {
         SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
-      ALE::Obj<ALE::Mesh::section_type> field = mesh->getSection(name);
+      ALE::Obj<ALE::Mesh::section_type>   field     = mesh->getSection(name);
+      ALE::Obj<ALE::Mesh::numbering_type> numbering = new ALE::Mesh::numbering_type(mesh->getTopologyNew(), "depth", 0);
+
       if (doOutput) {
         ALE::Mesh::section_type::patch_type patch = mesh->getTopologyNew()->getPatches().begin()->first;
-        int                                 N     = 0;
 
         fiberDim = field->getAtlas()->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
-#if 0
-        if (field->getGlobalOffsets()) {
-          N = field->getGlobalOffsets()[mesh->commSize()]/fiberDim;
-        } else {
-          N = field->getSize(*field->getPatches()->begin())/fiberDim;
-        }
-#else
-        N = mesh->getTopologyNew()->depthStratum(patch, 0)->size();
-#endif
-        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
-      VTKViewer::writeField(mesh, field, name, fiberDim, viewer);
+      VTKViewer::writeField(mesh, field, name, fiberDim, numbering, viewer);
     } else {
       if (outputState == 0) {
         outputState = 2;
@@ -205,24 +197,16 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
       } else if (outputState == 4) {
         doOutput = 0;
       }
-      ALE::Obj<ALE::Mesh::section_type> field = mesh->getSection(name);
+      ALE::Obj<ALE::Mesh::section_type>   field     = mesh->getSection(name);
+      ALE::Obj<ALE::Mesh::numbering_type> numbering = new ALE::Mesh::numbering_type(mesh->getTopologyNew(), "height", 0);
+
       if (doOutput) {
         ALE::Mesh::section_type::patch_type patch = mesh->getTopologyNew()->getPatches().begin()->first;
-        int                                 N     = 0;
 
         fiberDim = field->getAtlas()->size(patch, *mesh->getTopologyNew()->heightStratum(patch, 0)->begin());
-#if 0
-        if (field->getGlobalOffsets()) {
-          N = field->getGlobalOffsets()[mesh->commSize()]/fiberDim;
-        } else {
-          N = field->getSize(*field->getPatches()->begin())/fiberDim;
-        }
-#else
-        N = mesh->getTopologyNew()->heightStratum(patch, 0)->size();
-#endif
-        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", N);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
-      VTKViewer::writeField(mesh, field, name, fiberDim, viewer);
+      VTKViewer::writeField(mesh, field, name, fiberDim, numbering, viewer);
     }
     ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
   } else {

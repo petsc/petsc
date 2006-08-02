@@ -69,7 +69,7 @@ namespace ALE {
       >::type> supportDelta_type;
       typedef RightSequenceDuplicator<ConeArraySequence<typename order_type::traits::arrow_type> > orderFuser;
       typedef ParSupportDelta<order_type, orderFuser> supportOrderDelta_type;
-      typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
+      typedef CoSifter<sieve_type, patch_type, index_type, int> bundle_type;
     private:
       MPI_Comm        _comm;
       int             _commRank;
@@ -124,7 +124,7 @@ namespace ALE {
         int c = 1;
 
         for(typename pointSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-          this->_order->addArrow(*p_iter, patch, point_type(c++, 0));
+          this->_order->addArrow(*p_iter, patch, index_type(c++, 0));
         }
         if (points->begin() == points->end()) {
           this->_order->addBasePoint(patch);
@@ -708,14 +708,14 @@ namespace ALE {
           if (this->debug) {
             std::cout << "Doing cap overlap" << std::endl;
           }
-          capOverlap = supportDelta_type::overlap(this->_topology);
+          //capOverlap = supportDelta_type::overlap(this->_topology);
         }
         MPI_Allreduce(&useLocBaseOverlap, &useBaseOverlap, 1, MPI_INT, MPI_LOR, this->comm());
         if (useBaseOverlap) {
           if (this->debug) {
             std::cout << "Doing base overlap" << std::endl;
           }
-          baseOverlap = coneDelta_type::overlap(this->_topology);
+          //baseOverlap = coneDelta_type::overlap(this->_topology);
         }
         if (useCapOverlap && useBaseOverlap) {
           throw ALE::Exception("Cannot have both kinds of overlap");
@@ -743,13 +743,13 @@ namespace ALE {
             this->globalOrder->setFiberDimension(*b_iter, *p_iter, this->getFiberDimension(*b_iter, *p_iter));
           }
         }
-        if (useCapOverlap) {
-          this->localOrder->orderPatches(supportLocalizer(capOverlap, this->commRank()));
-          this->globalOrder->orderPatches(supportLocalizer(capOverlap, this->commRank()));
-        } else {
-          this->localOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
-          this->globalOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
-        }
+//         if (useCapOverlap) {
+//           this->localOrder->orderPatches(supportLocalizer(capOverlap, this->commRank()));
+//           this->globalOrder->orderPatches(supportLocalizer(capOverlap, this->commRank()));
+//         } else {
+//           this->localOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
+//           this->globalOrder->orderPatches(coneLocalizer(baseOverlap, this->commRank()));
+//         }
         if (this->debug) {
           this->localOrder->view("Local order");
           this->globalOrder->view("Global order");
@@ -783,51 +783,11 @@ namespace ALE {
           this->globalOrder->view("Global order with offset");
         }
         // Complete order to get ghost offsets
-        this->globalOrder->completeOrder();
+        //this->globalOrder->completeOrder();
         if (this->debug) {
           this->globalOrder->view("Global order after completion");
         }
       };
-      void completeOrder() {
-        typename bundle_type::patch_type patch;
-
-        Obj<typename supportOrderDelta_type::overlap_type> overlap = supportOrderDelta_type::overlap(this->_order);
-        Obj<typename supportOrderDelta_type::fusion_type>  fusion  = supportOrderDelta_type::fusion(this->_order, overlap);
-        if (this->debug) {
-          fusion->view("Fusion for global indices");
-        }
-        Obj<typename supportOrderDelta_type::fusion_type::coneSequence> fPatch = fusion->cone(patch);
-
-        for(typename supportOrderDelta_type::fusion_type::coneSequence::iterator c_iter = fPatch->begin(); c_iter != fPatch->end(); ++c_iter) {
-          if (c_iter.color().index > 0) {
-            this->setFiberOffset(patch, *c_iter, c_iter.color().prefix);
-          }
-        }
-      };
-      void partitionOrder(const std::string& orderName) {
-        Obj<typename sieve_type::traits::heightSequence> elements = this->_topology->heightStratum(0);
-        Obj<order_type> reorder = this->__getOrder(orderName);
-        
-        if (this->debug) {
-          reorder->view("Initial reorder");
-        }
-        ParConeDelta<order_type>::setDebug(this->debug);
-        Obj<typename ParConeDelta<order_type>::overlap_type> overlap = ParConeDelta<order_type>::overlap(reorder);
-        Obj<typename ParConeDelta<order_type>::fusion_type>  fusion  = ParConeDelta<order_type>::fusion(reorder, overlap);
-        reorder->add(fusion);
-        if (debug) {
-          overlap->view("Reorder fusion");
-          fusion->view("Reorder fusion");
-          reorder->view("Reorder after adding fusion");
-        }
-        //FIX
-        Obj<ALE::set<point_type> > points = ALE::set<point_type>();
-        points->insert(elements->begin(), elements->end());
-        reorder->restrictBase(points);
-        if (debug) {
-          reorder->view("Reorder after base restriction");
-        }
-      }
     };
 } // namespace ALE
 

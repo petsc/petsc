@@ -24,23 +24,21 @@
 #include <CoSieve.hh>
 
 namespace ALE {
-  // Forward declaration
-  class Partitioner;
-
     class Mesh {
     public:
-      typedef ALE::Point point_type;
+      typedef int point_type;
       typedef std::vector<point_type> PointArray;
       typedef ALE::Sieve<point_type,int,int> sieve_type;
-      typedef point_type patch_type;
-      typedef CoSifter<sieve_type, patch_type, point_type, int> bundle_type;
-      typedef CoSifter<sieve_type, patch_type, point_type, double> field_type;
-      typedef CoSifter<sieve_type, ALE::pair<patch_type,int>, point_type, double> foliation_type;
+      typedef ALE::Point patch_type;
+      typedef CoSifter<sieve_type, patch_type, ALE::Point, int> bundle_type;
+      typedef CoSifter<sieve_type, patch_type, ALE::Point, double> field_type;
+      typedef CoSifter<sieve_type, ALE::pair<patch_type,int>, ALE::Point, double> foliation_type;
       typedef std::map<std::string, Obj<field_type> > FieldContainer;
       typedef std::map<int, Obj<bundle_type> > BundleContainer;
       typedef ALE::New::Topology<int, sieve_type>        topology_type;
       typedef ALE::New::Atlas<topology_type, point_type> atlas_type;
       typedef ALE::New::Section<atlas_type, double>      section_type;
+      typedef ALE::New::Numbering<topology_type>         numbering_type;
       typedef std::map<std::string, Obj<section_type> >  SectionContainer;
       typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
       int debug;
@@ -148,259 +146,6 @@ namespace ALE {
       };
       const Obj<topology_type>& getTopologyNew() {return this->_topology;};
       void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
-      // For a hex, there are 2d faces
-      void buildHexFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
-        PointArray *faces = NULL;
-
-        if (debug > 1) {std::cout << "  Building hex faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
-        if (dim > 3) {
-          throw ALE::Exception("Cannot do hexes of dimension greater than three");
-        } else if (dim > 2) {
-          int nodes[24] = {0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 5, 4,
-                           1, 2, 6, 5, 2, 3, 7, 6, 3, 0, 4, 7};
-          faces = new PointArray();
-
-          for(int b = 0; b < 6; b++) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
-
-            for(int c = 0; c < 4; c++) {
-              faceBoundary.push_back((*boundary)[nodes[b*4+c]]);
-            }
-            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
-          }
-        } else if (dim > 1) {
-          int boundarySize = (int) boundary->size();
-          faces = new PointArray();
-
-          for(int b = 0; b < boundarySize; b++) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
-
-            for(int c = 0; c < 2; c++) {
-              faceBoundary.push_back((*boundary)[(b+c)%boundarySize]);
-            }
-            if (debug > 1) {std::cout << "    boundary point " << (*boundary)[b] << std::endl;}
-            this->buildHexFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
-          }
-        } else {
-          if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
-          faces = boundary;
-        }
-        if (debug > 1) {
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            std::cout << "  face point " << *f_itor << std::endl;
-          }
-        }
-        // We always create the toplevel, so we could short circuit somehow
-        // Should not have to loop here since the meet of just 2 boundary elements is an element
-        PointArray::iterator f_itor = faces->begin();
-        point_type           start = *f_itor;
-        f_itor++;
-        point_type           next = *f_itor;
-        Obj<sieve_type::supportSet> preElement = this->topology->nJoin(start, next, 1);
-
-        if (preElement->size() > 0) {
-          simplex = *preElement->begin();
-          if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
-        } else {
-          int color = 0;
-
-          simplex = point_type(0, (*(*curSimplex)[dim])++);
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            this->topology->addArrow(*f_itor, simplex, color++);
-          }
-          if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
-        }
-        if (dim > 1) {
-          delete faces;
-        }
-      };
-      void buildFaces(int dim, std::map<int, int*> *curSimplex, PointArray *boundary, point_type& simplex) {
-        PointArray *faces = NULL;
-
-        if (debug > 1) {std::cout << "  Building faces for boundary of " << simplex << " (size " << boundary->size() << "), dim " << dim << std::endl;}
-        if (dim > 1) {
-          faces = new PointArray();
-
-          // Use the cone construction
-          for(PointArray::iterator b_itor = boundary->begin(); b_itor != boundary->end(); ++b_itor) {
-            PointArray faceBoundary = PointArray();
-            point_type face;
-
-            for(PointArray::iterator i_itor = boundary->begin(); i_itor != boundary->end(); ++i_itor) {
-              if (i_itor != b_itor) {
-                faceBoundary.push_back(*i_itor);
-              }
-            }
-            if (debug > 1) {std::cout << "    boundary point " << *b_itor << std::endl;}
-            this->buildFaces(dim-1, curSimplex, &faceBoundary, face);
-            faces->push_back(face);
-          }
-        } else {
-          if (debug > 1) {std::cout << "  Just set faces to boundary in 1d" << std::endl;}
-          faces = boundary;
-        }
-        if (debug > 1) {
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            std::cout << "  face point " << *f_itor << std::endl;
-          }
-        }
-        // We always create the toplevel, so we could short circuit somehow
-        // Should not have to loop here since the meet of just 2 boundary elements is an element
-        PointArray::iterator f_itor = faces->begin();
-        point_type           start = *f_itor;
-        f_itor++;
-        point_type           next = *f_itor;
-        Obj<sieve_type::supportSet> preElement = this->topology->nJoin(start, next, 1);
-
-        if (preElement->size() > 0) {
-          simplex = *preElement->begin();
-          if (debug > 1) {std::cout << "  Found old simplex " << simplex << std::endl;}
-        } else {
-          int color = 0;
-
-          simplex = point_type(0, (*(*curSimplex)[dim])++);
-          for(PointArray::iterator f_itor = faces->begin(); f_itor != faces->end(); ++f_itor) {
-            this->topology->addArrow(*f_itor, simplex, color++);
-          }
-          if (debug > 1) {std::cout << "  Added simplex " << simplex << " dim " << dim << std::endl;}
-        }
-        if (dim > 1) {
-          delete faces;
-        }
-      };
-
-      #undef __FUNCT__
-      #define __FUNCT__ "Mesh::buildTopology"
-      // Build a topology from a connectivity description
-      //   (0, 0)            ... (0, numSimplices-1):  dim-dimensional simplices
-      //   (0, numSimplices) ... (0, numVertices):     vertices
-      // The other simplices are numbered as they are requested
-      void buildTopology(int numSimplices, int simplices[], int numVertices, bool interpolate = true, int corners = -1) {
-        ALE_LOG_EVENT_BEGIN;
-        if (this->commRank() != 0) {
-          ALE_LOG_EVENT_END;
-          return;
-        }
-        // Create a map from dimension to the current element number for that dimension
-        std::map<int,int*> curElement = std::map<int,int*>();
-        int                curSimplex = 0;
-        int                curVertex  = numSimplices;
-        int                newElement = numSimplices+numVertices;
-        PointArray         boundary   = PointArray();
-
-        if (corners < 0) corners = this->dim+1;
-        curElement[0]         = &curVertex;
-        curElement[this->dim] = &curSimplex;
-        for(int d = 1; d < this->dim; d++) {
-          curElement[d] = &newElement;
-        }
-        for(int s = 0; s < numSimplices; s++) {
-          point_type simplex(0, s);
-
-          // Build the simplex
-          if (interpolate) {
-            boundary.clear();
-            for(int b = 0; b < corners; b++) {
-              point_type vertex(0, simplices[s*corners+b]+numSimplices);
-
-              if (debug > 1) {std::cout << "Adding boundary node " << vertex << std::endl;}
-              boundary.push_back(vertex);
-            }
-            if (debug) {std::cout << "simplex " << s << " boundary size " << boundary.size() << std::endl;}
-
-            if (corners != this->dim+1) {
-              this->buildHexFaces(this->dim, &curElement, &boundary, simplex);
-            } else {
-              this->buildFaces(this->dim, &curElement, &boundary, simplex);
-            }
-          } else {
-            for(int b = 0; b < corners; b++) {
-              point_type p(0, simplices[s*corners+b]+numSimplices);
-
-              this->topology->addArrow(p, simplex, b);
-            }
-          }
-        }
-        ALE_LOG_EVENT_END;
-      };
-
-      #undef __FUNCT__
-      #define __FUNCT__ "Mesh::createVertBnd"
-      void createVertexBundle(int numSimplices, int simplices[], int elementOffset = 0, int corners = -1) {
-        ALE_LOG_STAGE_BEGIN;
-        Obj<bundle_type> vertexBundle = this->getBundle(0);
-        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
-        std::string orderName("element");
-        int vertexOffset;
-
-        ALE_LOG_EVENT_BEGIN;
-        if (elementOffset) {
-          vertexOffset = 0;
-        } else {
-          vertexOffset = numSimplices;
-        }
-        if (corners < 0) corners = this->dim+1;
-        Obj<PointArray> patch = new PointArray();
-        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-          // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
-          //   What we really need is the depthStratum relative to the patch
-          patch->clear();
-
-          for(int b = 0; b < corners; b++) {
-            patch->push_back(point_type(0, simplices[((*e_iter).index - elementOffset)*corners+b]+vertexOffset));
-          }
-          vertexBundle->setPatch(orderName, patch, *e_iter);
-          for(PointArray::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
-            vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
-          }
-        }
-        if (elements->size() == 0) {
-          vertexBundle->setPatch(orderName, elements, bundle_type::patch_type());
-        }
-        ALE_LOG_EVENT_END;
-        vertexBundle->orderPatches(orderName);
-        ALE_LOG_STAGE_END;
-      };
-
-      #undef __FUNCT__
-      #define __FUNCT__ "Mesh::createSerCoords"
-      void createSerialCoordinates(int embedDim, int numSimplices, double coords[]) {
-        ALE_LOG_EVENT_BEGIN;
-        patch_type patch;
-
-        this->coordinates->setTopology(this->topology);
-        this->coordinates->setPatch(this->topology->leaves(), patch);
-        this->coordinates->setFiberDimensionByDepth(patch, 0, embedDim);
-        this->coordinates->orderPatches();
-        Obj<sieve_type::traits::depthSequence> vertices = this->topology->depthStratum(0);
-        for(sieve_type::traits::depthSequence::iterator v_itor = vertices->begin(); v_itor != vertices->end(); v_itor++) {
-          this->coordinates->update(patch, *v_itor, &coords[((*v_itor).index - numSimplices)*embedDim]);
-        }
-        Obj<bundle_type> vertexBundle = this->getBundle(0);
-        Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
-        std::string orderName("element");
-
-        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-          // setFiberDimensionByDepth() does not work here since we only want it to apply to the patch cone
-          //   What we really need is the depthStratum relative to the patch
-          Obj<bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_iter);
-
-          this->coordinates->setPatch(orderName, cone, *e_iter);
-          for(bundle_type::order_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-            this->coordinates->setFiberDimension(orderName, *e_iter, *c_iter, embedDim);
-          }
-        }
-        if (elements->size() == 0) {
-          this->coordinates->setPatch(orderName, elements, field_type::patch_type());
-        }
-        this->coordinates->orderPatches(orderName);
-        ALE_LOG_EVENT_END;
-      };
     private:
       template<typename IntervalSequence>
       int *__expandIntervals(Obj<IntervalSequence> intervals) {
@@ -445,56 +190,21 @@ namespace ALE {
         return indices;
       };
     public:
-      #undef __FUNCT__
-      #define __FUNCT__ "Mesh::parVertReOrd"
-      // This is not right, we should not have to copy everything to the new order first
-      void createParallelVertexReorder(Obj<bundle_type> serialVertexBundle) {
-        ALE_LOG_EVENT_BEGIN;
-        Obj<bundle_type> vertexBundle = this->getBundle(0);
-        std::string orderName("element");
-
-        if (!this->commRank()) {
-          Obj<bundle_type::order_type::baseSequence> patches = serialVertexBundle->getPatches(orderName);
-
-          for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
-            Obj<bundle_type::order_type::coneSequence> patch = serialVertexBundle->getPatch(orderName, *e_iter);
-
-            vertexBundle->setPatch(orderName, patch, *e_iter);
-            for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
-              vertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
-            }
-          }
-        } else {
-          Obj<sieve_type::traits::heightSequence> elements = this->topology->heightStratum(0);
-          Obj<bundle_type::order_type> reorder = vertexBundle->__getOrder(orderName);
-
-          for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-            reorder->addBasePoint(*e_iter);
-          }
-        }
-        vertexBundle->orderPatches(orderName);
-        vertexBundle->partitionOrder(orderName);
-        ALE_LOG_EVENT_END;
-      };
       template<typename OverlapType>
       void createParallelCoordinates(int embedDim, Obj<field_type> serialCoordinates, Obj<OverlapType> partitionOverlap);
 
       // Create a serial mesh
       void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true, int corners = -1) {
         this->topology->setStratification(false);
-        this->buildTopology(numSimplices, simplices, numVertices, interpolate, corners);
+        ALE::New::SieveBuilder<sieve_type>::buildTopology(this->topology, this->dim, numSimplices, simplices, numVertices, interpolate, corners);
         this->topology->stratify();
         this->topology->setStratification(true);
-        this->createVertexBundle(numSimplices, simplices, 0, corners);
-        this->createSerialCoordinates(this->dim, numSimplices, coords);
       };
       void populateBd(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true, int corners = -1) {
         this->topology->setStratification(false);
-        this->buildTopology(numSimplices, simplices, numVertices, interpolate, corners);
+        ALE::New::SieveBuilder<sieve_type>::buildTopology(this->topology, this->dim, numSimplices, simplices, numVertices, interpolate, corners);
         this->topology->stratify();
         this->topology->setStratification(true);
-        this->createVertexBundle(numSimplices, simplices, 0, corners);
-        this->createSerialCoordinates(this->dim+1, numSimplices, coords);
       };
 
       // Partition and distribute a serial mesh
@@ -637,14 +347,14 @@ namespace ALE {
           }
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              mBoundary->setFiberDimension(Mesh::field_type::patch_type(0, out.pointmarkerlist[v]), Mesh::point_type(0, v+out.numberoftriangles), 1);
+              mBoundary->setFiberDimension(Mesh::field_type::patch_type(0, out.pointmarkerlist[v]), Mesh::point_type(v+out.numberoftriangles), 1);
             }
           }
           if (interpolate) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
-                Mesh::point_type vertexA(0, out.edgelist[e*2+0]+out.numberoftriangles);
-                Mesh::point_type vertexB(0, out.edgelist[e*2+1]+out.numberoftriangles);
+                Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+                Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
                 Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(vertexA, vertexB, 1);
 
                 mBoundary->setFiberDimension(Mesh::field_type::patch_type(0, out.edgemarkerlist[e]), *(join->begin()), 1);
@@ -704,7 +414,8 @@ namespace ALE {
             in.facetmarkerlist = new int[in.numberoffacets];
             for(Mesh::sieve_type::traits::heightSequence::iterator f_itor = facets->begin(); f_itor != facets->end(); ++f_itor) {
               const Mesh::field_type::index_type& interval = facetBundle->getIndex(patch, *f_itor);
-              Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch("element", *f_itor);
+              //Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch("element", *f_itor);
+              Obj<Mesh::bundle_type::order_type::coneSequence> cone;
 
               in.facetlist[interval.prefix].numberofpolygons = 1;
               in.facetlist[interval.prefix].polygonlist = new tetgenio::polygon[in.facetlist[interval.prefix].numberofpolygons];
@@ -737,15 +448,15 @@ namespace ALE {
 
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              topology->setMarker(Mesh::point_type(0, v + out.numberoftetrahedra), out.pointmarkerlist[v]);
+              topology->setMarker(Mesh::point_type(v + out.numberoftetrahedra), out.pointmarkerlist[v]);
             }
           }
           if (interpolate) {
             if (out.edgemarkerlist) {
               for(int e = 0; e < out.numberofedges; e++) {
                 if (out.edgemarkerlist[e]) {
-                  Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
-                  Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
+                  Mesh::point_type endpointA(out.edgelist[e*2+0] + out.numberoftetrahedra);
+                  Mesh::point_type endpointB(out.edgelist[e*2+1] + out.numberoftetrahedra);
                   Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                   topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
@@ -757,9 +468,9 @@ namespace ALE {
                 if (out.trifacemarkerlist[f]) {
                   Obj<Mesh::sieve_type::supportSet> point = Mesh::sieve_type::supportSet();
                   Obj<Mesh::sieve_type::supportSet> edge = Mesh::sieve_type::supportSet();
-                  Mesh::point_type cornerA(0, out.trifacelist[f*3+0] + out.numberoftetrahedra);
-                  Mesh::point_type cornerB(0, out.trifacelist[f*3+1] + out.numberoftetrahedra);
-                  Mesh::point_type cornerC(0, out.trifacelist[f*3+2] + out.numberoftetrahedra);
+                  Mesh::point_type cornerA(out.trifacelist[f*3+0] + out.numberoftetrahedra);
+                  Mesh::point_type cornerB(out.trifacelist[f*3+1] + out.numberoftetrahedra);
+                  Mesh::point_type cornerC(out.trifacelist[f*3+2] + out.numberoftetrahedra);
                   point->insert(cornerA);
                   edge->insert(cornerB);
                   edge->insert(cornerC);
@@ -842,7 +553,8 @@ namespace ALE {
           in.numberoftriangles = faces->size();
           ierr = PetscMalloc(in.numberoftriangles * in.numberofcorners * sizeof(int), &in.trianglelist);
           for(Mesh::sieve_type::traits::heightSequence::iterator f_itor = faces->begin(); f_itor != faces->end(); f_itor++) {
-            Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *f_itor);
+            //Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *f_itor);
+            Obj<Mesh::bundle_type::order_type::coneSequence> cone;
             int                                              v = 0;
 
             for(ALE::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
@@ -923,14 +635,14 @@ namespace ALE {
           }
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              boundary->setFiberDimension(Mesh::field_type::patch_type(0, out.pointmarkerlist[v]), Mesh::point_type(0, v+out.numberoftriangles), 1);
+              boundary->setFiberDimension(Mesh::field_type::patch_type(0, out.pointmarkerlist[v]), Mesh::point_type(v+out.numberoftriangles), 1);
             }
           }
           if (interpolate) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
-                Mesh::point_type vertexA(0, out.edgelist[e*2+0]+out.numberoftriangles);
-                Mesh::point_type vertexB(0, out.edgelist[e*2+1]+out.numberoftriangles);
+                Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+                Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
                 Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(vertexA, vertexB, 1);
 
                 boundary->setFiberDimension(Mesh::field_type::patch_type(0, out.edgemarkerlist[e]), *(join->begin()), 1);
@@ -1015,7 +727,8 @@ namespace ALE {
           in.numberoftetrahedra = cells->size();
           in.tetrahedronlist = new int[in.numberoftetrahedra*in.numberofcorners];
           for(Mesh::sieve_type::traits::heightSequence::iterator c_itor = cells->begin(); c_itor != cells->end(); ++c_itor) {
-            Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *c_itor);
+            //Obj<Mesh::field_type::IndexArray> intervals = vertexBundle->getIndices("element", *c_itor);
+            Obj<Mesh::field_type::IndexArray> intervals;
             int                               v = 0;
 
             for(Mesh::field_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
@@ -1036,14 +749,14 @@ namespace ALE {
 
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              topology->setMarker(Mesh::point_type(0, v + out.numberoftetrahedra), out.pointmarkerlist[v]);
+              topology->setMarker(Mesh::point_type(v + out.numberoftetrahedra), out.pointmarkerlist[v]);
             }
           }
           if (out.edgemarkerlist) {
             for(int e = 0; e < out.numberofedges; e++) {
               if (out.edgemarkerlist[e]) {
-                Mesh::point_type endpointA(0, out.edgelist[e*2+0] + out.numberoftetrahedra);
-                Mesh::point_type endpointB(0, out.edgelist[e*2+1] + out.numberoftetrahedra);
+                Mesh::point_type endpointA(out.edgelist[e*2+0] + out.numberoftetrahedra);
+                Mesh::point_type endpointB(out.edgelist[e*2+1] + out.numberoftetrahedra);
                 Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(endpointA, endpointB, 1);
 
                 topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
@@ -1055,9 +768,9 @@ namespace ALE {
               if (out.trifacemarkerlist[f]) {
                 Obj<Mesh::sieve_type::supportSet> point = Mesh::sieve_type::supportSet();
                 Obj<Mesh::sieve_type::supportSet> edge = Mesh::sieve_type::supportSet();
-                Mesh::point_type cornerA(0, out.edgelist[f*3+0] + out.numberoftetrahedra);
-                Mesh::point_type cornerB(0, out.edgelist[f*3+1] + out.numberoftetrahedra);
-                Mesh::point_type cornerC(0, out.edgelist[f*3+2] + out.numberoftetrahedra);
+                Mesh::point_type cornerA(out.edgelist[f*3+0] + out.numberoftetrahedra);
+                Mesh::point_type cornerB(out.edgelist[f*3+1] + out.numberoftetrahedra);
+                Mesh::point_type cornerC(out.edgelist[f*3+2] + out.numberoftetrahedra);
                 point->insert(cornerA);
                 edge->insert(cornerB);
                 edge->insert(cornerC);
@@ -1111,7 +824,8 @@ namespace ALE {
         constraints->orderPatches();
 
         for(Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-          const double *coords = coordinates->restrict(orderName, *e_itor);
+          //const double *coords = coordinates->restrict(orderName, *e_itor);
+          const double *coords = NULL;
 
           for(int d = 0; d < embedDim; d++) {
             centroid[d] = 0.0;
@@ -1158,618 +872,34 @@ namespace ALE {
       };
     };
 
-    // Creation
-    class PyLithBuilder {
-      static inline void ignoreComments(char *buf, PetscInt bufSize, FILE *f) {
-        while((fgets(buf, bufSize, f) != NULL) && ((buf[0] == '#') || (buf[0] == '\0'))) {}
-      };
-
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[], int *materials[]) {
-        PetscViewer    viewer;
-        FILE          *f;
-        PetscInt       maxCells = 1024, cellCount = 0;
-        PetscInt      *verts;
-        PetscInt      *mats;
-        char           buf[2048];
-        PetscInt       c;
-        PetscInt       commRank;
-        PetscErrorCode ierr;
-
-        ierr = MPI_Comm_rank(comm, &commRank);
-        if (commRank != 0) return;
-        ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-        ierr = PetscViewerFileSetName(viewer, filename.c_str());
-        ierr = PetscViewerASCIIGetPointer(viewer, &f);
-        /* Ignore comments */
-        ignoreComments(buf, 2048, f);
-        do {
-          const char *v = strtok(buf, " ");
-          int         elementType;
-
-          if (cellCount == maxCells) {
-            PetscInt *vtmp, *mtmp;
-
-            vtmp = verts;
-            mtmp = mats;
-            ierr = PetscMalloc2(maxCells*2*corners,PetscInt,&verts,maxCells*2,PetscInt,&mats);
-            ierr = PetscMemcpy(verts, vtmp, maxCells*corners * sizeof(PetscInt));
-            ierr = PetscMemcpy(mats,  mtmp, maxCells         * sizeof(PetscInt));
-            ierr = PetscFree2(vtmp,mtmp);
-            maxCells *= 2;
-          }
-          /* Ignore cell number */
-          v = strtok(NULL, " ");
-          /* Get element type */
-          elementType = atoi(v);
-          if (elementType == 1) {
-            corners = 8;
-          } else if (elementType == 5) {
-            corners = 4;
-          } else {
-            ostringstream msg;
-
-            msg << "We do not accept element type " << elementType << " right now";
-            throw ALE::Exception(msg.str().c_str());
-          }
-          if (cellCount == 0) {
-            ierr = PetscMalloc2(maxCells*corners,PetscInt,&verts,maxCells,PetscInt,&mats);
-          }
-          v = strtok(NULL, " ");
-          /* Store material type */
-          mats[cellCount] = atoi(v);
-          v = strtok(NULL, " ");
-          /* Ignore infinite domain element code */
-          v = strtok(NULL, " ");
-          for(c = 0; c < corners; c++) {
-            int vertex = atoi(v);
-        
-            if (!useZeroBase) vertex -= 1;
-            verts[cellCount*corners+c] = vertex;
-            v = strtok(NULL, " ");
-          }
-          cellCount++;
-        } while(fgets(buf, 2048, f) != NULL);
-        ierr = PetscViewerDestroy(viewer);
-        numElements = cellCount;
-        *vertices   = verts;
-        *materials  = mats;
-      };
-      static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
-        PetscViewer    viewer;
-        FILE          *f;
-        PetscInt       maxVerts = 1024, vertexCount = 0;
-        PetscScalar   *coords;
-        double         scaleFactor = 1.0;
-        char           buf[2048];
-        PetscInt       c;
-        PetscInt       commRank;
-        PetscErrorCode ierr;
-
-        ierr = MPI_Comm_rank(comm, &commRank);
-        if (commRank == 0) {
-          ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-          ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-          ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-          ierr = PetscViewerFileSetName(viewer, filename.c_str());
-          ierr = PetscViewerASCIIGetPointer(viewer, &f);
-          /* Ignore comments */
-          ignoreComments(buf, 2048, f);
-          ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);
-          /* Read units */
-          const char *units = strtok(buf, " ");
-          if (strcmp(units, "coord_units")) {
-            throw ALE::Exception("Invalid coordinate units line");
-          }
-          units = strtok(NULL, " ");
-          if (strcmp(units, "=")) {
-            throw ALE::Exception("Invalid coordinate units line");
-          }
-          units = strtok(NULL, " ");
-          if (!strcmp(units, "km")) {
-            /* Should use Pythia to do units conversion */
-            scaleFactor = 1000.0;
-          }
-          /* Ignore comments */
-          ignoreComments(buf, 2048, f);
-          do {
-            const char *x = strtok(buf, " ");
-
-            if (vertexCount == maxVerts) {
-              PetscScalar *ctmp;
-
-              ctmp = coords;
-              ierr = PetscMalloc(maxVerts*2*dim * sizeof(PetscScalar), &coords);
-              ierr = PetscMemcpy(coords, ctmp, maxVerts*dim * sizeof(PetscScalar));
-              ierr = PetscFree(ctmp);
-              maxVerts *= 2;
-            }
-            /* Ignore vertex number */
-            x = strtok(NULL, " ");
-            for(c = 0; c < dim; c++) {
-              coords[vertexCount*dim+c] = atof(x)*scaleFactor;
-              x = strtok(NULL, " ");
-            }
-            vertexCount++;
-          } while(fgets(buf, 2048, f) != NULL);
-          ierr = PetscViewerDestroy(viewer);
-          numVertices = vertexCount;
-          *coordinates = coords;
-        }
-      };
-      static void readSplit(MPI_Comm comm, const std::string& filename, int dim, bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]) {
-        PetscViewer    viewer;
-        FILE          *f;
-        PetscInt       maxSplit = 1024, splitCount = 0;
-        PetscInt      *splitId;
-        PetscScalar   *splitVal;
-        char           buf[2048];
-        PetscInt       c;
-        PetscInt       commRank;
-        PetscErrorCode ierr;
-
-        ierr = MPI_Comm_rank(comm, &commRank);
-        if (dim != 3) {
-          throw ALE::Exception("PyLith only works in 3D");
-        }
-        if (commRank != 0) return;
-        ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
-        if (PetscExceptionValue(ierr)) {
-          // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
-        } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
-          // File does not exist
-          return;
-        } 
-        ierr = PetscViewerASCIIGetPointer(viewer, &f);
-        /* Ignore comments */
-        ignoreComments(buf, 2048, f);
-        ierr = PetscMalloc2(maxSplit*2,PetscInt,&splitId,maxSplit*dim,PetscScalar,&splitVal);
-        do {
-          const char *s = strtok(buf, " ");
-
-          if (splitCount == maxSplit) {
-            PetscInt    *sitmp;
-            PetscScalar *svtmp;
-
-            sitmp = splitId;
-            svtmp = splitVal;
-            ierr = PetscMalloc2(maxSplit*2*2,PetscInt,&splitId,maxSplit*dim*2,PetscScalar,&splitVal);
-            ierr = PetscMemcpy(splitId,  sitmp, maxSplit*2   * sizeof(PetscInt));
-            ierr = PetscMemcpy(splitVal, svtmp, maxSplit*dim * sizeof(PetscScalar));
-            ierr = PetscFree2(sitmp,svtmp);
-            maxSplit *= 2;
-          }
-          /* Get element number */
-          int elem = atoi(s);
-          if (!useZeroBase) elem -= 1;
-          splitId[splitCount*2+0] = elem;
-          s = strtok(NULL, " ");
-          /* Get node number */
-          int node = atoi(s);
-          if (!useZeroBase) node -= 1;
-          splitId[splitCount*2+1] = node;
-          s = strtok(NULL, " ");
-          /* Ignore load history number */
-          s = strtok(NULL, " ");
-          /* Get split values */
-          for(c = 0; c < dim; c++) {
-            splitVal[splitCount*dim+c] = atof(s);
-            s = strtok(NULL, " ");
-          }
-          splitCount++;
-        } while(fgets(buf, 2048, f) != NULL);
-        ierr = PetscViewerDestroy(viewer);
-        numSplit     = splitCount;
-        *splitInd    = splitId;
-        *splitValues = splitVal;
-      };
-      static void createMaterialField(int numElements, int materials[], Obj<Mesh> mesh, Obj<Mesh::field_type> matField) {
-        Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
-        Mesh::field_type::patch_type patch;
-
-        matField->setPatch(elements, patch);
-        matField->setFiberDimensionByHeight(patch, 0, 1);
-        matField->orderPatches();
-        for(int e = 0; e < numElements; e++) {
-          double mat = (double) materials[e];
-          matField->update(patch, Mesh::point_type(0, e), &mat);
-        }
-      };
-      static void createSplitField(int numSplit, int splitInd[], double splitVals[], Obj<Mesh> mesh, Obj<Mesh::field_type> splitField) {
-        Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
-        std::map<Mesh::point_type, std::set<int> > elem2vertIndex;
-        Obj<std::list<Mesh::point_type> > vertices = std::list<Mesh::point_type>();
-        Mesh::field_type::patch_type patch;
-        int numElements = elements->size();
-        int dim = 3;
-
-        for(int e = 0; e < numSplit; e++) {
-          elem2vertIndex[Mesh::point_type(0, splitInd[e*2+0])].insert(e);
-        }
-        for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
-          vertices->clear();
-          for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
-            vertices->push_back(Mesh::point_type(0, numElements+splitInd[*v_iter*2+1]));
-          }
-          splitField->setPatch(vertices, e_iter->first);
-
-          for(std::list<Mesh::point_type>::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-            splitField->setFiberDimension(e_iter->first, *v_iter, dim);
-          }
-        }
-        splitField->orderPatches();
-        for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
-          for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
-            splitField->update(e_iter->first, Mesh::point_type(0, numElements+splitInd[*v_iter*2+1]), &splitVals[*v_iter*dim]);
-          }
-        }
-      };
-    public:
-      PyLithBuilder() {};
-      virtual ~PyLithBuilder() {};
-
-      static Obj<Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, bool interpolate = true, int debug = 0) {
-        int       dim = 3;
-        bool      useZeroBase = false;
-        Obj<Mesh> mesh = Mesh(comm, dim);
-        int      *vertices = NULL;
-        int      *materials = NULL;
-        double   *coordinates = NULL;
-        int      *splitInd = NULL;
-        double   *splitValues = NULL;
-        int       numElements = 0, numVertices = 0, numCorners = dim+1, numSplit = 0, hasSplit;
-        PetscErrorCode ierr;
-
-        mesh->debug = debug;
-        readConnectivity(comm, baseFilename+".connect", numCorners, useZeroBase, numElements, &vertices, &materials);
-        readCoordinates(comm, baseFilename+".coord", dim, numVertices, &coordinates);
-        readSplit(comm, baseFilename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
-        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate, numCorners);
-        createMaterialField(numElements, materials, mesh, mesh->getField("material"));
-        ierr = MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
-        if (hasSplit) {
-          createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
-        }
-        ierr = PetscFree2(vertices, materials);
-        ierr = PetscFree(coordinates);
-        return mesh;
-      };
-    };
-
-    class PCICEBuilder {
-      static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, bool useZeroBase, int& numElements, int *vertices[]) {
-        PetscViewer    viewer;
-        FILE          *f;
-        PetscInt       numCells, cellCount = 0;
-        PetscInt      *verts;
-        char           buf[2048];
-        PetscInt       c;
-        PetscInt       commRank;
-        PetscErrorCode ierr;
-
-        ierr = MPI_Comm_rank(comm, &commRank);
-
-        if (commRank != 0) return;
-        ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-        ierr = PetscViewerFileSetName(viewer, filename.c_str());
-        ierr = PetscViewerASCIIGetPointer(viewer, &f);
-        if (fgets(buf, 2048, f) == NULL) {
-          throw ALE::Exception("Invalid connectivity file: Missing number of elements");
-        }
-        const char *sizes = strtok(buf, " ");
-        numCells = atoi(sizes);
-        sizes = strtok(NULL, " ");
-        if (sizes != NULL) {
-          corners = atoi(sizes);
-          std::cout << "Reset corners to " << corners << std::endl;
-        }
-        ierr = PetscMalloc(numCells*corners * sizeof(PetscInt), &verts);
-        while(fgets(buf, 2048, f) != NULL) {
-          const char *v = strtok(buf, " ");
-      
-          /* Ignore cell number */
-          v = strtok(NULL, " ");
-          for(c = 0; c < corners; c++) {
-            int vertex = atoi(v);
-        
-            if (!useZeroBase) vertex -= 1;
-            verts[cellCount*corners+c] = vertex;
-            v = strtok(NULL, " ");
-          }
-          cellCount++;
-        }
-        ierr = PetscViewerDestroy(viewer);
-        numElements = numCells;
-        *vertices = verts;
-      };
-      static void readCoordinates(MPI_Comm comm, const std::string& filename, int dim, int& numVertices, double *coordinates[]) {
-        PetscViewer    viewer;
-        FILE          *f;
-        PetscInt       numVerts, vertexCount = 0;
-        PetscScalar   *coords;
-        char           buf[2048];
-        PetscInt       c;
-        PetscInt       commRank;
-        PetscErrorCode ierr;
-
-        ierr = MPI_Comm_rank(comm, &commRank);
-
-        if (commRank != 0) return;
-        ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-        ierr = PetscViewerFileSetName(viewer, filename.c_str());
-        ierr = PetscViewerASCIIGetPointer(viewer, &f);
-        numVerts = atoi(fgets(buf, 2048, f));
-        ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);
-        while(fgets(buf, 2048, f) != NULL) {
-          const char *x = strtok(buf, " ");
-      
-          /* Ignore vertex number */
-          x = strtok(NULL, " ");
-          for(c = 0; c < dim; c++) {
-            coords[vertexCount*dim+c] = atof(x);
-            x = strtok(NULL, " ");
-          }
-          vertexCount++;
-        }
-        ierr = PetscViewerDestroy(viewer);
-        numVertices = numVerts;
-        *coordinates = coords;
-      };
-    public:
-      PCICEBuilder() {};
-      virtual ~PCICEBuilder() {};
-
-      static Obj<ALE::Mesh> createNew(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, bool interpolate = true, int debug = 0) {
-        Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
-        int      *vertices;
-        double   *coordinates;
-        int       numElements = 0, numVertices = 0, numCorners = dim+1;
-
-        readConnectivity(comm, baseFilename+".lcon", numCorners, useZeroBase, numElements, &vertices);
-        readCoordinates(comm, baseFilename+".nodes", dim, numVertices, &coordinates);
-        mesh->populate(numElements, vertices, numVertices, coordinates, interpolate, numCorners);
-        return mesh;
-      };
-
-      static Obj<ALE::Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
-        Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
-        int      *vertices = NULL;
-        double   *coordinates = NULL;
-        int       numElements = 0, numVertices = 0;
-        PetscErrorCode ierr;
-
-        readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
-        readCoordinates(comm, baseFilename+".nodes", dim+1, numVertices, &coordinates);
-        mesh->populateBd(numElements, vertices, numVertices, coordinates);
-        ierr = PetscFree(vertices);
-        ierr = PetscFree(coordinates);
-        return mesh;
-      };
-    };
-
-    class Partitioner {
-    public:
-//       typedef ParDelta<Mesh::sieve_type>;
-      typedef RightSequenceDuplicator<ConeArraySequence<Mesh::sieve_type::traits::arrow_type> > fuser;
-      typedef ParConeDelta<Mesh::sieve_type, fuser,
-                           Mesh::sieve_type::rebind<fuser::fusion_source_type,
-                                                    fuser::fusion_target_type,
-                                                    fuser::fusion_color_type,
-                                                    Mesh::sieve_type::traits::cap_container_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::traits::sourceRec_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::marker_type>::type>::type,
-                                                    Mesh::sieve_type::traits::base_container_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::traits::targetRec_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::marker_type>::type>::type
-      >::type> coneDelta_type;
-      typedef ParSupportDelta<Mesh::sieve_type, fuser,
-                              Mesh::sieve_type::rebind<fuser::fusion_source_type,
-                                                       fuser::fusion_target_type,
-                                                       fuser::fusion_color_type,
-                                                       Mesh::sieve_type::traits::cap_container_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::traits::sourceRec_type::rebind<fuser::fusion_source_type, Mesh::sieve_type::marker_type>::type>::type,
-                                                       Mesh::sieve_type::traits::base_container_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::traits::targetRec_type::rebind<fuser::fusion_target_type, Mesh::sieve_type::marker_type>::type>::type
-      >::type> supportDelta_type;
-    public:
-      #undef __FUNCT__
-      #define __FUNCT__ "createMappingStoP"
-      template<typename FieldType, typename OverlapType>
-      static VecScatter createMappingStoP(Obj<FieldType> serialSifter, Obj<FieldType> parallelSifter, Obj<OverlapType> overlap, bool doExchange = false) {
-        VecScatter scatter;
-        Obj<typename OverlapType::traits::baseSequence> neighbors = overlap->base();
-        MPI_Comm comm = serialSifter->comm();
-        int      rank = serialSifter->commRank();
-        int      debug = serialSifter->debug;
-        typename FieldType::patch_type patch;
-        Vec        serialVec, parallelVec;
-        PetscErrorCode ierr;
-
-        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "Creating mapping\n");}
-        // Use an MPI vector for the serial data since it has no overlap
-        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating serial indices\n");}
-        if (serialSifter->debug) {
-          serialSifter->view("SerialSifter");
-          overlap->view("Partition Overlap");
-        }
-        ierr = VecCreateMPIWithArray(serialSifter->comm(), serialSifter->getSize(patch), PETSC_DETERMINE, serialSifter->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
-        // Use individual serial vectors for each of the parallel domains
-        if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Creating parallel indices\n");}
-        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelSifter->getSize(patch), parallelSifter->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
-
-        int NeighborCountA = 0, NeighborCountB = 0;
-        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-
-          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            if ((*p_iter).first == 0) {
-              NeighborCountA++;
-              break;
-            }
-          }
-          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            if ((*p_iter).first == 1) {
-              NeighborCountB++;
-              break;
-            }
-          } 
-        }
-
-        int *NeighborsA, *NeighborsB; // Neighbor processes
-        int *SellSizesA, *BuySizesA;  // Sizes of the A cones to transmit and B cones to receive
-        int *SellSizesB, *BuySizesB;  // Sizes of the B cones to transmit and A cones to receive
-        int *SellConesA = PETSC_NULL;
-        int *SellConesB = PETSC_NULL;
-        int nA, nB, offsetA, offsetB;
-        ierr = PetscMalloc2(NeighborCountA,int,&NeighborsA,NeighborCountB,int,&NeighborsB);CHKERROR(ierr, "Error in PetscMalloc");
-        ierr = PetscMalloc2(NeighborCountA,int,&SellSizesA,NeighborCountA,int,&BuySizesA);CHKERROR(ierr, "Error in PetscMalloc");
-        ierr = PetscMalloc2(NeighborCountB,int,&SellSizesB,NeighborCountB,int,&BuySizesB);CHKERROR(ierr, "Error in PetscMalloc");
-
-        nA = 0;
-        nB = 0;
-        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-
-          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            if ((*p_iter).first == 0) {
-              NeighborsA[nA] = *neighbor;
-              BuySizesA[nA] = 0;
-              SellSizesA[nA] = 0;
-              nA++;
-              break;
-            }
-          }
-          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            if ((*p_iter).first == 1) {
-              NeighborsB[nB] = *neighbor;
-              BuySizesB[nB] = 0;
-              SellSizesB[nB] = 0;
-              nB++;
-              break;
-            }
-          } 
-        }
-        if ((nA != NeighborCountA) || (nB != NeighborCountB)) {
-          throw ALE::Exception("Invalid neighbor count");
-        }
-
-        nA = 0;
-        offsetA = 0;
-        nB = 0;
-        offsetB = 0;
-        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-          int foundA = 0, foundB = 0;
-
-          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            if ((*p_iter).first == 0) {
-              // Assume the same index sizes
-              int idxSize = serialSifter->getIndex(patch, (*p_iter).second).index;
-
-              BuySizesA[nA] += idxSize;
-              SellSizesA[nA] += idxSize;
-              offsetA += idxSize;
-              foundA = 1;
-            } else {
-              // Assume the same index sizes
-              int idxSize = parallelSifter->getIndex(patch, (*p_iter).second).index;
-
-              BuySizesB[nB] += idxSize;
-              SellSizesB[nB] += idxSize;
-              offsetB += idxSize;
-              foundB = 1;
-            }
-          }
-          if (foundA) nA++;
-          if (foundB) nB++;
-        }
-
-        ierr = PetscMalloc2(offsetA,int,&SellConesA,offsetB,int,&SellConesB);CHKERROR(ierr, "Error in PetscMalloc");
-        offsetA = 0;
-        offsetB = 0;
-        for(typename OverlapType::traits::baseSequence::iterator neighbor = neighbors->begin(); neighbor != neighbors->end(); ++neighbor) {
-          Obj<typename OverlapType::traits::coneSequence> cone = overlap->cone(*neighbor);
-
-          for(typename OverlapType::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            const Point& p = (*p_iter).second;
-
-            if ((*p_iter).first == 0) {
-              const typename FieldType::index_type& idx = serialSifter->getIndex(patch, p);
-
-              if (debug) {
-                ostringstream txt;
-
-                txt << "["<<rank<<"]Packing A index " << idx << " for " << *neighbor << std::endl;
-                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-              }
-              for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
-                SellConesA[offsetA++] = i;
-              }
-            } else {
-              const typename FieldType::index_type& idx = parallelSifter->getIndex(patch, p);
-
-              if (debug) {
-                ostringstream txt;
-
-                txt << "["<<rank<<"]Packing B index " << idx << " for " << *neighbor << std::endl;
-                ierr = PetscSynchronizedPrintf(comm, txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedPrintf");
-              }
-              for(int i = idx.prefix; i < idx.prefix+idx.index; ++i) {
-                SellConesB[offsetB++] = i;
-              }
-            }
-          }
-        }
-        if (debug) {
-          ierr = PetscSynchronizedFlush(comm);CHKERROR(ierr,"Error in PetscSynchronizedFlush");
-        }
-
-        ierr = VecScatterCreateEmpty(comm, &scatter);CHKERROR(ierr, "Error in VecScatterCreate");
-        scatter->from_n = serialSifter->getSize(patch);
-        scatter->to_n = parallelSifter->getSize(patch);
-        ierr = VecScatterCreateLocal_PtoS(NeighborCountA, SellSizesA, NeighborsA, SellConesA, NeighborCountB, SellSizesB, NeighborsB, SellConesB, 1, scatter);CHKERROR(ierr, "Error in VecScatterCreate");
-
-        if (doExchange) {
-          if (serialSifter->debug && !serialSifter->commRank()) {PetscSynchronizedPrintf(serialSifter->comm(), "  Exchanging data\n");}
-          ierr = VecScatterBegin(serialVec, parallelVec, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERROR(ierr, "Error in VecScatter");
-          ierr = VecScatterEnd(serialVec, parallelVec, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERROR(ierr, "Error in VecScatter");
-        }
-
-        ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
-        ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
-        return scatter;
-      };
-    };
     inline
     Obj<Mesh::field_type> Generator::getSerialConstraints(Obj<Mesh> serialMesh, Obj<Mesh> parallelMesh, Obj<Mesh::field_type> parallelConstraints) {
       Obj<Mesh::field_type> serialConstraints = Mesh::field_type(parallelMesh->comm(), parallelMesh->debug);
 
-      if (parallelMesh->distributed) {
-        Mesh::field_type::patch_type patch;
-        PetscErrorCode ierr;
+//       if (parallelMesh->distributed) {
+//         Mesh::field_type::patch_type patch;
+//         PetscErrorCode ierr;
 
-        serialConstraints->setTopology(serialMesh->getTopology());
-        serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
-        serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
-        serialConstraints->orderPatches();
+//         serialConstraints->setTopology(serialMesh->getTopology());
+//         serialConstraints->setPatch(serialMesh->getTopology()->leaves(), patch);
+//         serialConstraints->setFiberDimensionByHeight(patch, 0, 1);
+//         serialConstraints->orderPatches();
 
-        Obj<ALE::Partitioner::coneDelta_type::bioverlap_type> partitionOverlap = ALE::Partitioner::coneDelta_type::overlap(serialMesh->getTopology(), parallelMesh->getTopology());
-        Obj<Flip<ALE::Partitioner::coneDelta_type::bioverlap_type> > overlapFlip = Flip<ALE::Partitioner::coneDelta_type::bioverlap_type>(partitionOverlap);
-        VecScatter scatter = ALE::Partitioner::createMappingStoP(serialConstraints, parallelConstraints, overlapFlip, false);
-        Vec        serialVec, parallelVec;
+//         Obj<ALE::Distributer<ALE::Mesh::sieve_type>::coneDelta_type::bioverlap_type> partitionOverlap = ALE::Distributer<ALE::Mesh::sieve_type>::coneDelta_type::overlap(serialMesh->getTopology(), parallelMesh->getTopology());
+//         Obj<Flip<ALE::Distributer<ALE::Mesh::sieve_type>::coneDelta_type::bioverlap_type> > overlapFlip = Flip<ALE::Distributer<ALE::Mesh::sieve_type>::coneDelta_type::bioverlap_type>(partitionOverlap);
+//         VecScatter scatter = ALE::Distributer<ALE::Mesh::sieve_type>::createMappingStoP(serialConstraints, parallelConstraints, overlapFlip, false);
+//         Vec        serialVec, parallelVec;
 
-        ierr = VecCreateMPIWithArray(serialMesh->comm(), serialConstraints->getSize(patch), PETSC_DETERMINE, serialConstraints->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
-        ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelConstraints->getSize(patch), parallelConstraints->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
-        ierr = VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
-        ierr = VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
-        ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
-        ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
-        ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-      } else {
-        serialConstraints = parallelConstraints;
-      }
+//         ierr = VecCreateMPIWithArray(serialMesh->comm(), serialConstraints->getSize(patch), PETSC_DETERMINE, serialConstraints->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+//         ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, parallelConstraints->getSize(patch), parallelConstraints->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+//         ierr = VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+//         ierr = VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+//         ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
+//         ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+//         ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
+//       } else {
+//         serialConstraints = parallelConstraints;
+//       }
       return serialConstraints;
     };
     #undef __FUNCT__
@@ -1792,16 +922,8 @@ namespace ALE {
       }
       this->coordinates->createGlobalOrder();
 
-      VecScatter scatter = ALE::Partitioner::createMappingStoP(serialCoordinates, this->coordinates, partitionOverlap, true);
+      VecScatter scatter = ALE::Distributer<ALE::Mesh::sieve_type>::createMappingStoP(serialCoordinates, this->coordinates, partitionOverlap, true);
       PetscErrorCode ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-
-      Obj<bundle_type> vertexBundle = this->getBundle(0);
-      Obj<sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-      std::string orderName("element");
-
-      for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-        this->coordinates->setPatch(orderName, vertexBundle->getPatch(orderName, *e_iter), *e_iter);
-      }
       ALE_LOG_EVENT_END;
     };
     #undef __FUNCT__
@@ -1818,10 +940,9 @@ namespace ALE {
         parallelMesh->topology->view("Parallel topology");
         parallelMesh->getBoundary()->view("Parallel boundary");
       }
-      Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(this->topology, parallelMesh->topology);
-      // Need to deal with boundary
-      parallelMesh->createParallelVertexReorder(this->getBundle(0));
-      parallelMesh->createParallelCoordinates(this->dim, this->coordinates, partitionOverlap);
+//       Obj<ALE::Distributer<ALE::Mesh::sieve_type>::supportDelta_type::bioverlap_type> partitionOverlap = ALE::Distributer<ALE::Mesh::sieve_type>::supportDelta_type::overlap(this->topology, parallelMesh->topology);
+//       // Need to deal with boundary
+//       parallelMesh->createParallelCoordinates(this->dim, this->coordinates, partitionOverlap);
       parallelMesh->distributed = true;
       ALE_LOG_EVENT_END;
       return parallelMesh;
@@ -1835,7 +956,6 @@ namespace ALE {
       Obj<Mesh> serialMesh = Mesh(this->comm(), this->getDimension(), this->debug);
       Obj<Mesh::sieve_type> topology = serialMesh->getTopology();
       Mesh::patch_type patch;
-      PetscErrorCode ierr;
 
       topology->setStratification(false);
       // Partition the topology
@@ -1854,41 +974,17 @@ namespace ALE {
       serialMesh->coordinates->setFiberDimensionByDepth(patch, 0, this->dim);
       serialMesh->coordinates->orderPatches();
 
-      Obj<Partitioner::supportDelta_type::bioverlap_type> partitionOverlap = Partitioner::supportDelta_type::overlap(serialMesh->topology, this->topology);
-      VecScatter scatter = ALE::Partitioner::createMappingStoP(serialMesh->coordinates, this->coordinates, partitionOverlap, false);
-      Vec        serialVec, parallelVec;
+//       Obj<ALE::Distributer<ALE::Mesh::sieve_type>::supportDelta_type::bioverlap_type> partitionOverlap = ALE::Distributer<ALE::Mesh::sieve_type>::supportDelta_type::overlap(serialMesh->topology, this->topology);
+//       VecScatter scatter = ALE::Distributer<ALE::Mesh::sieve_type>::createMappingStoP(serialMesh->coordinates, this->coordinates, partitionOverlap, false);
+//       Vec        serialVec, parallelVec;
 
-      ierr = VecCreateMPIWithArray(serialMesh->comm(), serialMesh->coordinates->getSize(patch), PETSC_DETERMINE, serialMesh->coordinates->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
-      ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
-      ierr = VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
-      ierr = VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
-      ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
-      ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
-      ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
-
-      std::string orderName("element");
-      Obj<bundle_type> vertexBundle = this->getBundle(0);
-      Obj<bundle_type> serialVertexBundle = serialMesh->getBundle(0);
-      Obj<bundle_type::order_type::baseSequence> patches = vertexBundle->getPatches(orderName);
-
-      for(bundle_type::order_type::baseSequence::iterator e_iter = patches->begin(); e_iter != patches->end(); ++e_iter) {
-        Obj<bundle_type::order_type::coneSequence> patch = vertexBundle->getPatch(orderName, *e_iter);
-
-        serialVertexBundle->setPatch(orderName, patch, *e_iter);
-        for(bundle_type::order_type::coneSequence::iterator p_iter = patch->begin(); p_iter != patch->end(); ++p_iter) {
-          serialVertexBundle->setFiberDimension(orderName, *e_iter, *p_iter, 1);
-        }
-      }
-      if (!this->commRank()) {
-        Obj<sieve_type::traits::heightSequence> elements = serialMesh->getTopology()->heightStratum(0);
-        Obj<bundle_type::order_type> reorder = serialVertexBundle->__getOrder(orderName);
-
-        for(sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-          reorder->addBasePoint(*e_iter);
-        }
-      }
-      serialVertexBundle->orderPatches(orderName);
-      serialVertexBundle->partitionOrder(orderName);
+//       ierr = VecCreateMPIWithArray(serialMesh->comm(), serialMesh->coordinates->getSize(patch), PETSC_DETERMINE, serialMesh->coordinates->restrict(patch), &serialVec);CHKERROR(ierr, "Error in VecCreate");
+//       ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, this->coordinates->getSize(patch), this->coordinates->restrict(patch), &parallelVec);CHKERROR(ierr, "Error in VecCreate");
+//       ierr = VecScatterBegin(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+//       ierr = VecScatterEnd(parallelVec, serialVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERROR(ierr, "Error in VecScatter");
+//       ierr = VecDestroy(serialVec);CHKERROR(ierr, "Error in VecDestroy");
+//       ierr = VecDestroy(parallelVec);CHKERROR(ierr, "Error in VecDestroy");
+//       ierr = VecScatterDestroy(scatter);CHKERROR(ierr, "Error in VecScatterDestroy");
 
       serialMesh->distributed = false;
       ALE_LOG_EVENT_END;

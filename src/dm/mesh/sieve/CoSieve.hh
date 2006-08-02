@@ -5,10 +5,7 @@
 #include <Sieve.hh>
 #endif
 
-int deleteTag(MPI_Comm comm, int keyval, void *attr_val, void *extra_state) {
-  delete (int *) attr_val;
-  return MPI_SUCCESS;
-}
+extern PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
   class ParallelObject {
@@ -103,9 +100,9 @@ namespace ALE {
         }
         // We always create the toplevel, so we could short circuit somehow
         // Should not have to loop here since the meet of just 2 boundary elements is an element
-        typename PointArray::iterator   f_itor = faces[dim].begin();
-        typename sieve_type::point_type start  = *f_itor;
-        typename sieve_type::point_type next   = *(++f_itor);
+        typename PointArray::iterator          f_itor = faces[dim].begin();
+        const typename sieve_type::point_type& start  = *f_itor;
+        const typename sieve_type::point_type& next   = *(++f_itor);
         Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
@@ -114,7 +111,7 @@ namespace ALE {
         } else {
           int color = 0;
 
-          cell = typename sieve_type::point_type(0, (*curElement[dim])++);
+          cell = typename sieve_type::point_type((*curElement[dim])++);
           for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
             sieve->addArrow(*f_itor, cell, color++);
           }
@@ -153,9 +150,9 @@ namespace ALE {
         }
         // We always create the toplevel, so we could short circuit somehow
         // Should not have to loop here since the meet of just 2 boundary elements is an element
-        typename PointArray::iterator   f_itor = faces[dim].begin();
-        typename sieve_type::point_type start  = *f_itor;
-        typename sieve_type::point_type next   = *(++f_itor);
+        typename PointArray::iterator          f_itor = faces[dim].begin();
+        const typename sieve_type::point_type& start  = *f_itor;
+        const typename sieve_type::point_type& next   = *(++f_itor);
         Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
@@ -164,7 +161,7 @@ namespace ALE {
         } else {
           int color = 0;
 
-          cell = typename sieve_type::point_type(0, (*curElement[dim])++);
+          cell = typename sieve_type::point_type((*curElement[dim])++);
           for(typename PointArray::iterator f_itor = faces[dim].begin(); f_itor != faces[dim].end(); ++f_itor) {
             sieve->addArrow(*f_itor, cell, color++);
           }
@@ -201,13 +198,13 @@ namespace ALE {
           curElement[d] = &newElement;
         }
         for(int c = 0; c < numCells; c++) {
-          typename sieve_type::point_type cell(0, c);
+          typename sieve_type::point_type cell(c);
 
           // Build the cell
           if (interpolate) {
             bdVertices[dim].clear();
             for(int b = 0; b < corners; b++) {
-              typename sieve_type::point_type vertex(0, cells[c*corners+b]+numCells);
+              typename sieve_type::point_type vertex(cells[c*corners+b]+numCells);
 
               if (debug > 1) {std::cout << "Adding boundary vertex " << vertex << std::endl;}
               bdVertices[dim].push_back(vertex);
@@ -221,12 +218,12 @@ namespace ALE {
             }
           } else {
             for(int b = 0; b < corners; b++) {
-              sieve->addArrow(typename sieve_type::point_type(0, cells[c*corners+b]+numCells), cell, b);
+              sieve->addArrow(typename sieve_type::point_type(cells[c*corners+b]+numCells), cell, b);
             }
             if (debug) {
               if (debug > 1) {
                 for(int b = 0; b < corners; b++) {
-                  std::cout << "  Adding vertex " << typename sieve_type::point_type(0, cells[c*corners+b]+numCells) << std::endl;
+                  std::cout << "  Adding vertex " << typename sieve_type::point_type(cells[c*corners+b]+numCells) << std::endl;
                 }
               }
               std::cout << "Adding cell " << cell << " dim " << dim << std::endl;
@@ -305,7 +302,6 @@ namespace ALE {
       template<class InputPoints>
       void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
-        maxHeight = -1;
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max height of the points in the support of p, and add 1
@@ -329,6 +325,7 @@ namespace ALE {
         this->_maxHeight = -1;
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
+          this->_maxHeights[s_iter->first] = -1;
 
           this->computeHeight(label, s_iter->second, s_iter->second->leaves(), this->_maxHeights[s_iter->first]);
           this->_labels[name][s_iter->first] = label;
@@ -346,7 +343,6 @@ namespace ALE {
       template<class InputPoints>
       void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxDepth) {
         Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
-        maxDepth = -1;
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max depth of the points in the cone of p, and add 1
@@ -370,6 +366,7 @@ namespace ALE {
         this->_maxDepth = -1;
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
+          this->_maxDepths[s_iter->first] = -1;
 
           this->computeDepth(label, s_iter->second, s_iter->second->roots(), this->_maxDepths[s_iter->first]);
           this->_labels[name][s_iter->first] = label;
@@ -921,8 +918,8 @@ namespace ALE {
         int *tagvalp = NULL, *maxval, flg;
 
         if (tagKeyval == MPI_KEYVAL_INVALID) {
-          tagvalp = new int;
-          MPI_Keyval_create(MPI_NULL_COPY_FN, deleteTag, &tagKeyval, (void *) NULL);
+          PetscMalloc(sizeof(int), &tagvalp);
+          MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag, &tagKeyval, (void *) NULL);
           MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
         }
         MPI_Attr_get(this->_comm, tagKeyval, (void **) &tagvalp, &flg);
@@ -1041,13 +1038,23 @@ namespace ALE {
       Obj<recv_overlap_type>    _recvOverlap;
       Obj<send_section_type>    _sendSection;
       Obj<recv_section_type>    _recvSection;
+      int                       _localSize;
+      int                      *_offsets;
     public:
       Numbering(const Obj<topology_type>& topology, const std::string& label, int value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _label(label), _value(value) {
         this->_sendOverlap = new send_overlap_type(this->comm(), this->debug());
         this->_recvOverlap = new recv_overlap_type(this->comm(), this->debug());
         this->_sendSection = new send_section_type(this->comm(), send_section_type::SEND, this->debug());
         this->_recvSection = new recv_section_type(this->comm(), recv_section_type::RECEIVE, this->_sendSection->getTag(), this->debug());
+        this->_offsets     = new int[this->commSize()+1];
+        this->_offsets[0]  = 0;
       };
+      ~Numbering() {
+        delete [] this->_offsets;
+      };
+    public: // Accessors
+      int getLocalSize() const {return this->_localSize;};
+      int getGlobalSize() const {return this->_offsets[this->commSize()];};
     public:
       void constructOverlap() {
         if (this->commRank() == 0) {
@@ -1068,10 +1075,9 @@ namespace ALE {
       };
       void constructLocalOrder() {
         const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
-        int localNumber = 0;
-        int offset;
 
         this->_order.clear();
+        this->_localSize = 0;
         for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
           if (this->_sendOverlap->capContains(*l_iter)) {
             const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = this->_sendOverlap->support(*l_iter);
@@ -1083,17 +1089,19 @@ namespace ALE {
             if (minRank < this->_sendOverlap->commRank()) {
               this->_order[*l_iter] = -1;
             } else {
-              this->_order[*l_iter] = localNumber++;
+              this->_order[*l_iter] = this->_localSize++;
             }
           } else {
-            this->_order[*l_iter] = localNumber++;
+            this->_order[*l_iter] = this->_localSize++;
           }
         }
-        MPI_Scan(&localNumber, &offset, 1, MPI_INT, MPI_SUM, this->comm());
-        offset -= localNumber;
+        MPI_Allgather(&this->_localSize, 1, MPI_INT, &(this->_offsets[1]), 1, MPI_INT, this->comm());
+        for(int p = 2; p <= this->commSize(); p++) {
+          this->offsets[p] += this->_offsets[p-1];
+        }
         for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
           if (this->_order[*l_iter] >= 0) {
-            this->_order[*l_iter] += offset;
+            this->_order[*l_iter] += this->offsets[this->commRank()];
           }
         }
       };
@@ -1168,6 +1176,14 @@ namespace ALE {
             }
           }
         }
+      };
+      void construct() {
+        this->constructOverlap();
+        this->constructLocalOrder();
+        this->constructCommunication();
+        this->fillSection();
+        this->communicate();
+        this->fillOrder();
       };
       void view(const std::string& name) {
         const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
