@@ -1693,7 +1693,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatMPIRowbsSetPreallocation_C",
                                     "MatMPIRowbsSetPreallocation_MPIRowbs",
                                      MatMPIRowbsSetPreallocation_MPIRowbs);CHKERRQ(ierr);
-  ierr = PetscObjectChangeTypeName((PetscObject)B,MATMPIROWBS);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIROWBS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
