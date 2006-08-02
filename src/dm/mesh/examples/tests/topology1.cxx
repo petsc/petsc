@@ -33,7 +33,7 @@ PetscErrorCode StratificationTest(const Obj<topology_type>& topology, Options *o
     if (options->dim != topology->height()) {
       SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid topology height %d, should be %d", topology->height(), options->dim);
     }
-    topology->getLabel(patch, "height")->view("height");
+    if (options->debug) {topology->getLabel(patch, "height")->view("height");}
     // Calculate the Euler characteristic
     for(h = 0, eulerChi = 0; h <= topology->height(); h++) {
       if (h%2) {
@@ -45,7 +45,7 @@ PetscErrorCode StratificationTest(const Obj<topology_type>& topology, Options *o
     if (eulerChi != 1) {
       SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid Euler characteristic %d, should be %d", eulerChi, 0);
     }
-    topology->getLabel(patch, "depth")->view("depth");
+    if (options->debug) {topology->getLabel(patch, "depth")->view("depth");}
     for(d = 0, eulerChi = 0; d <= topology->depth(); d++) {
       if (d%2) {
         eulerChi -= topology->depthStratum(patch, d)->size();
@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
     Obj<sieve_type>    sieve = ALE::Test::SieveBuilder<sieve_type>::readSieve(comm, options.dim, options.baseFilename, options.useZeroBase, options.debug);
 
     topology->setPatch(0, sieve);
+    topology->stratify();
     ierr = StratificationTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
