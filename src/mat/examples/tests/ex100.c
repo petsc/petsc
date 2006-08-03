@@ -10,8 +10,6 @@ int main(int argc,char **args)
   Mat               A,B,MA;
   PetscViewer       fd;
   char              file[PETSC_MAX_PATH_LEN];
-  PetscRandom       rand;
-  Vec               xx,yy,s1,s2;
   PetscInt          m,n,M,N,dof=1;
   PetscMPIInt       rank,size;
   PetscErrorCode    ierr;
@@ -37,20 +35,12 @@ int main(int argc,char **args)
   ierr = MatCreateMAIJ(A,dof,&MA);CHKERRQ(ierr);
   ierr = MatGetLocalSize(MA,&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(MA,&M,&N);CHKERRQ(ierr);
-
+  
   if (size == 1){
     ierr = MatConvert(MA,MATSEQAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   } else {
     ierr = MatConvert(MA,MATMPIAIJ,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);
   }
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rand);CHKERRQ(ierr);
-  ierr = PetscRandomSetFromOptions(rand);CHKERRQ(ierr);
-  ierr = VecCreate(PETSC_COMM_WORLD,&xx);CHKERRQ(ierr);
-  ierr = VecSetSizes(xx,m,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(xx);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx,&s1);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx,&s2);CHKERRQ(ierr);
-  ierr = VecDuplicate(xx,&yy);CHKERRQ(ierr);
 
   /* Test MatMult() */ 
   ierr = MatMultEqual(MA,B,10,&flg);CHKERRQ(ierr);
@@ -77,12 +67,7 @@ int main(int argc,char **args)
 
   ierr = MatDestroy(MA);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr); 
-  ierr = MatDestroy(B);CHKERRQ(ierr); 
-  ierr = VecDestroy(xx);CHKERRQ(ierr);
-  ierr = VecDestroy(yy);CHKERRQ(ierr);
-  ierr = VecDestroy(s1);CHKERRQ(ierr);
-  ierr = VecDestroy(s2);CHKERRQ(ierr);
-  ierr = PetscRandomDestroy(rand);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);  
   ierr = PetscFinalize();CHKERRQ(ierr);
 #endif
   return 0;

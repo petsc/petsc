@@ -932,11 +932,17 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT   PetscMallocSetDumpLog(void);
 
 /*
     Variable type where we stash PETSc object pointers in Fortran.
-    Assumes that sizeof(long) == sizeof(void*) which is true on 
-    all machines that we know. If this is not the case you should change
-    the long below to something appropriate
+    On most machines size(pointer) == sizeof(long) - except windows
+    where its sizeof(long long)
 */     
+
+#if (PETSC_SIZEOF_VOID_P) == (PETSC_SIZEOF_LONG)
 #define PetscFortranAddr   long
+#elif  (PETSC_SIZEOF_VOID_P) == (PETSC_SIZEOF_LONG_LONG)
+#define PetscFortranAddr   long long
+#else
+#error "Unknown size for PetscFortranAddr! Send us a bugreport at petsc-maint@mcs.anl.gov"
+#endif
 
 /*E
     PetscDataType - Used for handling different basic data types.

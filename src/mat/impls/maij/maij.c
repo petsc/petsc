@@ -151,6 +151,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
 {
   PetscErrorCode ierr;
   Mat_MPIMAIJ    *b;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr     = PetscNew(Mat_MPIMAIJ,&b);CHKERRQ(ierr);
@@ -163,8 +164,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
   b->dof  = 0;  
   b->OAIJ = 0;
   b->ctx  = 0;
-  b->w    = 0;  
-  ierr = PetscObjectChangeTypeName((PetscObject)A,MATMAIJ);CHKERRQ(ierr);
+  b->w    = 0; 
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = PetscObjectChangeTypeName((PetscObject)A,MATSEQMAIJ);CHKERRQ(ierr);
+  } else {
+    ierr = PetscObjectChangeTypeName((PetscObject)A,MATMPIMAIJ);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
