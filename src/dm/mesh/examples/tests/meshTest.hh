@@ -203,11 +203,12 @@ namespace ALE {
           int ndims = 1;                          /* number of eigenvectors (2^d sets) */
           double eigtol = 0.001;                  /* tolerance on eigenvectors */
           long seed = 123636512;                  /* for random graph mutations */
+          int patch = 0;
           PetscErrorCode ierr;
 
           nvtxs = mesh->getTopologyNew()->heightStratum(0, 0)->size();
           mesh_dims[0] = mesh->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
-          ALE::Test::MeshProcessor::buildDualCSR(mesh, 0, &start, &adjacency);
+          ALE::Test::MeshProcessor::buildDualCSR(mesh, patch, &start, &adjacency);
           assignment = new short int[nvtxs];
           ierr = PetscMemzero(assignment, nvtxs * sizeof(short));CHKERROR(ierr, "Error in PetscMemzero");
 

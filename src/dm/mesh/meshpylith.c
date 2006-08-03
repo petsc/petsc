@@ -221,12 +221,12 @@ namespace ALE {
       int dim = 3;
 
       for(int e = 0; e < numSplit; e++) {
-        elem2vertIndex[Mesh::point_type(0, splitInd[e*2+0])].insert(e);
+        elem2vertIndex[Mesh::point_type(splitInd[e*2+0])].insert(e);
       }
       for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
         vertices->clear();
         for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
-          vertices->push_back(Mesh::point_type(0, numElements+splitInd[*v_iter*2+1]));
+          vertices->push_back(Mesh::point_type(numElements+splitInd[*v_iter*2+1]));
         }
         splitField->setPatch(vertices, e_iter->first);
 
@@ -237,7 +237,7 @@ namespace ALE {
       splitField->orderPatches();
       for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
         for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
-          splitField->update(e_iter->first, Mesh::point_type(0, numElements+splitInd[*v_iter*2+1]), &splitVals[*v_iter*dim]);
+          splitField->update(e_iter->first, Mesh::point_type(numElements+splitInd[*v_iter*2+1]), &splitVals[*v_iter*dim]);
         }
       }
     };
@@ -254,14 +254,14 @@ namespace ALE {
       }
     };
     void Builder::buildMaterials(const Obj<Mesh::section_type>& matField, const int materials[]) {
-      const section_type::patch_type patch = 0;
-      const Obj<topology_type::label_sequence>& elements = matField->getAtlas()->getTopology()->heightStratum(patch, 0);
+      const Mesh::section_type::patch_type patch = 0;
+      const Obj<Mesh::section_type::topology_type::label_sequence>& elements = matField->getAtlas()->getTopology()->heightStratum(patch, 0);
 
       matField->getAtlas()->setFiberDimensionByHeight(patch, 0, 1);
       matField->getAtlas()->orderPatches();
       matField->allocate();
-      for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        double mat = (double) materials[(*e_iter).index];
+      for(Mesh::section_type::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        double mat = (double) materials[*e_iter];
         matField->update(patch, *e_iter, &mat);
       }
     };
@@ -507,7 +507,7 @@ namespace ALE {
       for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         const Mesh::section_type::value_type *array = coordinates->restrict(patch, *v_iter);
 
-        PetscViewerASCIIPrintf(viewer, "%7D ", (*v_iter).index+1-numElements);
+        PetscViewerASCIIPrintf(viewer, "%7D ", *v_iter+1-numElements);
         for(int d = 0; d < embedDim; d++) {
           if (d > 0) {
             PetscViewerASCIIPrintf(viewer, " ");
@@ -566,7 +566,7 @@ namespace ALE {
         }
         for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
           //FIX: Need a global ordering here
-          ierr = PetscViewerASCIIPrintf(viewer, " %6d", (*c_iter).index+1-numElements);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, " %6d", *c_iter+1-numElements);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
@@ -580,8 +580,6 @@ namespace ALE {
       Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
       Obj<ALE::Mesh::field_type> splitField = mesh->getField("split");
       Obj<ALE::Mesh::field_type::order_type::baseSequence> splitElements = splitField->getPatches();
-      Obj<ALE::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
-      Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
       ALE::Mesh::bundle_type::patch_type patch;
       PetscErrorCode ierr;
 
@@ -589,12 +587,10 @@ namespace ALE {
       if (mesh->getDimension() != 3) {
         SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
       }
+#if 0
       for(ALE::Mesh::field_type::order_type::baseSequence::iterator e_itor = splitElements->begin(); e_itor != splitElements->end(); ++e_itor) {
-        const ALE::Mesh::bundle_type::index_type& idx = elementBundle->getIndex(patch, *e_itor);
-
-        if (idx.index > 0) {
+        if (*e_itor >= 0) {
           Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);
-          int e = idx.prefix+1;
 
           for(ALE::Mesh::field_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
             const double *values = splitField->restrict(*e_itor, *c_itor);
@@ -605,6 +601,7 @@ namespace ALE {
           }
         }
       }
+#endif
       PetscFunctionReturn(0);
     };
   };

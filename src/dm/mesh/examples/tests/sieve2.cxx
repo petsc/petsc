@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
     Obj<ALE::Mesh> mesh = ALE::PCICE::Builder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug);
 
     if (options.debug) {
-      mesh->getTopologyNew()->getPatch(0)->view("Mesh");
+      mesh->getTopologyNew()->view("Mesh");
     }
     ierr = DistributionTest(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
