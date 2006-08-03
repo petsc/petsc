@@ -991,9 +991,9 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   firstElement = 0;
   // Must relate b to field
   if (mode == INSERT_VALUES) {
-    m->getField(std::string("x"))->update(patch, ALE::Mesh::point_type(0, e + firstElement), v);
+    m->getField(std::string("x"))->update(patch, ALE::Mesh::point_type(e + firstElement), v);
   } else {
-    m->getField(std::string("x"))->updateAdd(patch, ALE::Mesh::point_type(0, e + firstElement), v);
+    m->getField(std::string("x"))->updateAdd(patch, ALE::Mesh::point_type(e + firstElement), v);
   }
   ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1013,7 +1013,7 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::section_type> field, co
   const ALE::Obj<ALE::Mesh::atlas_type::IndexArray> intervals = field->getAtlas()->getIndices(patch, e);
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (field->debug()) {printf("[%d]mat for element (%d, %d)\n", field->commRank(), e.prefix, e.index);}
+  if (field->debug()) {printf("[%d]mat for element %d\n", field->commRank(), e);}
   for(ALE::Mesh::atlas_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
     //numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_iter));
     numIndices += i_iter->index;
@@ -1082,7 +1082,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   try {
     // Notice that we map the global element number to the point
     //ierr = updateOperator(A, mesh->getField("displacement"), *mesh->getBundle(mesh->getTopology()->depth())->__getOrder()->cone(patch, order)->begin(), v, mode);CHKERRQ(ierr);
-    ierr = updateOperator(A, mesh->getSection("displacement"), ALE::Mesh::point_type(0, e), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, mesh->getSection("displacement"), ALE::Mesh::point_type(e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
@@ -1121,7 +1121,7 @@ PetscErrorCode preallocateMatrix(Mat A, ALE::Mesh *mesh, ALE::Obj<ALE::Mesh::fie
     for(ALE::Mesh::field_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
       numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
       if (field->debug) {
-        printf("[%d]Allocation mat interval (%d, %d)\n", field->commRank(), (*i_itor).prefix, (*i_itor).index);
+        printf("[%d]Allocation mat interval %d\n", field->commRank(), *i_itor);
       }
     }
     if (numIndices > indicesMaxSize) {

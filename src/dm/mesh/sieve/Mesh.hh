@@ -36,7 +36,7 @@ namespace ALE {
       typedef std::map<std::string, Obj<field_type> > FieldContainer;
       typedef std::map<int, Obj<bundle_type> > BundleContainer;
       typedef ALE::New::Topology<int, sieve_type>        topology_type;
-      typedef ALE::New::Atlas<topology_type, point_type> atlas_type;
+      typedef ALE::New::Atlas<topology_type, ALE::Point> atlas_type;
       typedef ALE::New::Section<atlas_type, double>      section_type;
       typedef ALE::New::Numbering<topology_type>         numbering_type;
       typedef std::map<std::string, Obj<section_type> >  SectionContainer;

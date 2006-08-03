@@ -123,6 +123,41 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "PartitionTest"
+PetscErrorCode PartitionTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
+{
+  // Construct the proto-overlap
+  //   We say that partition points overlap those on proc 0 (never appear in Sieve)
+  // Construct the send and receive sections
+  //   The send size is the number of points to send from proc 0
+  //   The recv size is the number coming into proc >0
+  // Fill up with points
+  // Communicate
+  // Insert points into overlap
+  // Construct the send and receive sections
+  //   The send size is the cone sizes to send from proc 0
+  //   The recv size is the incoming cone sizes into proc >0
+  // Fill up with cones
+  // Communicate
+  // Insert points into sieve
+
+  // Operator allocation or application:
+  // -----------------------------------
+  // Construct the proto-overlap
+  //   This is just the traditional overlap of boundary points
+  // Construct the send and receive sections
+  //   The send size and recv size are the sizes of the remote cone of influence
+  // Fill up with points in the cone of influence
+  // Communicate
+  // Insert influence points into overlap
+  // Construct the send and receive sections
+  //   The send size and recv size are the value sizes over each point
+  // Fill up with values
+  // Communicate
+  // Combine values into application
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
@@ -154,6 +189,7 @@ int main(int argc, char *argv[])
     Obj<recv_section_type> recvSection = new recv_section_type(comm, recv_section_type::RECEIVE, sendSection->getTag(), options.debug);
 
     ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
+    ierr = PartitionTest(sendSection, recvSection, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

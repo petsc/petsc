@@ -5,7 +5,7 @@
 #include <Sieve.hh>
 #endif
 
-extern PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
+extern "C" PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
   class ParallelObject {
@@ -830,11 +830,19 @@ namespace ALE {
       Obj<points_type>  _points;
       Obj<coneSequence> _empty;
       Obj<coneSequence> _return;
-    public:
-      DiscreteSieve() {
+      void _init() {
         this->_points = new points_type();
         this->_empty  = new coneSequence();
         this->_return = new coneSequence();
+      };
+    public:
+      DiscreteSieve() {
+        this->_init();
+      };
+      template<typename Input>
+      DiscreteSieve(const Obj<Input>& points) {
+        this->_init();
+        this->_points->insert(points->begin(), points->end());
       };
       virtual ~DiscreteSieve() {};
     public:
@@ -876,7 +884,9 @@ namespace ALE {
         return this->_return;
       };
       const Obj<capSequence>& roots() {return this->_points;};
+      const Obj<capSequence>& cap() {return this->_points;};
       const Obj<baseSequence>& leaves() {return this->_points;};
+      const Obj<baseSequence>& base() {return this->_points;};
     };
 
 
@@ -933,26 +943,15 @@ namespace ALE {
       int getTag() const {return this->_tag;};
       void setTag(const int tag) {this->_tag = tag;};
     public:
-      void construct(const Obj<overlap_type>& overlap, const int size) {
-        if (this->_type == RECEIVE) {
-          Obj<typename overlap_type::baseSequence> base = overlap->base();
+      void construct(const int size) {
+        const typename topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
 
-          for(typename overlap_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            const Obj<typename overlap_type::coneSequence>& ranks = overlap->cone(*b_iter);
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<typename topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+          int                                  rank = p_iter->first;
 
-            for(typename overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-              this->_atlas->setFiberDimension(*r_iter, *b_iter, size);
-            }
-          }
-        } else {
-          Obj<typename overlap_type::capSequence> cap = overlap->cap();
-
-          for(typename overlap_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-            const Obj<typename overlap_type::supportSequence>& ranks = overlap->support(*c_iter);
-
-            for(typename overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-              this->_atlas->setFiberDimension(*r_iter, *c_iter, size);
-            }
+          for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            this->_atlas->setFiberDimension(rank, *b_iter, size);
           }
         }
       };
@@ -1055,6 +1054,7 @@ namespace ALE {
     public: // Accessors
       int getLocalSize() const {return this->_localSize;};
       int getGlobalSize() const {return this->_offsets[this->commSize()];};
+      int getIndex(const point_type& point) {return this->_order[point];};
     public:
       void constructOverlap() {
         if (this->commRank() == 0) {
@@ -1097,11 +1097,11 @@ namespace ALE {
         }
         MPI_Allgather(&this->_localSize, 1, MPI_INT, &(this->_offsets[1]), 1, MPI_INT, this->comm());
         for(int p = 2; p <= this->commSize(); p++) {
-          this->offsets[p] += this->_offsets[p-1];
+          this->_offsets[p] += this->_offsets[p-1];
         }
         for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
           if (this->_order[*l_iter] >= 0) {
-            this->_order[*l_iter] += this->offsets[this->commRank()];
+            this->_order[*l_iter] += this->_offsets[this->commRank()];
           }
         }
       };
@@ -1131,8 +1131,8 @@ namespace ALE {
         }
         this->_recvSection->getAtlas()->getTopology()->stratify();
         // Setup sections
-        this->_sendSection->construct(this->_sendOverlap, 1);
-        this->_recvSection->construct(this->_recvOverlap, 1);
+        this->_sendSection->construct(1);
+        this->_recvSection->construct(1);
         this->_sendSection->getAtlas()->orderPatches();
         this->_recvSection->getAtlas()->orderPatches();
         this->_sendSection->allocate();

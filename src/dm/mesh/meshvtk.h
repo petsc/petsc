@@ -127,10 +127,11 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteElements"
   static PetscErrorCode writeElements(Obj<ALE::Mesh> mesh, PetscViewer viewer)
   {
-    ALE::Mesh::topology_type::patch_type   patch    = 0;
-    const Obj<ALE::Mesh::sieve_type>& topology = mesh->getTopologyNew()->getPatch(patch);
-    const Obj<ALE::Mesh::topology_type::label_sequence>& elements = mesh->getTopologyNew()->heightStratum(patch, 0);
-    int            corners = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
+    ALE::Mesh::topology_type::patch_type                 patch     = 0;
+    const Obj<ALE::Mesh::sieve_type>&                    topology  = mesh->getTopologyNew()->getPatch(patch);
+    const Obj<ALE::Mesh::topology_type::label_sequence>& elements  = mesh->getTopologyNew()->heightStratum(patch, 0);
+    Obj<ALE::Mesh::numbering_type>                       numbering = new ALE::Mesh::numbering_type(mesh->getTopologyNew(), "height", 0);
+    int            corners     = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
     int            numElements = mesh->getTopologyNew()->heightStratum(patch, 0)->size();
     PetscErrorCode ierr;
 
@@ -142,7 +143,7 @@ class VTKViewer {
 
         ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
         for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-          ierr = PetscViewerASCIIPrintf(viewer, " %d", (*c_iter).index - numElements);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, " %d", numbering->getIndex(*c_iter) - numElements);CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
       }
@@ -173,7 +174,7 @@ class VTKViewer {
         const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = topology->cone(*e_iter);
 
         for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-          localVertices[k++] = (*c_iter).index - numElements;
+          localVertices[k++] = numbering->getIndex(*c_iter) - numElements;
         }
       }
       if (k != numLocalElements*corners) {

@@ -1,3 +1,6 @@
+#ifndef included_ALE_sifterTest_hh
+#define included_ALE_sifterTest_hh
+
 #include <Sifter.hh>
 
 namespace ALE {
@@ -23,3 +26,5 @@ namespace ALE {
     };
   };
 };
+
+#endif
