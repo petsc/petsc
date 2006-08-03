@@ -212,9 +212,6 @@ class Configure(config.base.Configure):
       self.vendor = None
     if self.framework.argDB['with-vendor-compilers'] == '1' or self.framework.argDB['with-vendor-compilers'] == 'yes' or self.framework.argDB['with-vendor-compilers'] == 'true':
       self.vendor = ''
-    # if vendor is set & & gnu-compilers - error
-    if self.vendor and self.framework.argDB['with-gnu-compilers']:
-      raise RuntimeError('Cannot set both with-vendor-compilers and with-gnu-compilers options to true')
     self.logPrint('Compiler vendor is "'+str(self.vendor)+'"')
     return
 
@@ -319,6 +316,11 @@ class Configure(config.base.Configure):
         if vendor == 'solaris' or not vendor:
           if not Configure.isGNU('cc'):
             yield 'cc'
+      # duplicate code
+      if self.framework.argDB['with-gnu-compilers']:
+        yield 'gcc'
+        if Configure.isGNU('cc'):
+          yield 'cc'     
     return
 
   def checkCCompiler(self):
@@ -466,6 +468,11 @@ class Configure(config.base.Configure):
           yield 'pgCC'
         if vendor == 'solaris':
           yield 'CC'
+      #duplicate code
+      if self.framework.argDB['with-gnu-compilers']:
+        yield 'g++'
+        if Configure.isGNU('c++'):
+          yield 'c++'
     return
 
   def checkCxxCompiler(self):
@@ -619,6 +626,13 @@ class Configure(config.base.Configure):
           yield 'f90'
           if not Configure.isGNU('f77'):
             yield 'f77'
+      #duplicate code
+      if self.framework.argDB['with-gnu-compilers']:
+        yield 'gfortran'
+        yield 'g95'
+        yield 'g77'
+        if Configure.isGNU('f77'):
+          yield 'f77'
     return
 
   def checkFortranCompiler(self):
