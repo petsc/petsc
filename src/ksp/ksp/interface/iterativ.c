@@ -447,12 +447,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
         ierr = PetscInfo(ksp,"Special case, user has provided nonzero initial guess and zero RHS\n");CHKERRQ(ierr);
         snorm = rnorm;
       }
-      ksp->ttol   = PetscMax(ksp->rtol*snorm,ksp->abstol);
       ksp->rnorm0 = snorm;
     } else {
-      ksp->ttol   = PetscMax(ksp->rtol*rnorm,ksp->abstol);
       ksp->rnorm0 = rnorm;
     }
+    ksp->ttol   = PetscMax(ksp->rtol*ksp->rnorm0,ksp->abstol);
   }
 
   if (rnorm != rnorm) {
