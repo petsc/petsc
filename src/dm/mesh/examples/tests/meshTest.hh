@@ -210,7 +210,7 @@ namespace ALE {
           nvtxs = mesh->getTopologyNew()->heightStratum(0, 0)->size();
           mesh_dims[0] = mesh->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
           ALE::Test::MeshProcessor::buildDualCSR(mesh, patch, &start, &adjacency);
-          for(int e = 0; e < start[nvtxs+1]; e++) {
+          for(int e = 0; e < start[nvtxs]; e++) {
             adjacency[e]++;
           }
           assignment = new short int[nvtxs];
