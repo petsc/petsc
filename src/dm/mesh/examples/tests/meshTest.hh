@@ -149,7 +149,8 @@ namespace ALE {
             sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
 
             for(sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
-              if ((int) sieve->join(*e_iter, *n_iter)->size() == faceVertices) {
+              if (*e_iter == *n_iter) continue;
+              if ((int) sieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
                 neighborCells[*e_iter].insert(*n_iter);
               }
             }
@@ -209,6 +210,9 @@ namespace ALE {
           nvtxs = mesh->getTopologyNew()->heightStratum(0, 0)->size();
           mesh_dims[0] = mesh->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
           ALE::Test::MeshProcessor::buildDualCSR(mesh, patch, &start, &adjacency);
+          for(int e = 0; e < start[nvtxs+1]; e++) {
+            adjacency[e]++;
+          }
           assignment = new short int[nvtxs];
           ierr = PetscMemzero(assignment, nvtxs * sizeof(short));CHKERROR(ierr, "Error in PetscMemzero");
 

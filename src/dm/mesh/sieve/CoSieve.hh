@@ -777,15 +777,22 @@ namespace ALE {
         }
       };
     public:
-      void view(const std::string& name) const {
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
         ostringstream txt;
+        int rank;
 
+        if (comm == MPI_COMM_NULL) {
+          comm = this->comm();
+          rank = this->commRank();
+        } else {
+          MPI_Comm_rank(comm, &rank);
+        }
         if (name == "") {
-          if(this->commRank() == 0) {
+          if(rank == 0) {
             txt << "viewing a Section" << std::endl;
           }
         } else {
-          if(this->commRank() == 0) {
+          if(rank == 0) {
             txt << "viewing Section '" << name << "'" << std::endl;
           }
         }
@@ -808,8 +815,8 @@ namespace ALE {
             }
           }
         }
-        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
-        PetscSynchronizedFlush(this->comm());
+        PetscSynchronizedPrintf(comm, txt.str().c_str());
+        PetscSynchronizedFlush(comm);
       };
     };
 
@@ -952,30 +959,6 @@ namespace ALE {
 
           for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             this->_atlas->setFiberDimension(rank, *b_iter, size);
-          }
-        }
-      };
-      template<typename Sizer>
-      void construct(const Obj<overlap_type>& overlap, const Sizer& sizer) {
-        if (this->_type == RECEIVE) {
-          Obj<typename overlap_type::baseSequence> base = overlap->base();
-
-          for(typename overlap_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            const Obj<typename overlap_type::coneSequence>& ranks = overlap->cone(*b_iter);
-
-            for(typename overlap_type::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-              this->_atlas->setFiberDimension(*r_iter, *b_iter, sizer.size(r_iter.color()));
-            }
-          }
-        } else {
-          Obj<typename overlap_type::capSequence> cap = overlap->cap();
-
-          for(typename overlap_type::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
-            const Obj<typename overlap_type::supportSequence>& ranks = overlap->support(*c_iter);
-
-            for(typename overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-              this->_atlas->setFiberDimension(*r_iter, *c_iter, sizer.size(r_iter.color()));
-            }
           }
         }
       };

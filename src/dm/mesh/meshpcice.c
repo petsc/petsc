@@ -96,7 +96,7 @@ namespace ALE {
       coords->getAtlas()->orderPatches();
       coords->allocate();
       for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        coords->update(patch, *v_iter, &(coordinates[((*v_iter).index - numCells)*embedDim]));
+        coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
       }
     };
     Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {

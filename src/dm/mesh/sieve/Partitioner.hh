@@ -518,7 +518,8 @@ namespace ALE {
               typename sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
 
               for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
-                if ((int) oldSieve->join(*e_iter, *n_iter)->size() == faceVertices) {
+                if (*e_iter == *n_iter) continue;
+                if ((int) oldSieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
                   adj[elementBundle->getIndex(patch, *e_iter).prefix].insert(elementBundle->getIndex(patch, *n_iter).prefix);
                 }
               }
@@ -533,7 +534,7 @@ namespace ALE {
           int offset = 0;
           for(int v = 0; v < nvtxs; v++) {
             for(typename std::set<int>::iterator n_iter = adj[v].begin(); n_iter != adj[v].end(); ++n_iter) {
-              adjacency[offset++] = *n_iter;
+              adjacency[offset++] = *n_iter+1;
             }
           }
           delete [] adj;

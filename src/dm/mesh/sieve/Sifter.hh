@@ -855,27 +855,29 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       }
       if(!rawData) {
         os << "cap --> base:" << std::endl;
-        typename traits::capSequence cap = this->cap();
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          typename traits::supportSequence supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp.begin(); suppi != supp.end(); suppi++) {
+        Obj<typename traits::capSequence> cap = this->cap();
+        for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); capi++) {
+          const Obj<typename traits::supportSequence>& supp = this->support(*capi);
+
+          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); suppi++) {
             os << *capi << "--(" << suppi.color() << ")-->" << *suppi << std::endl;
           }
         }
         os << "base <-- cap:" << std::endl;
-        typename traits::baseSequence base = this->base();
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
-          typename traits::coneSequence cone = this->cone(*basei);
-          for(typename traits::coneSequence::iterator conei = cone.begin(); conei != cone.end(); conei++) {
+        Obj<typename traits::baseSequence> base = this->base();
+        for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); basei++) {
+          const Obj<typename traits::coneSequence>& cone = this->cone(*basei);
+
+          for(typename traits::coneSequence::iterator conei = cone->begin(); conei != cone->end(); conei++) {
             os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
           }
         }
         os << "cap --> outdegrees:" << std::endl;
-        for(typename traits::capSequence::iterator capi = cap.begin(); capi != cap.end(); capi++) {
+        for(typename traits::capSequence::iterator capi = cap->begin(); capi != cap->end(); capi++) {
           os << *capi <<  "-->" << capi.degree() << std::endl;
         }
         os << "base <-- indegrees:" << std::endl;
-        for(typename traits::baseSequence::iterator basei = base.begin(); basei != base.end(); basei++) {
+        for(typename traits::baseSequence::iterator basei = base->begin(); basei != base->end(); basei++) {
           os << *basei <<  "<--" << basei.degree() << std::endl;
         }
       }

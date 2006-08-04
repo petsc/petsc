@@ -250,7 +250,7 @@ namespace ALE {
       coords->getAtlas()->orderPatches();
       coords->allocate();
       for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        coords->update(patch, *v_iter, &(coordinates[((*v_iter).index - numCells)*embedDim]));
+        coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
       }
     };
     void Builder::buildMaterials(const Obj<Mesh::section_type>& matField, const int materials[]) {
