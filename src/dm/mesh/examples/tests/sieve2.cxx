@@ -22,9 +22,11 @@ typedef struct {
 
 PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
 {
-  Obj<send_overlap_type> sendOverlap = new send_overlap_type(mesh->comm(), options->debug);
-  Obj<send_section_type> sendSizer   = new send_section_type(mesh->comm(), send_section_type::SEND, options->debug);
-  Obj<send_section_type> sendSection = new send_section_type(mesh->comm(), send_section_type::SEND, options->debug);
+  typedef ALE::New::ConstantSection<send_section_type::topology_type, send_section_type::index_type, send_section_type::value_type> constant_section;
+  Obj<send_overlap_type> sendOverlap   = new send_overlap_type(mesh->comm(), options->debug);
+  Obj<send_section_type> sendSizer     = new send_section_type(mesh->comm(), send_section_type::SEND, options->debug);
+  Obj<send_section_type> sendSection   = new send_section_type(mesh->comm(), send_section_type::SEND, options->debug);
+  Obj<constant_section>  constantSizer = new constant_section(mesh->comm(), 1, options->debug);
   int numElements = mesh->getTopologyNew()->heightStratum(0, 0)->size();
 
   PetscFunctionBegin;
@@ -36,16 +38,17 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
     sendOverlap->addCone(mesh->commRank(), p, p);
   }
   sendOverlap->view(std::cout, "Send overlap");
-  // 3) Form send section sizer
-  for(int p = 1; p < mesh->commSize(); p++) {
-    Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(p));
-    sendSizer->getAtlas()->getTopology()->setPatch(p, sendSieve);
-  }
-  sendSizer->getAtlas()->getTopology()->stratify();
-  sendSizer->construct(1);
-  sendSizer->getAtlas()->orderPatches();
-  sendSizer->allocate();
-  sendSizer->constructCommunication();
+  ALE::Test::Completion::completeSend(sendOverlap, constantSizer, sendSizer);
+//   // 3) Form send section sizer
+//   for(int p = 1; p < mesh->commSize(); p++) {
+//     Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(p));
+//     sendSizer->getAtlas()->getTopology()->setPatch(p, sendSieve);
+//   }
+//   sendSizer->getAtlas()->getTopology()->stratify();
+//   sendSizer->construct(1);
+//   sendSizer->getAtlas()->orderPatches();
+//   sendSizer->allocate();
+//   sendSizer->constructCommunication();
   // 4) Form send section
   sendSection->getAtlas()->setTopology(sendSizer->getAtlas()->getTopology());
   for(int p = 1; p < mesh->commSize(); p++) {
@@ -105,29 +108,31 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
 
 PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
 {
+  typedef ALE::New::ConstantSection<recv_section_type::topology_type, recv_section_type::index_type, recv_section_type::value_type> constant_section;
   Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(mesh->comm(), options->debug);
   Obj<recv_section_type> recvSizer   = new recv_section_type(mesh->comm(), recv_section_type::RECEIVE, options->debug);
   Obj<recv_section_type> recvSection = new recv_section_type(mesh->comm(), recv_section_type::RECEIVE, options->debug);
+  Obj<constant_section>  constantSizer = new constant_section(mesh->comm(), 1, options->debug);
 
   PetscFunctionBegin;
   // 1) Form partition point overlap a priori
   //      The arrow is from rank 0 with partition point 0
   recvOverlap->addCone(0, mesh->commRank(), 0);
   recvOverlap->view(std::cout, "Receive overlap");
-  // 3) Form receive overlap section sizer
-  //      Want to replace this loop with a slice through color
-  Obj<dsieve_type> recvSieve = new dsieve_type();
-  const Obj<recv_overlap_type::supportSequence>& points = recvOverlap->support(0);
+  ALE::Test::Completion::completeReceive(recvOverlap, constantSizer, recvSizer);
+//   // 3) Form receive overlap section sizer
+//   Obj<dsieve_type> recvSieve = new dsieve_type();
+//   const Obj<recv_overlap_type::supportSequence>& points = recvOverlap->support(0);
 
-  for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-    recvSieve->addPoint(p_iter.color());
-  }
-  recvSizer->getAtlas()->getTopology()->setPatch(0, recvSieve);
-  recvSizer->getAtlas()->getTopology()->stratify();
-  recvSizer->construct(1);
-  recvSizer->getAtlas()->orderPatches();
-  recvSizer->allocate();
-  recvSizer->constructCommunication();
+//   for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+//     recvSieve->addPoint(p_iter.color());
+//   }
+//   recvSizer->getAtlas()->getTopology()->setPatch(0, recvSieve);
+//   recvSizer->getAtlas()->getTopology()->stratify();
+//   recvSizer->construct(1);
+//   recvSizer->getAtlas()->orderPatches();
+//   recvSizer->allocate();
+//   recvSizer->constructCommunication();
   // 4) Complete the sizer
   recvSizer->startCommunication();
   recvSizer->endCommunication();
