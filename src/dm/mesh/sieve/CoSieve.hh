@@ -820,6 +820,68 @@ namespace ALE {
       };
     };
 
+    template<typename Topology_, typename Index_, typename Value_>
+    class ConstantSection : public ALE::ParallelObject {
+    public:
+      typedef Topology_                          topology_type;
+      typedef typename topology_type::patch_type patch_type;
+      typedef typename topology_type::sieve_type sieve_type;
+      typedef typename topology_type::point_type point_type;
+      typedef Index_                             index_type;
+      typedef Value_                             value_type;
+    protected:
+      Obj<topology_type> _topology;
+      const value_type   _value;
+    public:
+      ConstantSection(MPI_Comm comm, const value_type value, const int debug = 0) : ParallelObject(comm, debug), _value(value) {
+        this->_topology = new topology_type(comm, debug);
+      };
+      ConstantSection(const Obj<topology_type>& topology, const value_type value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value) {};
+      virtual ~ConstantSection() {};
+    public:
+      void allocate() {};
+      const value_type *restrict(const patch_type& patch) {return &this->_value;};
+      // This should return something the size of the closure
+      const value_type *restrict(const patch_type& patch, const point_type& p) {return &this->_value;};
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {return &this->_value;};
+      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
+        throw ALE::Exception("Cannot update a ConstantSection");
+      };
+      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
+        throw ALE::Exception("Cannot update a ConstantSection");
+      };
+      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
+        throw ALE::Exception("Cannot update a ConstantSection");
+      };
+      template<typename Input>
+      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
+        throw ALE::Exception("Cannot update a ConstantSection");
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        ostringstream txt;
+        int rank;
+
+        if (comm == MPI_COMM_NULL) {
+          comm = this->comm();
+          rank = this->commRank();
+        } else {
+          MPI_Comm_rank(comm, &rank);
+        }
+        if (name == "") {
+          if(rank == 0) {
+            txt << "viewing a ConstantSection with value " << this->_value << std::endl;
+          }
+        } else {
+          if(rank == 0) {
+            txt << "viewing ConstantSection '" << name << "' with value " << this->_value << std::endl;
+          }
+        }
+        PetscSynchronizedPrintf(comm, txt.str().c_str());
+        PetscSynchronizedFlush(comm);
+      };
+    };
+
     template<typename Point_>
     class DiscreteSieve {
     public:
@@ -959,6 +1021,19 @@ namespace ALE {
 
           for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             this->_atlas->setFiberDimension(rank, *b_iter, size);
+          }
+        }
+      };
+      template<typename Sizer>
+      void construct(const Obj<Sizer>& sizer) {
+        const typename topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<typename topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+          int                                  rank = p_iter->first;
+
+          for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            this->_atlas->setFiberDimension(rank, *b_iter, *(sizer->restrict(rank, *b_iter)));
           }
         }
       };
