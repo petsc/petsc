@@ -347,6 +347,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
    Input Parameters:
 .  ksp   - iterative context
 
+   Options Database:
+.   -ksp_converged_use_initial_residual_norm
+
    Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
 
    The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
@@ -356,13 +359,49 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 
 .keywords: KSP, default, convergence, residual
 
-.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason()
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUMIRNorm()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (ksp->defaultconvergedmininitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
   ksp->defaultconvergedinitialrtol = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDefaultConvergedSetUMIRNorm"
+/*@C
+   KSPDefaultConvergedSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
+      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_UNPRECONDIITONED_NORM)
+      is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
+
+   Collective on KSP
+
+   Input Parameters:
+.  ksp   - iterative context
+
+   Options Database:
+.   -ksp_converged_use_min_initial_residual_norm
+
+   Use KSPSetTolerances() to alter the defaults for rtol, abstol, dtol.
+
+   The precise values of reason are macros such as KSP_CONVERGED_RTOL, which
+   are defined in petscksp.h.
+
+   Level: intermediate
+
+.keywords: KSP, default, convergence, residual
+
+.seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(), KSPDefaultConvergedSetUIRNorm()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  if (ksp->defaultconvergedinitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  ksp->defaultconvergedmininitialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
 
@@ -447,7 +486,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
         ierr = PetscInfo(ksp,"Special case, user has provided nonzero initial guess and zero RHS\n");CHKERRQ(ierr);
         snorm = rnorm;
       }
-      ksp->rnorm0 = snorm;
+      if (ksp->defaultconvergedmininitialrtol) {
+        ksp->rnorm0 = PetscMin(snorm,rnorm);
+      } else {
+        ksp->rnorm0 = snorm;
+      }
     } else {
       ksp->rnorm0 = rnorm;
     }
