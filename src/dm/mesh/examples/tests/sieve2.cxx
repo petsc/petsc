@@ -34,14 +34,14 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
   // 1) Form partition point overlap a priori
   //      There are arrows to each rank whose color is the partition point (also the rank)
   for(int p = 1; p < mesh->commSize(); p++) {
-    sendOverlap->addCone(mesh->commRank(), p, p);
+    sendOverlap->addCone(p, p, p);
   }
   sendOverlap->view(std::cout, "Send overlap");
   ALE::Test::Completion::setupSend(sendOverlap, constantSizer, sendSizer);
   // 2) Partition the mesh
   short *assignment = ALE::Test::MeshProcessor::partitionMesh_Chaco(mesh);
   Obj<partition_section> partitionSection = new partition_section(sendSizer->getAtlas()->getTopology(), numElements, assignment);
-  ALE::Test::Completion::completeSend(sendOverlap, partitionSection, sendSizer);
+  ALE::Test::Completion::completeSend(partitionSection, sendSizer);
 //   // 3) Form send section sizer
 //   for(int p = 1; p < mesh->commSize(); p++) {
 //     Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(p));
@@ -53,18 +53,19 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
 //   sendSizer->allocate();
 //   sendSizer->constructCommunication();
   // 4) Form send section
-  sendSection->getAtlas()->setTopology(sendSizer->getAtlas()->getTopology());
-  for(int p = 1; p < mesh->commSize(); p++) {
-    int size = 0;
+  ALE::Test::Completion::setupSend(sendOverlap, sendSizer, sendSection);
+//   sendSection->getAtlas()->setTopology(sendSizer->getAtlas()->getTopology());
+//   for(int p = 1; p < mesh->commSize(); p++) {
+//     int size = 0;
 
-    for(int e = 0; e < numElements; e++) {
-      if (assignment[e] == p) size++;
-    }
-    sendSection->getAtlas()->setFiberDimension(p, p, size);
-  }
-  sendSection->getAtlas()->orderPatches();
-  sendSection->allocate();
-  sendSection->constructCommunication();
+//     for(int e = 0; e < numElements; e++) {
+//       if (assignment[e] == p) size++;
+//     }
+//     sendSection->getAtlas()->setFiberDimension(p, p, size);
+//   }
+//   sendSection->getAtlas()->orderPatches();
+//   sendSection->allocate();
+//   sendSection->constructCommunication();
 //   // 5) Restrict from the send section
 //   const send_section_type::topology_type::sheaf_type& patches = sendSizer->getAtlas()->getTopology()->getPatches();
 
@@ -120,10 +121,10 @@ PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
   PetscFunctionBegin;
   // 1) Form partition point overlap a priori
   //      The arrow is from rank 0 with partition point 0
-  recvOverlap->addCone(0, mesh->commRank(), 0);
+  recvOverlap->addCone(0, mesh->commRank(), mesh->commRank());
   recvOverlap->view(std::cout, "Receive overlap");
   ALE::Test::Completion::setupReceive(recvOverlap, constantSizer, recvSizer);
-  ALE::Test::Completion::completeReceive(recvOverlap, recvSizer);
+  ALE::Test::Completion::completeReceive(recvSizer);
 //   // 3) Form receive overlap section sizer
 //   Obj<dsieve_type> recvSieve = new dsieve_type();
 //   const Obj<recv_overlap_type::supportSequence>& points = recvOverlap->support(0);
@@ -142,26 +143,29 @@ PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, Options *options)
 //   recvSizer->endCommunication();
 //   recvSizer->view("Receive Sizer", MPI_COMM_SELF);
   // 5) Update to the receive section
-  recvSection->getAtlas()->setTopology(recvSizer->getAtlas()->getTopology());
-  const recv_section_type::topology_type::sheaf_type& patches = recvSizer->getAtlas()->getTopology()->getPatches();
+  ALE::Test::Completion::setupReceive(recvOverlap, recvSizer, recvSection);
+//   recvSection->getAtlas()->setTopology(recvSizer->getAtlas()->getTopology());
+//   const recv_section_type::topology_type::sheaf_type& patches = recvSizer->getAtlas()->getTopology()->getPatches();
 
-  for(recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-    const Obj<recv_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
-    int                                                     rank = p_iter->first;
+//   for(recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+//     const Obj<recv_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
+//     int                                                     rank = p_iter->first;
 
-    for(recv_section_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      recvSection->getAtlas()->setFiberDimension(rank, *b_iter, *(recvSizer->restrict(rank, *b_iter)));
-    }
-  }
-  recvSection->getAtlas()->orderPatches();
-  recvSection->allocate();
-  recvSection->constructCommunication();
+//     for(recv_section_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+//       recvSection->getAtlas()->setFiberDimension(rank, *b_iter, *(recvSizer->restrict(rank, *b_iter)));
+//     }
+//   }
+//   recvSection->getAtlas()->orderPatches();
+//   recvSection->allocate();
+//   recvSection->constructCommunication();
   // 6) Complete the section
   recvSection->startCommunication();
   recvSection->endCommunication();
   recvSection->view("Receive Section", MPI_COMM_SELF);
   // 7) Unpack the section into the overlap
   recvOverlap->clear();
+  const recv_section_type::topology_type::sheaf_type& patches = recvSizer->getAtlas()->getTopology()->getPatches();
+
   for(recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
     const Obj<recv_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
     int                                                     rank = p_iter->first;

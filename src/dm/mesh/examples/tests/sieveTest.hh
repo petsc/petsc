@@ -39,7 +39,7 @@ namespace ALE {
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        if (patch == p) {
+        if (patch != p) {
           throw ALE::Exception("Point must be identical to patch in a PartitionSection");
         }
         return &this->_sizes[patch];
@@ -106,7 +106,7 @@ namespace ALE {
         sendSection->constructCommunication();
       };
       template<typename Filler>
-      static void completeSend(const Obj<send_overlap_type>& sendOverlap, const Obj<Filler>& sendFiller, const Obj<send_section_type>& sendSection) {
+      static void completeSend(const Obj<Filler>& sendFiller, const Obj<send_section_type>& sendSection) {
         // Fill section
         const send_section_type::topology_type::sheaf_type& patches = sendSection->getAtlas()->getTopology()->getPatches();
 
@@ -143,7 +143,7 @@ namespace ALE {
         recvSection->allocate();
         recvSection->constructCommunication();
       };
-      static void completeReceive(const Obj<recv_overlap_type>& recvOverlap, const Obj<recv_section_type>& recvSection) {
+      static void completeReceive(const Obj<recv_section_type>& recvSection) {
         // Complete the section
         recvSection->startCommunication();
         recvSection->endCommunication();
