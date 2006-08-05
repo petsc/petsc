@@ -290,9 +290,11 @@ namespace ALE {
         label->setCone(value, point);
       };
       const Obj<patch_label_type>& getLabel(const patch_type& patch, const std::string& name) {
+        this->checkPatch(patch);
         return this->_labels[name][patch];
       };
       const Obj<label_sequence>& getLabelStratum(const patch_type& patch, const std::string& name, int label) {
+        this->checkPatch(patch);
         return this->_labels[name][patch]->support(label);
       };
       const sheaf_type& getPatches() {
@@ -1000,6 +1002,7 @@ namespace ALE {
           PetscMalloc(sizeof(int), &tagvalp);
           MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag, &tagKeyval, (void *) NULL);
           MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
+          tagvalp[0] = 0;
         }
         MPI_Attr_get(this->_comm, tagKeyval, (void **) &tagvalp, &flg);
         if (tagvalp[0] < 1) {
