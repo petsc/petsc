@@ -38,7 +38,7 @@ namespace ALE {
         sendSection->construct(sendSizer);
         sendSection->getAtlas()->orderPatches();
         sendSection->allocate();
-        sendSection->constructCommunication();
+        sendSection->constructCommunication(send_section_type::SEND);
       };
       template<typename Filler>
       static void completeSend(const Obj<Filler>& sendFiller, const Obj<send_section_type>& sendSection) {
@@ -57,12 +57,26 @@ namespace ALE {
         sendSection->startCommunication();
         sendSection->endCommunication();
       };
+      template<typename SizerFiller, typename Filler>
+      static void sendSection(const Obj<send_overlap_type>& sendOverlap, const Obj<SizerFiller>& sizerFiller, const Obj<Filler>& filler, const Obj<send_section_type>& sendSection) {
+        Obj<send_section_type> sendSizer     = new send_section_type(sendSection->comm(), sendSection->debug());
+        Obj<constant_section>  constantSizer = new constant_section(MPI_COMM_SELF, 1, sendSection->debug());
+
+        // 1) Create the sizer section
+        ALE::New::Completion::setupSend(sendOverlap, constantSizer, sendSizer);
+        // 2) Fill the sizer section and communicate
+        ALE::New::Completion::completeSend(sizerFiller, sendSizer);
+        // 3) Create the send section
+        ALE::New::Completion::setupSend(sendOverlap, sendSizer, sendSection);
+        // 4) Fill up send section and communicate
+        ALE::New::Completion::completeSend(filler, sendSection);
+      };
       static void sendDistribution(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew) {
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
-        Obj<send_overlap_type> sendOverlap   = new send_overlap_type(sieve->comm(), topology->debug());
-        Obj<send_section_type> sendSizer     = new send_section_type(sieve->comm(), send_section_type::SEND, topology->debug());
-        Obj<send_section_type> sendSection   = new send_section_type(sieve->comm(), send_section_type::SEND, topology->debug());
+        Obj<send_overlap_type> sendOverlap   = new send_overlap_type(topology->comm(), topology->debug());
+        Obj<send_section_type> sendSizer     = new send_section_type(topology->comm(), topology->debug());
+        Obj<send_section_type> sendSection   = new send_section_type(topology->comm(), topology->debug());
         Obj<constant_section>  constantSizer = new constant_section(MPI_COMM_SELF, 1, topology->debug());
         int numElements = topology->heightStratum(0, 0)->size();
         int rank        = topology->commRank();
@@ -145,7 +159,7 @@ namespace ALE {
         recvSection->construct(recvSizer);
         recvSection->getAtlas()->orderPatches();
         recvSection->allocate();
-        recvSection->constructCommunication();
+        recvSection->constructCommunication(recv_section_type::RECEIVE);
       };
       static void completeReceive(const Obj<recv_section_type>& recvSection) {
         // Complete the section
@@ -157,9 +171,9 @@ namespace ALE {
       static void receiveDistribution(const Obj<mesh_topology_type>& topology, const Obj<mesh_topology_type>& topologyNew) {
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
-        Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(sieve->comm(), topology->debug());
-        Obj<recv_section_type> recvSizer   = new recv_section_type(sieve->comm(), recv_section_type::RECEIVE, topology->debug());
-        Obj<recv_section_type> recvSection = new recv_section_type(sieve->comm(), recv_section_type::RECEIVE, topology->debug());
+        Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(topology->comm(), topology->debug());
+        Obj<recv_section_type> recvSizer   = new recv_section_type(topology->comm(), topology->debug());
+        Obj<recv_section_type> recvSection = new recv_section_type(topology->comm(), topology->debug());
         Obj<constant_section>  constantSizer = new constant_section(MPI_COMM_SELF, 1, topology->debug());
         int debug = topology->debug();
 

@@ -1010,16 +1010,15 @@ namespace ALE {
       typedef enum {SEND, RECEIVE}                request_type;
       typedef std::map<patch_type, MPI_Request>   requests_type;
     protected:
-      request_type  _type;
       int           _tag;
       MPI_Datatype  _datatype;
       requests_type _requests;
     public:
-      OverlapValues(MPI_Comm comm, const request_type type, const int debug = 0) : Section<Atlas_, Value_>(comm, debug), _type(type) {
+      OverlapValues(MPI_Comm comm, const int debug = 0) : Section<Atlas_, Value_>(comm, debug) {
         this->_tag = this->getNewTag();
         this->_datatype = this->getMPIDatatype();
       };
-      OverlapValues(MPI_Comm comm, const request_type type, const int tag, const int debug) : Section<Atlas_, Value_>(comm, debug), _type(type), _tag(tag) {
+      OverlapValues(MPI_Comm comm, const int tag, const int debug) : Section<Atlas_, Value_>(comm, debug), _tag(tag) {
         this->_datatype = this->getMPIDatatype();
       };
       virtual ~OverlapValues() {};
@@ -1078,14 +1077,14 @@ namespace ALE {
           }
         }
       };
-      void constructCommunication() {
+      void constructCommunication(const request_type& requestType) {
         const typename topology_type::sheaf_type& patches = this->getAtlas()->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const patch_type patch = p_iter->first;
           MPI_Request request;
 
-          if (this->_type == RECEIVE) {
+          if (requestType == RECEIVE) {
             MPI_Recv_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
           } else {
             MPI_Send_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
@@ -1142,8 +1141,8 @@ namespace ALE {
       Numbering(const Obj<topology_type>& topology, const std::string& label, int value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _label(label), _value(value) {
         this->_sendOverlap = new send_overlap_type(this->comm(), this->debug());
         this->_recvOverlap = new recv_overlap_type(this->comm(), this->debug());
-        this->_sendSection = new send_section_type(this->comm(), send_section_type::SEND, this->debug());
-        this->_recvSection = new recv_section_type(this->comm(), recv_section_type::RECEIVE, this->_sendSection->getTag(), this->debug());
+        this->_sendSection = new send_section_type(this->comm(), this->debug());
+        this->_recvSection = new recv_section_type(this->comm(), this->_sendSection->getTag(), this->debug());
         this->_offsets     = new int[this->commSize()+1];
         this->_offsets[0]  = 0;
       };
