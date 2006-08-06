@@ -174,6 +174,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetOptionsPrefix(KSP ksp,const char *prefix
                 norm is less than this then convergence is declared
 .   -ksp_divtol tol - if residual norm increases by this factor than divergence is declared
 .   -ksp_converged_use_initial_residual_norm - see KSPDefaultConvergedSetUIRNorm()
+.   -ksp_converged_use_min_initial_residual_norm - see KSPDefaultConvergedSetUMIRNorm()
 .   -ksp_norm_type - none - skip norms used in convergence tests (useful only when not using 
 $                       convergence test (say you always want to run with 5 iterations) to 
 $                       save on communication overhead
@@ -233,6 +234,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 
     ierr = PetscOptionsName("-ksp_converged_use_initial_residual_norm","Use initial residual residual norm for computing relative convergence","KSPDefaultConvergedSetUIRNorm",&flag);CHKERRQ(ierr);
     if (flag) {ierr = KSPDefaultConvergedSetUIRNorm(ksp);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-ksp_converged_use_min_initial_residual_norm","Use minimum of initial residual norm and b for computing relative convergence","KSPDefaultConvergedSetUMIRNorm",&flag);CHKERRQ(ierr);
+    if (flag) {ierr = KSPDefaultConvergedSetUMIRNorm(ksp);CHKERRQ(ierr);}
 
     ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
