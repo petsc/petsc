@@ -27,7 +27,7 @@ namespace ALE {
         this->_topology = new topology_type(comm, debug);
         this->_init(numElements, partition);
       };
-      PartitionSizeSection(const Obj<topology_type>& topology, const int numElements, const marker_type *partition) : ParallelObject(topology->comm(), topology->debug()), _topology(topology) {this->_init(numElements, partition);};
+      PartitionSizeSection(const Obj<topology_type>& topology, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology) {this->_init(numElements, partition);};
       virtual ~PartitionSizeSection() {};
     public:
       void allocate() {};
@@ -111,7 +111,7 @@ namespace ALE {
         this->_topology = new topology_type(comm, debug);
         this->_init(numElements, partition);
       };
-      PartitionSection(const Obj<topology_type>& topology, const int numElements, const marker_type *partition) : ParallelObject(topology->comm(), topology->debug()), _topology(topology) {this->_init(numElements, partition);};
+      PartitionSection(const Obj<topology_type>& topology, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology) {this->_init(numElements, partition);};
       virtual ~PartitionSection() {
         for(typename points_type::iterator p_iter = this->_points.begin(); p_iter != this->_points.end(); ++p_iter) {
           delete [] p_iter->second;
@@ -185,7 +185,7 @@ namespace ALE {
       ConeSizeSection(MPI_Comm comm, const Obj<cone_sieve_type>& sieve, const int debug = 0) : ParallelObject(comm, debug), _sieve(sieve) {
         this->_topology = new topology_type(comm, debug);
       };
-      ConeSizeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _sieve(sieve) {};
+      ConeSizeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve) {};
       virtual ~ConeSizeSection() {};
     public:
       void allocate() {};
@@ -261,7 +261,7 @@ namespace ALE {
       ConeSection(MPI_Comm comm, const Obj<cone_sieve_type>& sieve, const int debug = 0) : ParallelObject(comm, debug), _sieve(sieve), _coneSize(-1), _cone(NULL) {
         this->_topology = new topology_type(comm, debug);
       };
-      ConeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _sieve(sieve), _coneSize(-1), _cone(NULL) {};
+      ConeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve), _coneSize(-1), _cone(NULL) {};
       virtual ~ConeSection() {if (this->_cone) delete [] this->_cone;};
     public:
       void allocate() {};
@@ -336,7 +336,7 @@ namespace ALE {
           sendSection->getAtlas()->getTopology()->setPatch(*r_iter, sendSieve);
         }
         sendSection->getAtlas()->getTopology()->stratify();
-        sendSection->getAtlas()->getTopology()->view("Send topology after setup", MPI_COMM_SELF);
+        if (sendSection->debug() > 10) {sendSection->getAtlas()->getTopology()->view("Send topology after setup", MPI_COMM_SELF);}
         sendSection->construct(sendSizer);
         sendSection->getAtlas()->orderPatches();
         sendSection->allocate();
@@ -354,7 +354,7 @@ namespace ALE {
             sendSection->update(p_iter->first, *b_iter, sendFiller->restrict(p_iter->first, *b_iter));
           }
         }
-        sendSection->view("Send Section in Completion", MPI_COMM_SELF);
+        if (sendSection->debug()) {sendSection->view("Send Section in Completion", MPI_COMM_SELF);}
         // Complete the section
         sendSection->startCommunication();
         sendSection->endCommunication();
@@ -385,7 +385,7 @@ namespace ALE {
         // Complete the section
         recvSection->startCommunication();
         recvSection->endCommunication();
-        recvSection->view("Receive Section in Completion", MPI_COMM_SELF);
+        if (recvSection->debug()) {recvSection->view("Receive Section in Completion", MPI_COMM_SELF);}
         // Read out section values
       };
     };
