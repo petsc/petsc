@@ -184,12 +184,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommSynchonizeTags(MPI_Comm comm)
       }
     }
   }
-  ierr = MPI_Allreduce(tagvalp, &tag, 1, MPI_INT, MPI_BOR, comm);CHKERRQ(ierr);
-  if (tag != tagvalp[0]) {
-    ierr = MPI_Allreduce(tagvalp, &tag, 1, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
-    tagvalp[0] = tag;
-    ierr = PetscInfo2(0, "Reset tag for comm %ld to \n", (long) comm, tagvalp[0]);CHKERRQ(ierr);
-  }
+  ierr = MPI_Allreduce(tagvalp, &tag, 1, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
+  tagvalp[0] = tag;
+  ierr = PetscInfo2(0, "Reset tag for comm %ld to \n", (long) comm, tagvalp[0]);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
