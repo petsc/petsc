@@ -116,11 +116,9 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "buildDualCSR"
       // This creates a CSR representation of the adjacency matrix for cells
-      static void buildDualCSR(const Obj<ALE::Mesh>& mesh, const topology_type::patch_type& patch, int **offsets, int **adjacency) {
-        const Obj<topology_type>& topology = mesh->getTopologyNew();
-        const Obj<sieve_type>&    sieve    = topology->getPatch(patch);
+      static void buildDualCSR(const Obj<topology_type>& topology, const int dim, const topology_type::patch_type& patch, int **offsets, int **adjacency) {
+        const Obj<sieve_type>&                   sieve    = topology->getPatch(patch);
         const Obj<topology_type::label_sequence> elements = topology->heightStratum(patch, 0);
-        int dim         = mesh->getDimension();
         int numElements = elements->size();
         int corners     = sieve->cone(*elements->begin())->size();
         int *off        = new int[numElements+1];
@@ -178,11 +176,11 @@ namespace ALE {
       };
 #ifdef PETSC_HAVE_CHACO
       #undef __FUNCT__
-      #define __FUNCT__ "partitionMesh_Chaco"
-      static short *partitionMesh_Chaco(Obj<ALE::Mesh> mesh) {
+      #define __FUNCT__ "partitionSieve_Chaco"
+      static short *partitionSieve_Chaco(const Obj<ALE::Mesh::topology_type>& topology, const int dim) {
         short *assignment = NULL; /* set number of each vtx (length n) */
 
-        if (mesh->commRank() == 0) {
+        if (topology->commRank() == 0) {
           /* arguments for Chaco library */
           FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
           int nvtxs;                              /* number of vertices in full graph */
@@ -207,9 +205,9 @@ namespace ALE {
           int patch = 0;
           PetscErrorCode ierr;
 
-          nvtxs = mesh->getTopologyNew()->heightStratum(0, 0)->size();
-          mesh_dims[0] = mesh->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
-          ALE::Test::MeshProcessor::buildDualCSR(mesh, patch, &start, &adjacency);
+          nvtxs = topology->heightStratum(patch, 0)->size();
+          mesh_dims[0] = topology->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+          ALE::Test::MeshProcessor::buildDualCSR(topology, dim, patch, &start, &adjacency);
           for(int e = 0; e < start[nvtxs]; e++) {
             adjacency[e]++;
           }
@@ -245,7 +243,7 @@ namespace ALE {
           close(fd_stdout);
           close(fd_pipe[0]);
           close(fd_pipe[1]);
-          if (mesh->debug) {
+          if (topology->debug()) {
             std::cout << msgLog << std::endl;
           }
           delete [] msgLog;
