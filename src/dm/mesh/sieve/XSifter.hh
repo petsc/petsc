@@ -18,90 +18,9 @@
 namespace ALE_X { 
   
   namespace SifterDef {
-    // Defines the traits of a sequence representing a subset of a multi_index container Index_.
-    // A sequence defines output (input in std terminology) iterators for traversing an Index_ object.
-    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
-    template <typename Index_, typename ValueExtractor_>
-    struct IndexSequenceTraits {
-      typedef Index_ index_type;
-      class iterator_base {
-      public:
-        // Standard iterator typedefs
-        typedef ValueExtractor_                        extractor_type;
-        typedef std::input_iterator_tag                iterator_category;
-        typedef typename extractor_type::result_type   value_type;
-        typedef int                                    difference_type;
-        typedef value_type*                            pointer;
-        typedef value_type&                            reference;
-        
-        // Underlying iterator type
-        typedef typename index_type::iterator          itor_type;
-      protected:
-        // Underlying iterator 
-        itor_type      _itor;
-        // Member extractor
-        extractor_type _ex;
-      public:
-        iterator_base(itor_type itor) {
-          this->_itor = itor_type(itor);
-        };
-        virtual ~iterator_base() {};
-        virtual bool              operator==(const iterator_base& iter) const {return this->_itor == iter._itor;};
-        virtual bool              operator!=(const iterator_base& iter) const {return this->_itor != iter._itor;};
-        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
-        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
-      };// class iterator_base
-      class iterator : public iterator_base {
-      public:
-        // Standard iterator typedefs
-        typedef typename iterator_base::iterator_category  iterator_category;
-        typedef typename iterator_base::value_type         value_type;
-        typedef typename iterator_base::extractor_type     extractor_type;
-        typedef typename iterator_base::difference_type    difference_type;
-        typedef typename iterator_base::pointer            pointer;
-        typedef typename iterator_base::reference          reference;
-        // Underlying iterator type
-        typedef typename iterator_base::itor_type          itor_type;
-      public:
-        iterator(const itor_type& itor) : iterator_base(itor) {};
-        virtual ~iterator() {};
-        //
-        virtual iterator   operator++() {++this->_itor; return *this;};
-        virtual iterator   operator++(int n) {iterator tmp(this->_itor); ++this->_itor; return tmp;};
-      };// class iterator
-    }; // struct IndexSequenceTraits
-    
-    template <typename Index_, typename ValueExtractor_>
-    struct ReversibleIndexSequenceTraits {
-      typedef IndexSequenceTraits<Index_, ValueExtractor_> base_traits;
-      typedef typename base_traits::iterator_base   iterator_base;
-      typedef typename base_traits::iterator        iterator;
-      typedef typename base_traits::index_type      index_type;
-
-      // reverse_iterator is the reverse of iterator
-      class reverse_iterator : public iterator_base {
-      public:
-        // Standard iterator typedefs
-        typedef typename iterator_base::iterator_category  iterator_category;
-        typedef typename iterator_base::value_type         value_type;
-        typedef typename iterator_base::extractor_type     extractor_type;
-        typedef typename iterator_base::difference_type    difference_type;
-        typedef typename iterator_base::pointer            pointer;
-        typedef typename iterator_base::reference          reference;
-        // Underlying iterator type
-        typedef typename iterator_base::itor_type          itor_type;
-      public:
-        reverse_iterator(const itor_type& itor) : iterator_base(itor) {};
-        virtual ~reverse_iterator() {};
-        //
-        virtual reverse_iterator     operator++() {--this->_itor; return *this;};
-        virtual reverse_iterator     operator++(int n) {reverse_iterator tmp(this->_itor); --this->_itor; return tmp;};
-      };
-    }; // class ReversibleIndexSequenceTraits
-
 
     // 
-    // Arrow & ArrowContainer definitions
+    // Arrow definition
     // 
     template<typename Source_, typename Target_, typename Color_>
     struct  Arrow { //: public ALE::def::Arrow<Source_, Target_, Color_> {
@@ -114,37 +33,36 @@ namespace ALE_X {
       color_type  color;
       // Basic
       Arrow(const source_type& s, const target_type& t, const color_type& c) : source(s), target(t), color(c) {};
-      // Flipping
+      // Rebinding
       template <typename OtherSource_, typename OtherTarget_, typename OtherColor_>
       struct rebind {
         typedef Arrow<OtherSource_, OtherTarget_, OtherColor_> type;
       };
+      // Flipping
       struct flip {
         typedef Arrow<target_type, source_type, color_type> type;
         type arrow(const arrow_type& a) { return type(a.target, a.source, a.color);};
       };
-
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
         os << a.source << " --(" << a.color << ")--> " << a.target;
         return os;
       }
-
-      // Arrow modifiers
+      // Modifying
       struct sourceChanger {
         sourceChanger(const source_type& newSource) : _newSource(newSource) {};
         void operator()(arrow_type& a) {a.source = this->_newSource;}
       private:
         source_type _newSource;
       };
-
+      //
       struct targetChanger {
         targetChanger(const target_type& newTarget) : _newTarget(newTarget) {};
         void operator()(arrow_type& a) { a.target = this->_newTarget;}
       private:
         const target_type _newTarget;
       };
-
+      //
       struct colorChanger {
         colorChanger(const color_type& newColor) : _newColor(newColor) {};
         void operator()(arrow_type& a) { a.color = this->_newColor;}
@@ -153,13 +71,8 @@ namespace ALE_X {
       };
     };// struct Arrow
     
-
-    template<typename Source_, typename Target_, typename Color_>
-    struct ArrowContainerTraits {
-    public:
-
-    };// class ArrowContainerTraits
-  
+    //
+    // Order and Compare definitions
     //
     // Definitions of wrappers for comparison predicates:
     // The most basic predicates, called 'orders', for our purposes is a lexicographical order on one or two keys.
@@ -194,9 +107,7 @@ namespace ALE_X {
       };
     };
 
-    //
     // Specializations of lex2 order to Arrow compare various combinations of pairs of Source, Target and Color in various orders.
-    //
     //
     template<typename Arrow_, typename KeyExtractorA_, typename KeyExtractorB_, 
              typename OrderA_ = std::less<typename KeyExtractorA_::result_type>, 
@@ -281,7 +192,6 @@ namespace ALE_X {
       };
     };
 
-    //
     // Default orders & compares.
     //
     template <typename Arrow_>
@@ -299,7 +209,6 @@ namespace ALE_X {
     template <typename Arrow_>
     struct DefaultColorOrder : public std::less<typename Arrow_::color_type> {};
     //
-    //
     // KeyArrowCompare specialized for support and cone indices, parameterized by the comparison predicates.
     template <typename Arrow_, typename SourceOrder_=DefaultSourceOrder<Arrow_>, typename SupportOrder_=DefaultSupportOrder<Arrow_> >
     struct SupportCompare : 
@@ -311,6 +220,315 @@ namespace ALE_X {
       public KeyArrowCompare<Arrow_, typename ::boost::multi_index::member<Arrow_,typename Arrow_::target_type,&Arrow_::target>, 
                              TargetOrder_, ConeOrder_>{};
     
+    //
+    // InnerIndexSequence definition
+    // 
+    // Defines a sequence representing a subset of a multi_index container defined by its Index_, which is ordered lexicographically
+    // starting with Key_, obtained using KeyExtractor_.
+    // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
+    // These traverse the subset of Index_ with the fixed Key_, that is all the entries lexicographically "within" the Key_ segment.
+    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
+    template <typename Index_, 
+              typename KeyExtractor_, typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type> >
+    struct InnerIndexSequence {
+      typedef Index_                                     index_type;
+      typedef KeyExtractor_                              key_extractor_type;
+      typedef typename key_extractor_type::result_type   key_type;
+      typedef ValueExtractor_                            value_extractor_type;
+      typedef typename value_extractor_type::result_type value_type;
+      typedef typename index_type::size_type             size_type;
+      //
+      template <typename Sequence_ = InnerIndexSequence>
+      class iterator {
+      public:
+        // Parent sequence type
+        typedef Sequence_                              sequence_type;
+        // Standard iterator typedefs
+        typedef std::input_iterator_tag                iterator_category;
+        typedef int                                    difference_type;
+        typedef value_type*                            pointer;
+        typedef value_type&                            reference;
+        /* value_type defined in the sequence */
+        // Underlying iterator type
+        typedef typename index_type::iterator          itor_type;
+      protected:
+        // Parent sequence
+        sequence_type&  _sequence;
+        // Underlying iterator 
+        itor_type      _itor;
+        // Value extractor
+        value_extractor_type _ex;
+      public:
+        iterator(sequence_type& sequence, const itor_type& itor)  : _sequence(sequence),_itor(itor) {};
+        iterator(const iterator& iter)                            : _sequence(iter._sequence),_itor(iter._itor) {}
+        virtual ~iterator() {};
+        virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
+        virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
+        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
+        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
+        virtual iterator          operator++() {++this->_itor; return *this;};
+        virtual iterator          operator++(int n) {iterator tmp(*this); ++this->_itor; return tmp;};
+      };// class iterator
+    protected:
+      index_type& _index;
+      key_type    _key;
+    public:
+      //
+      // Basic interface
+      //
+      InnerIndexSequence(const InnerIndexSequence& seq)             : _index(seq._index), _key(seq._key) {};
+      InnerIndexSequence(index_type& index, const key_type& key)    : _index(index), _key(key)           {};
+      virtual ~InnerIndexSequence() {};
+      //
+      // Extended interface
+      //
+      virtual bool         
+      empty() { return (this->_index.find(this->_key) == this->_index.end());};
+      //
+      virtual iterator
+      begin() { return this->_index.lower_bound(this->_key);};
+      //
+      virtual iterator
+      end() { return this->_index.upper_bound(this->_key);};
+      //
+      virtual typename index_type::size_type  
+      size()  {
+        typename index_type::size_type sz = 0;
+        for(typename index_type::iterator itor = this->_index.begin(); itor != this->_index.end(); itor++) {
+          ++sz;
+        }
+        return sz;
+      };
+      //
+      template<typename ostream_type>
+      void view(ostream_type& os, const char* label = NULL){
+        if(label != NULL) {
+          os << "Viewing " << label << " sequence:" << std::endl;
+        } 
+        os << "[";
+        for(iterator<> i = this->begin(); i != this->end(); i++) {
+          os << " "<< *i;
+        }
+        os << " ]" << std::endl;
+      };
+    };// class InnerIndexSequence    
+    
+    //
+    // OuterIndexSequence definition
+    // 
+    // Defines a sequence representing a subset of a multi_index container defined by its Index_ ordered lexicographically 
+    // starting with a Key_, obtained using a KeyExtractor_.
+    // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
+    // This particular sequence picks out the first element in each segment with a given Key_;
+    // in other words, the sequence iterates over the Key_ values, rather than within a fixed Key_ segment.
+    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
+    template <typename Index_, typename Key_, typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type> >
+    struct OuterIndexSequence {
+      typedef Index_                                     index_type;
+      typedef KeyExtractor_                              key_extractor_type;
+      typedef typename key_extractor_type::result_type   key_type;
+      typedef ValueExtractor_                            value_extractor_type;
+      typedef typename value_extractor_type::result_type value_type;
+      typedef typename index_type::size_type             size_type;
+      //
+      template <typename Sequence_ = OuterIndexSequence>
+      class iterator {
+      public:
+        // Parent sequence type
+        typedef Sequence_                              sequence_type;
+        // Standard iterator typedefs
+        typedef std::input_iterator_tag                iterator_category;
+        typedef int                                    difference_type;
+        typedef value_type*                            pointer;
+        typedef value_type&                            reference;
+        /* value_type defined in the containing OuterIndexSequence */
+        // Underlying iterator type
+        typedef typename index_type::iterator          itor_type;
+      protected:
+        // Parent sequence
+        sequence_type&  _sequence;
+        // Underlying iterator 
+        itor_type      _itor;
+        // Key extractor & key
+        key_extractor_type _kex
+        key_type           _key;
+        // Value extractor
+        value_extractor_type _ex;
+      public:
+        iterator(sequence_type& sequence, itor_type itor)       : _sequence(sequence),_itor(itor) {};
+        iterator(const iterator& iter)                          : _sequence(iter._sequence),_itor(iter._itor) {}
+        virtual ~iterator() {};
+        virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
+        virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
+        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
+        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
+        virtual iterator   operator++() {
+          this->_itor = this->_index.upper_bound(this->_key); 
+          if(this->_itor == this->_index.end()) {
+            this->_key = key_type();
+          }
+          else {
+            this->_key = this->_kex(*(this->_itor));
+          }
+          return *this;
+        };
+        virtual iterator   operator++(int n) {iterator tmp(*this); ++this->_itor; return tmp;};
+      };// class iterator
+    protected:
+      index_type& _index;
+      key_type  _high, _low;
+      bool _have_low, _have_high;
+    public:
+      //
+      // Basic interface
+      //
+      OuterIndexSequence(const OuterIndexSequence& seq)     : 
+        _index(seq._index), _low(seq._low), _high(seq._high), _have_low(seq._have_low), _have_high(seq._have_high) {};
+      OuterIndexSequence(index_type& index, const key_type high)  :  _index(index), _high(high) {
+        this->_have_low = false; this->_have_high = true;
+      };
+      OuterIndexSequence(index_type& index, const key_type& low, const key_type& high)  :  _index(index), _high(high), _low(low) {
+        this->_have_low = true; this->_have_high = true;
+      };
+      virtual ~OuterIndexSequence() {};
+      //
+      // Extended interface
+      //
+      virtual bool         empty() {return this->_index.empty();};
+      
+      virtual size_type  
+      size()  {
+        size_type sz = 0;
+        for(iterator it = this->begin(); it != this->end(); it++) {
+          ++sz;
+        }
+        return sz;
+      };
+      template<typename ostream_type>
+      void view(ostream_type& os, const char* label = NULL){
+        if(label != NULL) {
+          os << "Viewing " << label << " sequence:" << std::endl;
+        } 
+        os << "[";
+        for(iterator<> i = this->begin(); i != this->end(); i++) {
+          os << " "<< *i;
+        }
+        os << " ]" << std::endl;
+      };
+    };// class OuterIndexSequence    
+
+
+    //
+    // StridedIndexSequence definition
+    // 
+    // Defines a sequence representing a subset of a multi_index container defined by its Index_ ordered lexicographically 
+    // starting with an OuterKey_ (obtained from an OuterKeyExtractor_) and then by an InnerKey_ (obtained from an InnerKeyExtractor_).
+    // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
+    // This particular sequence traverses all OuterKey_ segements between given bounds, and within each segment traverses all elements
+    // in each segment with a given Key_. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
+    // the keys from a given range.
+    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
+    template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
+              typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type> >
+    struct StridedIndexSequence {
+      typedef Index_                                           index_type;
+      typedef OuterKeyExtractor_                               outer_key_extractor_type;
+      typedef typename outer_key_extractor_type::result_type   outer_key_type;
+      typedef InnerKeyExtractor_                               inner_key_extractor_type;
+      typedef typename inner_key_extractor_type::result_type   inner_key_type;
+      typedef ValueExtractor_                                  value_extractor_type;
+      typedef typename value_extractor_type::result_type       value_type;
+      typedef typename index_type::size_type                   size_type;
+      //
+      template <typename Sequence_ = StridedIndexSequence>
+      class iterator {
+      public:
+        // Parent sequence type
+        typedef Sequence_                              sequence_type;
+        // Standard iterator typedefs
+        typedef std::input_iterator_tag                iterator_category;
+        typedef int                                    difference_type;
+        typedef value_type*                            pointer;
+        typedef value_type&                            reference;
+        /* value_type defined in the containing StridedIndexSequence */
+        // Underlying iterator type
+        typedef typename index_type::iterator          itor_type;
+      protected:
+        // Parent sequence
+        sequence_type&  _sequence;
+        // Underlying iterator 
+        itor_type      _itor;
+        // Key extractors & keys
+        outer_key_extractor_type _okex
+        outer_key_type           _okey;
+        inner_key_extractor_type _ikex
+        inner_key_type           _ikey;
+        // Value extractor
+        value_extractor_type _ex;
+      public:
+        iterator(sequence_type& sequence, itor_type itor)       : _sequence(sequence)       {this->__setup_itor(itor);};
+        iterator(const iterator& iter)                          : _sequence(iter._sequence) {this->__setup_itor(itor);}
+        virtual ~iterator() {};
+        virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
+        virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
+        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
+        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
+        virtual iterator   operator++() {
+          this->__setup_itor(this->_itor++);
+          return *this;
+        };
+        virtual iterator   operator++(int n) {iterator tmp(*this); ++this->_itor; return tmp;};
+      protected:
+        void __setup_itor(const itor_type& itor) {
+          this->_itor = itor;
+        };
+      };// class iterator
+    protected:
+      index_type& _index;
+      outer_key_type  _ohigh, _olow;
+      bool _have_olow, _have_ohigh;
+      inner_key_type  _ihigh, _ilow;
+      bool _have_ilow, _have_ihigh;
+    public:
+      //
+      // Basic interface
+      //
+      StridedIndexSequence(const OuterIndexSequence& seq) : _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
+      {};
+      // CONTINUE: 1) fix constructors with various combinations of high/low keys; 2) provide 'have_outer_high'/'outer_high' functions;
+      //           3) fix iterators to make use of these functions; 4) fix Inner/OuterIndexSequence to behave accordingly.
+      StridedIndexSequence(index_type& index, const key_type high)  :  _index(index), _high(high) {
+        this->_have_low = false; this->_have_high = true;
+      };
+      StridedIndexSequence(index_type& index, const key_type& low, const key_type& high)  :  _index(index), _high(high), _low(low) {
+        this->_have_low = true; this->_have_high = true;
+      };
+      virtual ~StridedIndexSequence() {};
+      //
+      // Extended interface
+      //
+      virtual bool         empty() {return this->_index.empty();};
+      
+      virtual size_type  
+      size()  {
+        size_type sz = 0;
+        for(iterator it = this->begin(); it != this->end(); it++) {
+          ++sz;
+        }
+        return sz;
+      };
+      template<typename ostream_type>
+      void view(ostream_type& os, const char* label = NULL){
+        if(label != NULL) {
+          os << "Viewing " << label << " sequence:" << std::endl;
+        } 
+        os << "[";
+        for(iterator<> i = this->begin(); i != this->end(); i++) {
+          os << " "<< *i;
+        }
+        os << " ]" << std::endl;
+      };
+    };// class StridedIndexSequence    
     
     //
     // ArrowContainer definition
@@ -343,31 +561,31 @@ namespace ALE_X {
       //
       // Sequence types
       template <typename Index_, typename Key_, typename SubKey_, typename ValueExtractor_>
-      class ArrowSequence {
-        // ArrowSequence implements ReversibleIndexSequencTraits with Index_ and ValueExtractor_ types.
+      class ArrowSequence : public IndexSequence<Index_, ValueExtractor_> {
+        // ArrowSequence extends IndexSequence Index_ and ValueExtractor_ types.
         // A Key_ object and an optional SubKey_ object are used to extract the index subset.
       public:
-        typedef ReversibleIndexSequenceTraits<Index_, ValueExtractor_>  traits;
+        typedef IndexSequence<Index_, ValueExtractor_>                  super; 
         typedef Key_                                                    key_type;
         typedef SubKey_                                                 subkey_type;
       protected:
-        typename traits::index_type&                                    _index;
+        typename super::index_type&                                     _index;
         const key_type                                                  key;
         const subkey_type                                               subkey;
         const bool                                                      useSubkey;
       public:
         // Need to extend the inherited iterators to be able to extract arrow color
-        class iterator : public traits::iterator {
+        class iterator : public super::iterator {
         public:
-          iterator(const typename traits::iterator::itor_type& itor) : traits::iterator(itor) {};
+          iterator(const typename super::iterator::itor_type& itor) : super::iterator(itor) {};
           virtual const source_type& source() const {return this->_itor->source;};
           virtual const color_type&  color()  const {return this->_itor->color;};
           virtual const target_type& target() const {return this->_itor->target;};
           virtual const arrow_type&  arrow()  const {return *(this->_itor);};
         };
-        class reverse_iterator : public traits::reverse_iterator {
+        class reverse_iterator : public super::reverse_iterator {
         public:
-          reverse_iterator(const typename traits::reverse_iterator::itor_type& itor) : traits::reverse_iterator(itor) {};
+          reverse_iterator(const typename super::reverse_iterator::itor_type& itor) : super::reverse_iterator(itor) {};
           virtual const source_type& source() const {return this->_itor->source;};
           virtual const color_type&  color()  const {return this->_itor->color;};
           virtual const target_type& target() const {return this->_itor->target;};
@@ -378,9 +596,9 @@ namespace ALE_X {
         // Basic ArrowSequence interface
         //
         ArrowSequence(const ArrowSequence& seq) : _index(seq._index), key(seq.key), subkey(seq.subkey), useSubkey(seq.useSubkey) {};
-        ArrowSequence(typename traits::index_type& index, const key_type& k) : 
+        ArrowSequence(typename super::index_type& index, const key_type& k) : 
           _index(index), key(k), subkey(subkey_type()), useSubkey(0) {};
-        ArrowSequence(typename traits::index_type& index, const key_type& k, const subkey_type& kk) : 
+        ArrowSequence(typename super::index_type& index, const key_type& k, const subkey_type& kk) : 
           _index(index), key(k), subkey(kk), useSubkey(1){};
         virtual ~ArrowSequence() {};
         //
@@ -388,7 +606,7 @@ namespace ALE_X {
         //
         virtual bool         empty() {return this->_index.empty();};
         //
-        virtual typename traits::index_type::size_type  size()  {
+        virtual typename super::index_type::size_type  size()  {
           if (this->useSubkey) {
             return this->_index.count(::boost::make_tuple(this->key,this->subkey));
           } else {
