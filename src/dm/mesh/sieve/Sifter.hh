@@ -1135,7 +1135,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       typename traits::coneSequence::traits::index_type& coneIndex = 
         ::boost::multi_index::get<typename traits::coneInd>(this->_arrows.set);
       typename traits::coneSequence::traits::index_type::iterator i, ii, j;
-      if(debug) { // if(debug)
+      if (debug > 20) {
         std::cout << "clearCone: removing cone over " << t;
         if(useColor) {
           std::cout << " with color" << color << std::endl;
@@ -1155,7 +1155,7 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
           }
           std::cout << "]" << std::endl;
         }
-      }// if(debug)
+      }
       if (useColor) {
         i = coneIndex.lower_bound(::boost::make_tuple(t,color));
         ii = coneIndex.upper_bound(::boost::make_tuple(t,color));

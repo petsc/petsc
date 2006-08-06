@@ -300,6 +300,14 @@ namespace ALE {
       const sheaf_type& getPatches() {
         return this->_sheaf;
       };
+      void clear() {
+        this->_sheaf.clear();
+        this->_labels.clear();
+        this->_maxHeight = -1;
+        this->_maxHeights.clear();
+        this->_maxDepth = -1;
+        this->_maxDepths.clear();
+      };
     public:
       template<class InputPoints>
       void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {
@@ -388,17 +396,20 @@ namespace ALE {
         this->computeDepths();
       };
     public: // Viewers
-      void view(const std::string& name) const {
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        if (comm == MPI_COMM_NULL) {
+          comm = this->comm();
+        }
         if (name == "") {
-          PetscPrintf(this->comm(), "viewing a Topology\n");
+          PetscPrintf(comm, "viewing a Topology\n");
         } else {
-          PetscPrintf(this->comm(), "viewing Topology '%s'\n", name.c_str());
+          PetscPrintf(comm, "viewing Topology '%s'\n", name.c_str());
         }
         for(typename sheaf_type::const_iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           ostringstream txt;
 
           txt << "Patch " << s_iter->first;
-          s_iter->second->view(txt.str().c_str());
+          s_iter->second->view(txt.str().c_str(), comm);
         }
       };
     };
@@ -437,6 +448,9 @@ namespace ALE {
           msg << "Invalid atlas patch: " << patch << std::endl;
           throw ALE::Exception(msg.str().c_str());
         }
+      };
+      void clear() {
+        this->_indices.clear();
       };
     public: // Sizes
       int const getFiberDimension(const patch_type& patch, const point_type& p) {
@@ -822,14 +836,13 @@ namespace ALE {
       };
     };
 
-    template<typename Topology_, typename Index_, typename Value_>
+    template<typename Topology_, typename Value_>
     class ConstantSection : public ALE::ParallelObject {
     public:
       typedef Topology_                          topology_type;
       typedef typename topology_type::patch_type patch_type;
       typedef typename topology_type::sieve_type sieve_type;
       typedef typename topology_type::point_type point_type;
-      typedef Index_                             index_type;
       typedef Value_                             value_type;
     protected:
       Obj<topology_type> _topology;
@@ -958,6 +971,31 @@ namespace ALE {
       const Obj<capSequence>& cap() {return this->_points;};
       const Obj<baseSequence>& leaves() {return this->_points;};
       const Obj<baseSequence>& base() {return this->_points;};
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        ostringstream txt;
+        int rank;
+
+        if (comm == MPI_COMM_NULL) {
+          comm = MPI_COMM_SELF;
+          rank = 0;
+        } else {
+          MPI_Comm_rank(comm, &rank);
+        }
+        if (name == "") {
+          if(rank == 0) {
+            txt << "viewing a DiscreteSieve" << std::endl;
+          }
+        } else {
+          if(rank == 0) {
+            txt << "viewing DiscreteSieve '" << name << "'" << std::endl;
+          }
+        }
+        for(typename points_type::const_iterator p_iter = this->_points->begin(); p_iter != this->_points->end(); ++p_iter) {
+          txt << "  Point " << *p_iter << std::endl;
+        }
+        PetscSynchronizedPrintf(comm, txt.str().c_str());
+        PetscSynchronizedFlush(comm);
+      };
     };
 
 

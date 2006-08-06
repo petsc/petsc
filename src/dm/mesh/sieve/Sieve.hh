@@ -367,7 +367,7 @@ namespace ALE {
 
       template<typename ostream_type>
       void view(ostream_type& os, const char* label, bool rawData);
-      void view(const char* label);
+      void view(const char* label, MPI_Comm comm);
 
       Obj<Sieve> copy() {
         Obj<Sieve> s = Sieve(this->comm(), this->debug);
@@ -1193,7 +1193,7 @@ namespace ALE {
       }
     };
     template <typename Point_, typename Marker_, typename Color_> 
-    void Sieve<Point_,Marker_,Color_>::view(const char* label = NULL) {
+    void Sieve<Point_,Marker_,Color_>::view(const char* label = NULL, MPI_Comm comm = MPI_COMM_NULL) {
         ostringstream txt;
 
         if (this->debug) {
