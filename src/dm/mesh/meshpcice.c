@@ -134,8 +134,8 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteVertices"
     PetscErrorCode Viewer::writeVertices(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      ALE::Obj<ALE::Mesh::field_type>   coordinates  = mesh->getCoordinates();
-      ALE::Obj<ALE::Mesh::bundle_type>  vertexBundle = mesh->getBundle(0);
+      ALE::Obj<ALE::Mesh::section_type> coordinates = mesh->getSection("coordinates");
+#if 0
       ALE::Mesh::field_type::patch_type patch;
       const double  *array = coordinates->restrict(patch);
       int            numVertices;
@@ -210,12 +210,14 @@ namespace ALE {
         ierr = MPI_Send(localCoords, numLocalVertices*embedDim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = PetscFree(localCoords);CHKERRQ(ierr);
       }
+#endif
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteElements"
     PetscErrorCode Viewer::writeElements(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+      ALE::Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+#if 0
       ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
       ALE::Obj<ALE::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
       ALE::Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
@@ -293,6 +295,7 @@ namespace ALE {
         ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = PetscFree(localVertices);CHKERRQ(ierr);
       }
+#endif
       PetscFunctionReturn(0);
     };
   };

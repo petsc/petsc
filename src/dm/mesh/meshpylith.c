@@ -1,5 +1,7 @@
 #include "src/dm/mesh/meshpylith.h"   /*I      "petscmesh.h"   I*/
 
+#include<list>
+
 namespace ALE {
   namespace PyLith {
     using ALE::Mesh;
@@ -212,17 +214,18 @@ namespace ALE {
       *splitInd    = splitId;
       *splitValues = splitVal;
     };
-    void Builder::createSplitField(int numSplit, int splitInd[], double splitVals[], Obj<Mesh> mesh, Obj<Mesh::field_type> splitField) {
-      Obj<Mesh::sieve_type::traits::heightSequence> elements = mesh->getTopology()->heightStratum(0);
+    void Builder::buildSplit(const Obj<Mesh::section_type>& splitField, const Obj<Mesh>& mesh, int numSplit, int splitInd[], double splitVals[]) {
+      const Obj<Mesh::topology_type::label_sequence>& elements = mesh->getTopologyNew()->heightStratum(0, 0);
       std::map<Mesh::point_type, std::set<int> > elem2vertIndex;
       Obj<std::list<Mesh::point_type> > vertices = std::list<Mesh::point_type>();
-      Mesh::field_type::patch_type patch;
+      Mesh::section_type::patch_type patch;
       int numElements = elements->size();
       int dim = 3;
 
       for(int e = 0; e < numSplit; e++) {
         elem2vertIndex[Mesh::point_type(splitInd[e*2+0])].insert(e);
       }
+#if 0
       for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
         vertices->clear();
         for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
@@ -231,15 +234,16 @@ namespace ALE {
         splitField->setPatch(vertices, e_iter->first);
 
         for(std::list<Mesh::point_type>::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-          splitField->setFiberDimension(e_iter->first, *v_iter, dim);
+          splitField->getAtlas()->setFiberDimension(e_iter->first, *v_iter, dim);
         }
       }
-      splitField->orderPatches();
+      splitField->getAtlas()->orderPatches();
       for(std::map<Mesh::point_type, std::set<int> >::iterator e_iter = elem2vertIndex.begin(); e_iter != elem2vertIndex.end(); ++e_iter) {
         for(std::set<int>::iterator v_iter = e_iter->second.begin(); v_iter != e_iter->second.end(); ++v_iter) {
           splitField->update(e_iter->first, Mesh::point_type(numElements+splitInd[*v_iter*2+1]), &splitVals[*v_iter*dim]);
         }
       }
+#endif
     };
     void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
       const section_type::patch_type patch = 0;
@@ -287,7 +291,7 @@ namespace ALE {
       buildMaterials(mesh->getSection("material"), materials);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
       if (hasSplit) {
-        createSplitField(numSplit, splitInd, splitValues, mesh, mesh->getField("split"));
+        buildSplit(mesh->getSection("split"), mesh, numSplit, splitInd, splitValues);
       }
       return mesh;
     };
@@ -297,15 +301,15 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteVertices"
     PetscErrorCode Viewer::writeVertices(Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      Obj<ALE::Mesh::field_type>   coordinates  = mesh->getCoordinates();
-      Obj<ALE::Mesh::bundle_type>  vertexBundle = mesh->getBundle(0);
-      ALE::Mesh::field_type::patch_type patch;
-      const double  *array = coordinates->restrict(ALE::Mesh::field_type::patch_type());
+      Obj<ALE::Mesh::section_type> coordinates  = mesh->getSection("coordinates");
+      ALE::Mesh::section_type::patch_type patch;
+      const double  *array = coordinates->restrict(ALE::Mesh::section_type::patch_type());
       int            dim = mesh->getDimension();
       int            numVertices;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
+#if 0
       //FIX:
       if (vertexBundle->getGlobalOffsets()) {
         numVertices = vertexBundle->getGlobalOffsets()[mesh->commSize()];
@@ -377,12 +381,14 @@ namespace ALE {
         ierr = MPI_Send(localCoords, numLocalVertices*dim, MPI_DOUBLE, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = PetscFree(localCoords);CHKERRQ(ierr);
       }
+#endif
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteElements"
     PetscErrorCode Viewer::writeElements(Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
+      Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+#if 0
       Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
       Obj<ALE::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
       Obj<ALE::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
@@ -483,6 +489,7 @@ namespace ALE {
         ierr = MPI_Send(localVertices, numLocalElements*(corners+1), MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
         ierr = PetscFree(localVertices);CHKERRQ(ierr);
       }
+#endif
       PetscFunctionReturn(0);
     };
     #undef __FUNCT__  
@@ -525,11 +532,11 @@ namespace ALE {
       const Obj<Mesh::topology_type>&                 topology = mesh->getTopologyNew();
       const Obj<Mesh::sieve_type>&                    sieve    = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements = topology->heightStratum(patch, 0);
-      Obj<Mesh::field_type> material;
+      Obj<Mesh::section_type> material;
       int            dim          = mesh->getDimension();
       int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
       int            numElements  = elements->size();
-      bool           hasMaterial  = false;
+      bool           hasMaterial  = mesh->hasSection("material");
       int            elementType  = -1;
       int            elementCount = 1;
       PetscErrorCode ierr;
@@ -548,7 +555,7 @@ namespace ALE {
         SETERRQ1(PETSC_ERR_SUP, "PyLith Error: Unsupported number of elements vertices: %d", corners);
       }
       if (hasMaterial) {
-        material = mesh->getField("material");
+        material = mesh->getSection("material");
       }
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
@@ -559,7 +566,7 @@ namespace ALE {
         ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", elementCount++, elementType);CHKERRQ(ierr);
         if (hasMaterial) {
           // No infinite elements
-          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(Mesh::field_type::patch_type(), *e_iter)[0], 0);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(patch, *e_iter)[0], 0);CHKERRQ(ierr);
         } else {
           // No infinite elements
           ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", 1, 0);CHKERRQ(ierr);
@@ -577,10 +584,9 @@ namespace ALE {
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
     //   number here by bundle, but we can fix it by traversing the elements like the vertices
     PetscErrorCode Viewer::writeSplitLocal(Obj<ALE::Mesh> mesh, PetscViewer viewer) {
-      Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
-      Obj<ALE::Mesh::field_type> splitField = mesh->getField("split");
-      Obj<ALE::Mesh::field_type::order_type::baseSequence> splitElements = splitField->getPatches();
-      ALE::Mesh::bundle_type::patch_type patch;
+      Obj<ALE::Mesh::topology_type> topology   = mesh->getTopologyNew();
+      Obj<ALE::Mesh::section_type>  splitField = mesh->getSection("split");
+      ALE::Mesh::section_type::patch_type patch;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -588,6 +594,7 @@ namespace ALE {
         SETERRQ(PETSC_ERR_SUP, "PyLith only supports 3D meshes.");
       }
 #if 0
+      Obj<ALE::Mesh::topology_type::order_type::baseSequence> splitElements = splitField->getPatches();
       for(ALE::Mesh::field_type::order_type::baseSequence::iterator e_itor = splitElements->begin(); e_itor != splitElements->end(); ++e_itor) {
         if (*e_itor >= 0) {
           Obj<ALE::Mesh::field_type::order_type::coneSequence> cone = splitField->getPatch(*e_itor);

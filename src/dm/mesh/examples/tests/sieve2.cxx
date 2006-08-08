@@ -5,12 +5,13 @@ static char help[] = "Sieve Distribution Tests.\n\n";
 #include "meshTest.hh"
 #include <Completion.hh>
 
-extern PetscErrorCode PetscCommSynchonizeTags(MPI_Comm);
+extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
 
 using ALE::Obj;
-typedef ALE::Test::sieve_type                                     sieve_type;
-typedef ALE::New::Completion<sieve_type::point_type>              sieveCompletion;
-typedef ALE::New::Completion<ALE::Mesh::section_type::value_type> sectionCompletion;
+typedef ALE::Test::OverlapTest::topology_type                     topology_type;
+typedef topology_type::sieve_type                                 sieve_type;
+typedef ALE::New::Completion<topology_type, sieve_type::point_type>              sieveCompletion;
+typedef ALE::New::Completion<topology_type, ALE::Mesh::section_type::value_type> sectionCompletion;
 typedef sectionCompletion::send_overlap_type                      send_overlap_type;
 typedef sectionCompletion::recv_overlap_type                      recv_overlap_type;
 typedef sectionCompletion::send_section_type                      send_section_type;
@@ -24,9 +25,9 @@ typedef struct {
   PetscTruth interpolate;        // Construct missing elements of the mesh
 } Options;
 
-PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew, Options *options)
+PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew)
 {
-  typedef ALE::Test::PatchlessSection<ALE::Mesh::section_type> CoordFiller;
+  typedef ALE::New::PatchlessSection<ALE::Mesh::section_type> CoordFiller;
   const int dim   = mesh->getDimension();
   const int debug = mesh->debug;
 
@@ -68,7 +69,7 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew, Options *options)
+PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew)
 {
   PetscFunctionBegin;
   Obj<recv_overlap_type> cellOverlap   = sieveCompletion::receiveDistribution(mesh->getTopologyNew(), meshNew->getTopologyNew());
@@ -124,12 +125,12 @@ PetscErrorCode DistributionTest(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   topology->setPatch(0, sieve);
   meshNew->setTopologyNew(topology);
   if (mesh->commRank() == 0) {
-    ierr = SendDistribution(mesh, meshNew, options);CHKERRQ(ierr);
+    ierr = SendDistribution(mesh, meshNew);CHKERRQ(ierr);
   } else {
-    ierr = ReceiveDistribution(mesh, meshNew, options);CHKERRQ(ierr);
+    ierr = ReceiveDistribution(mesh, meshNew);CHKERRQ(ierr);
   }
   // This is necessary since we create types (like PartitionSection) on a subset of processors
-  ierr = PetscCommSynchonizeTags(PETSC_COMM_WORLD); CHKERRQ(ierr);
+  ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD); CHKERRQ(ierr);
   sieve->view("Distributed sieve");
   meshNew->getSection("coordinates")->view("Coordinates");
   PetscFunctionReturn(0);
@@ -172,7 +173,7 @@ int main(int argc, char *argv[])
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
     Obj<ALE::Mesh> mesh = ALE::PCICE::Builder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug);
-    Obj<ALE::Mesh> meshNew = new ALE::Mesh(comm, options.debug);
+    Obj<ALE::Mesh> meshNew = new ALE::Mesh(comm, options.dim, options.debug);
 
     if (options.debug) {
       mesh->getTopologyNew()->view("Mesh");

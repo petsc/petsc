@@ -19,9 +19,9 @@ namespace ALE {
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[], int *materials[]);
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
       static void readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]);
-      static void createSplitField(int numSplit, int splitInd[], double splitVals[], Obj<Mesh> mesh, Obj<Mesh::field_type> splitField);
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static void buildMaterials(const Obj<Mesh::section_type>& matField, const int materials[]);
+      static void buildSplit(const Obj<Mesh::section_type>& splitField, const Obj<Mesh>& mesh, int numSplit, int splitInd[], double splitVals[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
     };
 

@@ -1,7 +1,7 @@
 #ifndef included_ALE_overlapTest_hh
 #define included_ALE_overlapTest_hh
 
-#include <CoSieve.hh>
+#include <Distribution.hh>
 #include "sectionTest.hh"
 
 namespace ALE {

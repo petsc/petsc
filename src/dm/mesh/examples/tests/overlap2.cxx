@@ -54,14 +54,14 @@ PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<
   sendSection->getAtlas()->getTopology()->stratify();
   recvSection->getAtlas()->getTopology()->stratify();
   // Setup sections
-  sendSection->construct(sendOverlap, 1);
-  recvSection->construct(recvOverlap, 1);
+  sendSection->construct(1);
+  recvSection->construct(1);
   sendSection->getAtlas()->orderPatches();
   recvSection->getAtlas()->orderPatches();
   sendSection->allocate();
   recvSection->allocate();
-  sendSection->constructCommunication();
-  recvSection->constructCommunication();
+  sendSection->constructCommunication(send_section_type::SEND);
+  recvSection->constructCommunication(recv_section_type::RECEIVE);
   // Create local piece of the global order
   const Obj<topology_type::label_sequence>& vertices = topology->depthStratum(0, 0);
   int localNumber = 0;
@@ -160,14 +160,7 @@ PetscErrorCode NumberingTest(const Obj<topology_type>& topology, Options *option
 
   PetscFunctionBegin;
   ALE::Test::OverlapTest::constructDoublet(topology);
-
-  numbering->constructOverlap();
-  numbering->constructLocalOrder();
-  numbering->view("Local Vertex numbering");
-  numbering->constructCommunication();
-  numbering->fillSection();
-  numbering->communicate();
-  numbering->fillOrder();
+  numbering->construct();
   numbering->view("Vertex numbering");
   PetscFunctionReturn(0);
 }
@@ -200,11 +193,11 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<send_section_type> sendSection = new send_section_type(comm, send_section_type::SEND, options.debug);
-    Obj<recv_section_type> recvSection = new recv_section_type(comm, recv_section_type::RECEIVE, sendSection->getTag(), options.debug);
+    Obj<send_section_type> sendSection = new send_section_type(comm, options.debug);
+    Obj<recv_section_type> recvSection = new recv_section_type(comm, sendSection->getTag(), options.debug);
     Obj<topology_type>     topology    = new topology_type(comm, options.debug);
 
-    ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
+    //ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
     ierr = NumberingTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;

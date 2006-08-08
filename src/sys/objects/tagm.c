@@ -159,7 +159,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCommSynchronizeTags" 
-PetscErrorCode PETSC_DLLEXPORT PetscCommSynchonizeTags(MPI_Comm comm)
+PetscErrorCode PETSC_DLLEXPORT PetscCommSynchronizeTags(MPI_Comm comm)
 {
   PetscMPIInt   *tagvalp = 0, tag;
   PetscTruth     flg;

@@ -7,6 +7,20 @@
 
 extern "C" PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
+#ifdef PETSC_HAVE_CHACO
+/* Chaco does not have an include file */
+extern "C" {
+  extern int interface(int nvtxs, int *start, int *adjacency, int *vwgts,
+                       float *ewgts, float *x, float *y, float *z, char *outassignname,
+                       char *outfilename, short *assignment, int architecture, int ndims_tot,
+                       int mesh_dims[3], double *goal, int global_method, int local_method,
+                       int rqi_flag, int vmax, int ndims, double eigtol, long seed);
+
+  extern int FREE_GRAPH;
+}
+#endif
+
+
 namespace ALE {
   class ParallelObject {
   protected:
@@ -421,6 +435,157 @@ namespace ALE {
           s_iter->second->view(txt.str().c_str(), comm);
         }
       };
+    };
+
+    template<typename Topology_>
+    class Partitioner {
+    public:
+      typedef Topology_                          topology_type;
+      typedef typename topology_type::sieve_type sieve_type;
+      typedef typename topology_type::patch_type patch_type;
+      typedef typename topology_type::point_type point_type;
+    public:
+      #undef __FUNCT__
+      #define __FUNCT__ "buildDualCSR"
+      // This creates a CSR representation of the adjacency matrix for cells
+      static void buildDualCSR(const Obj<topology_type>& topology, const int dim, const patch_type& patch, int **offsets, int **adjacency) {
+        const Obj<sieve_type>&                            sieve    = topology->getPatch(patch);
+        const Obj<typename topology_type::label_sequence> elements = topology->heightStratum(patch, 0);
+        int numElements = elements->size();
+        int corners     = sieve->cone(*elements->begin())->size();
+        int *off        = new int[numElements+1];
+
+        std::set<point_type> *neighborCells = new std::set<point_type>[numElements];
+        int faceVertices = -1;
+
+        if (topology->depth(patch) != 1) {
+          throw ALE::Exception("Not yet implemented for interpolated meshes");
+        }
+        if (corners == dim+1) {
+          faceVertices = dim;
+        } else if ((dim == 2) && (corners == 4)) {
+          faceVertices = 2;
+        } else if ((dim == 3) && (corners == 8)) {
+          faceVertices = 4;
+        } else {
+          throw ALE::Exception("Could not determine number of face vertices");
+        }
+        for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          const Obj<typename sieve_type::traits::coneSequence>& vertices  = sieve->cone(*e_iter);
+          typename sieve_type::traits::coneSequence::iterator vEnd = vertices->end();
+
+          for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+            const Obj<typename sieve_type::traits::supportSequence>& neighbors = sieve->support(*v_iter);
+            typename sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
+
+            for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
+              if (*e_iter == *n_iter) continue;
+              if ((int) sieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
+                neighborCells[*e_iter].insert(*n_iter);
+              }
+            }
+          }
+        }
+        off[0] = 0;
+        for(int e = 1; e <= numElements; e++) {
+          off[e] = neighborCells[e-1].size() + off[e-1];
+        }
+        int *adj    = new int[off[numElements]];
+        int  offset = 0;
+        for(int e = 0; e < numElements; e++) {
+          for(typename std::set<point_type>::iterator n_iter = neighborCells[e].begin(); n_iter != neighborCells[e].end(); ++n_iter) {
+            adj[offset++] = *n_iter;
+          }
+        }
+        delete [] neighborCells;
+        if (offset != off[numElements]) {
+          ostringstream msg;
+          msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numElements];
+          throw ALE::Exception(msg.str().c_str());
+        }
+        *offsets   = off;
+        *adjacency = adj;
+      };
+#ifdef PETSC_HAVE_CHACO
+      #undef __FUNCT__
+      #define __FUNCT__ "partitionSieve_Chaco"
+      static short *partitionSieve_Chaco(const Obj<topology_type>& topology, const int dim) {
+        short *assignment = NULL; /* set number of each vtx (length n) */
+
+        if (topology->commRank() == 0) {
+          /* arguments for Chaco library */
+          FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
+          int nvtxs;                              /* number of vertices in full graph */
+          int *start;                             /* start of edge list for each vertex */
+          int *adjacency;                         /* = adj -> j; edge list data  */
+          int *vwgts = NULL;                      /* weights for all vertices */
+          float *ewgts = NULL;                    /* weights for all edges */
+          float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
+          char *outassignname = NULL;             /*  name of assignment output file */
+          char *outfilename = NULL;               /* output file name */
+          int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+          int ndims_tot = 0;                      /* total number of cube dimensions to divide */
+          int mesh_dims[3];                       /* dimensions of mesh of processors */
+          double *goal = NULL;                    /* desired set sizes for each set */
+          int global_method = 1;                  /* global partitioning algorithm */
+          int local_method = 1;                   /* local partitioning algorithm */
+          int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
+          int vmax = 200;                         /* how many vertices to coarsen down to? */
+          int ndims = 1;                          /* number of eigenvectors (2^d sets) */
+          double eigtol = 0.001;                  /* tolerance on eigenvectors */
+          long seed = 123636512;                  /* for random graph mutations */
+          int patch = 0;
+          PetscErrorCode ierr;
+
+          nvtxs = topology->heightStratum(patch, 0)->size();
+          mesh_dims[0] = topology->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+          ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &start, &adjacency);
+          for(int e = 0; e < start[nvtxs]; e++) {
+            adjacency[e]++;
+          }
+          assignment = new short int[nvtxs];
+          ierr = PetscMemzero(assignment, nvtxs * sizeof(short));CHKERROR(ierr, "Error in PetscMemzero");
+
+          /* redirect output to buffer: chaco -> msgLog */
+#ifdef PETSC_HAVE_UNISTD_H
+          char *msgLog;
+          int fd_stdout, fd_pipe[2], count;
+
+          fd_stdout = dup(1);
+          pipe(fd_pipe);
+          close(1);
+          dup2(fd_pipe[1], 1);
+          msgLog = new char[16284];
+#endif
+
+          ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
+                           outassignname, outfilename, assignment, architecture, ndims_tot,
+                           mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
+                           eigtol, seed);
+
+#ifdef PETSC_HAVE_UNISTD_H
+          int SIZE_LOG  = 10000;
+
+          fflush(stdout);
+          count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
+          if (count < 0) count = 0;
+          msgLog[count] = 0;
+          close(1);
+          dup2(fd_stdout, 1);
+          close(fd_stdout);
+          close(fd_pipe[0]);
+          close(fd_pipe[1]);
+          if (topology->debug()) {
+            std::cout << msgLog << std::endl;
+          }
+          delete [] msgLog;
+#endif
+          delete [] adjacency;
+          delete [] start;
+        }
+        return assignment;
+      };
+#endif
     };
 
     template<typename Topology_, typename Index_>
@@ -1119,197 +1284,6 @@ namespace ALE {
 
           MPI_Wait(&request, &status);
         }
-      };
-    };
-
-    template<typename Topology_>
-    class Numbering : public ParallelObject {
-    public:
-      typedef Topology_                                                                           topology_type;
-      typedef typename topology_type::point_type                                                  point_type;
-      typedef typename topology_type::sieve_type                                                  sieve_type;
-      typedef typename ALE::New::DiscreteSieve<point_type>                                        dsieve_type;
-      typedef typename ALE::New::Topology<int, dsieve_type>                                       overlap_topology_type;
-      typedef typename ALE::New::Atlas<overlap_topology_type, ALE::Point>                         overlap_atlas_type;
-      typedef typename ALE::Sifter<int,point_type,point_type>                                     send_overlap_type;
-      typedef typename ALE::New::OverlapValues<send_overlap_type, overlap_atlas_type, point_type> send_section_type;
-      typedef typename ALE::Sifter<point_type,int,point_type>                                     recv_overlap_type;
-      typedef typename ALE::New::OverlapValues<recv_overlap_type, overlap_atlas_type, point_type> recv_section_type;
-    protected:
-      Obj<topology_type>        _topology;
-      std::string               _label;
-      int                       _value;
-      std::map<point_type, int> _order;
-      Obj<send_overlap_type>    _sendOverlap;
-      Obj<recv_overlap_type>    _recvOverlap;
-      Obj<send_section_type>    _sendSection;
-      Obj<recv_section_type>    _recvSection;
-      int                       _localSize;
-      int                      *_offsets;
-    public:
-      Numbering(const Obj<topology_type>& topology, const std::string& label, int value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _label(label), _value(value) {
-        this->_sendOverlap = new send_overlap_type(this->comm(), this->debug());
-        this->_recvOverlap = new recv_overlap_type(this->comm(), this->debug());
-        this->_sendSection = new send_section_type(this->comm(), this->debug());
-        this->_recvSection = new recv_section_type(this->comm(), this->_sendSection->getTag(), this->debug());
-        this->_offsets     = new int[this->commSize()+1];
-        this->_offsets[0]  = 0;
-      };
-      ~Numbering() {
-        delete [] this->_offsets;
-      };
-    public: // Accessors
-      int getLocalSize() const {return this->_localSize;};
-      int getGlobalSize() const {return this->_offsets[this->commSize()];};
-      int getIndex(const point_type& point) {return this->_order[point];};
-    public:
-      void constructOverlap() {
-        if (this->commRank() == 0) {
-          // Local point 1 is overlapped by remote point 0 from proc 1
-          this->_sendOverlap->addArrow(1, 1, 0);
-          this->_recvOverlap->addArrow(1, 1, 0);
-          // Local point 2 is overlapped by remote point 2 from proc 1
-          this->_sendOverlap->addArrow(2, 1, 2);
-          this->_recvOverlap->addArrow(1, 2, 2);
-        } else {
-          // Local point 0 is overlapped by remote point 1 from proc 0
-          this->_sendOverlap->addArrow(0, 0, 1);
-          this->_recvOverlap->addArrow(0, 0, 1);
-          // Local point 2 is overlapped by remote point 2 from proc 0
-          this->_sendOverlap->addArrow(2, 0, 2);
-          this->_recvOverlap->addArrow(0, 2, 2);
-        }
-      };
-      void constructLocalOrder() {
-        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
-
-        this->_order.clear();
-        this->_localSize = 0;
-        for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
-          if (this->_sendOverlap->capContains(*l_iter)) {
-            const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = this->_sendOverlap->support(*l_iter);
-            int minRank = this->_sendOverlap->commSize();
-
-            for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
-              if (*p_iter < minRank) minRank = *p_iter;
-            }
-            if (minRank < this->_sendOverlap->commRank()) {
-              this->_order[*l_iter] = -1;
-            } else {
-              this->_order[*l_iter] = this->_localSize++;
-            }
-          } else {
-            this->_order[*l_iter] = this->_localSize++;
-          }
-        }
-        MPI_Allgather(&this->_localSize, 1, MPI_INT, &(this->_offsets[1]), 1, MPI_INT, this->comm());
-        for(int p = 2; p <= this->commSize(); p++) {
-          this->_offsets[p] += this->_offsets[p-1];
-        }
-        for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
-          if (this->_order[*l_iter] >= 0) {
-            this->_order[*l_iter] += this->_offsets[this->commRank()];
-          }
-        }
-      };
-      void constructCommunication() {
-        Obj<typename send_overlap_type::baseSequence> sendRanks = this->_sendOverlap->base();
-
-        for(typename send_overlap_type::baseSequence::iterator r_iter = sendRanks->begin(); r_iter != sendRanks->end(); ++r_iter) {
-          const Obj<typename send_overlap_type::coneSequence>& cone = this->_sendOverlap->cone(*r_iter);
-          Obj<dsieve_type> sieve = new dsieve_type();
-
-          for(typename send_overlap_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-            sieve->addPoint(*c_iter);
-          }
-          this->_sendSection->getAtlas()->getTopology()->setPatch(*r_iter, sieve);
-        }
-        this->_sendSection->getAtlas()->getTopology()->stratify();
-        Obj<typename recv_overlap_type::capSequence> recvRanks = this->_recvOverlap->cap();
-
-        for(typename recv_overlap_type::capSequence::iterator r_iter = recvRanks->begin(); r_iter != recvRanks->end(); ++r_iter) {
-          const Obj<typename recv_overlap_type::supportSequence>& support = this->_recvOverlap->support(*r_iter);
-          Obj<dsieve_type> sieve = new dsieve_type();
-
-          for(typename recv_overlap_type::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
-            sieve->addPoint(*s_iter);
-          }
-          this->_recvSection->getAtlas()->getTopology()->setPatch(*r_iter, sieve);
-        }
-        this->_recvSection->getAtlas()->getTopology()->stratify();
-        // Setup sections
-        this->_sendSection->construct(1);
-        this->_recvSection->construct(1);
-        this->_sendSection->getAtlas()->orderPatches();
-        this->_recvSection->getAtlas()->orderPatches();
-        this->_sendSection->allocate();
-        this->_recvSection->allocate();
-        this->_sendSection->constructCommunication();
-        this->_recvSection->constructCommunication();
-      };
-      void fillSection() {
-        Obj<typename send_overlap_type::traits::capSequence> sendPoints = this->_sendOverlap->cap();
-
-        for(typename send_overlap_type::traits::capSequence::iterator s_iter = sendPoints->begin(); s_iter != sendPoints->end(); ++s_iter) {
-          const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = this->_sendOverlap->support(*s_iter);
-
-          for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
-            this->_sendSection->update(*p_iter, *s_iter, &(this->_order[*s_iter]));
-          }
-        }
-      };
-      void communicate() {
-        this->_sendSection->startCommunication();
-        this->_recvSection->startCommunication();
-        this->_sendSection->endCommunication();
-        this->_recvSection->endCommunication();
-      };
-      void fillOrder() {
-        Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = this->_recvOverlap->base();
-
-        for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
-          const Obj<typename recv_overlap_type::traits::coneSequence>& recvPatches = this->_recvOverlap->cone(*r_iter);
-    
-          for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
-            const typename recv_section_type::value_type *values = this->_recvSection->restrict(*p_iter, *r_iter);
-
-            if (values[0] >= 0) {
-              if (this->_order[*r_iter] >= 0) {
-                ostringstream msg;
-                msg << "Multiple indices for point " << *r_iter;
-                throw ALE::Exception(msg.str().c_str());
-              }
-              this->_order[*r_iter] = values[0];
-            }
-          }
-        }
-      };
-      void construct() {
-        this->constructOverlap();
-        this->constructLocalOrder();
-        this->constructCommunication();
-        this->fillSection();
-        this->communicate();
-        this->fillOrder();
-      };
-      void view(const std::string& name) {
-        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
-        ostringstream txt;
-
-        if (name == "") {
-          if(this->commRank() == 0) {
-            txt << "viewing a Numbering" << std::endl;
-          }
-        } else {
-          if(this->commRank() == 0) {
-            txt << "viewing Numbering '" << name << "'" << std::endl;
-          }
-        }
-        for(typename topology_type::label_sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-          txt << "[" << this->commRank() << "] " << *p_iter << " --> " << this->_order[*p_iter] << std::endl;
-        }
-        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
-        PetscSynchronizedFlush(this->comm());
       };
     };
   }
