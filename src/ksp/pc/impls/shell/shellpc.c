@@ -14,6 +14,7 @@ typedef struct {
   PetscErrorCode (*destroy)(void*);
   PetscErrorCode (*setup)(void*);
   PetscErrorCode (*apply)(void*,Vec,Vec);
+  PetscErrorCode (*applyBA)(void*,PCSide,Vec,Vec,Vec);
   PetscErrorCode (*presolve)(void*,KSP,Vec,Vec);
   PetscErrorCode (*postsolve)(void*,KSP,Vec,Vec);
   PetscErrorCode (*view)(void*,PetscViewer);
@@ -122,6 +123,24 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscStackPush("PCSHELL user function");
   CHKMEMQ;
   ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApplyBA_Shell"
+static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
+{
+  PC_Shell       *shell;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  shell = (PC_Shell*)pc->data;
+  if (!shell->applyBA) SETERRQ(PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function BA");
+  CHKMEMQ;
+  ierr  = (*shell->applyBA)(shell->ctx,side,x,y,w);CHKERRQ(ierr);
   CHKMEMQ;
   PetscStackPop;
   PetscFunctionReturn(0);
@@ -259,6 +278,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply_Shell(PC pc,PetscErrorCode (*a
   PetscFunctionBegin;
   shell        = (PC_Shell*)pc->data;
   shell->apply = apply;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyBA_Shell"
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*apply)(void*,PCSide,Vec,Vec,Vec))
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell          = (PC_Shell*)pc->data;
+  shell->applyBA = apply;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -516,7 +549,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetView(PC pc,PetscErrorCode (*view)(vo
 
 .keywords: PC, shell, set, apply, user-provided
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext()
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApplyBA()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec))
 {
@@ -527,6 +560,45 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(
   ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApply_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc,apply);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyBA"
+/*@C
+   PCShellSetApplyBA - Sets routine to use as preconditioner times operator.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  applyBA - the application-provided BA routine
+
+   Calling sequence of apply:
+.vb
+   PetscErrorCode applyBA (void *ptr,Vec xin,Vec xout)
+.ve
+
++  ptr - the application context
+.  xin - input vector
+-  xout - output vector
+
+   Level: developer
+
+.keywords: PC, shell, set, apply, user-provided
+
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApplyTranspose(), PCShellSetContext(), PCShellSetApply()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA(PC pc,PetscErrorCode (*applyBA)(void*,PCSide,Vec,Vec,Vec))
+{
+  PetscErrorCode ierr,(*f)(PC,PetscErrorCode (*)(void*,PCSide,Vec,Vec,Vec));
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCShellSetApplyBA_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,applyBA);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -558,7 +630,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApply(PC pc,PetscErrorCode (*apply)(
 
 .keywords: PC, shell, set, apply, user-provided
 
-.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply(), PCSetContext()
+.seealso: PCShellSetApplyRichardson(), PCShellSetSetUp(), PCShellSetApply(), PCSetContext(), PCShellSetApplyBA()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose(PC pc,PetscErrorCode (*applytranspose)(void*,Vec,Vec))
 {
@@ -781,13 +853,15 @@ $             PetscErrorCode (*setup)(void*);
 $             PCCreate(comm,&pc);
 $             PCSetType(pc,PCSHELL);
 $             PCShellSetApply(pc,mult);
+$             PCShellSetApplyBA(pc,mult);      (optional)
+$             PCShellSetApplyTranspose(pc,mult); (optional)
 $             PCShellSetContext(pc,ctx)
 $             PCShellSetSetUp(pc,setup);       (optional)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(), 
            PCShellSetApplyTranspose(), PCShellSetName(), PCShellSetApplyRichardson(), 
-           PCShellGetName(), PCShellSetContext(), PCShellGetContext()
+           PCShellGetName(), PCShellSetContext(), PCShellGetContext(), PCShellSetApplyBA()
 M*/
 
 EXTERN_C_BEGIN
@@ -806,6 +880,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   pc->name         = 0;
 
   pc->ops->apply           = PCApply_Shell;
+  pc->ops->applyBA         = PCApplyBA_Shell;
   pc->ops->view            = PCView_Shell;
   pc->ops->applytranspose  = PCApplyTranspose_Shell;
   pc->ops->applyrichardson = 0;
@@ -831,6 +906,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
                     PCShellSetSetUp_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApply_C","PCShellSetApply_Shell",
                     PCShellSetApply_Shell);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetApplyBA_C","PCShellSetApplyBA_Shell",
+                    PCShellSetApplyBA_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetPreSolve_C","PCShellSetPreSolve_Shell",
                     PCShellSetPreSolve_Shell);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCShellSetPostSolve_C","PCShellSetPostSolve_Shell",

@@ -80,7 +80,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
   pc->ops->setup               = (PetscErrorCode (*)(PC)) 0;
   pc->ops->apply               = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->applyrichardson     = (PetscErrorCode (*)(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt)) 0;
-  pc->ops->applyBA             = (PetscErrorCode (*)(PC,PetscInt,Vec,Vec,Vec)) 0;
+  pc->ops->applyBA             = (PetscErrorCode (*)(PC,PCSide,Vec,Vec,Vec)) 0;
   pc->ops->applytranspose      = (PetscErrorCode (*)(PC,Vec,Vec)) 0;
   pc->ops->applyBAtranspose    = (PetscErrorCode (*)(PC,PetscInt,Vec,Vec,Vec)) 0;
   pc->ops->setfromoptions      = (PetscErrorCode (*)(PC)) 0;
