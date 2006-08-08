@@ -1,6 +1,5 @@
 #include <Sieve.hh>
 #include <src/dm/mesh/meshpcice.h>
-#include "overlapTest.hh"
 
 namespace ALE {
   namespace Test {
@@ -317,76 +316,46 @@ namespace ALE {
       };
     };
 
-    class Completion {
+    template<typename Section_>
+    class PatchlessSection : public ALE::ParallelObject {
     public:
-      typedef ALE::Test::OverlapTest::dsieve_type       dsieve_type;
-      typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
-      typedef ALE::Test::OverlapTest::send_section_type send_section_type;
-      typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
-      typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
+      typedef Section_                          section_type;
+      typedef typename section_type::patch_type patch_type;
+      typedef typename section_type::sieve_type sieve_type;
+      typedef typename section_type::point_type point_type;
+      typedef typename section_type::value_type value_type;
+    protected:
+      Obj<section_type> _section;
+      const patch_type  _patch;
     public:
-      template<typename Sizer>
-      static void setupSend(const Obj<send_overlap_type>& sendOverlap, const Obj<Sizer>& sendSizer, const Obj<send_section_type>& sendSection) {
-        // Here we should just use the overlap as the topology (once it is a new-style sieve)
-        const Obj<send_overlap_type::traits::baseSequence> ranks = sendOverlap->base();
-
-        sendSection->getAtlas()->clear();
-        for(send_overlap_type::traits::baseSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-          Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(*r_iter));
-          sendSection->getAtlas()->getTopology()->setPatch(*r_iter, sendSieve);
-        }
-        sendSection->getAtlas()->getTopology()->stratify();
-        if (sendSection->debug() > 10) {sendSection->getAtlas()->getTopology()->view("Send topology after setup", MPI_COMM_SELF);}
-        sendSection->construct(sendSizer);
-        sendSection->getAtlas()->orderPatches();
-        sendSection->allocate();
-        sendSection->constructCommunication();
+      PatchlessSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
+      virtual ~PatchlessSection() {};
+    public:
+      const value_type *restrict(const patch_type& patch) {
+        return this->_section->restrict(this->_patch);
       };
-      template<typename Filler>
-      static void completeSend(const Obj<Filler>& sendFiller, const Obj<send_section_type>& sendSection) {
-        // Fill section
-        const send_section_type::topology_type::sheaf_type& patches = sendSection->getAtlas()->getTopology()->getPatches();
-
-        for(send_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-          const Obj<send_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
-
-          for(send_section_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            sendSection->update(p_iter->first, *b_iter, sendFiller->restrict(p_iter->first, *b_iter));
-          }
-        }
-        if (sendSection->debug()) {sendSection->view("Send Section in Completion", MPI_COMM_SELF);}
-        // Complete the section
-        sendSection->startCommunication();
-        sendSection->endCommunication();
+      const value_type *restrict(const patch_type& patch, const point_type& p) {
+        return this->_section->restrict(this->_patch, p);
       };
-      template<typename Sizer>
-      static void setupReceive(const Obj<recv_overlap_type>& recvOverlap, const Obj<Sizer>& recvSizer, const Obj<recv_section_type>& recvSection) {
-        // Create section
-        const Obj<recv_overlap_type::traits::capSequence> ranks = recvOverlap->cap();
-
-        recvSection->getAtlas()->clear();
-        for(recv_overlap_type::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-          Obj<dsieve_type> recvSieve = new dsieve_type();
-          const Obj<recv_overlap_type::supportSequence>& points = recvOverlap->support(0);
-
-          // Want to replace this loop with a slice through color
-          for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-            recvSieve->addPoint(p_iter.color());
-          }
-          recvSection->getAtlas()->getTopology()->setPatch(0, recvSieve);
-        }
-        recvSection->getAtlas()->getTopology()->stratify();
-        recvSection->construct(recvSizer);
-        recvSection->getAtlas()->orderPatches();
-        recvSection->allocate();
-        recvSection->constructCommunication();
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        return this->_section->restrictPoint(this->_patch, p);
       };
-      static void completeReceive(const Obj<recv_section_type>& recvSection) {
-        // Complete the section
-        recvSection->startCommunication();
-        recvSection->endCommunication();
-        if (recvSection->debug()) {recvSection->view("Receive Section in Completion", MPI_COMM_SELF);}
-        // Read out section values
+      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_section->update(this->_patch, p, v);
+      };
+      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_section->updateAdd(this->_patch, p, v);
+      };
+      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_section->updatePoint(this->_patch, p, v);
+      };
+      template<typename Input>
+      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
+        this->_section->update(this->_patch, p, v);
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        this->_section->view(name, comm);
       };
     };
   };

@@ -1,18 +1,20 @@
 static char help[] = "Sieve Distribution Tests.\n\n";
 
 #include <petsc.h>
-#include "meshTest.hh"
 #include "overlapTest.hh"
+#include "meshTest.hh"
+#include <Completion.hh>
 
 extern PetscErrorCode PetscCommSynchonizeTags(MPI_Comm);
 
 using ALE::Obj;
-typedef ALE::Test::sieve_type sieve_type;
-typedef ALE::Test::OverlapTest::dsieve_type       dsieve_type;
-typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
-typedef ALE::Test::OverlapTest::send_section_type send_section_type;
-typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
-typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
+typedef ALE::Test::sieve_type                                     sieve_type;
+typedef ALE::New::Completion<sieve_type::point_type>              sieveCompletion;
+typedef ALE::New::Completion<ALE::Mesh::section_type::value_type> sectionCompletion;
+typedef sectionCompletion::send_overlap_type                      send_overlap_type;
+typedef sectionCompletion::recv_overlap_type                      recv_overlap_type;
+typedef sectionCompletion::send_section_type                      send_section_type;
+typedef sectionCompletion::recv_section_type                      recv_section_type;
 
 typedef struct {
   int        debug;              // The debugging level
@@ -24,145 +26,85 @@ typedef struct {
 
 PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew, Options *options)
 {
-  typedef ALE::New::ConstantSection<send_section_type::topology_type, send_section_type::value_type> constant_section;
-  typedef ALE::Test::PartitionSizeSection<send_section_type::topology_type, short int>               partition_size_section;
-  typedef ALE::Test::PartitionSection<send_section_type::topology_type, short int>                   partition_section;
-  typedef ALE::Test::ConeSizeSection<send_section_type::topology_type, ALE::Mesh::sieve_type>        cone_size_section;
-  typedef ALE::Test::ConeSection<send_section_type::topology_type, ALE::Mesh::sieve_type>            cone_section;
-  Obj<send_overlap_type> sendOverlap   = new send_overlap_type(mesh->comm(), options->debug);
-  Obj<send_section_type> sendSizer     = new send_section_type(mesh->comm(), send_section_type::SEND, options->debug);
-  Obj<send_section_type> sendSection   = new send_section_type(mesh->comm(), send_section_type::SEND, options->debug);
-  Obj<constant_section>  constantSizer = new constant_section(MPI_COMM_SELF, 1, options->debug);
-  int numElements = mesh->getTopologyNew()->heightStratum(0, 0)->size();
-  int rank        = mesh->commRank();
-  int debug       = mesh->debug;
+  typedef ALE::Test::PatchlessSection<ALE::Mesh::section_type> CoordFiller;
+  const int dim   = mesh->getDimension();
+  const int debug = mesh->debug;
 
   PetscFunctionBegin;
-  // 1) Form partition point overlap a priori
-  //      There are arrows to each rank whose color is the partition point (also the rank)
-  for(int p = 1; p < mesh->commSize(); p++) {
-    sendOverlap->addCone(p, p, p);
-  }
-  if (debug) {sendOverlap->view(std::cout, "Send overlap for partition");}
-  // 2) Create the sizer section
-  ALE::Test::Completion::setupSend(sendOverlap, constantSizer, sendSizer);
-  // 3) Partition the mesh
-  short *assignment = ALE::Test::MeshProcessor::partitionMesh_Chaco(mesh);
-  Obj<partition_size_section> partitionSizeSection = new partition_size_section(sendSizer->getAtlas()->getTopology(), numElements, assignment);
-  Obj<partition_section>      partitionSection     = new partition_section(sendSizer->getAtlas()->getTopology(), numElements, assignment);
-  // 4) Create local sieve
-  const Obj<ALE::Mesh::sieve_type>& sieve    = mesh->getTopologyNew()->getPatch(0);
-  const Obj<ALE::Mesh::sieve_type>& sieveNew = meshNew->getTopologyNew()->getPatch(0);
+  Obj<send_overlap_type> cellOverlap   = sieveCompletion::sendDistribution(mesh->getTopologyNew(), dim, meshNew->getTopologyNew());
+  Obj<send_overlap_type> vertexOverlap = new send_overlap_type(mesh->comm(), debug);
+  Obj<ALE::Mesh::sieve_type> sieve = mesh->getTopologyNew()->getPatch(0);
+  const Obj<send_overlap_type::traits::capSequence> cap = cellOverlap->cap();
 
-  for(int e = 0; e < numElements; e++) {
-    if (assignment[e] == rank) {
-      const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(e);
+  for(send_overlap_type::traits::baseSequence::iterator p_iter = cap->begin(); p_iter != cap->end(); ++p_iter) {
+    const Obj<send_overlap_type::traits::supportSequence>& ranks = cellOverlap->support(*p_iter);
+
+    for(send_overlap_type::traits::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+      const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
 
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-        sieveNew->addArrow(*c_iter, e, c_iter.color());
+        vertexOverlap->addArrow(*c_iter, *r_iter, *c_iter);
       }
     }
   }
-  // 5) Fill the sizer section and communicate
-  ALE::Test::Completion::completeSend(partitionSizeSection, sendSizer);
-  // 6) Create the send section
-  ALE::Test::Completion::setupSend(sendOverlap, sendSizer, sendSection);
-  // 7) Fill up send section and communicate
-  ALE::Test::Completion::completeSend(partitionSection, sendSection);
-  // 8) Create point overlap
-  // Could this potentially be the sendSection itself?
-  sendOverlap->clear();
-  const send_section_type::topology_type::sheaf_type& patches = sendSection->getAtlas()->getTopology()->getPatches();
+  vertexOverlap->view(std::cout, "Send vertex overlap");
+  const ALE::Mesh::section_type::patch_type patch = 0;
+  const Obj<ALE::Mesh::section_type> coordinates    = mesh->getSection("coordinates");
+  const Obj<ALE::Mesh::section_type> coordinatesNew = meshNew->getSection("coordinates");
+  const Obj<send_section_type>       sendCoords     = new send_section_type(mesh->comm(), debug);
+  const Obj<CoordFiller>             coordFiller    = new CoordFiller(coordinates, patch);
+  const int embedDim = coordinates->getAtlas()->getFiberDimension(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+  const Obj<sectionCompletion::constant_sizer> constantSizer = new sectionCompletion::constant_sizer(MPI_COMM_SELF, embedDim, debug);
 
-  for(send_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-    const Obj<send_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
+  sectionCompletion::sendSection(vertexOverlap, constantSizer, coordFiller, sendCoords);
+  coordinatesNew->getAtlas()->setFiberDimensionByDepth(patch, 0, embedDim);
+  coordinatesNew->getAtlas()->orderPatches();
+  coordinatesNew->allocate();
+  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
 
-    for(send_section_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const send_section_type::value_type *points = sendSection->restrict(p_iter->first, *b_iter);
-      int size = sendSection->getAtlas()->size(p_iter->first, *b_iter);
-
-      for(int p = 0; p < size; p++) {
-        sendOverlap->addArrow(points[p], p_iter->first, points[p]);
-      }
-    }
+  for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    coordinatesNew->update(patch, *v_iter, coordinates->restrict(patch, *v_iter));
   }
-  if (debug) {sendOverlap->view(std::cout, "Send overlap for points");}
-  // 9) Create the sizer section
-  ALE::Test::Completion::setupSend(sendOverlap, constantSizer, sendSizer);
-  // 10) Fill the sizer section and communicate
-  Obj<cone_size_section> coneSizeSection = new cone_size_section(sendSizer->getAtlas()->getTopology(), mesh->getTopologyNew()->getPatch(0));
-  ALE::Test::Completion::completeSend(coneSizeSection, sendSizer);
-  // 11) Create the send section
-  ALE::Test::Completion::setupSend(sendOverlap, sendSizer, sendSection);
-  // 12) Fill up send section and communicate
-  Obj<cone_section>      coneSection     = new cone_section(sendSizer->getAtlas()->getTopology(), mesh->getTopologyNew()->getPatch(0));
-  ALE::Test::Completion::completeSend(coneSection, sendSection);
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew, Options *options)
 {
-  typedef ALE::New::ConstantSection<recv_section_type::topology_type, recv_section_type::value_type> constant_section;
-  Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(mesh->comm(), options->debug);
-  Obj<recv_section_type> recvSizer   = new recv_section_type(mesh->comm(), recv_section_type::RECEIVE, options->debug);
-  Obj<recv_section_type> recvSection = new recv_section_type(mesh->comm(), recv_section_type::RECEIVE, options->debug);
-  Obj<constant_section>  constantSizer = new constant_section(MPI_COMM_SELF, 1, options->debug);
-  int debug = mesh->debug;
-
   PetscFunctionBegin;
-  // 1) Form partition point overlap a priori
-  //      The arrow is from rank 0 with partition point 0
-  recvOverlap->addCone(0, mesh->commRank(), mesh->commRank());
-  if (debug) {recvOverlap->view(std::cout, "Receive overlap for partition");}
-  // 2) Create the sizer section
-  ALE::Test::Completion::setupReceive(recvOverlap, constantSizer, recvSizer);
-  // 3) Communicate
-  ALE::Test::Completion::completeReceive(recvSizer);
-  // 4) Update to the receive section
-  ALE::Test::Completion::setupReceive(recvOverlap, recvSizer, recvSection);
-  // 5) Complete the section
-  ALE::Test::Completion::completeReceive(recvSection);
-  // 6) Unpack the section into the overlap
-  recvOverlap->clear();
-  const recv_section_type::topology_type::sheaf_type& patches = recvSizer->getAtlas()->getTopology()->getPatches();
+  Obj<recv_overlap_type> cellOverlap   = sieveCompletion::receiveDistribution(mesh->getTopologyNew(), meshNew->getTopologyNew());
+  Obj<recv_overlap_type> vertexOverlap = new recv_overlap_type(mesh->comm(), mesh->debug);
+  Obj<ALE::Mesh::sieve_type> sieveNew = meshNew->getTopologyNew()->getPatch(0);
+  const Obj<send_overlap_type::traits::baseSequence> base = cellOverlap->base();
 
-  for(recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-    const Obj<recv_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
-    int                                                     rank = p_iter->first;
+  for(send_overlap_type::traits::baseSequence::iterator p_iter = base->begin(); p_iter != base->end(); ++p_iter) {
+    const Obj<send_overlap_type::traits::coneSequence>& ranks = cellOverlap->cone(*p_iter);
 
-    for(recv_section_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
-      int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+    for(send_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+      const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieveNew->cone(*p_iter);
 
-      for(int p = 0; p < size; p++) {
-        recvOverlap->addArrow(rank, points[p], points[p]);
+      for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+        vertexOverlap->addArrow(*r_iter, *c_iter, *c_iter);
       }
     }
   }
-  if (debug) {recvOverlap->view(std::cout, "Receive overlap for points");}
-  // 7) Create the sizer section
-  ALE::Test::Completion::setupReceive(recvOverlap, constantSizer, recvSizer);
-  // 8) Communicate
-  ALE::Test::Completion::completeReceive(recvSizer);
-  // 9) Update to the receive section
-  ALE::Test::Completion::setupReceive(recvOverlap, recvSizer, recvSection);
-  // 10) Complete the section
-  ALE::Test::Completion::completeReceive(recvSection);
-  // 11) Unpack the section into the sieve
-  const Obj<ALE::Mesh::sieve_type>& sieve = meshNew->getTopologyNew()->getPatch(0);
+  vertexOverlap->view(std::cout, "Receive vertex overlap");
+  const Obj<ALE::Mesh::section_type> coordinates    = mesh->getSection("coordinates");
+  const Obj<ALE::Mesh::section_type> coordinatesNew = meshNew->getSection("coordinates");
+  const Obj<recv_section_type>       recvCoords     = new recv_section_type(mesh->comm(), mesh->debug);
+  const ALE::Mesh::section_type::patch_type patch   = 0;
 
-  for(recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-    const Obj<recv_section_type::sieve_type::baseSequence>& base = p_iter->second->base();
-    int                                                     rank = p_iter->first;
+  sectionCompletion::recvSection(vertexOverlap, recvCoords);
+  const sectionCompletion::topology_type::sheaf_type& patches = recvCoords->getAtlas()->getTopology()->getPatches();
+  const int embedDim = recvCoords->getAtlas()->getFiberDimension(patch, *recvCoords->getAtlas()->getTopology()->depthStratum(patches.begin()->first, 0)->begin());
+  coordinatesNew->getAtlas()->setFiberDimensionByDepth(patch, 0, embedDim);
+  coordinatesNew->getAtlas()->orderPatches();
+  coordinatesNew->allocate();
 
-    for(recv_section_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
-      int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
-      int c = 0;
+  for(sectionCompletion::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+    const Obj<sectionCompletion::topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
 
-      for(int p = 0; p < size; p++) {
-        sieve->addArrow(points[p], *b_iter, c++);
-      }
+    for(sectionCompletion::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+      coordinatesNew->update(patch, *b_iter, recvCoords->restrict(p_iter->first, *b_iter));
     }
   }
   PetscFunctionReturn(0);
@@ -189,6 +131,7 @@ PetscErrorCode DistributionTest(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   // This is necessary since we create types (like PartitionSection) on a subset of processors
   ierr = PetscCommSynchonizeTags(PETSC_COMM_WORLD); CHKERRQ(ierr);
   sieve->view("Distributed sieve");
+  meshNew->getSection("coordinates")->view("Coordinates");
   PetscFunctionReturn(0);
 }
 
