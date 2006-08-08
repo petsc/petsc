@@ -263,6 +263,13 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
+      void checkLabel(const std::string& name) {
+        if (this->_labels.find(name) == this->_labels.end()) {
+          ostringstream msg;
+          msg << "Invalid label name: " << name << std::endl;
+          throw ALE::Exception(msg.str().c_str());
+        }
+      };
     public: // Accessors
       const Obj<sieve_type>& getPatch(const patch_type& patch) {
         this->checkPatch(patch);
@@ -290,10 +297,12 @@ namespace ALE {
         label->setCone(value, point);
       };
       const Obj<patch_label_type>& getLabel(const patch_type& patch, const std::string& name) {
+        this->checkLabel(name);
         this->checkPatch(patch);
         return this->_labels[name][patch];
       };
       const Obj<label_sequence>& getLabelStratum(const patch_type& patch, const std::string& name, int label) {
+        this->checkLabel(name);
         this->checkPatch(patch);
         return this->_labels[name][patch]->support(label);
       };
