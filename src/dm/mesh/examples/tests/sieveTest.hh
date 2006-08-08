@@ -315,5 +315,48 @@ namespace ALE {
         PetscSynchronizedFlush(comm);
       };
     };
+
+    template<typename Section_>
+    class PatchlessSection : public ALE::ParallelObject {
+    public:
+      typedef Section_                          section_type;
+      typedef typename section_type::patch_type patch_type;
+      typedef typename section_type::sieve_type sieve_type;
+      typedef typename section_type::point_type point_type;
+      typedef typename section_type::value_type value_type;
+    protected:
+      Obj<section_type> _section;
+      const patch_type  _patch;
+    public:
+      PatchlessSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
+      virtual ~PatchlessSection() {};
+    public:
+      const value_type *restrict(const patch_type& patch) {
+        return this->_section->restrict(this->_patch);
+      };
+      const value_type *restrict(const patch_type& patch, const point_type& p) {
+        return this->_section->restrict(this->_patch, p);
+      };
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        return this->_section->restrictPoint(this->_patch, p);
+      };
+      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_section->update(this->_patch, p, v);
+      };
+      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_section->updateAdd(this->_patch, p, v);
+      };
+      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_section->updatePoint(this->_patch, p, v);
+      };
+      template<typename Input>
+      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
+        this->_section->update(this->_patch, p, v);
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        this->_section->view(name, comm);
+      };
+    };
   };
 };

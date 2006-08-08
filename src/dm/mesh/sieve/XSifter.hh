@@ -421,12 +421,12 @@ namespace ALE_X {
     //
     // StridedIndexSequence definition
     // 
-    // Defines a sequence representing a subset of a multi_index container defined by its Index_ ordered lexicographically 
+    // Defines a sequence representing a subset of a multi_index container defined by its Index_ which is ordered lexicographically 
     // starting with an OuterKey_ (obtained from an OuterKeyExtractor_) and then by an InnerKey_ (obtained from an InnerKeyExtractor_).
     // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
     // This particular sequence traverses all OuterKey_ segements between given bounds, and within each segment traverses all elements
     // in each segment with a given Key_. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
-    // the keys from a given range.
+    // the outer keys from a given range and a fixed inner key.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
     template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
               typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type> >
@@ -440,11 +440,10 @@ namespace ALE_X {
       typedef typename value_extractor_type::result_type       value_type;
       typedef typename index_type::size_type                   size_type;
       //
-      template <typename Sequence_ = StridedIndexSequence>
       class iterator {
       public:
         // Parent sequence type
-        typedef Sequence_                              sequence_type;
+        typedef StridedIndexSequence                   sequence_type;
         // Standard iterator typedefs
         typedef std::input_iterator_tag                iterator_category;
         typedef int                                    difference_type;
@@ -456,59 +455,102 @@ namespace ALE_X {
       protected:
         // Parent sequence
         sequence_type&  _sequence;
+        // Underlying index
+        index_type& _index;
         // Underlying iterator 
         itor_type      _itor;
         // Key extractors & keys
         outer_key_extractor_type _okex
-        outer_key_type           _okey;
+        outer_key_type           _ok;
         inner_key_extractor_type _ikex
-        inner_key_type           _ikey;
+        inner_key_type           _ik;
         // Value extractor
         value_extractor_type _ex;
       public:
-        iterator(sequence_type& sequence, itor_type itor)       : _sequence(sequence)       {this->__setup_itor(itor);};
-        iterator(const iterator& iter)                          : _sequence(iter._sequence) {this->__setup_itor(itor);}
+        iterator(sequence_type& sequence, itor_type itor)       : _sequence(sequence), _index(_sequence.index())       {
+          this->__setup_itor(itor);
+        };
+        iterator(const iterator& iter)                          : _sequence(iter._sequence), _index(_sequence.index()) {
+          this->__setup_itor(iter._itor);}
         virtual ~iterator() {};
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
         virtual const value_type  operator*() const {return _ex(*(this->_itor));};
         virtual iterator   operator++() {
-          this->__setup_itor(this->_itor++);
+          this->__setup_itor(++this->_itor);
           return *this;
         };
-        virtual iterator   operator++(int n) {iterator tmp(*this); ++this->_itor; return tmp;};
+        virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
       protected:
-        void __setup_itor(const itor_type& itor) {
+        void __setup_itor(itor_type& itor) {
+          // THIS IS THE HEART OF ITERATOR FUNCTIONALITY.  IN PARTICULAR, THIS HELPS ADVANCE THE ITERATOR CORRECTLY
+          //
+          // First we extract the current inner/outer keys from the underlying itor
+          outer_key_type = this->_okex(*itor);
+          inner_key_type = this->_ikex(*itor);
+          // Now we check whether the inner iterator has reached its low
+          // ASSUMPTION: _index ordering operator can take outer_key_type by itself
+          // CONTINUE: 1) implement 'init' functionality; 2) probably want to use 'current_high itor' to guard for end of segment;
           this->_itor = itor;
         };
       };// class iterator
     protected:
-      index_type& _index;
+      index_type&     _index;
       outer_key_type  _ohigh, _olow;
-      bool _have_olow, _have_ohigh;
-      inner_key_type  _ihigh, _ilow;
-      bool _have_ilow, _have_ihigh;
+      bool            _have_olow, _have_ohigh;
+      outer_key_type  _ihigh, _ilow;
+      bool            _have_ilow, _have_ihigh;
     public:
       //
       // Basic interface
       //
       StridedIndexSequence(const OuterIndexSequence& seq) : _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
       {};
-      // CONTINUE: 1) fix constructors with various combinations of high/low keys; 2) provide 'have_outer_high'/'outer_high' functions;
-      //           3) fix iterators to make use of these functions; 4) fix Inner/OuterIndexSequence to behave accordingly.
-      StridedIndexSequence(index_type& index, const key_type high)  :  _index(index), _high(high) {
-        this->_have_low = false; this->_have_high = true;
-      };
-      StridedIndexSequence(index_type& index, const key_type& low, const key_type& high)  :  _index(index), _high(high), _low(low) {
-        this->_have_low = true; this->_have_high = true;
+      StridedIndexSequence(index_type& index)  :  _index(index) {
+        this->_have_olow = false; this->_have_ohigh = false;
+        this->_have_ilow = false; this->_have_ihigh = false;
       };
       virtual ~StridedIndexSequence() {};
       //
       // Extended interface
       //
-      virtual bool         empty() {return this->_index.empty();};
-      
+      index_type& index() {return this->_index;};
+      //
+      void setInnerLow(const inner_key_type& ilow) {this->_ilow = ilow; this->_have_ilow = true;};
+      //
+      void setInnerHigh(const inner_key_type& ihigh) {this->_ihigh = ihigh; this->_have_ihigh = true;};
+      //
+      void setInnerLimits(const inner_key_type& ilow, const inner_key_type& ihigh) {
+        this->_ilow = ilow; this->_have_ilow = true; this->_ihigh = ihigh; this->_have_ihigh = true;
+      };
+      //
+      void setOuterLimits(const outer_key_type& olow, const outer_key_type& ohigh) {
+        this->_olow = olow; this->_have_olow = true; this->_ohigh = ohigh; this->_have_ohigh = true;
+      };
+      //
+      void setOuterLow(const outer_key_type& olow) {this->_olow = olow; this->_have_olow = true;};
+      //
+      void setOuterHigh(const outer_key_type& ohigh) {this->_ohigh = ohigh; this->_have_ohigh = true;};
+      //
+      bool haveOuterHigh()              { return this->_have_ohigh;};
+      //
+      bool haveOuterLow()               { return this->_have_olow;};
+      //
+      const outer_key_type& outerHigh() {return this->_ohigh;};
+      //
+      const outer_key_type& outerLow()  {return this->_olow;};
+      //
+      bool haveInnerHigh()              { return this->_have_ihigh;};
+      //
+      bool haveInnerLow()               { return this->_have_ilow;};
+      //
+      const outer_key_type& innerHigh() {return this->_ihigh;};
+      //
+      const outer_key_type& innerLow()  {return this->_ilow;};
+      //
+      virtual bool         empty() {return (this->begin() == this->end());};
+      //
       virtual size_type  
       size()  {
         size_type sz = 0;
@@ -523,7 +565,7 @@ namespace ALE_X {
           os << "Viewing " << label << " sequence:" << std::endl;
         } 
         os << "[";
-        for(iterator<> i = this->begin(); i != this->end(); i++) {
+        for(iterator i = this->begin(); i != this->end(); i++) {
           os << " "<< *i;
         }
         os << " ]" << std::endl;
