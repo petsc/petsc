@@ -52,22 +52,22 @@ valex1:
 	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 
 runex1_pylith:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 debugex1_pylith:
-	-${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 valex1_pylith:
-	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 3 -file_type pylith -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} valgrind --tool=memcheck ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1b/bm1b ${EXTRA_ARGS}
 
 runex1_pylith2:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS}
 
 debugex1_pylith2:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/bm1m/bm1m ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex1_pylith_split:
-	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -interpolate 1 -output_local 1 -base_file data/splitFaultTest/splittest ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./ex1 -dim 3 -file_type pylith -use_zero_base 0 -interpolate 0 -output_local 1 -base_file data/splitFaultTest/splittest ${EXTRA_ARGS}
 
 runex1_2:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 2 -use_zero_base 1 -base_file data/ex1_2d ${EXTRA_ARGS}
