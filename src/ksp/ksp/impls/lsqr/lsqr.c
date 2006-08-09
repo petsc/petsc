@@ -144,7 +144,7 @@ static PetscErrorCode KSPSolve_LSQR(KSP ksp)
     if (SE) {
       ierr = VecCopy(W,W2);CHKERRQ(ierr);
       ierr = VecSquare(W2);CHKERRQ(ierr);
-      ierr = VecScale(W2,1/(rho*rho));CHKERRQ(ierr);
+      ierr = VecScale(W2,1.0/(rho*rho));CHKERRQ(ierr);
       ierr = VecAXPY(SE, 1.0, W2);CHKERRQ(ierr); /* SE <- SE + (w^2/rho^2) */
     }
     ierr = VecAYPX(W,-theta/rho,V1);CHKERRQ(ierr); /* w <- v - (theta/rho) w */
@@ -235,7 +235,6 @@ PetscErrorCode KSPSetFromOptions_LSQR(KSP ksp)
 {
   PetscErrorCode ierr;
   KSP_LSQR       *lsqr = (KSP_LSQR*)ksp->data;
-  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("KSP LSQR Options");CHKERRQ(ierr);
