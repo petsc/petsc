@@ -476,6 +476,8 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
   Vec            f;
   PetscErrorCode (*ff)(void),(*fd)(void);
   void           *fctx;
+  DA             da;
+  Vec            x1_loc;
 
   PetscFunctionBegin;
   ierr = MatFDColoringGetFrequency(color,&freq);CHKERRQ(ierr);
@@ -493,8 +495,7 @@ PetscErrorCode MySNESDefaultComputeJacobianColor(SNES snes,Vec x1,Mat *J,Mat *B,
       ierr  = MatFDColoringSetF(color,f);CHKERRQ(ierr);
     }
     /* Now, get x1_loc and scatter global x1 onto x1_loc */ 
-    DA     da = *(DA*)fctx;
-    Vec    x1_loc;
+    da = *(DA*)fctx;
     ierr = DAGetLocalVector(da,&x1_loc);CHKERRQ(ierr); 
     ierr = DAGlobalToLocalBegin(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr); 
     ierr = DAGlobalToLocalEnd(da,x1,INSERT_VALUES,x1_loc);CHKERRQ(ierr);   
