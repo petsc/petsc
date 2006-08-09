@@ -102,10 +102,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char sname[], const cha
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscRandomList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscRandomList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
