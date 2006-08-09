@@ -1,5 +1,5 @@
-#if !defined(__ParameterHandling_hh)
-#define __ParameterHandling_hh
+#if !defined(__ParameterHandling_hxx)
+#define __ParameterHandling_hxx
 
 // This file is not generated from SIDL, it's for internal impl use only
 #include <string>

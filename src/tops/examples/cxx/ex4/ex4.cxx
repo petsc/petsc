@@ -1,6 +1,6 @@
-#include "sidl.hh"
-#include "TOPS.hh"
-#include "server/c++/Ex4.hh"
+#include "sidl.hxx"
+#include "TOPS.hxx"
+#include "server/cxx/glue/Ex4.hxx"
 #include <iostream>
 
 int main(int argc,char **argv)

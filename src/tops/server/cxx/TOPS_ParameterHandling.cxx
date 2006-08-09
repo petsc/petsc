@@ -1,7 +1,7 @@
 // This file is not generated from SIDL, it's for internal impl use only
 
 #include <iostream>
-#include "TOPS_ParameterHandling.hh"
+#include "TOPS_ParameterHandling.hxx"
 
 void processTOPSOptions(std::string options) {
   std::string key = "", val = ""; 

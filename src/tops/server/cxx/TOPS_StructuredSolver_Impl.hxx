@@ -1,49 +1,63 @@
 // 
-// File:          TOPS_StructuredSolver_Impl.hh
+// File:          TOPS_StructuredSolver_Impl.hxx
 // Symbol:        TOPS.StructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for TOPS.StructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
 
-#ifndef included_TOPS_StructuredSolver_Impl_hh
-#define included_TOPS_StructuredSolver_Impl_hh
+#ifndef included_TOPS_StructuredSolver_Impl_hxx
+#define included_TOPS_StructuredSolver_Impl_hxx
 
-#ifndef included_sidl_cxx_hh
-#include "sidl_cxx.hh"
+#ifndef included_sidl_cxx_hxx
+#include "sidl_cxx.hxx"
 #endif
 #ifndef included_TOPS_StructuredSolver_IOR_h
 #include "TOPS_StructuredSolver_IOR.h"
 #endif
-// 
-// Includes for all method dependencies.
-// 
-#ifndef included_TOPS_StructuredSolver_hh
-#include "TOPS_StructuredSolver.hh"
+#ifndef included_TOPS_Structured_Solver_hxx
+#include "TOPS_Structured_Solver.hxx"
 #endif
-#ifndef included_gov_cca_CCAException_hh
-#include "gov_cca_CCAException.hh"
+#ifndef included_TOPS_StructuredSolver_hxx
+#include "TOPS_StructuredSolver.hxx"
 #endif
-#ifndef included_gov_cca_Services_hh
-#include "gov_cca_Services.hh"
+#ifndef included_gov_cca_CCAException_hxx
+#include "gov_cca_CCAException.hxx"
 #endif
-#ifndef included_sidl_BaseInterface_hh
-#include "sidl_BaseInterface.hh"
+#ifndef included_gov_cca_Component_hxx
+#include "gov_cca_Component.hxx"
 #endif
-#ifndef included_sidl_ClassInfo_hh
-#include "sidl_ClassInfo.hh"
+#ifndef included_gov_cca_Services_hxx
+#include "gov_cca_Services.hxx"
+#endif
+#ifndef included_gov_cca_ports_ParameterGetListener_hxx
+#include "gov_cca_ports_ParameterGetListener.hxx"
+#endif
+#ifndef included_gov_cca_ports_ParameterSetListener_hxx
+#include "gov_cca_ports_ParameterSetListener.hxx"
+#endif
+#ifndef included_sidl_BaseClass_hxx
+#include "sidl_BaseClass.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
+#endif
+#ifndef included_sidl_RuntimeException_hxx
+#include "sidl_RuntimeException.hxx"
 #endif
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._includes)
 #include "petscdmmg.h"
-#include "TOPS.hh"
-#include "gov_cca_ports_ParameterPortFactory.hh"
-#include "gov_cca_ports_ParameterPort.hh"
+#include "TOPS.hxx"
+#include "gov_cca_ports_ParameterPortFactory.hxx"
+#include "gov_cca_ports_ParameterPort.hxx"
 // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
 
 namespace TOPS { 
@@ -51,16 +65,17 @@ namespace TOPS {
   /**
    * Symbol "TOPS.StructuredSolver" (version 0.0.0)
    */
-  class StructuredSolver_impl
+  class StructuredSolver_impl : public virtual ::TOPS::StructuredSolver 
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._inherits)
   // Insert-Code-Here {TOPS.StructuredSolver._inherits} (optional inheritance here)
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._inherits)
   {
 
-  private:
-    // Pointer back to IOR.
-    // Use this to dispatch back through IOR vtable.
-    StructuredSolver self;
+  // All data marked protected will be accessable by 
+  // descendant Impl classes
+  protected:
+
+    bool _wrapped;
 
     // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._implementation)
     DMMG                                  *dmmg;
@@ -76,17 +91,14 @@ namespace TOPS {
     int setupParameterPort();
     // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._implementation)
 
-  private:
-    // private default constructor (required)
-    StructuredSolver_impl() 
-    {} 
-
   public:
+    // default constructor, used for data wrapping(required)
+    StructuredSolver_impl();
     // sidl constructor (required)
     // Note: alternate Skel constructor doesn't call addref()
     // (fixes bug #275)
-    StructuredSolver_impl( struct TOPS_StructuredSolver__object * s ) : self(s,
-      true) { _ctor(); }
+    StructuredSolver_impl( struct TOPS_StructuredSolver__object * s ) : 
+      StubBase(s,true), _wrapped(false) { _ctor(); }
 
     // user defined construction
     void _ctor();
@@ -97,6 +109,9 @@ namespace TOPS {
     // user defined destruction
     void _dtor();
 
+    // true if this object was created by a user newing the impl
+    inline bool _isWrapped() {return _wrapped;}
+
     // static class initializer
     static void _load();
 
@@ -106,200 +121,179 @@ namespace TOPS {
      * user defined non-static method.
      */
     ::gov::cca::Services
-    getServices() throw () 
-    ;
+    getServices_impl() ;
     /**
      * user defined non-static method.
      */
-    void
-    Initialize (
-      /* in */ ::sidl::array< ::std::string> args
+    int32_t
+    dimen_impl() ;
+    /**
+     * user defined non-static method.
+     */
+    int32_t
+    length_impl (
+      /* in */int32_t a
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     void
-    solve() throw () 
+    setDimen_impl (
+      /* in */int32_t dim
+    )
     ;
+
     /**
      * user defined non-static method.
      */
     void
-    setBlockSize (
-      /* in */ int32_t bs
+    setLength_impl (
+      /* in */int32_t a,
+      /* in */int32_t l
     )
-    throw () 
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    setStencilWidth_impl (
+      /* in */int32_t width
+    )
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    int32_t
+    getStencilWidth_impl() ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    setLevels_impl (
+      /* in */int32_t levels
+    )
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    Initialize_impl (
+      /* in array<string> */::sidl::array< ::std::string> args
+    )
+    ;
+
+    /**
+     * user defined non-static method.
+     */
+    void
+    solve_impl() ;
+    /**
+     * user defined non-static method.
+     */
+    void
+    setBlockSize_impl (
+      /* in */int32_t bs
+    )
     ;
 
     /**
      * user defined non-static method.
      */
     ::sidl::array<double>
-    getSolution() throw () 
-    ;
+    getSolution_impl() ;
     /**
      * user defined non-static method.
      */
     void
-    setSolution (
-      /* in */ ::sidl::array<double> location
+    setSolution_impl (
+      /* in array<double> */::sidl::array<double> location
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     void
-    setValue (
-      /* in */ const ::std::string& key,
-      /* in */ const ::std::string& value
+    setValue_impl (
+      /* in */const ::std::string& key,
+      /* in */const ::std::string& value
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     void
-    setValue (
-      /* in */ const ::std::string& key,
-      /* in */ int32_t value
+    setValue_impl (
+      /* in */const ::std::string& key,
+      /* in */int32_t value
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     void
-    setValue (
-      /* in */ const ::std::string& key,
-      /* in */ bool value
+    setValue_impl (
+      /* in */const ::std::string& key,
+      /* in */bool value
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     void
-    setValue (
-      /* in */ const ::std::string& key,
-      /* in */ double value
+    setValue_impl (
+      /* in */const ::std::string& key,
+      /* in */double value
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     ::std::string
-    getValue (
-      /* in */ const ::std::string& key
+    getValue_impl (
+      /* in */const ::std::string& key
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     int32_t
-    getValueInt (
-      /* in */ const ::std::string& key
+    getValueInt_impl (
+      /* in */const ::std::string& key
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     bool
-    getValueBool (
-      /* in */ const ::std::string& key
+    getValueBool_impl (
+      /* in */const ::std::string& key
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     double
-    getValueDouble (
-      /* in */ const ::std::string& key
+    getValueDouble_impl (
+      /* in */const ::std::string& key
     )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    dimen() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    length (
-      /* in */ int32_t a
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setDimen (
-      /* in */ int32_t dim
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setLength (
-      /* in */ int32_t a,
-      /* in */ int32_t l
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    void
-    setStencilWidth (
-      /* in */ int32_t width
-    )
-    throw () 
-    ;
-
-    /**
-     * user defined non-static method.
-     */
-    int32_t
-    getStencilWidth() throw () 
-    ;
-    /**
-     * user defined non-static method.
-     */
-    void
-    setLevels (
-      /* in */ int32_t levels
-    )
-    throw () 
     ;
 
 
     /**
-     * Starts up a component presence in the calling framework.
+     *  Starts up a component presence in the calling framework.
      * @param services the component instance's handle on the framework world.
      * Contracts concerning Svc and setServices:
      * 
@@ -316,40 +310,39 @@ namespace TOPS {
      * setServices.
      */
     void
-    setServices (
-      /* in */ ::gov::cca::Services services
+    setServices_impl (
+      /* in */::gov::cca::Services services
     )
-    throw ( 
-      ::gov::cca::CCAException
-    );
-
-
-    /**
-     * Inform the listener that someone is about to fetch their 
-     * typemap. The return should be true if the listener
-     * has changed the ParameterPort definitions.
-     */
-    bool
-    updateParameterPort (
-      /* in */ const ::std::string& portName
-    )
-    throw () 
+    // throws:
+    //     ::gov::cca::CCAException
+    //     ::sidl::RuntimeException
     ;
 
 
     /**
-     * The component wishing to be told after a parameter is changed
+     *  Inform the listener that someone is about to fetch their 
+     * typemap. The return should be true if the listener
+     * has changed the ParameterPort definitions.
+     */
+    bool
+    updateParameterPort_impl (
+      /* in */const ::std::string& portName
+    )
+    ;
+
+
+    /**
+     *  The component wishing to be told after a parameter is changed
      * implements this function.
      * @param portName the name of the port (typemap) on which the
      * value was set.
      * @param fieldName the name of the value in the typemap.
      */
     void
-    updatedParameterValue (
-      /* in */ const ::std::string& portName,
-      /* in */ const ::std::string& fieldName
+    updatedParameterValue_impl (
+      /* in */const ::std::string& portName,
+      /* in */const ::std::string& fieldName
     )
-    throw () 
     ;
 
   };  // end class StructuredSolver_impl
