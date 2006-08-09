@@ -27,7 +27,11 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetInt(PETSC_NULL,"-view_randomvalues",&view_rank,PETSC_NULL);CHKERRQ(ierr);
   
   ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rnd);CHKERRQ(ierr);
-  ierr = PetscRandomSetType(rnd,PETSCRAND48);CHKERRQ(ierr); 
+#if defined(PETSC_HAVE_DRAND48)
+  ierr = PetscRandomSetType(rnd,PETSCRAND48);CHKERRQ(ierr);
+#elif defined(PETSC_HAVE_RAND)
+  ierr = PetscRandomSetType(rnd,PETSCRAND);CHKERRQ(ierr);
+#endif
   ierr = PetscRandomSetFromOptions(rnd);CHKERRQ(ierr); 
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);

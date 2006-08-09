@@ -1,2 +1,2 @@
 #! /bin/csh
-set TEST=buildexamples_
+set TESTMODE=buildexamples
