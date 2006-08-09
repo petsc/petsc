@@ -25,6 +25,7 @@
 */
 #define MAXOPTIONS 512
 #define MAXALIASES 25
+#define MAXOPTIONSMONITORS 5
 
 typedef struct {
   int        N,argc,Naliases;
@@ -33,9 +34,27 @@ typedef struct {
   PetscTruth used[MAXOPTIONS];
   PetscTruth namegiven;
   char       programname[PETSC_MAX_PATH_LEN]; /* HP includes entire path in name */
+
+  /* --------User (or default) routines (most return -1 on error) --------*/
+  PetscErrorCode (*monitor[MAXOPTIONSMONITORS])(const char[], const char[], void*); /* returns control to user after */
+  PetscErrorCode (*monitordestroy[MAXOPTIONSMONITORS])(void*);         /* */
+  void           *monitorcontext[MAXOPTIONSMONITORS];                  /* to pass arbitrary user data into monitor */
+  PetscInt       numbermonitors;                                       /* to, for instance, detect options being set */
+
 } PetscOptionsTable;
 
+
 static PetscOptionsTable *options = 0;
+
+/*
+    Options events monitor
+*/
+#define PetscOptionsMonitor(name,value)                                     \
+        { PetscErrorCode _ierr; PetscInt _i,_im = options->numbermonitors; \
+          for (_i=0; _i<_im; _i++) {\
+            _ierr = (*options->monitor[_i])(name, value, options->monitorcontext[_i]);CHKERRQ(_ierr); \
+	  } \
+	}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsAtoi"
@@ -315,6 +334,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
    the user does not typically need to call this routine. PetscOptionsInsert()
    can be called several times, adding additional entries into the database.
 
+   Options Database Keys:
++   -options_monitor <optional filename> - print options names and values as they are set
+
    Level: advanced
 
    Concepts: options database^adding
@@ -327,6 +349,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
   PetscToken     *token;
+  char           monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewer    monviewer;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -348,6 +373,25 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
     } else {
       ierr = PetscInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");CHKERRQ(ierr);
     }
+
+    ierr = PetscOptionsName("-options_cancelmonitors","Remove any hardwired monitor routines","PetscOptionsClearMonitor",&flg);CHKERRQ(ierr);
+    /* -----------------------------------------------------------------------*/
+    /*
+      Cancels all monitors hardwired into code before call to PetscOptionsInsert()
+    */
+    if (flg) {
+      ierr = PetscOptionsClearMonitor();CHKERRQ(ierr);
+    }
+
+    /*
+      Prints the name and value of each option being set
+    */
+    ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    if (flg && (!options->monitor)) {
+      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = PetscOptionsSetMonitor(PetscOptionsDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    }
+
   }
 
   /* insert environmental options */
@@ -641,6 +685,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
   } else {options->values[n] = 0;}
   options->used[n] = PETSC_FALSE;
   options->N++;
+  PetscOptionsMonitor(name,value);
   PetscFunctionReturn(0);
 }
 
@@ -682,6 +727,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearValue(const char iname[])
     ierr  = PetscStrgrt(names[i],name,&gt);CHKERRQ(ierr);
     if (match) {
       if (options->values[i]) free(options->values[i]);
+      PetscOptionsMonitor(name,"");
       break;
     } else if (gt) {
       PetscFunctionReturn(0); /* it was not listed */
@@ -1584,5 +1630,124 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
   options->namegiven = PETSC_FALSE;
   options->N         = 0;
   options->Naliases  = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsDefaultMonitor"
+/*@C
+   PetscOptionsDefaultMonitor - Print all options set events.
+
+   Collective on PETSC_COMM_WORLD
+
+   Input Parameters:
++  name  - option name string
+.  value - option value string
+-  dummy - unused monitor context 
+
+   Level: intermediate
+
+.keywords: PetscOptions, default, monitor
+
+.seealso: PetscOptionsSetMonitor()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char name[], const char value[], void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscViewer    viewer = (PetscViewer) dummy;
+
+  PetscFunctionBegin;
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD);
+  ierr = PetscViewerASCIIPrintf(viewer,"Option was set: %s = %s\n",name,value);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsSetMonitor"
+/*@C
+   PetscOptionsSetMonitor - Sets an ADDITIONAL function to be called at every method that
+   modified the PETSc options database.
+      
+   Not collective
+
+   Input Parameters:
++  monitor - pointer to function (if this is PETSC_NULL, it turns off monitoring
+.  mctx    - [optional] context for private data for the
+             monitor routine (use PETSC_NULL if no context is desired)
+-  monitordestroy - [optional] routine that frees monitor context
+          (may be PETSC_NULL)
+
+   Calling Sequence of monitor:
+$     monitor (const char name[], const char value[], void *mctx)
+
++  name - option name string
+.  value - option value string
+-  mctx  - optional monitoring context, as set by PetscOptionsSetMonitor()
+
+   Options Database Keys:
++    -options_monitor    - sets PetscOptionsDefaultMonitor()
+-    -options_cancelmonitors - cancels all monitors that have
+                          been hardwired into a code by 
+                          calls to PetscOptionsSetMonitor(), but
+                          does not cancel those set via
+                          the options database.
+
+   Notes:  
+   The default is to do nothing.  To print the name and value of options 
+   being inserted into the database, use PetscOptionsDefaultMonitor() as the monitoring routine, 
+   with a null monitoring context. 
+
+   Several different monitoring routines may be set by calling
+   PetscOptionsSetMonitor() multiple times; all will be called in the 
+   order in which they were set.
+
+   Level: beginner
+
+.keywords: PetscOptions, set, monitor
+
+.seealso: PetscOptionsDefaultMonitor(), PetscOptionsClearMonitor()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+{
+  PetscFunctionBegin;
+  if (options->numbermonitors >= MAXOPTIONSMONITORS) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many PetscOptions monitors set");
+  }
+  options->monitor[options->numbermonitors]           = monitor;
+  options->monitordestroy[options->numbermonitors]    = monitordestroy;
+  options->monitorcontext[options->numbermonitors++]  = (void*)mctx;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsClearMonitor"
+/*@
+   PetscOptionsClearMonitor - Clears all monitors for a PetscOptions object.
+
+   Not collective 
+
+   Options Database Key:
+.  -options_cancelmonitors - Cancels all monitors that have
+    been hardwired into a code by calls to PetscOptionsSetMonitor(), 
+    but does not cancel those set via the options database.
+
+   Level: intermediate
+
+.keywords: PetscOptions, set, monitor
+
+.seealso: PetscOptionsDefaultMonitor(), PetscOptionsSetMonitor()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearMonitor()
+{
+  PetscErrorCode ierr;
+  PetscInt       i;
+
+  PetscFunctionBegin;
+  for (i=0; i<options->numbermonitors; i++) {
+    if (options->monitordestroy[i]) {
+      ierr = (*options->monitordestroy[i])(options->monitorcontext[i]);CHKERRQ(ierr);
+    }
+  }
+  options->numbermonitors = 0;
   PetscFunctionReturn(0);
 }
