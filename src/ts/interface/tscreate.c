@@ -75,7 +75,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->initial_time_step  = t->time_step;
   t->steps              = 0;
   t->ptime              = 0.0;
-  t->ptime_Alhs         = -1.0;
   t->linear_its         = 0;
   t->nonlinear_its      = 0;
   t->work               = PETSC_NULL;
