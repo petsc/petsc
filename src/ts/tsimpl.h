@@ -18,6 +18,7 @@
 
 struct _TSOps {
   PetscErrorCode (*rhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *);
+  PetscErrorCode (*lhsmatrix)(TS, PetscReal, Mat *, Mat *, MatStructure *, void *);
   PetscErrorCode (*rhsfunction)(TS, PetscReal, Vec, Vec, void *);
   PetscErrorCode (*rhsjacobian)(TS, PetscReal, Vec, Mat *, Mat *, MatStructure *, void *);
   PetscErrorCode (*prestep)(TS);
@@ -50,11 +51,12 @@ struct _p_TS {
   /* ---------------------Linear Iteration---------------------------------*/
   KSP ksp;
   Mat A, B;                                         /* user provided matrix and preconditioner */
+  Mat Alhs, Blhs;                    /* user provided left hand side matrix and preconditioner */
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;
   void *funP;
-  void *jacP;
+  void *jacP,*jacPlhs;
   void *bcP;
 
 

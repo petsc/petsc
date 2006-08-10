@@ -57,9 +57,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->numbermonitors     = 0;
   t->isExplicit         = PETSC_NULL;
   t->Iindex             = PETSC_NULL;
-  t->ksp               = PETSC_NULL;
+  t->ksp                = PETSC_NULL;
   t->A                  = PETSC_NULL;
   t->B                  = PETSC_NULL;
+  t->Alhs               = PETSC_NULL;
+  t->Blhs               = PETSC_NULL;
   t->snes               = PETSC_NULL;
   t->funP               = PETSC_NULL;
   t->jacP               = PETSC_NULL;
@@ -73,6 +75,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->initial_time_step  = t->time_step;
   t->steps              = 0;
   t->ptime              = 0.0;
+  t->ptime_Alhs         = -1.0;
   t->linear_its         = 0;
   t->nonlinear_its      = 0;
   t->work               = PETSC_NULL;
@@ -82,6 +85,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   PetscFunctionReturn(0);
 }
 
+/* Set A = 1/dt*Alhs - A, B = 1/dt*Blhs - B */
 #undef __FUNCT__  
 #define __FUNCT__ "TSScaleShiftMatrices"
 PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
@@ -94,11 +98,19 @@ PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
   ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);
-    ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
+    if (ts->Alhs){
+      ierr = MatAXPY(ts->A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
+    }
   }
   if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
     ierr = MatScale(ts->B,-1.0);CHKERRQ(ierr);
-    ierr = MatShift(ts->B,mdt);CHKERRQ(ierr);
+    if (ts->Blhs){
+      ierr = MatAXPY(ts->B,mdt,ts->Blhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      ierr = MatShift(ts->B,mdt);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
