@@ -102,10 +102,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char sname[], const cha
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscStrcpy(fullname, path);CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, ":");CHKERRQ(ierr);
-  ierr = PetscStrcat(fullname, name);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PetscRandomList, sname, fullname, (void (*)(void)) function);CHKERRQ(ierr);
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PetscRandomList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -137,7 +135,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void)
 }
 
 EXTERN_C_BEGIN
-#if defined(PETSC_HAVE_DRAND)
+#if defined(PETSC_HAVE_RAND)
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate_Rand(PetscRandom);
 #endif
 #if defined(PETSC_HAVE_DRAND48)
@@ -169,7 +167,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterAll(const char path[])
 
   PetscFunctionBegin;
   PetscRandomRegisterAllCalled = PETSC_TRUE;
-#if defined(PETSC_HAVE_DRAND)
+#if defined(PETSC_HAVE_RAND)
   ierr = PetscRandomRegisterDynamic(PETSCRAND,  path,"PetscRandomCreate_Rand",  PetscRandomCreate_Rand);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_DRAND48)

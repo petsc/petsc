@@ -57,7 +57,7 @@ popd
 
 set DATAFILESPATH=/home/petsc/datafiles
 set NICE=''
-set TEST='testexamples_'
+set TESTMODE='testexamples'
 # possibly overwrite the values above
 if (${#argv} >= 1 && -f ${nPETSC_DIR}/config/${ARCH}) then
   source ${nPETSC_DIR}/config/${ARCH}
@@ -94,7 +94,7 @@ tar rf buildoutput.tar test.log
 # Run examples
 rm -f examples.log
 echo "Build on $MACH $PETSC_ARCH  `date` " > examples.log
-$NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests DATAFILESPATH=$DATAFILESPATH |& grep -v 'up to date' >>& examples.log
+$NICE make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  alltests TESTMODE=$TESTMODE DATAFILESPATH=$DATAFILESPATH |& grep -v 'up to date' >>& examples.log
 echo '******************************************************' >>& $nPETSC_DIR/examples.log
 
 set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/bmake/$PETSC_ARCH/petscconf.h`

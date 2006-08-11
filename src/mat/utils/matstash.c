@@ -221,12 +221,11 @@ static PetscErrorCode MatStashExpand_Private(MatStash *stash,PetscInt incr)
   if (newnmax  < (stash->nmax + incr)) newnmax += 2*incr;
 
   /* Get a MatStashSpace and attach it to stash */
-  if (!stash->nmax) { /* new stash or resuing stash->oldnmax */
-    ierr = PetscMatStashSpaceGet(bs2,newnmax,&stash->space_head);CHKERRQ(ierr);
-    stash->space = stash->space_head;
-  } else {
-    ierr = PetscMatStashSpaceGet(bs2,newnmax,&stash->space);CHKERRQ(ierr);
+  ierr = PetscMatStashSpaceGet(bs2,newnmax,&stash->space);CHKERRQ(ierr);
+  if (!stash->space_head) { /* new stash or resuing stash->oldnmax */
+    stash->space_head = stash->space;
   }
+
   stash->reallocs++;
   stash->nmax = newnmax;
   PetscFunctionReturn(0);
@@ -531,7 +530,7 @@ PetscErrorCode MatStashScatterBegin_Private(MatStash *stash,PetscInt *owners)
         PetscInt  k;
         MatScalar *buf1,*buf2;
         buf1 = svalues+bs2*startv[j];
-        buf2 = space->val + bs2*i;                      
+        buf2 = space->val + bs2*l;
         for (k=0; k<bs2; k++){ buf1[k] = buf2[k]; }
       }
       sindices[starti[j]]             = sp_idx[l]; 

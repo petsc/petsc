@@ -291,6 +291,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (
 
   PetscFunctionBegin;
   shell          = (PC_Shell*)pc->data;
+  if (apply) pc->ops->applyBA  = PCApplyBA_Shell;
+  else       pc->ops->applyBA  = 0;
   shell->applyBA = apply;
   PetscFunctionReturn(0);
 }
@@ -880,7 +882,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   pc->name         = 0;
 
   pc->ops->apply           = PCApply_Shell;
-  pc->ops->applyBA         = PCApplyBA_Shell;
   pc->ops->view            = PCView_Shell;
   pc->ops->applytranspose  = PCApplyTranspose_Shell;
   pc->ops->applyrichardson = 0;

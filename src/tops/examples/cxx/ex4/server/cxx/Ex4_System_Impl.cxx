@@ -1,59 +1,90 @@
 // 
-// File:          Ex4_System_Impl.cc
+// File:          Ex4_System_Impl.cxx
 // Symbol:        Ex4.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for Ex4.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
-#include "Ex4_System_Impl.hh"
+#include "Ex4_System_Impl.hxx"
 
+// 
+// Includes for all method dependencies.
+// 
+#ifndef included_TOPS_Matrix_hxx
+#include "TOPS_Matrix.hxx"
+#endif
+#ifndef included_gov_cca_CCAException_hxx
+#include "gov_cca_CCAException.hxx"
+#endif
+#ifndef included_gov_cca_Services_hxx
+#include "gov_cca_Services.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
+#endif
+#ifndef included_sidl_RuntimeException_hxx
+#include "sidl_RuntimeException.hxx"
+#endif
+#ifndef included_sidl_NotImplementedException_hxx
+#include "sidl_NotImplementedException.hxx"
+#endif
 // DO-NOT-DELETE splicer.begin(Ex4.System._includes)
 // Insert-Code-Here {Ex4.System._includes} (additional includes or code)
 #include <iostream>
 // DO-NOT-DELETE splicer.end(Ex4.System._includes)
 
-// user-defined constructor.
+// speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
+Ex4::System_impl::System_impl() : StubBase(reinterpret_cast< 
+  void*>(::Ex4::System::_wrapObj(reinterpret_cast< void*>(this))),false) ,
+  _wrapped(true){ 
+  // DO-NOT-DELETE splicer.begin(Ex4.System._ctor2)
+  // Insert-Code-Here {Ex4.System._ctor2} (ctor2)
+  // DO-NOT-DELETE splicer.end(Ex4.System._ctor2)
+}
+
+// user defined constructor
 void Ex4::System_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(Ex4.System._ctor)
   this->n = 4;
   // DO-NOT-DELETE splicer.end(Ex4.System._ctor)
 }
 
-// user-defined destructor.
+// user defined destructor
 void Ex4::System_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(Ex4.System._dtor)
   // Insert-Code-Here {Ex4.System._dtor} (destructor)
   // DO-NOT-DELETE splicer.end(Ex4.System._dtor)
 }
 
-// static class initializer.
+// static class initializer
 void Ex4::System_impl::_load() {
   // DO-NOT-DELETE splicer.begin(Ex4.System._load)
   // Insert-Code-Here {Ex4.System._load} (class initialization)
   // DO-NOT-DELETE splicer.end(Ex4.System._load)
 }
 
-// user-defined static methods: (none)
+// user defined static methods: (none)
 
-// user-defined non-static methods:
+// user defined non-static methods:
 /**
  * Method:  computeMatrix[]
  */
 void
-Ex4::System_impl::computeMatrix (
-  /* in */ ::TOPS::Matrix J,
-  /* in */ ::TOPS::Matrix B ) 
-throw () 
+Ex4::System_impl::computeMatrix_impl (
+  /* in */::TOPS::Matrix J,
+  /* in */::TOPS::Matrix B ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.computeMatrix)
 #undef __FUNCT__
 #define __FUNCT__ "Ex4::System_impl::computeMatrix"
 
-  TOPS::Unstructured::Matrix BB = (TOPS::Unstructured::Matrix)B;
+  TOPS::Unstructured::Matrix BB = babel_cast< TOPS::Unstructured::Matrix >(B);
   int rank; MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   int size; MPI_Comm_size(MPI_COMM_WORLD,&size);
   double hx     = 1.0/(double)(this->n*size);
@@ -96,8 +127,7 @@ throw ()
  * Method:  initializeOnce[]
  */
 void
-Ex4::System_impl::initializeOnce ()
-throw () 
+Ex4::System_impl::initializeOnce_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.initializeOnce)
@@ -119,9 +149,8 @@ throw ()
  * Method:  computeRightHandSide[]
  */
 void
-Ex4::System_impl::computeRightHandSide (
-  /* in */ ::sidl::array<double> b ) 
-throw () 
+Ex4::System_impl::computeRightHandSide_impl (
+  /* in array<double> */::sidl::array<double> b ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.computeRightHandSide)
 #undef __FUNCT__
@@ -140,7 +169,7 @@ throw ()
 }
 
 /**
- * Starts up a component presence in the calling framework.
+ *  Starts up a component presence in the calling framework.
  * @param services the component instance's handle on the framework world.
  * Contracts concerning Svc and setServices:
  * 
@@ -157,11 +186,12 @@ throw ()
  * setServices.
  */
 void
-Ex4::System_impl::setServices (
-  /* in */ ::gov::cca::Services services ) 
-throw ( 
-  ::gov::cca::CCAException
-){
+Ex4::System_impl::setServices_impl (
+  /* in */::gov::cca::Services services ) 
+// throws:
+//     ::gov::cca::CCAException
+//     ::sidl::RuntimeException
+{
   // DO-NOT-DELETE splicer.begin(Ex4.System.setServices)
   // Insert-Code-Here {Ex4.System.setServices} (setServices method)
 #undef __FUNCT__
@@ -169,9 +199,9 @@ throw (
 
   myServices = services;
 
-  gov::cca::Port p = self;      //  Babel required casting
+  gov::cca::Port p = (*this);      //  Babel required casting
   if(p._is_nil()) {
-    fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
+    fprintf(stderr, "Error:: %s:%d: Error casting (*this) to gov::cca::Port \n",
 	    __FILE__, __LINE__);
     return;
   }
@@ -204,14 +234,14 @@ throw (
 }
 
 /**
+ *  
  * Execute some encapsulated functionality on the component. 
  * Return 0 if ok, -1 if internal error but component may be 
  * used further, and -2 if error so severe that component cannot
  * be further used safely.
  */
 int32_t
-Ex4::System_impl::go ()
-throw () 
+Ex4::System_impl::go_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(Ex4.System.go)
@@ -227,7 +257,7 @@ throw ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex4");
 
-  TOPS::Solver solver = myServices.getPort("TOPS.Unstructured.Solver");
+  TOPS::Unstructured::Solver solver = babel_cast< TOPS::Unstructured::Solver>( myServices.getPort("TOPS.Unstructured.Solver") );
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
               << "possibly not connected." << std::endl;

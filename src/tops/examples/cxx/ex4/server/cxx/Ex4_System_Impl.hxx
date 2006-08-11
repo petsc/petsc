@@ -1,51 +1,68 @@
 // 
-// File:          Ex4_System_Impl.hh
+// File:          Ex4_System_Impl.hxx
 // Symbol:        Ex4.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for Ex4.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
 
-#ifndef included_Ex4_System_Impl_hh
-#define included_Ex4_System_Impl_hh
+#ifndef included_Ex4_System_Impl_hxx
+#define included_Ex4_System_Impl_hxx
 
-#ifndef included_sidl_cxx_hh
-#include "sidl_cxx.hh"
+#ifndef included_sidl_cxx_hxx
+#include "sidl_cxx.hxx"
 #endif
 #ifndef included_Ex4_System_IOR_h
 #include "Ex4_System_IOR.h"
 #endif
-// 
-// Includes for all method dependencies.
-// 
-#ifndef included_Ex4_System_hh
-#include "Ex4_System.hh"
+#ifndef included_Ex4_System_hxx
+#include "Ex4_System.hxx"
 #endif
-#ifndef included_TOPS_Matrix_hh
-#include "TOPS_Matrix.hh"
+#ifndef included_TOPS_Matrix_hxx
+#include "TOPS_Matrix.hxx"
 #endif
-#ifndef included_gov_cca_CCAException_hh
-#include "gov_cca_CCAException.hh"
+#ifndef included_TOPS_System_Compute_Matrix_hxx
+#include "TOPS_System_Compute_Matrix.hxx"
 #endif
-#ifndef included_gov_cca_Services_hh
-#include "gov_cca_Services.hh"
+#ifndef included_TOPS_System_Compute_RightHandSide_hxx
+#include "TOPS_System_Compute_RightHandSide.hxx"
 #endif
-#ifndef included_sidl_BaseInterface_hh
-#include "sidl_BaseInterface.hh"
+#ifndef included_TOPS_System_Initialize_Once_hxx
+#include "TOPS_System_Initialize_Once.hxx"
 #endif
-#ifndef included_sidl_ClassInfo_hh
-#include "sidl_ClassInfo.hh"
+#ifndef included_gov_cca_CCAException_hxx
+#include "gov_cca_CCAException.hxx"
+#endif
+#ifndef included_gov_cca_Component_hxx
+#include "gov_cca_Component.hxx"
+#endif
+#ifndef included_gov_cca_Services_hxx
+#include "gov_cca_Services.hxx"
+#endif
+#ifndef included_gov_cca_ports_GoPort_hxx
+#include "gov_cca_ports_GoPort.hxx"
+#endif
+#ifndef included_sidl_BaseClass_hxx
+#include "sidl_BaseClass.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
+#endif
+#ifndef included_sidl_RuntimeException_hxx
+#include "sidl_RuntimeException.hxx"
 #endif
 
 
 // DO-NOT-DELETE splicer.begin(Ex4.System._includes)
 #define MPICH_IGNORE_CXX_SEEK
 #include "mpi.h"
-#include "TOPS.hh"
+#include "TOPS.hxx"
 // DO-NOT-DELETE splicer.end(Ex4.System._includes)
 
 namespace Ex4 { 
@@ -53,16 +70,17 @@ namespace Ex4 {
   /**
    * Symbol "Ex4.System" (version 0.0.0)
    */
-  class System_impl
+  class System_impl : public virtual ::Ex4::System 
   // DO-NOT-DELETE splicer.begin(Ex4.System._inherits)
   // Insert-Code-Here {Ex4.System._inherits} (optional inheritance here)
   // DO-NOT-DELETE splicer.end(Ex4.System._inherits)
   {
 
-  private:
-    // Pointer back to IOR.
-    // Use this to dispatch back through IOR vtable.
-    System self;
+  // All data marked protected will be accessable by 
+  // descendant Impl classes
+  protected:
+
+    bool _wrapped;
 
     // DO-NOT-DELETE splicer.begin(Ex4.System._implementation)
     TOPS::Unstructured::Solver solver;
@@ -70,16 +88,14 @@ namespace Ex4 {
     int                        n;
     // DO-NOT-DELETE splicer.end(Ex4.System._implementation)
 
-  private:
-    // private default constructor (required)
-    System_impl() 
-    {} 
-
   public:
+    // default constructor, used for data wrapping(required)
+    System_impl();
     // sidl constructor (required)
     // Note: alternate Skel constructor doesn't call addref()
     // (fixes bug #275)
-    System_impl( struct Ex4_System__object * s ) : self(s,true) { _ctor(); }
+    System_impl( struct Ex4_System__object * s ) : StubBase(s,true),
+      _wrapped(false) { _ctor(); }
 
     // user defined construction
     void _ctor();
@@ -90,6 +106,9 @@ namespace Ex4 {
     // user defined destruction
     void _dtor();
 
+    // true if this object was created by a user newing the impl
+    inline bool _isWrapped() {return _wrapped;}
+
     // static class initializer
     static void _load();
 
@@ -99,32 +118,29 @@ namespace Ex4 {
      * user defined non-static method.
      */
     void
-    computeMatrix (
-      /* in */ ::TOPS::Matrix J,
-      /* in */ ::TOPS::Matrix B
+    computeMatrix_impl (
+      /* in */::TOPS::Matrix J,
+      /* in */::TOPS::Matrix B
     )
-    throw () 
     ;
 
     /**
      * user defined non-static method.
      */
     void
-    initializeOnce() throw () 
-    ;
+    initializeOnce_impl() ;
     /**
      * user defined non-static method.
      */
     void
-    computeRightHandSide (
-      /* in */ ::sidl::array<double> b
+    computeRightHandSide_impl (
+      /* in array<double> */::sidl::array<double> b
     )
-    throw () 
     ;
 
 
     /**
-     * Starts up a component presence in the calling framework.
+     *  Starts up a component presence in the calling framework.
      * @param services the component instance's handle on the framework world.
      * Contracts concerning Svc and setServices:
      * 
@@ -141,23 +157,24 @@ namespace Ex4 {
      * setServices.
      */
     void
-    setServices (
-      /* in */ ::gov::cca::Services services
+    setServices_impl (
+      /* in */::gov::cca::Services services
     )
-    throw ( 
-      ::gov::cca::CCAException
-    );
+    // throws:
+    //     ::gov::cca::CCAException
+    //     ::sidl::RuntimeException
+    ;
 
 
     /**
+     *  
      * Execute some encapsulated functionality on the component. 
      * Return 0 if ok, -1 if internal error but component may be 
      * used further, and -2 if error so severe that component cannot
      * be further used safely.
      */
     int32_t
-    go() throw () 
-    ;
+    go_impl() ;
   };  // end class System_impl
 
 } // end namespace Ex4

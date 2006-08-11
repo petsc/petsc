@@ -38,11 +38,18 @@ static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
-    ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
+    /* set rhs = 1/dt*Alhs*sol */
+    if (ts->Alhs){
+      ierr = MatMult(ts->Alhs,sol,rhs);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
+    }
     ierr = VecScale(rhs,mdt);CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
+
+    /* solve (1/dt*Alhs - A)*update = rhs */
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += its;
@@ -67,7 +74,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   Vec            sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
-  PetscScalar    mdt = 1.0/ts->time_step;
+  PetscReal      mdt = 1.0/ts->time_step,t_mid;
   MatStructure   str;
   KSP            ksp;
 
@@ -80,17 +87,26 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
-    ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
+    /* set rhs = 1/dt*Alhs(t_mid)*sol */
+    if (ts->Alhs){
+      t_mid = ts->ptime+ts->time_step/2.0;
+      ierr = (*ts->ops->lhsmatrix)(ts,t_mid,&ts->Alhs,&ts->Blhs,&str,ts->jacPlhs);CHKERRQ(ierr);
+      ierr = MatMult(ts->Alhs,sol,rhs);CHKERRQ(ierr);
+    } else {
+      ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
+    }
     ierr = VecScale(rhs,mdt);CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
     /*
-        evaluate matrix function 
+        evaluate rhs matrix function at current ptime. 
     */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
     ierr = TSScaleShiftMatrices(ts,ts->A,ts->B,str);CHKERRQ(ierr);
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
+
+    /* solve (1/dt*Alhs(t_mid) - A(t_n+1))*update = rhs */
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
     ts->linear_its += its;
@@ -226,6 +242,7 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
+  /* ts->A = 1/dt*Alhs - A, ts->B = 1/dt*Blhs - B */
   ierr = TSScaleShiftMatrices(ts,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);

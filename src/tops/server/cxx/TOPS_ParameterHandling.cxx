@@ -1,7 +1,7 @@
 // This file is not generated from SIDL, it's for internal impl use only
 
 #include <iostream>
-#include "TOPS_ParameterHandling.hh"
+#include "TOPS_ParameterHandling.hxx"
 
 void processTOPSOptions(std::string options) {
   std::string key = "", val = ""; 
@@ -17,8 +17,10 @@ void processTOPSOptions(std::string options) {
   for (int i = start; i <= end; ++i) {
     if ((i == end) || (newOption && (options[i] == '-'))) { 
       //std::cout << "Setting petsc option: " << key << " " << val << std::endl;
-      if (val != "") PetscOptionsSetValue(key.c_str(), val.c_str());
-      else if (key != "") PetscOptionsSetValue(key.c_str(), 0);
+      if (key != "") {
+      	if (val != "") PetscOptionsSetValue(key.c_str(), val.c_str());
+      	else PetscOptionsSetValue(key.c_str(), 0);
+      }
       inKey = true; inVal = false; 
       key = "-"; val = ""; continue; 
     } else if (options[i] == ' ') { 
@@ -29,4 +31,7 @@ void processTOPSOptions(std::string options) {
       else { inVal = true; val += options[i]; }
     }
   }
+}
+
+void TOPSPetscOptionsMonitor(const char name[], const char value[], void* ctxt) {
 }

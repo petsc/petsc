@@ -270,6 +270,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetDiagonalScaleFix(KSP,PetscTruth*)
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP,PetscViewer);
 
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRSetStandardErrorVec(KSP,Vec);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
+
 /*E
     KSPNormType - Norm that is passed in the Krylov convergence
        test routines.

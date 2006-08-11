@@ -1,40 +1,42 @@
 // 
-// File:          TOPS_Structured_Matrix_Impl.hh
+// File:          TOPS_Structured_Matrix_Impl.hxx
 // Symbol:        TOPS.Structured.Matrix-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for TOPS.Structured.Matrix
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
 
-#ifndef included_TOPS_Structured_Matrix_Impl_hh
-#define included_TOPS_Structured_Matrix_Impl_hh
+#ifndef included_TOPS_Structured_Matrix_Impl_hxx
+#define included_TOPS_Structured_Matrix_Impl_hxx
 
-#ifndef included_sidl_cxx_hh
-#include "sidl_cxx.hh"
+#ifndef included_sidl_cxx_hxx
+#include "sidl_cxx.hxx"
 #endif
 #ifndef included_TOPS_Structured_Matrix_IOR_h
 #include "TOPS_Structured_Matrix_IOR.h"
 #endif
-// 
-// Includes for all method dependencies.
-// 
-#ifndef included_TOPS_Structured_Matrix_hh
-#include "TOPS_Structured_Matrix.hh"
+#ifndef included_TOPS_Matrix_hxx
+#include "TOPS_Matrix.hxx"
 #endif
-#ifndef included_sidl_BaseInterface_hh
-#include "sidl_BaseInterface.hh"
+#ifndef included_TOPS_Structured_Matrix_hxx
+#include "TOPS_Structured_Matrix.hxx"
 #endif
-#ifndef included_sidl_ClassInfo_hh
-#include "sidl_ClassInfo.hh"
+#ifndef included_sidl_BaseClass_hxx
+#include "sidl_BaseClass.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
 #endif
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._includes)
-#include "TOPS.hh"
+#include "TOPS.hxx"
 #include "petscmat.h"
 // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._includes)
 
@@ -44,16 +46,17 @@ namespace TOPS {
     /**
      * Symbol "TOPS.Structured.Matrix" (version 0.0.0)
      */
-    class Matrix_impl
+    class Matrix_impl : public virtual ::TOPS::Structured::Matrix 
     // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._inherits)
     // Insert-Code-Here {TOPS.Structured.Matrix._inherits} (optional inheritance here)
     // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._inherits)
     {
 
-    private:
-      // Pointer back to IOR.
-      // Use this to dispatch back through IOR vtable.
-      Matrix self;
+    // All data marked protected will be accessable by 
+    // descendant Impl classes
+    protected:
+
+      bool _wrapped;
 
       // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._implementation)
     public: // not really public, but we make it public so TOPS::Solver::Structured can access directly
@@ -62,17 +65,14 @@ namespace TOPS {
       Mat mat;
       // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._implementation)
 
-    private:
-      // private default constructor (required)
-      Matrix_impl() 
-      {} 
-
     public:
+      // default constructor, used for data wrapping(required)
+      Matrix_impl();
       // sidl constructor (required)
       // Note: alternate Skel constructor doesn't call addref()
       // (fixes bug #275)
-      Matrix_impl( struct TOPS_Structured_Matrix__object * s ) : self(s,
-        true) { _ctor(); }
+      Matrix_impl( struct TOPS_Structured_Matrix__object * s ) : StubBase(s,
+        true), _wrapped(false) { _ctor(); }
 
       // user defined construction
       void _ctor();
@@ -83,6 +83,9 @@ namespace TOPS {
       // user defined destruction
       void _dtor();
 
+      // true if this object was created by a user newing the impl
+      inline bool _isWrapped() {return _wrapped;}
+
       // static class initializer
       static void _load();
 
@@ -92,95 +95,86 @@ namespace TOPS {
        * user defined non-static method.
        */
       int32_t
-      dimen() throw () 
-      ;
+      dimen_impl() ;
       /**
        * user defined non-static method.
        */
       int32_t
-      lower (
-        /* in */ int32_t a
+      lower_impl (
+        /* in */int32_t a
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       int32_t
-      length (
-        /* in */ int32_t a
+      length_impl (
+        /* in */int32_t a
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ int32_t i,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in */int32_t i,
+        /* in array<double,2> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ int32_t i,
-        /* in */ int32_t j,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in */int32_t i,
+        /* in */int32_t j,
+        /* in array<double,2> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ int32_t i,
-        /* in */ int32_t j,
-        /* in */ int32_t k,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in */int32_t i,
+        /* in */int32_t j,
+        /* in */int32_t k,
+        /* in array<double,2> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ int32_t i,
-        /* in */ int32_t j,
-        /* in */ int32_t k,
-        /* in */ int32_t l,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in */int32_t i,
+        /* in */int32_t j,
+        /* in */int32_t k,
+        /* in */int32_t l,
+        /* in array<double,2> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      apply (
-        /* in */ ::sidl::array<double> x,
-        /* in */ ::sidl::array<double> y
+      apply_impl (
+        /* in array<double> */::sidl::array<double> x,
+        /* in array<double> */::sidl::array<double> y
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      zero() throw () 
-      ;
+      zero_impl() ;
     };  // end class Matrix_impl
 
   } // end namespace Structured
