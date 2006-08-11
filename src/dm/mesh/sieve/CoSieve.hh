@@ -708,6 +708,11 @@ namespace ALE {
         this->checkPatch(patch);
         return this->_indices[patch][p];
       };
+      template<typename Numbering>
+      const index_type getIndex(const patch_type& patch, const point_type& p, const Obj<Numbering>& numbering) {
+        this->checkPatch(patch);
+        return index_type(numbering->getIndex(p), this->_indices[patch][p].index);
+      };
       // Want to return a sequence
       const Obj<IndexArray>& getIndices(const patch_type& patch, const point_type& p, const int level = -1) {
         this->_array->clear();
@@ -732,6 +737,34 @@ namespace ALE {
 
           for(typename sieve_type::coneArray::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
             this->_array->push_back(this->getIndex(patch, *p_iter));
+          }
+        }
+        return this->_array;
+      };
+      template<typename Numbering>
+      const Obj<IndexArray>& getIndices(const patch_type& patch, const point_type& p, const Obj<Numbering>& numbering, const int level = -1) {
+        this->_array->clear();
+
+        if (level == 0) {
+          this->_array->push_back(this->getIndex(patch, p, numbering));
+        } else if ((level == 1) || (this->_topology->height(patch) == 1)) {
+          const Obj<typename sieve_type::coneSequence>& cone = this->_topology->getPatch(patch)->cone(p);
+
+          this->_array->push_back(this->getIndex(patch, p, numbering));
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            this->_array->push_back(this->getIndex(patch, *p_iter, numbering));
+          }
+        } else if (level == -1) {
+          Obj<typename sieve_type::coneSet> closure = this->_topology->getPatch(patch)->closure(p);
+
+          for(typename sieve_type::coneSet::iterator p_iter = closure->begin(); p_iter != closure->end(); ++p_iter) {
+            this->_array->push_back(this->getIndex(patch, *p_iter, numbering));
+          }
+        } else {
+          Obj<typename sieve_type::coneArray> cone = this->_topology->getPatch(patch)->nCone(p, level);
+
+          for(typename sieve_type::coneArray::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            this->_array->push_back(this->getIndex(patch, *p_iter, numbering));
           }
         }
         return this->_array;

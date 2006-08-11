@@ -595,6 +595,351 @@ namespace ALE {
         return recvOverlap;
       };
     };
+
+    template<typename Topology_>
+    class Numbering : public ParallelObject {
+    public:
+      typedef Topology_                                                                           topology_type;
+      typedef typename topology_type::point_type                                                  point_type;
+      typedef typename topology_type::sieve_type                                                  sieve_type;
+      typedef typename ALE::New::DiscreteSieve<point_type>                                        dsieve_type;
+      typedef typename ALE::New::Topology<int, dsieve_type>                                       overlap_topology_type;
+      typedef typename ALE::New::Atlas<overlap_topology_type, ALE::Point>                         overlap_atlas_type;
+      typedef typename ALE::Sifter<int,point_type,point_type>                                     send_overlap_type;
+      typedef typename ALE::New::OverlapValues<send_overlap_type, overlap_atlas_type, point_type> send_section_type;
+      typedef typename ALE::Sifter<point_type,int,point_type>                                     recv_overlap_type;
+      typedef typename ALE::New::OverlapValues<recv_overlap_type, overlap_atlas_type, point_type> recv_section_type;
+    protected:
+      Obj<topology_type>        _topology;
+      std::string               _label;
+      int                       _value;
+      std::map<point_type, int> _order;
+      std::map<int, point_type> _invOrder;
+      Obj<send_overlap_type>    _sendOverlap;
+      Obj<recv_overlap_type>    _recvOverlap;
+      Obj<send_section_type>    _sendSection;
+      Obj<recv_section_type>    _recvSection;
+      int                       _localSize;
+      int                      *_offsets;
+    public:
+      Numbering(const Obj<topology_type>& topology, const std::string& label, int value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _label(label), _value(value), _localSize(0) {
+        this->_sendOverlap = new send_overlap_type(this->comm(), this->debug());
+        this->_recvOverlap = new recv_overlap_type(this->comm(), this->debug());
+        this->_sendSection = new send_section_type(this->comm(), this->debug());
+        this->_recvSection = new recv_section_type(this->comm(), this->_sendSection->getTag(), this->debug());
+        this->_offsets     = new int[this->commSize()+1];
+        this->_offsets[0]  = 0;
+      };
+      ~Numbering() {
+        delete [] this->_offsets;
+      };
+    public: // Accessors
+      const Obj<topology_type>& getTopology() {return this->_topology;};
+      void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
+      std::string getLabel() {return this->_label;};
+      void setLabel(const std::string& label) {this->_label = label;};
+      int getValue() {return this->_value;};
+      void setValue(const int value) {this->_value = value;};
+    public: // Sizes
+      int getLocalSize() const {return this->_localSize;};
+      int getGlobalSize() const {return this->_offsets[this->commSize()];};
+      const int *getGlobalOffsets() const {return this->_offsets;};
+      int getIndex(const point_type& point) {return std::abs(this->_order[point]);};
+      point_type getPoint(const int& index) {return this->_invOrder[index];};
+      bool isLocal(const point_type& point) {return this->_order[point] >= 0;};
+      bool isRemote(const point_type& point) {return this->_order[point] < 0;};
+      const Obj<send_overlap_type>& getSendOverlap() {return this->_sendOverlap;};
+      void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
+      const Obj<recv_overlap_type>& getRecvOverlap() {return this->_recvOverlap;};
+      void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+      const Obj<send_section_type>& getSendSection() {return this->_sendSection;};
+      void setSendSection(const Obj<send_section_type>& section) {this->_sendSection = section;};
+      const Obj<recv_section_type>& getRecvSection() {return this->_recvSection;};
+      void setRecvSection(const Obj<recv_section_type>& section) {this->_recvSection = section;};
+    public: // Construction
+      void setLocalSize(const int size) {this->_localSize = size;};
+      void setIndex(const point_type& point, const int index) {this->_order[point] = index;};
+      void calculateOffsets() {
+        MPI_Allgather(&this->_localSize, 1, MPI_INT, &(this->_offsets[1]), 1, MPI_INT, this->comm());
+        for(int p = 2; p <= this->commSize(); p++) {
+          this->_offsets[p] += this->_offsets[p-1];
+        }
+      };
+      void updateOrder() {
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
+
+        for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+          if (this->_order[*l_iter] >= 0) {
+            this->_order[*l_iter] += this->_offsets[this->commRank()];
+          }
+        }
+      };
+      void copyCommunication(const Obj<Numbering<topology_type> >& numbering) {
+        this->setSendOverlap(numbering->getSendOverlap());
+        this->setRecvOverlap(numbering->getRecvOverlap());
+        this->setSendSection(numbering->getSendSection());
+        this->setRecvSection(numbering->getRecvSection());
+      }
+      void constructOverlap() {
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
+
+        point_type *sendBuf = new point_type[points->size()];
+        int         size    = 0;
+        for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+          sendBuf[size++] = *l_iter;
+        }
+        int *sizes   = new int[this->commSize()];
+        int *offsets = new int[this->commSize()+1];
+        point_type *remotePoints = NULL;
+        int        *remoteRanks  = NULL;
+
+        // Change to Allgather() for the correct binning algorithm
+        MPI_Gather(&size, 1, MPI_INT, sizes, 1, MPI_INT, 0, this->comm());
+        if (this->commRank() == 0) {
+          offsets[0] = 0;
+          for(int p = 1; p <= this->commSize(); p++) {
+            offsets[p] = offsets[p-1] + sizes[p-1];
+          }
+          remotePoints = new point_type[offsets[this->commSize()]];
+        }
+        MPI_Gatherv(sendBuf, size, MPI_INT, remotePoints, sizes, offsets, MPI_INT, 0, this->comm());
+        std::map<int, std::map<int, std::set<point_type> > > overlapInfo;
+
+        if (this->commRank() == 0) {
+          for(int p = 0; p < this->commSize(); p++) {
+            std::sort(&remotePoints[offsets[p]], &remotePoints[offsets[p+1]]);
+          }
+          for(int p = 0; p < this->commSize(); p++) {
+            for(int q = p+1; q < this->commSize(); q++) {
+              std::set_intersection(&remotePoints[offsets[p]], &remotePoints[offsets[p+1]],
+                                    &remotePoints[offsets[q]], &remotePoints[offsets[q+1]],
+                                    std::insert_iterator<std::set<point_type> >(overlapInfo[p][q], overlapInfo[p][q].begin()));
+              overlapInfo[q][p] = overlapInfo[p][q];
+            }
+            sizes[p]     = overlapInfo[p].size()*2;
+            offsets[p+1] = offsets[p] + sizes[p];
+          }
+          remoteRanks = new int[offsets[this->commSize()]];
+          int       k = 0;
+          for(int p = 0; p < this->commSize(); p++) {
+            for(typename std::map<int, std::set<point_type> >::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
+              remoteRanks[k*2]   = r_iter->first;
+              remoteRanks[k*2+1] = r_iter->second.size();
+              k++;
+            }
+          }
+        }
+        int numOverlaps;
+        MPI_Scatter(sizes, 1, MPI_INT, &numOverlaps, 1, MPI_INT, 0, this->comm());
+        int *overlapRanks = new int[numOverlaps];
+        MPI_Scatterv(remoteRanks, sizes, offsets, MPI_INT, overlapRanks, numOverlaps, MPI_INT, 0, this->comm());
+        if (this->commRank() == 0) {
+          for(int p = 0, k = 0; p < this->commSize(); p++) {
+            sizes[p] = 0;
+            for(int r = 0; r < (int) overlapInfo[p].size(); r++) {
+              sizes[p] += remoteRanks[k*2+1];
+              k++;
+            }
+            offsets[p+1] = offsets[p] + sizes[p];
+          }
+          for(int p = 0, k = 0; p < this->commSize(); p++) {
+            for(typename std::map<int, std::set<point_type> >::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
+              int rank = r_iter->first;
+              for(typename std::set<point_type>::iterator p_iter = (overlapInfo[p][rank]).begin(); p_iter != (overlapInfo[p][rank]).end(); ++p_iter) {
+                remotePoints[k++] = *p_iter;
+              }
+            }
+          }
+        }
+        int numOverlapPoints = 0;
+        for(int r = 0; r < numOverlaps/2; r++) {
+          numOverlapPoints += overlapRanks[r*2+1];
+        }
+        point_type *overlapPoints = new point_type[numOverlapPoints];
+        MPI_Scatterv(remotePoints, sizes, offsets, MPI_INT, overlapPoints, numOverlapPoints, MPI_INT, 0, this->comm());
+
+        for(int r = 0, k = 0; r < numOverlaps/2; r++) {
+          int rank = overlapRanks[r*2];
+
+          for(int p = 0; p < overlapRanks[r*2+1]; p++) {
+            point_type point = overlapPoints[k++];
+
+            this->_sendOverlap->addArrow(point, rank, point);
+            this->_recvOverlap->addArrow(rank, point, point);
+          }
+        }
+
+        delete [] overlapPoints;
+        delete [] overlapRanks;
+        delete [] sizes;
+        delete [] offsets;
+        if (this->commRank() == 0) {
+          delete [] remoteRanks;
+          delete [] remotePoints;
+        }
+      };
+      void constructLocalOrder() {
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
+
+        this->_order.clear();
+        this->_localSize = 0;
+        for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+          if (this->_sendOverlap->capContains(*l_iter)) {
+            const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = this->_sendOverlap->support(*l_iter);
+            int minRank = this->_sendOverlap->commSize();
+
+            for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
+              if (*p_iter < minRank) minRank = *p_iter;
+            }
+            if (minRank < this->_sendOverlap->commRank()) {
+              this->_order[*l_iter] = -1;
+            } else {
+              this->_order[*l_iter] = this->_localSize++;
+            }
+          } else {
+            this->_order[*l_iter] = this->_localSize++;
+          }
+        }
+      };
+      void constructInverseOrder() {
+        for(typename std::map<point_type, int>::iterator p_iter = this->_order.begin(); p_iter != this->_order.end(); ++p_iter) {
+          this->_invOrder[p_iter->second] = p_iter->first;
+        }
+      };
+      void constructCommunication() {
+        Obj<typename send_overlap_type::baseSequence> sendRanks = this->_sendOverlap->base();
+
+        for(typename send_overlap_type::baseSequence::iterator r_iter = sendRanks->begin(); r_iter != sendRanks->end(); ++r_iter) {
+          const Obj<typename send_overlap_type::coneSequence>& cone = this->_sendOverlap->cone(*r_iter);
+          Obj<dsieve_type> sieve = new dsieve_type();
+
+          for(typename send_overlap_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            sieve->addPoint(*c_iter);
+          }
+          this->_sendSection->getAtlas()->getTopology()->setPatch(*r_iter, sieve);
+        }
+        this->_sendSection->getAtlas()->getTopology()->stratify();
+        Obj<typename recv_overlap_type::capSequence> recvRanks = this->_recvOverlap->cap();
+
+        for(typename recv_overlap_type::capSequence::iterator r_iter = recvRanks->begin(); r_iter != recvRanks->end(); ++r_iter) {
+          const Obj<typename recv_overlap_type::supportSequence>& support = this->_recvOverlap->support(*r_iter);
+          Obj<dsieve_type> sieve = new dsieve_type();
+
+          for(typename recv_overlap_type::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+            sieve->addPoint(*s_iter);
+          }
+          this->_recvSection->getAtlas()->getTopology()->setPatch(*r_iter, sieve);
+        }
+        this->_recvSection->getAtlas()->getTopology()->stratify();
+        // Setup sections
+        this->_sendSection->construct(1);
+        this->_recvSection->construct(1);
+        this->_sendSection->getAtlas()->orderPatches();
+        this->_recvSection->getAtlas()->orderPatches();
+        this->_sendSection->allocate();
+        this->_recvSection->allocate();
+        this->_sendSection->constructCommunication(send_section_type::SEND);
+        this->_recvSection->constructCommunication(recv_section_type::RECEIVE);
+      };
+      void fillSection() {
+        Obj<typename send_overlap_type::traits::capSequence> sendPoints = this->_sendOverlap->cap();
+
+        for(typename send_overlap_type::traits::capSequence::iterator s_iter = sendPoints->begin(); s_iter != sendPoints->end(); ++s_iter) {
+          const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = this->_sendOverlap->support(*s_iter);
+
+          for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
+            this->_sendSection->update(*p_iter, *s_iter, &(this->_order[*s_iter]));
+          }
+        }
+      };
+      void communicate() {
+        this->_sendSection->startCommunication();
+        this->_recvSection->startCommunication();
+        this->_sendSection->endCommunication();
+        this->_recvSection->endCommunication();
+      };
+      void fillOrder() {
+        Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = this->_recvOverlap->base();
+
+        for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+          const Obj<typename recv_overlap_type::traits::coneSequence>& recvPatches = this->_recvOverlap->cone(*r_iter);
+    
+          for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
+            const typename recv_section_type::value_type *values = this->_recvSection->restrict(*p_iter, *r_iter);
+
+            if (values[0] >= 0) {
+              if (this->_order[*r_iter] >= 0) {
+                ostringstream msg;
+                msg << "Multiple indices for point " << *r_iter;
+                throw ALE::Exception(msg.str().c_str());
+              }
+              this->_order[*r_iter] = -values[0];
+            }
+          }
+        }
+      };
+      void construct() {
+        //const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap
+        this->constructOverlap();
+        this->constructLocalOrder();
+        this->calculateOffsets();
+        this->updateOrder();
+        this->constructCommunication();
+        this->fillSection();
+        this->communicate();
+        this->fillOrder();
+      };
+      void view(const std::string& name) {
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(0, this->_label, this->_value);
+        ostringstream txt;
+
+        if (name == "") {
+          if(this->commRank() == 0) {
+            txt << "viewing a Numbering" << std::endl;
+          }
+        } else {
+          if(this->commRank() == 0) {
+            txt << "viewing Numbering '" << name << "'" << std::endl;
+          }
+        }
+        for(typename topology_type::label_sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          txt << "[" << this->commRank() << "] " << *p_iter << " --> " << this->_order[*p_iter] << std::endl;
+        }
+        PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
+        PetscSynchronizedFlush(this->comm());
+      };
+    };
+
+    class GlobalOrder {
+    public:
+      template<typename Atlas, typename Numbering>
+      static Obj<Numbering> createIndices(const Obj<Atlas>& atlas, const Obj<Numbering>& numbering) {
+        Obj<Numbering> globalOffsets = new Numbering(numbering->getTopology(), numbering->getLabel(), numbering->getValue());
+        typename Atlas::patch_type patch = 0;
+        // FIX: I think we can just generalize Numbering to take a stride based upon an Atlas
+        //        However, then we also want a lightweight way of creating one numbering from another I think (maybe constructor?)
+        // Construct local offsets
+        const Obj<typename Numbering::topology_type::label_sequence>& points = numbering->getTopology()->getLabelStratum(patch, numbering->getLabel(), numbering->getValue());
+        int offset = 0;
+
+        for(typename Numbering::topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+          if (numbering->isLocal(*l_iter)) {
+            globalOffsets->setIndex(*l_iter, offset);
+            offset += atlas->getFiberDimension(patch, *l_iter);
+          } else {
+            globalOffsets->setIndex(*l_iter, -1);
+          }
+        }
+        globalOffsets->setLocalSize(offset);
+        globalOffsets->calculateOffsets();
+        globalOffsets->updateOrder();
+        globalOffsets->copyCommunication(numbering);
+        globalOffsets->fillSection();
+        globalOffsets->communicate();
+        globalOffsets->fillOrder();
+        return globalOffsets;
+      };
+    };
   }
 }
 #endif

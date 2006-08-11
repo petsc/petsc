@@ -579,10 +579,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandInterval"
-inline void ExpandInterval(ALE::Point interval, PetscInt indices[], PetscInt *indx)
+inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
 {
-  for(int i = 0; i < interval.index; i++) {
-    indices[(*indx)++] = interval.prefix + i;
+  const int end = interval.prefix + interval.index;
+  for(int i = interval.prefix; i < end; i++) {
+    indices[indx++] = i;
   }
 }
 
@@ -749,31 +750,42 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh,const char fieldName[],Vec g,VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const char fieldName[], Vec g, VecScatter *scatter)
 {
-  ALE::Mesh::patch_type patch;
-  Vec            localVec;
-  IS             globalIS, localIS;
-  PetscInt      *indices;
+  typedef ALE::Mesh::atlas_type::index_type index_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh::section_type> field = mesh->getSection(std::string(fieldName));
+  const ALE::Obj<ALE::Mesh::section_type>&   field       = mesh->getSection(std::string(fieldName));
+  const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder = mesh->getGlobalOrder(fieldName);
+  const ALE::Mesh::section_type::patch_type  patch       = 0;
+  const ALE::Mesh::atlas_type::chart_type&   chart       = field->getAtlas()->getChart(patch);
+  int                                        localSize   = field->getAtlas()->size(patch);
+  int *localIndices, *globalIndices;
+  int  localIndx = 0, globalIndx = 0;
+  Vec  localVec;
+  IS   localIS, globalIS;
 
-#if 0
-  //ierr = __expandIntervals(globalOrder->getPatch(patch), &indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, field->getSize(patch), indices, &globalIS);CHKERRQ(ierr);
-  ierr = PetscFree(indices);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &localVec);CHKERRQ(ierr);
-  //ierr = __expandCanonicalIntervals(globalOrder->getPatch(patch), field, &indices);CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF, field->getSize(patch), indices, &localIS);CHKERRQ(ierr);
-  ierr = PetscFree(indices);CHKERRQ(ierr);
+  // Loop over all local points
+  ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
+  ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
+  for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    // Map local indices to global indices
+    ExpandInterval(c_iter->second, localIndices, localIndx);
+    ExpandInterval(index_type(globalOrder->getIndex(c_iter->first), c_iter->second.index), globalIndices, globalIndx);
+  }
+  if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
+  if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,  &localIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices, &globalIS);CHKERRQ(ierr);
+  ierr = PetscFree(localIndices);
+  ierr = PetscFree(globalIndices);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localSize, field->restrict(patch), &localVec);CHKERRQ(ierr);
   ierr = VecScatterCreate(localVec, localIS, g, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -904,24 +916,23 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::section_type> field, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
+  ALE::Mesh::section_type::patch_type patch = 0;
   static PetscInt  indicesSize = 0;
   static PetscInt *indices = NULL;
   PetscInt         numIndices = 0;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ALE::Mesh::section_type::patch_type patch = 0;
-  const ALE::Obj<ALE::Mesh::atlas_type::IndexArray> intervals = field->getAtlas()->getIndices(patch, e);
+  const ALE::Obj<ALE::Mesh::atlas_type::IndexArray> intervals = atlas->getIndices(patch, e, globalOrder);
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (field->debug()) {printf("[%d]mat for element %d\n", field->commRank(), e);}
+  if (atlas->debug()) {printf("[%d]mat for element %d\n", atlas->commRank(), e);}
   for(ALE::Mesh::atlas_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    //numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_iter));
     numIndices += i_iter->index;
-    if (field->debug()) {
-      printf("[%d]mat interval (%d, %d)\n", field->commRank(), i_iter->prefix, i_iter->index);
+    if (atlas->debug()) {
+      printf("[%d]mat interval (%d, %d)\n", atlas->commRank(), i_iter->prefix, i_iter->index);
     }
   }
   if (indicesSize && (indicesSize != numIndices)) {
@@ -933,13 +944,12 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::section_type> field, co
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  //ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
-  if (field->debug()) {
+  if (atlas->debug()) {
     for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", field->commRank(), i, indices[i]);
+      printf("[%d]mat indices[%d] = %d\n", atlas->commRank(), i, indices[i]);
     }
     for(int i = 0; i < numIndices; i++) {
-      printf("[%d]", field->commRank());
+      printf("[%d]", atlas->commRank());
       for(int j = 0; j < numIndices; j++) {
         printf(" %g", array[i*numIndices+j]);
       }
@@ -972,20 +982,16 @@ PetscErrorCode updateOperator(Mat A, ALE::Obj<ALE::Mesh::section_type> field, co
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  static ALE::Mesh::section_type::patch_type patch;
-  PetscObjectContainer  c;
-  ALE::Mesh            *mesh;
-  //ALE::Mesh::point_type order(e, 0);
-  PetscErrorCode        ierr;
+  PetscObjectContainer c;
+  ALE::Mesh           *mesh;
+  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   try {
-    // Notice that we map the global element number to the point
-    //ierr = updateOperator(A, mesh->getField("displacement"), *mesh->getBundle(mesh->getTopology()->depth())->__getOrder()->cone(patch, order)->begin(), v, mode);CHKERRQ(ierr);
-    ierr = updateOperator(A, mesh->getSection("displacement"), ALE::Mesh::point_type(e), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, mesh->getSection("displacement")->getAtlas(), mesh->getGlobalOrder("displacement"), mesh->getLocalNumbering(mesh->getTopologyNew()->depth())->getPoint(e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
