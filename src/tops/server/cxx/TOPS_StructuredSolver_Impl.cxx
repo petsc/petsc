@@ -587,6 +587,7 @@ TOPS::StructuredSolver_impl::getValue_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValue)
   // Insert-Code-Here {TOPS.StructuredSolver.getValue} (getValue method)
+  return ""; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValue)
 }
 
@@ -599,6 +600,7 @@ TOPS::StructuredSolver_impl::getValueInt_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueInt)
   // Insert-Code-Here {TOPS.StructuredSolver.getValueInt} (getValueInt method)
+    return 0; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueInt)
 }
 
@@ -611,6 +613,7 @@ TOPS::StructuredSolver_impl::getValueBool_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueBool)
   // Insert-Code-Here {TOPS.StructuredSolver.getValueBool} (getValueBool method)
+  return false; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueBool)
 }
 
@@ -623,6 +626,7 @@ TOPS::StructuredSolver_impl::getValueDouble_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueDouble)
   // Insert-Code-Here {TOPS.StructuredSolver.getValueDouble} (getValueDouble method)
+  return 0.0; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueDouble)
 }
 
