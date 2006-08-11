@@ -349,9 +349,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
   PetscToken     *token;
-  char           monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer    monviewer;
-  PetscTruth     flg;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -372,24 +369,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
       }
     } else {
       ierr = PetscInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");CHKERRQ(ierr);
-    }
-
-    ierr = PetscOptionsName("-options_cancelmonitors","Remove any hardwired monitor routines","PetscOptionsClearMonitor",&flg);CHKERRQ(ierr);
-    /* -----------------------------------------------------------------------*/
-    /*
-      Cancels all monitors hardwired into code before call to PetscOptionsInsert()
-    */
-    if (flg) {
-      ierr = PetscOptionsClearMonitor();CHKERRQ(ierr);
-    }
-
-    /*
-      Prints the name and value of each option being set
-    */
-    ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
-    if (flg && (!options->monitor)) {
-      ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = PetscOptionsSetMonitor(PetscOptionsDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
   }
@@ -467,11 +446,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
         ierr = PetscOptionsSetValue(eargs[0],PETSC_NULL);CHKERRQ(ierr);
         eargs++; left--;
       } else {
-        ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr);
+        ierr = PetscOptionsSetValue(eargs[0],eargs[1]);CHKERRQ(ierr); 
         eargs += 2; left -= 2;
       }
     }
   }
+  
   PetscFunctionReturn(0);
 }
 
@@ -1614,6 +1594,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsLeft(void)
   PetscFunctionReturn(0);
 }
 
+
 /*
     PetscOptionsCreate - Creates the empty options database.
 
@@ -1627,16 +1608,66 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
   PetscFunctionBegin;
   options = (PetscOptionsTable*)malloc(sizeof(PetscOptionsTable));
   ierr    = PetscMemzero(options->used,MAXOPTIONS*sizeof(PetscTruth));CHKERRQ(ierr);
-  options->namegiven = PETSC_FALSE;
-  options->N         = 0;
-  options->Naliases  = 0;
+  options->namegiven 		= PETSC_FALSE;
+  options->N         		= 0;
+  options->Naliases  		= 0;
+  options->numbermonitors 	= 0;
+  
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__
+#define __FUNCT__ "PetscOptionsSetFromOptions"
+/*@
+   PetscOptionsSetFromOptions - Sets various SNES and KSP parameters from user options.
+
+   Collective on PETSC_COMM_WORLD
+
+   Options Database Keys:
++  -options_monitor <optional filename> - prints the names and values of all 
+ 				runtime options as they are set. The monitor functionality is not 
+                available for options set through a file, environment variable, or on 
+                the command line. Only options set after PetscInitialize completes will 
+                be monitored.
+.  -options_cancelmonitors - cancel all options database monitors    
+
+   Notes:
+   To see all options, run your program with the -help option or consult
+   the users manual. 
+
+   Level: intermediate
+
+.keywords: set, options, database
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
+{
+  PetscTruth          flg;
+  PetscErrorCode      ierr;
+  char                monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewer         monviewer; 
+
+  PetscFunctionBegin;
+
+  ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
+  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  if (flg && (!options->numbermonitors)) {
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
+    ierr = PetscOptionsSetMonitor(PetscOptionsDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+  }
+     
+  ierr = PetscOptionsName("-options_cancelmonitors","Cancel all options database monitors","PetscOptionsClearMonitor",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = PetscOptionsClearMonitor();CHKERRQ(ierr); }
+  
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsDefaultMonitor"
 /*@C
-   PetscOptionsDefaultMonitor - Print all options set events.
+   PetscOptionsDefaultMonitor - Print all options set value events.
 
    Collective on PETSC_COMM_WORLD
 
@@ -1658,7 +1689,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char name[], con
 
   PetscFunctionBegin;
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD);
-  ierr = PetscViewerASCIIPrintf(viewer,"Option was set: %s = %s\n",name,value);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -156,5 +156,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char[],const c
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscTruth*);
 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions();
 PETSC_EXTERN_CXX_END
 #endif
