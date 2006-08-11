@@ -117,20 +117,6 @@ namespace ALE {
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       return mesh;
     };
-    Obj<ALE::Mesh> Builder::createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase = false, int debug = 0) {
-      Obj<ALE::Mesh> mesh = ALE::Mesh(comm, dim, debug);
-      int      *vertices = NULL;
-      double   *coordinates = NULL;
-      int       numElements = 0, numVertices = 0;
-      PetscErrorCode ierr;
-
-      readConnectivity(comm, baseFilename+".lcon", dim, useZeroBase, numElements, &vertices);
-      readCoordinates(comm, baseFilename+".nodes", dim+1, numVertices, &coordinates);
-      mesh->populateBd(numElements, vertices, numVertices, coordinates);
-      ierr = PetscFree(vertices);
-      ierr = PetscFree(coordinates);
-      return mesh;
-    };
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteVertices"
     PetscErrorCode Viewer::writeVertices(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {
