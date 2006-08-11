@@ -6,6 +6,12 @@
        using several different schemes. 
 */
 
+/* Usage: 
+   ./ex1 -nox -ts_type beuler -ts_view 
+   ./ex1 -nox -linear_constant_matrix -ts_type beuler
+   ./ex1 -nox -linear_variable_matrix -ts_type beuler
+*/
+
 static char help[] = "Solves 1D heat equation.\n\n";
 
 #include "petscda.h"
@@ -29,6 +35,7 @@ extern PetscErrorCode RHSFunctionHeat(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSMatrixFree(Mat,Vec,Vec);
 extern PetscErrorCode Initial(Vec,void*);
 extern PetscErrorCode RHSMatrixHeat(TS,PetscReal,Mat *,Mat *,MatStructure *,void *);
+extern PetscErrorCode LHSMatrixHeat(TS,PetscReal,Mat *,Mat *,MatStructure *,void *);
 extern PetscErrorCode RHSJacobianHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
 #define linear_no_matrix       0
@@ -49,12 +56,14 @@ int main(int argc,char **argv)
   AppCtx         appctx;
   PetscReal      dt,ftime;
   TS             ts;
-  Mat            A = 0;
+  Mat            A=0,Alhs=0;
   MatStructure   A_structure;
   TSProblemType  tsproblem = TS_LINEAR;
   PetscDraw      draw;
   PetscViewer    viewer;
   char           tsinfo[120];
+  TSType         type;
+  PetscTruth     isBEULER;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -138,9 +147,10 @@ int main(int argc,char **argv)
     ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
+
   } else if (problem == linear_no_time) {
     /*
-         The user provides the RHS as a matrix
+         The user provides the RHS as a constant matrix
     */
     ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
     ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,appctx.M,appctx.M);CHKERRQ(ierr);
@@ -178,6 +188,24 @@ int main(int argc,char **argv)
 
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
+  /* The user also provides the LHS matrix when ts_type = beuler */
+  ierr = TSGetType(ts, &type);CHKERRQ(ierr);
+  ierr = PetscStrcmp(type,"beuler",&isBEULER);CHKERRQ(ierr);
+  if (isBEULER){
+    if (problem == linear_no_time) {
+      ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&Alhs);CHKERRQ(ierr);    
+      ierr = MatZeroEntries(Alhs);CHKERRQ(ierr);
+      ierr = MatShift(Alhs,1.0);CHKERRQ(ierr);
+      ierr = TSSetLHSMatrix(ts,Alhs,Alhs,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+    } else if (problem == linear) {
+      ierr = MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&Alhs);CHKERRQ(ierr);    
+      ierr = MatZeroEntries(Alhs);CHKERRQ(ierr);
+      ierr = MatShift(Alhs,1.0);CHKERRQ(ierr);
+      ierr = LHSMatrixHeat(ts,0.0,&Alhs,&Alhs,&A_structure,&appctx);CHKERRQ(ierr);
+      ierr = TSSetLHSMatrix(ts,Alhs,Alhs,LHSMatrixHeat,&appctx);CHKERRQ(ierr);
+    }
+  }
+ 
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps,100.);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,appctx.global);CHKERRQ(ierr);
@@ -216,6 +244,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(appctx.global);CHKERRQ(ierr);
   ierr = DADestroy(appctx.da);CHKERRQ(ierr);
   if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
+  if (Alhs) {ierr= MatDestroy(Alhs);CHKERRQ(ierr);}
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
@@ -363,7 +392,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
   PetscScalar    v[3],stwo = -2./(appctx->h*appctx->h),sone = -.5*stwo;
 
   *str = SAME_NONZERO_PATTERN;
-
+ 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
 
@@ -400,7 +429,14 @@ PetscErrorCode RHSJacobianHeat(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStruct
   return RHSMatrixHeat(ts,t,AA,BB,str,ctx);
 }
 
-
+#undef __FUNCT__
+#define __FUNCT__ "LHSMatrixHeat"
+PetscErrorCode LHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
+{
+  *str = SAME_NONZERO_PATTERN;
+  /* printf("  LHSMatrixHeat t: %g\n",t); */
+  return 0;
+}  
 
 
 

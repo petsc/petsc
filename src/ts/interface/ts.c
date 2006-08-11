@@ -402,6 +402,79 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSSetLHSMatrix"
+/*@C
+   TSSetLHSMatrix - Sets the function to compute the matrix A, where A U_t = F(U).
+   Also sets the location to store A.
+
+   Collective on TS
+
+   Input Parameters:
++  ts  - the TS context obtained from TSCreate()
+.  A   - matrix
+.  B   - preconditioner matrix (usually same as A)
+.  f   - the matrix evaluation routine; use PETSC_NULL (PETSC_NULL_FUNCTION in fortran)
+         if A is not a function of t.
+-  ctx - [optional] user-defined context for private data for the 
+          matrix evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$     func (TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
+
++  t - current timestep
+.  A - matrix A, where A U_t = F(U)
+.  B - preconditioner matrix, usually the same as A
+.  flag - flag indicating information about the preconditioner matrix
+          structure (same as flag in KSPSetOperators())
+-  ctx - [optional] user-defined context for matrix evaluation routine
+
+   Notes: 
+   See KSPSetOperators() for important information about setting the flag
+   output parameter in the routine func().  Be sure to read this information!
+
+   The routine func() takes Mat * as the matrix arguments rather than Mat.  
+   This allows the matrix evaluation routine to replace A and/or B with a 
+   completely new new matrix structure (not just different matrix elements)
+   when appropriate, for instance, if the nonzero structure is changing
+   throughout the global iterations.
+
+   Notes: 
+   Currently, TSSetLHSMatrix() only supports the TS_BEULER type.
+
+   Level: beginner
+
+.keywords: TS, timestep, set, left-hand-side, matrix
+
+.seealso: TSSetRHSMatrix()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetLHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),void *ctx)
+{
+  PetscTruth     sametype;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(A,MAT_COOKIE,2);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,3);
+  PetscCheckSameComm(ts,1,A,2);
+  PetscCheckSameComm(ts,1,B,3);
+  
+  if (!ts->type_name) SETERRQ(PETSC_ERR_ARG_NULL,"TS type must be set before calling TSSetLHSMatrix()");
+  ierr = PetscTypeCompare((PetscObject)ts,"beuler",&sametype);CHKERRQ(ierr);
+  if (!sametype)
+    SETERRQ1(PETSC_ERR_SUP,"TS type %s not supported for LHSMatrix",ts->type_name);
+  if (ts->problem_type == TS_NONLINEAR) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for nonlinear problems yet");
+  }
+
+  ts->ops->lhsmatrix = f;
+  ts->jacPlhs        = ctx; 
+  ts->Alhs           = A;
+  ts->Blhs           = B;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
