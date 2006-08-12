@@ -192,51 +192,51 @@ ex37: ex37.o chkopts
 
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex1 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1_2:
-	-@${MPIRUN} -np 1 ./ex1 -pc_type sor -pc_sor_symmetric -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always >\
+	-@${MPIRUN} -np 1 ./ex1 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always >\
 	   ex1_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_2.out ex1_2.tmp) then true; \
 	   else echo "Possible problem with ex1_2, diffs above"; fi; \
 	   ${RM} -f ex1_2.tmp
 runex1_3:
-	-@${MPIRUN} -np 1 ./ex1 -pc_type eisenstat -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always >\
+	-@${MPIRUN} -np 1 ./ex1 -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always >\
 	   ex1_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_3.out ex1_3.tmp) then true; \
 	   else echo "Possible problem with ex1_3, diffs above"; fi; \
 	   ${RM} -f ex1_3.tmp
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex1f -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1f_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 runex2:
-	-@${MPIRUN} -np 1 ./ex2 -ksp_smonitor -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always > ex2_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex2 -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always > ex2_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIRUN} -np 2 ./ex2 -ksp_smonitor -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always > ex2_2.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex2 -ksp_monitor_short -m 5 -n 5 -ksp_gmres_cgs_refinement_type refine_always > ex2_2.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIRUN} -np 1 ./ex2 -pc_type sor -pc_sor_symmetric -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > \
+	-@${MPIRUN} -np 1 ./ex2 -pc_type sor -pc_sor_symmetric -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > \
 	    ex2_3.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 runex2_4:
-	-@${MPIRUN} -np 1 ./ex2 -pc_type eisenstat -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always >\
+	-@${MPIRUN} -np 1 ./ex2 -pc_type eisenstat -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always >\
 	    ex2_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex2_4.out ex2_4.tmp) then true; \
 	   else echo "Possible problem with ex2_4, diffs above"; fi; \
 	   ${RM} -f ex2_4.tmp
 runex2_5:
-	-@${MPIRUN} -np 2 ./ex2 -ksp_smonitor -m 5 -n 5 -mat_view_draw -ksp_gmres_cgs_refinement_type refine_always    > ex2_5.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex2 -ksp_monitor_short -m 5 -n 5 -mat_view_draw -ksp_gmres_cgs_refinement_type refine_always    > ex2_5.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_5.tmp) then true; \
 	   else echo "Possible problem with ex2_5, diffs above"; fi; \
 	   ${RM} -f ex2_5.tmp
@@ -247,22 +247,22 @@ runex2_6:
 	   else echo "Possible problem with ex2_6, diffs above"; fi; \
 	   ${RM} -f ex2_6.tmp
 runex2f:
-	-@${MPIRUN} -np 2 ./ex2f -pc_type jacobi -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex2f -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex2f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex2f_1.out ex2f_1.tmp) then true; \
 	   else echo "Possible problem with ex2f_1, diffs above"; fi; \
 	   ${RM} -f ex2f_1.tmp
 runex4:
-	-@${MPIRUN} -np 3  ./ex4 -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex4_1.tmp 2>&1; \
+	-@${MPIRUN} -np 3  ./ex4 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex4_1.tmp 2>&1; \
 	   if (${DIFF} output/ex4_1.out ex4_1.tmp) then true; \
 	   else echo "Possible problem with ex4_1, diffs above"; fi; \
 	   ${RM} -f ex4_1.tmp
 runex5:
-	-@${MPIRUN} -np 1 ./ex5 -pc_type jacobi -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
-	-@${MPIRUN} -np 2 ./ex5 -pc_type jacobi -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always \
+	-@${MPIRUN} -np 2 ./ex5 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
 	   -ksp_rtol .000001 > ex5_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
@@ -284,18 +284,18 @@ runex5_5:
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
 runex6f:
-	-@${MPIRUN} -np 1 ./ex6f -pc_type jacobi -mat_view -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex6f -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6f_1.out ex6f_1.tmp) then true; \
 	   else echo "Possible problem with ex6f_1, diffs above"; fi; \
 	   ${RM} -f ex6f_1.tmp
 runex7:
-	-@${MPIRUN} -np 2 ./ex7 -ksp_smonitor -nokspview -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex7 -ksp_monitor_short -nokspview -ksp_gmres_cgs_refinement_type refine_always> ex7_1.tmp 2>&1; \
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
 runex9:
-	-@${MPIRUN} -np 1 ./ex9 -t 2 -pc_type jacobi -ksp_smonitor -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always \
-	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_smonitor \
+	-@${MPIRUN} -np 1 ./ex9 -t 2 -pc_type jacobi -ksp_monitor_short -ksp_type gmres -ksp_gmres_cgs_refinement_type refine_always \
+	   -s2_ksp_type bcgs -s2_pc_type jacobi -s2_ksp_monitor_short \
            > ex9_1.tmp 2>&1; \
 	   if (${DIFF} output/ex9_1.out ex9_1.tmp) then true; \
 	   else echo "Possible problem with ex9_1, diffs above"; fi; \
@@ -341,22 +341,22 @@ runex10_7:
 	-@for bs in ${BS}; do \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_monitor_short >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -pc_factor_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_monitor_short -pc_factor_mat_ordering_type nd >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -pc_factor_levels 1 >> ex10_7.tmp 2>&1 ; \
+                    1.0e-15 -ksp_monitor_short -pc_factor_levels 1 >> ex10_7.tmp 2>&1 ; \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_type preonly \
-                    -ksp_smonitor -pc_type lu  >> ex10_7.tmp 2>&1 ; \
+                    -ksp_monitor_short -pc_type lu  >> ex10_7.tmp 2>&1 ; \
          done;
 	-@if (${DIFF} output/ex10_7.out ex10_7.tmp) then true; \
 	   else echo "Possible problem with ex10_7, diffs above"; fi;
 	-@${RM} -f ex10_7.tmp
 runex10_8:
-	-@${MPIRUN} -np 1 ./ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_smonitor -ksp_diagonal_scale_fix \
+	-@${MPIRUN} -np 1 ./ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix \
 	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -options_left no > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
@@ -367,24 +367,24 @@ runex10_9:
           for bs in 1 2 3 4 5 6 7; do \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
+                    1.0e-15 -ksp_monitor_short >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
 	 ${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -viewer_binary_skip_info \
                     -mat_type seqbaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
+                    1.0e-15 -ksp_monitor_short -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
           for np in 2 3; do \
 	 ${MPIRUN} -np $$np ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_gmres_cgs_refinement_type refine_always -ksp_rtol \
-                    1.0e-15 -ksp_smonitor >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
+                    1.0e-15 -ksp_monitor_short >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
 	 ${MPIRUN} -np $$np ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -viewer_binary_skip_info \
                     -mat_type mpibaij -matload_block_size $$bs -ksp_max_it 100 -ksp_rtol \
-                    1.0e-15 -ksp_smonitor -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
+                    1.0e-15 -ksp_monitor_short -trans >> ex10_9.tmp 2>&1 ; ${WIN_SLEEP} \
          done; done; done; 
 	-@if (${DIFF} output/ex10_9.out ex10_9.tmp) then true; \
 	   else echo "Possible problem with ex10_9, diffs above"; fi;
 	-@${RM} -f ex10_9.tmp
 runex10_10:
 	-@${MPIRUN} -np 2 ./ex10 -options_left no -ksp_type fgmres -pc_type ksp \
-	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_smonitor> ex10_10.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_fgmres_modifypcksp -ksp_monitor_short> ex10_10.tmp 2>&1; \
 	   if (${DIFF} output/ex10_10.out ex10_10.tmp) then true; \
 	   else echo "Possible problem with ex10_10, diffs above"; fi; \
 	   ${RM} -f ex10_10.tmp
@@ -497,12 +497,12 @@ runex10_mumps_cholesky_2:
 	   ${RM} -f ex10_mumps_cholesky_2.tmp
 
 runex11:
-	-@${MPIRUN} -np 1 ./ex11 -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
 	   else echo "Possible problem with ex11_1, diffs above"; fi; \
 	   ${RM} -f ex11_1.tmp
 runex11f:
-	-@${MPIRUN} -np 1 ./ex11f -n 6 -norandom -pc_type none -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex11f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex11f -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11f_1.out ex11f_1.tmp) then true; \
 	   else echo "Possible problem with ex11f_1, diffs above"; fi; \
 	   ${RM} -f ex11f_1.tmp
@@ -559,13 +559,13 @@ runex22f:
 	   ${RM} -f ex22_1.tmp
 
 runex23:
-	-@${MPIRUN} -np 1 ./ex23 -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex23_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex23 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex23_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi; \
 	   ${RM} -f ex23_1.tmp
 
 runex23_2:
-	-@${MPIRUN} -np 3 ./ex23 -ksp_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex23_2.tmp 2>&1;	  \
+	-@${MPIRUN} -np 3 ./ex23 -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex23_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex23_2.out ex23_2.tmp) then true; \
 	   else echo "Possible problem with ex23_2, diffs above"; fi; \
 	   ${RM} -f ex23_2.tmp
@@ -583,13 +583,13 @@ runex25_2:
 	   ${RM} -f ex25_1.tmp
 
 runex29:
-	-@${MPIRUN} -np 1 ./ex29 -ksp_smonitor  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex29 -ksp_monitor_short  -dmmg_nlevels 9 > ex29_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_1.out ex29_1.tmp) then true; \
 	   else echo "Possible problem with ex29_1, diffs above"; fi; \
 	   ${RM} -f ex29_1.tmp
 
 runex29_2:
-	-@${MPIRUN} -np 1 ./ex29 -ksp_smonitor  -bc_type neumann -dmmg_nlevels 9 > ex29_2.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex29 -ksp_monitor_short  -bc_type neumann -dmmg_nlevels 9 > ex29_2.tmp 2>&1;	  \
 	   if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
 	   else echo "Possible problem with ex29_2, diffs above"; fi; \
 	   ${RM} -f ex29_2.tmp
@@ -601,7 +601,7 @@ runex30:
 	   ${RM} -f ex30_1.tmp
 
 runex32:
-	-@${MPIRUN} -np 1 ./ex32 -ksp_smonitor  > ex32_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex32 -ksp_monitor_short  > ex32_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex32_1.out ex32_1.tmp) then true; \
 	   else echo "Possible problem with ex32_1, diffs above"; fi; \
 	   ${RM} -f ex32_1.tmp

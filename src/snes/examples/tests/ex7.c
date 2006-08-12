@@ -75,7 +75,7 @@ int main(int argc,char **argv)
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user);CHKERRQ(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* Solve nonlinear system */

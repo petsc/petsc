@@ -16,7 +16,7 @@
    In this case, we use pre-solve and post-solve phases to handle scaling and
    permutation, and by default the scaled residual norm is monitored for the
    ILU/ICC preconditioners.  Use the option
-     -ksp_truemonitor
+     -ksp_monitor_true_residual
    to print both the scaled and unscaled residual norms.
 */
 

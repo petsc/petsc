@@ -13,7 +13,7 @@ Input parameters include:\n\
    Concepts: TS^heat equation
    Concepts: TS^diffusion equation
    Routines: TSCreate(); TSSetSolution(); TSSetRHSMatrix();
-   Routines: TSSetInitialTimeStep(); TSSetDuration(); TSSetMonitor();
+   Routines: TSSetInitialTimeStep(); TSSetDuration(); TSMonitorSet();
    Routines: TSSetFromOptions(); TSStep(); TSDestroy(); 
    Routines: TSSetTimeStep(); TSGetTimeStep();
    Processors: 1
@@ -153,7 +153,7 @@ int main(int argc,char **argv)
      Set optional user-defined monitoring routine
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

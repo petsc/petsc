@@ -155,9 +155,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
                                of convergence test
 .  -snes_monitor <optional filename> - prints residual norm at each iteration. if no
                                        filename given prints to stdout
-.  -snes_vecmonitor - plots solution at each iteration
-.  -snes_vecmonitor_update - plots update to solution at each iteration 
-.  -snes_xmonitor - plots residual norm at each iteration 
+.  -snes_monitor_solution - plots solution at each iteration
+.  -snes_monitor_residual - plots residual (not its norm) at each iteration
+.  -snes_monitor_solution_update - plots update to solution at each iteration 
+.  -snes_monitor_draw - plots residual norm at each iteration 
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
 -  -snes_print_converged_reason - print the reason for convergence/divergence after each solve
@@ -236,35 +237,35 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 
     ierr = PetscOptionsName("-snes_no_convergence_test","Don't test for convergence","None",&flg);CHKERRQ(ierr);
     if (flg) {snes->ops->converged = 0;}
-    ierr = PetscOptionsName("-snes_cancelmonitors","Remove all monitors","SNESClearMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESClearMonitor(snes);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_monitor_cancel","Remove all monitors","SNESMonitorCancel",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);}
 
-    ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = SNESSetMonitor(snes,SNESDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESSetRatioMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESMonitorSetRatio","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = SNESSetRatioMonitor(snes,monviewer);CHKERRQ(ierr);
+      ierr = SNESMonitorSetRatio(snes,monviewer);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsString("-snes_smonitor","Monitor norm of function (fewer digits)","SNESSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-snes_monitor_short","Monitor norm of function (fewer digits)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = SNESSetMonitor(snes,SNESDefaultSMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsName("-snes_vecmonitor","Plot solution at each iteration","SNESVecViewMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewMonitor,0,0);CHKERRQ(ierr);}
-    ierr = PetscOptionsName("-snes_vecmonitor_update","Plot correction at each iteration","SNESVecViewUpdateMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewUpdateMonitor,0,0);CHKERRQ(ierr);}
-    ierr = PetscOptionsName("-snes_vecmonitor_residual","Plot residual at each iteration","SNESVecViewResidualMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetMonitor(snes,SNESVecViewResidualMonitor,0,0);CHKERRQ(ierr);}
-    ierr = PetscOptionsName("-snes_xmonitor","Plot function norm at each iteration","SNESLGMonitor",&flg);CHKERRQ(ierr);
-    if (flg) {ierr = SNESSetMonitor(snes,SNESLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_monitor_solution","Plot solution at each iteration","SNESMonitorSolution",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorSolution,0,0);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_monitor_solution_update","Plot correction at each iteration","SNESMonitorSolutionUpdate",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorSolutionUpdate,0,0);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_monitor_residual","Plot residual at each iteration","SNESMonitorResidual",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorResidual,0,0);CHKERRQ(ierr);}
+    ierr = PetscOptionsName("-snes_monitor_draw","Plot function norm at each iteration","SNESMonitorLG",&flg);CHKERRQ(ierr);
+    if (flg) {ierr = SNESMonitorSet(snes,SNESMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);}
 
     ierr = PetscOptionsName("-snes_fd","Use finite differences (slow) to compute Jacobian","SNESDefaultComputeJacobian",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -1262,7 +1263,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
   if (snes->afine) {ierr = VecDestroy(snes->afine);CHKERRQ(ierr);}
   ierr = KSPDestroy(snes->ksp);CHKERRQ(ierr);
   if (snes->vwork) {ierr = VecDestroyVecs(snes->vwork,snes->nvwork);CHKERRQ(ierr);}
-  ierr = SNESClearMonitor(snes);CHKERRQ(ierr);
+  ierr = SNESMonitorCancel(snes);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1385,45 +1386,45 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES snes,PetscRe
    macros instead of functions
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLGMonitor"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitor(SNES snes,PetscInt it,PetscReal norm,void *ctx)
+#define __FUNCT__ "SNESMonitorLG"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLG(SNES snes,PetscInt it,PetscReal norm,void *ctx)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  ierr = KSPLGMonitor((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
+  ierr = KSPMonitorLG((KSP)snes,it,norm,ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLGMonitorCreate"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+#define __FUNCT__ "SNESMonitorLGCreate"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPLGMonitorCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
+  ierr = KSPMonitorLGCreate(host,label,x,y,m,n,draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESLGMonitorDestroy"
-PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitorDestroy(PetscDrawLG draw)
+#define __FUNCT__ "SNESMonitorLGDestroy"
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG draw)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPLGMonitorDestroy(draw);CHKERRQ(ierr);
+  ierr = KSPMonitorLGDestroy(draw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ------------ Routines to set performance monitoring options ----------- */
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetMonitor"
+#define __FUNCT__ "SNESMonitorSet"
 /*@C
-   SNESSetMonitor - Sets an ADDITIONAL function that is to be used at every
+   SNESMonitorSet - Sets an ADDITIONAL function that is to be used at every
    iteration of the nonlinear solver to display the iteration's 
    progress.   
 
@@ -1446,27 +1447,27 @@ $     int func(SNES snes,PetscInt its, PetscReal norm,void *mctx)
 -    mctx - [optional] monitoring context
 
    Options Database Keys:
-+    -snes_monitor        - sets SNESDefaultMonitor()
-.    -snes_xmonitor       - sets line graph monitor,
-                            uses SNESLGMonitorCreate()
-_    -snes_cancelmonitors - cancels all monitors that have
++    -snes_monitor        - sets SNESMonitorDefault()
+.    -snes_monitor_draw    - sets line graph monitor,
+                            uses SNESMonitorLGCreate()
+_    -snes_monitor_cancel - cancels all monitors that have
                             been hardwired into a code by 
-                            calls to SNESSetMonitor(), but
+                            calls to SNESMonitorSet(), but
                             does not cancel those set via
                             the options database.
 
    Notes: 
    Several different monitoring routines may be set by calling
-   SNESSetMonitor() multiple times; all will be called in the 
+   SNESMonitorSet() multiple times; all will be called in the 
    order in which they were set.
 
    Level: intermediate
 
 .keywords: SNES, nonlinear, set, monitor
 
-.seealso: SNESDefaultMonitor(), SNESClearMonitor()
+.seealso: SNESMonitorDefault(), SNESMonitorCancel()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1480,9 +1481,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES snes,PetscErrorCode (*fun
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESClearMonitor"
+#define __FUNCT__ "SNESMonitorCancel"
 /*@C
-   SNESClearMonitor - Clears all the monitor functions for a SNES object.
+   SNESMonitorCancel - Clears all the monitor functions for a SNES object.
 
    Collective on SNES
 
@@ -1490,8 +1491,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES snes,PetscErrorCode (*fun
 .  snes - the SNES context
 
    Options Database Key:
-.  -snes_cancelmonitors - cancels all monitors that have been hardwired
-    into a code by calls to SNESSetMonitor(), but does not cancel those 
+.  -snes_monitor_cancel - cancels all monitors that have been hardwired
+    into a code by calls to SNESMonitorSet(), but does not cancel those 
     set via the options database
 
    Notes: 
@@ -1501,9 +1502,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES snes,PetscErrorCode (*fun
 
 .keywords: SNES, nonlinear, set, monitor
 
-.seealso: SNESDefaultMonitor(), SNESSetMonitor()
+.seealso: SNESMonitorDefault(), SNESMonitorSet()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES snes)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorCancel(SNES snes)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1719,7 +1720,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUpdate(SNES snes, PetscErrorCode (*fun
   Level: intermediate
 
 .keywords: SNES, update
-.seealso SNESSetUpdate(), SNESDefaultRhsBC(), SNESDefaultSolutionBC()
+.seealso SNESSetUpdate(), SNESDefaultRhsBC(), SNESDefaultShortolutionBC()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultUpdate(SNES snes, PetscInt step)
 {

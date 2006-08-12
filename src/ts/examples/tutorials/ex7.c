@@ -90,7 +90,7 @@ int main(int argc,char **argv)
   ierr = TSSetType(ts,TS_BEULER);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,maxsteps,1.0);CHKERRQ(ierr);
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-  ierr = TSSetMonitor(ts,Monitor,0,0);CHKERRQ(ierr);
+  ierr = TSMonitorSet(ts,Monitor,0,0);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Set initial conditions

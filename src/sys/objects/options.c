@@ -1629,7 +1629,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
                 available for options set through a file, environment variable, or on 
                 the command line. Only options set after PetscInitialize completes will 
                 be monitored.
-.  -options_cancelmonitors - cancel all options database monitors    
+.  -options_monitor_cancel - cancel all options database monitors    
 
    Notes:
    To see all options, run your program with the -help option or consult
@@ -1649,14 +1649,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
   PetscFunctionBegin;
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD,"","Options database options","PetscOptions");CHKERRQ(ierr);
-  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsSetMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsString("-options_monitor","Monitor options database","PetscOptionsMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && (!options->numbermonitors)) {
     ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,monfilename,&monviewer);CHKERRQ(ierr);
-    ierr = PetscOptionsSetMonitor(PetscOptionsDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = PetscOptionsMonitorSet(PetscOptionsMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
      
-  ierr = PetscOptionsName("-options_cancelmonitors","Cancel all options database monitors","PetscOptionsClearMonitor",&flg);CHKERRQ(ierr);
-  if (flg) { ierr = PetscOptionsClearMonitor();CHKERRQ(ierr); }
+  ierr = PetscOptionsName("-options_monitor_cancel","Cancel all options database monitors","PetscOptionsMonitorCancel",&flg);CHKERRQ(ierr);
+  if (flg) { ierr = PetscOptionsMonitorCancel();CHKERRQ(ierr); }
   
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -1665,9 +1665,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsDefaultMonitor"
+#define __FUNCT__ "PetscOptionsMonitorDefault"
 /*@C
-   PetscOptionsDefaultMonitor - Print all options set value events.
+   PetscOptionsMonitorDefault - Print all options set value events.
 
    Collective on PETSC_COMM_WORLD
 
@@ -1680,9 +1680,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
 
 .keywords: PetscOptions, default, monitor
 
-.seealso: PetscOptionsSetMonitor()
+.seealso: PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char name[], const char value[], void *dummy)
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorDefault(const char name[], const char value[], void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -1694,9 +1694,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char name[], con
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsSetMonitor"
+#define __FUNCT__ "PetscOptionsMonitorSet"
 /*@C
-   PetscOptionsSetMonitor - Sets an ADDITIONAL function to be called at every method that
+   PetscOptionsMonitorSet - Sets an ADDITIONAL function to be called at every method that
    modified the PETSc options database.
       
    Not collective
@@ -1713,32 +1713,32 @@ $     monitor (const char name[], const char value[], void *mctx)
 
 +  name - option name string
 .  value - option value string
--  mctx  - optional monitoring context, as set by PetscOptionsSetMonitor()
+-  mctx  - optional monitoring context, as set by PetscOptionsMonitorSet()
 
    Options Database Keys:
-+    -options_monitor    - sets PetscOptionsDefaultMonitor()
--    -options_cancelmonitors - cancels all monitors that have
++    -options_monitor    - sets PetscOptionsMonitorDefault()
+-    -options_monitor_cancel - cancels all monitors that have
                           been hardwired into a code by 
-                          calls to PetscOptionsSetMonitor(), but
+                          calls to PetscOptionsMonitorSet(), but
                           does not cancel those set via
                           the options database.
 
    Notes:  
    The default is to do nothing.  To print the name and value of options 
-   being inserted into the database, use PetscOptionsDefaultMonitor() as the monitoring routine, 
+   being inserted into the database, use PetscOptionsMonitorDefault() as the monitoring routine, 
    with a null monitoring context. 
 
    Several different monitoring routines may be set by calling
-   PetscOptionsSetMonitor() multiple times; all will be called in the 
+   PetscOptionsMonitorSet() multiple times; all will be called in the 
    order in which they were set.
 
    Level: beginner
 
 .keywords: PetscOptions, set, monitor
 
-.seealso: PetscOptionsDefaultMonitor(), PetscOptionsClearMonitor()
+.seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorCancel()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(const char name[], const char value[], void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   if (options->numbermonitors >= MAXOPTIONSMONITORS) {
@@ -1751,24 +1751,24 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*monitor)(
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOptionsClearMonitor"
+#define __FUNCT__ "PetscOptionsMonitorCancel"
 /*@
-   PetscOptionsClearMonitor - Clears all monitors for a PetscOptions object.
+   PetscOptionsMonitorCancel - Clears all monitors for a PetscOptions object.
 
    Not collective 
 
    Options Database Key:
-.  -options_cancelmonitors - Cancels all monitors that have
-    been hardwired into a code by calls to PetscOptionsSetMonitor(), 
+.  -options_monitor_cancel - Cancels all monitors that have
+    been hardwired into a code by calls to PetscOptionsMonitorSet(), 
     but does not cancel those set via the options database.
 
    Level: intermediate
 
 .keywords: PetscOptions, set, monitor
 
-.seealso: PetscOptionsDefaultMonitor(), PetscOptionsSetMonitor()
+.seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearMonitor()
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel()
 {
   PetscErrorCode ierr;
   PetscInt       i;

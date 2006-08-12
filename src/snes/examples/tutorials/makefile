@@ -137,47 +137,47 @@ ex31: ex31.o chkopts
 	${RM} ex31.o
 #--------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_smonitor > ex1_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_smonitor > ex1f_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1f -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1f_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1f_1.out ex1f_1.tmp) then true; \
 	   else echo "Possible problem with ex1f_1, diffs above"; fi; \
 	   ${RM} -f ex1f_1.tmp
 runex2:
-	-@${MPIRUN} -np 1 ./ex2 -nox -snes_cancelmonitors -snes_smonitor \
+	-@${MPIRUN} -np 1 ./ex2 -nox -snes_monitor_cancel -snes_monitor_short \
 		 -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always >ex2_1.tmp 2>&1;	\
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
 runex2_2:
-	-@${MPIRUN} -np 1 ./ex2 -nox -snes_cancelmonitors -snes_smonitor \
+	-@${MPIRUN} -np 1 ./ex2 -nox -snes_monitor_cancel -snes_monitor_short \
 		-snes_type tr -snes_view \
 		-pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always > ex2_2.tmp 2>&1; \
 	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
 	   else echo "Possible problem with ex2_2, diffs above"; fi; \
 	   ${RM} -f ex2_2.tmp
 runex2_3:
-	-@${MPIRUN} -np 1 ./ex2 -nox -snes_cancelmonitors -snes_smonitor -malloc no \
+	-@${MPIRUN} -np 1 ./ex2 -nox -snes_monitor_cancel -snes_monitor_short -malloc no \
 		 -snes_view -pc_type jacobi -ksp_gmres_cgs_refinement_type refine_always >ex2_3.tmp 2>&1;	\
 	   if (${DIFF} output/ex2_1.out ex2_3.tmp) then true; \
 	   else echo "Possible problem with ex2_3, diffs above"; fi; \
 	   ${RM} -f ex2_3.tmp
 runex3:
-	-@${MPIRUN} -np 1 ./ex3 -nox -snes_cancelmonitors -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex3_1.tmp 2>&1;	  \
+	-@${MPIRUN} -np 1 ./ex3 -nox -snes_monitor_cancel -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex3_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \
 	   ${RM} -f ex3_1.tmp
 runex3_2:
 	-@${MPIRUN} -np 3 ./ex3 -nox -pc_type asm -mat_type mpiaij  \
-	   -snes_cancelmonitors -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex3_2.tmp 2>&1; \
+	   -snes_monitor_cancel -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex3_2.tmp 2>&1; \
 	   if (${DIFF} output/ex3_2.out ex3_2.tmp) then true; \
 	   else echo "Possible problem with ex3_2, diffs above"; fi; \
 	   ${RM} -f ex3_2.tmp
 runex3_3:
-	-@${MPIRUN} -np 2 ./ex3 -nox -snes_cancelmonitors -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex3_3.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex3 -nox -snes_monitor_cancel -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex3_3.tmp 2>&1; \
 	   if (${DIFF} output/ex3_3.out ex3_3.tmp) then true; \
 	   else echo "Possible problem with ex3_3, diffs above"; fi; \
 	   ${RM} -f ex3_3.tmp
@@ -187,99 +187,99 @@ runex3_4:
 	   else echo "Possible problem with ex3_4, diffs above"; fi; \
 	   ${RM} -f ex3_4.tmp
 runex5:
-	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_1.tmp) then true; \
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp
 runex5_2:
-	-@${MPIRUN} -np 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5_2.out ex5_2.tmp) then true; \
 	   else echo "Possible problem with ex5_2, diffs above"; fi; \
 	   ${RM} -f ex5_2.tmp
 runex5_3:
-	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 2 -da_processors_y 2 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_3.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_3.tmp 2>&1;\
 	   if (${DIFF} output/ex5_1.out ex5_3.tmp) then true; \
 	   else echo "Possible problem with ex5_3, diffs above"; fi; \
 	   ${RM} -f ex5_3.tmp
 runex5_4:
-	-@${MPIRUN} -np 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_smonitor -pc_type asm \
+	-@${MPIRUN} -np 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -pc_type asm \
 	   -pc_asm_blocks 4 -pc_asm_overlap 1 -ksp_gmres_cgs_refinement_type refine_always > ex5_4.tmp 2>&1; \
 	   if (${DIFF} output/ex5_4.out ex5_4.tmp) then true; \
 	   else echo "Possible problem with ex5_4, diffs above"; fi; \
 	   ${RM} -f ex5_4.tmp
 runex5_5:
-	-@${MPIRUN} -np 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_smonitor -pc_type bjacobi \
+	-@${MPIRUN} -np 4 ./ex5 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -pc_type bjacobi \
 	   -snes_view -ksp_gmres_cgs_refinement_type refine_always > ex5_5.tmp 2>&1; \
 	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
 runex5_6:
-	-@${MPIRUN} -np 4 ./ex5 -snes_fd -da_processors_x 2 -da_processors_y 2 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_6.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5 -snes_fd -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_6.tmp 2>&1; \
 	   if (${DIFF} output/ex5_6.out ex5_6.tmp) then true; \
 	   else echo "Possible problem with ex5_6, diffs above"; fi; \
 	   ${RM} -f ex5_6.tmp
 runex5_7:
-	-@${MPIRUN} -np 3 ./ex5 -snes_fd  -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_7.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ./ex5 -snes_fd  -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_7.tmp 2>&1;\
 	   if (${DIFF} output/ex5_7.out ex5_7.tmp) then true; \
 	   else echo "Possible problem with ex5_7, diffs above"; fi; \
 	   ${RM} -f ex5_7.tmp
 runex5_8:
-	-@${MPIRUN} -np 2 ./ex5 -snes_vecmonitor -ksp_gmres_cgs_refinement_type refine_always > /dev/null 2>&1
+	-@${MPIRUN} -np 2 ./ex5 -snes_monitor_solution -ksp_gmres_cgs_refinement_type refine_always > /dev/null 2>&1
 runex5_9:
-	-@${MPIRUN} -np 4 ./ex5 -snes_mf -snes_smonitor>ex5_9.tmp 2>&1;\
+	-@${MPIRUN} -np 4 ./ex5 -snes_mf -snes_monitor_short>ex5_9.tmp 2>&1;\
 	   if (${DIFF} output/ex5_9.out ex5_9.tmp) then true; \
 	   else echo "Possible problem with ex5_9, diffs above"; fi; \
 	   ${RM} -f ex5_9.tmp
 runex5_10:
-	-@${MPIRUN} -np 2 ./ex5 -ksp_diagonal_scale -ksp_smonitor -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5_10.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex5 -ksp_diagonal_scale -ksp_monitor_short -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5_10.tmp 2>&1;\
 	   if (${DIFF} output/ex5_10.out ex5_10.tmp) then true; \
 	   else echo "Possible problem with ex5_10, diffs above"; fi; \
 	   ${RM} -f ex5_10.tmp
 runex5_11:
-	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always -matlab_function > ex5_11.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always -matlab_function > ex5_11.tmp 2>&1; \
 	   if (${DIFF} output/ex5_1.out ex5_11.tmp) then true; \
 	   else echo "Possible problem with ex5_11, diffs above"; fi; \
 	   ${RM} -f ex5_11.tmp
 runex5_13:
 	-@for F in " " -matlab_function ; do \
             for J in " " -fd_jacobian -adic_jacobian; do \
-              ${MPIRUN} -np 2 ./ex5 -snes_smonitor $$F $$J > ex5_13.tmp 2>&1; \
+              ${MPIRUN} -np 2 ./ex5 -snes_monitor_short $$F $$J > ex5_13.tmp 2>&1; \
               if (${DIFF} output/ex5_13.out ex5_13.tmp) then true; \
 	      else echo "Possible problem with ex5_13, diffs above " $F $J; fi; \
               ${RM} -f ex5_13.tmp; \
-              ${MPIRUN} -np 2 ./ex5 -snes_smonitor $$F $$J -adicmf_jacobian > ex5_13.tmp 2>&1; \
+              ${MPIRUN} -np 2 ./ex5 -snes_monitor_short $$F $$J -adicmf_jacobian > ex5_13.tmp 2>&1; \
               if (${DIFF} output/ex5_13.out ex5_13.tmp) then true; \
 	      else echo "Possible problem with ex5_13, diffs above " $F $J; fi; \
               ${RM} -f ex5_13.tmp; \
             done; \
           done
 runex5_14:
-	-@${MPIRUN} -np 4 ./ex5 -snes_smonitor -fd_jacobian_ghosted > ex5_14.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5 -snes_monitor_short -fd_jacobian_ghosted > ex5_14.tmp 2>&1; \
 	   if (${DIFF} output/ex5_13.out ex5_14.tmp) then true; \
 	   else echo "Possible problem with ex5_14, diffs above "; fi; \
            ${RM} -f ex5_14.tmp; 
 runex5f:
-	-@${MPIRUN} -np 4 ./ex5f -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5f -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f_1.tmp) then true; \
 	   else echo "Possible problem with ex5f_1, diffs above"; fi; \
 	   ${RM} -f ex5f_1.tmp
 runex5f_2:
-	-@${MPIRUN} -np 4 ./ex5f  -da_processors_x 2 -da_processors_y 2 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5f  -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_2.out ex5f_2.tmp) then true; \
 	   else echo "Possible problem with ex5f_2, diffs above"; fi; \
 	   ${RM} -f ex5f_2.tmp
 runex5f_3:
-	-@${MPIRUN} -np 3 ./ex5f -snes_fd  -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f_3.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ./ex5f -snes_fd  -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_3.tmp 2>&1;\
 	   if (${DIFF} output/ex5f_3.out ex5f_3.tmp) then true; \
 	   else echo "Possible problem with ex5f_3, diffs above"; fi; \
 	   ${RM} -f ex5f_3.tmp
 runex5f_4:
-	-@${MPIRUN} -np 2 ./ex5f -adifor_jacobian -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f_4.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex5f -adifor_jacobian -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_4.tmp 2>&1;\
 	   if (${DIFF} output/ex5f_4.out ex5f_4.tmp) then true; \
 	   else echo "Possible problem with ex5f_4, diffs above"; fi; \
 	   ${RM} -f ex5f_4.tmp
 runex5f_5:
-	-@${MPIRUN} -np 2 ./ex5f -adiformf_jacobian  -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f_5.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex5f -adiformf_jacobian  -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f_5.tmp 2>&1;\
 	   if (${DIFF} output/ex5f_5.out ex5f_5.tmp) then true; \
 	   else echo "Possible problem with ex5f_5, diffs above"; fi; \
 	   ${RM} -f ex5f_5.tmp
@@ -297,60 +297,60 @@ testex5f: ex5f.PETSc
          ${RM} -f ex5f_1.tmp ;\
          ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex5f.rm; fi
 runex5f90:
-	-@${MPIRUN} -np 4 ./ex5f90 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f90_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5f90 -snes_mf -da_processors_x 4 -da_processors_y 1 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f90_1.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_1.out ex5f90_1.tmp) then true; \
 	   else echo "Possible problem with ex5f90_1, diffs above"; fi; \
 	   ${RM} -f ex5f90_1.tmp
 runex5f90_2:
-	-@${MPIRUN} -np 4 ./ex5f90 -da_processors_x 2 -da_processors_y 2 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f90_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex5f90 -da_processors_x 2 -da_processors_y 2 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f90_2.tmp 2>&1; \
 	   if (${DIFF} output/ex5f_2.out ex5f90_2.tmp) then true; \
 	   else echo "Possible problem with ex5f90_2, diffs above"; fi; \
 	   ${RM} -f ex5f90_2.tmp
 runex5f90_3:
-	-@${MPIRUN} -np 3 ./ex5f90 -snes_fd  -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex5f90_3.tmp 2>&1;\
+	-@${MPIRUN} -np 3 ./ex5f90 -snes_fd  -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex5f90_3.tmp 2>&1;\
 	   if (${DIFF} output/ex5f_3.out ex5f90_3.tmp) then true; \
 	   else echo "Possible problem with ex5f90_3, diffs above"; fi; \
 	   ${RM} -f ex5f90_3.tmp
 runex6:
-	-@${MPIRUN} -np 1 ./ex6 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex6_1.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex6 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex6_1.out ex6_1.tmp) then true; \
 	   else echo "Possible problem with ex6_1, diffs above"; fi; \
 	   ${RM} -f ex6_1.tmp
 runex6_2:
-	-@${MPIRUN} -np 1 ./ex6 -snes_mf -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex6_2.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex6 -snes_mf -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6_2.tmp 2>&1;   \
 	   if (${DIFF} output/ex6_2.out ex6_2.tmp) then true; \
 	   else echo "Possible problem with ex6_2, diffs above"; fi; \
 	   ${RM} -f ex6_2.tmp
 runex8:
-	-@${MPIRUN} -np 2 ./ex8  -mx 16 -my 16 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always \
+	-@${MPIRUN} -np 2 ./ex8  -mx 16 -my 16 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always \
                     -lidvelocity 0. -grashof 1000. > ex8_1.tmp 2>&1; \
            if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
            else echo "Possible problem with ex8_1, diffs above"; fi; \
            ${RM} -f ex8_1.tmp
 runex8_2:
-	-@${MPIRUN} -np 2 ./ex8 -snes_vecmonitor -ksp_gmres_cgs_refinement_type refine_always > /dev/null 2>&1 
+	-@${MPIRUN} -np 2 ./ex8 -snes_monitor_solution -ksp_gmres_cgs_refinement_type refine_always > /dev/null 2>&1 
 runex8_3:
 	-@${MPIRUN} -np 2 ./ex8 -is_coloring_view > ex8_3.tmp 2>&1;\
            if (${DIFF} output/ex8_3.out ex8_3.tmp) then true; \
            else echo "Possible problem with ex8_3, diffs above"; fi; \
            ${RM} -f ex8_3.tmp
 runex14:
-	-@${MPIRUN} -np 4 ./ex14 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex14_1.tmp 2>&1; \
 	   if (${DIFF} output/ex14_1.out ex14_1.tmp) then true; \
 	   else echo "Possible problem with ex14_1, diffs above"; fi; \
 	   ${RM} -f ex14_1.tmp
 runex14_2:
-	-@${MPIRUN} -np 4 ./ex14 -snes_smonitor -ksp_gmres_cgs_refinement_type refine_always  > ex14_2.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex14 -snes_monitor_short -ksp_gmres_cgs_refinement_type refine_always  > ex14_2.tmp 2>&1; \
 	   if (${DIFF} output/ex14_2.out ex14_2.tmp) then true; \
 	   else echo "Possible problem with ex14_2, diffs above"; fi; \
 	   ${RM} -f ex14_2.tmp
 runex19:
-	-@${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4 -snes_smonitor  > ex19_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_1:
-	-@${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4 -snes_smonitor -dmmg_jacobian_fd -dmmg_iscoloring_type IS_COLORING_LOCAL > ex19_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_jacobian_fd -dmmg_iscoloring_type IS_COLORING_LOCAL > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_2, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
@@ -376,7 +376,7 @@ testex19: ex19.PETSc
         D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h`; \
 	if [ "$${D2}" != "" ]; then havex="1"; fi;\
 	if [ $${havex} = "1" ]; then \
-           ${MPIRUN} -np 1 ./ex19 -dmmg_nlevels 4 -snes_xmonitor  > ex19_1.tmp 2>&1; \
+           ${MPIRUN} -np 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.testout ex19_1.tmp > /dev/null 2>&1) then \
            echo "Graphics example src/snes/examples/tutorials/ex19 run successfully with 1 MPI process"; \
 	   else echo "Possible error running Graphics examples src/snes/examples/tutorials/ex19 1 MPI process"; \
@@ -385,7 +385,7 @@ testex19: ex19.PETSc
            ${RM} -f ex19_1.tmp; \
            ${MAKE} PETSC_ARCH=${PETSC_ARCH} PETSC_DIR=${PETSC_DIR} ex19.rm ; fi
 runex21:
-	-@${MPIRUN} -np 4 ./ex21  -snes_mf -snes_smonitor -nox > ex21_1.tmp 2>&1; \
+	-@${MPIRUN} -np 4 ./ex21  -snes_mf -snes_monitor_short -nox > ex21_1.tmp 2>&1; \
 	   if (${DIFF} output/ex21_1.out ex21_1.tmp) then true; \
 	   else echo "Possible problem with ex21_1, diffs above"; fi; \
 	   ${RM} -f ex21_1.tmp

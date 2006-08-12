@@ -3,9 +3,9 @@
 #include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESVecViewMonitor"
+#define __FUNCT__ "SNESMonitorSolution"
 /*@C
-   SNESVecViewMonitor - Monitors progress of the SNES solvers by calling 
+   SNESMonitorSolution - Monitors progress of the SNES solvers by calling 
    VecView() for the approximate solution at each iteration.
 
    Collective on SNES
@@ -20,9 +20,9 @@
 
 .keywords: SNES, nonlinear, vector, monitor, view
 
-.seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
+.seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolution(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -41,9 +41,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewMonitor(SNES snes,PetscInt its,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESVecViewResidualMonitor"
+#define __FUNCT__ "SNESMonitorResidual"
 /*@C
-   SNESVecViewResidualMonitor - Monitors progress of the SNES solvers by calling 
+   SNESMonitorResidual - Monitors progress of the SNES solvers by calling 
    VecView() for the residual at each iteration.
 
    Collective on SNES
@@ -58,9 +58,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewMonitor(SNES snes,PetscInt its,Pet
 
 .keywords: SNES, nonlinear, vector, monitor, view
 
-.seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
+.seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewResidualMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorResidual(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -79,9 +79,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewResidualMonitor(SNES snes,PetscInt
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESVecViewUpdateMonitor"
+#define __FUNCT__ "SNESMonitorSolutionUpdate"
 /*@C
-   SNESVecViewUpdateMonitor - Monitors progress of the SNES solvers by calling 
+   SNESMonitorSolutionUpdate - Monitors progress of the SNES solvers by calling 
    VecView() for the UPDATE to the solution at each iteration.
 
    Collective on SNES
@@ -96,9 +96,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewResidualMonitor(SNES snes,PetscInt
 
 .keywords: SNES, nonlinear, vector, monitor, view
 
-.seealso: SNESSetMonitor(), SNESDefaultMonitor(), VecView()
+.seealso: SNESMonitorSet(), SNESMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewUpdateMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -117,9 +117,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewUpdateMonitor(SNES snes,PetscInt i
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESDefaultMonitor"
+#define __FUNCT__ "SNESMonitorDefault"
 /*@C
-   SNESDefaultMonitor - Monitors progress of the SNES solvers (default).
+   SNESMonitorDefault - Monitors progress of the SNES solvers (default).
 
    Collective on SNES
 
@@ -136,9 +136,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewUpdateMonitor(SNES snes,PetscInt i
 
 .keywords: SNES, nonlinear, default, monitor, norm
 
-.seealso: SNESSetMonitor(), SNESVecViewMonitor()
+.seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -152,12 +152,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMonitor(SNES snes,PetscInt its,Pet
 typedef struct {
   PetscViewer viewer;
   PetscReal   *history;
-} SNESRatioMonitorContext;
+} SNESMonitorRatioContext;
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESRatioMonitor"
+#define __FUNCT__ "SNESMonitorRatio"
 /*@C
-   SNESRatioMonitor - Monitors progress of the SNES solvers by printing the ratio
+   SNESMonitorRatio - Monitors progress of the SNES solvers by printing the ratio
    of residual norm at each iteration to the previous.
 
    Collective on SNES
@@ -172,14 +172,14 @@ typedef struct {
 
 .keywords: SNES, nonlinear, monitor, norm
 
-.seealso: SNESSetMonitor(), SNESVecViewMonitor()
+.seealso: SNESMonitorSet(), SNESMonitorSolution()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESRatioMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode          ierr;
   PetscInt                len;
   PetscReal               *history;
-  SNESRatioMonitorContext *ctx = (SNESRatioMonitorContext*)dummy;
+  SNESMonitorRatioContext *ctx = (SNESMonitorRatioContext*)dummy;
 
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
@@ -196,11 +196,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRatioMonitor(SNES snes,PetscInt its,Petsc
    If the we set the history monitor space then we must destroy it
 */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESRatioMonitorDestroy"
-PetscErrorCode SNESRatioMonitorDestroy(void *ct)
+#define __FUNCT__ "SNESMonitorRatioDestroy"
+PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 {
   PetscErrorCode          ierr;
-  SNESRatioMonitorContext *ctx = (SNESRatioMonitorContext*)ct;
+  SNESMonitorRatioContext *ctx = (SNESMonitorRatioContext*)ct;
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->history);CHKERRQ(ierr);
@@ -210,9 +210,9 @@ PetscErrorCode SNESRatioMonitorDestroy(void *ct)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetRatioMonitor"
+#define __FUNCT__ "SNESMonitorSetRatio"
 /*@C
-   SNESSetRatioMonitor - Sets SNES to use a monitor that prints the 
+   SNESMonitorSetRatio - Sets SNES to use a monitor that prints the 
    ratio of the function norm at each iteration.
 
    Collective on SNES
@@ -225,12 +225,12 @@ PetscErrorCode SNESRatioMonitorDestroy(void *ct)
 
 .keywords: SNES, nonlinear, monitor, norm
 
-.seealso: SNESSetMonitor(), SNESVecViewMonitor(), SNESDefaultMonitor()
+.seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRatioMonitor(SNES snes,PetscViewer viewer)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
 {
   PetscErrorCode          ierr;
-  SNESRatioMonitorContext *ctx;
+  SNESMonitorRatioContext *ctx;
   PetscReal               *history;
 
   PetscFunctionBegin;
@@ -238,28 +238,28 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRatioMonitor(SNES snes,PetscViewer vie
     viewer = PETSC_VIEWER_STDOUT_(snes->comm);
     ierr   = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   } 
-  ierr = PetscNew(SNESRatioMonitorContext,&ctx);
+  ierr = PetscNew(SNESMonitorRatioContext,&ctx);
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!history) {
     ierr = PetscMalloc(100*sizeof(PetscReal),&ctx->history);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
   }
   ctx->viewer = viewer;
-  ierr = SNESSetMonitor(snes,SNESRatioMonitor,ctx,SNESRatioMonitorDestroy);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(snes,SNESMonitorRatio,ctx,SNESMonitorRatioDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /* ---------------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESDefaultSMonitor"
+#define __FUNCT__ "SNESMonitorDefaultShort"
 /*
-     Default (short) SNES Monitor, same as SNESDefaultMonitor() except
+     Default (short) SNES Monitor, same as SNESMonitorDefault() except
   it prints fewer digits of the residual as the residual gets smaller.
   This is because the later digits are meaningless and are often 
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSMonitor(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;

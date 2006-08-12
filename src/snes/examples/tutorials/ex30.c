@@ -1501,11 +1501,11 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
     param->toggle_kspmon = PETSC_FALSE;
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     if (param->kspmon) {
-      ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
+      ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
       param->kspmon = PETSC_FALSE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");
     } else {
-      ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       param->kspmon = PETSC_TRUE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }

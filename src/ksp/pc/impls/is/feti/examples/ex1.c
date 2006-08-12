@@ -9,7 +9,7 @@
 
 #define PRINT(A) PetscPrintf(PETSC_COMM_WORLD,"debug:%d\n",(A))
 
-static char help[]="\t\t\tFetiDP\nSample usage:\n mpirun -np 1 ex1 -N 27\nSome meaningful options (first is default):\n\t\t-local_pc_type\t\tlu|none|ilu|jacobi|asm\n\t\t-local_ksp_type\t\tpreonly|cg|gmres\n\t\t-ksp_type\t\tcg|gmres\n\t\t-pc_type\t\tpcfeti|none\n\t\t-pcfeti_schur_ksp_type\tpreonly|cg|gmres\n\t\t-pcfeti_schur_pc_type\tlu|ilu\n\t\t-pcfeti_lumped\t\toff|on\n\t\t-local_ksp_rtol\t\t1e-7\n\t\t-ksp_rtol\t\t1e-7\nConvergence:\n\t\t-ksp_xmonitor\t\t-ksp_monitor\t\t-ksp_truemonitor\n\t\t-compute_explicit_operator\n\nUsing:\n";
+static char help[]="\t\t\tFetiDP\nSample usage:\n mpirun -np 1 ex1 -N 27\nSome meaningful options (first is default):\n\t\t-local_pc_type\t\tlu|none|ilu|jacobi|asm\n\t\t-local_ksp_type\t\tpreonly|cg|gmres\n\t\t-ksp_type\t\tcg|gmres\n\t\t-pc_type\t\tpcfeti|none\n\t\t-pcfeti_schur_ksp_type\tpreonly|cg|gmres\n\t\t-pcfeti_schur_pc_type\tlu|ilu\n\t\t-pcfeti_lumped\t\toff|on\n\t\t-local_ksp_rtol\t\t1e-7\n\t\t-ksp_rtol\t\t1e-7\nConvergence:\n\t\t-ksp_monitor_draw\t\t-ksp_monitor\t\t-ksp_monitor_true_residual\n\t\t-compute_explicit_operator\n\nUsing:\n";
 
 PetscReal cond(PetscReal *r, PetscReal *c, int neig, PetscReal *min,PetscReal *max)
 {

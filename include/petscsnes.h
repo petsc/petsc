@@ -40,8 +40,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm,SNES*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES,SNESType);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMonitor(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESClearMonitor(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES,PetscErrorCode(*)(SNES,PetscInt,PetscReal,void*),void *,PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorCancel(SNES);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES,PetscReal[],PetscInt[],PetscInt,PetscTruth);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES,PetscReal*[],PetscInt *[],PetscInt *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES);
@@ -198,13 +198,13 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormU(Mat,PetscTr
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES,SNESType*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMonitor(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESRatioMonitor(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetRatioMonitor(SNES,PetscViewer);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewMonitor(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewResidualMonitor(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESVecViewUpdateMonitor(SNES,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultSMonitor(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES,PetscViewer);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolution(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorResidual(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES,PetscReal);
@@ -225,9 +225,9 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetConvergenceTestEW(SNES);
 /*
      Reuse the default KSP monitor routines for SNES
 */
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitorCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitor(SNES,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESLGMonitorDestroy(PetscDrawLG);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLG(SNES,PetscInt,PetscReal,void*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorLGDestroy(PetscDrawLG);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetApplicationContext(SNES,void *);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES,void **);

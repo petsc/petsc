@@ -229,7 +229,7 @@ int main(int argc,char **args)
     CHKERRQ(ierr);
   }
  
- /*ierr = SNESSetMonitor(snes,Monitor,(void*)&monP); CHKERRQ(ierr);*/
+ /*ierr = SNESMonitorSet(snes,Monitor,(void*)&monP); CHKERRQ(ierr);*/
   ierr = SNESSetFromOptions(snes); CHKERRQ(ierr);
 
  

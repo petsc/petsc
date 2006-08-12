@@ -271,8 +271,8 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 /*------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSPseudoDefaultMonitor"
-PetscErrorCode TSPseudoDefaultMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
+#define __FUNCT__ "TSPseudoMonitorDefault"
+PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
   TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
@@ -293,9 +293,9 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   PetscFunctionBegin;
 
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-ts_monitor","Monitor convergence","TSPseudoDefaultMonitor",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = TSSetMonitor(ts,TSPseudoDefaultMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",&flg);CHKERRQ(ierr);
     if (flg) {

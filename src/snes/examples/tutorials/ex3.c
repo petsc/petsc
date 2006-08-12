@@ -157,7 +157,7 @@ int main(int argc,char **argv)
      Set an optional user-defined monitoring routine
   */
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,0,0,0,400,400,&monP.viewer);CHKERRQ(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&monP,0);CHKERRQ(ierr); 
+  ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr); 
 
   /*
      Set names for some vectors to facilitate monitoring (optional)
@@ -466,14 +466,14 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,vo
 #define __FUNCT__ "Monitor"
 /*
    Monitor - Optional user-defined monitoring routine that views the
-   current iterate with an x-window plot. Set by SNESSetMonitor().
+   current iterate with an x-window plot. Set by SNESMonitorSet().
 
    Input Parameters:
    snes - the SNES context
    its - iteration number
    norm - 2-norm function value (may be estimated)
    ctx - optional user-defined context for private data for the 
-         monitor routine, as set by SNESSetMonitor()
+         monitor routine, as set by SNESMonitorSet()
 
    Note:
    See the manpage for PetscViewerDrawOpen() for useful runtime options,
