@@ -8,7 +8,7 @@
 
 typedef struct _MeshOps *MeshOps;
 struct _MeshOps {
-  PetscErrorCode (*view)(ALE::Obj<ALE::Mesh>,PetscViewer);
+  PetscErrorCode (*view)(const ALE::Obj<ALE::Mesh>&,PetscViewer);
   PetscErrorCode (*createglobalvector)(Mesh,Vec*);
   PetscErrorCode (*getcoloring)(Mesh,ISColoringType,ISColoring*);
   PetscErrorCode (*getmatrix)(Mesh,MatType,Mat*);

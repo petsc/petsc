@@ -623,6 +623,10 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
+      bool hasPatch(const patch_type& patch) {
+        if (this->_indices.find(patch) == this->_indices.end()) return false;
+        return true;
+      }
       void clear() {
         this->_indices.clear();
       };
@@ -633,6 +637,13 @@ namespace ALE {
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         this->_indices[patch][p].prefix = -1;
         this->_indices[patch][p].index  = dim;
+      };
+      void addFiberDimension(const patch_type& patch, const point_type& p, int dim) {
+        if (this->hasPatch(patch) && (this->_indices[patch].find(p) != this->_indices[patch].end())) {
+          this->_indices[patch][p].index += dim;
+        } else {
+          this->setFiberDimension(patch, p, dim);
+        }
       };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
         const Obj<typename topology_type::label_sequence>& points = this->_topology->depthStratum(patch, depth);
