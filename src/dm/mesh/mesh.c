@@ -11,7 +11,7 @@ PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, M
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
-PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
 {
   PetscViewerFormat format;
   PetscErrorCode    ierr;
@@ -69,13 +69,13 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
     ierr = ALE::PyLith::Viewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
 
-    if (mesh->hasSection("split")) {
+    if (!mesh->getSplitSection().isNull()) {
       sprintf(localFilename, "%s.%d.split", filename, rank);
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &splitViewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(splitViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(splitViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(splitViewer, localFilename);CHKERRQ(ierr);
-      ierr = ALE::PyLith::Viewer::writeSplitLocal(mesh, splitViewer);CHKERRQ(ierr);
+      ierr = ALE::PyLith::Viewer::writeSplitLocal(mesh->getSplitSection(), splitViewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(splitViewer);CHKERRQ(ierr);
     }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
@@ -111,7 +111,7 @@ PetscErrorCode MeshView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
-PetscErrorCode MeshView_Sieve(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer)
+PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
 {
   PetscTruth     iascii, isbinary, isdraw;
   PetscErrorCode ierr;
@@ -1177,5 +1177,5 @@ PetscErrorCode WritePyLithSplitLocal(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
-  return ALE::PyLith::Viewer::writeSplitLocal(m, viewer);
+  return ALE::PyLith::Viewer::writeSplitLocal(m->getSplitSection(), viewer);
 }

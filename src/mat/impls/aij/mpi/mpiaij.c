@@ -1717,7 +1717,6 @@ typedef boost::property_map<graph_type, boost::edge_weight_t>::type      weight_
 */
 PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorInfo *info, Mat *fact)
 {
-  Mat_MPIAIJ          *a = (Mat_MPIAIJ *) A->data;
   PetscTruth           row_identity, col_identity;
   PetscObjectContainer c;
   PetscInt             m, n, M, N;
@@ -1749,6 +1748,8 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact, m, n, M, N);CHKERRQ(ierr);
   ierr = MatSetType(*fact, A->type_name);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   (*fact)->factor = FACTOR_LU;
 
   ierr = PetscObjectContainerCreate(A->comm, &c);
