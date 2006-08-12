@@ -466,6 +466,7 @@ TOPS::UnstructuredSolver_impl::getValue_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValue)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValue} (getValue method)
+  return ""; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValue)
 }
 
@@ -478,6 +479,7 @@ TOPS::UnstructuredSolver_impl::getValueInt_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueInt)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValueInt} (getValueInt method)
+  return 0; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueInt)
 }
 
@@ -490,6 +492,7 @@ TOPS::UnstructuredSolver_impl::getValueBool_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueBool)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValueBool} (getValueBool method)
+  return false; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueBool)
 }
 
@@ -502,6 +505,7 @@ TOPS::UnstructuredSolver_impl::getValueDouble_impl (
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueDouble)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValueDouble} (getValueDouble method)
+  return 0.0; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueDouble)
 }
 
