@@ -183,7 +183,7 @@ PetscErrorCode establish(u_short portnum)
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
-  int t,portnumber;
+  int        t,portnumber;
 
   /* check output parameters */
   if (nlhs != 1) PETSC_MEX_ERROR("Open requires one output argument.");

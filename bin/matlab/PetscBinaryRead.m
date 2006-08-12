@@ -1,29 +1,39 @@
-function [varargout] = PetscBinaryRead(file,comp)
+function [varargout] = PetscBinaryRead(inarg,comp)
 %
 %  Reads in PETSc binary file matrices or vectors
 %  emits as Matlab sparse matrice or vectors.
 %
-%  Argument may be file name (string) or matlab
-%  file descriptor.
+%  Argument may be file name (string), socket number (integer)
+%  or any Matlab class that provides the read() and close() methods
+%  [We provide freader() and sreader() for binary files and sockets
 %
-   
+%  comp = 'complex' means the input file is complex
+%  comp = cell means return a Matlab cell array with all the items in 
+%              file/socket.
+%   
 if nargin == 1
   comp = 0;
 end
 
-if ischar(file) fd = fopen(file,'r','ieee-be');
-else            fd = file;
+if ischar(inarg) 
+  fd = freader(inarg);
+else if isnumeric(inarg)
+       fd = sreader(inarg)
+     else
+       fd = inarg
+     end
+% otherwise assume it is a freader or sreader and handles read()
 end
 
 if comp == 'cell'
-  narg   = 1000;
+  narg   = 1000;  
   result = cell(1);
 else
   narg = nargout;
 end
 
 for l=1:narg
-  header = sread(fd,1,'int32');
+  header = read(fd,1,'int32');
   if isempty(header)
     if comp == 'cell'
       varargout(1) = {result};
@@ -34,21 +44,21 @@ for l=1:narg
     return
   end
   if header == 1211216 % Petsc Mat Object 
-    header = sread(fd,3,'int32');
+    header = read(fd,3,'int32');
     m      = header(1);
     n      = header(2);
     nz     = header(3);
-    nnz = sread(fd,m,'int32');  %nonzeros per row
+    nnz = read(fd,m,'int32');  %nonzeros per row
     sum_nz = sum(nnz);
     if(sum_nz ~=nz)
       str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
       error(str);
     end
-    j   = sread(fd,nz,'int32') + 1;
-    if comp == 1
-      s   = sread(fd,2*nz,'double');
+    j   = read(fd,nz,'int32') + 1;
+    if comp == 'complex'
+      s   = read(fd,2*nz,'double');
     else 
-      s   = sread(fd,nz,'double');
+      s   = read(fd,nz,'double');
     end
     i   = ones(nz,1);
     cnt = 1;
@@ -57,7 +67,7 @@ for l=1:narg
       i(cnt:next,1) = k*ones(nnz(k),1);
       cnt = next+1;
     end
-    if comp == 1
+    if comp == 'complex'
       A = sparse(i,j,complex(s(1:2:2*nz),s(2:2:2*nz)),m,n,nz);
     else
       A = sparse(i,j,s,m,n,nz);
@@ -69,12 +79,12 @@ for l=1:narg
     end
   
   elseif  header == 1211214 % Petsc Vec Object
-    m = sread(fd,1,'int32');
-    if comp == 1
-      v = sread(fd,2*m,'double');
+    m = read(fd,1,'int32');
+    if comp == 'complex'
+      v = read(fd,2*m,'double');
       v = complex(v(1:2:2*m),v(2:2:2*m));
     else
-      v = sread(fd,m,'double');
+      v = read(fd,m,'double');
     end
     if comp == 'cell'
       result{l} = v;
@@ -97,4 +107,6 @@ for l=1:narg
   end
 
 end
-if ischar(file) fclose(fd); end;
+
+% close the reader if we opened it
+if ischar(inarg) or isinteger(inarg) close(fd); end;
