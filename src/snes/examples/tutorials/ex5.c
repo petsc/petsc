@@ -183,7 +183,7 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-matlab_function",&matlab_function,0);CHKERRQ(ierr);
 
   ierr = SNESSetFunction(snes,r,SNESDAFormFunction,&user);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   if (matlab_function) {
     ierr = SNESSetFunction(snes,r,FormFunctionMatlab,&user);CHKERRQ(ierr);
   }
@@ -413,7 +413,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
 /*
       Variant of FormFunction() that computes the function in Matlab
 */
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 PetscErrorCode FormFunctionMatlab(SNES snes,Vec X,Vec F,void *ptr)
 {
   AppCtx         *user = (AppCtx*)ptr;

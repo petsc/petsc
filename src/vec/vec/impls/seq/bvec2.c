@@ -417,7 +417,7 @@ PetscErrorCode VecView_Seq_Netcdf(Vec xin,PetscViewer v)
 }
 #endif
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mat.h"   /* Matlab include file */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -451,7 +451,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   PetscTruth     isnetcdf;
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscTruth     ismatlab;
 #endif
 
@@ -466,7 +466,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_PNETCDF)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_NETCDF,&isnetcdf);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
 
@@ -474,11 +474,6 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
     ierr = VecView_Seq_Draw(xin,viewer);CHKERRQ(ierr);
   } else if (iascii){
     ierr = VecView_Seq_File(xin,viewer);CHKERRQ(ierr);
-#if defined(PETSC_USE_SOCKET_VIEWER)
-  } else if (issocket) {
-    Vec_Seq        *x = (Vec_Seq *)xin->data;
-    ierr = PetscViewerSocketPutScalar(viewer,xin->map.n,1,x->array);CHKERRQ(ierr);
-#endif
   } else if (isbinary) {
     ierr = VecView_Seq_Binary(xin,viewer);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -489,7 +484,7 @@ PetscErrorCode VecView_Seq(Vec xin,PetscViewer viewer)
   } else if (isnetcdf) {
     ierr = VecView_Seq_Netcdf(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
     ierr = VecView_Seq_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif
@@ -697,7 +692,7 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   if (v->map.bs == -1) v->map.bs = 1;
   ierr = PetscMapInitialize(v->comm,&v->map);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)v,VECSEQ);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEngineGet_C","VecMatlabEngineGet_Default",VecMatlabEngineGet_Default);CHKERRQ(ierr);
 #endif

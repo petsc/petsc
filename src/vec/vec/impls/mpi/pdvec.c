@@ -628,7 +628,7 @@ PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
 }
 #endif
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Matlab"
 PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
@@ -774,7 +774,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF4)
   PetscTruth     ishdf4;
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   PetscTruth     ismatlab;
 #endif
 
@@ -792,7 +792,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF4)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii){
@@ -824,7 +824,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ishdf4) {
     ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif

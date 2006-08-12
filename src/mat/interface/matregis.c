@@ -70,7 +70,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat);
 #if defined(PETSC_HAVE_DSCPACK)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #endif
 #if defined(PETSC_HAVE_PLAPACK)
@@ -175,7 +175,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #if defined(PETSC_HAVE_DSCPACK)
   ierr = MatRegisterDynamic(MATDSCPACK,        path,"MatCreate_DSCPACK",MatCreate_DSCPACK);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = MatRegisterDynamic(MATMATLAB,         path,"MatCreate_Matlab",MatCreate_Matlab);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_PLAPACK)

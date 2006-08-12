@@ -9,36 +9,46 @@ function [varargout] = PetscBinaryRead(file,comp)
    
 if nargin == 1
   comp = 0;
-else
-  comp = 1;
 end
 
 if ischar(file) fd = fopen(file,'r','ieee-be');
 else            fd = file;
 end
 
-for l=1:nargout
-  header = fread(fd,1,'int32');
+if comp == 'cell'
+  narg   = 1000;
+  result = cell(1);
+else
+  narg = nargout;
+end
+
+for l=1:narg
+  header = sread(fd,1,'int32');
   if isempty(header)
-    disp('File does not have that many items')
+    if comp == 'cell'
+      varargout(1) = {result};
+      return 
+    else 
+      disp('File does not have that many items')
+    end
     return
   end
   if header == 1211216 % Petsc Mat Object 
-    header = fread(fd,3,'int32');
+    header = sread(fd,3,'int32');
     m      = header(1);
     n      = header(2);
     nz     = header(3);
-    nnz = fread(fd,m,'int32');  %nonzeros per row
+    nnz = sread(fd,m,'int32');  %nonzeros per row
     sum_nz = sum(nnz);
     if(sum_nz ~=nz)
       str = sprintf('No-Nonzeros sum-rowlengths do not match %d %d',nz,sum_nz);
       error(str);
     end
-    j   = fread(fd,nz,'int32') + 1;
+    j   = sread(fd,nz,'int32') + 1;
     if comp == 1
-      s   = fread(fd,2*nz,'double');
+      s   = sread(fd,2*nz,'double');
     else 
-      s   = fread(fd,nz,'double');
+      s   = sread(fd,nz,'double');
     end
     i   = ones(nz,1);
     cnt = 1;
@@ -52,21 +62,33 @@ for l=1:nargout
     else
       A = sparse(i,j,s,m,n,nz);
     end
-    varargout(l) = {A};
+    if comp == 'cell'
+      result{l} = A;
+    else 
+      varargout(l) = {A};
+    end
   
   elseif  header == 1211214 % Petsc Vec Object
-    m = fread(fd,1,'int32');
+    m = sread(fd,1,'int32');
     if comp == 1
-      v = fread(fd,2*m,'double');
+      v = sread(fd,2*m,'double');
       v = complex(v(1:2:2*m),v(2:2:2*m));
     else
-      v = fread(fd,m,'double');
+      v = sread(fd,m,'double');
     end
-    varargout(l) = {v};
+    if comp == 'cell'
+      result{l} = v;
+    else 
+      varargout(l) = {v};
+    end
 
   elseif header == 1211219 % Petsc Bag Object
     b = PetscBagRead(fd);
-    varargout(l) = {b};
+    if comp == 'cell'
+      result{l} = b;
+    else 
+      varargout(l) = {b};
+    end
 
   else 
     disp('Found unrecongnized header in file. If your file contains complex numbers')
