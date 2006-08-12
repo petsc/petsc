@@ -1,16 +1,36 @@
 // 
-// File:          Ex2_System_Impl.cc
+// File:          Ex2_System_Impl.cxx
 // Symbol:        Ex2.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for Ex2.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
-#include "Ex2_System_Impl.hh"
+#include "Ex2_System_Impl.hxx"
 
+// 
+// Includes for all method dependencies.
+// 
+#ifndef included_gov_cca_CCAException_hxx
+#include "gov_cca_CCAException.hxx"
+#endif
+#ifndef included_gov_cca_Services_hxx
+#include "gov_cca_Services.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
+#endif
+#ifndef included_sidl_RuntimeException_hxx
+#include "sidl_RuntimeException.hxx"
+#endif
+#ifndef included_sidl_NotImplementedException_hxx
+#include "sidl_NotImplementedException.hxx"
+#endif
 // DO-NOT-DELETE splicer.begin(Ex2.System._includes)
 // Insert-Code-Here {Ex2.System._includes} (additional includes or code)
 
@@ -18,7 +38,16 @@
 
 // DO-NOT-DELETE splicer.end(Ex2.System._includes)
 
-// user-defined constructor.
+// speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
+Ex2::System_impl::System_impl() : StubBase(reinterpret_cast< 
+  void*>(::Ex2::System::_wrapObj(reinterpret_cast< void*>(this))),false) ,
+  _wrapped(true){ 
+  // DO-NOT-DELETE splicer.begin(Ex2.System._ctor2)
+  // Insert-Code-Here {Ex2.System._ctor2} (ctor2)
+  // DO-NOT-DELETE splicer.end(Ex2.System._ctor2)
+}
+
+// user defined constructor
 void Ex2::System_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(Ex2.System._ctor)
   this->lid     = 0.0;
@@ -27,29 +56,28 @@ void Ex2::System_impl::_ctor() {
   // DO-NOT-DELETE splicer.end(Ex2.System._ctor)
 }
 
-// user-defined destructor.
+// user defined destructor
 void Ex2::System_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(Ex2.System._dtor)
   // Insert-Code-Here {Ex2.System._dtor} (destructor)
   // DO-NOT-DELETE splicer.end(Ex2.System._dtor)
 }
 
-// static class initializer.
+// static class initializer
 void Ex2::System_impl::_load() {
   // DO-NOT-DELETE splicer.begin(Ex2.System._load)
   // Insert-Code-Here {Ex2.System._load} (class initialization)
   // DO-NOT-DELETE splicer.end(Ex2.System._load)
 }
 
-// user-defined static methods: (none)
+// user defined static methods: (none)
 
-// user-defined non-static methods:
+// user defined non-static methods:
 /**
  * Method:  initializeOnce[]
  */
 void
-Ex2::System_impl::initializeOnce ()
-throw () 
+Ex2::System_impl::initializeOnce_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.initializeOnce)
@@ -61,8 +89,7 @@ throw ()
  * Method:  initializeEverySolve[]
  */
 void
-Ex2::System_impl::initializeEverySolve ()
-throw () 
+Ex2::System_impl::initializeEverySolve_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.initializeEverySolve)
@@ -74,10 +101,9 @@ throw ()
  * Method:  computeResidual[]
  */
 void
-Ex2::System_impl::computeResidual (
-  /* in */ ::sidl::array<double> x,
-  /* in */ ::sidl::array<double> f ) 
-throw () 
+Ex2::System_impl::computeResidual_impl (
+  /* in array<double> */::sidl::array<double> x,
+  /* in array<double> */::sidl::array<double> f ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.computeResidual)
   TOPS::Structured::Solver solver = this->solver;
@@ -207,9 +233,8 @@ throw ()
  * Method:  computeInitialGuess[]
  */
 void
-Ex2::System_impl::computeInitialGuess (
-  /* in */ ::sidl::array<double> x ) 
-throw () 
+Ex2::System_impl::computeInitialGuess_impl (
+  /* in array<double> */::sidl::array<double> x ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.computeInitialGuess)
   /*
@@ -236,7 +261,7 @@ throw ()
 }
 
 /**
- * Starts up a component presence in the calling framework.
+ *  Starts up a component presence in the calling framework.
  * @param services the component instance's handle on the framework world.
  * Contracts concerning Svc and setServices:
  * 
@@ -253,16 +278,17 @@ throw ()
  * setServices.
  */
 void
-Ex2::System_impl::setServices (
-  /* in */ ::gov::cca::Services services ) 
-throw ( 
-  ::gov::cca::CCAException
-){
+Ex2::System_impl::setServices_impl (
+  /* in */::gov::cca::Services services ) 
+// throws:
+//     ::gov::cca::CCAException
+//     ::sidl::RuntimeException
+{
   // DO-NOT-DELETE splicer.begin(Ex2.System.setServices)
   // Insert-Code-Here {Ex2.System.setServices} (setServices method)
   myServices = services;
 
-  gov::cca::Port p = self;      //  Babel required casting
+  gov::cca::Port p = (*this);      //  Babel required casting
   if(p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
 	    __FILE__, __LINE__);
@@ -300,14 +326,14 @@ throw (
 }
 
 /**
+ *  
  * Execute some encapsulated functionality on the component. 
  * Return 0 if ok, -1 if internal error but component may be 
  * used further, and -2 if error so severe that component cannot
  * be further used safely.
  */
 int32_t
-Ex2::System_impl::go ()
-throw () 
+Ex2::System_impl::go_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(Ex2.System.go)
@@ -319,7 +345,7 @@ throw ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex2");
 
-  this->solver = myServices.getPort("TOPS.Structured.Solver");
+  this->solver = babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
               << "possibly not connected." << std::endl;

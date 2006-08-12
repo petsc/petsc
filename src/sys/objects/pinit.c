@@ -512,6 +512,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscInfo1(0,"Running on machine: %s\n",hostname);CHKERRQ(ierr);
 
   ierr = PetscOptionsCheckInitial_Components();CHKERRQ(ierr);
+  /* Check the options database for options related to the options database itself */
+  ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
+
 
   PetscFunctionReturn(ierr);
 }

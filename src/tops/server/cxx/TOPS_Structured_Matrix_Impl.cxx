@@ -1,50 +1,69 @@
 // 
-// File:          TOPS_Structured_Matrix_Impl.cc
+// File:          TOPS_Structured_Matrix_Impl.cxx
 // Symbol:        TOPS.Structured.Matrix-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for TOPS.Structured.Matrix
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
-#include "TOPS_Structured_Matrix_Impl.hh"
+#include "TOPS_Structured_Matrix_Impl.hxx"
 
+// 
+// Includes for all method dependencies.
+// 
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
+#endif
+#ifndef included_sidl_NotImplementedException_hxx
+#include "sidl_NotImplementedException.hxx"
+#endif
 // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._includes)
 // Insert-Code-Here {TOPS.Structured.Matrix._includes} (additional includes or code)
 // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._includes)
 
-// user-defined constructor.
+// speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
+TOPS::Structured::Matrix_impl::Matrix_impl() : StubBase(reinterpret_cast< 
+  void*>(::TOPS::Structured::Matrix::_wrapObj(reinterpret_cast< void*>(this))),
+  false) , _wrapped(true){ 
+  // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._ctor2)
+  // Insert-Code-Here {TOPS.Structured.Matrix._ctor2} (ctor2)
+  // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._ctor2)
+}
+
+// user defined constructor
 void TOPS::Structured::Matrix_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._ctor)
   // Insert-Code-Here {TOPS.Structured.Matrix._ctor} (constructor)
   // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._ctor)
 }
 
-// user-defined destructor.
+// user defined destructor
 void TOPS::Structured::Matrix_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._dtor)
   // Insert-Code-Here {TOPS.Structured.Matrix._dtor} (destructor)
   // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._dtor)
 }
 
-// static class initializer.
+// static class initializer
 void TOPS::Structured::Matrix_impl::_load() {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix._load)
   // Insert-Code-Here {TOPS.Structured.Matrix._load} (class initialization)
   // DO-NOT-DELETE splicer.end(TOPS.Structured.Matrix._load)
 }
 
-// user-defined static methods: (none)
+// user defined static methods: (none)
 
-// user-defined non-static methods:
+// user defined non-static methods:
 /**
  * Method:  dimen[]
  */
 int32_t
-TOPS::Structured::Matrix_impl::dimen ()
-throw () 
+TOPS::Structured::Matrix_impl::dimen_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.dimen)
@@ -56,9 +75,8 @@ throw ()
  * Method:  lower[]
  */
 int32_t
-TOPS::Structured::Matrix_impl::lower (
-  /* in */ int32_t a ) 
-throw () 
+TOPS::Structured::Matrix_impl::lower_impl (
+  /* in */int32_t a ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.lower)
   return this->vlower[a];
@@ -69,9 +87,8 @@ throw ()
  * Method:  length[]
  */
 int32_t
-TOPS::Structured::Matrix_impl::length (
-  /* in */ int32_t a ) 
-throw () 
+TOPS::Structured::Matrix_impl::length_impl (
+  /* in */int32_t a ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.length)
   return this->vlength[a];
@@ -82,10 +99,9 @@ throw ()
  * Method:  set[D1]
  */
 void
-TOPS::Structured::Matrix_impl::set (
-  /* in */ int32_t i,
-  /* in */ ::sidl::array<double> values ) 
-throw () 
+TOPS::Structured::Matrix_impl::set_impl (
+  /* in */int32_t i,
+  /* in array<double,2> */::sidl::array<double> values ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.setD1)
   // Insert-Code-Here {TOPS.Structured.Matrix.setD1} (set method)
@@ -96,11 +112,10 @@ throw ()
  * Method:  set[D2]
  */
 void
-TOPS::Structured::Matrix_impl::set (
-  /* in */ int32_t i,
-  /* in */ int32_t j,
-  /* in */ ::sidl::array<double> values ) 
-throw () 
+TOPS::Structured::Matrix_impl::set_impl (
+  /* in */int32_t i,
+  /* in */int32_t j,
+  /* in array<double,2> */::sidl::array<double> values ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.setD2)
   int I = i - this->gghostlower[0] + this->gghostlength[0]*(j - this->gghostlower[1]);
@@ -116,12 +131,11 @@ throw ()
  * Method:  set[D3]
  */
 void
-TOPS::Structured::Matrix_impl::set (
-  /* in */ int32_t i,
-  /* in */ int32_t j,
-  /* in */ int32_t k,
-  /* in */ ::sidl::array<double> values ) 
-throw () 
+TOPS::Structured::Matrix_impl::set_impl (
+  /* in */int32_t i,
+  /* in */int32_t j,
+  /* in */int32_t k,
+  /* in array<double,2> */::sidl::array<double> values ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.setD3)
   int I = i - this->gghostlower[0] + this->gghostlength[0]*(j - this->gghostlower[1]) + this->gghostlength[0]*this->gghostlength[1]*(k - this->gghostlower[2]);
@@ -137,13 +151,12 @@ throw ()
  * Method:  set[D4]
  */
 void
-TOPS::Structured::Matrix_impl::set (
-  /* in */ int32_t i,
-  /* in */ int32_t j,
-  /* in */ int32_t k,
-  /* in */ int32_t l,
-  /* in */ ::sidl::array<double> values ) 
-throw () 
+TOPS::Structured::Matrix_impl::set_impl (
+  /* in */int32_t i,
+  /* in */int32_t j,
+  /* in */int32_t k,
+  /* in */int32_t l,
+  /* in array<double,2> */::sidl::array<double> values ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.setD4)
   int I = i - this->gghostlower[0] + this->gghostlength[0]*(j - this->gghostlower[1]) + this->gghostlength[0]*this->gghostlength[1]*(k - this->gghostlower[2]) +
@@ -160,10 +173,9 @@ throw ()
  * Method:  apply[]
  */
 void
-TOPS::Structured::Matrix_impl::apply (
-  /* in */ ::sidl::array<double> x,
-  /* in */ ::sidl::array<double> y ) 
-throw () 
+TOPS::Structured::Matrix_impl::apply_impl (
+  /* in array<double> */::sidl::array<double> x,
+  /* in array<double> */::sidl::array<double> y ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.apply)
   // Insert-Code-Here {TOPS.Structured.Matrix.apply} (apply method)
@@ -174,8 +186,7 @@ throw ()
  * Method:  zero[]
  */
 void
-TOPS::Structured::Matrix_impl::zero ()
-throw () 
+TOPS::Structured::Matrix_impl::zero_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.Structured.Matrix.zero)

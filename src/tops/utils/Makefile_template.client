@@ -51,7 +51,8 @@ F90FLAGS := $(FCFLAGS) $(F90FLAGS) $(CCASPEC_BABEL_F90FLAGS) \
 	$(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_BABEL_includedir)/f90 \
 	$(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_BABEL_includedir) \
 	$(CCASPEC_BABEL_F90MFLAG)$(CCASPEC_pkgincludedir)/f90 \
-	$(CCASPEC_BABEL_F90MFLAG)$(PORT_DIR)/include $(USER_F90FLAGS)
+	$(CCASPEC_BABEL_F90MFLAG)$(PORT_DIR)/include $(USER_F90FLAGS) \
+	-w	# Hide F90 warnings when building clients
 
 
 INCLUDES = -I$(CCASPEC_BABEL_includedir)/$(LANGUAGE) \
@@ -62,7 +63,7 @@ ifeq ($(LANGUAGE),java)
 	JAVA_INC = $(shell $(CCASPEC_BABEL_BABEL_CONFIG) --query-var=JNI_INCLUDES)
 	INCLUDES += $(JAVA_INC)
 	JAVASRCS = $(shell find . -name '*.java')
-	JAVA_CP= -classpath $(CCASPEC_LIB_L_DIR)/cca-spec.jar:$(CCASPEC_BABEL_libdir)/sidl-$(CCASPEC_BABEL_VERSION).jar:$(CCASPEC_BABEL_libdir)/sidlstub_$(strip $(CCASPEC_BABEL_VERSION)).jar:.
+	JAVA_CP= -classpath $(CCASPEC_LIB_L_DIR)/cca-spec.jar:$(CCASPEC_BABEL_libdir)/sidl-$(CCASPEC_BABEL_VERSION).jar:$(CCASPEC_BABEL_libdir)/sidlstub_$(CCASPEC_BABEL_VERSION).jar:.
 endif
 
 LIBS := $(LIBS) -R$(CCASPEC_BABEL_libdir) -L$(CCASPEC_BABEL_libdir) -lsidl
@@ -73,11 +74,11 @@ LIBS := $(LIBS) -R$(CCASPEC_BABEL_libdir) -L$(CCASPEC_BABEL_libdir) -lsidl
 		$(INCLUDES) -I$(CCA_SPEC_CLIENTS)/c \
 		-c $< -o $(<:.c=.lo)
 
-%.lo: %.cc	
+%.lo: %.cxx	
 	$(HIDE_LIBTOOL)$(LIBTOOL) --mode=compile --tag=CXX $(HIDE_COMPILE) \
 		$(CXX) -g $(CXXFLAGS) \
 		$(INCLUDES) -I$(CCA_SPEC_CLIENTS)/cxx \
-		-c $< -o $(<:.cc=.lo)
+		-c $< -o $(<:.cxx=.lo)
 
 %.lo: %.F90	
 	@-cp $(@:.lo=.F90) $(@:.lo=.f90.$(TMP)) # for case-insensitive systems
@@ -91,13 +92,16 @@ LIBS := $(LIBS) -R$(CCASPEC_BABEL_libdir) -L$(CCASPEC_BABEL_libdir) -lsidl
 
 # Get source names (use sed to filter out result when no files match)
 CSRC_FILES := $(shell echo *.c | sed -e 's/\*\.c//') 
-CXXSRC_FILES := $(shell echo *.cc | sed -e 's/\*\.cc//') 
+CXXSRC_FILES := $(shell echo *.cxx | sed -e 's/\*\.cxx//') 
 F90SRC_FILES := $(TYPEMODULESRCS) $(ARRAYMODULESRCS) $(STUBMODULESRCS) 
 
-OBJS = $(CSRC_FILES:.c=.lo) $(CXXSRC_FILES:.cc=.lo) $(F90SRC_FILES:.F90=.lo)
+OBJS = $(CSRC_FILES:.c=.lo) $(CXXSRC_FILES:.cxx=.lo) $(F90SRC_FILES:.F90=.lo)
 
 ifeq ($(LANGUAGE),f90)
-	LIBS := $(LIBS) $(CCASPEC_BABEL_F90LIBS)
+	LIBS := $(LIBS) $(CCASPEC_BABEL_FLIBS)
+endif
+ifeq ($(LANGUAGE),f77)
+	LIBS := $(LIBS) $(CCASPEC_BABEL_FLIBS)
 endif
 
 ifeq ($(LANGUAGE),python)
@@ -139,15 +143,14 @@ $(CLIENT_LIB): $(OBJS)
 	      $(CCASPEC_BABEL_JAVAC) $(JAVA_CP) $(JAVASRCS); \
 	   fi ; \
 	   $(LIBTOOL) --mode=link --tag=CXX $(HIDE_COMPILE) \
-	      $(CXX) $(INCLUDES) \
-	      $(OBJS) -o $@ \
-	      -rpath $(PETSC_LIB_DIR)/tops/$(LANGUAGE) $(LIBS) ;\
+	      $(CXX) $(INCLUDES) -rpath $(PETSC_LIB_DIR)/tops/$(LANGUAGE) \
+	      $(OBJS) -o $@ $(LIBS) ;\
 	      $(LIBTOOL) --mode=install $(HIDE_COMPILE) cp $@ $(PETSC_LIB_DIR)/tops/$(LANGUAGE);\
 	      $(LIBTOOL) --mode=finish $(HIDE_COMPILE) $(PETSC_LIB_DIR)/tops/$(LANGUAGE);\
 	fi ; 
 	@if [ ! -d $(PETSC_DIR)/include/tops ]; then mkdir -p $(PETSC_DIR)/include/tops; fi;
 	@cp *.h* $(PETSC_DIR)/include/tops
-	@-if [ "$(LANGUAGE)" == "f90" ]; then cp *.mod $(PETSC_DIR)/include/tops; fi
+	@-if [ "$(LANGUAGE)" == "f90" ]; then cp *.mod $(PETSC_LIB_DIR)/include/tops; fi
 	@if [ "$(LANGUAGE)" == "f77" ]; then \
         for f in `find . -name '*.inc'`; do \
           cp -f $f $(PETSC_DIR)/include/tops ; \
@@ -156,7 +159,7 @@ $(CLIENT_LIB): $(OBJS)
 	@if [ "$(LANGUAGE)" == "java" ]; then \
 	   classes=`find . -name '*.class'` && \
 	   dirs=`for i in \`echo $$classes\` ; do dirname $$i; done` && \
-	   dirsunique=`echo $$dirs | sed -e 's/ /\n/g' | sort -u` && \
+	   dirsunique=`for i in $$dirs ; do echo -e "$$i\n" ; done | sort -u` && \
 	   for dir in $$dirsunique; do \
 	      mkdir -p $(PETSC_LIB_DIR)/tops/$(LANGUAGE)/$$dir ;\
 	      cp -f $$dir/*.class  $(PETSC_LIB_DIR)/tops/$(LANGUAGE)/$$dir ;\

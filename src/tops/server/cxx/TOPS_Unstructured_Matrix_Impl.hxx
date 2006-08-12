@@ -1,40 +1,42 @@
 // 
-// File:          TOPS_Unstructured_Matrix_Impl.hh
+// File:          TOPS_Unstructured_Matrix_Impl.hxx
 // Symbol:        TOPS.Unstructured.Matrix-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for TOPS.Unstructured.Matrix
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
 
-#ifndef included_TOPS_Unstructured_Matrix_Impl_hh
-#define included_TOPS_Unstructured_Matrix_Impl_hh
+#ifndef included_TOPS_Unstructured_Matrix_Impl_hxx
+#define included_TOPS_Unstructured_Matrix_Impl_hxx
 
-#ifndef included_sidl_cxx_hh
-#include "sidl_cxx.hh"
+#ifndef included_sidl_cxx_hxx
+#include "sidl_cxx.hxx"
 #endif
 #ifndef included_TOPS_Unstructured_Matrix_IOR_h
 #include "TOPS_Unstructured_Matrix_IOR.h"
 #endif
-// 
-// Includes for all method dependencies.
-// 
-#ifndef included_TOPS_Unstructured_Matrix_hh
-#include "TOPS_Unstructured_Matrix.hh"
+#ifndef included_TOPS_Matrix_hxx
+#include "TOPS_Matrix.hxx"
 #endif
-#ifndef included_sidl_BaseInterface_hh
-#include "sidl_BaseInterface.hh"
+#ifndef included_TOPS_Unstructured_Matrix_hxx
+#include "TOPS_Unstructured_Matrix.hxx"
 #endif
-#ifndef included_sidl_ClassInfo_hh
-#include "sidl_ClassInfo.hh"
+#ifndef included_sidl_BaseClass_hxx
+#include "sidl_BaseClass.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
 #endif
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix._includes)
-#include "TOPS.hh"
+#include "TOPS.hxx"
 #include "petscmat.h"
 // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix._includes)
 
@@ -44,33 +46,31 @@ namespace TOPS {
     /**
      * Symbol "TOPS.Unstructured.Matrix" (version 0.0.0)
      */
-    class Matrix_impl
+    class Matrix_impl : public virtual ::TOPS::Unstructured::Matrix 
     // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix._inherits)
     // Insert-Code-Here {TOPS.Unstructured.Matrix._inherits} (optional inheritance here)
     // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix._inherits)
     {
 
-    private:
-      // Pointer back to IOR.
-      // Use this to dispatch back through IOR vtable.
-      Matrix self;
+    // All data marked protected will be accessable by 
+    // descendant Impl classes
+    protected:
+
+      bool _wrapped;
 
       // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix._implementation)
     public:
       Mat mat;
       // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix._implementation)
 
-    private:
-      // private default constructor (required)
-      Matrix_impl() 
-      {} 
-
     public:
+      // default constructor, used for data wrapping(required)
+      Matrix_impl();
       // sidl constructor (required)
       // Note: alternate Skel constructor doesn't call addref()
       // (fixes bug #275)
-      Matrix_impl( struct TOPS_Unstructured_Matrix__object * s ) : self(s,
-        true) { _ctor(); }
+      Matrix_impl( struct TOPS_Unstructured_Matrix__object * s ) : StubBase(s,
+        true), _wrapped(false) { _ctor(); }
 
       // user defined construction
       void _ctor();
@@ -81,6 +81,9 @@ namespace TOPS {
       // user defined destruction
       void _dtor();
 
+      // true if this object was created by a user newing the impl
+      inline bool _isWrapped() {return _wrapped;}
+
       // static class initializer
       static void _load();
 
@@ -90,67 +93,61 @@ namespace TOPS {
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ int32_t row,
-        /* in */ int32_t column,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in */int32_t row,
+        /* in */int32_t column,
+        /* in array<double> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ int32_t row,
-        /* in */ ::sidl::array<int32_t> columns,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in */int32_t row,
+        /* in array<int> */::sidl::array<int32_t> columns,
+        /* in array<double> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ ::sidl::array<int32_t> rows,
-        /* in */ int32_t column,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in array<int> */::sidl::array<int32_t> rows,
+        /* in */int32_t column,
+        /* in array<double> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      set (
-        /* in */ ::sidl::array<int32_t> rows,
-        /* in */ ::sidl::array<int32_t> columns,
-        /* in */ ::sidl::array<double> values
+      set_impl (
+        /* in array<int> */::sidl::array<int32_t> rows,
+        /* in array<int> */::sidl::array<int32_t> columns,
+        /* in array<double> */::sidl::array<double> values
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      apply (
-        /* in */ ::sidl::array<double> x,
-        /* in */ ::sidl::array<double> y
+      apply_impl (
+        /* in array<double> */::sidl::array<double> x,
+        /* in array<double> */::sidl::array<double> y
       )
-      throw () 
       ;
 
       /**
        * user defined non-static method.
        */
       void
-      zero() throw () 
-      ;
+      zero_impl() ;
     };  // end class Matrix_impl
 
   } // end namespace Unstructured

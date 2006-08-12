@@ -34,11 +34,11 @@ $(SIDL_PACKAGES_TARGETS):
 		echo -e "\n### Building $$LANGUAGE client library for $(@:.%=%)."; \
 		if [ ! -d client ] ; then mkdir client; fi; \
 		if [ $$LANGUAGE == python ] ; then \
-			$(BABEL) -c $$LANGUAGE $(XML_REP) -E --suppress-timestamp $(SIDLFILES) -o client/python; \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) $(SIDLFILES) -o client/python; \
 		elif [ $$LANGUAGE == java ] ; then \
-			$(BABEL) -c $$LANGUAGE $(XML_REP) -E --suppress-timestamp $(SIDLFILES) -o client/java; \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) $(SIDLFILES) -o client/java; \
 		else \
-			$(BABEL) -c $$LANGUAGE $(XML_REP) -E -l --suppress-timestamp $(SIDLFILES) -o client; \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) -l $(SIDLFILES) -o client; \
 		fi; \
 		$(SH) ./utils/generateClientMakefile.sh ${CCAFE_CONFIG} topsclient client ${PETSC_DIR} $$LANGUAGE;  \
 		$(MAKE) -C client/$$LANGUAGE .lib ; \
@@ -61,22 +61,22 @@ server-cxx:  server/cxx/obj/makefile
 
 server/cxx/obj/makefile: ${SIDLFILES}
 	-@if [ ! -d "server/cxx/obj" ]; then mkdir -p server/cxx/obj; fi
-	-@if [ -d "server/cxx/SCCS" ]; then ${BK} edit -q server/cxx/*_Impl.cc server/cxx/*_Impl.hh; fi
-	-${BABEL} -R ${CCA_REPO} --hide-glue --exclude-external --suppress-timestamp \
+	-@if [ -d "server/cxx/SCCS" ]; then ${BK} edit -q server/cxx/*_Impl.cxx server/cxx/*_Impl.hxx; fi
+	-${BABEL} -R ${CCA_REPO} --hide-glue \
 		${SIDLEXCLUDE} --server=cxx --output-directory=./server/cxx ${SIDLFILES}
 	@-${RM} ${REMOVEFILES} server/cxx/obj/makefile
 	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/cxx/obj/makefile; fi
 	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/cxx/obj/makefile
 
 libserver-cxx.${SOSUFFIX}: 
-	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	@-${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 	    -I${PETSC_DIR}/include/tops \
 			$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
       -I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
-	    ../*.cc ../glue/*.cc
-	-@${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} \
+	    ../*.cxx ../glue/*.cxx
+	@-${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} \
 			-I${PETSC_DIR}/include/tops -I../glue ../glue/*.c
-	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
+	@-$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in StructuredSolver UnstructuredSolver ; do \
 	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \

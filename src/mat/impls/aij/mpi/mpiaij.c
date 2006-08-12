@@ -1683,6 +1683,107 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
   PetscFunctionReturn(0);
 }
 
+#ifdef PETSC_HAVE_PBGL
+#include <boost/parallel/mpi/bsp_process_group.hpp>
+typedef boost::parallel::mpi::bsp_process_group            process_group_type;
+
+#include <boost/graph/distributed/adjacency_list.hpp>
+#include <boost/parallel/mpi/bsp_process_group.hpp>
+
+#include <boost/graph/distributed/petsc/interface.hpp>
+#include <boost/graph/distributed/ilu_0.hpp>
+
+namespace petsc = boost::distributed::petsc;
+using namespace std;
+typedef double                                             value_type;
+typedef boost::graph::distributed::ilu_elimination_state   elimination_state;
+typedef boost::adjacency_list<boost::listS,
+                       boost::distributedS<process_group_type, boost::vecS>,
+                       boost::bidirectionalS,
+                       // Vertex properties
+                       boost::no_property,
+                       // Edge properties
+                       boost::property<boost::edge_weight_t, value_type,
+                         boost::property<boost::edge_finished_t, elimination_state> > > graph_type;
+
+typedef boost::graph_traits<graph_type>::vertex_descriptor        vertex_type;
+typedef boost::graph_traits<graph_type>::edge_descriptor          edge_type;
+typedef boost::property_map<graph_type, boost::edge_weight_t>::type      weight_map_type;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatILUFactorSymbolic_MPIAIJ"
+/*
+  This uses the parallel ILU factorization of Peter Gottschling <pgottsch@osl.iu.edu>
+*/
+PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorInfo *info, Mat *fact)
+{
+  Mat_MPIAIJ          *a = (Mat_MPIAIJ *) A->data;
+  PetscTruth           row_identity, col_identity;
+  PetscObjectContainer c;
+  PetscInt             m, n, M, N;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only levels = 0 supported for parallel ilu");
+  ierr = ISIdentity(isrow, &row_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(iscol, &col_identity);CHKERRQ(ierr);
+  if (!row_identity || !col_identity) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for parallel ILU");
+  }
+
+  process_group_type pg;
+  graph_type*        graph_p = new graph_type(petsc::num_global_vertices(A), pg, petsc::matrix_distribution(A, pg));
+  graph_type&        graph   = *graph_p;
+  petsc::read_matrix(A, graph, get(boost::edge_weight, graph));
+
+  //write_graphviz("petsc_matrix_as_graph.dot", graph, default_writer(), matrix_graph_writer<graph_type>(graph));
+  boost::property_map<graph_type, boost::edge_finished_t>::type finished = get(boost::edge_finished, graph);
+  BGL_FORALL_EDGES(e, graph, graph_type)
+    put(finished, e, boost::graph::distributed::unseen);
+
+  ilu_0(graph, get(boost::edge_weight, graph), get(boost::edge_finished, graph));
+
+  /* put together the new matrix */
+  ierr = MatCreate(A->comm, fact);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(A, &m, &n);CHKERRQ(ierr);
+  ierr = MatGetSize(A, &M, &N);CHKERRQ(ierr);
+  ierr = MatSetSizes(*fact, m, n, M, N);CHKERRQ(ierr);
+  ierr = MatSetType(*fact, A->type_name);CHKERRQ(ierr);
+  (*fact)->factor = FACTOR_LU;
+
+  ierr = PetscObjectContainerCreate(A->comm, &c);
+  ierr = PetscObjectContainerSetPointer(c, graph_p);
+  ierr = PetscObjectCompose((PetscObject) (*fact), "graph", (PetscObject) c);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_MPIAIJ"
+PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat A, MatFactorInfo *info, Mat *B)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_MPIAIJ"
+/*
+  This uses the parallel ILU factorization of Peter Gottschling <pgottsch@osl.iu.edu>
+*/
+PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
+{
+  graph_type*          graph_p;
+  PetscObjectContainer c;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) A, "graph", (PetscObject *) &c);CHKERRQ(ierr);
+  ierr = PetscObjectContainerGetPointer(c, (void **) &graph_p);CHKERRQ(ierr);
+  ierr = VecCopy(b, x); CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+#endif
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -1691,7 +1792,11 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
 /* 4*/ MatMultAdd_MPIAIJ,
        MatMultTranspose_MPIAIJ,
        MatMultTransposeAdd_MPIAIJ,
+#ifdef PETSC_HAVE_PBGL
+       MatSolve_MPIAIJ,
+#else
        0,
+#endif
        0,
        0,
 /*10*/ 0,
@@ -1711,11 +1816,19 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatZeroEntries_MPIAIJ,
 /*25*/ MatZeroRows_MPIAIJ,
        0,
+#ifdef PETSC_HAVE_PBGL
+       MatLUFactorNumeric_MPIAIJ,
+#else
        0,
+#endif
        0,
        0,
 /*30*/ MatSetUpPreallocation_MPIAIJ,
+#ifdef PETSC_HAVE_PBGL
+       MatILUFactorSymbolic_MPIAIJ,
+#else
        0,
+#endif
        0,
        0,
        0,

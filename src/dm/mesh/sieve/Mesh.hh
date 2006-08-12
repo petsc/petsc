@@ -1,8 +1,8 @@
 #ifndef included_ALE_Mesh_hh
 #define included_ALE_Mesh_hh
 
-#ifndef  included_ALE_CoSieve_hh
-#include <CoSieve.hh>
+#ifndef  included_ALE_Completion_hh
+#include <Completion.hh>
 #endif
 
 namespace ALE {
@@ -12,15 +12,21 @@ namespace ALE {
       typedef std::vector<point_type> PointArray;
       typedef ALE::Sieve<point_type,int,int> sieve_type;
       typedef ALE::Point patch_type;
-      typedef ALE::New::Topology<int, sieve_type>        topology_type;
-      typedef ALE::New::Atlas<topology_type, ALE::Point> atlas_type;
-      typedef ALE::New::Section<atlas_type, double>      section_type;
-      typedef std::map<std::string, Obj<section_type> >  SectionContainer;
+      typedef ALE::New::Topology<int, sieve_type>         topology_type;
+      typedef ALE::New::Atlas<topology_type, ALE::Point>  atlas_type;
+      typedef ALE::New::Section<atlas_type, double>       section_type;
+      typedef std::map<std::string, Obj<section_type> >   SectionContainer;
+      typedef ALE::New::Numbering<topology_type>          numbering_type;
+      typedef std::map<int, Obj<numbering_type> >         NumberingContainer;
+      typedef std::map<std::string, Obj<numbering_type> > OrderContainer;
       typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
       int debug;
     private:
       Obj<sieve_type>            topology;
       SectionContainer           sections;
+      NumberingContainer         localNumberings;
+      NumberingContainer         numberings;
+      OrderContainer             orders;
       Obj<topology_type>         _topology;
       Obj<foliated_section_type> _boundaries;
       MPI_Comm        _comm;
@@ -47,7 +53,7 @@ namespace ALE {
       int             getDimension() const {return this->dim;};
       void            setDimension(int dim) {this->dim = dim;};
       const Obj<foliated_section_type>& getBoundariesNew() const {return this->_boundaries;};
-      Obj<section_type> getSection(const std::string& name) {
+      const Obj<section_type>& getSection(const std::string& name) {
         if (this->sections.find(name) == this->sections.end()) {
           Obj<section_type> section = new section_type(this->_comm, this->debug);
           section->getAtlas()->setTopology(this->_topology);
@@ -68,65 +74,37 @@ namespace ALE {
       bool hasSection(const std::string& name) const {
         return(this->sections.find(name) != this->sections.end());
       };
+      const Obj<numbering_type>& getNumbering(const int depth) {
+        if (this->numberings.find(depth) == this->numberings.end()) {
+          Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
+          numbering->construct();
+
+          std::cout << "Creating new numbering: " << depth << std::endl;
+          this->numberings[depth] = numbering;
+        }
+        return this->numberings[depth];
+      };
+      const Obj<numbering_type>& getLocalNumbering(const int depth) {
+        if (this->localNumberings.find(depth) == this->localNumberings.end()) {
+          Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
+          numbering->constructLocalOrder();
+
+          std::cout << "Creating new local numbering: " << depth << std::endl;
+          this->localNumberings[depth] = numbering;
+        }
+        return this->localNumberings[depth];
+      };
+      const Obj<numbering_type>& getGlobalOrder(const std::string& name) {
+        if (this->orders.find(name) == this->orders.end()) {
+          Obj<numbering_type> numbering = ALE::New::GlobalOrder::createIndices(this->getSection(name)->getAtlas(), this->getNumbering(0));
+
+          std::cout << "Creating new global order: " << name << std::endl;
+          this->orders[name] = numbering;
+        }
+        return this->orders[name];
+      };
       const Obj<topology_type>& getTopologyNew() {return this->_topology;};
       void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
-    private:
-      template<typename IntervalSequence>
-      int *__expandIntervals(Obj<IntervalSequence> intervals) {
-        int *indices;
-        int  k = 0;
-
-        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-          k += std::abs(i_iter.color().index);
-        }
-        std::cout << "Allocated indices of size " << k << std::endl;
-        indices = new int[k];
-        k = 0;
-        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-          for(int i = i_iter.color().prefix; i < i_iter.color().prefix + std::abs(i_iter.color().index); i++) {
-            std::cout << "  indices[" << k << "] = " << i << std::endl;
-            indices[k++] = i;
-          }
-        }
-        return indices;
-      };
-      template<typename IntervalSequence,typename Field>
-      int *__expandCanonicalIntervals(Obj<IntervalSequence> intervals, Obj<Field> field) {
-        typename Field::patch_type patch;
-        int *indices;
-        int  k = 0;
-
-        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-          k += std::abs(field->getFiberDimension(patch, *i_iter));
-        }
-        std::cout << "Allocated indices of size " << k << std::endl;
-        indices = new int[k];
-        k = 0;
-        for(typename IntervalSequence::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-          int dim = field->getFiberDimension(patch, *i_iter);
-          int offset = field->getFiberOffset(patch, *i_iter);
-
-          for(int i = offset; i < offset + std::abs(dim); i++) {
-            std::cout << "  indices[" << k << "] = " << i << std::endl;
-            indices[k++] = i;
-          }
-        }
-        return indices;
-      };
-    public:
-      // Create a serial mesh
-      void populate(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true, int corners = -1) {
-        this->topology->setStratification(false);
-        ALE::New::SieveBuilder<sieve_type>::buildTopology(this->topology, this->dim, numSimplices, simplices, numVertices, interpolate, corners);
-        this->topology->stratify();
-        this->topology->setStratification(true);
-      };
-      void populateBd(int numSimplices, int simplices[], int numVertices, double coords[], bool interpolate = true, int corners = -1) {
-        this->topology->setStratification(false);
-        ALE::New::SieveBuilder<sieve_type>::buildTopology(this->topology, this->dim, numSimplices, simplices, numVertices, interpolate, corners);
-        this->topology->stratify();
-        this->topology->setStratification(true);
-      };
     };
 } // namespace ALE
 

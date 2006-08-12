@@ -1,20 +1,40 @@
 // 
-// File:          TOPS_UnstructuredSolver_Impl.cc
+// File:          TOPS_UnstructuredSolver_Impl.cxx
 // Symbol:        TOPS.UnstructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 0.10.12
+// Babel Version: 1.0.0
 // Description:   Server-side implementation for TOPS.UnstructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
 // 
-// babel-version = 0.10.12
 // 
-#include "TOPS_UnstructuredSolver_Impl.hh"
+#include "TOPS_UnstructuredSolver_Impl.hxx"
 
+// 
+// Includes for all method dependencies.
+// 
+#ifndef included_gov_cca_CCAException_hxx
+#include "gov_cca_CCAException.hxx"
+#endif
+#ifndef included_gov_cca_Services_hxx
+#include "gov_cca_Services.hxx"
+#endif
+#ifndef included_sidl_BaseInterface_hxx
+#include "sidl_BaseInterface.hxx"
+#endif
+#ifndef included_sidl_ClassInfo_hxx
+#include "sidl_ClassInfo.hxx"
+#endif
+#ifndef included_sidl_RuntimeException_hxx
+#include "sidl_RuntimeException.hxx"
+#endif
+#ifndef included_sidl_NotImplementedException_hxx
+#include "sidl_NotImplementedException.hxx"
+#endif
 // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._includes)
-#include "TOPS_Unstructured_Matrix_Impl.hh"
+#include "TOPS_Unstructured_Matrix_Impl.hxx"
 #include <iostream>
-#include "TOPS_ParameterHandling.hh" // not from SIDL
+#include "TOPS_ParameterHandling.hxx" // not from SIDL
 
 static PetscErrorCode FormFunction(SNES snes,Vec uu,Vec f,void *vdmmg)
 {
@@ -44,7 +64,8 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   imatrix1->mat = J;
   imatrix2->mat = B;
 
-  system = solver->getServices().getPort("TOPS.System.Compute.Matrix");
+  system = babel_cast< TOPS::System::Compute::Matrix >(
+  	solver->getServices().getPort("TOPS.System.Compute.Matrix"));
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
 	      << ": TOPS.System.Compute.Matrix port is nil, " 
@@ -84,7 +105,8 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   lower[0] = 0; upper[0] = nlocal-1; stride[0] = 1;
   ua.borrow(uu,1,*&lower,*&upper,*&stride);
 
-  system = solver->getServices().getPort("TOPS.System.Compute.RightHandSide");  
+  system = babel_cast< TOPS::System::Compute::RightHandSide >(
+  	solver->getServices().getPort("TOPS.System.Compute.RightHandSide") );  
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
 	      << ": TOPS.System.Compute.RightHandSide port is nil, " 
@@ -106,7 +128,17 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 }
 // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._includes)
 
-// user-defined constructor.
+// speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
+TOPS::UnstructuredSolver_impl::UnstructuredSolver_impl() : 
+  StubBase(reinterpret_cast< 
+  void*>(::TOPS::UnstructuredSolver::_wrapObj(reinterpret_cast< void*>(this))),
+  false) , _wrapped(true){ 
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._ctor2)
+  // Insert-Code-Here {TOPS.UnstructuredSolver._ctor2} (ctor2)
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._ctor2)
+}
+
+// user defined constructor
 void TOPS::UnstructuredSolver_impl::_ctor() {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._ctor)
   this->dmmg = PETSC_NULL;
@@ -114,7 +146,7 @@ void TOPS::UnstructuredSolver_impl::_ctor() {
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._ctor)
 }
 
-// user-defined destructor.
+// user defined destructor
 void TOPS::UnstructuredSolver_impl::_dtor() {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._dtor)
   if (this->dmmg) {DMMGDestroy(this->dmmg);}
@@ -124,22 +156,21 @@ void TOPS::UnstructuredSolver_impl::_dtor() {
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._dtor)
 }
 
-// static class initializer.
+// static class initializer
 void TOPS::UnstructuredSolver_impl::_load() {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._load)
   // Insert-Code-Here {TOPS.UnstructuredSolver._load} (class initialization)
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._load)
 }
 
-// user-defined static methods: (none)
+// user defined static methods: (none)
 
-// user-defined non-static methods:
+// user defined non-static methods:
 /**
  * Method:  getServices[]
  */
 ::gov::cca::Services
-TOPS::UnstructuredSolver_impl::getServices ()
-throw () 
+TOPS::UnstructuredSolver_impl::getServices_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getServices)
@@ -152,12 +183,98 @@ throw ()
 }
 
 /**
+ * Method:  setLocalSize[]
+ */
+void
+TOPS::UnstructuredSolver_impl::setLocalSize_impl (
+  /* in */int32_t m ) 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setLocalSize)
+  this->n = m;
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setLocalSize)
+}
+
+/**
+ * Method:  getLocalSize[]
+ */
+int32_t
+TOPS::UnstructuredSolver_impl::getLocalSize_impl () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getLocalSize)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::getLocalSize"
+
+  return this->n;
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getLocalSize)
+}
+
+/**
+ * Method:  setGhostPoints[]
+ */
+void
+TOPS::UnstructuredSolver_impl::setGhostPoints_impl (
+  /* in array<int> */::sidl::array<int32_t> ghosts ) 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setGhostPoints)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setGhostPoints"
+
+  SlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setGhostPoints)
+}
+
+/**
+ * Method:  getGhostPoints[]
+ */
+::sidl::array<int32_t>
+TOPS::UnstructuredSolver_impl::getGhostPoints_impl () 
+
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getGhostPoints)
+  // Insert-Code-Here {TOPS.UnstructuredSolver.getGhostPoints} (getGhostPoints method)
+  return 0;
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getGhostPoints)
+}
+
+/**
+ * Method:  setPreallocation[]
+ */
+void
+TOPS::UnstructuredSolver_impl::setPreallocation_impl (
+  /* in */int32_t d,
+  /* in */int32_t od ) 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocation)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
+
+  SlicedSetPreallocation(this->slice,d,PETSC_NULL,od,PETSC_NULL);
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocation)
+}
+
+/**
+ * Method:  setPreallocation[s]
+ */
+void
+TOPS::UnstructuredSolver_impl::setPreallocation_impl (
+  /* in array<int> */::sidl::array<int32_t> d,
+  /* in array<int> */::sidl::array<int32_t> od ) 
+{
+  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocations)
+#undef __FUNCT__
+#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
+
+  SlicedSetPreallocation(this->slice,0,d.first(),0,od.first());
+  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocations)
+}
+
+/**
  * Method:  Initialize[]
  */
 void
-TOPS::UnstructuredSolver_impl::Initialize (
-  /* in */ ::sidl::array< ::std::string> args ) 
-throw () 
+TOPS::UnstructuredSolver_impl::Initialize_impl (
+  /* in array<string> */::sidl::array< ::std::string> args ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.Initialize)
 #undef __FUNCT__
@@ -184,7 +301,7 @@ throw ()
   SlicedCreate(PETSC_COMM_WORLD,&this->slice);
 
   // Process runtime parameters
-  params = myServices.getPort("tops_options");
+  params = babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
 
@@ -195,8 +312,7 @@ throw ()
  * Method:  solve[]
  */
 void
-TOPS::UnstructuredSolver_impl::solve ()
-throw () 
+TOPS::UnstructuredSolver_impl::solve_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.solve)
@@ -208,18 +324,19 @@ throw ()
   if (!this->dmmg) {
     TOPS::System::Initialize::Once once;
 
-    once = myServices.getPort("TOPS.System.Initialize.Once");
+    once = babel_cast< TOPS::System::Initialize::Once >( myServices.getPort("TOPS.System.Initialize.Once") );
     if (once._not_nil()) {    
       once.initializeOnce();
     }
     myServices.releasePort("TOPS.System.Initialize.Once");
 
     // create DMMG object 
-    DMMGCreate(PETSC_COMM_WORLD,1,(void*)&this->self,&this->dmmg);
+    DMMGCreate(PETSC_COMM_WORLD,1,(void*)this,&this->dmmg);
     DMMGSetDM(this->dmmg,(DM)this->slice);
     TOPS::System::Compute::Residual residual;
 
-    residual = myServices.getPort("TOPS.System.Compute.Residual");
+    residual = babel_cast< TOPS::System::Compute::Residual >( 
+    	myServices.getPort("TOPS.System.Compute.Residual") );
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
     } else {
@@ -229,7 +346,7 @@ throw ()
 
     TOPS::System::Compute::InitialGuess guess;
 
-    guess = myServices.getPort("TOPS.System.Compute.InitialGuess");
+    guess = babel_cast< TOPS::System::Compute::InitialGuess >(myServices.getPort("TOPS.System.Compute.InitialGuess") );
     if (guess._not_nil()) {
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
@@ -238,7 +355,7 @@ throw ()
 
   TOPS::System::Initialize::EverySolve every;
 
-  every = myServices.getPort("TOPS.System.Initialize.EverySolve");
+  every = babel_cast< TOPS::System::Initialize::EverySolve >( myServices.getPort("TOPS.System.Initialize.EverySolve") );
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
@@ -252,9 +369,8 @@ throw ()
  * Method:  setBlockSize[]
  */
 void
-TOPS::UnstructuredSolver_impl::setBlockSize (
-  /* in */ int32_t bs ) 
-throw () 
+TOPS::UnstructuredSolver_impl::setBlockSize_impl (
+  /* in */int32_t bs ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setBlockSize)
 #undef __FUNCT__
@@ -268,8 +384,7 @@ throw ()
  * Method:  getSolution[]
  */
 ::sidl::array<double>
-TOPS::UnstructuredSolver_impl::getSolution ()
-throw () 
+TOPS::UnstructuredSolver_impl::getSolution_impl () 
 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getSolution)
@@ -282,9 +397,8 @@ throw ()
  * Method:  setSolution[]
  */
 void
-TOPS::UnstructuredSolver_impl::setSolution (
-  /* in */ ::sidl::array<double> location ) 
-throw () 
+TOPS::UnstructuredSolver_impl::setSolution_impl (
+  /* in array<double> */::sidl::array<double> location ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setSolution)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setSolution} (setSolution method)
@@ -295,10 +409,9 @@ throw ()
  * Method:  setValue[]
  */
 void
-TOPS::UnstructuredSolver_impl::setValue (
-  /* in */ const ::std::string& key,
-  /* in */ const ::std::string& value ) 
-throw () 
+TOPS::UnstructuredSolver_impl::setValue_impl (
+  /* in */const ::std::string& key,
+  /* in */const ::std::string& value ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValue)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setValue} (setValue method)
@@ -309,10 +422,9 @@ throw ()
  * Method:  setValue[Int]
  */
 void
-TOPS::UnstructuredSolver_impl::setValue (
-  /* in */ const ::std::string& key,
-  /* in */ int32_t value ) 
-throw () 
+TOPS::UnstructuredSolver_impl::setValue_impl (
+  /* in */const ::std::string& key,
+  /* in */int32_t value ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValueInt)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setValueInt} (setValue method)
@@ -323,10 +435,9 @@ throw ()
  * Method:  setValue[Bool]
  */
 void
-TOPS::UnstructuredSolver_impl::setValue (
-  /* in */ const ::std::string& key,
-  /* in */ bool value ) 
-throw () 
+TOPS::UnstructuredSolver_impl::setValue_impl (
+  /* in */const ::std::string& key,
+  /* in */bool value ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValueBool)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setValueBool} (setValue method)
@@ -337,10 +448,9 @@ throw ()
  * Method:  setValue[Double]
  */
 void
-TOPS::UnstructuredSolver_impl::setValue (
-  /* in */ const ::std::string& key,
-  /* in */ double value ) 
-throw () 
+TOPS::UnstructuredSolver_impl::setValue_impl (
+  /* in */const ::std::string& key,
+  /* in */double value ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setValueDouble)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setValueDouble} (setValue method)
@@ -351,12 +461,12 @@ throw ()
  * Method:  getValue[]
  */
 ::std::string
-TOPS::UnstructuredSolver_impl::getValue (
-  /* in */ const ::std::string& key ) 
-throw () 
+TOPS::UnstructuredSolver_impl::getValue_impl (
+  /* in */const ::std::string& key ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValue)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValue} (getValue method)
+  return ""; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValue)
 }
 
@@ -364,12 +474,12 @@ throw ()
  * Method:  getValueInt[]
  */
 int32_t
-TOPS::UnstructuredSolver_impl::getValueInt (
-  /* in */ const ::std::string& key ) 
-throw () 
+TOPS::UnstructuredSolver_impl::getValueInt_impl (
+  /* in */const ::std::string& key ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueInt)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValueInt} (getValueInt method)
+  return 0; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueInt)
 }
 
@@ -377,12 +487,12 @@ throw ()
  * Method:  getValueBool[]
  */
 bool
-TOPS::UnstructuredSolver_impl::getValueBool (
-  /* in */ const ::std::string& key ) 
-throw () 
+TOPS::UnstructuredSolver_impl::getValueBool_impl (
+  /* in */const ::std::string& key ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueBool)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValueBool} (getValueBool method)
+  return false; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueBool)
 }
 
@@ -390,110 +500,17 @@ throw ()
  * Method:  getValueDouble[]
  */
 double
-TOPS::UnstructuredSolver_impl::getValueDouble (
-  /* in */ const ::std::string& key ) 
-throw () 
+TOPS::UnstructuredSolver_impl::getValueDouble_impl (
+  /* in */const ::std::string& key ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getValueDouble)
   // Insert-Code-Here {TOPS.UnstructuredSolver.getValueDouble} (getValueDouble method)
+  return 0.0; // temporary default implementation to prevent compiler warnings
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getValueDouble)
 }
 
 /**
- * Method:  setLocalSize[]
- */
-void
-TOPS::UnstructuredSolver_impl::setLocalSize (
-  /* in */ int32_t m ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setLocalSize)
-  this->n = m;
-  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setLocalSize)
-}
-
-/**
- * Method:  getLocalSize[]
- */
-int32_t
-TOPS::UnstructuredSolver_impl::getLocalSize ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getLocalSize)
-#undef __FUNCT__
-#define __FUNCT__ "TOPS::UnstructuredSolver_impl::getLocalSize"
-
-  return this->n;
-  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getLocalSize)
-}
-
-/**
- * Method:  setGhostPoints[]
- */
-void
-TOPS::UnstructuredSolver_impl::setGhostPoints (
-  /* in */ ::sidl::array<int32_t> ghosts ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setGhostPoints)
-#undef __FUNCT__
-#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setGhostPoints"
-
-  SlicedSetGhosts(this->slice,this->bs,this->n,ghosts.length(0),ghosts.first());
-  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setGhostPoints)
-}
-
-/**
- * Method:  getGhostPoints[]
- */
-::sidl::array<int32_t>
-TOPS::UnstructuredSolver_impl::getGhostPoints ()
-throw () 
-
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.getGhostPoints)
-  // Insert-Code-Here {TOPS.UnstructuredSolver.getGhostPoints} (getGhostPoints method)
-  return 0;
-  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.getGhostPoints)
-}
-
-/**
- * Method:  setPreallocation[]
- */
-void
-TOPS::UnstructuredSolver_impl::setPreallocation (
-  /* in */ int32_t d,
-  /* in */ int32_t od ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocation)
-#undef __FUNCT__
-#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
-
-  SlicedSetPreallocation(this->slice,d,PETSC_NULL,od,PETSC_NULL);
-  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocation)
-}
-
-/**
- * Method:  setPreallocation[s]
- */
-void
-TOPS::UnstructuredSolver_impl::setPreallocation (
-  /* in */ ::sidl::array<int32_t> d,
-  /* in */ ::sidl::array<int32_t> od ) 
-throw () 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setPreallocations)
-#undef __FUNCT__
-#define __FUNCT__ "TOPS::UnstructuredSolver_impl::setPreallocation"
-
-  SlicedSetPreallocation(this->slice,0,d.first(),0,od.first());
-  // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver.setPreallocations)
-}
-
-/**
- * Starts up a component presence in the calling framework.
+ *  Starts up a component presence in the calling framework.
  * @param services the component instance's handle on the framework world.
  * Contracts concerning Svc and setServices:
  * 
@@ -510,11 +527,12 @@ throw ()
  * setServices.
  */
 void
-TOPS::UnstructuredSolver_impl::setServices (
-  /* in */ ::gov::cca::Services services ) 
-throw ( 
-  ::gov::cca::CCAException
-){
+TOPS::UnstructuredSolver_impl::setServices_impl (
+  /* in */::gov::cca::Services services ) 
+// throws:
+//     ::gov::cca::CCAException
+//     ::sidl::RuntimeException
+{
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.setServices)
   // Insert-Code-Here {TOPS.UnstructuredSolver.setServices} (setServices method)
 #undef __FUNCT__
@@ -527,9 +545,9 @@ throw (
 	    __FILE__, __LINE__);
     exit(1);
   }
-  gov::cca::Port p = self;      //  Babel required casting
+  gov::cca::Port p = (*this);      //  Babel required casting
   if(p._is_nil()) {
-    fprintf(stderr, "Error:: %s:%d: Error casting self to gov::cca::Port \n",
+    fprintf(stderr, "Error:: %s:%d: Error casting (*this) to gov::cca::Port \n",
 	    __FILE__, __LINE__);
     exit(1);
   }
@@ -577,20 +595,19 @@ throw (
 }
 
 /**
- * Inform the listener that someone is about to fetch their 
+ *  Inform the listener that someone is about to fetch their 
  * typemap. The return should be true if the listener
  * has changed the ParameterPort definitions.
  */
 bool
-TOPS::UnstructuredSolver_impl::updateParameterPort (
-  /* in */ const ::std::string& portName ) 
-throw () 
+TOPS::UnstructuredSolver_impl::updateParameterPort_impl (
+  /* in */const ::std::string& portName ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.updateParameterPort)
   // Insert-Code-Here {TOPS.UnstructuredSolver.updateParameterPort} (updateParameterPort method)
   std::cout << "TOPS::UnstructuredSolver_impl::updatedParameterPort called" << std::endl;
   // Get the runtime parameters
-  params = myServices.getPort("tops_options");
+  params = babel_cast< gov::cca::ports::ParameterPort>( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
   return true;
@@ -598,17 +615,16 @@ throw ()
 }
 
 /**
- * The component wishing to be told after a parameter is changed
+ *  The component wishing to be told after a parameter is changed
  * implements this function.
  * @param portName the name of the port (typemap) on which the
  * value was set.
  * @param fieldName the name of the value in the typemap.
  */
 void
-TOPS::UnstructuredSolver_impl::updatedParameterValue (
-  /* in */ const ::std::string& portName,
-  /* in */ const ::std::string& fieldName ) 
-throw () 
+TOPS::UnstructuredSolver_impl::updatedParameterValue_impl (
+  /* in */const ::std::string& portName,
+  /* in */const ::std::string& fieldName ) 
 {
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver.updatedParameterValue)
   // Insert-Code-Here {TOPS.UnstructuredSolver.updatedParameterValue} (updatedParameterValue method)
@@ -625,7 +641,7 @@ int TOPS::UnstructuredSolver_impl::setupParameterPort() {
 #define __FUNCT__ "TOPS::UnstructuredSolver_impl::setupParameterPort"
 
   // First, get parameters
-  ppf = myServices.getPort("ParameterPortFactory");
+  ppf = babel_cast< gov::cca::ports::ParameterPortFactory>( myServices.getPort("ParameterPortFactory") );
   if (ppf._is_nil()) {
     std::cerr << "TOPS::UnstructuredSolver_impl::setupParameterPort: called without ParameterPortFactory connected." << std::endl;
     return -1;
@@ -642,11 +658,11 @@ int TOPS::UnstructuredSolver_impl::setupParameterPort() {
 			  "Enter runtime TOPS options", "-help");
 
   // We may want to respond to changes
-  gov::cca::ports::ParameterSetListener paramSetListener = self;
+  gov::cca::ports::ParameterSetListener paramSetListener = (*this);
   ppf.registerUpdatedListener(tm, paramSetListener);
 
   // We may want to change the parameters before sharing them
-  gov::cca::ports::ParameterGetListener paramGetListener = self;
+  gov::cca::ports::ParameterGetListener paramGetListener = (*this);
   ppf.registerUpdater(tm, paramGetListener);
 
   // publish the parameter port and release the parameter port factory
