@@ -135,7 +135,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
 
 #undef __FUNCT__  
 #define __FUNCT__ "FieldView_Sieve_Ascii"
-PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string& name, PetscViewer viewer)
+PetscErrorCode FieldView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, const std::string& name, PetscViewer viewer)
 {
   // state 0: No header has been output
   // state 1: Only POINT_DATA has been output
@@ -220,7 +220,7 @@ PetscErrorCode FieldView_Sieve_Ascii(ALE::Obj<ALE::Mesh> mesh, const std::string
 
 #undef __FUNCT__  
 #define __FUNCT__ "FieldView_Sieve"
-PetscErrorCode FieldView_Sieve(ALE::Obj<ALE::Mesh> mesh, const std::string& name, PetscViewer viewer)
+PetscErrorCode FieldView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, const std::string& name, PetscViewer viewer)
 {
   PetscTruth     iascii, isbinary, isdraw;
   PetscErrorCode ierr;

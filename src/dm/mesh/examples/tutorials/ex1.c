@@ -60,8 +60,8 @@ typedef struct {
   PetscTruth     material;           // Construct field over cells indicating material type
 } Options;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(Obj<ALE::Mesh>, PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(Obj<ALE::Mesh>, const std::string&, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
 PetscErrorCode ProcessOptions(MPI_Comm, Options *);
 PetscErrorCode CreateMesh(MPI_Comm, Obj<ALE::Mesh>&, Options *);
 PetscErrorCode CreatePartition(Obj<ALE::Mesh>);
