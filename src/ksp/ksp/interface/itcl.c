@@ -320,7 +320,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsString("-ksp_monitor_true_residual","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(ksp->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidual,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
     /*
       Prints extreme eigenvalue estimates at each iteration
@@ -351,7 +351,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsName("-ksp_monitor_draw_true_residual","Monitor graphically true residual norm","KSPMonitorSet",&flg);CHKERRQ(ierr);
     if (flg){
-      ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidual,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorLGTrueResidualNorm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
     /* -----------------------------------------------------------------------*/

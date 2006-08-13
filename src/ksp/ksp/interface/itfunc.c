@@ -1173,7 +1173,7 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 
    Options Database Keys:
 +    -ksp_monitor        - sets KSPMonitorDefault()
-.    -ksp_monitor_true_residual    - sets KSPMonitorTrueResidual()
+.    -ksp_monitor_true_residual_norm    - sets KSPMonitorTrueResidualNorm()
 .    -ksp_monitor_draw    - sets line graph monitor,
                            uses KSPMonitorLGCreate()
 .    -ksp_monitor_draw_true_residual   - sets line graph monitor,

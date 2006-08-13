@@ -2380,14 +2380,14 @@ including \findex{KSPMonitorDefault()} \findex{KSPMonitorSingularValue()}
 \begin{tabbing}
   KSPMonitorDefault(KSP,int,double, void *);\\
   KSPMonitorSingularValue(KSP,int,double, void *);\\
-  KSPMonitorTrueResidual(KSP,int,double, void *);
+  KSPMonitorTrueResidualNorm(KSP,int,double, void *);
 \end{tabbing}
 The default monitor simply prints an estimate of the $l_2$-norm of the 
 residual at each iteration. The routine
 KSPMonitorSingularValue() is appropriate only for use with the conjugate 
 gradient method or GMRES, since it prints estimates of the extreme singular 
 values of the preconditioned operator at each iteration. Since
-KSPMonitorTrueResidual() prints \findex{KSPMonitorTrueResidual()}
+KSPMonitorTrueResidualNorm() prints \findex{KSPMonitorTrueResidualNorm()}
 the true residual at each iteration by 
 actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,

@@ -197,7 +197,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP ksp,PetscInt its,PetscR
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPMonitorSet(), KSPMonitorTrueResidual(), KSPMonitorLGCreate()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
@@ -211,9 +211,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPMonitorTrueResidual"
+#define __FUNCT__ "KSPMonitorTrueResidualNorm"
 /*@C
-   KSPMonitorTrueResidual - Prints the true residual norm as well as the preconditioned
+   KSPMonitorTrueResidualNorm - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
 
    Collective on KSP
@@ -225,7 +225,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
 -  dummy - unused monitor context 
 
    Options Database Key:
-.  -ksp_monitor_true_residual - Activates KSPMonitorTrueResidual()
+.  -ksp_monitor_true_residual_norm - Activates KSPMonitorTrueResidualNorm()
 
    Notes:
    When using right preconditioning, these values are equivalent.
@@ -241,7 +241,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
 
 .seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidual(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            resid,work;

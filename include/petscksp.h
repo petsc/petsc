@@ -246,7 +246,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPAddOptionsChecker(PetscErrorCode (*)
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidual(KSP,PetscInt,PetscReal,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP,PetscInt,PetscReal,void *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESMonitorKrylov(KSP,PetscInt,PetscReal,void *);
@@ -514,9 +514,9 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC,KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGCreate(const char[],const char[],int,int,int,int,PetscDrawLG*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLG(KSP,PetscInt,PetscReal,void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGDestroy(PetscDrawLG);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidual(KSP,PetscInt,PetscReal,void*);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualDestroy(PetscDrawLG);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDrawLG*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNorm(KSP,PetscInt,PetscReal,void*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNormDestroy(PetscDrawLG);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve(PC,PetscErrorCode (*)(void*,KSP,Vec,Vec));
