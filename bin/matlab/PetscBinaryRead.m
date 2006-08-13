@@ -1,15 +1,18 @@
-function [varargout] = PetscBinaryRead(inarg,comp)
+function [varargout] = PetscBinaryRead(inarg,comp,cnt)
+%
+%   [varargout] = PetscBinaryRead(inarg[,comp[,cnt]])
 %
 %  Reads in PETSc binary file matrices or vectors
 %  emits as Matlab sparse matrice or vectors.
 %
 %  Argument may be file name (string), socket number (integer)
 %  or any Matlab class that provides the read() and close() methods
-%  [We provide freader() and sreader() for binary files and sockets
+%  [We provide freader() and sreader() for binary files and sockets]
 %
 %  comp = 'complex' means the input file is complex
-%  comp = cell means return a Matlab cell array with all the items in 
-%              file/socket.
+%  comp = 'cell' means return a Matlab cell array 
+%         if cnt is given then cnt PETSc objects are read otherwise 
+%         all objects are read in
 %   
 if nargin == 1
   comp = 0;
@@ -26,7 +29,11 @@ else if isnumeric(inarg)
 end
 
 if comp == 'cell'
-  narg   = 1000;  
+  if nargin == 3
+    narg = cnt
+  else
+    narg   = 1000;  
+  end
   result = cell(1);
 else
   narg = nargout;

@@ -90,14 +90,9 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultComputeJacobian(TS,PetscReal,V
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetRHSMatrix(TS,Mat*,Mat*,void**);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetRHSJacobian(TS,Mat*,Mat*,void**);
 
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetSystemMatrixBC(TS, PetscErrorCode (*)(TS, Mat, Mat, void *));
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetSolutionBC(TS, PetscErrorCode (*)(TS, Vec, void *));
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetPreStep(TS, PetscErrorCode (*)(TS));
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetUpdate(TS, PetscErrorCode (*)(TS, PetscReal, PetscReal *));
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetPostStep(TS, PetscErrorCode (*)(TS));
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultRhsBC(TS, Vec, void *);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultSystemMatrixBC(TS, Mat, Mat, void *);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultSolutionBC(TS, Vec, void *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultPreStep(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultUpdate(TS, PetscReal, PetscReal *);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSDefaultPostStep(TS);

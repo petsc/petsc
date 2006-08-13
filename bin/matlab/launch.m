@@ -2,7 +2,7 @@ function launch(program,np)
 %
 %  launch(program,np)
 %  Starts up PETSc program
-% see openport, closeport and receive
+% see @sreader/sreader() and PetscBinaryRead()
 % 
 % Unfortunately does not emit an error code if the 
 % launch failes.

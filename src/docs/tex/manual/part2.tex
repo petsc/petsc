@@ -4602,20 +4602,15 @@ and then sends matrices or vectors via
   VecView(Vec A,v);\\
   MatView(Mat B,v);
 \end{tabbing}
-One can also send arrays or integer arrays via
-\begin{tabbing}
-  PetscViewerSocketPutScalar(v,int m,int n,PetscScalar *array);\\
-  PetscViewerSocketPutReal(v,int m,int n,double *array);\\
-  PetscViewerSocketPutInt(v,int m,int *array);
-\end{tabbing}
+One can also send arrays or integer arrays via PetscIntView(), PetscRealView() and PetscScalarView().
 One may start the Matlab program manually or use the PETSc command
 \trl{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \trl{PETSC_NULL}.
 
 To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
-is in your Matlab path. Use \trl{p = openport;} (or \trl{p = openport(portnum)} if you provided a port number in
-your call to PetscViewerSocketOpen()), then \trl{a = receive(p);} returns the object you have passed from PETSc.
-\trl{receive()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \trl{closeport()} to close the connection from Matlab.
+is in your Matlab path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
+your call to PetscViewerSocketOpen()), then \trl{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
+\trl{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. You many call \trl{sclose()} to close the connection from Matlab.
 It is also possible to start your PETSc program from Matlab via \trl{launch()}.
 
 \section{Using the Matlab Compute Engine}
@@ -6212,15 +6207,15 @@ predefined viewers:
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by 
 \begin{tabbing}
-     PetscViewerMatlabOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerMatlabOpen()}
+     PetscViewerSocketOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerSocketOpen()}
 \end{tabbing} 
-      On the Matlab side, one must first run \trl{v = openport(int port)}
-      and then \trl{A = receive(v)} to obtain the matrix or vector. Once all
+      On the Matlab side, one must first run \trl{v = sreader(int port)}
+      and then \trl{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
-      with \trl{closeport(v)}. On the PETSc side, one should destroy
+      with \trl{close(v)}. On the PETSc side, one should destroy
       the viewer object with \findex{PetscViewerDestroy()} \trl{
       PetscViewerDestroy()}. The corresponding Matlab \trl{mex}
-      files are located in \trl{${PETSC_DIR}/src/viewer/impls/matlab}.
+      files are located in \trl{${PETSC_DIR}/src/sys/viewer/impls/socket/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
