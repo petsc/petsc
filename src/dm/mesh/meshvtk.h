@@ -26,8 +26,8 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteVertices"
   static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
     typedef ALE::New::Numbering<ALE::Mesh::topology_type> numbering_type;
-    Obj<ALE::Mesh::section_type> coordinates = mesh->getSection("coordinates");
-    Obj<numbering_type>          numbering   = new numbering_type(mesh->getTopologyNew(), "depth", 0);
+    Obj<ALE::Mesh::section_type>        coordinates = mesh->getSection("coordinates");
+    Obj<numbering_type>                 numbering   = new numbering_type(mesh->getTopologyNew(), "depth", 0);
     ALE::Mesh::section_type::patch_type patch       = 0;
     int embedDim = coordinates->getAtlas()->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
     PetscErrorCode ierr;

@@ -370,6 +370,9 @@ namespace ALE {
         this->checkPatch(patch);
         return this->_maxHeights[patch];
       };
+      int height(const patch_type& patch, const point_type& point) {
+        return this->getValue(this->_labels["height"][patch], point, -1);
+      };
       const Obj<label_sequence>& heightStratum(const patch_type& patch, int height) {
         return this->getLabelStratum(patch, "height", height);
       };
@@ -410,6 +413,9 @@ namespace ALE {
       int depth(const patch_type& patch) {
         this->checkPatch(patch);
         return this->_maxDepths[patch];
+      };
+      int depth(const patch_type& patch, const point_type& point) {
+        return this->getValue(this->_labels["depth"][patch], point, -1);
       };
       const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
         return this->getLabelStratum(patch, "depth", depth);
@@ -614,6 +620,40 @@ namespace ALE {
     public: // Accessors
       const Obj<topology_type>& getTopology() const {return this->_topology;};
       void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
+      void copy(const Obj<Atlas>& atlas) {
+        const typename topology_type::sheaf_type& patches = atlas->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          for(typename chart_type::const_iterator c_iter = p_iter->second.begin(); c_iter != p_iter->second.end(); ++c_iter) {
+            this->setFiberDimension(p_iter->first, c_iter->first, c_iter->second);
+          }
+        }
+        this->orderPatches();
+      };
+      void copyByDepth(const Obj<Atlas>& atlas) {
+        this->copyByDepth(atlas, atlas->getTopology());
+      };
+      template<typename AtlasType, typename TopologyType>
+      void copyByDepth(const Obj<AtlasType>& atlas, const Obj<TopologyType>& topology) {
+        const typename topology_type::sheaf_type& patches  = topology->getPatches();
+        bool *depths = new bool[topology->depth()];
+
+        for(int d = 0; d < topology->depth(); d++) depths[d] = false;
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const patch_type& patch = p_iter->first;
+          const chart_type& chart = atlas->getChart(p_iter->first);
+
+          for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            const point_type& point = c_iter->first;
+            const int         depth = topology->depth(patch, point);
+
+            if (!depths[depth]) {
+              this->setFiberDimensionByDepth(patch, depth, atlas->getFiberDimension(patch, point));
+            }
+          }
+        }
+        this->orderPatches();
+      }
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         this->_topology->checkPatch(patch);
@@ -702,10 +742,10 @@ namespace ALE {
         }
       };
       void orderPatches() {
-        int offset = 0;
-
         for(typename indices_type::iterator i_iter = this->_indices.begin(); i_iter != this->_indices.end(); ++i_iter) {
           if (this->_debug) {std::cout << "Ordering patch " << i_iter->first << std::endl;}
+          int offset = 0;
+
           this->orderPatch(i_iter->first, offset);
         }
       };
@@ -1264,6 +1304,7 @@ namespace ALE {
           MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &maxval, &flg);
           tagvalp[0] = *maxval - 128; // hope that any still active tags were issued right at the beginning of the run
         }
+        //std::cout << "[" << this->commRank() << "]Got new tag " << tagvalp[0] << std::endl;
         return tagvalp[0]--;
       };
     public: // Accessors
@@ -1303,8 +1344,10 @@ namespace ALE {
           MPI_Request request;
 
           if (requestType == RECEIVE) {
+            if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Receiving data(" << this->_atlas->size(patch) << ") from " << patch << " tag " << this->_tag << std::endl;}
             MPI_Recv_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
           } else {
+            if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Sending data (" << this->_atlas->size(patch) << ") to " << patch << " tag " << this->_tag << std::endl;}
             MPI_Send_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
           }
           this->_requests[patch] = request;

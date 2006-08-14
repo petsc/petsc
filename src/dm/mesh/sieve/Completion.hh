@@ -644,7 +644,7 @@ namespace ALE {
       int getLocalSize() const {return this->_localSize;};
       int getGlobalSize() const {return this->_offsets[this->commSize()];};
       const int *getGlobalOffsets() const {return this->_offsets;};
-      int getIndex(const point_type& point) {return std::abs(this->_order[point]);};
+      int getIndex(const point_type& point) {if (this->_order[point] >= 0) return this->_order[point]; else return -(this->_order[point]+1);};
       point_type getPoint(const int& index) {return this->_invOrder[index];};
       bool isLocal(const point_type& point) {return this->_order[point] >= 0;};
       bool isRemote(const point_type& point) {return this->_order[point] < 0;};
@@ -803,7 +803,7 @@ namespace ALE {
       };
       void constructInverseOrder() {
         for(typename std::map<point_type, int>::iterator p_iter = this->_order.begin(); p_iter != this->_order.end(); ++p_iter) {
-          this->_invOrder[p_iter->second] = p_iter->first;
+          this->_invOrder[this->getIndex(p_iter->first)] = p_iter->first;
         }
       };
       void constructCommunication() {
@@ -873,7 +873,7 @@ namespace ALE {
                 msg << "Multiple indices for point " << *r_iter;
                 throw ALE::Exception(msg.str().c_str());
               }
-              this->_order[*r_iter] = -values[0];
+              this->_order[*r_iter] = -(values[0]+1);
             }
           }
         }
