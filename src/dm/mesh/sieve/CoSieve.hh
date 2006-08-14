@@ -636,9 +636,9 @@ namespace ALE {
       template<typename AtlasType, typename TopologyType>
       void copyByDepth(const Obj<AtlasType>& atlas, const Obj<TopologyType>& topology) {
         const typename topology_type::sheaf_type& patches  = topology->getPatches();
-        bool *depths = new bool[topology->depth()];
+        bool *depths = new bool[topology->depth()+1];
 
-        for(int d = 0; d < topology->depth(); d++) depths[d] = false;
+        for(int d = 0; d <= topology->depth(); d++) depths[d] = false;
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const patch_type& patch = p_iter->first;
           const chart_type& chart = atlas->getChart(p_iter->first);
