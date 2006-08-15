@@ -1286,6 +1286,15 @@ namespace ALE {
           return MPI_INT;
         } else if (sizeof(value_type) == 8) {
           return MPI_DOUBLE;
+        } else if (sizeof(value_type) == 28) {
+          int          blen[2];
+          MPI_Aint     indices[2];
+          MPI_Datatype oldtypes[2], newtype;
+          blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_INT;
+          blen[1] = 3; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
+          MPI_Type_struct(2, blen, indices, oldtypes, &newtype);
+          MPI_Type_commit(&newtype);
+          return newtype;
         }
         throw ALE::Exception("Cannot determine MPI type for value type");
       };

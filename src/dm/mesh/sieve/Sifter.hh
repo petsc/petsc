@@ -707,6 +707,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       //}
       return cap.contains(p);
     };
+    bool baseContains(const typename traits::target_type& p) {
+      typename traits::baseSequence base(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
+
+      //for(typename traits::capSequence::iterator c_iter = cap.begin(); c_iter != cap.end(); ++c_iter) {
+      //}
+      return base.contains(p);
+    };
     // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
     Obj<typename traits::arrowSequence> 
     arrows(const typename traits::source_type& s, const typename traits::target_type& t) {

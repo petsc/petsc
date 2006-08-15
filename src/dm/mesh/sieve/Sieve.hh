@@ -387,6 +387,10 @@ namespace ALE {
         s->stratify();
         return s;
       };
+      bool hasPoint(const point_type& point) {
+        if (this->baseContains(point) || this->capContains(point)) return true;
+        return false;
+      };
     private:
       template<class InputSequence> Obj<coneSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
       template<class pointSequence> void __nCone(const Obj<pointSequence>& points, int n, const Color_& color, bool useColor, Obj<coneArray> cone, Obj<coneSet> seen);

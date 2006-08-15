@@ -110,6 +110,12 @@ namespace ALE {
     void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
     const Obj<split_section_type>& getSplitSection() const {return this->_splitField;};
     void                           setSplitSection(const Obj<split_section_type>& splitField) {this->_splitField = splitField;};
+    // Printing
+    template <typename Stream_>
+    friend Stream_& operator<<(Stream_& os, const split_value& v) {
+      os << "(" << v.x << "," << v.y << "," << v.z << ")";
+      return os;
+    };
   };
 } // namespace ALE
 

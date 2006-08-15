@@ -8,6 +8,35 @@
 namespace ALE {
   namespace New {
     template<typename Section_>
+    class SizeSection : public ALE::ParallelObject {
+    public:
+      typedef Section_                          section_type;
+      typedef typename section_type::patch_type patch_type;
+      typedef typename section_type::point_type point_type;
+      typedef int                               value_type;
+    protected:
+      Obj<section_type> _section;
+      const patch_type  _patch;
+      value_type        _size;
+    public:
+      SizeSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
+      virtual ~SizeSection() {};
+    public:
+      const value_type *restrict(const patch_type& patch, const point_type& p) {
+        this->_size = this->_section->getAtlas()->getFiberDimension(this->_patch, p); // Could be size()
+        return &this->_size;
+      };
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        this->_size = this->_section->getAtlas()->getFiberDimension(this->_patch, p);
+        return &this->_size;
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        this->_section->view(name, comm);
+      };
+    };
+
+    template<typename Section_>
     class PatchlessSection : public ALE::ParallelObject {
     public:
       typedef Section_                          section_type;
@@ -375,10 +404,8 @@ namespace ALE {
       typedef typename ALE::New::Atlas<topology_type, ALE::Point>                         atlas_type;
       typedef typename ALE::Sifter<int, point_type, point_type>                           send_overlap_type;
       typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, int>        send_sizer_type;
-      typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
       typedef typename ALE::Sifter<point_type, int, point_type>                           recv_overlap_type;
       typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, int>        recv_sizer_type;
-      typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, value_type> recv_section_type;
       typedef typename ALE::New::ConstantSection<topology_type, int>                      constant_sizer;
       typedef typename ALE::New::ConstantSection<topology_type, value_type>               constant_section;
       typedef typename ALE::New::PartitionSizeSection<topology_type, short int>           partition_size_section;
@@ -397,8 +424,8 @@ namespace ALE {
         topology->stratify();
         return topology;
       };
-      template<typename Sizer>
-      static void setupSend(const Obj<send_overlap_type>& sendOverlap, const Obj<Sizer>& sendSizer, const Obj<send_section_type>& sendSection) {
+      template<typename Sizer, typename Section>
+      static void setupSend(const Obj<send_overlap_type>& sendOverlap, const Obj<Sizer>& sendSizer, const Obj<Section>& sendSection) {
         // Here we should just use the overlap as the topology (once it is a new-style sieve)
         sendSection->getAtlas()->clear();
         sendSection->getAtlas()->setTopology(ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap));
@@ -406,10 +433,10 @@ namespace ALE {
         sendSection->construct(sendSizer);
         sendSection->getAtlas()->orderPatches();
         sendSection->allocate();
-        sendSection->constructCommunication(send_section_type::SEND);
+        sendSection->constructCommunication(Section::SEND);
       };
-      template<typename Filler>
-      static void completeSend(const Obj<Filler>& sendFiller, const Obj<send_section_type>& sendSection) {
+      template<typename Filler, typename Section>
+      static void completeSend(const Obj<Filler>& sendFiller, const Obj<Section>& sendSection) {
         // Fill section
         const topology_type::sheaf_type& patches = sendSection->getAtlas()->getTopology()->getPatches();
 
@@ -425,8 +452,8 @@ namespace ALE {
         sendSection->startCommunication();
         sendSection->endCommunication();
       };
-      template<typename SizerFiller, typename Filler>
-      static void sendSection(const Obj<send_overlap_type>& sendOverlap, const Obj<SizerFiller>& sizerFiller, const Obj<Filler>& filler, const Obj<send_section_type>& sendSection) {
+      template<typename SizerFiller, typename Filler, typename Section>
+      static void sendSection(const Obj<send_overlap_type>& sendOverlap, const Obj<SizerFiller>& sizerFiller, const Obj<Filler>& filler, const Obj<Section>& sendSection) {
         Obj<send_sizer_type>   sendSizer     = new send_sizer_type(sendSection->comm(), sendSection->debug());
         Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, sendSection->debug());
 
@@ -440,6 +467,7 @@ namespace ALE {
         ALE::New::Completion<mesh_topology_type,value_type>::completeSend(filler, sendSection);
       };
       static Obj<send_overlap_type> sendDistribution(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew) {
+        typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
         Obj<send_overlap_type> sendOverlap   = new send_overlap_type(topology->comm(), topology->debug());
@@ -499,8 +527,8 @@ namespace ALE {
         topologyNew->stratify();
         return sendOverlap;
       };
-      template<typename Sizer>
-      static void setupReceive(const Obj<recv_overlap_type>& recvOverlap, const Obj<Sizer>& recvSizer, const Obj<recv_section_type>& recvSection) {
+      template<typename Sizer, typename Section>
+      static void setupReceive(const Obj<recv_overlap_type>& recvOverlap, const Obj<Sizer>& recvSizer, const Obj<Section>& recvSection) {
         // Create section
         const Obj<recv_overlap_type::traits::capSequence> ranks = recvOverlap->cap();
 
@@ -519,16 +547,18 @@ namespace ALE {
         recvSection->construct(recvSizer);
         recvSection->getAtlas()->orderPatches();
         recvSection->allocate();
-        recvSection->constructCommunication(recv_section_type::RECEIVE);
+        recvSection->constructCommunication(Section::RECEIVE);
       };
-      static void completeReceive(const Obj<recv_section_type>& recvSection) {
+      template<typename Section>
+      static void completeReceive(const Obj<Section>& recvSection) {
         // Complete the section
         recvSection->startCommunication();
         recvSection->endCommunication();
         if (recvSection->debug()) {recvSection->view("Receive Section in Completion", MPI_COMM_SELF);}
         // Read out section values
       };
-      static void recvSection(const Obj<recv_overlap_type>& recvOverlap, const Obj<recv_section_type>& recvSection) {
+      template<typename Section>
+      static void recvSection(const Obj<recv_overlap_type>& recvOverlap, const Obj<Section>& recvSection) {
         Obj<recv_sizer_type> recvSizer     = new recv_sizer_type(recvSection->comm(), recvSection->debug());
         Obj<constant_sizer>  constantSizer = new constant_sizer(MPI_COMM_SELF, 1, recvSection->debug());
 
@@ -542,6 +572,7 @@ namespace ALE {
         ALE::New::Completion<mesh_topology_type,value_type>::completeReceive(recvSection);
       };
       static Obj<recv_overlap_type> receiveDistribution(const Obj<mesh_topology_type>& topology, const Obj<mesh_topology_type>& topologyNew) {
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, value_type> recv_section_type;
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
         Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(topology->comm(), topology->debug());

@@ -217,7 +217,7 @@ namespace ALE {
       *splitInd    = splitId;
       *splitValues = splitVal;
     };
-    void Builder::buildSplit(const Obj<split_section_type>& splitField, int numSplit, int splitInd[], double splitVals[]) {
+    void Builder::buildSplit(const Obj<split_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]) {
       const Obj<split_section_type::atlas_type>& atlas = splitField->getAtlas();
       const split_section_type::patch_type       patch = 0;
       split_section_type::value_type             values[3];
@@ -236,7 +236,7 @@ namespace ALE {
         for(std::set<int>::const_iterator i_iter = e_iter->second.begin(); i_iter != e_iter->second.end(); ++i_iter, ++k) {
           const int& i = *i_iter;
 
-          values[k].first    = splitInd[i*2+1];
+          values[k].first    = splitInd[i*2+1] + numCells;
           values[k].second.x = splitVals[i*3+0];
           values[k].second.y = splitVals[i*3+1];
           values[k].second.z = splitVals[i*3+2];
@@ -293,7 +293,7 @@ namespace ALE {
         Obj<split_section_type> splitField = new split_section_type(comm, debug);
 
         splitField->getAtlas()->setTopology(topology);
-        buildSplit(splitField, numSplit, splitInd, splitValues);
+        buildSplit(splitField, numCells, numSplit, splitInd, splitValues);
         mesh->setSplitSection(splitField);
       }
       return mesh;
@@ -535,13 +535,13 @@ namespace ALE {
       const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
       const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
+      const Obj<Mesh::numbering_type>&                eNumbering = mesh->getLocalNumbering(topology->depth());
       const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
       Obj<Mesh::section_type>                         material;
       int            dim          = mesh->getDimension();
       int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
       bool           hasMaterial  = mesh->hasSection("material");
       int            elementType  = -1;
-      int            elementCount = 1;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -566,7 +566,7 @@ namespace ALE {
       for(Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         Obj<Mesh::sieve_type::traits::coneSequence> cone = sieve->cone(*e_iter);
 
-        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", elementCount++, elementType);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", eNumbering->getIndex(*e_iter)+1, elementType);CHKERRQ(ierr);
         if (hasMaterial) {
           // No infinite elements
           ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) material->restrict(patch, *e_iter)[0], 0);CHKERRQ(ierr);
@@ -586,8 +586,10 @@ namespace ALE {
     #define __FUNCT__ "PyLithWriteSplitLocal"
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
     //   number here by bundle, but we can fix it by traversing the elements like the vertices
-    PetscErrorCode Viewer::writeSplitLocal(const Obj<Builder::split_section_type>& splitField, PetscViewer viewer) {
-      Builder::split_section_type::patch_type patch = 0;
+    PetscErrorCode Viewer::writeSplitLocal(const Obj<Mesh>& mesh, const Obj<Builder::split_section_type>& splitField, PetscViewer viewer) {
+      const Obj<Mesh::numbering_type>&        eNumbering = mesh->getLocalNumbering(mesh->getTopologyNew()->depth());
+      const Obj<Mesh::numbering_type>&        vNumbering = mesh->getLocalNumbering(0);
+      Builder::split_section_type::patch_type patch      = 0;
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -596,11 +598,15 @@ namespace ALE {
       for(Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         const Builder::split_section_type::point_type& e      = c_iter->first;
         const Builder::split_section_type::value_type *values = splitField->restrict(patch, e);
-        const Builder::split_section_type::point_type& v      = values[0].first;
-        const Builder::split_value&                    split  = values[0].second;
+        const int                                      size   = splitField->getAtlas()->getFiberDimension(patch, e);
 
-        // No time history
-        ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", e, v, split.x, split.y, split.y);CHKERRQ(ierr);
+        for(int i = 0; i < size; i++) {
+          const Builder::split_section_type::point_type& v      = values[i].first;
+          const Builder::split_value&                    split  = values[i].second;
+
+          // No time history
+          ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", eNumbering->getIndex(e)+1, vNumbering->getIndex(v)+1, split.x, split.y, split.y);CHKERRQ(ierr);
+        }
       }
       PetscFunctionReturn(0);
     };

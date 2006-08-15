@@ -25,31 +25,48 @@ namespace ALE {
       typedef ALE::New::Completion<Topology_, Mesh::section_type::value_type> sectionCompletion;
       typedef typename sectionCompletion::send_overlap_type                   send_overlap_type;
       typedef typename sectionCompletion::recv_overlap_type                   recv_overlap_type;
-      typedef typename sectionCompletion::send_section_type                   send_section_type;
-      typedef typename sectionCompletion::recv_section_type                   recv_section_type;
     public:
       template<typename Section, typename Sizer, typename Filler>
       static void sendSection(const Obj<send_overlap_type>& overlap, const Obj<Sizer>& sizer, const Obj<Filler>& filler, const Obj<Section>& serialSection, const Obj<Section>& parallelSection) {
-        const Obj<send_section_type>         sendSec = new send_section_type(serialSection->comm(), serialSection->debug());
+        typedef typename ALE::New::OverlapValues<send_overlap_type, typename sectionCompletion::atlas_type, typename Section::value_type> send_section_type;
+        const Obj<send_section_type> sendSec = new send_section_type(serialSection->comm(), serialSection->debug());
 
-        parallelSection->getAtlas()->copyByDepth(serialSection->getAtlas());
-        parallelSection->allocate();
         sectionCompletion::sendSection(overlap, sizer, filler, sendSec);
-        const typename Mesh::section_type::topology_type::sheaf_type& patches = parallelSection->getAtlas()->getTopology()->getPatches();
+        const Obj<typename Section::atlas_type>&                      serialAtlas = serialSection->getAtlas();
+        const Obj<typename Section::atlas_type>&                      atlas       = parallelSection->getAtlas();
+        const Obj<typename Section::topology_type>&                   topology    = atlas->getTopology();
+        const typename Mesh::section_type::topology_type::sheaf_type& patches     = topology->getPatches();
 
         for(typename Mesh::section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-          const typename send_section_type::patch_type&             patch = p_iter->first;
-          const typename send_section_type::atlas_type::chart_type& chart = parallelSection->getAtlas()->getChart(patch);
+          const typename Section::patch_type&                     patch = p_iter->first;
+          const Obj<typename Section::topology_type::sieve_type>& sieve = p_iter->second;
+          const typename Section::atlas_type::chart_type&         chart = serialAtlas->getChart(patch);
 
-          for(typename send_section_type::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            const typename send_section_type::point_type& point = c_iter->first;
+          for(typename Section::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            const typename Section::point_type& point = c_iter->first;
+
+            if (sieve->hasPoint(point)) {
+              atlas->setFiberDimension(patch, point, serialAtlas->getFiberDimension(patch, point));
+            }
+          }
+        }
+        atlas->orderPatches();
+        //parallelSection->getAtlas()->copyByDepth(serialSection->getAtlas());
+        parallelSection->allocate();
+        for(typename Mesh::section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const typename Section::patch_type&             patch = p_iter->first;
+          const typename Section::atlas_type::chart_type& chart = parallelSection->getAtlas()->getChart(patch);
+
+          for(typename Section::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            const typename Section::point_type& point = c_iter->first;
 
             parallelSection->update(patch, point, serialSection->restrict(patch, point));
           }
         }
       };
       static void sendMesh(const Obj<Mesh>& serialMesh, const Obj<Mesh>& parallelMesh) {
-        typedef ALE::New::PatchlessSection<Mesh::section_type> CoordFiller;
+        typedef ALE::New::SizeSection<Mesh::section_type>      SectionSizer;
+        typedef ALE::New::PatchlessSection<Mesh::section_type> SectionFiller;
         const Obj<Mesh::topology_type> topology         = serialMesh->getTopologyNew();
         const Obj<Mesh::topology_type> parallelTopology = parallelMesh->getTopologyNew();
         const int dim   = serialMesh->getDimension();
@@ -74,11 +91,10 @@ namespace ALE {
         Obj<std::set<std::string> > sections = serialMesh->getSections();
 
         for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
-          const Mesh::section_type::patch_type                  patch         = 0;
-          const Obj<Mesh::section_type>&                        serialSection = serialMesh->getSection(*name);
-          const Obj<CoordFiller>                                filler        = new CoordFiller(serialSection, patch);
-          int size = serialSection->getAtlas()->getChart(patch).begin()->second.index;
-          const Obj<typename sectionCompletion::constant_sizer> sizer  = new typename sectionCompletion::constant_sizer(MPI_COMM_SELF, size, debug);
+          const Mesh::section_type::patch_type patch         = 0;
+          const Obj<Mesh::section_type>&       serialSection = serialMesh->getSection(*name);
+          const Obj<SectionSizer>              sizer         = new SectionSizer(serialSection, patch);
+          const Obj<SectionFiller>             filler        = new SectionFiller(serialSection, patch);
           // Need to associate overlaps with sections somehow (through the atlas?)
           if (*name == "material") {
             sendSection(cellOverlap, sizer, filler, serialSection, parallelMesh->getSection(*name));
@@ -87,28 +103,40 @@ namespace ALE {
           }
         }
         if (!serialMesh->getSplitSection().isNull()) {
+          typedef ALE::New::SizeSection<Mesh::split_section_type>      SplitSizer;
           typedef ALE::New::PatchlessSection<Mesh::split_section_type> SplitFiller;
-          const Mesh::section_type::patch_type                  patch            = 0;
-          const Obj<Mesh::split_section_type>&                  serialSplitField = serialMesh->getSplitSection();
-          const Obj<SplitFiller>                                filler           = new SplitFiller(serialSplitField, patch);
-          int size = serialSplitField->getAtlas()->getChart(patch).begin()->second.index;
-          const Obj<typename sectionCompletion::constant_sizer> sizer  = new typename sectionCompletion::constant_sizer(MPI_COMM_SELF, size, debug);
-          Obj<Mesh::split_section_type> parallelSplitField = new Mesh::split_section_type(serialMesh->comm(), debug);
+          const Mesh::section_type::patch_type patch              = 0;
+          const Obj<Mesh::split_section_type>& serialSplitField   = serialMesh->getSplitSection();
+          const Obj<SplitSizer>                sizer              = new SplitSizer(serialSplitField, patch);
+          const Obj<SplitFiller>               filler             = new SplitFiller(serialSplitField, patch);
+          Obj<Mesh::split_section_type>        parallelSplitField = new Mesh::split_section_type(serialMesh->comm(), debug);
 
-          parallelSplitField->getAtlas()->setTopology(parallelMesh->getTopology());
-          sendSection(vertexOverlap, sizer, filler, serialSplitField, parallelSplitField);
+          parallelSplitField->getAtlas()->setTopology(parallelMesh->getTopologyNew());
+          sendSection(cellOverlap, sizer, filler, serialSplitField, parallelSplitField);
           parallelMesh->setSplitSection(parallelSplitField);
         }
       };
       template<typename Section>
       static void receiveSection(const Obj<recv_overlap_type>& overlap, const Obj<Section>& serialSection, const Obj<Section>& parallelSection) {
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, typename sectionCompletion::atlas_type, typename Section::value_type> recv_section_type;
         const Obj<recv_section_type>         recvSec = new recv_section_type(serialSection->comm(), serialSection->debug());
         const Mesh::section_type::patch_type patch   = 0;
 
         sectionCompletion::recvSection(overlap, recvSec);
-        parallelSection->getAtlas()->copyByDepth(recvSec->getAtlas(), parallelSection->getAtlas()->getTopology());
+        const Obj<typename recv_section_type::atlas_type>&           serialAtlas = recvSec->getAtlas();
+        const Obj<typename Section::atlas_type>&                     atlas       = parallelSection->getAtlas();
+        const typename sectionCompletion::topology_type::sheaf_type& patches     = serialAtlas->getTopology()->getPatches();
+
+        for(typename sectionCompletion::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<typename sectionCompletion::topology_type::sieve_type::baseSequence>& base  = p_iter->second->base();
+
+          for(typename sectionCompletion::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            atlas->setFiberDimension(patch, *b_iter, serialAtlas->getFiberDimension(p_iter->first, *b_iter));
+          }
+        }
+        atlas->orderPatches();
+        //parallelSection->getAtlas()->copyByDepth(recvSec->getAtlas(), parallelSection->getAtlas()->getTopology());
         parallelSection->allocate();
-        const typename sectionCompletion::topology_type::sheaf_type& patches = recvSec->getAtlas()->getTopology()->getPatches();
 
         for(typename sectionCompletion::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const Obj<typename sectionCompletion::topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
@@ -150,8 +178,8 @@ namespace ALE {
         if (!serialMesh->getSplitSection().isNull()) {
           Obj<Mesh::split_section_type> parallelSplitField = new Mesh::split_section_type(serialMesh->comm(), serialMesh->debug);
 
-          parallelSplitField->getAtlas()->setTopology(parallelMesh->getTopology());
-          receiveSection(vertexOverlap, serialMesh->getSplitSection(), parallelSplitField);
+          parallelSplitField->getAtlas()->setTopology(parallelMesh->getTopologyNew());
+          receiveSection(cellOverlap, serialMesh->getSplitSection(), parallelSplitField);
           parallelMesh->setSplitSection(parallelSplitField);
         }
       };
@@ -172,6 +200,9 @@ namespace ALE {
           for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
             serialMesh->getSection(*name)->view(*name);
           }
+          if (!serialMesh->getSplitSection().isNull()) {
+            serialMesh->getSplitSection()->view("Serial split field");
+          }
         }
         if (serialMesh->commRank() == 0) {
           Distribution<topology_type>::sendMesh(serialMesh, parallelMesh);
@@ -184,6 +215,9 @@ namespace ALE {
           parallelMesh->getTopologyNew()->view("Parallel topology");
           for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
             parallelMesh->getSection(*name)->view(*name);
+          }
+          if (!parallelMesh->getSplitSection().isNull()) {
+            parallelMesh->getSplitSection()->view("Parallel split field");
           }
         }
         parallelMesh->distributed = true;
