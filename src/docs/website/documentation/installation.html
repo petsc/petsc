@@ -501,18 +501,39 @@ ${PETSC_DIR}/bin/win32/win32fe without any options.</p>
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
-      <h3 style="font-weight: bold;"><a
- name="AdditionalMicrosoftWindowsNotes"><font color="#551a8b">Installing
+      <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
+on machine requiring job scheduler:</font></a></h3>
+      <p>If one has to go through the job scheduler to use MPI on a
+given machine - use the configure option <span
+ style="font-weight: bold;">'--with-batch=1'</span> as follows:<br>
+      </p>
+      <ul>
+        <li>run configure with the additional option <span
+ style="font-weight: bold;">'--with-batch=1' </span>on the <span
+ style="font-weight: bold;">frontend node</span> [perhpas with the
+additional option <span style="font-weight: bold;">'--with-mpi-shared=0']</span><br>
+        </li>
+        <li>the above configure run will create a binary <span
+ style="font-weight: bold;">'conftest'</span>. Run this binary
+'conftest' on <span style="font-weight: bold;">one compute node</span>
+using the job scheduler.</li>
+        <li>The above run of conftest will create a new python script <span
+ style="font-weight: bold;">'reconfigure'</span>. Run <span
+ style="font-weight: bold;">'python reconfigure'</span>&nbsp; to
+complete the configure process<br>
+        </li>
+      </ul>
+      <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
 on IBM SP:</font></a></h3>
-      <p>To run any code compiled with MPI on IBM SP - one has to
+To run any code compiled with MPI on IBM SP - one has to
 go
 through the <span style="font-weight: bold;">job scheduler</span>.&nbsp;
-Running configure on such job-scheduler only machines requires the
-additional option <span style="font-weight: bold;">'--with-batch=1'</span>.
-Alternatively check/run config/aix5.1.0.0.py for all configure options
+[So follow the instructions from the above section 'Installing on
+machine requiring job scheduler']. Alternatively check/run
+config/aix5.1.0.0.py for all
+configure options
 required on the SP with compilers defaulting to 32bit mode, and
-config/aix5.1.0.0-64.py with compilers defaulting to 64bit mode.<br>
-      </p>
+config/aix5.1.0.0-64.py with compilers defaulting to 64bit mode.
       <h3 style="font-weight: bold;"><a
  name="AdditionalMicrosoftWindowsNotes"><font color="#551a8b">Installing
 on IBM Blue Gene:</font></a></h3>
