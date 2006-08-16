@@ -107,118 +107,124 @@ namespace ALE_X {
       };
     };
 
-    // Specializations of lex2 order to Arrow compare various combinations of pairs of Source, Target and Color in various orders.
     //
-    template<typename Arrow_, typename KeyExtractorA_, typename KeyExtractorB_, 
-             typename OrderA_ = std::less<typename KeyExtractorA_::result_type>, 
-             typename OrderB_ = std::less<typename KeyExtractorB_::result_type> >
-    struct ArrowLex2Order {
-      typedef typename KeyExtractorA_::result_type KeyA_;
-      typedef typename KeyExtractorB_::result_type KeyB_;
-      typedef ALE::pair<KeyA_,KeyB_> KeyAB_;
-    private:
-      KeyExtractorA_ _keyA;
-      KeyExtractorB_ _keyB;
-      lex1<KeyA_, OrderA_>                 _lex1;
-      lex2<KeyA_, KeyB_, OrderA_, OrderB_> _lex2;
+    // Arrow-specific orders
+    //
+    // ArrowKey order compares arrows by comparing keys of type Key_ extracted from arrows using a KeyExtractor_.
+    // In addition, an arrow can be compared to a single Key_ or another CompatibleKey_.
+    template<typename Arrow_, typename KeyExtractor_, typename KeyOrder_ = std::less<typename KeyExtractor_::result_type> >
+    struct ArrowKeyOrder {
+      typedef typename KeyExtractor_::result_type Key_;
+    protected:
+      KeyOrder_ _key_order;
     public:
       bool operator()(const Arrow_& arr1, const Arrow_& arr2) {
-        return _lex2(_keyA(arr1), _keyB(arr1), _keyA(arr2), _keyB(arr2));
+        return _key_order(_key(arr1), _key(arr2));
       };
-      bool operator()(const Arrow_& arr, const KeyA_ keyA) {
-        return _lex1(_keyA(arr), keyA);
+      template <typename CompatibleKey_>
+      bool operator()(const Arrow_& arr, const CompatibleKey_ key) {
+        return _key_order(_key(arr), key);
       };
-      bool operator()(const Arrow_& arr, const KeyAB_ keyAB) {
-        return _lex2(_keyA(arr), _keyB(arr), keyAB.first, keyAB.second);
+    };// ArrowKeyOrder
+
+    //
+    // Composite Arrow ordering operators, called '2-orders' are used to generate cone and support indices.
+    // An ArrowKeyXXXOrder first orders on a single key using KeyOrder (e.g., Target or Source for cone and support respectively),
+    // and then on the whole Arrow, using an additional predicate XXXOrder.
+    // These are then specialized to SupportCompare & ConeCompare, using the order operators supplied by the user:
+    // Support2Order = (SourceOrder, SupportOrder), 
+    // Cone2Order    = (TargetOrder, ConeOrder), etc
+    template <typename Arrow_, typename KeyExtractor_, typename KeyOrder_, typename XXXOrder_>
+    struct ArrowKeyXXXOrder {
+      typedef Arrow_                                                           arrow_type;
+      typedef KeyExtractor_                                                    key_extractor_type;
+      typedef KeyOrder_                                                        key_order_type;
+      typedef typename key_extractor_type::result_type                         key_type;
+      typedef XXXOrder_                                                        xxx_order_type;
+      //
+      typedef lex1<key_type, key_order_type>                                   order1_type;
+      typedef lex2<key_type, arrow_type, key_order_type, xxx_order_type>       order2_type;
+    private:
+    public:
+      bool operator()(const arrow_type& arr1, const arrow_type& arr2) { 
+        static order2_type       _order2;
+        static key_extractor_type _kex;
+        return _order2(_kex(arr1),arr1,_kex(arr2),arr2);
       };
-    };
+      template <typename CompatibleKey_>
+      bool operator()(const arrow_type& arr1, const CompatibleKey_& key) {
+        // We want key to be less than any (key, ...)
+        return !_compare1(key,_kex(arr1));
+      };
+      template <typename CompatibleKey_, typename CompatibleXXXKey_>
+      bool operator()(const arrow_type& arr1, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) {
+        // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
+        return !_compare2(keyPair.first,keyPair.second,_kex(arr1),arr1);
+      };
+    };// class ArrowKeyXXXOrder
+
+    //
+    // Default orders.
     //
     template<typename Arrow_, 
              typename SourceOrder_ = std::less<typename Arrow_::source_type>,
              typename ColorOrder_  = std::less<typename Arrow_::color_type> >
-    struct ArrowSourceColorOrder : 
-      public ArrowLex2Order< ::boost::multi_index::template member<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
-                             ::boost::multi_index::template member<Arrow_, typename Arrow_::color_type,  &Arrow_::color >,
-                             SourceOrder_, ColorOrder_> {};
+    struct SourceColorOrder : 
+      public ArrowKeyXXXOrder<Arrow_, 
+                              ::boost::multi_index::template member<Arrow_,typename Arrow_::source_type,&Arrow_::source>, SourceOrder_,
+                              ArrowKeyOrder<Arrow_,
+                                            ::boost::multi_index::template member<Arrow_,typename Arrow_::color_type,&Arrow_::color>,
+                                            ColorOrder_>
+      >{};
     //
     template<typename Arrow_, 
              typename ColorOrder_  = std::less<typename Arrow_::color_type>,
              typename SourceOrder_ = std::less<typename Arrow_::source_type> >
-    struct ArrowColorSourceOrder : 
-      public ArrowLex2Order< ::boost::multi_index::template member<Arrow_, typename Arrow_::color_type,  &Arrow_::color >,
-                             ::boost::multi_index::template member<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
-                             ColorOrder_, SourceOrder_> {};
+    struct ColorSourceOrder : 
+      public ArrowKeyXXXOrder<Arrow_, 
+                              ::boost::multi_index::template member<Arrow_,typename Arrow_::color_type,&Arrow_::source>, ColorOrder_,
+                              ArrowKeyOrder<Arrow_,
+                                            ::boost::multi_index::template member<Arrow_,typename Arrow_::source_type,&Arrow_::source>,
+                                            SourceOrder_>
+      >{};
     //
     template<typename Arrow_, 
-             typename TargetOrder_ = std::less<typename Arrow_::target_type>,
+             typename TargetOrder_ = std::less<typename Arrow_::source_type>,
              typename ColorOrder_  = std::less<typename Arrow_::color_type> >
-    struct ArrowTargetColorOrder : 
-      public ArrowLex2Order< Arrow_,
-                             ::boost::multi_index::template member<Arrow_, typename Arrow_::target_type, &Arrow_::target>, 
-                             ::boost::multi_index::template member<Arrow_, typename Arrow_::color_type, &Arrow_::color  >,
-                             TargetOrder_, ColorOrder_> {};
-
+    struct TargetColorOrder : 
+      public ArrowKeyXXXOrder<Arrow_, 
+                              ::boost::multi_index::template member<Arrow_,typename Arrow_::source_type,&Arrow_::source>, TargetOrder_,
+                              ArrowKeyOrder<Arrow_,
+                                            ::boost::multi_index::template member<Arrow_,typename Arrow_::color_type,&Arrow_::color>,
+                                            ColorOrder_>
+      >{};
     //
     template<typename Arrow_, 
              typename ColorOrder_  = std::less<typename Arrow_::color_type>,
-             typename TargetOrder_ = std::less<typename Arrow_::target_type> >
-    struct ArrowColorTargetOrder : 
-      public ArrowLex2Order< Arrow_, 
-                             ::boost::multi_index::template member<Arrow_, typename Arrow_::color_type,  &Arrow_::color >,
-                             ::boost::multi_index::template member<Arrow_, typename Arrow_::target_type, &Arrow_::target>, 
-                             ColorOrder_, TargetOrder_> {};
+             typename TargetOrder_ = std::less<typename Arrow_::source_type> >
+    struct ColorTargetOrder : 
+      public ArrowKeyXXXOrder<Arrow_, 
+                              ::boost::multi_index::template member<Arrow_,typename Arrow_::color_type,&Arrow_::source>, ColorOrder_,
+                              ArrowKeyOrder<Arrow_,
+                                            ::boost::multi_index::template member<Arrow_,typename Arrow_::source_type,&Arrow_::source>,
+                                            TargetOrder_>
+      >{};
     //
-    // Composite Arrow comparison operators, called 'compares', are used to generate cone and support indices.
-    // A KeyArrowOrder first orders on a single key using KeyOrder (e.g., Target or Source for cone and support respectively),
-    // and then on the whole Arrow, using an additional predicate ArrowOrder.
-    // These are then specialized to SupportCompare & ConeCompare, using the order operators supplied by the user:
-    // SupportCompare = (SourceOrder, SupportOrder), 
-    // ConeCompare    = (TargetOrder, ConeOrder), etc
-    template <typename Arrow_, typename KeyExtractor_, typename KeyOrder_, typename ArrowOrder_>
-    struct KeyArrowCompare {
-      typedef Arrow_                                                           arrow_type;
-      typedef ArrowOrder_                                                      arrow_order_type;
-      typedef KeyExtractor_                                                    key_extractor_type;
-      typedef KeyOrder_                                                        key_order_type;
-      typedef typename key_extractor_type::result_type                         key_type;
-      //
-      typedef lex2<key_type, arrow_type, key_order_type, arrow_order_type>     compare_type;
-    private:
-      compare_type       _compare;
-      key_extractor_type _key;
-    public:
-      bool operator()(const arrow_type& arr1, const arrow_type& arr2) { 
-        return _compare(_key(arr1),arr1,_key(arr2),arr2);
-      };
-    };
-
-    // Default orders & compares.
+    // Cone/Support orders
     //
-    template <typename Arrow_>
-    struct DefaultConeOrder : public ArrowColorSourceOrder<Arrow_> {};
+    template <typename Arrow_, 
+              typename SourceOrder_ = std::less<typename Arrow_::source_type>, typename XXXOrder_ = ColorTargetOrder<Arrow_> >
+    struct SupportOrder : 
+      public ArrowKeyXXXOrder<Arrow_,
+                                typename ::boost::multi_index::template member<Arrow_,typename Arrow_::source_type,&Arrow_::source>,
+                                SourceOrder_, XXXOrder_>{};
     //
-    template <typename Arrow_>
-    struct DefaultSupportOrder : public ArrowColorTargetOrder<Arrow_> {};
-    // 
-    template <typename Arrow_>
-    struct DefaultSourceOrder : public std::less<typename Arrow_::source_type> {};
-    //
-    template <typename Arrow_>
-    struct DefaultTargetOrder : public std::less<typename Arrow_::target_type> {};
-    //
-    template <typename Arrow_>
-    struct DefaultColorOrder : public std::less<typename Arrow_::color_type> {};
-    //
-    // KeyArrowCompare specialized for support and cone indices, parameterized by the comparison predicates.
-    template <typename Arrow_, typename SourceOrder_=DefaultSourceOrder<Arrow_>, typename SupportOrder_=DefaultSupportOrder<Arrow_> >
-    struct SupportCompare : 
-      public KeyArrowCompare<Arrow_,typename ::boost::multi_index::template member<Arrow_,typename Arrow_::source_type,&Arrow_::source>,
-                             SourceOrder_, SupportOrder_>{};
-    //
-    template <typename Arrow_, typename TargetOrder_=DefaultTargetOrder<Arrow_>, typename ConeOrder_=DefaultConeOrder<Arrow_> >
+    template <typename Arrow_, 
+              typename TargetOrder_ = std::less<typename Arrow_::target_type>, typename XXXOrder_ = ColorSourceOrder<Arrow_> >
     struct ConeCompare: 
-      public KeyArrowCompare<Arrow_, typename ::boost::multi_index::member<Arrow_,typename Arrow_::target_type,&Arrow_::target>, 
-                             TargetOrder_, ConeOrder_>{};
+      public ArrowKeyXXXOrder<Arrow_, 
+                              typename ::boost::multi_index::template member<Arrow_,typename Arrow_::target_type,&Arrow_::target>, 
+                              TargetOrder_, XXXOrder_>{};
     
     //
     // InnerIndexSequence definition
@@ -231,86 +237,7 @@ namespace ALE_X {
     template <typename Index_, 
               typename KeyExtractor_, typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type> >
     struct InnerIndexSequence {
-      typedef Index_                                     index_type;
-      typedef KeyExtractor_                              key_extractor_type;
-      typedef typename key_extractor_type::result_type   key_type;
-      typedef ValueExtractor_                            value_extractor_type;
-      typedef typename value_extractor_type::result_type value_type;
-      typedef typename index_type::size_type             size_type;
-      //
-      template <typename Sequence_ = InnerIndexSequence>
-      class iterator {
-      public:
-        // Parent sequence type
-        typedef Sequence_                              sequence_type;
-        // Standard iterator typedefs
-        typedef std::input_iterator_tag                iterator_category;
-        typedef int                                    difference_type;
-        typedef value_type*                            pointer;
-        typedef value_type&                            reference;
-        /* value_type defined in the sequence */
-        // Underlying iterator type
-        typedef typename index_type::iterator          itor_type;
-      protected:
-        // Parent sequence
-        sequence_type&  _sequence;
-        // Underlying iterator 
-        itor_type      _itor;
-        // Value extractor
-        value_extractor_type _ex;
-      public:
-        iterator(sequence_type& sequence, const itor_type& itor)  : _sequence(sequence),_itor(itor) {};
-        iterator(const iterator& iter)                            : _sequence(iter._sequence),_itor(iter._itor) {}
-        virtual ~iterator() {};
-        virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
-        virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
-        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
-        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
-        virtual iterator          operator++() {++this->_itor; return *this;};
-        virtual iterator          operator++(int n) {iterator tmp(*this); ++this->_itor; return tmp;};
-      };// class iterator
-    protected:
-      index_type& _index;
-      key_type    _key;
-    public:
-      //
-      // Basic interface
-      //
-      InnerIndexSequence(const InnerIndexSequence& seq)             : _index(seq._index), _key(seq._key) {};
-      InnerIndexSequence(index_type& index, const key_type& key)    : _index(index), _key(key)           {};
-      virtual ~InnerIndexSequence() {};
-      //
-      // Extended interface
-      //
-      virtual bool         
-      empty() { return (this->_index.find(this->_key) == this->_index.end());};
-      //
-      virtual iterator
-      begin() { return this->_index.lower_bound(this->_key);};
-      //
-      virtual iterator
-      end() { return this->_index.upper_bound(this->_key);};
-      //
-      virtual typename index_type::size_type  
-      size()  {
-        typename index_type::size_type sz = 0;
-        for(typename index_type::iterator itor = this->_index.begin(); itor != this->_index.end(); itor++) {
-          ++sz;
-        }
-        return sz;
-      };
-      //
-      template<typename ostream_type>
-      void view(ostream_type& os, const char* label = NULL){
-        if(label != NULL) {
-          os << "Viewing " << label << " sequence:" << std::endl;
-        } 
-        os << "[";
-        for(iterator<> i = this->begin(); i != this->end(); i++) {
-          os << " "<< *i;
-        }
-        os << " ]" << std::endl;
-      };
+
     };// class InnerIndexSequence    
     
     //
@@ -324,97 +251,7 @@ namespace ALE_X {
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
     template <typename Index_, typename Key_, typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type> >
     struct OuterIndexSequence {
-      typedef Index_                                     index_type;
-      typedef KeyExtractor_                              key_extractor_type;
-      typedef typename key_extractor_type::result_type   key_type;
-      typedef ValueExtractor_                            value_extractor_type;
-      typedef typename value_extractor_type::result_type value_type;
-      typedef typename index_type::size_type             size_type;
-      //
-      template <typename Sequence_ = OuterIndexSequence>
-      class iterator {
-      public:
-        // Parent sequence type
-        typedef Sequence_                              sequence_type;
-        // Standard iterator typedefs
-        typedef std::input_iterator_tag                iterator_category;
-        typedef int                                    difference_type;
-        typedef value_type*                            pointer;
-        typedef value_type&                            reference;
-        /* value_type defined in the containing OuterIndexSequence */
-        // Underlying iterator type
-        typedef typename index_type::iterator          itor_type;
-      protected:
-        // Parent sequence
-        sequence_type&  _sequence;
-        // Underlying iterator 
-        itor_type      _itor;
-        // Key extractor & key
-        key_extractor_type _kex
-        key_type           _key;
-        // Value extractor
-        value_extractor_type _ex;
-      public:
-        iterator(sequence_type& sequence, itor_type itor)       : _sequence(sequence),_itor(itor) {};
-        iterator(const iterator& iter)                          : _sequence(iter._sequence),_itor(iter._itor) {}
-        virtual ~iterator() {};
-        virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
-        virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
-        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
-        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
-        virtual iterator   operator++() {
-          this->_itor = this->_index.upper_bound(this->_key); 
-          if(this->_itor == this->_index.end()) {
-            this->_key = key_type();
-          }
-          else {
-            this->_key = this->_kex(*(this->_itor));
-          }
-          return *this;
-        };
-        virtual iterator   operator++(int n) {iterator tmp(*this); ++this->_itor; return tmp;};
-      };// class iterator
-    protected:
-      index_type& _index;
-      key_type  _high, _low;
-      bool _have_low, _have_high;
-    public:
-      //
-      // Basic interface
-      //
-      OuterIndexSequence(const OuterIndexSequence& seq)     : 
-        _index(seq._index), _low(seq._low), _high(seq._high), _have_low(seq._have_low), _have_high(seq._have_high) {};
-      OuterIndexSequence(index_type& index, const key_type high)  :  _index(index), _high(high) {
-        this->_have_low = false; this->_have_high = true;
-      };
-      OuterIndexSequence(index_type& index, const key_type& low, const key_type& high)  :  _index(index), _high(high), _low(low) {
-        this->_have_low = true; this->_have_high = true;
-      };
-      virtual ~OuterIndexSequence() {};
-      //
-      // Extended interface
-      //
-      virtual bool         empty() {return this->_index.empty();};
-      
-      virtual size_type  
-      size()  {
-        size_type sz = 0;
-        for(iterator it = this->begin(); it != this->end(); it++) {
-          ++sz;
-        }
-        return sz;
-      };
-      template<typename ostream_type>
-      void view(ostream_type& os, const char* label = NULL){
-        if(label != NULL) {
-          os << "Viewing " << label << " sequence:" << std::endl;
-        } 
-        os << "[";
-        for(iterator<> i = this->begin(); i != this->end(); i++) {
-          os << " "<< *i;
-        }
-        os << " ]" << std::endl;
-      };
+
     };// class OuterIndexSequence    
 
 
@@ -424,8 +261,8 @@ namespace ALE_X {
     // Defines a sequence representing a subset of a multi_index container defined by its Index_ which is ordered lexicographically 
     // starting with an OuterKey_ (obtained from an OuterKeyExtractor_) and then by an InnerKey_ (obtained from an InnerKeyExtractor_).
     // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
-    // This particular sequence traverses all OuterKey_ segements between given bounds, and within each segment traverses all elements
-    // in each segment with a given Key_. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
+    // This particular sequence traverses all OuterKey_ segements within the given bounds, and within each segment traverses all 
+    // with a given Key_. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
     // the outer keys from a given range and a fixed inner key.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
     template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
@@ -439,6 +276,7 @@ namespace ALE_X {
       typedef ValueExtractor_                                  value_extractor_type;
       typedef typename value_extractor_type::result_type       value_type;
       typedef typename index_type::size_type                   size_type;
+      typedef typename index_type::iterator                    itor_type;
       //
       class iterator {
       public:
@@ -450,50 +288,31 @@ namespace ALE_X {
         typedef value_type*                            pointer;
         typedef value_type&                            reference;
         /* value_type defined in the containing StridedIndexSequence */
-        // Underlying iterator type
-        typedef typename index_type::iterator          itor_type;
       protected:
         // Parent sequence
         sequence_type&  _sequence;
-        // Underlying index
-        index_type& _index;
-        // Underlying iterator 
-        itor_type      _itor;
-        // Key extractors & keys
-        outer_key_extractor_type _okex
-        outer_key_type           _ok;
-        inner_key_extractor_type _ikex
-        inner_key_type           _ik;
+        // Underlying iterator & segment boundary
+        itor_type       _itor;
+        itor_type       _segBndry;
+        //
         // Value extractor
-        value_extractor_type _ex;
+        outer_key_extractor_type _okex;
+        inner_key_extractor_type _ikex;
+        value_extractor_type     _ex;
       public:
-        iterator(sequence_type& sequence, itor_type itor)       : _sequence(sequence), _index(_sequence.index())       {
-          this->__setup_itor(itor);
-        };
-        iterator(const iterator& iter)                          : _sequence(iter._sequence), _index(_sequence.index()) {
-          this->__setup_itor(iter._itor);}
+        iterator(sequence_type& sequence, const itor_type& itor, const itor_type& segBndry) : 
+          _sequence(sequence), _itor(itor), _segBndry(segBndry) {};
+        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor),_segBndry(iter.segBndry){};
         virtual ~iterator() {};
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
-        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
+        virtual const value_type  operator*() const {_ex(*(this->_itor));};
         virtual iterator   operator++() {
-          this->__setup_itor(++this->_itor);
+          this->_sequence.next(this->_itor, this->_segBndry);
           return *this;
         };
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
-      protected:
-        void __setup_itor(itor_type& itor) {
-          // THIS IS THE HEART OF ITERATOR FUNCTIONALITY.  IN PARTICULAR, THIS HELPS ADVANCE THE ITERATOR CORRECTLY
-          //
-          // First we extract the current inner/outer keys from the underlying itor
-          outer_key_type = this->_okex(*itor);
-          inner_key_type = this->_ikex(*itor);
-          // Now we check whether the inner iterator has reached its low
-          // ASSUMPTION: _index ordering operator can take outer_key_type by itself
-          // CONTINUE: 1) implement 'init' functionality; 2) probably want to use 'current_high itor' to guard for end of segment;
-          this->_itor = itor;
-        };
       };// class iterator
     protected:
       index_type&     _index;
@@ -501,6 +320,9 @@ namespace ALE_X {
       bool            _have_olow, _have_ohigh;
       outer_key_type  _ihigh, _ilow;
       bool            _have_ilow, _have_ihigh;
+      //
+      outer_key_extractor _okex;
+      inner_key_extractor _ikex;
     public:
       //
       // Basic interface
@@ -515,41 +337,8 @@ namespace ALE_X {
       //
       // Extended interface
       //
-      index_type& index() {return this->_index;};
-      //
-      void setInnerLow(const inner_key_type& ilow) {this->_ilow = ilow; this->_have_ilow = true;};
-      //
-      void setInnerHigh(const inner_key_type& ihigh) {this->_ihigh = ihigh; this->_have_ihigh = true;};
-      //
-      void setInnerLimits(const inner_key_type& ilow, const inner_key_type& ihigh) {
-        this->_ilow = ilow; this->_have_ilow = true; this->_ihigh = ihigh; this->_have_ihigh = true;
-      };
-      //
-      void setOuterLimits(const outer_key_type& olow, const outer_key_type& ohigh) {
-        this->_olow = olow; this->_have_olow = true; this->_ohigh = ohigh; this->_have_ohigh = true;
-      };
-      //
-      void setOuterLow(const outer_key_type& olow) {this->_olow = olow; this->_have_olow = true;};
-      //
-      void setOuterHigh(const outer_key_type& ohigh) {this->_ohigh = ohigh; this->_have_ohigh = true;};
-      //
-      bool haveOuterHigh()              { return this->_have_ohigh;};
-      //
-      bool haveOuterLow()               { return this->_have_olow;};
-      //
-      const outer_key_type& outerHigh() {return this->_ohigh;};
-      //
-      const outer_key_type& outerLow()  {return this->_olow;};
-      //
-      bool haveInnerHigh()              { return this->_have_ihigh;};
-      //
-      bool haveInnerLow()               { return this->_have_ilow;};
-      //
-      const outer_key_type& innerHigh() {return this->_ihigh;};
-      //
-      const outer_key_type& innerLow()  {return this->_ilow;};
-      //
-      virtual bool         empty() {return (this->begin() == this->end());};
+      virtual bool         
+      empty() {return (this->begin() == this->end());};
       //
       virtual size_type  
       size()  {
@@ -559,6 +348,109 @@ namespace ALE_X {
         }
         return sz;
       };
+      iterator begin() {
+        static itor_type itor;
+        // Determine the lower outer limit iterator
+        if(this->_have_olow()) {
+          // ASSUMPTION: index ordering operator can compare against outer_keys
+          this->_itor = this->_index.lower_bound(this->_olow);
+        }
+        else {
+          this->_itor = this->_index.begin();
+        }
+        // Now determine the inner lower limit and set the iterator to that limit within the first segment
+        if(this->_have_ilow) {
+          // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+          itor = this->_index.lower_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ilow));
+        }
+        else {
+          // the itor is already in the right place: nothing to do
+        }  
+        // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+        static itor_type segBndry;
+        segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),_ikex(*itor)));
+        return iterator(*this, itor, segBndry);
+      }; // begin()
+      //
+      void next(itor_type& itor, itor_type& segBndry) {
+        // See if our advance would lead to breaching the segment boundary:
+        itor_type tmp_itor = ++(itor);
+        if(tmp_itor != segBndry) { 
+          // if not breached the segment boundary, simply use the advanced iterator
+          itor = tmp_itor;
+        }
+        else {
+          // Obtain the current outer key from itor:
+          outer_key_type olow = this->_okex(*itor);
+          // Compute the lower boundary of the new segment
+          // ASSUMPTION: index ordering operator can compare against outer_keys
+          itor = this->_index.upper_bound(olow);
+          // Extract the new outer key
+          olow = this->_okex(*itor);
+          // Now determine the inner lower limit and set the iterator to that limit within the new segment
+          inner_key_type ilow;
+          if(this->_have_ilow) {
+            ilow = this->_ilow;
+            // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+            itor = this->_index.lower_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+          }
+          else {
+            // the itor is already in the right place; need to extract the ilow key
+            ilow = this->_ikex(*itor);
+          }
+          // Finally, compute the new segment's boundary
+          // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+          segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+        }
+      };// next()
+      //
+      iterator end() {
+        itor_type itor;
+        // Determine the upper outer limit
+        outer_key_type ohigh;
+        if(!this->_have_ohigh) {
+          itor = this->_index.rbegin();
+          ohigh = this->_okex(*itor);
+        }
+        // Determine the inner outer limit
+        inner_key_type ihigh;
+        if(this->_have_ihigh) {
+          ihigh = this->_ihigh;
+          // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+          itor = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(ohigh,ihigh));
+        }
+        else {
+          // ASSUMPTION: index ordering operator can compare against outer_keys
+          itor = this->_index.upper_bound(ohigh);
+        }
+        // use segBndry == itor
+        return iterator(*this, itor, itor); 
+      };// end()
+      //
+      void setInnerLow(const inner_key_type& ilow) {
+        this->_ilow = ilow; this->_have_ilow = true;
+      };
+      //
+      void setInnerHigh(const inner_key_type& ihigh) {
+        this->_ihigh = ihigh; this->_have_ihigh = true;
+      };
+      //
+      void setInnerLimits(const inner_key_type& ilow, const inner_key_type& ihigh) {
+        this->_ilow = ilow; this->_have_ilow = true; this->_ihigh = ihigh; this->_have_ihigh = true;
+      };
+      //
+      void setOuterLimits(const outer_key_type& olow, const outer_key_type& ohigh) {
+        this->_olow = olow; this->_have_olow = true; this->_ohigh = ohigh; this->_have_ohigh = true;
+      };
+      //
+      void setOuterLow(const outer_key_type& olow) {
+        this->_olow = olow; this->_have_olow = true;
+      };
+      //
+      void setOuterHigh(const outer_key_type& ohigh) {
+        this->_ohigh = ohigh; this->_have_ohigh = true;
+      };
+      //
       template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL){
         if(label != NULL) {
@@ -602,10 +494,10 @@ namespace ALE_X {
       > arrow_set_type;
       //
       // Sequence types
-      template <typename Index_, typename Key_, typename SubKey_, typename ValueExtractor_>
-      class ArrowSequence : public IndexSequence<Index_, ValueExtractor_> {
-        // ArrowSequence extends IndexSequence Index_ and ValueExtractor_ types.
-        // A Key_ object and an optional SubKey_ object are used to extract the index subset.
+      template <typename Index_, typename KeyExtractor_, typename SubKeyExtractor_, typename ValueExtractor_>
+      class ArrowSequence : public StridedIndexSequence<Index_, KeyExtractor_, SubKeyExtractor_, ValueExtractor_> {
+        // ArrowSequence extends StridedIndexSequence with extra iterator methods.
+        // CONTINUE: need to template StridedIndexSequence::iterator on Sequence so that inheriting Sequences can use it.
       public:
         typedef IndexSequence<Index_, ValueExtractor_>                  super; 
         typedef Key_                                                    key_type;
