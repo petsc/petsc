@@ -310,6 +310,13 @@ namespace ALE {
       void setValue(const Obj<patch_label_type>& label, const point_type& point, const int value) {
         label->setCone(value, point);
       };
+      const Obj<patch_label_type>& createLabel(const patch_type& patch, const std::string& name) {
+        this->checkPatch(patch);
+        if (this->_labels.find(name) == this->_labels.end()) {
+          this->_labels[name][patch] = new patch_label_type(this->comm(), this->debug());
+        }
+        return this->_labels[name][patch];
+      };
       const Obj<patch_label_type>& getLabel(const patch_type& patch, const std::string& name) {
         this->checkLabel(name);
         this->checkPatch(patch);
@@ -357,11 +364,10 @@ namespace ALE {
 
         this->_maxHeight = -1;
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
-          Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
-          this->_maxHeights[s_iter->first] = -1;
+          Obj<patch_label_type> label = this->createLabel(s_iter->first, name);
 
+          this->_maxHeights[s_iter->first] = -1;
           this->computeHeight(label, s_iter->second, s_iter->second->leaves(), this->_maxHeights[s_iter->first]);
-          this->_labels[name][s_iter->first] = label;
           if (this->_maxHeights[s_iter->first] > this->_maxHeight) this->_maxHeight = this->_maxHeights[s_iter->first];
         }
       };
@@ -401,11 +407,10 @@ namespace ALE {
 
         this->_maxDepth = -1;
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
-          Obj<patch_label_type> label = new patch_label_type(this->comm(), this->debug());
-          this->_maxDepths[s_iter->first] = -1;
+          Obj<patch_label_type> label = this->createLabel(s_iter->first, name);
 
+          this->_maxDepths[s_iter->first] = -1;
           this->computeDepth(label, s_iter->second, s_iter->second->roots(), this->_maxDepths[s_iter->first]);
-          this->_labels[name][s_iter->first] = label;
           if (this->_maxDepths[s_iter->first] > this->_maxDepth) this->_maxDepth = this->_maxDepths[s_iter->first];
         }
       };
