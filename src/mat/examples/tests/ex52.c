@@ -53,9 +53,9 @@ int main(int argc,char **args)
   /* Test MatSetValuesBlocked() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_setvaluesblocked",&flg);CHKERRQ(ierr);
   if (flg) { 
+    PetscScalar bval[bs*bs];
     row /= bs;
     col = start/bs;
-    PetscScalar bval[bs*bs];
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;
     /* row oriented - defalt */

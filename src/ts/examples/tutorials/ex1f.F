@@ -363,17 +363,17 @@
      &        i .eq. mx .or. j .eq. my) then
             call MatSetValues(jac,i1,row,i1,row,one,INSERT_VALUES,ierr) 
           else
-            v(1)   = hxdhy 
+            v(1)   = hxdhy
             col(1) = row(1) - mx
-            v(2)   = hydhx 
+            v(2)   = hydhx
             col(2) = row(1) - 1
-            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)+1+xidx)) 
+            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)+1+xidx))
             col(3) = row(1)
-            v(4)   = hydhx 
+            v(4)   = hydhx
             col(4) = row(1) + 1
-            v(5)   = hxdhy 
+            v(5)   = hxdhy
             col(5) = row(1) + mx
-            call MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr) 
+            call MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr)
           endif
  20     continue
  10   continue
