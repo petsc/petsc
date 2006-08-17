@@ -106,7 +106,7 @@ namespace ALE {
       }
       return this->orders[name];
     };
-    const Obj<topology_type>& getTopologyNew() {return this->_topology;};
+    const Obj<topology_type>& getTopologyNew() const {return this->_topology;};
     void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
     const Obj<split_section_type>& getSplitSection() const {return this->_splitField;};
     void                           setSplitSection(const Obj<split_section_type>& splitField) {this->_splitField = splitField;};
@@ -115,6 +115,18 @@ namespace ALE {
     friend Stream_& operator<<(Stream_& os, const split_value& v) {
       os << "(" << v.x << "," << v.y << "," << v.z << ")";
       return os;
+    };
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+      }
+      if (name == "") {
+        PetscPrintf(comm, "viewing a Mesh\n");
+      } else {
+        PetscPrintf(comm, "viewing Mesh '%s'\n", name.c_str());
+      }
+      this->getTopologyNew()->view("mesh topology", comm);
+      this->getSection("coordinates")->view("mesh coordinates", comm);
     };
   };
 } // namespace ALE

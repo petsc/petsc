@@ -64,7 +64,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, Pe
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
 PetscErrorCode ProcessOptions(MPI_Comm, Options *);
 PetscErrorCode CreateMesh(MPI_Comm, Obj<ALE::Mesh>&, Options *);
-PetscErrorCode CreatePartition(Obj<ALE::Mesh>);
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>&);
 PetscErrorCode DistributeMesh(Obj<ALE::Mesh>&, Options *);
 PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, Options *);
 PetscErrorCode OutputMesh(const Obj<ALE::Mesh>&, Options *);
@@ -112,7 +112,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->inputFileType  = PCICE;
   options->outputFileType = PCICE;
   ierr = PetscStrcpy(options->baseFilename, "data/ex1_2d");CHKERRQ(ierr);
-  options->distribute     = PETSC_TRUE;
   options->output         = PETSC_TRUE;
   options->outputLocal    = PETSC_FALSE;
   options->outputVTK      = PETSC_TRUE;
@@ -279,7 +278,7 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh, Options *options)
 /*
   Creates a field whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartition(Obj<ALE::Mesh> mesh)
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& mesh)
 {
   Obj<ALE::Mesh::section_type>        partition = mesh->getSection("partition");
   ALE::Mesh::section_type::patch_type patch     = 0;

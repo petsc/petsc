@@ -605,7 +605,7 @@ namespace ALE {
           const Builder::split_value&                    split  = values[i].second;
 
           // No time history
-          ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", eNumbering->getIndex(e)+1, vNumbering->getIndex(v)+1, split.x, split.y, split.y);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", eNumbering->getIndex(e)+1, vNumbering->getIndex(v)+1, split.x, split.y, split.z);CHKERRQ(ierr);
         }
       }
       PetscFunctionReturn(0);
