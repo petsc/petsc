@@ -21,6 +21,7 @@ class Configure(config.base.Configure):
   def setupDependencies(self, framework):
     config.base.Configure.setupDependencies(self, framework)
     self.arch          = framework.require('PETSc.utilities.arch', self)
+    self.scalartypes   = framework.require('PETSc.utilities.scalarTypes', self)
     self.bmake         = framework.require('PETSc.utilities.bmakeDir', self)    
     self.datafilespath = framework.require('PETSc.utilities.dataFilesPath', self)
     self.compilers     = framework.require('config.compilers', self)
@@ -43,9 +44,15 @@ class Configure(config.base.Configure):
         jobs.append('C_X11')
       if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
-        rjobs.append('Fortran_NoComplex')
+        if self.scalartypes.scalartype.lower() == 'complex':
+          rjobs.append('Fortran_Complex')
+        else:
+          rjobs.append('Fortran_NoComplex')
       if self.datafilespath.datafilespath:
-        rjobs.append('C_NoComplex')
+        if self.scalartypes.scalartype.lower() == 'complex':
+          rjobs.append('C_Complex')
+        else:
+          rjobs.append('C_NoComplex')
       # add jobs for each external package BUGBUGBUG may be run before all packages
       for i in self.framework.packages:
         ejobs.append(i.name.upper())
