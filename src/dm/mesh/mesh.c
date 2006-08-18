@@ -999,79 +999,61 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   PetscFunctionReturn(0);
 }
 
-#if 0
 #undef __FUNCT__
 #define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(Mat A, ALE::Mesh *mesh, ALE::Obj<ALE::Mesh::field_type> field)
+PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::section_type>& field, const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder, Mat A)
 {
-  PetscInt numLocalRows, firstRow;
-  PetscInt *rnz, *dnz, *onz;
-  std::string orderName("element");
-  int *indices = NULL;
-  int indicesMaxSize = 12;
+  const ALE::Obj<ALE::Mesh::sieve_type>     graph = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
+  const ALE::Mesh::section_type::patch_type patch = 0;
+  const ALE::Obj<ALE::Mesh::sieve_type>&    sieve = mesh->getTopologyNew()->getPatch(patch);
+  PetscInt       numLocalRows, firstRow, lastRow;
+  PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatGetLocalSize(A, &numLocalRows, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A, &firstRow, PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscMalloc3(numLocalRows,PetscInt,&rnz,numLocalRows,PetscInt,&dnz,numLocalRows,PetscInt,&onz);CHKERRQ(ierr);
-  ierr = PetscMemzero(rnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A, &firstRow, &lastRow);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
+  /* Create local adjacency graph */
+  const ALE::Mesh::atlas_type::chart_type& chart = field->getAtlas()->getChart(patch);
+
+  for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
+
+    graph->addCone(sieve->cone(sieve->support(point)), point);
+  }
+  /* Distribute adjacency graph */
+  /* Read out adjacency graph */
   ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMalloc(indicesMaxSize * sizeof(PetscInt), &indices);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements    = mesh->getTopology()->heightStratum(0);
-  ALE::Obj<ALE::Mesh::bundle_type>                        globalOrder = field->getGlobalOrder();
-  std::set<int>                                          *localCols   = new std::set<int>[numLocalRows];
+  for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
 
-  for(ALE::Mesh::sieve_type::traits::heightSequence::iterator e_iter = elements->begin(); e_iter != elements->end(); e_iter++) {
-    ALE::Obj<ALE::Mesh::field_type::order_type::coneSequence> intervals = field->getPatch(orderName, *e_iter);
-    ALE::Mesh::bundle_type::patch_type patch;
-    int numIndices = 0;
+    if (globalOrder->isLocal(point)) {
+      const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
+      const int                                               row   = globalOrder->getIndex(point);
+      const int                                               rSize = c_iter->second.index;
 
-    for(ALE::Mesh::field_type::order_type::coneSequence::iterator i_itor = intervals->begin(); i_itor != intervals->end(); ++i_itor) {
-      numIndices += std::abs(globalOrder->getFiberDimension(patch, *i_itor));
-      if (field->debug) {
-        printf("[%d]Allocation mat interval %d\n", field->commRank(), *i_itor);
-      }
-    }
-    if (numIndices > indicesMaxSize) {
-      int *tmpIndices = indices;
-
-      ierr = PetscMalloc(indicesMaxSize*2 * sizeof(PetscInt), &indices);CHKERRQ(ierr);
-      ierr = PetscMemcpy(indices, tmpIndices, indicesMaxSize * sizeof(PetscInt));CHKERRQ(ierr);
-      ierr = PetscFree(tmpIndices);CHKERRQ(ierr);
-      indicesMaxSize *= 2;
-    }
-    ierr = __expandCanonicalIntervals(intervals, globalOrder, indices); CHKERRQ(ierr);
-    for(int i = 0; i < numIndices; i++) {
-      int localRow = indices[i] - firstRow;
-
-      if ((localRow >= 0) && (localRow < numLocalRows)) {
-        for(int j = 0; j < numIndices; j++) {
-          localCols[localRow].insert(indices[j] - firstRow);
+      for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
+        const ALE::Mesh::atlas_type::point_type& neighbor = *v_iter;
+        const int                                col      = globalOrder->getIndex(neighbor);
+        const int                                cSize    = field->getAtlas()->getFiberDimension(patch, neighbor);
+        
+        if (col >= firstRow && col < lastRow) {
+          for(int r = 0; r < rSize; ++r) {dnz[row - firstRow + r] += cSize;}
+        } else {
+          for(int r = 0; r < rSize; ++r) {onz[row - firstRow + r] += cSize;}
         }
       }
     }
   }
-  for(int r = 0; r < numLocalRows; r++) {
-    rnz[r] = localCols[r].size();
-
-    for(std::set<int>::iterator c_iter = localCols[r].begin(); c_iter != localCols[r].end(); ++c_iter) {
-      if ((*c_iter >= 0) && (*c_iter < numLocalRows)) {
-        dnz[r]++;
-      } else {
-        onz[r]++;
-      }
-    }
-  }
-  delete [] localCols;
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(A, 0, rnz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
-  ierr = PetscFree3(rnz, dnz, onz);CHKERRQ(ierr);
+  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
+
 /******************************** C Wrappers **********************************/
 
 #undef __FUNCT__  
