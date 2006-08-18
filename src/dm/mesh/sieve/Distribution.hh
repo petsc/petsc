@@ -186,12 +186,13 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "distributeMesh"
       static Obj<Mesh> distributeMesh(const Obj<Mesh>& serialMesh) {
-        ALE_LOG_EVENT_BEGIN;
         Obj<Mesh> parallelMesh = Mesh(serialMesh->comm(), serialMesh->getDimension(), serialMesh->debug);
         const Obj<Mesh::topology_type>& topology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug);
         const Obj<Mesh::sieve_type>&    sieve    = new Mesh::sieve_type(serialMesh->comm(), serialMesh->debug);
         PetscErrorCode                  ierr;
 
+        if (serialMesh->distributed) return serialMesh;
+        ALE_LOG_EVENT_BEGIN;
         topology->setPatch(0, sieve);
         parallelMesh->setTopologyNew(topology);
         Obj<std::set<std::string> > sections = serialMesh->getSections();
@@ -223,6 +224,59 @@ namespace ALE {
         parallelMesh->distributed = true;
         ALE_LOG_EVENT_END;
         return parallelMesh;
+      };
+      static void receiveMesh2(const Obj<Mesh>& parallelMesh, const Obj<Mesh>& serialMesh) {
+        const Obj<Mesh::topology_type> serialTopology   = serialMesh->getTopologyNew();
+        const Obj<Mesh::topology_type> parallelTopology = parallelMesh->getTopologyNew();
+        Obj<recv_overlap_type> cellOverlap   = sieveCompletion::receiveDistribution2(parallelTopology, serialTopology);
+        Obj<recv_overlap_type> vertexOverlap = new recv_overlap_type(serialMesh->comm(), serialMesh->debug);
+        Obj<Mesh::sieve_type>  serialSieve   = serialTopology->getPatch(0);
+        const Obj<typename send_overlap_type::traits::baseSequence> base = cellOverlap->base();
+
+        for(typename send_overlap_type::traits::baseSequence::iterator p_iter = base->begin(); p_iter != base->end(); ++p_iter) {
+          const Obj<typename send_overlap_type::traits::coneSequence>& ranks = cellOverlap->cone(*p_iter);
+
+          for(typename send_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+            const Obj<typename ALE::Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*p_iter);
+
+            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              vertexOverlap->addArrow(*r_iter, *c_iter, *c_iter);
+            }
+          }
+        }
+        Obj<std::set<std::string> > sections = parallelMesh->getSections();
+
+        for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+          // Need to associate overlaps with sections somehow (through the atlas?)
+          if (*name == "material") {
+            receiveSection2(cellOverlap, parallelMesh->getSection(*name), serialMesh->getSection(*name));
+          } else {
+            receiveSection2(vertexOverlap, parallelMesh->getSection(*name), serialMesh->getSection(*name));
+          }
+        }
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "unifyMesh"
+      static Obj<Mesh> unifyMesh(const Obj<Mesh>& parallelMesh) {
+        Obj<Mesh> serialMesh = Mesh(parallelMesh->comm(), parallelMesh->getDimension(), parallelMesh->debug);
+        const Obj<Mesh::topology_type>& topology = new Mesh::topology_type(parallelMesh->comm(), parallelMesh->debug);
+        const Obj<Mesh::sieve_type>&    sieve    = new Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug);
+        PetscErrorCode                  ierr;
+
+        if (!parallelMesh->distributed) return parallelMesh;
+        ALE_LOG_EVENT_BEGIN;
+        topology->setPatch(0, sieve);
+        serialMesh->setTopologyNew(topology);
+        if (serialMesh->commRank() != 0) {
+          Distribution<topology_type>::sendMesh2(parallelMesh, serialMesh);
+        } else {
+          Distribution<topology_type>::receiveMesh2(parallelMesh, serialMesh);
+        }
+        // This is necessary since we create types (like PartitionSection) on a subset of processors
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+        serialMesh->distributed = false;
+        ALE_LOG_EVENT_END;
+        return serialMesh;
       };
     };
   }

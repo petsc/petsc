@@ -625,6 +625,123 @@ namespace ALE {
         topologyNew->stratify();
         return recvOverlap;
       };
+      static Obj<send_overlap_type> sendDistribution2(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew) {
+        typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
+        const Obj<sieve_type>& sieve         = topology->getPatch(0);
+        const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
+        Obj<send_overlap_type> sendOverlap   = new send_overlap_type(topology->comm(), topology->debug());
+        Obj<send_sizer_type>   sendSizer     = new send_sizer_type(topology->comm(), topology->debug());
+        Obj<send_section_type> sendSection   = new send_section_type(topology->comm(), topology->debug());
+        Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, topology->debug());
+        int numElements = topology->heightStratum(0, 0)->size();
+        int rank        = topology->commRank();
+        int debug       = topology->debug();
+
+        // 1) Form partition point overlap a priori
+        //      The arrow is to rank 0 with partition point p
+        sendOverlap->addCone(sieve->commRank(), 0, sieve->commRank());
+        if (debug) {sendOverlap->view(std::cout, "Send overlap for partition");}
+        // 2) Create simple partition
+        short *assignment = new short[numElements];
+        for(int e = 0; e < numElements; e++) assignment[e] = 0;
+        // 2) Send the point section
+        Obj<topology_type>          secTopology          = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
+        Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numElements, assignment);
+        Obj<partition_section>      partitionSection     = new partition_section(secTopology, numElements, assignment);
+        ALE::New::Completion<mesh_topology_type,value_type>::sendSection(sendOverlap, partitionSizeSection, partitionSection, sendSection);
+        // 3) Create point overlap
+        // Could this potentially be the sendSection itself?
+        sendOverlap->clear();
+        const topology_type::sheaf_type& patches = sendSection->getAtlas()->getTopology()->getPatches();
+
+        for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+
+          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename send_section_type::value_type *points = sendSection->restrict(p_iter->first, *b_iter);
+            int size = sendSection->getAtlas()->size(p_iter->first, *b_iter);
+
+            for(int p = 0; p < size; p++) {
+              sendOverlap->addArrow(points[p], p_iter->first, points[p]);
+            }
+          }
+        }
+        if (debug) {sendOverlap->view(std::cout, "Send overlap for points");}
+        // 4) Send the point section
+        secTopology = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
+        Obj<cone_size_section> coneSizeSection = new cone_size_section(secTopology, sieve);
+        Obj<cone_section>      coneSection     = new cone_section(secTopology, sieve);
+        ALE::New::Completion<mesh_topology_type,value_type>::sendSection(sendOverlap, coneSizeSection, coneSection, sendSection);
+        topologyNew->stratify();
+        return sendOverlap;
+      };
+      static Obj<recv_overlap_type> receiveDistribution2(const Obj<mesh_topology_type>& topology, const Obj<mesh_topology_type>& topologyNew) {
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, value_type> recv_section_type;
+        const Obj<sieve_type>& sieve         = topology->getPatch(0);
+        const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
+        Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(topology->comm(), topology->debug());
+        Obj<recv_sizer_type>   recvSizer   = new recv_sizer_type(topology->comm(), topology->debug());
+        Obj<recv_section_type> recvSection = new recv_section_type(topology->comm(), topology->debug());
+        Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, topology->debug());
+        int debug = topology->debug();
+
+        // 1) Form partition point overlap a priori
+        //      There are arrows from each rank whose color is the partition point (also the rank)
+        for(int p = 1; p < sieve->commSize(); p++) {
+          recvOverlap->addCone(p, p, p);
+        }
+        recvOverlap->addCone(0, sieve->commRank(), sieve->commRank());
+        if (debug) {recvOverlap->view(std::cout, "Receive overlap for partition");}
+        // 2) Create local sieve
+        const Obj<typename mesh_topology_type::label_sequence>& cells = topology->heightStratum(0, 0);
+
+        for(typename mesh_topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
+          const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
+
+          for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            sieveNew->addArrow(*c_iter, *e_iter, c_iter.color());
+          }
+        }
+        // 3) Receive sizer section
+        ALE::New::Completion<mesh_topology_type,value_type>::recvSection(recvOverlap, recvSection);
+        // 4) Unpack the section into the overlap
+        recvOverlap->clear();
+        const topology_type::sheaf_type& patches = recvSection->getAtlas()->getTopology()->getPatches();
+
+        for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+          int                                                 rank = p_iter->first;
+
+          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
+            int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+
+            for(int p = 0; p < size; p++) {
+              recvOverlap->addArrow(rank, points[p], points[p]);
+            }
+          }
+        }
+        if (debug) {recvOverlap->view(std::cout, "Receive overlap for points");}
+        // 4) Receive the point section
+        ALE::New::Completion<mesh_topology_type,value_type>::recvSection(recvOverlap, recvSection);
+        // 5) Unpack the section into the sieve
+        for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+          int                                                     rank = p_iter->first;
+
+          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
+            int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+            int c = 0;
+
+            for(int p = 0; p < size; p++) {
+              sieveNew->addArrow(points[p], *b_iter, c++);
+            }
+          }
+        }
+        topologyNew->stratify();
+        return recvOverlap;
+      };
     };
 
     template<typename Topology_>
