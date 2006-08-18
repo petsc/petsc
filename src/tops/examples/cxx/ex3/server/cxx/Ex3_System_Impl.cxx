@@ -80,7 +80,7 @@ Ex3::System_impl::computeMatrix_impl (
   /* in */::TOPS::Matrix B ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
-  TOPS::Structured::Matrix BB = babel_cast< TOPS::Structured::Matrix >(B);
+  TOPS::Structured::Matrix BB = ::babel_cast< TOPS::Structured::Matrix >(B);
   TOPS::Structured::Solver solver = this->solver;
   int xs = BB.lower(0);      // first grid point in X and Y directions on this process
   int ys = BB.lower(1);
@@ -271,7 +271,7 @@ Ex3::System_impl::go_impl ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex3");
 
-  TOPS::Structured::Solver solver = babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
+  TOPS::Structured::Solver solver = ::babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
   this->solver = solver;
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "

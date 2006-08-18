@@ -345,7 +345,7 @@ Ex2::System_impl::go_impl ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex2");
 
-  this->solver = babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
+  this->solver = ::babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
               << "possibly not connected." << std::endl;

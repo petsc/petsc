@@ -84,7 +84,7 @@ Ex1::System_impl::computeResidual_impl (
 #define __FUNCT__ "Ex1::System_impl::computeResidual"
 
   TOPS::Structured::Solver solver;
-  solver = babel_cast< TOPS::Structured::Solver> (
+  solver = ::babel_cast< TOPS::Structured::Solver> (
   	this->myServices.getPort("TOPS.Structured.Solver") );
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, " 
@@ -210,7 +210,7 @@ Ex1::System_impl::go_impl ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex1");
 
-  TOPS::Solver solver = babel_cast< TOPS::Structured::Solver >( 
+  TOPS::Solver solver = ::babel_cast< TOPS::Structured::Solver >( 
   	myServices.getPort("TOPS.Structured.Solver") );
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "

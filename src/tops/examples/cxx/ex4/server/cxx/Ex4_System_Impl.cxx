@@ -84,7 +84,7 @@ Ex4::System_impl::computeMatrix_impl (
 #undef __FUNCT__
 #define __FUNCT__ "Ex4::System_impl::computeMatrix"
 
-  TOPS::Unstructured::Matrix BB = babel_cast< TOPS::Unstructured::Matrix >(B);
+  TOPS::Unstructured::Matrix BB = ::babel_cast< TOPS::Unstructured::Matrix >(B);
   int rank; MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   int size; MPI_Comm_size(MPI_COMM_WORLD,&size);
   double hx     = 1.0/(double)(this->n*size);
@@ -257,7 +257,7 @@ Ex4::System_impl::go_impl ()
   argv[0] = (char*) malloc(10*sizeof(char));
   strcpy(argv[0],"ex4");
 
-  TOPS::Unstructured::Solver solver = babel_cast< TOPS::Unstructured::Solver>( myServices.getPort("TOPS.Unstructured.Solver") );
+  TOPS::Unstructured::Solver solver = ::babel_cast< TOPS::Unstructured::Solver>( myServices.getPort("TOPS.Unstructured.Solver") );
   if (solver._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ << ": TOPS.Structured.Solver port is nil, "
               << "possibly not connected." << std::endl;
