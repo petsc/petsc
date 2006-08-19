@@ -127,7 +127,7 @@ kill-gui:
 
 #-------------------------------------------------------------------------------
 
-examples: 
+examples: clients
 	-@for dir in `ls -d examples/cxx/ex*`; do \
 	  echo -e "\n### Building and testing in $$dir"; \
 	  make -C $$dir server-cxx test-cca; \
