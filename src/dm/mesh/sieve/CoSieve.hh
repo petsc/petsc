@@ -260,6 +260,7 @@ namespace ALE {
       typedef typename std::map<patch_type, int>                    max_label_type;
       typedef typename std::map<const std::string, label_type>      labels_type;
       typedef typename patch_label_type::supportSequence            label_sequence;
+      typedef typename std::set<point_type>                         point_set_type;
     protected:
       sheaf_type     _sheaf;
       labels_type    _labels;
@@ -267,8 +268,12 @@ namespace ALE {
       max_label_type _maxHeights;
       int            _maxDepth;
       max_label_type _maxDepths;
+      // Work space
+      Obj<point_set_type> _modifiedPoints;
     public:
-      Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {};
+      Topology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
+        this->_modifiedPoints = new point_set_type();
+      };
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         if (this->_sheaf.find(patch) == this->_sheaf.end()) {
@@ -341,7 +346,7 @@ namespace ALE {
     public:
       template<class InputPoints>
       void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {
-        Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+        this->_modifiedPoints->clear();
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max height of the points in the support of p, and add 1
@@ -351,12 +356,12 @@ namespace ALE {
           if(h1 != h0) {
             this->setValue(height, *p_iter, h1);
             if (h1 > maxHeight) maxHeight = h1;
-            modifiedPoints->insert(*p_iter);
+            this->_modifiedPoints->insert(*p_iter);
           }
         }
         // FIX: We would like to avoid the copy here with cone()
-        if(modifiedPoints->size() > 0) {
-          this->computeHeight(height, sieve, sieve->cone(modifiedPoints), maxHeight);
+        if(this->_modifiedPoints->size() > 0) {
+          this->computeHeight(height, sieve, sieve->cone(this->_modifiedPoints), maxHeight);
         }
       };
       void computeHeights() {
@@ -384,7 +389,7 @@ namespace ALE {
       };
       template<class InputPoints>
       void computeDepth(const Obj<patch_label_type>& depth, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxDepth) {
-        Obj<typename std::set<point_type> > modifiedPoints = new typename std::set<point_type>();
+        this->_modifiedPoints->clear();
 
         for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           // Compute the max depth of the points in the cone of p, and add 1
@@ -394,12 +399,12 @@ namespace ALE {
           if(d1 != d0) {
             this->setValue(depth, *p_iter, d1);
             if (d1 > maxDepth) maxDepth = d1;
-            modifiedPoints->insert(*p_iter);
+            this->_modifiedPoints->insert(*p_iter);
           }
         }
         // FIX: We would like to avoid the copy here with support()
-        if(modifiedPoints->size() > 0) {
-          this->computeDepth(depth, sieve, sieve->support(modifiedPoints), maxDepth);
+        if(this->_modifiedPoints->size() > 0) {
+          this->computeDepth(depth, sieve, sieve->support(this->_modifiedPoints), maxDepth);
         }
       };
       void computeDepths() {
@@ -425,9 +430,13 @@ namespace ALE {
       const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
         return this->getLabelStratum(patch, "depth", depth);
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "Topology::stratify"
       void stratify() {
+        ALE_LOG_EVENT_BEGIN;
         this->computeHeights();
         this->computeDepths();
+        ALE_LOG_EVENT_END;
       };
     public: // Viewers
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
@@ -460,8 +469,9 @@ namespace ALE {
       #define __FUNCT__ "buildDualCSR"
       // This creates a CSR representation of the adjacency matrix for cells
       static void buildDualCSR(const Obj<topology_type>& topology, const int dim, const patch_type& patch, int **offsets, int **adjacency) {
-        const Obj<sieve_type>&                            sieve    = topology->getPatch(patch);
-        const Obj<typename topology_type::label_sequence> elements = topology->heightStratum(patch, 0);
+        ALE_LOG_EVENT_BEGIN;
+        const Obj<sieve_type>&                             sieve    = topology->getPatch(patch);
+        const Obj<typename topology_type::label_sequence>& elements = topology->heightStratum(patch, 0);
         int numElements = elements->size();
         int corners     = sieve->cone(*elements->begin())->size();
         int *off        = new int[numElements+1];
@@ -516,6 +526,7 @@ namespace ALE {
         }
         *offsets   = off;
         *adjacency = adj;
+        ALE_LOG_EVENT_END;
       };
 #ifdef PETSC_HAVE_CHACO
       #undef __FUNCT__
@@ -523,6 +534,7 @@ namespace ALE {
       static short *partitionSieve_Chaco(const Obj<topology_type>& topology, const int dim) {
         short *assignment = NULL; /* set number of each vtx (length n) */
 
+        ALE_LOG_EVENT_BEGIN;
         if (topology->commRank() == 0) {
           /* arguments for Chaco library */
           FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
@@ -594,6 +606,7 @@ namespace ALE {
           delete [] adjacency;
           delete [] start;
         }
+        ALE_LOG_EVENT_END;
         return assignment;
       };
 #endif

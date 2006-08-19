@@ -26,8 +26,11 @@ namespace ALE {
       typedef typename sectionCompletion::send_overlap_type                   send_overlap_type;
       typedef typename sectionCompletion::recv_overlap_type                   recv_overlap_type;
     public:
+      #undef __FUNCT__
+      #define __FUNCT__ "sendSection"
       template<typename Section, typename Sizer, typename Filler>
       static void sendSection(const Obj<send_overlap_type>& overlap, const Obj<Sizer>& sizer, const Obj<Filler>& filler, const Obj<Section>& serialSection, const Obj<Section>& parallelSection) {
+        ALE_LOG_EVENT_BEGIN;
         typedef typename ALE::New::OverlapValues<send_overlap_type, typename sectionCompletion::atlas_type, typename Section::value_type> send_section_type;
         const Obj<send_section_type> sendSec = new send_section_type(serialSection->comm(), serialSection->debug());
 
@@ -63,6 +66,7 @@ namespace ALE {
             parallelSection->update(patch, point, serialSection->restrict(patch, point));
           }
         }
+        ALE_LOG_EVENT_END;
       };
       static void sendMesh(const Obj<Mesh>& serialMesh, const Obj<Mesh>& parallelMesh) {
         typedef ALE::New::SizeSection<Mesh::section_type>      SectionSizer;
@@ -195,8 +199,9 @@ namespace ALE {
         ALE_LOG_EVENT_BEGIN;
         topology->setPatch(0, sieve);
         parallelMesh->setTopologyNew(topology);
-        Obj<std::set<std::string> > sections = serialMesh->getSections();
         if (serialMesh->debug) {
+          Obj<std::set<std::string> > sections = serialMesh->getSections();
+
           serialMesh->getTopologyNew()->view("Serial topology");
           for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
             serialMesh->getSection(*name)->view(*name);
@@ -213,6 +218,8 @@ namespace ALE {
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelMesh->debug) {
+          Obj<std::set<std::string> > sections = serialMesh->getSections();
+
           parallelMesh->getTopologyNew()->view("Parallel topology");
           for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
             parallelMesh->getSection(*name)->view(*name);

@@ -466,7 +466,10 @@ namespace ALE {
         // 4) Fill up send section and communicate
         ALE::New::Completion<mesh_topology_type,value_type>::completeSend(filler, sendSection);
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "sendDistribution"
       static Obj<send_overlap_type> sendDistribution(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew) {
+        ALE_LOG_EVENT_BEGIN;
         typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
@@ -525,6 +528,7 @@ namespace ALE {
         Obj<cone_section>      coneSection     = new cone_section(secTopology, sieve);
         ALE::New::Completion<mesh_topology_type,value_type>::sendSection(sendOverlap, coneSizeSection, coneSection, sendSection);
         topologyNew->stratify();
+        ALE_LOG_EVENT_END;
         return sendOverlap;
       };
       template<typename Sizer, typename Section>
