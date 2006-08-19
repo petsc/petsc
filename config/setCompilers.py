@@ -294,6 +294,8 @@ class Configure(config.base.Configure):
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
+        if Configure.isGNU('cc'):
+          yield 'cc'     
       if not self.vendor is None:
         if not vendor and not Configure.isGNU('cc'):
           yield 'cc'
@@ -314,8 +316,11 @@ class Configure(config.base.Configure):
         if vendor == 'solaris' or not vendor:
           if not Configure.isGNU('cc'):
             yield 'cc'
+      # duplicate code
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gcc'
+        if Configure.isGNU('cc'):
+          yield 'cc'     
     return
 
   def checkCCompiler(self):
@@ -437,6 +442,8 @@ class Configure(config.base.Configure):
       vendor = self.vendor
       if (not vendor) and self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
+        if Configure.isGNU('c++'):
+          yield 'c++'
       if not self.vendor is None:
         if not vendor:
           if not Configure.isGNU('c++'):
@@ -461,8 +468,11 @@ class Configure(config.base.Configure):
           yield 'pgCC'
         if vendor == 'solaris':
           yield 'CC'
+      #duplicate code
       if self.framework.argDB['with-gnu-compilers']:
         yield 'g++'
+        if Configure.isGNU('c++'):
+          yield 'c++'
     return
 
   def checkCxxCompiler(self):
@@ -592,6 +602,8 @@ class Configure(config.base.Configure):
         yield 'gfortran'
         yield 'g95'
         yield 'g77'
+        if Configure.isGNU('f77'):
+          yield 'f77'
       if not self.vendor is None:
         if vendor == 'ibm' or not vendor:
           yield 'xlf'
@@ -614,10 +626,13 @@ class Configure(config.base.Configure):
           yield 'f90'
           if not Configure.isGNU('f77'):
             yield 'f77'
+      #duplicate code
       if self.framework.argDB['with-gnu-compilers']:
         yield 'gfortran'
         yield 'g95'
         yield 'g77'
+        if Configure.isGNU('f77'):
+          yield 'f77'
     return
 
   def checkFortranCompiler(self):
