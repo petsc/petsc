@@ -1,0 +1,68 @@
+#!/bin/tcsh
+#
+#  See info at:  http://www.lcrc.anl.gov/jazz/Documentation
+#
+#  Sample Batch Script for a Platinum cluster job
+#
+#  Submit this script using the command: qsub script.sample
+#
+#  Use the "qstat -a" command to check the status of a job.
+#
+#  To delete a script from the queue: 
+#       qdel <job_number>
+#  or 
+#       qdel -W force <job_number>
+#
+# The following are embedded QSUB options. The syntax is #PBS (the # does
+# _not_  denote that the lines are commented out so do not remove).
+#
+# resource limits  walltime: maximum wall clock time (hh:mm:ss)
+#                  nodes: number of 2-processor nodes
+#                  ppn: how many processors per node to use (1 or 2)
+#                      (you are always charged for the entire node)
+#                  pt: production Platinum cluster nodes
+#PBS -l nodes=1
+#PBS -l walltime=0:02:00
+#PBS -o Ex1.out 
+#PBS -e Ex1.err
+#PBS -N Ex1
+
+#
+# export all my environment variables to the job
+#PBS -V
+
+
+# Charge job to project abc (recommended for users with multiple projects)
+# [If project is invalid, a valid project will be automatically selected]
+#PBS -A Multimethod-Solvers
+# 
+# combine standard output and standard error (optional)
+#PBS -j oe
+
+#
+# send mail when the job begins and ends (optional)
+# not set PBS -m be
+# End of embedded QSUB options
+#
+
+# set $NN to have the current number of nodes 
+setenv NN `wc -l ${PBS_NODEFILE} | awk '{print $1}'`
+
+echo '========================================'
+
+# print out the list of nodes
+#echo 'NODES: '
+#cat $PBS_NODEFILE
+
+echo '========================================'
+echo ${NN}
+
+setenv CCA_DIR /homes/norris/cca/1.0.0-ifort/bin
+setenv TOPS_DIR /homes/norris/petsc2.x/petsc-dev/src/tops
+setenv EX_DIR ${TOPS_DIR}/examples/cxx/ex1/run
+setenv EX_RC ${EX_DIR}/Ex1_rc
+
+cd ${EX_DIR}
+
+mpd&
+mpirun -np $NN ${CCA_DIR}/ccafe-batch --ccafe-rc ${EX_RC} > ${EX_RC}.log

@@ -96,7 +96,8 @@ cca:
 		lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/cca/lib${EXNAME}.${SL_LINKER_SUFFIX}.cca
 	@-${RM} *.cca.in
 	-@echo "Creating simple Ccaffeine script"
-	@-if [ -f ${EXNAME}_rc.in ]; then\
+	@-cd run; \
+	if [ -f ${EXNAME}_rc.in ]; then\
 	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ; fi
 	@-if [ -f ${EXNAME}_gui_rc.in ]; then\
 	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_gui_rc.in > ${EXNAME}_gui_rc; fi
@@ -104,15 +105,17 @@ cca:
 test-cca: cca
 	@-echo "Testing component example ${EXNAME} with Ccaffeine"
 	@if [ -z "${CCA_PARALLEL}" ]; then \
+	  cd run; \
 	  ${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
 	  if [ "`egrep \"(specific|1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "2" ]; then \
-	    echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
-	  else echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; fi; \
+	    echo "=== ${EXNAME}: Component test succeeded (see `pwd`/run/${EXNAME}_rc.log)."; \
+	  else echo "*** ${EXNAME}: Component test failed (see `pwd`/run/${EXNAME}_rc.log)."; fi; \
         else \
-          ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
+	  cd run; \
+          mpirun -np 1 ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc `pwd`/${EXNAME}_rc > `pwd`/${EXNAME}_rc.log  2>&1 ; \
 	  if [ "`egrep \"(1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "1" ]; then \
-	    echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
-	  else echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; fi; \
+	    echo "=== ${EXNAME}: Component test succeeded (see `pwd`/run/${EXNAME}_rc.log)."; \
+	  else echo "*** ${EXNAME}: Component test failed (see `pwd`/run/${EXNAME}_rc.log)."; fi; \
 	fi
 
 gui-cca: cca
