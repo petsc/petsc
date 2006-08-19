@@ -204,7 +204,7 @@ class Package(config.base.Configure):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+self.getInstallDir()+'\n')
 
-    raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>')
+    raise RuntimeError('You must specify a path for '+self.name+' with --with-'+self.package+'-dir=<directory>\nIf you do not want '+self.name+', then give --with-'+self.package)
 
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download the package, returning the install directory or the empty string indicating installation'''
