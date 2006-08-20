@@ -260,6 +260,7 @@ namespace ALE_X {
     template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
               typename ValueExtractor_ = ALE::identity<typename Index_::value_type> >
     struct StridedIndexSequence {
+      // CONTINUE: need to rethink the design to accomodate sequences like BaseSequence
       typedef Index_                                           index_type;
       typedef OuterKeyExtractor_                               outer_key_extractor_type;
       typedef typename outer_key_extractor_type::result_type   outer_key_type;
@@ -481,190 +482,188 @@ namespace ALE_X {
         os << " ]" << std::endl;
       };
     };// class StridedIndexSequence    
-    
-    //
-    // ArrowContainer definition
-    template<typename Arrow_, typename ArrowSupportOrder_= ColorTargetOrder<Arrow_>,typename ArrowConeOrder_= ColorSourceOrder<Arrow_>, 
-             typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
-    struct ArrowContainer { // struct ArrowContainer
-      //
-      // Encapsulated types
-      //
-      typedef Arrow_                           arrow_type;
-      typedef typename arrow_type::source_type source_type;
-      typedef typename arrow_type::target_type target_type;
-      typedef typename arrow_type::color_type  color_type;
-      //
-      // Internal types
-      //
-      // Predicates and Rec
-      typedef Predicate_                       predicate_type;
-      typedef PredicateOrder_                  predicate_order_type;
-      struct Rec : public arrow_type {
-      public:
-        //
-        // Re-export typedefs
-        //
-        typedef arrow_type::source_type        source_type;
-        typedef arrow_type::target_type        target_type;
-        typedef arrow_type::color_type         color_type;
-      public:
-        // Predicate stored alongside the arrow data
-        predicate_type predicate;
-      }; // struct Rec
-      //
-      typedef Rec                              rec_type;
-      //
-      // Compound orders are assembled here
-      //
-      typedef std::less<typename rec_type::source_type> source_order_type; 
-      typedef std::less<typename rec_type::target_type> target_order_type;
-      //
-      // Rec 'downward' order type: first order by predicate, then source, then support
-      struct downward_order_type 
-        : public RecKeyXXXOrder<rec_type, typename ALE::member<rec_type, predicate_type, &rec_type::predicate>, predicate_order_type,
-                                RecKeyXXXOrder<rec_type,
-                                               ALE::member<rec_type, typename rec_type::source_type,&rec_type::source>,
-                                               source_order_type, ArrowSupportOrder_> >
-      {};
-    
-      //
-      // Rec Cone order
-      struct upward_order_type
-        : public RecKeyXXXOrder<rec_type, ALE::member<rec_type, predicate_type, &rec_type::predicate>, predicate_order_type,
-                                  RecKeyXXXOrder<rec_type,
-                                                 ALE::member<rec_type,typename rec_type::target_type,&rec_type::target>,
-                                                 target_order_type, ArrowConeOrder_> >
-      {};
-    
-      //
-      // Index tags
-      //
-      struct                                   DownwardTag{};
-      struct                                   UpwardTag{};
-      // CONTINUE: 1) need to wrap Arrows in Recs, in which Arrows are joined by a slice predicate;
-      //           2) need to define orders and change ArrowSequences accordingly.
-      //
-      // Arrow set type
-      typedef ::boost::multi_index::multi_index_container<
-        rec_type,
-        ::boost::multi_index::indexed_by<
-          ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<SupportTag>,::boost::multi_index::identity<rec_type>, downward_order_type
-          >,
-          ::boost::multi_index::ordered_non_unique<
-            ::boost::multi_index::tag<ConeTag>,::boost::multi_index::identity<rec_type>, upward_order_type
-          >
-        >,
-        ALE_ALLOCATOR<rec_type>
-      > rec_set_type;
-      //
-      // Sequence types
-      template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_>
-      class ArrowSequence : public StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> {
-        // ArrowSequence extends StridedIndexSequence with extra iterator methods.
-      public:
-        typedef StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> super;
-        typedef ArrowContainer                                                                        container_type;
-        typedef typename super::index_type                                                            index;
-        // Need to extend the inherited iterators to be able to extract arrow color
-        class iterator : public super::iterator {
-        public:
-          iterator(const typename super::iterator& super_iter) : super::iterator(super_iter) {};
-          virtual const source_type& source() const {return this->_itor->source;};
-          virtual const color_type&  color()  const {return this->_itor->color;};
-          virtual const target_type& target() const {return this->_itor->target;};
-          virtual const arrow_type&  arrow()  const {return *(this->_itor);};
-        };
-      protected:
-        container_type _container;
-      public:
-        //
-        // Basic ArrowSequence interface
-        //
-        ArrowSequence(const ArrowSequence& seq) : super(seq), _container(seq._container) {};
-        ArrowSequence(const container_type& container, index_type& index) : super(index), _container(container) {};
-        virtual ~ArrowSequence() {};
-        void copy(const ArrowSequence& seq, ArrowSequence& cseq) {
-          super::copy(seq,cseq);
-          cseq._container = seq._container;
-        };
-        ArrowSequence& operator=(const ArrowSequence& seq) {
-          copy(seq,*this); return *this;
-        };
-        void reset(const container_type& container, index_type& index) {
-          this->super::reset(index);
-          this->_container = container;
-        };
-        //
-        // Extended ArrowSequence interface
-        //
-
-        virtual iterator begin() {
-          return super::begin();
-        };
-        //
-        virtual iterator end() {
-          return super::end();
-        };
-        //
-        template<typename ostream_type>
-        void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
-          if(label != NULL) {
-            os << "Viewing " << label << " sequence:" << std::endl;
-          } 
-          os << "[";
-          for(iterator i = this->begin(); i != this->end(); i++) {
-            os << " (" << *i;
-            if(useColor) {
-              os << "," << i.color();
-            }
-            os  << ")";
-          }
-          os << " ]" << std::endl;
-        };
-        void addArrow(const arrow_type& a) {
-          this->_container.addArrow(a);
-        };
-        //
-        virtual bool contains(const outer_key_type& ok, const inner_key_type& ik) {
-          return (this->_index.find(ALE::pair<outer_key_type,inner_key_type>(ok,ik)) != this->_index.end());
-        };
-      };// class ArrowSequence    
-      //
-      // Specialized sequence types
-      //
-      typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                            ALE::member<rec_type, predicate_type, &rec_type::predicate>, 
-                            ALE::identity<rec_type>,
-                            ALE::member<rec_type, source_type, &rec_type::source> >
-      ConeSequence;
-      //
-      // Extended interface
-      //
-      void addArrow(const arrow_type& a) {
-        this->_rec_set.insert(a);
-      };
-      void cone(const target_type& t, ConeSequence& seq) {
-        seq.reset(*this, ::boost::multi_index::get<UpwardTag>(this->_rec_set));
-        seq.setInnerLimits(t,t);
-      };
-      ConeSequence& cone(const target_type& t) {
-        static ConeSequence cseq;
-        this->cone(t,cseq);
-        return cseq;
-      };
-
-    protected:
-      // set of arrow records
-      rec_set_type _rec_set;
-      
-    }; // class ArrowContainer
   }; // namespace SifterDef
   
+  //
+  // Sifter definition
+  template<typename Arrow_, typename ArrowSupportOrder_= ColorTargetOrder<Arrow_>,typename ArrowConeOrder_= ColorSourceOrder<Arrow_>, 
+           typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
+  struct Sifter { // struct Sifter
+    //
+    // Encapsulated types
+    //
+    typedef Arrow_                           arrow_type;
+    typedef typename arrow_type::source_type source_type;
+    typedef typename arrow_type::target_type target_type;
+    typedef typename arrow_type::color_type  color_type;
+    //
+    // Internal types
+    //
+    // Predicates and Rec
+    typedef Predicate_                       predicate_type;
+    typedef PredicateOrder_                  predicate_order_type;
+    struct Rec : public arrow_type {
+    public:
+      //
+      // Re-export typedefs
+      //
+      typedef arrow_type::source_type        source_type;
+      typedef arrow_type::target_type        target_type;
+      typedef arrow_type::color_type         color_type;
+    public:
+      // Predicate stored alongside the arrow data
+      predicate_type predicate;
+    }; // struct Rec
+    //
+    typedef Rec                              rec_type;
+    //
+    // Compound orders are assembled here
+    //
+    typedef std::less<typename rec_type::source_type> source_order_type; 
+    typedef std::less<typename rec_type::target_type> target_order_type;
+    //
+    // Rec 'downward' order type: first order by predicate, then source, then support
+    struct downward_order_type : 
+      public SifterDef::RecKeyXXXOrder<rec_type, 
+                                       typename ALE::member<rec_type, predicate_type, &rec_type::predicate>, 
+                                       predicate_order_type, 
+                                       SifterDef::RecKeyXXXOrder<rec_type,
+                                                                 ALE::member<rec_type,typename rec_type::source_type,&rec_type::source>,
+                                                                 source_order_type, ArrowSupportOrder_> > {};
+    
+    //
+    // Rec Cone order
+    struct upward_order_type : 
+      public SifterDef::RecKeyXXXOrder<rec_type, 
+                                       typename ALE::member<rec_type, predicate_type, &rec_type::predicate>, predicate_order_type,
+                                       SifterDef::RecKeyXXXOrder<rec_type,
+                                                                 ALE::member<rec_type,typename rec_type::target_type,&rec_type::target>,
+                                                                 target_order_type, ArrowConeOrder_> >
+    {};
+    
+    //
+    // Index tags
+    //
+    struct                                   DownwardTag{};
+    struct                                   UpwardTag{};
+    
+    // Rec set type
+    typedef ::boost::multi_index::multi_index_container< 
+      rec_type,
+      ::boost::multi_index::indexed_by< 
+        ::boost::multi_index::ordered_non_unique<
+          ::boost::multi_index::tag<UpwardTag>, ::boost::multi_index::identity<rec_type>, downward_order_type
+        >,
+        ::boost::multi_index::ordered_non_unique<
+          ::boost::multi_index::tag<DownwardTag>, ::boost::multi_index::identity<rec_type>, upward_order_type
+        > 
+      >,
+      ALE_ALLOCATOR<rec_type> > 
+    rec_set_type;
+    //
+    // Sequence types
+    template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_>
+    class ArrowSequence : public SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> {
+      // ArrowSequence extends StridedIndexSequence with extra iterator methods.
+    public:
+      typedef SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> super;
+      typedef Sifter                                                                                           container_type;
+      typedef typename super::index_type                                                                       index;
+      // Need to extend the inherited iterators to be able to extract arrow color
+      class iterator : public super::iterator {
+      public:
+        iterator(const typename super::iterator& super_iter) : super::iterator(super_iter) {};
+        virtual const source_type& source() const {return this->_itor->source;};
+        virtual const color_type&  color()  const {return this->_itor->color;};
+        virtual const target_type& target() const {return this->_itor->target;};
+        virtual const arrow_type&  arrow()  const {return *(this->_itor);};
+      };
+    protected:
+      container_type _container;
+    public:
+      //
+      // Basic ArrowSequence interface
+      //
+      ArrowSequence(const ArrowSequence& seq) : super(seq), _container(seq._container) {};
+      ArrowSequence(const container_type& container, index_type& index) : super(index), _container(container) {};
+      virtual ~ArrowSequence() {};
+      void copy(const ArrowSequence& seq, ArrowSequence& cseq) {
+        super::copy(seq,cseq);
+        cseq._container = seq._container;
+      };
+      ArrowSequence& operator=(const ArrowSequence& seq) {
+        copy(seq,*this); return *this;
+      };
+      void reset(const container_type& container, index_type& index) {
+        this->super::reset(index);
+        this->_container = container;
+      };
+      //
+      // Extended ArrowSequence interface
+      //
+      
+      virtual iterator begin() {
+        return super::begin();
+      };
+      //
+      virtual iterator end() {
+        return super::end();
+      };
+      //
+      template<typename ostream_type>
+      void view(ostream_type& os, const bool& useColor = false, const char* label = NULL){
+        if(label != NULL) {
+          os << "Viewing " << label << " sequence:" << std::endl;
+        } 
+        os << "[";
+        for(iterator i = this->begin(); i != this->end(); i++) {
+          os << " (" << *i;
+          if(useColor) {
+            os << "," << i.color();
+          }
+          os  << ")";
+        }
+        os << " ]" << std::endl;
+      };
+      void addArrow(const arrow_type& a) {
+        this->_container.addArrow(a);
+      };
+      //
+      virtual bool contains(const outer_key_type& ok, const inner_key_type& ik) {
+        return (this->_index.find(ALE::pair<outer_key_type,inner_key_type>(ok,ik)) != this->_index.end());
+      };
+    };// class ArrowSequence    
+      
+    //
+    // Specialized sequence types
+    //
+    typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
+                          ALE::member<rec_type, predicate_type, &rec_type::predicate>,
+                          ALE::identity<rec_type>,
+                          ALE::member<rec_type, source_type, &rec_type::source> >     ConeSequence;
+    //
+    // Extended interface
+    //
+    void addArrow(const arrow_type& a) {
+      this->_rec_set.insert(a);
+    };
+    void cone(const target_type& t, ConeSequence& seq) {
+      seq.reset(*this, ::boost::multi_index::get<UpwardTag>(this->_rec_set));
+      seq.setInnerLimits(t,t);
+    };
+    ConeSequence& cone(const target_type& t) {
+      static ConeSequence cseq;
+      this->cone(t,cseq);
+      return cseq;
+    };
+    
+  protected:
+    // set of arrow records
+    rec_set_type _rec_set;
+    
+  }; // class Sifter
 
 
-
-  } // namespace ALE_X
+} // namespace ALE_X
 
 #endif
