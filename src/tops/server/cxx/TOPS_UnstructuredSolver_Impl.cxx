@@ -64,7 +64,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   imatrix1->mat = J;
   imatrix2->mat = B;
 
-  system = babel_cast< TOPS::System::Compute::Matrix >(
+  system = ::babel_cast< TOPS::System::Compute::Matrix >(
   	solver->getServices().getPort("TOPS.System.Compute.Matrix"));
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -105,7 +105,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   lower[0] = 0; upper[0] = nlocal-1; stride[0] = 1;
   ua.borrow(uu,1,*&lower,*&upper,*&stride);
 
-  system = babel_cast< TOPS::System::Compute::RightHandSide >(
+  system = ::babel_cast< TOPS::System::Compute::RightHandSide >(
   	solver->getServices().getPort("TOPS.System.Compute.RightHandSide") );  
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -301,7 +301,7 @@ TOPS::UnstructuredSolver_impl::Initialize_impl (
   SlicedCreate(PETSC_COMM_WORLD,&this->slice);
 
   // Process runtime parameters
-  params = babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
+  params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
 
@@ -324,7 +324,7 @@ TOPS::UnstructuredSolver_impl::solve_impl ()
   if (!this->dmmg) {
     TOPS::System::Initialize::Once once;
 
-    once = babel_cast< TOPS::System::Initialize::Once >( myServices.getPort("TOPS.System.Initialize.Once") );
+    once = ::babel_cast< TOPS::System::Initialize::Once >( myServices.getPort("TOPS.System.Initialize.Once") );
     if (once._not_nil()) {    
       once.initializeOnce();
     }
@@ -335,7 +335,7 @@ TOPS::UnstructuredSolver_impl::solve_impl ()
     DMMGSetDM(this->dmmg,(DM)this->slice);
     TOPS::System::Compute::Residual residual;
 
-    residual = babel_cast< TOPS::System::Compute::Residual >( 
+    residual = ::babel_cast< TOPS::System::Compute::Residual >( 
     	myServices.getPort("TOPS.System.Compute.Residual") );
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
@@ -346,7 +346,7 @@ TOPS::UnstructuredSolver_impl::solve_impl ()
 
     TOPS::System::Compute::InitialGuess guess;
 
-    guess = babel_cast< TOPS::System::Compute::InitialGuess >(myServices.getPort("TOPS.System.Compute.InitialGuess") );
+    guess = ::babel_cast< TOPS::System::Compute::InitialGuess >(myServices.getPort("TOPS.System.Compute.InitialGuess") );
     if (guess._not_nil()) {
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
     }
@@ -355,7 +355,7 @@ TOPS::UnstructuredSolver_impl::solve_impl ()
 
   TOPS::System::Initialize::EverySolve every;
 
-  every = babel_cast< TOPS::System::Initialize::EverySolve >( myServices.getPort("TOPS.System.Initialize.EverySolve") );
+  every = ::babel_cast< TOPS::System::Initialize::EverySolve >( myServices.getPort("TOPS.System.Initialize.EverySolve") );
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
@@ -607,7 +607,7 @@ TOPS::UnstructuredSolver_impl::updateParameterPort_impl (
   // Insert-Code-Here {TOPS.UnstructuredSolver.updateParameterPort} (updateParameterPort method)
   std::cout << "TOPS::UnstructuredSolver_impl::updatedParameterPort called" << std::endl;
   // Get the runtime parameters
-  params = babel_cast< gov::cca::ports::ParameterPort>( myServices.getPort("tops_options") );
+  params = ::babel_cast< gov::cca::ports::ParameterPort>( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
   return true;
@@ -641,7 +641,7 @@ int TOPS::UnstructuredSolver_impl::setupParameterPort() {
 #define __FUNCT__ "TOPS::UnstructuredSolver_impl::setupParameterPort"
 
   // First, get parameters
-  ppf = babel_cast< gov::cca::ports::ParameterPortFactory>( myServices.getPort("ParameterPortFactory") );
+  ppf = ::babel_cast< gov::cca::ports::ParameterPortFactory>( myServices.getPort("ParameterPortFactory") );
   if (ppf._is_nil()) {
     std::cerr << "TOPS::UnstructuredSolver_impl::setupParameterPort: called without ParameterPortFactory connected." << std::endl;
     return -1;
