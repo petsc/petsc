@@ -512,6 +512,7 @@ namespace ALE {
             }
           }
         }
+        sieveNew->stratify();
         // 2) Send the point section
         Obj<topology_type>          secTopology          = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
         Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numElements, assignment);
@@ -639,6 +640,7 @@ namespace ALE {
             }
           }
         }
+        sieveNew->stratify();
         topologyNew->stratify();
         return recvOverlap;
       };
