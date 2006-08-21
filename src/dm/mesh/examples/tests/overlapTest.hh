@@ -11,6 +11,7 @@ namespace ALE {
       typedef int                                                                        point_type;
       typedef ALE::Sieve<point_type, int, int>                                           sieve_type;
       typedef ALE::New::Topology<int, sieve_type>                                        topology_type;
+      typedef ALE::New::Atlas<topology_type, ALE::Point>                                 atlas_type;
       typedef ALE::New::DiscreteSieve<point_type>                                        dsieve_type;
       typedef ALE::New::Topology<int, dsieve_type>                                       overlap_topology_type;
       typedef ALE::New::Atlas<overlap_topology_type, ALE::Point>                         overlap_atlas_type;
@@ -45,6 +46,46 @@ namespace ALE {
         sieve->addCone(cone, 4);cone->clear();
         cone->insert(2);cone->insert(0);
         sieve->addCone(cone, 5);cone->clear();
+        topology->setPatch(0, sieve);
+        topology->stratify();
+      };
+      // The unambiguous doublet is
+      //
+      //       2 | 2
+      // p0     /|\      p1
+      //     5 / | \ 7
+      //      /  |  \     _
+      //     /   |   \    _
+      //  0 /   4|4   \ 3
+      //    \    |    /
+      //     \ 8 | 9 /
+      //    3 \  |  / 6
+      //       \ | /
+      //        \|/
+      //       1 | 1
+      static void constructDoublet2(const Obj<topology_type>& topology) {
+        Obj<sieve_type>     sieve = new sieve_type(topology->comm(), topology->debug());
+        Obj<std::set<int> > cone  = new std::set<int>();
+
+        if (topology->commRank() == 0) {
+          cone->insert(3);cone->insert(4);cone->insert(5);
+          sieve->addCone(cone, 8);cone->clear();
+          cone->insert(0);cone->insert(1);
+          sieve->addCone(cone, 3);cone->clear();
+          cone->insert(1);cone->insert(2);
+          sieve->addCone(cone, 4);cone->clear();
+          cone->insert(2);cone->insert(0);
+          sieve->addCone(cone, 5);cone->clear();
+        } else {
+          cone->insert(4);cone->insert(6);cone->insert(7);
+          sieve->addCone(cone, 9);cone->clear();
+          cone->insert(1);cone->insert(3);
+          sieve->addCone(cone, 6);cone->clear();
+          cone->insert(3);cone->insert(2);
+          sieve->addCone(cone, 7);cone->clear();
+          cone->insert(2);cone->insert(1);
+          sieve->addCone(cone, 4);cone->clear();
+        }
         topology->setPatch(0, sieve);
         topology->stratify();
       };
