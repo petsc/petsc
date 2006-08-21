@@ -717,6 +717,13 @@ namespace ALE {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
+      void setFiberDimensionByLabel(const patch_type& patch, const std::string& label, int value, int dim) {
+        const Obj<typename topology_type::label_sequence>& points = this->_topology->getLabelStratum(patch, label, value);
+
+        for(typename topology_type::label_sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->setFiberDimension(patch, *p_iter, dim);
+        }
+      };
       int size(const patch_type& patch) {
         typename chart_type::iterator end = this->_indices[patch].end();
         int size = 0;
@@ -743,10 +750,10 @@ namespace ALE {
 
         if (chart[point].prefix < 0) {
           for(typename sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
-            if (this->_debug) {std::cout << "    Recursing to " << *c_iter << std::endl;}
+            if (this->_debug > 1) {std::cout << "    Recursing to " << *c_iter << std::endl;}
             this->orderPoint(chart, sieve, *c_iter, offset);
           }
-          if (this->_debug) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
+          if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
           chart[point].prefix = offset;
           offset += chart[point].index;
         }
@@ -755,13 +762,13 @@ namespace ALE {
         chart_type& chart = this->_indices[patch];
 
         for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-          if (this->_debug) {std::cout << "Ordering closure of point " << p_iter->first << std::endl;}
+          if (this->_debug > 1) {std::cout << "Ordering closure of point " << p_iter->first << std::endl;}
           this->orderPoint(chart, this->_topology->getPatch(patch), p_iter->first, offset);
         }
       };
       void orderPatches() {
         for(typename indices_type::iterator i_iter = this->_indices.begin(); i_iter != this->_indices.end(); ++i_iter) {
-          if (this->_debug) {std::cout << "Ordering patch " << i_iter->first << std::endl;}
+          if (this->_debug > 1) {std::cout << "Ordering patch " << i_iter->first << std::endl;}
           int offset = 0;
 
           this->orderPatch(i_iter->first, offset);
