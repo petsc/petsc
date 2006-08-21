@@ -41,6 +41,10 @@ ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
 
+ex_coarsen: ex_coarsen.o   chkopts
+	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}
+	${RM} -f ex_coarsen.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
