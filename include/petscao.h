@@ -58,13 +58,15 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOMappingHasPetscIndex(AO, PetscInt, Pet
 
 /* ----------------------------------------------------*/
 
+/* aodatabasic.c, aodata.c inpututils.c */
+
 typedef enum {AODATA_BASIC=0,AODATA_ADVANCED=1} AODataType;
 
 /*S
      AOData - Abstract PETSc object that manages complex parallel data structures intended to 
          hold grid information, etc
 
-   Level: advanced
+   Level: depreciated
 
 .seealso:  AODataCreateBasic()
 S*/
