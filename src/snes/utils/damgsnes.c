@@ -225,7 +225,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
     ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   } else {
-    ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+    ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
   ierr = DAFormFunction1(da,localX,F,ptr);
