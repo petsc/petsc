@@ -38,6 +38,7 @@ extern PetscErrorCode VecView_VTK(Vec, const char [], const char []);
 typedef enum {DIRICHLET, NEUMANN} BCType;
 
 typedef struct {
+  PetscScalar   rho;
   PetscScalar   nu;
   BCType        bcType;
 } UserContext;
@@ -65,8 +66,10 @@ int main(int argc,char **argv)
   }
 
   ierr = PetscOptionsBegin(PETSC_COMM_WORLD, "", "Options for the inhomogeneous Poisson equation", "DMMG");
+    user.rho    = 1.0;
+    ierr        = PetscOptionsScalar("-rho", "The conductivity", "ex29.c", user.rho, &user.rho, PETSC_NULL);CHKERRQ(ierr);
     user.nu     = 0.1;
-    ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", 0.1, &user.nu, PETSC_NULL);CHKERRQ(ierr);
+    ierr        = PetscOptionsScalar("-nu", "The width of the Gaussian source", "ex29.c", user.nu, &user.nu, PETSC_NULL);CHKERRQ(ierr);
     bc          = (PetscInt)DIRICHLET;
     ierr        = PetscOptionsEList("-bc_type","Type of boundary condition","ex29.c",bcTypes,2,bcTypes[0],&bc,PETSC_NULL);CHKERRQ(ierr);
     user.bcType = (BCType)bc;
@@ -134,11 +137,11 @@ PetscErrorCode ComputeRHS(DMMG dmmg, Vec b)
     
 #undef __FUNCT__
 #define __FUNCT__ "ComputeRho"
-PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscScalar *rho)
+PetscErrorCode ComputeRho(PetscInt i, PetscInt j, PetscInt mx, PetscInt my, PetscScalar centerRho, PetscScalar *rho)
 {
   PetscFunctionBegin;
   if ((i > mx/3.0) && (i < 2.0*mx/3.0) && (j > my/3.0) && (j < 2.0*my/3.0)) {
-    *rho = 100.0;
+    *rho = centerRho;
   } else {
     *rho = 1.0;
   }
@@ -151,6 +154,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
 {
   DA             da = (DA) dmmg->dm;
   UserContext    *user = (UserContext *) dmmg->user;
+  PetscScalar    centerRho = user->rho;
   PetscErrorCode ierr;
   PetscInt       i,j,mx,my,xm,ym,xs,ys,num;
   PetscScalar    v[5],Hx,Hy,HydHx,HxdHy,rho;
@@ -166,7 +170,7 @@ PetscErrorCode ComputeJacobian(DMMG dmmg, Mat J,Mat jac)
   for (j=ys; j<ys+ym; j++){
     for(i=xs; i<xs+xm; i++){
       row.i = i; row.j = j;
-      ierr = ComputeRho(i, j, mx, my, &rho);CHKERRQ(ierr);
+      ierr = ComputeRho(i, j, mx, my, centerRho, &rho);CHKERRQ(ierr);
       if (i==0 || j==0 || i==mx-1 || j==my-1) {
         if (user->bcType == DIRICHLET) {
            v[0] = 2.0*rho*(HxdHy + HydHx);
