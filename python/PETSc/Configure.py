@@ -160,10 +160,6 @@ class Configure(config.base.Configure):
     else: lang = 'CXXONLY'
     self.addMakeMacro('PETSC_LANGUAGE',lang)
 
-    if self.python.usePython:
-      self.addMakeMacro('PYTHON_INCLUDE', ' '.join([self.headers.getIncludeArgument(inc) for inc in self.python.python.include]))
-      self.addMakeMacro('PYTHON_LIB', ' '.join([self.libraries.getLibArgument(lib) for lib in self.python.python.lib]))
-    
     # real or complex
     self.addMakeMacro('PETSC_SCALAR',self.scalartypes.scalartype)
     # double or float
