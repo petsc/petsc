@@ -159,17 +159,18 @@ PetscErrorCode DMMGFormFunctionFD(SNES snes,Vec X,Vec F,void *ptr)
  
   PetscFunctionBegin;
   /* determine whether X=localX */
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
   ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(localX,&n);CHKERRQ(ierr);
 
   if (n != N){ /* X != localX */
-    ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
     /* Scatter ghost points to local vector, using the 2-step process
        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
     */
     ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   } else {
+    ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
   ierr = DAFormFunction(da,dmmg->lfj,localX,F,dmmg->user);CHKERRQ(ierr);
@@ -209,19 +210,22 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
   PetscInt       N,n;
   
   PetscFunctionBegin;
-  /* determine whether X=localX */
-  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(X,&n);CHKERRQ(ierr);
- 
   if (!da) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Looks like you called SNESSetFromFuntion(snes,SNESDAFormFunction,) without the DA context");
+
+  /* determine whether X=localX */
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = VecGetSize(X,&N);CHKERRQ(ierr);
+  ierr = VecGetSize(localX,&n);CHKERRQ(ierr);
+ 
+  
   if (n != N){ /* X != localX */
-    ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
     /* Scatter ghost points to local vector, using the 2-step process
         DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
     */
     ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
   } else {
+    ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
     localX = X;
   }
   ierr = DAFormFunction1(da,localX,F,ptr);

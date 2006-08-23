@@ -435,7 +435,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringCreate(Mat mat,ISColoring iscolor
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   c->ctype = iscoloring->ctype;
-  if (size == 1) c->ctype = iscoloring->ctype = IS_COLORING_LOCAL;
 
   if (mat->ops->fdcoloringcreate) {
     ierr = (*mat->ops->fdcoloringcreate)(mat,iscoloring,c);CHKERRQ(ierr);

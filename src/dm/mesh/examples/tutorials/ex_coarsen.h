@@ -23,8 +23,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, c
 PetscErrorCode CreateMesh(MPI_Comm, Obj<ALE::Mesh>&);
 PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, std::string, std::string, bool cell);
 PetscErrorCode OutputMesh(const Obj<ALE::Mesh>&);
-PetscErrorCode GenerateMesh (MPI_Comm, Obj<ALE::Mesh>& mesh);
-
+PetscErrorCode GenerateMesh (MPI_Comm, Obj<ALE::Mesh>&, double);
+PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>&, int);
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm)
@@ -53,10 +53,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh)
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
 if (r_factor <= 0.0) {
-    mesh = ALE::PCICE::Builder::readMesh(comm, 2, baseFile, true, false, false);
+    mesh = ALE::PCICE::Builder::readMesh(comm, 2, baseFile, true, true, false);
+    IdentifyBoundary(mesh, 2);
   } else {
-    //mesh = new ALE::Mesh(comm, 2, 0);
-    GenerateMesh(comm, mesh);
+    mesh = new ALE::Mesh(comm, 2, 0);
+    GenerateMesh(comm, mesh, r_factor);
   }
   ALE::LogStagePop(stage);
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
@@ -169,10 +170,10 @@ ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numb
   topology->stratify();
   mesh->setTopologyNew(topology);
     int nvertices = topology->depthStratum(patch, 0)->size();
-    int nedges = topology->heightStratum(patch, 1)->size();
+    int nedges = topology->depthStratum(patch, 1)->size();
     int ncells = topology->heightStratum(patch, 0)->size();
     ierr = PetscPrintf(mesh->comm(), "NEW MESH: %d vertices, %d edges, %d cells\n", nvertices, nedges, ncells);
-  //create the coordinate section and dump in the coordinates.
+  //create the coordinate section and dump in the coordinates.  At the same time set the boundary markers.
   Obj<ALE::Mesh::section_type> coordinates = mesh->getSection("coordinates");
   coordinates->getAtlas()->setFiberDimensionByDepth(patch, 0, 2);  //puts two doubles on each node.
   coordinates->getAtlas()->orderPatches();
@@ -181,7 +182,9 @@ ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numb
   
 	ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
 	ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
+	const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
 	while(v_iter != v_iter_end) {
+		topology->setValue(markers, *v_iter, src->pointmarkerlist[*v_iter - src->numberoftriangles]);
 		coordinates->update(patch, *v_iter, src->pointlist+2*(*v_iter-src->numberoftriangles));
 		v_iter++;
 	}
@@ -200,46 +203,129 @@ ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numb
  \     \
  0-(7)-3
 */
-PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh) {
+PetscErrorCode GenerateMesh (MPI_Comm comm, Obj<ALE::Mesh>& mesh, double ref_lim) {
 
-  PetscFunctionBegin
-  Obj<ALE::Mesh> boundary = new ALE::Mesh(comm, 2, 0);
-  PetscScalar coords[8] = {0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0};
-  const ALE::Mesh::topology_type::patch_type patch = 0;
-  const Obj<ALE::Mesh::sieve_type>    sieve    = new ALE::Mesh::sieve_type(comm, 0);
-  const Obj<ALE::Mesh::topology_type> topology = new ALE::Mesh::topology_type(comm, 0);
-  
-  sieve->addArrow(0, 4, 0);
-  sieve->addArrow(1, 4, 1);
 
-  sieve->addArrow(1, 5, 2);
-  sieve->addArrow(2, 5, 3);
+   PetscFunctionBegin;
+//create the previous boundary set, feed into triangle with the boundaries marked.
+   triangulateio * input = new triangulateio;
+ //  triangulateio * ioutput = new triangulateio;
+   triangulateio * output = new triangulateio;
 
-  sieve->addArrow(2, 6, 4);
-  sieve->addArrow(3, 6, 5);
+//set up input
 
-  sieve->addArrow(3, 7, 6);
-  sieve->addArrow(0, 7, 7);
+   input->numberofpoints = 4;
+   input->numberofpointattributes = 0;
+   double coords[8] = {0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0};
+   input->pointlist = coords;
+   input->numberofpointattributes = 0;
+   input->pointattributelist = NULL;
+   int pointmarks[4] = {1,1,1,1};
+   input->pointmarkerlist = pointmarks; //mark as boundaries
 
-  sieve->stratify();
-  topology->setPatch(patch, sieve);
-  topology->stratify();
-  boundary->setTopologyNew(topology);
-  ALE::PyLith::Builder::buildCoordinates(boundary->getSection("coordinates"), 2, coords);
-  const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+   input->numberoftriangles = 0;
+   input->numberofcorners = 0;
+   input->numberoftriangleattributes = 0;
+   input->trianglelist = NULL;
+   input->triangleattributelist = NULL;
+   input->trianglearealist = NULL;
 
-  for(int v = 0; v < 4; v++) {
-      topology->setValue(markers, v, 1);
-  }
-  for(int e = 4; e < 8; e++) {
-      topology->setValue(markers, e, 1);
-  }
-  mesh = ALE::Mesh(comm, 2, 0);
-  //mesh = ALE::Generator::generateMesh(boundary, 0);
-  
-  //mesh = ALE::Generator::refineMesh(mesh, r_factor, 0);
-  mesh->getTopologyNew()->view("Serial topology");
-  PetscFunctionReturn(0);
+   int segments[8] = {0, 1, 1, 2, 2, 3, 3, 0};
+   input->segmentlist = segments;
+   int segmentmarks[4] = {1, 1, 1, 1};
+   input->segmentmarkerlist = segmentmarks;  //mark as boundaries.
+   input->numberofsegments = 4;
+
+   input->holelist = NULL;
+   input->numberofholes = 0;
+   
+   input->regionlist = NULL;
+   input->numberofregions = 0;
+
+//set up output
+
+   output->pointlist = NULL;
+   output->pointattributelist = NULL;
+   output->pointmarkerlist = NULL;
+   output->trianglelist = NULL;
+   output->triangleattributelist = NULL;
+   output->trianglearealist = NULL;
+   output->neighborlist = NULL;
+   output->segmentlist = NULL;
+   output->segmentmarkerlist = NULL;
+   output->holelist = NULL;
+   output->regionlist = NULL;
+   output->edgelist = NULL;
+   output->edgemarkerlist = NULL;
+   output->normlist = NULL;
+
+   char triangleOptions[256]; 
+   sprintf(triangleOptions, "-zeQa%f",ref_lim);
+   triangulate(triangleOptions, input, output, NULL); //refine
+
+   //for(int i = 0; i < output->numberofpoints; i++) {
+   //  printf("%d", output->pointmarkerlist[i]);
+   //}
+   //printf("\n");
+
+   TriangleToMesh(mesh, output, 0);
+
+   PetscFunctionReturn(0);
+
 }
 
+//identify the boundary points and edges on an interpolated mesh by looking for the number of elements covered by edges (or faces in 3D).
 
+PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim) {
+
+   PetscFunctionBegin;
+
+if (dim == 2) {
+     ALE::Mesh::section_type::patch_type patch = 0;
+     Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+     const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
+     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
+
+
+     ALE::Mesh::topology_type::label_sequence::iterator e_iter = edges->begin();
+     ALE::Mesh::topology_type::label_sequence::iterator e_iter_end = edges->end();
+
+     ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
+     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
+
+     const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+
+//initialize all the vertices
+
+     while (v_iter != v_iter_end) {
+        topology->setValue(markers, *v_iter, 0);
+        v_iter++;
+     }
+
+//trace through the edges, initializing them to be non-boundary, then setting them as boundary.
+
+int boundEdges = 0, boundVerts = 0;
+
+    // int nBoundaryVertices = 0;
+     while (e_iter != e_iter_end) {
+       topology->setValue(markers, *e_iter, 0);
+//find out if the edge is not supported on both sides, if so, this is a boundary node
+       //printf("Edge %d supported by %d faces", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());
+       if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
+        topology->setValue(markers, *e_iter, 1);
+        boundEdges++;
+        ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter = endpoints->begin();
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter_end = endpoints->end();
+        while (p_iter != p_iter_end) {
+           topology->setValue(markers, *p_iter, 1);
+           boundVerts++;
+           p_iter++;
+        }
+       }
+      e_iter++;
+   }
+  printf("Boundary Edges: %d, Boundary Vertices: %d\n", boundEdges, boundVerts);
+  } 
+  PetscFunctionReturn(0);
+}
