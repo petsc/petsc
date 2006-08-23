@@ -13,6 +13,7 @@ static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
 PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh>);
 PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh>, Obj<ALE::Mesh>, double);
+bool IsEssentialBoundaryNode(Obj<ALE::Mesh>&, ALE::Mesh::point_type, int);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -115,10 +116,6 @@ PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> mesh) {
   PetscFunctionReturn(0);
 }
 
-struct coarsen_point {
-float * coordinates;
-
-};
 
 PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh> srcMesh, Obj<ALE::Mesh> dstMesh, double beta) {
    PetscErrorCode ierr;
@@ -132,12 +129,72 @@ PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh> srcMesh, Obj<ALE::Mesh> dstMes
    const double * tmp_point;
   Obj<ALE::Mesh::section_type> coords = srcMesh->getSection("coordinates");
   Obj<ALE::Mesh::section_type> space = srcMesh->getSection("spacing");
-  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = coords->getAtlas()->getTopology()->depthStratum(patch, 0);
+  Obj<ALE::Mesh::topology_type> topology = srcMesh->getTopologyNew();
+  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
 
    ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
    ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
+
+   const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+   double v_space;
+   int essentialBoundary = 0;
+//boundary handling  right now we are using uninterpolated meshes, so to find the neighbors will only take one down and up, but we will have to watch
+//for which are on the boundary.
+    
+   while (v_iter != v_iter_end) {  //add the essential boundary nodes first.
+     		if (topology->getValue(markers, *v_iter) != 0) if(IsEssentialBoundaryNode(srcMesh, *v_iter, 2)){ 
+                   essentialBoundary++;
+			add_point = new double[3];
+			tmp_point = coords->restrict(patch, *v_iter);
+			add_point[0] = tmp_point[0];
+			add_point[1] = tmp_point[1];
+			add_point[2] = *space->restrict(patch, *v_iter);
+			points.push_front(add_point);
+                }
+       v_iter++;
+   }
+
+   v_iter = vertices->begin();
+   v_iter_end = vertices->end();
+
+//go through the rest of the boundary nodes now
+
    while(v_iter != v_iter_end) {
-		double v_space;
+
+      if (topology->getValue(markers, *v_iter) != 0) {
+		v_space = *space->restrict(patch, *v_iter); 
+		tmp_point = coords->restrict(patch, *v_iter);
+		std::list<double *>::iterator c_iter = points.begin(), c_iter_end = points.end();
+		bool point_is_ok = true; //point doesn't intersect anything already in the list.
+		while (c_iter != c_iter_end && point_is_ok) {
+			double dist = sqrt(((*c_iter)[0] - tmp_point[0])*((*c_iter)[0] - tmp_point[0]) + ((*c_iter)[1] - tmp_point[1])*((*c_iter)[1] - tmp_point[1]));
+			if(dist < beta*((*c_iter)[2] + v_space)/2.) {
+				point_is_ok = false;
+			//ierr = PetscPrintf(srcMesh->comm(), "(%f, %f) (%f) <> (%f, %f) (%f)\n", tmp_point[0], tmp_point[1], v_space, (*c_iter)[0], (*c_iter)[1], (*c_iter)[2]);
+
+			}
+		c_iter++;
+		}
+		if(point_is_ok) { //add to the set.
+			add_point = new double[3];
+			tmp_point = coords->restrict(patch, *v_iter);
+			add_point[0] = tmp_point[0];
+			add_point[1] = tmp_point[1];
+			add_point[2] = v_space;
+			points.push_front(add_point);
+			//ierr = PetscPrintf(srcMesh->comm(), "added %d to the set\n", *v_iter);
+		}
+      }
+     v_iter++;
+   }
+printf("Found %d essential boundary nodes\n", essentialBoundary);
+//interior handling
+
+   v_iter = vertices->begin();
+   v_iter_end = vertices->end();
+
+
+   while(v_iter != v_iter_end) {
 		v_space = *space->restrict(patch, *v_iter); 
 		tmp_point = coords->restrict(patch, *v_iter);
 		std::list<double *>::iterator c_iter = points.begin(), c_iter_end = points.end();
@@ -246,4 +303,51 @@ PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh> srcMesh, Obj<ALE::Mesh> dstMes
    
    //ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
    PetscFunctionReturn(0);
+}
+
+//decides if the given boundary node is essential, or merely collinear (or coplanar as the case may be) with its neighbors.
+
+bool IsEssentialBoundaryNode(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex, int dim) {
+
+    ALE::Mesh::section_type::patch_type patch = 0; 
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+    if (dim != 2) {printf("Not Supported for more than 2D yet\n"); return false;}
+    const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+    Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
+    const double *vCoords = coords->restrict(patch, vertex);
+    double v_x = vCoords[0], v_y = vCoords[1];
+
+    bool foundNeighbor = false;
+    bool isEssential = false;
+
+    double f_n_x, f_n_y;
+
+    ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence> support = topology->getPatch(patch)->support(vertex);
+    ALE::Mesh::topology_type::label_sequence::iterator s_iter = support->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
+    while(s_iter != s_iter_end) {
+      if (topology->getValue(markers, *s_iter) != 0) {
+      ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
+      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
+      ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
+      while(n_iter != n_iter_end) {
+        if (vertex != *n_iter && topology->getValue(markers, *n_iter) == 1) {
+          if (!foundNeighbor) {
+             const double *nCoords = coords->restrict(patch, *n_iter);
+	     f_n_x = nCoords[0]; f_n_y = nCoords[1];
+             foundNeighbor = true;
+         } else {
+             const double *nCoords = coords->restrict(patch, *n_iter);
+	     double n_x = nCoords[0], n_y = nCoords[1];
+             double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
+             if (parArea > 0.000001) isEssential = true;
+             printf("Parallelogram area: %f\n", parArea);
+         }
+        }
+      n_iter++;
+      }
+      } //end of testing if the edge is a boundary edge
+    s_iter++;
+    }
+  return isEssential;
 }
