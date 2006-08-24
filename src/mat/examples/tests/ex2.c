@@ -1,13 +1,7 @@
 
-static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), and MatAXPY().\n\n";
+static char help[] = "Tests MatTranspose(), MatNorm(), MatValid(), MatAXPY() and MatAYPX().\n\n";
 
 #include "petscmat.h"
-
-#define  TestMatNorm
-#define  TestMatTranspose
-#define  TestMatNorm_tmat
-#define  TestMatAXPY
-#undef   TestMatAXPY2
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -33,14 +27,13 @@ int main(int argc,char **argv)
   if (flg) {n -= 2; rect = 1;}
 
   /* ------- Assemble matrix, test MatValid() --------- */
-
   ierr = MatCreate(PETSC_COMM_WORLD,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(mat);CHKERRQ(ierr);
   ierr = MatGetOwnershipRange(mat,&rstart,&rend);CHKERRQ(ierr);
   for (i=rstart; i<rend; i++) { 
     for (j=0; j<n; j++) { 
-      v=10*i+j; 
+      v=10.0*i+j; 
       ierr = MatSetValues(mat,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -53,16 +46,14 @@ int main(int argc,char **argv)
   if (!flg) SETERRQ(1,"Corrupted matrix.");
 
   /* ----------------- Test MatNorm()  ----------------- */
-#ifdef TestMatNorm
   ierr = MatNorm(mat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(mat,NORM_INFINITY,&normi);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"original: Frobenious norm = %G, one norm = %G, infinity norm = %G\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"original A: Frobenious norm = %G, one norm = %G, infinity norm = %G\n",
                      normf,norm1,normi);CHKERRQ(ierr);
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
+
   /* --------------- Test MatTranspose()  -------------- */
-#ifdef TestMatTranspose
   ierr = PetscOptionsHasName(PETSC_NULL,"-in_place",&flg);CHKERRQ(ierr);
   if (!rect && flg) {
     ierr = MatTranspose(mat,0);CHKERRQ(ierr);   /* in-place transpose */
@@ -70,65 +61,64 @@ int main(int argc,char **argv)
   } else {      /* out-of-place transpose */
     ierr = MatTranspose(mat,&tmat);CHKERRQ(ierr); 
   }
-#endif
+
   /* ----------------- Test MatNorm()  ----------------- */
-#ifdef TestMatNorm_tmat
   /* Print info about transpose matrix */
   ierr = MatNorm(tmat,NORM_FROBENIUS,&normf);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = MatNorm(tmat,NORM_INFINITY,&normi);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"transpose: Frobenious norm = %G, one norm = %G, infinity norm = %G\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"B = A^T: Frobenious norm = %G, one norm = %G, infinity norm = %G\n",
                      normf,norm1,normi);CHKERRQ(ierr);
   ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-#endif
-  /* ----------------- Test MatAXPY()  ----------------- */
-#ifdef TestMatAXPY
+
+  /* ----------------- Test MatAXPY(), MatAYPX()  ----------------- */
   if (mat && !rect) {
     alpha = 1.0;
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-alpha",&alpha,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A\n");CHKERRQ(ierr);
     ierr = MatAXPY(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
     ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAYPX:  B = alpha*B + A\n");CHKERRQ(ierr);
+    ierr = MatAYPX(tmat,alpha,mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatView(tmat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   }
-#endif 
-#ifdef TestMatAXPY2
-    Mat matB;
+
+  {
+    Mat C;
     alpha = 1.0;
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&matB);CHKERRQ(ierr); 
-    ierr = MatAXPY(matB,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
-    ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
-    ierr = MatDestroy(matB);CHKERRQ(ierr);
-#ifdef TMP
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  C = C + alpha * A, C=A, SAME_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr = MatDuplicate(mat,MAT_COPY_VALUES,&C);CHKERRQ(ierr); 
+    ierr = MatAXPY(C,alpha,mat,SAME_NONZERO_PATTERN);CHKERRQ(ierr); 
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 
+    ierr = MatDestroy(C);CHKERRQ(ierr);
+  }
+
+  {
+    Mat matB;
     /* get matB that has nonzeros of mat in all even numbers of row and col */
     ierr = MatCreate(PETSC_COMM_WORLD,&matB);CHKERRQ(ierr);
     ierr = MatSetSizes(matB,PETSC_DECIDE,PETSC_DECIDE,m,n);CHKERRQ(ierr);
     ierr = MatSetFromOptions(matB);CHKERRQ(ierr);
     ierr = MatGetOwnershipRange(matB,&rstart,&rend);CHKERRQ(ierr);
+    if (rstart % 2 != 0) rstart++;   
     for (i=rstart; i<rend; i += 2) { 
       for (j=0; j<n; j += 2) { 
-        v=10*i+j; 
+        v=10.0*i+j; 
         ierr = MatSetValues(matB,1,&i,1,&j,&v,INSERT_VALUES);CHKERRQ(ierr);
       }
     }
     ierr = MatAssemblyBegin(matB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(matB,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD," B: original matrix:\n");
+    PetscPrintf(PETSC_COMM_WORLD," A: original matrix:\n");
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    PetscPrintf(PETSC_COMM_WORLD," A(a subset of B):\n");
+    PetscPrintf(PETSC_COMM_WORLD," B(a subset of A):\n");
     ierr = MatView(matB,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"MatAXPY:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
     ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    
-    ierr = PetscPrintf(PETSC_COMM_WORLD,"matrix addition:  B = B + alpha * A, SUBSET_NONZERO_PATTERN\n");CHKERRQ(ierr);
-    ierr = MatAXPY(mat,alpha,matB,SUBSET_NONZERO_PATTERN);CHKERRQ(ierr); 
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
-    
     ierr = MatDestroy(matB);CHKERRQ(ierr);  
-#endif /* TMP */
-#endif 
-  
+  }
 
   /* Free data structures */  
   if (mat)  {ierr = MatDestroy(mat);CHKERRQ(ierr);}

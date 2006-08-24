@@ -15,8 +15,6 @@
 .  Y - the second matrix
 -  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
-   Contributed by: Matthew Knepley
-
    Notes:
      Will only be efficient if one has the SAME_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
@@ -188,20 +186,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 #undef __FUNCT__  
 #define __FUNCT__ "MatAYPX"
 /*@
-   MatAYPX - Computes Y = X + a*Y.
+   MatAYPX - Computes Y = a*Y + X.
 
    Collective on Mat
 
    Input Parameters:
-+  X,Y - the matrices
--  a - the PetscScalar multiplier
-
-   Contributed by: Matthew Knepley
++  a - the PetscScalar multiplier
+.  Y - the first matrix
+.  X - the second matrix
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN 
 
    Notes:
-   This routine currently uses the MatAXPY() implementation.
-
-   This is slow, if you need it fast send email to petsc-maint@mcs.anl.gov
+     Will only be efficient if one has the SAME_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
 
    Level: intermediate
 
@@ -209,7 +205,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet(Mat Y,Vec D,InsertMode is)
 
 .seealso: MatAXPY()
  @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X)
+PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X,MatStructure str)
 {
   PetscScalar    one = 1.0;
   PetscErrorCode ierr;
@@ -224,7 +220,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat Y,PetscScalar a,Mat X)
   if (mX != mY || nX != nY) SETERRQ4(PETSC_ERR_ARG_SIZ,"Non conforming matrices: %D %D first %D %D second",mX,mY,nX,nY);
 
   ierr = MatScale(Y,a);CHKERRQ(ierr);
-  ierr = MatAXPY(Y,one,X,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = MatAXPY(Y,one,X,str);CHKERRQ(ierr)
   PetscFunctionReturn(0);
 }
 
