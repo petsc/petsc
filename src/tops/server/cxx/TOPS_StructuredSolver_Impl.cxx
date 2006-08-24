@@ -757,7 +757,7 @@ TOPS::StructuredSolver_impl::updatedParameterValue_impl (
   PetscInt ierr;
   ierr = PetscInitialized(&flg); 
   if (!flg) ierr = PetscInitializeNoArguments();
-  params = babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
+  params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
   SNES snes = DMMGGetSNES(dmmg);
