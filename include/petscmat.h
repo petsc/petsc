@@ -548,7 +548,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTransposeSymbolic(Mat,Mat,Pet
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTransposeNumeric(Mat,Mat,Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAXPY(Mat,PetscScalar,Mat,MatStructure);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat,PetscScalar,Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAYPX(Mat,PetscScalar,Mat,MatStructure);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScale(Mat,PetscScalar);
