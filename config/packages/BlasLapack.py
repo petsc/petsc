@@ -106,19 +106,19 @@ class Configure(config.package.Package):
     foundBlas   = 0
     foundLapack = 0
     self.f2c    = 0
+    self.f2cpkg = 0
     mangleFunc = self.compilers.fortranMangling
     foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     if foundBlas:
       foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), mangleFunc)
     elif not hasattr(self.compilers, 'FC'):
-      self.framework.logPrint('Checking cblaslapack')
-      foundcBlasLapack = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
-      if foundcBlasLapack:
-        foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
-        foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
-        if foundBlas and foundLapack:
-          self.framework.logPrint('Found cblaslapack')
-          self.f2c = 1
+      self.framework.logPrint('Checking for cblaslapack (underscore) namemangling')
+      foundBlas = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'ddot_')
+      foundLapack = self.checkLapack(lapackLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, ['dgetrs_', 'dgeev_'])
+      if foundBlas and foundLapack:
+        self.framework.logPrint('Found cblaslapack (underscore) name mangling')
+        self.f2c = 1
+        self.f2pkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -460,7 +460,7 @@ class Configure(config.package.Package):
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
-    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not self.f2c:
+    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not f2cpkg:
       raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble/int')
     return
 
