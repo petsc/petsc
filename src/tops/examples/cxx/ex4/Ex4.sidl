@@ -3,5 +3,9 @@ package Ex4 version 0.0.0 {
   class System implements-all TOPS.System.Compute.Matrix, 
                               TOPS.System.Initialize.Once, TOPS.System.Compute.RightHandSide, 
                               gov.cca.Component, gov.cca.ports.GoPort  {}
+               
+  class SystemProxy implements-all TOPS.System.Compute.Matrix, 
+                              TOPS.System.Initialize.Once, TOPS.System.Compute.RightHandSide, 
+                              gov.cca.Component {}
 }
 

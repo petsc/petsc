@@ -732,6 +732,8 @@ TOPS::StructuredSolver_impl::updateParameterPort_impl (
   params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
+  SNES snes = DMMGGetSNES(dmmg);
+  if (snes) SNESSetFromOptions(snes);
   return true;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updateParameterPort)
 }
@@ -751,12 +753,15 @@ TOPS::StructuredSolver_impl::updatedParameterValue_impl (
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.updatedParameterValue)
   // Insert-Code-Here {TOPS.StructuredSolver.updatedParameterValue} (updatedParameterValue method)
   std::cout << "TOPS::StructuredSolver_impl::updatedParameterValue called" << std::endl;
-  /*
-  int ierr = PetscInitializeVoid();
-  params = myServices.getPort("tops_options");
+  PetscTruth flg;
+  PetscInt ierr;
+  ierr = PetscInitialized(&flg); 
+  if (!flg) ierr = PetscInitializeNoArguments();
+  params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
-  */
+  SNES snes = DMMGGetSNES(dmmg);
+  if (snes)  SNESSetFromOptions(snes);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updatedParameterValue)
 }
 
