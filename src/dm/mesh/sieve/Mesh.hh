@@ -22,6 +22,8 @@ namespace ALE {
     typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
     typedef struct {double x, y, z;}                                           split_value;
     typedef ALE::New::Section<atlas_type, ALE::pair<point_type, split_value> > split_section_type;
+    typedef ALE::New::Completion<topology_type, point_type>::send_overlap_type send_overlap_type;
+    typedef ALE::New::Completion<topology_type, point_type>::recv_overlap_type recv_overlap_type;
     int debug;
   private:
     Obj<sieve_type>            topology;
@@ -32,6 +34,8 @@ namespace ALE {
     Obj<topology_type>         _topology;
     Obj<foliated_section_type> _boundaries;
     Obj<split_section_type>    _splitField;
+    Obj<send_overlap_type>     _vertexSendOverlap;
+    Obj<recv_overlap_type>     _vertexRecvOverlap;
     MPI_Comm        _comm;
     int             _commRank;
     int             _commSize;
@@ -110,6 +114,10 @@ namespace ALE {
     void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
     const Obj<split_section_type>& getSplitSection() const {return this->_splitField;};
     void                           setSplitSection(const Obj<split_section_type>& splitField) {this->_splitField = splitField;};
+    const Obj<send_overlap_type>&  getVertexSendOverlap() const {return this->_vertexSendOverlap;};
+    void                           setVertexSendOverlap(const Obj<send_overlap_type>& vertexOverlap) {this->_vertexSendOverlap = vertexOverlap;};
+    const Obj<recv_overlap_type>&  getVertexRecvOverlap() const {return this->_vertexRecvOverlap;};
+    void                           setVertexRecvOverlap(const Obj<recv_overlap_type>& vertexOverlap) {this->_vertexRecvOverlap = vertexOverlap;};
     // Printing
     template <typename Stream_>
     friend Stream_& operator<<(Stream_& os, const split_value& v) {

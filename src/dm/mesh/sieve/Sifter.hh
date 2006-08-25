@@ -854,11 +854,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL, bool rawData = false){
+      int rank = this->commRank();
+
       if(label != NULL) {
-        os << "Viewing Sifter '" << label << "':" << std::endl;
+        os << "["<<rank<<"]Viewing Sifter '" << label << "':" << std::endl;
       } 
       else {
-        os << "Viewing a Sifter:" << std::endl;
+        os << "["<<rank<<"]Viewing a Sifter:" << std::endl;
       }
       if(!rawData) {
         os << "cap --> base:" << std::endl;

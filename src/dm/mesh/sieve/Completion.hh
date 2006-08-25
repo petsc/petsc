@@ -111,10 +111,7 @@ namespace ALE {
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        if (patch != p) {
-          throw ALE::Exception("Point must be identical to patch in a PartitionSizeSection");
-        }
-        return &this->_sizes[patch];
+        return &this->_sizes[p];
       };
       void update(const patch_type& patch, const point_type& p, const value_type v[]) {
         throw ALE::Exception("Cannot update a PartitionSizeSection");
@@ -199,10 +196,7 @@ namespace ALE {
       };
       const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        if (patch != p) {
-          throw ALE::Exception("Point must be identical to patch in a PartitionSection");
-        }
-        return this->_points[patch];
+        return this->_points[p];
       };
       void update(const patch_type& patch, const point_type& p, const value_type v[]) {
         throw ALE::Exception("Cannot update a PartitionSection");
@@ -437,14 +431,15 @@ namespace ALE {
       };
       template<typename Filler, typename Section>
       static void fillSend(const Obj<Filler>& sendFiller, const Obj<Section>& sendSection) {
-        const topology_type::sheaf_type& patches = sendSection->getAtlas()->getTopology()->getPatches();
-        const topology_type::patch_type  patch   = 0; // FIX: patch should come from overlap
+        const topology_type::sheaf_type& ranks = sendSection->getAtlas()->getTopology()->getPatches();
+        const topology_type::patch_type  patch = 0; // FIX: patch should come from overlap
 
-        for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+        for(topology_type::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
+          const int&                                          rank = p_iter->first;
           const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
 
           for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            sendSection->update(p_iter->first, *b_iter, sendFiller->restrict(patch, *b_iter));
+            sendSection->update(rank, *b_iter, sendFiller->restrict(patch, *b_iter));
           }
         }
       };

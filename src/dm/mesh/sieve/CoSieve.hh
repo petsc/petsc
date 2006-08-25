@@ -1254,6 +1254,11 @@ namespace ALE {
       const Obj<capSequence>& cap() {return this->_points;};
       const Obj<baseSequence>& leaves() {return this->_points;};
       const Obj<baseSequence>& base() {return this->_points;};
+      template<typename Color>
+      void addArrow(const point_type& p, const point_type& q, const Color& color) {
+        throw ALE::Exception("Cannot add an arrow to a DiscreteSieve");
+      };
+      void stratify() {};
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
         ostringstream txt;
         int rank;
