@@ -218,36 +218,6 @@ namespace ALE_X {
     {};
   
     //
-    // InnerIndexSequence definition
-    // 
-    // Defines a sequence representing a subset of a multi_index container defined by its Index_, which is ordered lexicographically
-    // starting with Key_, obtained using KeyExtractor_.
-    // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
-    // These traverse the subset of Index_ with the fixed Key_, that is all the entries lexicographically "within" the Key_ segment.
-    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
-    // template <typename Index_, 
-    //               typename KeyExtractor_, typename ValueExtractor_ = ALE::template identity<typename Index_::value_type> 
-    //     >
-    //     struct InnerIndexSequence {
-    
-    //     };// class InnerIndexSequence    
-    
-    //
-    // OuterIndexSequence definition
-    // 
-    // Defines a sequence representing a subset of a multi_index container defined by its Index_ ordered lexicographically 
-    // starting with a Key_, obtained using a KeyExtractor_.
-    // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
-    // This particular sequence picks out the first element in each segment with a given Key_;
-    // in other words, the sequence iterates over the Key_ values, rather than within a fixed Key_ segment.
-    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
-    //     template <typename Index_, typename Key_, typename ValueExtractor_ = ALE::template ::identity<typename Index_::value_type> >
-    //     struct OuterIndexSequence {
-    
-    //     };// class OuterIndexSequence    
-    
-
-    //
     // StridedIndexSequence definition
     // 
     // Defines a sequence representing a subset of a multi_index container defined by its Index_ which is ordered lexicographically 
@@ -258,9 +228,8 @@ namespace ALE_X {
     // the outer keys from a given range and a fixed inner key.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
     template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
-              typename ValueExtractor_ = ALE::identity<typename Index_::value_type> >
+              typename ValueExtractor_ = ALE::identity<typename Index_::value_type>, bool inner_strided_flag = false >
     struct StridedIndexSequence {
-      // CONTINUE: need to rethink the design to accomodate sequences like BaseSequence
       typedef Index_                                           index_type;
       typedef OuterKeyExtractor_                               outer_key_extractor_type;
       typedef typename outer_key_extractor_type::result_type   outer_key_type;
@@ -302,7 +271,7 @@ namespace ALE_X {
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
         virtual const value_type  operator*() const {_ex(*(this->_itor));};
         virtual iterator   operator++() {
-          this->_sequence.next(this->_itor, this->_segBndry);
+          this->_sequence.next(this->_itor, this->_segBndry, inner_strided_flag);
           return *this;
         };
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
@@ -391,36 +360,49 @@ namespace ALE_X {
         return iterator(*this, itor, segBndry);
       }; // begin()
       //
-      void next(itor_type& itor, itor_type& segBndry) {
-        // See if our advance would lead to breaching the segment boundary:
-        itor_type tmp_itor = ++(itor);
-        if(tmp_itor != segBndry) { 
-          // if not breached the segment boundary, simply use the advanced iterator
-          itor = tmp_itor;
-        }
-        else {
-          // Obtain the current outer key from itor:
-          outer_key_type olow = this->_okex(*itor);
-          // Compute the lower boundary of the new segment
-          // ASSUMPTION: index ordering operator can compare against outer_keys
-          itor = this->_index.upper_bound(olow);
-          // Extract the new outer key
-          olow = this->_okex(*itor);
-          // Now determine the inner lower limit and set the iterator to that limit within the new segment
-          inner_key_type ilow;
-          if(this->_have_ilow) {
-            ilow = this->_ilow;
-            // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-            itor = this->_index.lower_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
-          }
-          else {
-            // the itor is already in the right place; need to extract the ilow key
-            ilow = this->_ikex(*itor);
-          }
+      void next(itor_type& itor, itor_type& segBndry, bool inner_strided = false) {
+        outer_key_type olow;
+        inner_key_type ilow;
+        // If iteration over inner keys is to be strided as well, we advance directly to the segment boundary.
+        // Effectively, we iterate over segments.
+        if(inner_strided) {
+          itor = segBndry;
           // Finally, compute the new segment's boundary
           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+          olow = this->_okex(*itor);
+          ilow = this->_ikex(*itor);
           segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
         }
+        // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
+        else {
+          // See if our advance would lead to breaching the segment boundary:
+          itor_type tmp_itor = ++(itor);
+          if(tmp_itor != segBndry) { 
+            // if not breached the segment boundary, simply use the advanced iterator
+            itor = tmp_itor;
+          }
+          else {
+            // Obtain the current outer key from itor:
+            olow = this->_okex(*itor);
+            // Compute the lower boundary of the new segment
+            // ASSUMPTION: index ordering operator can compare against outer_keys
+            itor = this->_index.upper_bound(olow);
+            // Extract the new outer key
+            olow = this->_okex(*itor);
+            // Now determine the inner lower limit and set the iterator to that limit within the new segment
+            if(this->_have_ilow) {
+              ilow = this->_ilow;
+              // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+              itor = this->_index.lower_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+            }
+            else {
+              // the itor is already in the right place; need to extract the ilow key
+              ilow = this->_ikex(*itor);
+            }
+            // Finally, compute the new segment's boundary
+            // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+            segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+          }
       };// next()
       //
       iterator end() {
@@ -562,8 +544,10 @@ namespace ALE_X {
     rec_set_type;
     //
     // Sequence types
-    template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_>
-    class ArrowSequence : public SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> {
+    template <typename Index_, 
+              typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_, bool inner_strided_flag = false>
+    class ArrowSequence : 
+      public SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
       // ArrowSequence extends StridedIndexSequence with extra iterator methods.
     public:
       typedef SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> super;
@@ -637,6 +621,12 @@ namespace ALE_X {
     //
     // Specialized sequence types
     //
+    typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
+                          ALE::member<rec_type, predicate_type, &rec_type::predicate>,
+                          ALE::identity<rec_type>,
+                          ALE::member<rec_type, target_type, &rec_type::target>, 
+                          true>                                                       BaseSequence;
+
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
                           ALE::member<rec_type, predicate_type, &rec_type::predicate>,
                           ALE::identity<rec_type>,
