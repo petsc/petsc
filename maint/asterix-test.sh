@@ -43,8 +43,11 @@ make PETSC_ARCH=asterix-intel-complex all test
 make PETSC_ARCH=asterix-intel-cxx-prometheus all test
 
 # tops test
-./config/asterix-tops.py
-make PETSC_ARCH=asterix-tops all test
+#./config/asterix-tops.py
+#make PETSC_ARCH=asterix-tops all test
+
+./config/asterix-c89.py
+make PETSC_ARCH=asterix-c89 all test alltests
 
 # basic sun tests
 ./config/asterix-sun.py

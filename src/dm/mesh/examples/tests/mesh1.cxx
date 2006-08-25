@@ -1,6 +1,7 @@
 static char help[] = "Mesh Tests.\n\n";
 
 #include <petsc.h>
+#include <Distribution.hh>
 #include "meshTest.hh"
 #include "../../meshpcice.h"
 
@@ -17,6 +18,9 @@ typedef struct {
   PetscTruth useZeroBase;        // Use zero-based indexing
   PetscTruth interpolate;        // Construct missing elements of the mesh
 } Options;
+
+extern PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode);
+
 
 PetscErrorCode PrintMatrix(MPI_Comm comm, int rank, const std::string& name, const int rows, const int cols, const section_type::value_type matrix[])
 {
@@ -63,6 +67,35 @@ PetscErrorCode GeometryTest(const Obj<section_type>& coordinates, Options *optio
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "AllocationTest"
+PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
+{
+  std::string                           name("coordinates");
+  const Obj<ALE::Mesh::numbering_type>& order   = mesh->getGlobalOrder(name);
+  const Obj<ALE::Mesh::section_type>&   section = mesh->getSection(name);
+  Mat                                   A;
+  PetscErrorCode                        ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(mesh->comm(), &A);CHKERRQ(ierr);
+  ierr = MatSetSizes(A, order->getLocalSize(), order->getLocalSize(), order->getGlobalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
+  ierr = preallocateMatrix(mesh.objPtr, section, order, A);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::topology_type::label_sequence>& elements = mesh->getTopologyNew()->heightStratum(0, 0);
+  int          size       = options->dim*options->dim*9;
+  PetscScalar *elementMat = new PetscScalar[size];
+
+  for(int i = 0; i < size; ++i) elementMat[i] = 1.0;
+  for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+    ierr = updateOperator(A, section->getAtlas(), order, *e_iter, elementMat, ADD_VALUES);CHKERRQ(ierr);
+  }
+  ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
@@ -103,7 +136,9 @@ int main(int argc, char *argv[])
     if (options.debug) {
       mesh->getTopologyNew()->getPatch(0)->view("Mesh");
     }
+    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(mesh);
     ierr = GeometryTest(mesh->getSection("coordinates"), &options);CHKERRQ(ierr);
+    ierr = AllocationTest(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

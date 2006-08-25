@@ -1,5 +1,6 @@
  
 #include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
+#include <Distribution.hh>
 #include "src/dm/mesh/meshvtk.h"
 #include "src/dm/mesh/meshpcice.h"
 #include "src/dm/mesh/meshpylith.h"
@@ -1003,7 +1004,8 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "preallocateMatrix"
 PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::section_type>& field, const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder, Mat A)
 {
-  const ALE::Obj<ALE::Mesh::sieve_type>     graph = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
+  const ALE::Obj<ALE::Mesh::sieve_type>     serialGraph   = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
+  const ALE::Obj<ALE::Mesh::sieve_type>     parallelGraph = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
   const ALE::Mesh::section_type::patch_type patch = 0;
   const ALE::Obj<ALE::Mesh::sieve_type>&    sieve = mesh->getTopologyNew()->getPatch(patch);
   PetscInt       numLocalRows, firstRow, lastRow;
@@ -1020,9 +1022,10 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
   for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
 
-    graph->addCone(sieve->cone(sieve->support(point)), point);
+    serialGraph->addCone(sieve->cone(sieve->support(point)), point);
   }
   /* Distribute adjacency graph */
+  ALE::New::Distribution<serialGraph::topology_type>::scatterSieve(serialGraph, parallelGraph);
   /* Read out adjacency graph */
   ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
@@ -1047,10 +1050,10 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
       }
     }
   }
-  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1,0 +1,30 @@
+#!ccaffeine bootstrap file. 
+# ------- don't change anything ABOVE this line.-------------
+path set @PETSC_LIB_DIR@/cca
+
+repository get-global TOPS.UnstructuredSolver
+repository get-global Ex4.System
+repository get-global Ex4.SystemProxy
+
+instantiate TOPS.UnstructuredSolver solver
+instantiate Ex4.System system
+instantiate Ex4.SystemProxy systemProxy
+
+# Connect system provides ports to systemProxy uses ports
+connect systemProxy u_proxy_TOPS.System.Initialize.Once system TOPS.System.Initialize.Once
+connect systemProxy u_proxy_TOPS.System.Compute.Matrix system TOPS.System.Compute.Matrix
+connect systemProxy u_proxy_TOPS.System.Compute.RightHandSide system TOPS.System.Compute.RightHandSide
+
+# Connect solver uses ports to the corresponding system proxy provides ports
+connect solver TOPS.System.Initialize.Once systemProxy TOPS.System.Initialize.Once
+connect solver TOPS.System.Compute.Matrix systemProxy TOPS.System.Compute.Matrix
+connect solver TOPS.System.Compute.RightHandSide systemProxy TOPS.System.Compute.RightHandSide
+
+# Connect system uses ports to the corresponding solver provides ports
+connect system TOPS.Unstructured.Solver solver TOPS.Unstructured.Solver
+
+parameter solver tops_options options "-ksp_monitor"
+
+go system DoSolve
+
+quit
