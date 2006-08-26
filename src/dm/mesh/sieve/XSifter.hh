@@ -646,6 +646,14 @@ namespace ALE_X {
       this->cone(t,cseq);
       return cseq;
     };
+    void base(BaseSequence& seq) {
+      seq.reset(*this, ::boost::multi_index::get<UpwardTag>(this->_rec_set));
+    };
+    BaseSequence& base() {
+      static BaseSequence bseq;
+      this->base(t,bseq);
+      return bseq;
+    };
     
   protected:
     // set of arrow records
