@@ -57,21 +57,21 @@ namespace ALE_X {
       // Modifying
       struct sourceChanger {
         sourceChanger(const source_type& newSource) : _newSource(newSource) {};
-        void operator()(arrow_type& a) {a.source = this->_newSource;}
+        void operator()(arrow_type& a) {a._source = this->_newSource;}
       private:
         source_type _newSource;
       };
       //
       struct targetChanger {
         targetChanger(const target_type& newTarget) : _newTarget(newTarget) {};
-        void operator()(arrow_type& a) { a.target = this->_newTarget;}
+        void operator()(arrow_type& a) { a._target = this->_newTarget;}
       private:
         const target_type _newTarget;
       };
       //
       struct colorChanger {
         colorChanger(const color_type& newColor) : _newColor(newColor) {};
-        void operator()(arrow_type& a) { a.color = this->_newColor;}
+        void operator()(arrow_type& a) { a._color = this->_newColor;}
       private:
         const color_type _newColor;
       };
@@ -279,7 +279,7 @@ namespace ALE_X {
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
-        virtual const value_type  operator*() const {_ex(*(this->_itor));};
+        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
         virtual iterator   operator++() {
           this->_sequence.next(this->_itor, this->_segBndry, inner_strided_flag);
           return *this;
@@ -583,9 +583,9 @@ namespace ALE_X {
       class iterator : public super::iterator {
       public:
         iterator(const typename super::iterator& super_iter) : super::iterator(super_iter) {};
-        virtual const source_type& source() const {return this->_itor->source;};
-        virtual const color_type&  color()  const {return this->_itor->color;};
-        virtual const target_type& target() const {return this->_itor->target;};
+        virtual const source_type& source() const {return this->_itor->_source;};
+        virtual const color_type&  color()  const {return this->_itor->_color;};
+        virtual const target_type& target() const {return this->_itor->_target;};
         virtual const arrow_type&  arrow()  const {return *(this->_itor);};
       };
     protected:
@@ -648,15 +648,17 @@ namespace ALE_X {
     // Specialized sequence types
     //
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, rec_type::predicate>,
+                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
                           ::boost::multi_index::identity<rec_type>,
-                          ::boost::multi_index::const_mem_fun<rec_type, target_type, rec_type::target>, 
-                          true>                                                       BaseSequence;
+                          ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>, 
+                          true>                                                       
+    BaseSequence;
 
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, rec_type::predicate>,
+                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
                           ::boost::multi_index::identity<rec_type>,
-                          ::boost::multi_index::const_mem_fun<rec_type, source_type, rec_type::source> >     ConeSequence;
+                          ::boost::multi_index::const_mem_fun<rec_type, source_type, &rec_type::source> >     
+    ConeSequence;
     //
     // Extended interface
     //
