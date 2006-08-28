@@ -1,12 +1,12 @@
 #ifndef included_ALE_Sifter_hh
 #define included_ALE_Sifter_hh
 
-/*
+
 #include <boost/multi_index_container.hpp>
-#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/key_extractors.hpp>
 #include <boost/multi_index/ordered_index.hpp>
 #include <boost/multi_index/composite_key.hpp>
-*/
+
 #include <iostream>
 
 // ALE extensions
@@ -15,19 +15,7 @@
 #include <ALE.hh>
 #endif
 
-namespace ALE {
-  //
-  // Member extractors (based on boost::multi_index)
-  //
-  template <typename Rec_>
-  struct identity : public ::boost::multi_index::identity<Rec_> {};
-  
-  template <typename Rec_, typename MemberType_, MemberType_ Rec_::*Member_>
-  struct member : public ::boost::multi_index::member<Rec_, MemberType_, Member_>{};
 
-  template <typename Rec_, typename MemberType_, MemberType_ (Rec_::*MemberFun_)() >
-  struct mem_fun : public ::boost::multi_index::mem_fun<Rec_, MemberType_, MemberFun_>{};
-}
 namespace ALE_X { 
   
   namespace SifterDef {
@@ -37,7 +25,7 @@ namespace ALE_X {
     // Arrow definition
     // 
     template<typename Source_, typename Target_, typename Color_>
-    struct  Arrow { //: public ALE::def::Arrow<Source_, Target_, Color_> {
+    struct  Arrow { 
       typedef Arrow   arrow_type;
       typedef Source_ source_type;
       typedef Target_ target_type;
@@ -46,9 +34,9 @@ namespace ALE_X {
       target_type _target;
       color_type  _color;
       //
-      source_type source(){return this->_source;};
-      target_type target(){return this->_target;};
-      color_type  color(){return this->_color;};
+      source_type source() const {return this->_source;};
+      target_type target() const {return this->_target;};
+      color_type  color()  const {return this->_color;};
       // Basic
       Arrow(const source_type& s, const target_type& t, const color_type& c) : _source(s), _target(t), _color(c) {};
       // Rebinding
@@ -190,8 +178,11 @@ namespace ALE_X {
              typename ColorOrder_  = std::less<typename Arrow_::color_type> >
     struct SourceColorOrder : 
       public RecKeyXXXOrder<Arrow_, 
-                            ALE::mem_fun<Arrow_,typename Arrow_::source_type,Arrow_::source>, SourceOrder_, 
-                            RecKeyOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::color_type,Arrow_::color>, ColorOrder_>
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::source_type, &Arrow_::source>, 
+                            SourceOrder_, 
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::color_type, &Arrow_::color>, 
+                                        ColorOrder_>
       >
     {};
     
@@ -201,8 +192,12 @@ namespace ALE_X {
              typename SourceOrder_ = std::less<typename Arrow_::source_type>
     >
     struct ColorSourceOrder : 
-      public RecKeyXXXOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::color_type,Arrow_::source>, ColorOrder_,
-                              RecKeyOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::source_type,Arrow_::source>, SourceOrder_>
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::color_type, &Arrow_::source>, 
+                            ColorOrder_,
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
+                                        SourceOrder_>
       >
     {};
     //
@@ -210,8 +205,12 @@ namespace ALE_X {
              typename TargetOrder_ = std::less<typename Arrow_::source_type>,
              typename ColorOrder_  = std::less<typename Arrow_::color_type> >
     struct TargetColorOrder : 
-      public RecKeyXXXOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::source_type,Arrow_::source>, TargetOrder_,
-                            RecKeyOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::color_type,Arrow_::color>, ColorOrder_>
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::source_type, &Arrow_::source>, 
+                            TargetOrder_,
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::color_type, &Arrow_::color>, 
+                                        ColorOrder_>
       >
     {};
     //
@@ -219,8 +218,12 @@ namespace ALE_X {
              typename ColorOrder_  = std::less<typename Arrow_::color_type>,
              typename TargetOrder_ = std::less<typename Arrow_::source_type> >
     struct ColorTargetOrder : 
-      public RecKeyXXXOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::color_type,Arrow_::source>, ColorOrder_,
-                              RecKeyOrder<Arrow_, ALE::mem_fun<Arrow_,typename Arrow_::source_type,Arrow_::source>, TargetOrder_>
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::color_type, &Arrow_::source>, 
+                            ColorOrder_,
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
+                                        TargetOrder_>
       >
     {};
   
@@ -235,7 +238,7 @@ namespace ALE_X {
     // the outer keys from a given range and a fixed inner key.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
     template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
-              typename ValueExtractor_ = ALE::identity<typename Index_::value_type>, bool inner_strided_flag = false >
+              typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type>, bool inner_strided_flag = false >
     struct StridedIndexSequence {
       typedef Index_                                           index_type;
       typedef OuterKeyExtractor_                               outer_key_extractor_type;
@@ -505,31 +508,41 @@ namespace ALE_X {
     public:
       // Predicate stored alongside the arrow data
       predicate_type _predicate;
-      predicate_type predicate() {return this->_predicate;};
+      predicate_type predicate() const{return this->_predicate;};
+      source_type    source() const {return this->arrow_type::source();};
+      target_type    target() const {return this->arrow_type::target();};
     };
     //
     typedef Rec                              rec_type;
     //
     // Compound orders are assembled here
     //
-    typedef std::less<typename arrow_type::source_type> source_order_type; 
-    typedef std::less<typename arrow_type::target_type> target_order_type;
+    typedef std::less<typename rec_type::source_type> source_order_type; 
+    typedef std::less<typename rec_type::target_type> target_order_type;
     //
     // Rec 'downward' order type: first order by predicate, then source, then support
     struct downward_order_type : public 
     SifterDef::RecKeyXXXOrder<rec_type, 
-                              typename ALE::mem_fun<rec_type, predicate_type, rec_type::predicate>, predicate_order_type, 
+                              typename ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>, 
+                              predicate_order_type, 
                               SifterDef::RecKeyXXXOrder<rec_type,
-                                                        ALE::mem_fun<rec_type,typename arrow_type::source_type,arrow_type::source>,
+                                                        ::boost::multi_index::const_mem_fun<rec_type,
+                                                                                            typename rec_type::source_type,
+                                                                                            &rec_type::source>,
                                                         source_order_type, ArrowSupportOrder_> > {};
     
     //
     // Rec Cone order
     struct upward_order_type : public 
     SifterDef::RecKeyXXXOrder<rec_type, 
-                              typename ALE::mem_fun<rec_type, predicate_type, rec_type::predicate>, predicate_order_type,
+                              typename ::boost::multi_index::const_mem_fun<rec_type, 
+                                                                           predicate_type, 
+                                                                           &rec_type::predicate>, 
+                              predicate_order_type,
                               SifterDef::RecKeyXXXOrder<rec_type,
-                                                        ALE::mem_fun<rec_type,typename arrow_type::target_type,arrow_type::target>,
+                                                        ::boost::multi_index::const_mem_fun<rec_type,
+                                                                                            typename rec_type::target_type,
+                                                                                            &rec_type::target>,
                                                         target_order_type, ArrowConeOrder_> >
     {};
     
@@ -635,15 +648,15 @@ namespace ALE_X {
     // Specialized sequence types
     //
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ALE::mem_fun<rec_type, predicate_type, rec_type::predicate>,
-                          ALE::identity<rec_type>,
-                          ALE::mem_fun<rec_type, target_type, rec_type::target>, 
+                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, rec_type::predicate>,
+                          ::boost::multi_index::identity<rec_type>,
+                          ::boost::multi_index::const_mem_fun<rec_type, target_type, rec_type::target>, 
                           true>                                                       BaseSequence;
 
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ALE::mem_fun<rec_type, predicate_type, rec_type::predicate>,
-                          ALE::identity<rec_type>,
-                          ALE::mem_fun<rec_type, source_type, rec_type::source> >     ConeSequence;
+                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, rec_type::predicate>,
+                          ::boost::multi_index::identity<rec_type>,
+                          ::boost::multi_index::const_mem_fun<rec_type, source_type, rec_type::source> >     ConeSequence;
     //
     // Extended interface
     //
