@@ -5,10 +5,6 @@
 
 #include "interpreter.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 int PETSC_dpotrf_interface (char *uplo, int *n, double *a, int * lda, int *info);
 
 int PETSC_dsygv_interface (int *itype, char *jobz, char *uplo, int *
@@ -49,9 +45,5 @@ LOBPCG_DestroyRandomContext(void);
 
 int
 PETSCSetupInterpreter( mv_InterfaceInterpreter *ii );
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PETSC_INTERFACE_HEADER */
