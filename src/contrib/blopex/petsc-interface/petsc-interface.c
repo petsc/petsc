@@ -1,3 +1,5 @@
+/* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
+
 #include "petscsys.h"
 #include "petscvec.h"
 #include "petscmat.h"
@@ -141,14 +143,15 @@ PETSC_Axpy( double alpha,
 int
 LOBPCG_InitRandomContext(void)
 {
-  PetscErrorCode ierr;
+	PetscErrorCode ierr;
   /* PetscScalar rnd_bound = 1.0; */
   
-  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&LOBPCG_RandomContext);CHKERRQ (ierr);
-  ierr = PetscRandomSetFromOptions(LOBPCG_RandomContext);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_WORLD,&LOBPCG_RandomContext);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(LOBPCG_RandomContext);CHKERRQ(ierr); 
   
-  ierr = PetscRandomSetInterval(LOBPCG_RandomContext,(PetscScalar)-1.0,(PetscScalar)1.0);CHKERRQ(ierr);
-  return 0;
+  ierr = PetscRandomSetInterval(LOBPCG_RandomContext,(PetscScalar)-1.0,(PetscScalar)1.0);
+	CHKERRQ(ierr);
+	return 0;
 }
 
 int 

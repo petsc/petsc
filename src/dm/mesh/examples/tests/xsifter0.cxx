@@ -9,16 +9,17 @@ typedef ALE_X::Test::sifter_type sifter_type;
 
 #undef __FUNCT__
 #define __FUNCT__ "BasicBaseTest"
-PetscErrorCode BasicBaseTest(const ALE_X::Obj<sifter_type>& sifter, Options options)
+PetscErrorCode BasicBaseTest(const ALE::Obj<sifter_type>& sifter, ALE_X::Test::Options options)
 {
-  ALE_X::Obj<sifter_type::BaseSequence> base = sifter.base();
+  ALE::Obj<sifter_type::BaseSequence> base = sifter->base();
 
   PetscFunctionBegin;
+  ALE::LogStage stage = ALE::LogStageRegister("Base Test");
   ALE::LogStagePush(stage);
   std::cout << "Basic base:" << std::endl;
   sifter_type::BaseSequence::iterator begin, end, itor;
-  begin = base.begin();
-  end   = base.end();
+  begin = base->begin();
+  end   = base->end();
   itor = begin;
   std::cout << *itor;
   for(; itor != end; ++itor) {
@@ -33,7 +34,7 @@ PetscErrorCode BasicBaseTest(const ALE_X::Obj<sifter_type>& sifter, Options opti
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-  Options        options;
+  ALE_X::Test::Options        options;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

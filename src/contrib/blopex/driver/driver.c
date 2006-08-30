@@ -1,6 +1,6 @@
+/* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
+
 /* Program usage:  mpirun -np <procs> driver [-help] [all PETSc options] */ 
-
-
 
 static char help[] = "Test driver for 'abstract lobpcg' in PETSC\n\
 Usage: mpirun -np <procs> driver [-help] [all PETSc options]\n\
@@ -26,8 +26,8 @@ mpirun -np 2 driver -n_eigs 3 -tol 1e-6 -itr 20\n";
 #include "petscksp.h"
 #include "petscda.h"
 #include <assert.h>
-#include "lobpcg.h" 
-#include "src/contrib/blopex/petsc-interface/petsc-interface.h" 
+#include "lobpcg.h"
+#include "src/contrib/blopex/petsc-interface/petsc-interface.h"
 #include "interpreter.h"
 #include "multivector.h"
 
@@ -76,7 +76,7 @@ void Precond_FnSingleVector(void * data, void * x, void * y)
 {
       PetscErrorCode     ierr;
       
-      ierr = KSPSolve(((aux_data_struct*)data)->ksp, x, y);
+      ierr = KSPSolve(((aux_data_struct*)data)->ksp, (Vec)x, (Vec)y);
       assert(!ierr);
 }
 
