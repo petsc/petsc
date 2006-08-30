@@ -9,7 +9,6 @@
 
 #include <iostream>
 
-// ALE extensions
 
 #ifndef  included_ALE_hh
 #include <ALE.hh>
@@ -152,21 +151,22 @@ namespace ALE_X {
       typedef lex1<key_type, key_order_type>                                   order1_type;
       typedef lex2<key_type, rec_type, key_order_type, xxx_order_type>         order2_type;
     private:
+      order1_type        _order1;
+      order2_type        _order2;
+      key_extractor_type _kex;
     public:
       bool operator()(const rec_type& rec1, const rec_type& rec2) { 
-        static order2_type        _order2;
-        static key_extractor_type _kex;
-        return _order2(_kex(rec1),rec1,_kex(rec2),rec2);
+        return this->_order2(this->_kex(rec1),rec1,this->_kex(rec2),rec2);
       };
       template <typename CompatibleKey_>
       bool operator()(const rec_type& rec1, const CompatibleKey_& key) {
         // We want key to be less than any (key, ...)
-        return !_compare1(key,_kex(rec1));
+        return !this->_order1(key,this->_kex(rec1));
       };
       template <typename CompatibleKey_, typename CompatibleXXXKey_>
       bool operator()(const rec_type& rec1, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) {
         // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
-        return !_compare2(keyPair.first,keyPair.second,_kex(rec1),rec1);
+        return !this->_order2(keyPair.first,keyPair.second,this->_kex(rec1),rec1);
       };
     };// class RecKeyXXXOrder
 
@@ -249,6 +249,7 @@ namespace ALE_X {
       typedef typename value_extractor_type::result_type       value_type;
       typedef typename index_type::size_type                   size_type;
       typedef typename index_type::iterator                    itor_type;
+      typedef typename index_type::reverse_iterator            ritor_type;
       //
       class iterator {
       public:
@@ -262,7 +263,7 @@ namespace ALE_X {
         /* value_type defined in the containing StridedIndexSequence */
       protected:
         // Parent sequence
-        sequence_type&  _sequence;
+        sequence_type  *_sequence;
         // Underlying iterator & segment boundary
         itor_type       _itor;
         itor_type       _segBndry;
@@ -272,22 +273,24 @@ namespace ALE_X {
         inner_key_extractor_type _ikex;
         value_extractor_type     _ex;
       public:
-        iterator(sequence_type& sequence, const itor_type& itor, const itor_type& segBndry) : 
+        iterator() : _sequence(NULL) {};
+        iterator(sequence_type *sequence, const itor_type& itor, const itor_type& segBndry) : 
           _sequence(sequence), _itor(itor), _segBndry(segBndry) {};
-        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor),_segBndry(iter.segBndry){};
+        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor),_segBndry(iter._segBndry){};
         virtual ~iterator() {};
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
         virtual const value_type  operator*() const {return _ex(*(this->_itor));};
         virtual iterator   operator++() {
-          this->_sequence.next(this->_itor, this->_segBndry, inner_strided_flag);
+          this->_sequence->next(this->_itor, this->_segBndry, inner_strided_flag);
           return *this;
         };
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
       };// class iterator
     protected:
-      index_type&     _index;
+      index_type      *_index;
+      //
       outer_key_type  _ohigh, _olow;
       bool            _have_olow, _have_ohigh;
       outer_key_type  _ihigh, _ilow;
@@ -299,9 +302,10 @@ namespace ALE_X {
       //
       // Basic interface
       //
+      StridedIndexSequence() : _index(NULL) {};
       StridedIndexSequence(const StridedIndexSequence& seq) : _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
       {};
-      StridedIndexSequence(index_type& index)  :  _index(index) {
+      StridedIndexSequence(index_type *index)  :  _index(index) {
         this->_have_olow = false; this->_have_ohigh = false;
         this->_have_ilow = false; this->_have_ihigh = false;
       };
@@ -321,7 +325,7 @@ namespace ALE_X {
       StridedIndexSequence& operator=(const StridedIndexSequence& seq) {
         copy(seq,*this); return *this;
       };
-      void reset(index_type& index) {
+      void reset(index_type *index) {
         this->_index      = index;
         this->_have_olow  = false;
         this->_have_ohigh = false;
@@ -349,25 +353,25 @@ namespace ALE_X {
       iterator begin() {
         static itor_type itor;
         // Determine the lower outer limit iterator
-        if(this->_have_olow()) {
+        if(this->_have_olow) {
           // ASSUMPTION: index ordering operator can compare against outer_keys
-          this->_itor = this->_index.lower_bound(this->_olow);
+          itor = this->_index->lower_bound(this->_olow);
         }
         else {
-          this->_itor = this->_index.begin();
+          itor = this->_index->begin();
         }
         // Now determine the inner lower limit and set the iterator to that limit within the first segment
         if(this->_have_ilow) {
           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-          itor = this->_index.lower_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ilow));
+          itor = this->_index->lower_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ilow));
         }
         else {
           // the itor is already in the right place: nothing to do
         }  
         // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
         static itor_type segBndry;
-        segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),_ikex(*itor)));
-        return iterator(*this, itor, segBndry);
+        segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ikex(*itor)));
+        return iterator(this, itor, segBndry);
       }; // begin()
       //
       void next(itor_type& itor, itor_type& segBndry, bool inner_strided = false) {
@@ -381,7 +385,7 @@ namespace ALE_X {
           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
           olow = this->_okex(*itor);
           ilow = this->_ikex(*itor);
-          segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+          segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
         }// inner strided
         // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
         else {
@@ -396,14 +400,14 @@ namespace ALE_X {
             olow = this->_okex(*itor);
             // Compute the lower boundary of the new segment
             // ASSUMPTION: index ordering operator can compare against outer_keys
-            itor = this->_index.upper_bound(olow);
+            itor = this->_index->upper_bound(olow);
             // Extract the new outer key
             olow = this->_okex(*itor);
             // Now determine the inner lower limit and set the iterator to that limit within the new segment
             if(this->_have_ilow) {
               ilow = this->_ilow;
               // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-              itor = this->_index.lower_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+              itor = this->_index->lower_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
             }
             else {
               // the itor is already in the right place; need to extract the ilow key
@@ -411,33 +415,43 @@ namespace ALE_X {
             }
             // Finally, compute the new segment's boundary
             // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-            segBndry = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
+            segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
           }
         }// inner not strided
       };// next()
       //
       iterator end() {
-        itor_type itor;
+        static itor_type itor;
+        static ritor_type ritor;
         // Determine the upper outer limit
-        outer_key_type ohigh;
-        if(!this->_have_ohigh) {
-          itor = this->_index.rbegin();
-          ohigh = this->_okex(*itor);
+        static outer_key_type ohigh;
+        if(this->_have_ohigh) {
+          ohigh = this->_ohigh;
+        }
+        else {
+          ritor = this->_index->rbegin();
+          ohigh = this->_okex(*ritor);
         }
         // Determine the inner outer limit
-        inner_key_type ihigh;
+        static inner_key_type ihigh;
         if(this->_have_ihigh) {
           ihigh = this->_ihigh;
           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-          itor = this->_index.upper_bound(ALE::pair<outer_key_type, inner_key_type>(ohigh,ihigh));
+          itor = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(ohigh,ihigh));
         }
         else {
           // ASSUMPTION: index ordering operator can compare against outer_keys
-          itor = this->_index.upper_bound(ohigh);
+          itor = this->_index->upper_bound(ohigh);
         }
         // use segBndry == itor
-        return iterator(*this, itor, itor); 
+        return iterator(this, itor, itor); 
       };// end()
+      //
+      virtual bool contains(const outer_key_type& ok, const inner_key_type& ik) {
+        // FIX: This has to be implemented correctly, using the index ordering operator.
+        //return (this->_index->find(ALE::pair<outer_key_type,inner_key_type>(ok,ik)) != this->_index->end());
+        return true;
+      };
       //
       void setInnerLow(const inner_key_type& ilow) {
         this->_ilow = ilow; this->_have_ilow = true;
@@ -480,8 +494,8 @@ namespace ALE_X {
   //
   // Sifter definition
   template<typename Arrow_, 
-           typename ArrowSupportOrder_= SifterDef::ColorTargetOrder<Arrow_>, 
-           typename ArrowConeOrder_   = SifterDef::ColorSourceOrder<Arrow_>, 
+           typename ArrowSupportOrder_= SifterDef::TargetColorOrder<Arrow_>, 
+           typename ArrowConeOrder_   = SifterDef::SourceColorOrder<Arrow_>, 
            typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
   struct Sifter { // struct Sifter
     //
@@ -508,10 +522,21 @@ namespace ALE_X {
     public:
       // Predicate stored alongside the arrow data
       predicate_type _predicate;
+      // Basic interface
+      Rec(const arrow_type& a) : arrow_type(a) {};
+      Rec(const arrow_type& a, const predicate_type& p) : arrow_type(a), _predicate(p) {};
+      // Extended interface
       predicate_type predicate() const{return this->_predicate;};
       source_type    source() const {return this->arrow_type::source();};
       target_type    target() const {return this->arrow_type::target();};
-    };
+      // Modifier objects
+      struct predicateChanger {
+        predicateChanger(const predicate_type& newPredicate) : _newPredicate(newPredicate) {};
+        void operator()(Rec& r) { r._predicate = this->_newPredicate;}
+      private:
+        const predicate_type _newPredicate;
+      };
+    };// struct Rec
     //
     typedef Rec                              rec_type;
     //
@@ -573,15 +598,16 @@ namespace ALE_X {
       public SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
       // ArrowSequence extends StridedIndexSequence with extra iterator methods.
     public:
-      typedef SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_> super;
-      typedef Sifter                                                                                           container_type;
-      typedef typename super::index_type                                                                       index_type;
-      typedef typename super::outer_key_type                                                                   outer_key_type;
-      typedef typename super::inner_key_type                                                                   inner_key_type;
+      typedef SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
+      typedef Sifter                                                                                                               container_type;
+      typedef typename super::index_type                                                                                           index_type;
+      typedef typename super::outer_key_type                                                                                       outer_key_type;
+      typedef typename super::inner_key_type                                                                                       inner_key_type;
       
       // Need to extend the inherited iterators to be able to extract arrow color
       class iterator : public super::iterator {
       public:
+        iterator() : super::iterator() {};
         iterator(const typename super::iterator& super_iter) : super::iterator(super_iter) {};
         virtual const source_type& source() const {return this->_itor->_source;};
         virtual const color_type&  color()  const {return this->_itor->_color;};
@@ -589,13 +615,14 @@ namespace ALE_X {
         virtual const arrow_type&  arrow()  const {return *(this->_itor);};
       };
     protected:
-      container_type _container;
+      container_type *_container;
     public:
       //
       // Basic ArrowSequence interface
       //
+      ArrowSequence() : super(), _container(NULL) {};
       ArrowSequence(const ArrowSequence& seq) : super(seq), _container(seq._container) {};
-      ArrowSequence(const container_type& container, index_type& index) : super(index), _container(container) {};
+      ArrowSequence(container_type *container, index_type *index) : super(index), _container(container) {};
       virtual ~ArrowSequence() {};
       void copy(const ArrowSequence& seq, ArrowSequence& cseq) {
         super::copy(seq,cseq);
@@ -604,20 +631,19 @@ namespace ALE_X {
       ArrowSequence& operator=(const ArrowSequence& seq) {
         copy(seq,*this); return *this;
       };
-      void reset(const container_type& container, index_type& index) {
+      void reset(container_type *container, index_type *index) {
         this->super::reset(index);
         this->_container = container;
       };
       //
       // Extended ArrowSequence interface
       //
-      
       virtual iterator begin() {
-        return super::begin();
+        return this->super::begin();
       };
       //
       virtual iterator end() {
-        return super::end();
+        return this->super::end();
       };
       //
       template<typename ostream_type>
@@ -636,12 +662,9 @@ namespace ALE_X {
         os << " ]" << std::endl;
       };
       void addArrow(const arrow_type& a) {
-        this->_container.addArrow(a);
+        this->_container->addArrow(a);
       };
       //
-      virtual bool contains(const outer_key_type& ok, const inner_key_type& ik) {
-        return (this->_index.find(ALE::pair<outer_key_type,inner_key_type>(ok,ik)) != this->_index.end());
-      };
     };// class ArrowSequence    
       
     //
@@ -649,24 +672,24 @@ namespace ALE_X {
     //
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
                           ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
-                          ::boost::multi_index::identity<rec_type>,
+                          ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>,
                           ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>, 
                           true>                                                       
     BaseSequence;
 
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
                           ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
-                          ::boost::multi_index::identity<rec_type>,
+                          ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>,
                           ::boost::multi_index::const_mem_fun<rec_type, source_type, &rec_type::source> >     
     ConeSequence;
     //
     // Extended interface
     //
     void addArrow(const arrow_type& a) {
-      this->_rec_set.insert(a);
+      this->_rec_set.insert(rec_type(a));
     };
     void cone(const target_type& t, ConeSequence& seq) {
-      seq.reset(*this, ::boost::multi_index::get<UpwardTag>(this->_rec_set));
+      seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set));
       seq.setInnerLimits(t,t);
     };
     ConeSequence& cone(const target_type& t) {
@@ -675,7 +698,7 @@ namespace ALE_X {
       return cseq;
     };
     void base(BaseSequence& seq) {
-      seq.reset(*this, ::boost::multi_index::get<UpwardTag>(this->_rec_set));
+      seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set));
     };
     BaseSequence& base() {
       static BaseSequence bseq;
