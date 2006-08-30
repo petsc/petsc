@@ -74,13 +74,89 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   const Obj<ALE::Mesh::numbering_type>& order   = mesh->getGlobalOrder(name);
   const Obj<ALE::Mesh::section_type>&   section = mesh->getSection(name);
   Mat                                   A;
+  PetscInt                              numLocalRows, firstRow, lastRow;
+  PetscInt                             *dnz, *onz;
   PetscErrorCode                        ierr;
 
   PetscFunctionBegin;
   ierr = MatCreate(mesh->comm(), &A);CHKERRQ(ierr);
   ierr = MatSetSizes(A, order->getLocalSize(), order->getLocalSize(), order->getGlobalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-  ierr = preallocateMatrix(mesh.objPtr, section, order, A);CHKERRQ(ierr);
+  //ierr = preallocateMatrix(mesh.objPtr, section, order, A);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::sieve_type>    adjGraph    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
+  const Obj<ALE::Mesh::topology_type> adjTopology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug);
+  const ALE::Mesh::section_type::patch_type patch = 0;
+
+  adjTopology->setPatch(patch, adjGraph);
+  ierr = MatGetLocalSize(A, &numLocalRows, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(A, &firstRow, &lastRow);CHKERRQ(ierr);
+  ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
+  // Create local adjacency graph
+  //   In general, we need to FIAT inof that attaches dual basis vectors to sieve points
+  const ALE::Mesh::atlas_type::chart_type& chart = section->getAtlas()->getChart(patch);
+  const Obj<ALE::Mesh::sieve_type>&        sieve = mesh->getTopologyNew()->getPatch(patch);
+
+  for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
+
+    adjGraph->addCone(sieve->cone(sieve->support(point)), point);
+  }
+  // Distribute adjacency graph
+  const Obj<ALE::Mesh::numbering_type>&    vNumbering        = mesh->getNumbering(0);
+  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = vNumbering->getSendOverlap();
+  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = vNumbering->getRecvOverlap();
+  const Obj<ALE::Mesh::send_overlap_type>  nbrSendOverlap    = new ALE::Mesh::send_overlap_type(mesh->comm(), mesh->debug);
+  const Obj<ALE::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALE::Mesh::recv_overlap_type(mesh->comm(), mesh->debug);
+  const Obj<ALE::Mesh::send_section_type>  sendSection       = new ALE::Mesh::send_section_type(mesh->comm(), mesh->debug);
+  const Obj<ALE::Mesh::recv_section_type>  recvSection       = new ALE::Mesh::recv_section_type(mesh->comm(), sendSection->getTag(), mesh->debug);
+
+  ALE::New::Distribution<ALE::Mesh::topology_type>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjTopology, sendSection, recvSection);
+  adjTopology->view("Adjacency topology");
+  vNumbering->view("Global vertex numbering");
+  order->view("Global vertex order");
+  // Distribute indices for new points
+  ALE::New::Distribution<ALE::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
+  order->setSendOverlap(nbrSendOverlap);
+  order->setRecvOverlap(nbrRecvOverlap);
+  nbrSendOverlap->view("Neighbor Send Overlap");
+  nbrRecvOverlap->view("Neighbor Receive Overlap");
+  order->complete(true);
+  order->view("Global vertex order after completion");
+  // Read out adjacency graph
+  const ALE::Obj<ALE::Mesh::sieve_type> graph = adjTopology->getPatch(patch);
+
+  ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
+
+    if (order->isLocal(point)) {
+      const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
+      const int                                               row   = order->getIndex(point);
+      const int                                               rSize = section->getAtlas()->getFiberDimension(patch, point);
+
+      for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
+        const ALE::Mesh::atlas_type::point_type& neighbor = *v_iter;
+        const int                                col      = order->getIndex(neighbor);
+        const int                                cSize    = section->getAtlas()->getFiberDimension(patch, neighbor);
+        
+        if (col >= firstRow && col < lastRow) {
+          for(int r = 0; r < rSize; ++r) {dnz[row - firstRow + r] += cSize;}
+        } else {
+          for(int r = 0; r < rSize; ++r) {onz[row - firstRow + r] += cSize;}
+        }
+      }
+    }
+  }
+  int rank = mesh->commRank();
+  for(int r = 0; r < numLocalRows; r++) {
+    std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
+  }
+  ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
+  // Fill matrix
   const Obj<ALE::Mesh::topology_type::label_sequence>& elements = mesh->getTopologyNew()->heightStratum(0, 0);
   int          size       = options->dim*options->dim*9;
   PetscScalar *elementMat = new PetscScalar[size];

@@ -639,14 +639,15 @@ namespace ALE {
       const Obj<topology_type>& getTopology() const {return this->_topology;};
       void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
       void copy(const Obj<Atlas>& atlas) {
-        const typename topology_type::sheaf_type& patches = atlas->getTopology()->getPatches();
+        const typename topology_type::sheaf_type& sheaf = atlas->getTopology()->getPatches();
 
-        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-          for(typename chart_type::const_iterator c_iter = p_iter->second.begin(); c_iter != p_iter->second.end(); ++c_iter) {
-            this->setFiberDimension(p_iter->first, c_iter->first, c_iter->second);
+        for(typename topology_type::sheaf_type::const_iterator s_iter = sheaf.begin(); s_iter != sheaf.end(); ++s_iter) {
+          const chart_type& chart = atlas->getChart(s_iter->first);
+
+          for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            this->setFiberDimension(s_iter->first, c_iter->first, c_iter->second.index);
           }
         }
-        this->orderPatches();
       };
       void copyByDepth(const Obj<Atlas>& atlas) {
         this->copyByDepth(atlas, atlas->getTopology());
@@ -863,12 +864,15 @@ namespace ALE {
       typedef std::map<patch_type, value_type *> values_type;
     protected:
       Obj<atlas_type> _atlas;
+      Obj<atlas_type> _atlasNew;
       values_type     _arrays;
+      typename atlas_type::indices_type _newPoints;
     public:
       Section(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-        this->_atlas = new atlas_type(comm, debug);
+        this->_atlas    = new atlas_type(comm, debug);
+        this->_atlasNew = NULL;
       };
-      Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {};
+      Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {};
       virtual ~Section() {
         for(typename values_type::iterator a_iter = this->_arrays.begin(); a_iter != this->_arrays.end(); ++a_iter) {
           delete [] a_iter->second;
@@ -1026,10 +1030,10 @@ namespace ALE {
       void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
         this->checkPatch(patch);
         const index_type& ind = this->_atlas->getIndex(patch, p);
-        value_type       *a   = &(this->_arrays[patch][ind.first]);
+        value_type       *a   = &(this->_arrays[patch][ind.prefix]);
 
         // Using the index structure explicitly
-        for(int i = 0; i < ind.second; ++i) {
+        for(int i = 0; i < ind.index; ++i) {
           a[i] = v[i];
         }
       };
@@ -1074,6 +1078,44 @@ namespace ALE {
             }
           }
         }
+      };
+    public: // Resizing
+      void addPoint(const patch_type& patch, const point_type& point, const int size) {
+        const typename atlas_type::chart_type& chart = this->_atlas->getChart(patch);
+
+        if (chart.find(point) == chart.end()) {
+          if (this->_atlasNew.isNull()) {
+            this->_atlasNew = new atlas_type(this->_atlas->getTopology());
+            this->_atlasNew->copy(this->_atlas);
+          }
+          this->_atlasNew->setFiberDimension(patch, point, size);
+        }
+      };
+      void reallocate() {
+        if (this->_atlasNew.isNull()) return;
+        this->_atlasNew->orderPatches();
+        const typename atlas_type::topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
+
+        for(typename atlas_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const typename atlas_type::patch_type& patch    = p_iter->first;
+          const typename atlas_type::chart_type& chart    = this->_atlas->getChart(patch);
+          const value_type                      *array    = this->_arrays[patch];
+          value_type                            *newArray = new value_type[this->_atlasNew->size(patch)];
+
+          for(typename atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            const int& size      = c_iter->second.index;
+            const int& offset    = c_iter->second.prefix;
+            const int& newOffset = this->_atlasNew->getIndex(patch, c_iter->first).prefix;
+
+            for(int i = 0; i < size; ++i) {
+              newArray[newOffset+i] = array[offset+i];
+            }
+          }
+          delete [] this->_arrays[patch];
+          this->_arrays[patch] = newArray;
+        }
+        this->_atlas    = this->_atlasNew;
+        this->_atlasNew = NULL;
       };
     public:
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {

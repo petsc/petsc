@@ -1129,9 +1129,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     template<class sourceInputSequence> 
     void 
     addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
-      if (debug) {std::cout << "Adding a cone " << std::endl;}
+      if (debug > 1) {std::cout << "Adding a cone " << std::endl;}
       for(typename sourceInputSequence::iterator iter = sources->begin(); iter != sources->end(); ++iter) {
-        if (debug) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
+        if (debug > 1) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
         this->addArrow(*iter, target, color);
       }
     };

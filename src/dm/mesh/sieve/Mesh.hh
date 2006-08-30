@@ -16,7 +16,7 @@ namespace ALE {
     typedef ALE::New::Atlas<topology_type, ALE::Point>  atlas_type;
     typedef ALE::New::Section<atlas_type, double>       section_type;
     typedef std::map<std::string, Obj<section_type> >   SectionContainer;
-    typedef ALE::New::Numbering<topology_type>          numbering_type;
+    typedef ALE::New::NewNumbering<atlas_type>          numbering_type;
     typedef std::map<int, Obj<numbering_type> >         NumberingContainer;
     typedef std::map<std::string, Obj<numbering_type> > OrderContainer;
     typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
@@ -24,6 +24,9 @@ namespace ALE {
     typedef ALE::New::Section<atlas_type, ALE::pair<point_type, split_value> > split_section_type;
     typedef ALE::New::Completion<topology_type, point_type>::send_overlap_type send_overlap_type;
     typedef ALE::New::Completion<topology_type, point_type>::recv_overlap_type recv_overlap_type;
+    typedef ALE::New::Completion<topology_type, point_type>::atlas_type        comp_atlas_type;
+    typedef ALE::New::OverlapValues<send_overlap_type, comp_atlas_type, point_type> send_section_type;
+    typedef ALE::New::OverlapValues<recv_overlap_type, comp_atlas_type, point_type> recv_section_type;
     int debug;
   private:
     Obj<sieve_type>            topology;
@@ -83,7 +86,7 @@ namespace ALE {
     };
     const Obj<numbering_type>& getNumbering(const int depth) {
       if (this->numberings.find(depth) == this->numberings.end()) {
-        Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
+        Obj<numbering_type> numbering = new numbering_type(new atlas_type(this->getTopologyNew()), "depth", depth);
         numbering->construct();
 
         std::cout << "Creating new numbering: " << depth << std::endl;
@@ -93,7 +96,7 @@ namespace ALE {
     };
     const Obj<numbering_type>& getLocalNumbering(const int depth) {
       if (this->localNumberings.find(depth) == this->localNumberings.end()) {
-        Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
+        Obj<numbering_type> numbering = new numbering_type(new atlas_type(this->getTopologyNew()), "depth", depth);
         numbering->constructLocalOrder();
 
         std::cout << "Creating new local numbering: " << depth << std::endl;

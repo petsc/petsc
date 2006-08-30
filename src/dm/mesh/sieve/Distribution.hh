@@ -421,16 +421,19 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "createScatterOverlap"
+      // This is the overlap for initially partitioned things where everyone communicates
+      //   We also need 0 --> everybody
+      //   An initial phase to figure out the selective overlap
       static void createScatterOverlap(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
         const int rank = sendOverlap->commRank();
 
-        std::cout << "Rank: " << rank << " Size: " << sendOverlap->commSize() << std::endl;
         for(int p = 0; p < sendOverlap->commSize(); p++) {
           if (p != rank) {
-            // There are arrows to each rank whose color is the partition point (also the rank)
+            // Send arrow:   local point --- (remote point) ---> remote rank 
+            //   There are arrows to each rank whose color is the partition point (also the rank)
             sendOverlap->addCone(p, p, p);
-            //  The arrow is from rank 0 with partition point 0
-            recvOverlap->addCone(p, rank, rank);
+            // Receive arrow:   remote rank --- (remote point) ---> local point
+            recvOverlap->addCone(p, p, p);
           }
         }
         if (sendOverlap->debug) {sendOverlap->view(std::cout, "Send overlap for sieve scatter");}
@@ -492,15 +495,48 @@ namespace ALE {
             int c = 0;
 
             for(int p = 0; p < size; p++) {
-              sieve->addArrow(points[p], *b_iter, c++);
+              //sieve->addArrow(points[p], *b_iter, c++);
+              sieve->addArrow(points[p], *b_iter, c);
             }
           }
         }
-        sieve->stratify();
-        topology->stratify();
       }
       #undef __FUNCT__
-      #define __FUNCT__ "scatterSieve"
+      #define __FUNCT__ "updateOverlap"
+      template<typename SendSection, typename RecvSection>
+      static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+        const typename SendSection::topology_type::sheaf_type& sendRanks = sendSection->getAtlas()->getTopology()->getPatches();
+        const typename RecvSection::topology_type::sheaf_type& recvRanks = recvSection->getAtlas()->getTopology()->getPatches();
+
+        for(typename SendSection::topology_type::sheaf_type::const_iterator p_iter = sendRanks.begin(); p_iter != sendRanks.end(); ++p_iter) {
+          int                                                                       rank = p_iter->first;
+          const Obj<typename SendSection::topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+
+          for(typename SendSection::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename SendSection::value_type *points = sendSection->restrict(rank, *b_iter);
+            int size = sendSection->getAtlas()->getFiberDimension(rank, *b_iter);
+
+            for(int p = 0; p < size; p++) {
+              sendOverlap->addArrow(points[p], rank, points[p]);
+            }
+          }
+        }
+        for(typename RecvSection::topology_type::sheaf_type::const_iterator p_iter = recvRanks.begin(); p_iter != recvRanks.end(); ++p_iter) {
+          int                                                                       rank = p_iter->first;
+          const Obj<typename RecvSection::topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+
+          for(typename RecvSection::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename RecvSection::value_type *points = recvSection->restrict(rank, *b_iter);
+            int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+
+            for(int p = 0; p < size; p++) {
+              recvOverlap->addArrow(rank, points[p], points[p]);
+            }
+          }
+        }
+      }
+      #undef __FUNCT__
+      #define __FUNCT__ "scatterTopology"
       static void scatterTopology(const Obj<topology_type>& oldTopology, const int numElements, const short assignment[], Obj<topology_type>& newTopology) {
         if (oldTopology->commSize() == 1) {
           newTopology = oldTopology;
@@ -517,7 +553,7 @@ namespace ALE {
         typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
         typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, value_type> recv_section_type;
         const Obj<send_section_type> sendSection = new send_section_type(oldTopology->comm(), oldTopology->debug());
-        const Obj<recv_section_type> recvSection = new recv_section_type(oldTopology->comm(), oldTopology->debug());
+        const Obj<recv_section_type> recvSection = new recv_section_type(oldTopology->comm(), sendSection->getTag(), oldTopology->debug());
 
         // Create Overlap - Could be calculated from partition, but would need communication
         createScatterOverlap(sendOverlap, recvOverlap);
@@ -539,6 +575,35 @@ namespace ALE {
         sectionCompletion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
         // Update sieve
         updateSieve(recvSection, newTopology);
+        newSieve->stratify();
+        newTopology->stratify();
+      };
+      static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<topology_type>& topology) {
+        typedef typename Mesh::point_type                                                   value_type;
+        typedef typename ALE::New::Completion<typename Mesh::topology_type, value_type>     completion_type;
+        typedef typename completion_type::atlas_type                                        atlas_type;
+        typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, value_type> recv_section_type;
+        const Obj<send_section_type> sendSection = new send_section_type(topology->comm(), topology->debug());
+        const Obj<recv_section_type> recvSection = new recv_section_type(topology->comm(), sendSection->getTag(), topology->debug());
+
+        coneCompletion(sendOverlap, recvOverlap, topology, sendSection, recvSection);
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "coneCompletion"
+      template<typename SendSection, typename RecvSection>
+      static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<topology_type>& topology, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+        if (sendOverlap->commSize() == 1) return;
+        typedef typename ALE::New::Completion<typename Mesh::topology_type, typename Mesh::point_type> completion_type;
+
+        // Distribute cones
+        const typename topology_type::patch_type               patch           = 0;
+        const Obj<completion_type::topology_type>              secTopology     = completion_type::createSendTopology(sendOverlap);
+        const Obj<typename completion_type::cone_size_section> coneSizeSection = new typename completion_type::cone_size_section(secTopology, topology->getPatch(patch));
+        const Obj<typename completion_type::cone_section>      coneSection     = new typename completion_type::cone_section(secTopology, topology->getPatch(patch));
+        sectionCompletion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+        // Update cones
+        updateSieve(recvSection, topology);
       };
     };
   }
