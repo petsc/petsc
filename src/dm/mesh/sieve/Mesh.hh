@@ -97,7 +97,7 @@ namespace ALE {
     const Obj<numbering_type>& getLocalNumbering(const int depth) {
       if (this->localNumberings.find(depth) == this->localNumberings.end()) {
         Obj<numbering_type> numbering = new numbering_type(new atlas_type(this->getTopologyNew()), "depth", depth);
-        numbering->constructLocalOrder();
+        numbering->constructLocalOrder(numbering->getSendOverlap());
 
         std::cout << "Creating new local numbering: " << depth << std::endl;
         this->localNumberings[depth] = numbering;

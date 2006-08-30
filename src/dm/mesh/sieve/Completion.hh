@@ -828,16 +828,6 @@ namespace ALE {
       void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
       const Obj<recv_overlap_type>& getRecvOverlap() {return this->_recvOverlap;};
       void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
-      //const Obj<send_section_type>& getSendSection() {return this->_sendSection;};
-      //void setSendSection(const Obj<send_section_type>& section) {this->_sendSection = section;};
-      //const Obj<recv_section_type>& getRecvSection() {return this->_recvSection;};
-      //void setRecvSection(const Obj<recv_section_type>& section) {this->_recvSection = section;};
-      void copyCommunication(const Obj<NewNumbering<atlas_type> >& numbering) {
-        this->setSendOverlap(numbering->getSendOverlap());
-        this->setRecvOverlap(numbering->getRecvOverlap());
-        //this->setSendSection(numbering->getSendSection());
-        //this->setRecvSection(numbering->getRecvSection());
-      }
     public: // Sizes
       int        getLocalSize() const {return this->_localSize;};
       void       setLocalSize(const int size) {this->_localSize = size;};
@@ -956,7 +946,7 @@ namespace ALE {
           this->_recvOverlap->view("Receive overlap");
         }
       };
-      void constructLocalOrder() {
+      void constructLocalOrder(const Obj<send_overlap_type>& sendOverlap) {
         const patch_type patch = 0;
         const Obj<typename topology_type::label_sequence>& points = this->getAtlas()->getTopology()->getLabelStratum(patch, this->_label, this->_value);
 
@@ -967,14 +957,14 @@ namespace ALE {
         for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
           int val;
 
-          if (this->_sendOverlap->capContains(*l_iter)) {
-            const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = this->_sendOverlap->support(*l_iter);
-            int minRank = this->_sendOverlap->commSize();
+          if (sendOverlap->capContains(*l_iter)) {
+            const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
+            int minRank = sendOverlap->commSize();
 
             for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
               if (*p_iter < minRank) minRank = *p_iter;
             }
-            if (minRank < this->_sendOverlap->commRank()) {
+            if (minRank < sendOverlap->commRank()) {
               val = -1;
             } else {
               val = this->_localSize++;
@@ -990,12 +980,14 @@ namespace ALE {
           this->_invOrder[this->getIndex(p_iter->first)] = p_iter->first;
         }
       };
+      // Calculate process offsets
       void calculateOffsets() {
         MPI_Allgather(&this->_localSize, 1, MPI_INT, &(this->_offsets[1]), 1, MPI_INT, this->comm());
         for(int p = 2; p <= this->commSize(); p++) {
           this->_offsets[p] += this->_offsets[p-1];
         }
       };
+      // Update local offsets based upon process offsets
       void updateOrder() {
         const patch_type patch = 0;
         const Obj<typename topology_type::label_sequence>& points = this->getAtlas()->getTopology()->getLabelStratum(patch, this->_label, this->_value);
@@ -1007,7 +999,7 @@ namespace ALE {
           }
         }
       };
-      void complete(bool allowDuplicates = false) {
+      void complete(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
         typedef typename Completion<topology_type, int>::atlas_type atlas_type;
         typedef typename ALE::New::OverlapValues<send_overlap_type, atlas_type, value_type> send_section_type;
         typedef typename ALE::New::OverlapValues<recv_overlap_type, atlas_type, value_type> recv_section_type;
@@ -1018,15 +1010,15 @@ namespace ALE {
         Obj<NewNumbering<Atlas_> > filler(this);
         (*filler.refCnt)++;
 
-        Completion<topology_type, int>::completeSection(this->_sendOverlap, this->_recvOverlap, sizer, filler, sendSection, recvSection);
-        Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = this->_recvOverlap->base();
+        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
+        Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
           this->addPoint(0, *r_iter, 1);
         }
         this->reallocate();
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
-          const Obj<typename recv_overlap_type::traits::coneSequence>& recvPatches = this->_recvOverlap->cone(*r_iter);
+          const Obj<typename recv_overlap_type::traits::coneSequence>& recvPatches = recvOverlap->cone(*r_iter);
     
           for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
             const typename recv_section_type::value_type *values = recvSection->restrict(*p_iter, *r_iter);
@@ -1050,10 +1042,13 @@ namespace ALE {
       };
       void construct() {
         this->constructOverlap();
-        this->constructLocalOrder();
+        this->construct(this->_sendOverlap, this->_recvOverlap);
+      };
+      void construct(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+        this->constructLocalOrder(sendOverlap);
         this->calculateOffsets();
         this->updateOrder();
-        this->complete();
+        this->complete(sendOverlap, recvOverlap);
       };
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
         ostringstream txt;
@@ -1435,15 +1430,15 @@ namespace ALE {
       template<typename Atlas, typename Numbering>
       static Obj<Numbering> createIndices(const Obj<Atlas>& atlas, const Obj<Numbering>& numbering) {
         Obj<Numbering> globalOffsets = new Numbering(new Atlas(numbering->getTopology()), numbering->getLabel(), numbering->getValue());
-        typename Atlas::patch_type patch = 0;
-        // FIX: I think we can just generalize Numbering to take a stride based upon an Atlas
-        //        However, then we also want a lightweight way of creating one numbering from another I think (maybe constructor?)
-        // Construct local offsets
+
+        // Create the local order
+        //   Here, this follows exactly the prescription for Numbering if we were to take into account sizes from the Atlas
+        //   Also, the meaning of local size is adjusted
+        const typename Atlas::patch_type patch = 0;
         const Obj<typename Numbering::topology_type::label_sequence>& points = numbering->getTopology()->getLabelStratum(patch, numbering->getLabel(), numbering->getValue());
         int offset = 0;
 
-        globalOffsets->copyCommunication(numbering);
-        globalOffsets->constructLocalOrder();
+        globalOffsets->constructLocalOrder(numbering->getSendOverlap());
         for(typename Numbering::topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
           if (numbering->isLocal(*l_iter)) {
             globalOffsets->setIndex(*l_iter, offset);
@@ -1453,12 +1448,8 @@ namespace ALE {
           }
         }
         globalOffsets->setLocalSize(offset);
-        globalOffsets->calculateOffsets();
-        globalOffsets->updateOrder();
-        //globalOffsets->fillSection();
-        //globalOffsets->communicate();
-        //globalOffsets->fillOrder();
-        globalOffsets->complete();
+
+        globalOffsets->construct(numbering->getSendOverlap(), numbering->getRecvOverlap());
         return globalOffsets;
       };
     };
