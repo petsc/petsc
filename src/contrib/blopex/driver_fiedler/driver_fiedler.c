@@ -14,7 +14,7 @@ Special options:\n\
 -output_file <string>  Filename to write calculated eigenvectors.\n\
 -shift <real number>   Apply shift to 'stiffness' matrix\n\
 Example:\n\
-mpirun -np 2 driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
+mpirun -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
 
 #include "petscksp.h"
 #include <assert.h>
@@ -36,7 +36,7 @@ void Precond_FnSingleVector(void * data, void * x, void * y)
 {
       PetscErrorCode     ierr;
       
-      ierr = KSPSolve(((aux_data_struct*)data)->ksp, x, y);
+      ierr = KSPSolve(((aux_data_struct*)data)->ksp, (Vec)x, (Vec)y);
       assert(!ierr);
 }
 
@@ -235,8 +235,8 @@ int main(int argc,char **args)
 
    /* building constraints (constant vector */
    constraints= mv_MultiVectorCreateFromSampleVector(&ii, 1,u);
-   raw_constraints = mv_MultiVectorGetData (constraints);
-   tmp_vec = (raw_constraints->vector)[0];
+   raw_constraints = (mv_TempMultiVector*)mv_MultiVectorGetData (constraints);
+   tmp_vec = (Vec)(raw_constraints->vector)[0];
    ierr = VecSet(tmp_vec,1.0); CHKERRQ(ierr); 
 
    for (i=0; i<seed; i++) /* this cycle is to imitate changing random seed */
@@ -325,14 +325,14 @@ int main(int argc,char **args)
    
    if (output_filename_present)
    {
-      raw_eigenvectors = mv_MultiVectorGetData (eigenvectors);
-      tmp_vec = (raw_constraints->vector)[0];
+      raw_eigenvectors = (mv_TempMultiVector*)mv_MultiVectorGetData (eigenvectors);
+      tmp_vec = (Vec)(raw_constraints->vector)[0];
       for ( i = 0; i < n_eigs; i++ ) 
       {
         sprintf( tmp_str, "%s_%d.petsc", output_filename, i );
         PetscViewerBinaryOpen(PETSC_COMM_WORLD, tmp_str, FILE_MODE_WRITE, &fd);
         /* PetscViewerSetFormat(fd,PETSC_VIEWER_ASCII_MATLAB); */
-        ierr = VecView((raw_eigenvectors->vector)[i],fd); CHKERRQ(ierr); 
+        ierr = VecView((Vec)(raw_eigenvectors->vector)[i],fd); CHKERRQ(ierr); 
         ierr = PetscViewerDestroy(fd);CHKERRQ(ierr);
       }
   
