@@ -76,7 +76,7 @@ void Precond_FnSingleVector(void * data, void * x, void * y)
 {
       PetscErrorCode     ierr;
       
-      ierr = KSPSolve(((aux_data_struct*)data)->ksp, x, y);
+      ierr = KSPSolve(((aux_data_struct*)data)->ksp, (Vec)x, (Vec)y);
       assert(!ierr);
 }
 
