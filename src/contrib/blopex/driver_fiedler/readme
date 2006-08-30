@@ -1,0 +1,33 @@
+The file "driver_fiedler.c" contains a driver for spectral segmentation problems. The driver solves 
+partial generalized eigenvalue problem with constant vector as a constraint.
+
+Usage: mpirun -np <procs> driver_fiedler [-help] [driver options] [all PETSc options]
+Driver options:
+-matrix <filename>      (mandatory) Specify file with 'stiffness' matrix. Matrix should be stored in petsc 
+                        binary format.
+
+-mass_matrix <filename> (optional) 'mass' matrix for generalized eigenproblem. Assumed identity if omitted. 
+                        If present, and if shift (see below) is present, then nonzero pattern of 'mass'
+			matrix must be a subset of nonzero pattern of 'stiffness' matrix.
+
+-n_eigs <integer>       Number of (smallest) eigenvalues to calculate.
+
+-tol <real number>     absolute tolerance for residuals
+
+-full_out              Produce more output
+
+-seed <integer>        seed for random number generator
+
+-itr <integer>         Maximal number of iterations
+
+-output_file <string>  Filename (prefix) to write calculated eigenvectors. For example, if the value of this 
+                       parameter is 'vectors', and 3 eigenvectors are calculated, then 3 files will be created:
+		       'vectors_0.petsc', 'vectors_1.petsc', and 'vectors_2.petsc'. If this parameter is 
+		       omitted, no files are created.
+
+-shift <real number>   Apply (add) shift to 'stiffness' matrix. If 'mass' matrix is present, then 'mass' matrix
+                       multiplied by shift is added to 'stiffness' matrix. The shift is subsequently subtracted 
+		       from 'final' eigenvalues. This option may be useful if for shifted matrix some 
+		       particular preconditioning technique is applicable.
+Example:
+mpirun -np 2 driver -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20
