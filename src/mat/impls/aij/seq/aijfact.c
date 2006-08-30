@@ -1122,9 +1122,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   Mat            C = *B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
   Mat_SeqSBAIJ   *b=(Mat_SeqSBAIJ*)C->data;
-  IS             ip=b->row;
+  IS             ip=b->row,iip = b->icol;
   PetscErrorCode ierr;
-  PetscInt       *rip,i,j,mbs=A->rmap.n,*bi=b->i,*bj=b->j,*bcol;
+  PetscInt       *rip,*riip,i,j,mbs=A->rmap.n,*bi=b->i,*bj=b->j,*bcol;
   PetscInt       *ai=a->i,*aj=a->j;
   PetscInt       k,jmin,jmax,*jl,*il,col,nexti,ili,nz;
   MatScalar      *rtmp,*ba=b->a,*bval,*aa=a->a,dk,uikdi;
@@ -1139,6 +1139,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   zeropivot = info->zeropivot; 
 
   ierr  = ISGetIndices(ip,&rip);CHKERRQ(ierr);
+  ierr  = ISGetIndices(iip,&riip);CHKERRQ(ierr);
   
   /* initialization */
   nz   = (2*mbs+1)*sizeof(PetscInt)+mbs*sizeof(MatScalar);
@@ -1159,7 +1160,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       /* initialize k-th row by the perm[k]-th row of A */
       jmin = ai[rip[k]]; jmax = ai[rip[k]+1];
       for (j = jmin; j < jmax; j++){
-        col = rip[aj[j]];
+        col = riip[aj[j]];
         if (col >= k){ /* only take upper triangular entry */
           rtmp[col] = aa[j];
           *bval++  = 0.0; /* for in-place factorization */
@@ -1226,6 +1227,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscFree(il);CHKERRQ(ierr);
 
   ierr = ISRestoreIndices(ip,&rip);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iip,&riip);CHKERRQ(ierr);
   C->factor       = FACTOR_CHOLESKY; 
   C->assembled    = PETSC_TRUE; 
   C->preallocated = PETSC_TRUE;
@@ -1457,19 +1459,10 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
 
   PetscFunctionBegin;
   /* check whether perm is the identity mapping */
-  ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
+  ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);  
+  ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
+  ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);  
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
-
-  if (!perm_identity){
-    /* check if perm is symmetric! */
-    ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);  
-    ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
-    for (i=0; i<am; i++) {
-      if (rip[i] != riip[i]) SETERRQ(PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, must use symmetric permutation");
-    }
-    ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
-    ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  } 
 
   /* initialization */
   ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);
@@ -1497,9 +1490,10 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
     /* initialize lnk by the column indices of row rip[k] of A */
     nzk   = 0;
     ncols = ai[rip[k]+1] - ai[rip[k]]; 
+    if (!ncols) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix");
     ncols_upper = 0;
     for (j=0; j<ncols; j++){
-      i = rip[*(aj + ai[rip[k]] + j)];
+      i = riip[*(aj + ai[rip[k]] + j)];  
       if (i >= k){ /* only take upper triangular entry */
         cols[ncols_upper] = i;
         ncols_upper++;
@@ -1566,6 +1560,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
 #endif
 
   ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
   ierr = PetscFree(jl);CHKERRQ(ierr);
 
   /* destroy list of free space and other temporary array(s) */
@@ -1591,10 +1586,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
+  b->col  = perm;
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  b->icol = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
-  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
-  b->icol = perm;
-  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   ierr    = PetscLogObjectMemory(B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
   b->maxnz = b->nz = ui[am];

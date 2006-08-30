@@ -8,30 +8,23 @@ typedef ALE_X::Test::sifter_type sifter_type;
 
 
 #undef __FUNCT__
-#define __FUNCT__ "BasicConeTest"
-PetscErrorCode BasicConeTest(const ALE_X::Obj<sifter_type>& sifter, Options options)
+#define __FUNCT__ "BasicBaseTest"
+PetscErrorCode BasicBaseTest(const ALE_X::Obj<sifter_type>& sifter, Options options)
 {
-  ALE_X::Obj<sifter_type::ConeSequence> cone = sifter_type::ConeSequence();
-  long count = 0;
+  ALE_X::Obj<sifter_type::BaseSequence> base = sifter.base();
 
   PetscFunctionBegin;
-  ALE::LogStage stage = ALE::LogStageRegister(__FUNCT__);
   ALE::LogStagePush(stage);
-  // CONTINUE: 1) fix test to retrieve the base, then the cones and send them to cout; 
-  //           2) fix default comms in "main" to be PETSC_COMM_SELF
-  for(int r = 0; r < options.iters; r++) {
-    for(sifter_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-      const ALE::Obj<sifter_type::traits::coneSequence>& cone = sifter->cone(*b_iter);
-
-      for(sifter_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-        count++;
-      }
-    }
+  std::cout << "Basic base:" << std::endl;
+  sifter_type::BaseSequence::iterator begin, end, itor;
+  begin = base.begin();
+  end   = base.end();
+  itor = begin;
+  std::cout << *itor;
+  for(; itor != end; ++itor) {
+    std::cout << ", " << *itor;
   }
   ALE::LogStagePop(stage);
-  if (count != numConeArrows*options->iters) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ, "Cap count should be %d, not %d\n", numConeArrows*options->iters, count);
-  }
   PetscFunctionReturn(0);
 }
 
@@ -49,7 +42,7 @@ int main(int argc, char *argv[])
     ALE_X::Test::Options options(PETSC_COMM_WORLD);
     ALE::Obj<sifter_type> sifter = ALE_X::Test::SifterTest::createForkSifter(PETSC_COMM_WORLD);
 
-    ierr = BasicConeTest(sifter, options);CHKERRQ(ierr);
+    ierr = BasicBaseTest(sifter, options);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
