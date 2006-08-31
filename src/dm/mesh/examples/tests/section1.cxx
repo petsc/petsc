@@ -6,8 +6,11 @@ static char help[] = "Section Tests.\n\n";
 using ALE::Obj;
 typedef ALE::Test::section_type   section_type;
 typedef section_type::atlas_type  atlas_type;
-typedef atlas_type::topology_type topology_type;
-typedef topology_type::sieve_type sieve_type;
+
+typedef ALE::Test::topology_type         topology_type;
+typedef topology_type::sieve_type        sieve_type;
+typedef ALE::Test::constant_section_type constant_section_type;
+typedef ALE::Test::uniform_section_type  uniform_section_type;
 
 typedef struct {
   int        debug;              // The debugging level
@@ -18,15 +21,78 @@ typedef struct {
 } Options;
 
 #undef __FUNCT__
+#define __FUNCT__ "ConstantSectionTest"
+PetscErrorCode ConstantSectionTest(const Obj<topology_type>& topology, Options *options)
+{
+  const constant_section_type::value_type value   = 5.0;
+  const Obj<constant_section_type>        section = new constant_section_type(topology, value);
+  const topology_type::sheaf_type&        patches = topology->getPatches();
+
+  PetscFunctionBegin;
+  if (options->debug) {PetscPrintf(section->comm(), "Running %s\n", __FUNCT__);}
+  for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter)
+  {
+    const topology_type::patch_type&          patch   = p_iter->first;
+    const Obj<topology_type::label_sequence>& stratum = topology->depthStratum(patch, 0);
+
+    section->setFiberDimensionByDepth(patch, 0, 1);
+    if (section->size(patch) != (int) stratum->size()) {
+      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid section patch size %d should be %d", section->size(patch), stratum->size());
+    }
+    for(topology_type::label_sequence::iterator d_iter = stratum->begin(); d_iter != stratum->end(); ++d_iter) {
+      if (section->size(patch, *d_iter) != 1) SETERRQ(PETSC_ERR_ARG_SIZ, "Invalid section point size");
+      if (section->restrict(patch, *d_iter)[0] != value) SETERRQ(PETSC_ERR_ARG_SIZ, "Invalid section point value");
+    }
+  }
+  if (options->debug) {section->view("Constant Section");}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "UniformSectionTest"
+PetscErrorCode UniformSectionTest(const Obj<topology_type>& topology, Options *options)
+{
+  const Obj<uniform_section_type>  section  = new uniform_section_type(topology);
+  uniform_section_type::value_type value[2] = {0, 1};
+  const topology_type::sheaf_type& patches  = topology->getPatches();
+
+  PetscFunctionBegin;
+  if (options->debug) {PetscPrintf(section->comm(), "Running %s\n", __FUNCT__);}
+  for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter)
+  {
+    const topology_type::patch_type&          patch   = p_iter->first;
+    const Obj<topology_type::label_sequence>& stratum = topology->depthStratum(patch, 0);
+
+    section->setFiberDimensionByDepth(patch, 0, 2);
+    if (section->size(patch) != (int) stratum->size()*2) {
+      SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid section patch size %d should be %d", section->size(patch), stratum->size());
+    }
+    for(topology_type::label_sequence::iterator d_iter = stratum->begin(); d_iter != stratum->end(); ++d_iter) {
+      if (section->size(patch, *d_iter) != 2) {
+        SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid section point size %d should be %d", section->size(patch, *d_iter), 2);
+      }
+      section->update(patch, *d_iter, value);
+      value[0]++;
+    }
+    value[0] = 0;
+    for(topology_type::label_sequence::iterator d_iter = stratum->begin(); d_iter != stratum->end(); ++d_iter) {
+      if (section->restrict(patch, *d_iter)[0] != value[0]) SETERRQ(PETSC_ERR_PLIB, "Invalid uniform section point value");
+      if (section->restrict(patch, *d_iter)[1] != value[1]) SETERRQ(PETSC_ERR_PLIB, "Invalid uniform section point value");
+      value[0]++;
+    }
+  }
+  if (options->debug) {section->view("Uniform Section");}
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "LinearTest"
 PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
 {
-  const Obj<atlas_type>&    atlas    = section->getAtlas();
-  const Obj<topology_type>& topology = atlas->getTopology();
+  const Obj<topology_type>& topology = section->getTopology();
   topology_type::patch_type patch    = 0;
 
   PetscFunctionBegin;
-  atlas->clearIndices();
   // Creation
   const Obj<topology_type::label_sequence>& elements = topology->heightStratum(patch, 0);
   const Obj<topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
@@ -35,20 +101,21 @@ PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
   int numCorners  = topology->getPatch(patch)->nCone(*elements->begin(), depth)->size();
   section_type::value_type *values = new section_type::value_type[numCorners];
 
-  atlas->setFiberDimensionByDepth(patch, 0, 1);
-  atlas->orderPatches();
+  section->clear();
+  section->setFiberDimensionByDepth(patch, 0, 1);
+  //section->orderPatches();
   section->allocate();
   for(int c = 0; c < numCorners; c++) {values[c] = 3.0;}
   for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     section->updateAdd(patch, *e_iter, values);
   }
   // Verification
-  if (atlas->size(patch) != numVertices) {
-    SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid patch size %d should be %d", atlas->size(patch), numVertices);
+  if (section->size(patch) != numVertices) {
+    SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid patch size %d should be %d", section->size(patch), numVertices);
   }
   for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-    if (atlas->size(patch, *e_iter) != numCorners) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid element size %d should be %d", atlas->size(patch, *e_iter), numCorners);
+    if (section->size(patch, *e_iter) != numCorners) {
+      SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid element size %d should be %d", section->size(patch, *e_iter), numCorners);
     }
   }
   for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
@@ -56,12 +123,13 @@ PetscErrorCode LinearTest(const Obj<section_type>& section, Options *options)
     int neighbors = topology->getPatch(patch)->nSupport(*v_iter, depth)->size();
 
     if (values[0] != neighbors*3.0) {
-      SETERRQ2(PETSC_ERR_ARG_SIZ, "Linear Test: Invalid vertex value %g should be %g", values[0], neighbors*3.0);
+      SETERRQ2(PETSC_ERR_PLIB, "Linear Test: Invalid vertex value %g should be %g", values[0], neighbors*3.0);
     }
   }
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__
 #define __FUNCT__ "CubicTest"
 /* This only works for triangles right now
@@ -131,6 +199,23 @@ PetscErrorCode CubicTest(const Obj<section_type>& section, Options *options)
   }
   PetscFunctionReturn(0);
 }
+#endif
+
+#undef __FUNCT__
+#define __FUNCT__ "GeneralSectionTest"
+PetscErrorCode GeneralSectionTest(const Obj<topology_type>& topology, Options *options)
+{
+  const Obj<section_type> section = new section_type(topology);
+  PetscErrorCode          ierr;
+
+  PetscFunctionBegin;
+  if (options->debug) {PetscPrintf(section->comm(), "Running %s\n", __FUNCT__);}
+
+  ierr = LinearTest(section, options);CHKERRQ(ierr);
+  if (options->debug) {section->view("General Section");}
+  //ierr = CubicTest(section, options);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
@@ -168,13 +253,11 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<section_type> section = new section_type(comm, options.debug);
-    Obj<sieve_type>   sieve   = ALE::Test::SieveBuilder<sieve_type>::readSieve(comm, options.dim, options.baseFilename, options.useZeroBase, options.debug);
+    Obj<topology_type> topology = ALE::Test::TopologyBuilder<topology_type>::readTopology(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug);
 
-    section->getAtlas()->getTopology()->setPatch(0, sieve);
-    section->getAtlas()->getTopology()->stratify();
-    ierr = LinearTest(section, &options);CHKERRQ(ierr);
-    ierr = CubicTest(section, &options);CHKERRQ(ierr);
+    ierr = ConstantSectionTest(topology, &options);CHKERRQ(ierr);
+    ierr = UniformSectionTest(topology, &options);CHKERRQ(ierr);
+    ierr = GeneralSectionTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
