@@ -1040,17 +1040,15 @@ namespace ALE {
       typedef std::map<patch_type, array_type>       values_type;
     protected:
       Obj<atlas_type> _atlas;
-      Obj<atlas_type> _atlasNew;
       values_type     _arrays;
     public:
       UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-        this->_atlas    = new atlas_type(comm, debug);
-        this->_atlasNew = NULL;
+        this->_atlas = new atlas_type(comm, debug);
       };
-      UniformSection(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()), _atlasNew(NULL) {
+      UniformSection(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()) {
         this->_atlas = new atlas_type(topology);
       };
-      UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {};
+      UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {};
     protected:
       value_type *getRawArray(const int size) {
         static value_type *array   = NULL;
@@ -1202,7 +1200,7 @@ namespace ALE {
       };
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
         this->checkPatch(patch);
-        return &this->_arrays[patch][p];
+        return this->_arrays[patch][p].v;
       };
       void update(const patch_type& patch, const point_type& p, const value_type v[]) {
         this->_atlas->checkPatch(patch);
@@ -1242,6 +1240,32 @@ namespace ALE {
 #else
           throw ALE::Exception("Not yet implemented for interpolated sieves");
 #endif
+        }
+      };
+      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->_atlas->checkPatch(patch);
+        array_type& array = this->_arrays[patch];
+
+        if (this->getTopology()->height(patch) == 1) {
+          // Only avoids the copy of closure()
+          const int& dim = this->_atlas->restrict(patch, p)[0];
+          int        j   = -1;
+
+          for(int i = 0; i < dim; ++i) {
+            array[p].v[i] += v[++j];
+          }
+          // Should be closure()
+          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+            const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              array[*p_iter].v[i] += v[++j];
+            }
+          }
+        } else {
+          throw ALE::Exception("Not yet implemented for interpolated sieves");
         }
       };
       void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
