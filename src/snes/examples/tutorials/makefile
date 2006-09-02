@@ -427,7 +427,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2  runex2_3 ex2.
                                  ex25.rm ex29.PETSc ex29.rm 
 TESTEXAMPLES_C_X11	       = ex5.PETSc runex5_8 runex5_10 ex5.rm 
 TESTEXAMPLES_FORTRAN	       = ex1f.PETSc runex1f ex1f.rm
-TESTEXAMPLES_C_NOCOMPLEX       = ex30.PETSc ex30.rm
+TESTEXAMPLES_C_NOCOMPLEX       = ex26.PETSc ex26.rm ex30.PETSc ex30.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex5f.PETSc runex5f runex5f_3 ex5f.rm
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm ex6.PETSc \
