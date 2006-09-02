@@ -43,6 +43,7 @@ scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@harley.mcs.anl.gov:/
 # M src/docs/website/documentation/changes/index.html
 # M src/docs/website/download/index.html
 # M src/docs/website/index.html
+# M src/docs/website/documentation/installation.html
 # A src/docs/website/documentation/changes/232.html
 # ? bin/win32fe/win32fe.exe
 # ? bin/win32fe/win32feutils.dll
