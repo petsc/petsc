@@ -90,9 +90,9 @@ python </font>modules<strong></strong>) and use
 cygwin shell.<br>
         </li>
         <li>In the directory you wish PETSc installed: <font
- color="#ff0000">gunzip -c <a href="../download/index.html">petsc-2.3.1.tar.gz</a>
+ color="#ff0000">gunzip -c <a href="../download/index.html">petsc-2.3.2.tar.gz</a>
 | tar -xof -</font></li>
-        <li><font color="#ff0000">cd petsc-2.3.1-p0</font></li>
+        <li><font color="#ff0000">cd petsc-2.3.2-p0</font></li>
         <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=`pwd`;
 export PETSC_DIR</font>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the
@@ -154,7 +154,7 @@ will download &amp;
 install BLAS, LAPACK, MPICH if they are not already installed on the
 system) :<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.1-p0<br>
+PETSC_DIR=/home/petsc/petsc-2.3.2-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -164,14 +164,16 @@ cd $PETSC_DIR<br>
 make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make test</font></li>
-        <li>Same as above - but build Complex version of PETSc:<br>
+        <li>Same as above - but build Complex version of PETSc [using
+c++ compiler]:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.1-p0<br>
+PETSC_DIR=/home/petsc/petsc-2.3.2-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py
---download-f-blas-lapack=1 --download-mpich=1 --with-scalar-type=complex<br>
+--download-f-blas-lapack=1 --download-mpich=1
+--with-scalar-type=complex --with-clanguage=cxx<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -179,7 +181,7 @@ make test</font></li>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH software are installed at the specified locations:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
-PETSC_DIR=/home/petsc/petsc-2.3.1-p0<br>
+PETSC_DIR=/home/petsc/petsc-2.3.2-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -192,7 +194,7 @@ make test</font><font color="#ff0000"> </font></li>
         <li>Using tcsh shell, install PETSc with default BLAS and
 LAPACK and no MPI:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv
-PETSC_DIR /home/petsc/petsc-2.3.1-p0<br>
+PETSC_DIR /home/petsc/petsc-2.3.2-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -447,8 +449,10 @@ libraries is correct]:<br>
       <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py --with-cc='win32fe cl' --with-fc='win32fe f90'
 --download-f-blas-lapack=1 LIBS="-L'/cygdrive/c/Program Files/Microsoft
-Visual Studio/DF98/LIB'"</font><br><br>
-Note the usage of both single quotes and double quotes in the above line. <br>
+Visual Studio/DF98/LIB'"</font><br>
+      <br>
+Note the usage of both single quotes and double quotes in the above
+line. <br>
       <p><font color="#551a8b"><b>Configure</b></font><font
  color="#551a8b"><b>:</b> </font>--download-package
 option does not
@@ -540,7 +544,7 @@ config/aix5.1.0.0-64.py with compilers defaulting to 64bit mode.
 on IBM Blue Gene:</font></a></h3>
       <p>IBM Blue Gene [as of now] requires modified compiler
 script
-wrappers to compile PETSc-2.3.1. Please download <a
+wrappers to compile PETSc-2.3.2. Please download <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
 and follow instructions provided in the <span
  style="font-weight: bold;">README</span> file.</p>
