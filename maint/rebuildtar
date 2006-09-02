@@ -5,7 +5,7 @@ export LANG=en_US
 export LC=C
 export LC_ALL=C
 
-RELEASE=2.3.1
+RELEASE=2.3.2
 PETSC_DIR=/home/balay/hg-repo/petsc-release-${RELEASE}
 
 #automatically crankup the patchlevel
@@ -24,11 +24,25 @@ scp ~/petsc-lite-${VERSION}.tar.gz petsc@harley.mcs.anl.gov:/nfs/ftp/pub/petsc/r
 
 # petsc.tar.gz/petsc-lite.tar.gz links are done manually
 ssh petsc@harley.mcs.anl.gov " \
-  cd /nfs/ftp/pub/petsc/; \
+  cd /nfs/ftp/pub/petsc/release-snapshots; \
   /bin/rm -f petsc-${RELEASE}.tar.gz petsc-lite-${RELEASE}.tar.gz ; \
-  /bin/ln -s release-snapshots/petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
-  /bin/ln -s release-snapshots/petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
+  /bin/ln -s petsc-${VERSION}.tar.gz petsc-${RELEASE}.tar.gz; \
+  /bin/ln -s petsc-lite-${VERSION}.tar.gz petsc-lite-${RELEASE}.tar.gz"
 
 # Update download/index.html as well
 ssh petsc@harley.mcs.anl.gov chmod u+w /nfs/www-unix/petsc/petsc-as/download/index.html
 scp ${PETSC_DIR}/src/docs/website/download/index.html petsc@harley.mcs.anl.gov:/nfs/www-unix/petsc/petsc-as/download
+
+#######################################3333
+# M include/petscversion.h
+# M maint/createpatch
+# M maint/rebuildtar
+# M src/docs/tex/manual/intro.tex
+# M src/docs/tex/manual/manual.tex
+# M src/docs/website/documentation/changes/dev.html
+# M src/docs/website/documentation/changes/index.html
+# M src/docs/website/download/index.html
+# M src/docs/website/index.html
+# A src/docs/website/documentation/changes/232.html
+# ? bin/win32fe/win32fe.exe
+# ? bin/win32fe/win32feutils.dll

@@ -58,6 +58,9 @@ fi
 # crank up patchlevel
 new_version_patch=`expr $version_patch + 1`
 
+oldver=${version_major}.${version_minor}.${version_subminor}-p${version_patch}
+newver=${version_major}.${version_minor}.${version_subminor}-p${new_version_patch}
+
 echo #########################################################
 echo ## updating patchlevel from $version_patch to $new_version_patch  ##
 echo #########################################################
@@ -74,11 +77,11 @@ cat include/petscversion.h.bak | \
 patchlevel=0
 /bin/mv src/docs/website/download/index.html src/docs/website/download/index.html.bak
 cat src/docs/website/download/index.html.bak | \
-  sed -e "s/(patchlevel=.*)/(patchlevel=${new_version_patch})/" > src/docs/website/download/index.html
+  sed -e "s/-${oldver}.tar.gz/-${newver}.tar.gz/g" > src/docs/website/download/index.html
 /bin/rm -f src/docs/website/download/index.html.bak
 
 # now create a changeset
-hg commit -m"Increase patchlevel to ${version_major}.${version_minor}.${version_subminor}-p${new_version_patch}" include/petscversion.h src/docs/website/download/index.html
+hg commit -m"Increase patchlevel to ${newver}" include/petscversion.h src/docs/website/download/index.html
 echo #########################################################
 echo # Created patch for the following change                #
 echo #########################################################
