@@ -88,7 +88,7 @@ namespace ALE_X {
     private:
       Order_ _less;
     public:
-      bool operator()(const Key_& keyA, const Key_& keyB) 
+      bool operator()(const Key_& keyA, const Key_& keyB) const
       {
         return  (_less(keyA,keyB));
       };
@@ -100,7 +100,7 @@ namespace ALE_X {
       Order1_ _less1;
       Order2_ _less2;
     public:
-      bool operator()(const Key1_& key1A, const Key2_& key2A, const Key1_& key1B, const Key2_& key2B)
+      bool operator()(const Key1_& key1A, const Key2_& key2A, const Key1_& key1B, const Key2_& key2B) const
       {
         // In the following (key1A < key1B) || ((key1A == key1B)&&(key2A < key2B)) is computed.
         // Since we don't have equivalence '==' explicitly, it is defined by !(key1A < key1B) && !(key1B < key1A).
@@ -124,12 +124,16 @@ namespace ALE_X {
     protected:
       KeyOrder_ _key_order;
     public:
-      bool operator()(const Rec_& rec1, const Rec_& rec2) {
+      bool operator()(const Rec_& rec1, const Rec_& rec2) const {
         return _key_order(_key(rec1), _key(rec2));
       };
       template <typename CompatibleKey_>
-      bool operator()(const Rec_& rec, const CompatibleKey_ key) {
+      bool operator()(const Rec_& rec, const CompatibleKey_ key) const {
         return _key_order(_key(rec), key);
+      };
+      template <typename CompatibleKey_>
+      bool operator()(const CompatibleKey_ key, const Rec_& rec) const {
+        return _key_order(key,_key(rec));
       };
     };// RecKeyOrder
 
@@ -155,16 +159,26 @@ namespace ALE_X {
       order2_type        _order2;
       key_extractor_type _kex;
     public:
-      bool operator()(const rec_type& rec1, const rec_type& rec2) { 
+      bool operator()(const rec_type& rec1, const rec_type& rec2) const { 
         return this->_order2(this->_kex(rec1),rec1,this->_kex(rec2),rec2);
       };
       template <typename CompatibleKey_>
-      bool operator()(const rec_type& rec1, const CompatibleKey_& key) {
+      bool operator()(const CompatibleKey_& key, const rec_type& rec1) const {
+        // We want key to be less than any (key, ...)
+        return this->_order1(key,this->_kex(rec1));
+      };
+      template <typename CompatibleKey_>
+      bool operator()(const rec_type& rec1, const CompatibleKey_& key) const {
         // We want key to be less than any (key, ...)
         return !this->_order1(key,this->_kex(rec1));
       };
       template <typename CompatibleKey_, typename CompatibleXXXKey_>
-      bool operator()(const rec_type& rec1, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) {
+      bool operator()(const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair, const rec_type& rec1) const {
+        // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
+        return this->_order2(keyPair.first,keyPair.second,this->_kex(rec1),rec1);
+      };
+      template <typename CompatibleKey_, typename CompatibleXXXKey_>
+      bool operator()(const rec_type& rec1, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) const {
         // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
         return !this->_order2(keyPair.first,keyPair.second,this->_kex(rec1),rec1);
       };
