@@ -88,12 +88,11 @@ namespace ALE {
       *coordinates = coords;
     };
     void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
-      const section_type::patch_type patch = 0;
-      const Obj<topology_type::label_sequence>& vertices = coords->getAtlas()->getTopology()->depthStratum(patch, 0);
-      const int numCells = coords->getAtlas()->getTopology()->heightStratum(patch, 0)->size();
+      const section_type::patch_type            patch    = 0;
+      const Obj<topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
+      const int numCells = coords->getTopology()->heightStratum(patch, 0)->size();
 
-      coords->getAtlas()->setFiberDimensionByDepth(patch, 0, embedDim);
-      coords->getAtlas()->orderPatches();
+      coords->setFiberDimensionByDepth(patch, 0, embedDim);
       coords->allocate();
       for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));

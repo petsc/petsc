@@ -1008,7 +1008,7 @@ namespace ALE {
     template <typename Point_, typename Marker_, typename Color_> 
     const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n) {
       if (n == 1) {
-        std::set<point_type> intersect;
+        std::vector<point_type> vecA, vecB;
         const Obj<typename traits::coneSequence>&     coneA  = this->cone(p);
         const typename traits::coneSequence::iterator beginA = coneA->begin();
         const typename traits::coneSequence::iterator endA   = coneA->end();
@@ -1016,9 +1016,12 @@ namespace ALE {
         const typename traits::coneSequence::iterator beginB = coneB->begin();
         const typename traits::coneSequence::iterator endB   = coneB->end();
 
-        std::set_intersection(beginA, endA, beginB, endB, std::insert_iterator<std::set<point_type> >(intersect, intersect.begin()));
+        vecA.insert(vecA.begin(), beginA, endA);
+        std::sort(vecA.begin(), vecA.end());
+        vecB.insert(vecB.begin(), beginB, endB);
+        std::sort(vecB.begin(), vecB.end());
         this->_meetSet->clear();
-        this->_meetSet->insert(intersect.begin(), intersect.end());
+        std::set_intersection(vecA.begin(), vecA.end(), vecB.begin(), vecB.end(), std::insert_iterator<typename Sieve<Point_,Marker_,Color_>::coneSet>(*this->_meetSet, this->_meetSet->begin()));
         return this->_meetSet;
       }
       return nMeet(p, q, n, Color_(), false);

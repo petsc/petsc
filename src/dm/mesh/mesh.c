@@ -583,7 +583,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
 {
   const int end = interval.prefix + interval.index;
-  for(int i = interval.prefix; i < end; i++) {
+  for(int i = interval.index; i < end; i++) {
     indices[indx++] = i;
   }
 }
@@ -592,19 +592,19 @@ inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
 #define __FUNCT__ "ExpandInterval_New"
 inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt *indx)
 {
-  for(int i = 0; i < interval.index; i++) {
-    indices[(*indx)++] = interval.prefix + i;
+  for(int i = 0; i < interval.prefix; i++) {
+    indices[(*indx)++] = interval.index + i;
   }
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Mesh::atlas_type::IndexArray> intervals, PetscInt *indices)
+PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Mesh::section_type::IndexArray> intervals, PetscInt *indices)
 {
   int k = 0;
 
   PetscFunctionBegin;
-  for(ALE::Mesh::atlas_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+  for(ALE::Mesh::section_type::IndexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
     ExpandInterval_New(*i_itor, indices, &k);
   }
   PetscFunctionReturn(0);
@@ -753,15 +753,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 #define __FUNCT__ "MeshGetGlobalScatter"
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const char fieldName[], Vec g, VecScatter *scatter)
 {
-  typedef ALE::Mesh::atlas_type::index_type index_type;
+  typedef ALE::Mesh::section_type::index_type index_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::section_type>&   field       = mesh->getSection(std::string(fieldName));
-  const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder = mesh->getGlobalOrder(fieldName);
+  const ALE::Obj<ALE::Mesh::atlas_type>&     atlas       = field->getAtlas();
+  const ALE::Obj<ALE::Mesh::order_type>&     globalOrder = mesh->getGlobalOrder(fieldName);
   const ALE::Mesh::section_type::patch_type  patch       = 0;
-  const ALE::Mesh::atlas_type::chart_type&   chart       = field->getAtlas()->getChart(patch);
+  const ALE::Mesh::atlas_type::chart_type&   chart       = field->getAtlas()->getPatch(patch);
   int                                        localSize   = field->getAtlas()->size(patch);
   int *localIndices, *globalIndices;
   int  localIndx = 0, globalIndx = 0;
@@ -771,10 +772,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const cha
   // Loop over all local points
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
-  for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+    const ALE::Mesh::section_type::index_type& idx = atlas->restrict(patch, *p_iter)[0];
+
     // Map local indices to global indices
-    ExpandInterval(c_iter->second, localIndices, localIndx);
-    ExpandInterval(index_type(globalOrder->getIndex(c_iter->first), c_iter->second.index), globalIndices, globalIndx);
+    ExpandInterval(idx, localIndices, localIndx);
+    ExpandInterval(index_type(globalOrder->getIndex(*p_iter), idx.index), globalIndices, globalIndx);
   }
   if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
   if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
@@ -917,7 +920,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::section_type>& section, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
   ALE::Mesh::section_type::patch_type patch = 0;
   static PetscInt  indicesSize = 0;
@@ -926,14 +929,14 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::atlas_type>& atla
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  const ALE::Obj<ALE::Mesh::atlas_type::IndexArray> intervals = atlas->getIndices(patch, e, globalOrder);
+  const ALE::Obj<ALE::Mesh::section_type::IndexArray> intervals = section->getIndices(patch, e, globalOrder);
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (atlas->debug()) {printf("[%d]mat for element %d\n", atlas->commRank(), e);}
-  for(ALE::Mesh::atlas_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    numIndices += i_iter->index;
-    if (atlas->debug()) {
-      printf("[%d]mat interval (%d, %d)\n", atlas->commRank(), i_iter->prefix, i_iter->index);
+  if (section->debug()) {printf("[%d]mat for element %d\n", section->commRank(), e);}
+  for(ALE::Mesh::section_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+    numIndices += i_iter->prefix;
+    if (section->debug()) {
+      printf("[%d]mat interval (%d, %d)\n", section->commRank(), i_iter->prefix, i_iter->index);
     }
   }
   if (indicesSize && (indicesSize != numIndices)) {
@@ -945,12 +948,12 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::atlas_type>& atla
     ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
   }
   ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
-  if (atlas->debug()) {
+  if (section->debug()) {
     for(int i = 0; i < numIndices; i++) {
-      printf("[%d]mat indices[%d] = %d\n", atlas->commRank(), i, indices[i]);
+      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
     }
     for(int i = 0; i < numIndices; i++) {
-      printf("[%d]", atlas->commRank());
+      printf("[%d]", section->commRank());
       for(int j = 0; j < numIndices; j++) {
         printf(" %g", array[i*numIndices+j]);
       }
@@ -992,7 +995,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   try {
-    ierr = updateOperator(A, mesh->getSection("displacement")->getAtlas(), mesh->getGlobalOrder("displacement"), mesh->getLocalNumbering(mesh->getTopologyNew()->depth())->getPoint(e), v, mode);CHKERRQ(ierr);
+    ierr = updateOperator(A, mesh->getSection("displacement"), mesh->getGlobalOrder("displacement"), mesh->getLocalNumbering(mesh->getTopologyNew()->depth())->getPoint(e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
@@ -1002,7 +1005,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 
 #undef __FUNCT__
 #define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::section_type>& field, const ALE::Obj<ALE::Mesh::numbering_type>& globalOrder, Mat A)
+PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::section_type>& field, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
   const ALE::Obj<ALE::Mesh::sieve_type>     adjGraph    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
   const ALE::Obj<ALE::Mesh::topology_type>  adjTopology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug);
@@ -1018,17 +1021,17 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
   ierr = MatGetOwnershipRange(A, &firstRow, &lastRow);CHKERRQ(ierr);
   ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
   /* Create local adjacency graph */
-  const ALE::Mesh::atlas_type::chart_type& chart = field->getAtlas()->getChart(patch);
+  const ALE::Mesh::atlas_type::chart_type& chart = field->getAtlas()->getPatch(patch);
 
   for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
+    const ALE::Mesh::atlas_type::point_type& point = *c_iter;
 
     adjGraph->addCone(sieve->cone(sieve->support(point)), point);
   }
   /* Distribute adjacency graph */
 #if 1
-  const ALE::Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = mesh->getVertexSendOverlap();
-  const ALE::Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = mesh->getVertexRecvOverlap();
+  //const ALE::Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = mesh->getVertexSendOverlap();
+  //const ALE::Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = mesh->getVertexRecvOverlap();
 
   //ALE::New::Distribution<ALE::Mesh::topology_type>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjTopology);
 #else
@@ -1075,12 +1078,13 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
   ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
   for(ALE::Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const ALE::Mesh::atlas_type::point_type& point = c_iter->first;
+    const ALE::Mesh::atlas_type::point_type& point = *c_iter;
 
     if (globalOrder->isLocal(point)) {
       const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
       const int                                               row   = globalOrder->getIndex(point);
-      const int                                               rSize = c_iter->second.index;
+      //const int                                               rSize = c_iter->second.index;
+      const int rSize = 0;
 
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::atlas_type::point_type& neighbor = *v_iter;

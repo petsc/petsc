@@ -60,13 +60,14 @@ class VTKViewer {
   static PetscErrorCode writeSection(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::section_type>& field, const int fiberDim, const Obj<ALE::New::Numbering<ALE::Mesh::topology_type> >& numbering, PetscViewer viewer, int enforceDim = -1) {
     const ALE::Mesh::section_type::patch_type  patch = 0;
     const ALE::Mesh::section_type::value_type *array = field->restrict(patch);
-    const ALE::Mesh::atlas_type::chart_type&   chart = field->getAtlas()->getChart(patch);
+    const ALE::Obj<ALE::Mesh::atlas_type>&     atlas = field->getAtlas();
+    const ALE::Mesh::atlas_type::chart_type&   chart = atlas->getPatch(patch);
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     if (mesh->commRank() == 0) {
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const ALE::Mesh::atlas_type::index_type& idx = p_iter->second;
+        const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
 
         if (idx.index > 0) {
           for(int d = 0; d < fiberDim; d++) {
@@ -109,10 +110,11 @@ class VTKViewer {
 
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &localValues);CHKERRQ(ierr);
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        int offset = p_iter->second.prefix;
-        int dim    = p_iter->second.index;
+        const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
+        const int& offset = idx.prefix;
+        const int& dim    = idx.index;
 
-        if (numbering->isLocal(p_iter->first)) {
+        if (numbering->isLocal(*p_iter)) {
           for(int i = offset; i < offset+dim; ++i) {
             localValues[k++] = array[i];
           }

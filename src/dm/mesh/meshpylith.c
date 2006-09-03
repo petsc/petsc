@@ -218,16 +218,14 @@ namespace ALE {
       *splitValues = splitVal;
     };
     void Builder::buildSplit(const Obj<split_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]) {
-      const Obj<split_section_type::atlas_type>& atlas = splitField->getAtlas();
-      const split_section_type::patch_type       patch = 0;
-      split_section_type::value_type             values[3];
+      const split_section_type::patch_type                     patch = 0;
+      split_section_type::value_type                           values[3];
       std::map<split_section_type::point_type, std::set<int> > elem2index;
 
       for(int e = 0; e < numSplit; e++) {
-        atlas->addFiberDimension(patch, splitInd[e*2+0], 1);
+        splitField->addFiberDimension(patch, splitInd[e*2+0], 1);
         elem2index[splitInd[e*2+0]].insert(e);
       }
-      atlas->orderPatches();
       splitField->allocate();
       for(std::map<split_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         const split_section_type::point_type& e = e_iter->first;
@@ -593,10 +591,10 @@ namespace ALE {
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
-      const Builder::split_section_type::atlas_type::chart_type& chart = splitField->getAtlas()->getChart(patch);
+      const Builder::split_section_type::atlas_type::chart_type& chart = splitField->getAtlas()->getPatch(patch);
 
       for(Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-        const Builder::split_section_type::point_type& e      = c_iter->first;
+        const Builder::split_section_type::point_type& e      = *c_iter;
         const Builder::split_section_type::value_type *values = splitField->restrict(patch, e);
         const int                                      size   = splitField->getAtlas()->getFiberDimension(patch, e);
 
