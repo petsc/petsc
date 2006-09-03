@@ -10,7 +10,7 @@ namespace ALE {
     typedef ALE::New::Topology<int, sieve_type>                 topology_type;
     typedef ALE::New::NewConstantSection<topology_type, double> constant_section_type;
     typedef ALE::New::UniformSection<topology_type, int, 2>     uniform_section_type;
-    typedef ALE::New::NewSection<topology_type, double>         section_type;
+    typedef ALE::New::Section<topology_type, double>            section_type;
 
     class SectionTest {
     public:
