@@ -226,7 +226,6 @@ namespace ALE {
         splitField->addFiberDimension(patch, splitInd[e*2+0], 1);
         elem2index[splitInd[e*2+0]].insert(e);
       }
-      splitField->getAtlas()->view("Split field atlas");
       splitField->allocate();
       for(std::map<split_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         const split_section_type::point_type& e = e_iter->first;
