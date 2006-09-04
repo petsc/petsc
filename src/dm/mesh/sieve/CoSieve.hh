@@ -1173,12 +1173,15 @@ namespace ALE {
         return size;
       };
       int size(const patch_type& patch, const point_type& p) {
-        Obj<typename sieve_type::coneSet>  closure = this->getTopology()->getPatch(patch)->closure(p);
-        typename sieve_type::coneSet::iterator end = closure->end();
+        const typename atlas_type::chart_type&  points  = this->_atlas->getPatch(patch);
+        const Obj<typename sieve_type::coneSet> closure = this->getTopology()->getPatch(patch)->closure(p);
+        typename sieve_type::coneSet::iterator  end     = closure->end();
         int size = 0;
 
         for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
-          size += this->getFiberDimension(patch, *c_iter);
+          if (points.count(*c_iter)) {
+            size += this->getFiberDimension(patch, *c_iter);
+          }
         }
         return size;
       };
@@ -1203,13 +1206,16 @@ namespace ALE {
             values[++j] = array[p].v[i];
           }
           // Should be closure()
-          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+          const chart_type&                             chart = this->getPatch(patch);
+          const Obj<typename sieve_type::coneSequence>& cone  = this->getTopology()->getPatch(patch)->cone(p);
 
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
+            if (chart.count(*p_iter)) {
+              const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
 
-            for(int i = 0; i < dim; ++i) {
-              values[++j] = array[*p_iter].v[i];
+              for(int i = 0; i < dim; ++i) {
+                values[++j] = array[*p_iter].v[i];
+              }
             }
           }
         } else {
@@ -1248,13 +1254,16 @@ namespace ALE {
             array[p].v[i] = v[++j];
           }
           // Should be closure()
-          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+          const chart_type&                             chart = this->getPatch(patch);
+          const Obj<typename sieve_type::coneSequence>& cone  = this->getTopology()->getPatch(patch)->cone(p);
 
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
+            if (chart.count(*p_iter)) {
+              const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
 
-            for(int i = 0; i < dim; ++i) {
-              array[*p_iter].v[i] = v[++j];
+              for(int i = 0; i < dim; ++i) {
+                array[*p_iter].v[i] = v[++j];
+              }
             }
           }
         } else {
@@ -1287,15 +1296,19 @@ namespace ALE {
 
           for(int i = 0; i < dim; ++i) {
             array[p].v[i] += v[++j];
+            std::cout << "Updating point " << p << " to value " << array[p].v[i] << std::endl;
           }
           // Should be closure()
-          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+          const chart_type&                             chart = this->getPatch(patch);
+          const Obj<typename sieve_type::coneSequence>& cone  = this->getTopology()->getPatch(patch)->cone(p);
 
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-            const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
+            if (chart.count(*p_iter)) {
+              const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
 
-            for(int i = 0; i < dim; ++i) {
-              array[*p_iter].v[i] += v[++j];
+              for(int i = 0; i < dim; ++i) {
+                array[*p_iter].v[i] += v[++j];
+              }
             }
           }
         } else {
@@ -1445,7 +1458,7 @@ namespace ALE {
         this->_atlas->update(patch, p, &idx);
       };
       void addFiberDimension(const patch_type& patch, const point_type& p, int dim) {
-        const index_type values(dim, 0);
+        const index_type values(dim, -1);
         this->_atlas->updatePatch(patch, p);
         this->_atlas->updateAdd(patch, p, &values);
       };
@@ -1472,12 +1485,15 @@ namespace ALE {
         return size;
       };
       int size(const patch_type& patch, const point_type& p) {
-        Obj<typename sieve_type::coneSet>  closure = this->getTopology()->getPatch(patch)->closure(p);
-        typename sieve_type::coneSet::iterator end = closure->end();
+        const typename atlas_type::chart_type&  points  = this->_atlas->getPatch(patch);
+        const Obj<typename sieve_type::coneSet> closure = this->getTopology()->getPatch(patch)->closure(p);
+        typename sieve_type::coneSet::iterator  end     = closure->end();
         int size = 0;
 
         for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
-          size += this->getFiberDimension(patch, *c_iter);
+          if (points.count(*c_iter)) {
+            size += this->getFiberDimension(patch, *c_iter);
+          }
         }
         return size;
       };
@@ -1565,18 +1581,24 @@ namespace ALE {
       void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset) {
         const Obj<typename sieve_type::coneSequence>& cone = sieve->cone(point);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
-        const index_type&                             idx  = atlas->restrict(patch, point)[0];
-        const int                                     dim  = idx.prefix;
-        index_type                                 newIdx(dim, offset);
+        index_type                                    idx  = atlas->restrict(patch, point)[0];
+        const int&                                    dim  = idx.prefix;
+        const index_type                              defaultIdx(0, -1);
 
+        if (atlas->getPatch(patch).count(point) == 0) {
+          idx = defaultIdx;
+        }
         if (idx.index < 0) {
           for(typename sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
             if (this->_debug > 1) {std::cout << "    Recursing to " << *c_iter << std::endl;}
             this->orderPoint(atlas, sieve, patch, *c_iter, offset);
           }
-          if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
-          atlas->update(patch, point, &newIdx);
-          offset += dim;
+          if (dim > 0) {
+            if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
+            idx.index = offset;
+            atlas->update(patch, point, &idx);
+            offset += dim;
+          }
         }
       }
       void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset) {
@@ -1703,8 +1725,7 @@ namespace ALE {
       };
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
         this->checkPatch(patch);
-        // Using the index structure explicitly
-        return &(this->_arrays[patch][this->_atlas->restrict(patch, p).index]);
+        return &(this->_arrays[patch][this->_atlas->restrict(patch, p)[0].index]);
       };
       void update(const patch_type& patch, const point_type& p, const value_type v[]) {
         this->checkPatch(patch);
@@ -1790,11 +1811,10 @@ namespace ALE {
       };
       void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
         this->checkPatch(patch);
-        const index_type& ind = this->_atlas->getIndex(patch, p);
-        value_type       *a   = &(this->_arrays[patch][ind.prefix]);
+        const index_type& idx = this->_atlas->restrict(patch, p)[0];
+        value_type       *a   = &(this->_arrays[patch][idx.index]);
 
-        // Using the index structure explicitly
-        for(int i = 0; i < ind.index; ++i) {
+        for(int i = 0; i < idx.prefix; ++i) {
           a[i] = v[i];
         }
       };

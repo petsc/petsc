@@ -29,7 +29,7 @@ class VTKViewer {
     Obj<ALE::Mesh::section_type>        coordinates = mesh->getSection("coordinates");
     Obj<numbering_type>                 numbering   = new numbering_type(mesh->getTopologyNew(), "depth", 0);
     ALE::Mesh::section_type::patch_type patch       = 0;
-    int embedDim = coordinates->getAtlas()->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+    int embedDim = coordinates->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -69,12 +69,12 @@ class VTKViewer {
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
 
-        if (idx.index > 0) {
+        if (idx.prefix > 0) {
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer, "%G", array[idx.prefix+d]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, "%G", array[idx.index+d]);CHKERRQ(ierr);
           }
           for(int d = fiberDim; d < enforceDim; d++) {
             ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
@@ -111,8 +111,8 @@ class VTKViewer {
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &localValues);CHKERRQ(ierr);
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
-        const int& offset = idx.prefix;
-        const int& dim    = idx.index;
+        const int& dim    = idx.prefix;
+        const int& offset = idx.index;
 
         if (numbering->isLocal(*p_iter)) {
           for(int i = offset; i < offset+dim; ++i) {

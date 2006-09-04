@@ -630,8 +630,8 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "updateSectionRemote"
-      template<typename RecvSection>
-      static void updateSectionRemote(const Obj<recv_overlap_type>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<Mesh::section_type>& newSection) {
+      template<typename RecvSection, typename Section>
+      static void updateSectionRemote(const Obj<recv_overlap_type>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<Section>& newSection) {
         const Mesh::section_type::patch_type                  patch      = 0;
         Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
@@ -710,6 +710,24 @@ namespace ALE {
             sieveCompletion::completeSection(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), sizer, filler, sendSection, recvSection);
             updateSectionRemote(parallelMesh->getVertexRecvOverlap(), recvSection, parallelSection);
           }
+        }
+        if (!serialMesh->getSplitSection().isNull()) {
+          typedef ALE::New::SizeSection<Mesh::split_section_type>      SplitSizer;
+          typedef ALE::New::PatchlessSection<Mesh::split_section_type> SplitFiller;
+          typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::split_section_type::value_type> send_section_type;
+          typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::split_section_type::value_type> recv_section_type;
+          const Mesh::section_type::patch_type patch              = 0;
+          const Obj<Mesh::split_section_type>& serialSplitField   = serialMesh->getSplitSection();
+          Obj<Mesh::split_section_type>        parallelSplitField = new Mesh::split_section_type(parallelMesh->getTopologyNew());
+          const Obj<send_section_type>         sendSection        = new send_section_type(serialMesh->comm(), serialMesh->debug);
+          const Obj<recv_section_type>         recvSection        = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug);
+          const Obj<SplitSizer>                sizer              = new SplitSizer(serialSplitField, patch);
+          const Obj<SplitFiller>               filler             = new SplitFiller(serialSplitField, patch);
+
+          updateSectionLocal(serialSplitField, parallelSplitField);
+          sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
+          updateSectionRemote(cellRecvOverlap, recvSection, parallelSplitField);
+          parallelMesh->setSplitSection(parallelSplitField);
         }
 
         // This is necessary since we create types (like PartitionSection) on a subset of processors
