@@ -56,7 +56,6 @@ PetscErrorCode GeometryTest(const Obj<section_type>& coordinates, Options *optio
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  coordinates->view("Coordinates");
   for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
     ierr = ElementGeometry(coordinates, options->dim, *e_iter, v0, J, invJ, detJ); CHKERRQ(ierr);
   }
@@ -109,15 +108,19 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   const Obj<ALE::Mesh::recv_section_type>  recvSection       = new ALE::Mesh::recv_section_type(mesh->comm(), sendSection->getTag(), mesh->debug);
 
   ALE::New::Distribution<ALE::Mesh::topology_type>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjTopology, sendSection, recvSection);
-  adjTopology->view("Adjacency topology");
-  vNumbering->view("Global vertex numbering");
-  order->view("Global vertex order");
+  if (mesh->debug) {
+    adjTopology->view("Adjacency topology");
+    vNumbering->view("Global vertex numbering");
+    order->view("Global vertex order");
+  }
   // Distribute indices for new points
   ALE::New::Distribution<ALE::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-  nbrSendOverlap->view("Neighbor Send Overlap");
-  nbrRecvOverlap->view("Neighbor Receive Overlap");
   order->complete(nbrSendOverlap, nbrRecvOverlap, true);
-  order->view("Global vertex order after completion");
+  if (mesh->debug) {
+    nbrSendOverlap->view("Neighbor Send Overlap");
+    nbrRecvOverlap->view("Neighbor Receive Overlap");
+    order->view("Global vertex order after completion");
+  }
   // Read out adjacency graph
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjTopology->getPatch(patch);
 
@@ -145,9 +148,11 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
       }
     }
   }
-  int rank = mesh->commRank();
-  for(int r = 0; r < numLocalRows; r++) {
-    std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
+  if (mesh->debug) {
+    int rank = mesh->commRank();
+    for(int r = 0; r < numLocalRows; r++) {
+      std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
+    }
   }
   ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
@@ -164,7 +169,6 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   }
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatView(A, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

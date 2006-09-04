@@ -1493,7 +1493,7 @@ namespace ALE {
     public: // Index retrieval
       const index_type& getIndex(const patch_type& patch, const point_type& p) {
         this->checkPatch(patch);
-        return this->_atlas->restrict(patch, p);
+        return this->_atlas->restrict(patch, p)[0];
       };
       template<typename Numbering>
       const index_type getIndex(const patch_type& patch, const point_type& p, const Obj<Numbering>& numbering) {
@@ -1540,10 +1540,8 @@ namespace ALE {
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
 
-          std::cout << "  Getting index for " << p << std::endl;
           this->_indexArray->push_back(this->getIndex(patch, p, numbering));
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
-            std::cout << "  --> Getting index for " << *p_iter << std::endl;
             this->_indexArray->push_back(this->getIndex(patch, *p_iter, numbering));
           }
         } else if (level == -1) {

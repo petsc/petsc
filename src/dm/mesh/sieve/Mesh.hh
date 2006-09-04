@@ -20,7 +20,7 @@ namespace ALE {
     typedef std::map<int, Obj<numbering_type> >         NumberingContainer;
     typedef ALE::New::GlobalOrder<topology_type, section_type::atlas_type> order_type;
     typedef std::map<std::string, Obj<order_type> >          OrderContainer;
-    typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
+    typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
     typedef struct {double x, y, z;}                                           split_value;
     typedef ALE::New::Section<topology_type, ALE::pair<point_type, split_value> > split_section_type;
     typedef ALE::New::Completion<topology_type, point_type>::send_overlap_type send_overlap_type;
@@ -51,7 +51,7 @@ namespace ALE {
     Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
       this->setComm(comm);
       this->topology    = new sieve_type(comm, debug);
-      this->_boundaries = new foliated_section_type(comm, debug);
+      this->_boundaries = NULL;
       this->distributed = false;
     };
 
@@ -63,7 +63,12 @@ namespace ALE {
     void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
     int             getDimension() const {return this->dim;};
     void            setDimension(int dim) {this->dim = dim;};
-    const Obj<foliated_section_type>& getBoundariesNew() const {return this->_boundaries;};
+    const Obj<foliated_section_type>& getBoundariesNew() {
+      if (this->_boundaries.isNull()) {
+        this->_boundaries = new foliated_section_type(this->getTopologyNew());
+      }
+      return this->_boundaries;
+    };
     const Obj<section_type>& getSection(const std::string& name) {
       if (this->sections.find(name) == this->sections.end()) {
         Obj<section_type> section = new section_type(this->_topology);
