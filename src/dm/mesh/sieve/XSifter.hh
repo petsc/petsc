@@ -383,11 +383,12 @@ namespace ALE {
         // If iteration over inner keys is to be strided as well, we advance directly to the segment boundary.
         // Effectively, we iterate over segments.
         if(inner_strided) {
+          // Advance itor to the segment boundary
           itor = segBndry;
-          // Finally, compute the new segment's boundary
           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
           olow = this->_okex(*itor);
           ilow = this->_ikex(*itor);
+          // Compute the new segment's boundary
           segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
         }// inner strided
         // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
@@ -689,7 +690,12 @@ namespace ALE {
     // Extended interface
     //
     void addArrow(const arrow_type& a) {
+#ifdef ALE_USE_DEBUGGING
+      rec_type r(a);
+      this->_rec_set.insert(r);
+#else
       this->_rec_set.insert(rec_type(a));
+#endif
     };
     void cone(const target_type& t, ConeSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set));
