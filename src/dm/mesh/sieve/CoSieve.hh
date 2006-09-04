@@ -465,6 +465,9 @@ namespace ALE {
           txt << "Patch " << s_iter->first;
           s_iter->second->view(txt.str().c_str(), comm);
         }
+        for(typename labels_type::const_iterator l_iter = this->_labels.begin(); l_iter != this->_labels.end(); ++l_iter) {
+          PetscPrintf(comm, "  label %s constructed\n", l_iter->first.c_str());
+        }
       };
     };
 
@@ -898,7 +901,9 @@ namespace ALE {
       atlas_type         _atlas;
       value_type         _value;
     public:
-      NewConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
+      NewConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+        this->_topology = new topology_type(comm, debug);
+      };
       NewConstantSection(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()), _topology(topology) {};
       NewConstantSection(const Obj<topology_type>& topology, const value_type& value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value) {};
     public: // Verifiers
@@ -987,8 +992,19 @@ namespace ALE {
         this->_value += v[0];
       };
     public:
-      void copy(const NewConstantSection& section) {
-        this->_value = section->restrict(this->_topology->getPatches().begin().first, point_type());
+      void copy(const Obj<NewConstantSection>& section) {
+        const typename topology_type::sheaf_type& patches = this->_topology->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const patch_type& patch = p_iter->first;
+          if (!section->hasPatch(patch)) continue;
+          const chart_type& chart = section->getPatch(patch);
+
+          for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            this->updatePatch(patch, *c_iter);
+          }
+          this->_value = section->restrict(patch, *chart.begin())[0];
+        }
       };
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
         ostringstream txt;
@@ -1070,6 +1086,9 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
+      bool hasPatch(const patch_type& patch) {
+        return this->_atlas->hasPatch(patch);
+      };
       void checkDimension(const int& dim) {
         if (dim != fiberDim) {
           ostringstream msg;
@@ -1092,6 +1111,20 @@ namespace ALE {
       void updatePatch(const patch_type& patch, const Obj<Points>& points) {
         for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
           this->setFiberDimension(patch, *p_iter, 1);
+        }
+      };
+      void copy(const Obj<UniformSection<Topology_, Value_, fiberDim> >& section) {
+        this->getAtlas()->copy(section->getAtlas());
+        const typename topology_type::sheaf_type& sheaf = section->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator s_iter = sheaf.begin(); s_iter != sheaf.end(); ++s_iter) {
+          const patch_type& patch = s_iter->first;
+          if (!section->hasPatch(patch)) continue;
+          const chart_type& chart = section->getPatch(patch);
+
+          for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            this->update(s_iter->first, *c_iter, section->restrict(s_iter->first, *c_iter));
+          }
         }
       };
     public: // Sizes
@@ -1161,7 +1194,7 @@ namespace ALE {
         array_type& array  = this->_arrays[patch];
         value_type *values = this->getRawArray(this->size(patch, p));
 
-        if (this->getTopology()->height(patch) == 1) {
+        if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy of closure()
           const int& dim = this->_atlas->restrict(patch, p)[0];
           int        j   = -1;
@@ -1206,7 +1239,7 @@ namespace ALE {
         this->_atlas->checkPatch(patch);
         array_type& array = this->_arrays[patch];
 
-        if (this->getTopology()->height(patch) == 1) {
+        if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy of closure()
           const int& dim = this->_atlas->restrict(patch, p)[0];
           int        j   = -1;
@@ -1238,6 +1271,7 @@ namespace ALE {
             }
           }
 #else
+          std::cout << "[" << this->commRank() << "]Invalid topology height " << this->getTopology()->height(patch) << std::endl;
           throw ALE::Exception("Not yet implemented for interpolated sieves");
 #endif
         }
@@ -1246,7 +1280,7 @@ namespace ALE {
         this->_atlas->checkPatch(patch);
         array_type& array = this->_arrays[patch];
 
-        if (this->getTopology()->height(patch) == 1) {
+        if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy of closure()
           const int& dim = this->_atlas->restrict(patch, p)[0];
           int        j   = -1;
@@ -1319,18 +1353,11 @@ namespace ALE {
       };
     };
 
-    // A Numbering is a UniformSection giving each Sieve point a consecutive number
-    //   We need to support versions which operate both intra- and inter-patch
-    //   We sometimes need an inverse mapping, so those should really be Sifters or labels
-    //     However, I have not figured out/written distribution for Sifters (do soon)
-
-    // A GlobalOrder is an Atlas which calculates interpatch offsets
-
     // A Section is our most general construct (more general ones could be envisioned)
     //   The Atlas is a UniformSection of dimension 1 and value type Point
     //     to hold each fiber dimension and offsets into a contiguous patch array
     template<typename Topology_, typename Value_>
-    class NewSection : public ALE::ParallelObject {
+    class Section : public ALE::ParallelObject {
     public:
       typedef Topology_                                 topology_type;
       typedef typename topology_type::patch_type        patch_type;
@@ -1338,23 +1365,30 @@ namespace ALE {
       typedef typename topology_type::point_type        point_type;
       typedef ALE::Point                                index_type;
       typedef UniformSection<topology_type, index_type> atlas_type;
+      typedef typename atlas_type::chart_type           chart_type;
       typedef Value_                                    value_type;
       typedef value_type *                              array_type;
       typedef std::map<patch_type, array_type>          values_type;
+      typedef std::vector<index_type>                   IndexArray;
     protected:
       Obj<atlas_type> _atlas;
       Obj<atlas_type> _atlasNew;
       values_type     _arrays;
+      Obj<IndexArray> _indexArray;
     public:
-      NewSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-        this->_atlas    = new atlas_type(comm, debug);
-        this->_atlasNew = NULL;
+      Section(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+        this->_atlas      = new atlas_type(comm, debug);
+        this->_atlasNew   = NULL;
+        this->_indexArray = new IndexArray();
       };
-      NewSection(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()), _atlasNew(NULL) {
-        this->_atlas = new atlas_type(topology);
+      Section(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()), _atlasNew(NULL) {
+        this->_atlas      = new atlas_type(topology);
+        this->_indexArray = new IndexArray();
       };
-      NewSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {};
-      virtual ~NewSection() {
+      Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {
+        this->_indexArray = new IndexArray();
+      };
+      virtual ~Section() {
         for(typename values_type::iterator a_iter = this->_arrays.begin(); a_iter != this->_arrays.end(); ++a_iter) {
           delete [] a_iter->second;
           a_iter->second = NULL;
@@ -1381,11 +1415,17 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
+      bool hasPatch(const patch_type& patch) {
+        return this->_atlas->hasPatch(patch);
+      };
     public: // Accessors
       const Obj<atlas_type>& getAtlas() {return this->_atlas;};
       void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
       const Obj<topology_type>& getTopology() {return this->_atlas->getTopology();};
       void setTopology(const Obj<topology_type>& topology) {this->_atlas->setTopology(topology);};
+      const chart_type& getPatch(const patch_type& patch) {
+        return this->_atlas->getPatch(patch);
+      };
     public: // Sizes
       void clear() {
         this->_atlas->clear(); 
@@ -1395,15 +1435,19 @@ namespace ALE {
         // Could check for non-existence here
         return this->_atlas->restrict(patch, p)->prefix;
       };
+      int getFiberDimension(const Obj<atlas_type>& atlas, const patch_type& patch, const point_type& p) const {
+        // Could check for non-existence here
+        return atlas->restrict(patch, p)->prefix;
+      };
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         const index_type idx(dim, -1);
         this->_atlas->updatePatch(patch, p);
         this->_atlas->update(patch, p, &idx);
       };
       void addFiberDimension(const patch_type& patch, const point_type& p, int dim) {
-        const value_type values[2] = {dim, 0};
+        const index_type values(dim, 0);
         this->_atlas->updatePatch(patch, p);
-        this->_atlas->updateAdd(patch, p, values);
+        this->_atlas->updateAdd(patch, p, &values);
       };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
         this->setFiberDimensionByLabel(patch, "depth", depth, dim);
@@ -1437,6 +1481,86 @@ namespace ALE {
         }
         return size;
       };
+      int size(const Obj<atlas_type>& atlas, const patch_type& patch) {
+        const typename atlas_type::chart_type& points = atlas->getPatch(patch);
+        int size = 0;
+
+        for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+          size += this->getFiberDimension(atlas, patch, *p_iter);
+        }
+        return size;
+      };
+    public: // Index retrieval
+      const index_type& getIndex(const patch_type& patch, const point_type& p) {
+        this->checkPatch(patch);
+        return this->_atlas->restrict(patch, p)[0];
+      };
+      template<typename Numbering>
+      const index_type getIndex(const patch_type& patch, const point_type& p, const Obj<Numbering>& numbering) {
+        this->checkPatch(patch);
+        return index_type(this->getFiberDimension(patch, p), numbering->getIndex(p));
+      };
+      const Obj<IndexArray>& getIndices(const patch_type& patch, const point_type& p, const int level = -1) {
+        this->_indexArray->clear();
+
+        if (level == 0) {
+          this->_indexArray->push_back(this->getIndex(patch, p));
+        } else if ((level == 1) || (this->getTopology()->height(patch) == 1)) {
+          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+          typename sieve_type::coneSequence::iterator   end  = cone->end();
+
+          this->_indexArray->push_back(this->getIndex(patch, p));
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+            this->_indexArray->push_back(this->getIndex(patch, *p_iter));
+          }
+        } else if (level == -1) {
+          const Obj<typename sieve_type::coneSet> closure = this->getTopology()->getPatch(patch)->closure(p);
+          typename sieve_type::coneSet::iterator  end     = closure->end();
+
+          for(typename sieve_type::coneSet::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+            this->_indexArray->push_back(this->getIndex(patch, *p_iter));
+          }
+        } else {
+          const Obj<typename sieve_type::coneArray> cone = this->getTopology()->getPatch(patch)->nCone(p, level);
+          typename sieve_type::coneArray::iterator  end  = cone->end();
+
+          for(typename sieve_type::coneArray::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+            this->_indexArray->push_back(this->getIndex(patch, *p_iter));
+          }
+        }
+        return this->_indexArray;
+      };
+      template<typename Numbering>
+      const Obj<IndexArray>& getIndices(const patch_type& patch, const point_type& p, const Obj<Numbering>& numbering, const int level = -1) {
+        this->_indexArray->clear();
+
+        if (level == 0) {
+          this->_indexArray->push_back(this->getIndex(patch, p, numbering));
+        } else if ((level == 1) || (this->getTopology()->height(patch) == 1)) {
+          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+          typename sieve_type::coneSequence::iterator   end  = cone->end();
+
+          this->_indexArray->push_back(this->getIndex(patch, p, numbering));
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+            this->_indexArray->push_back(this->getIndex(patch, *p_iter, numbering));
+          }
+        } else if (level == -1) {
+          const Obj<typename sieve_type::coneSet> closure = this->getTopology()->getPatch(patch)->closure(p);
+          typename sieve_type::coneSet::iterator  end     = closure->end();
+
+          for(typename sieve_type::coneSet::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+            this->_indexArray->push_back(this->getIndex(patch, *p_iter, numbering));
+          }
+        } else {
+          const Obj<typename sieve_type::coneArray> cone = this->getTopology()->getPatch(patch)->nCone(p, level);
+          typename sieve_type::coneArray::iterator  end  = cone->end();
+
+          for(typename sieve_type::coneArray::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+            this->_indexArray->push_back(this->getIndex(patch, *p_iter, numbering));
+          }
+        }
+        return this->_indexArray;
+      };
     public: // Allocation
       void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset) {
         const Obj<typename sieve_type::coneSequence>& cone = sieve->cone(point);
@@ -1455,66 +1579,75 @@ namespace ALE {
           offset += dim;
         }
       }
-      void orderPatch(const patch_type& patch, int& offset) {
-        const typename atlas_type::chart_type& chart = this->_atlas->getPatch(patch);
+      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset) {
+        const typename atlas_type::chart_type& chart = atlas->getPatch(patch);
 
         for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
           if (this->_debug > 1) {std::cout << "Ordering closure of point " << *p_iter << std::endl;}
-          this->orderPoint(this->_atlas, this->getTopology()->getPatch(patch), patch, *p_iter, offset);
+          this->orderPoint(atlas, this->getTopology()->getPatch(patch), patch, *p_iter, offset);
         }
       };
-      void orderPatches() {
+      void orderPatches(const Obj<atlas_type>& atlas) {
         const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           if (this->_debug > 1) {std::cout << "Ordering patch " << p_iter->first << std::endl;}
           int offset = 0;
 
-          this->orderPatch(p_iter->first, offset);
+          if (!atlas->hasPatch(p_iter->first)) continue;
+          this->orderPatch(atlas, p_iter->first, offset);
         }
+      };
+      void orderPatches() {
+        this->orderPatches(this->_atlas);
       };
       void allocate() {
         this->orderPatches();
         const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          if (!this->_atlas->hasPatch(p_iter->first)) continue;
           this->_arrays[p_iter->first] = new value_type[this->size(p_iter->first)];
           PetscMemzero(this->_arrays[p_iter->first], this->size(p_iter->first) * sizeof(value_type));
         }
       };
-      void addPoint(const patch_type& patch, const point_type& point, const int size) {
-        const typename atlas_type::chart_type& chart = this->_atlas->getChart(patch);
+      void addPoint(const patch_type& patch, const point_type& point, const int dim) {
+        //const typename atlas_type::chart_type& chart = this->_atlas->getPatch(patch);
 
-        if (chart.find(point) == chart.end()) {
-          if (this->_atlasNew.isNull()) {
-            this->_atlasNew = new atlas_type(this->getTopology());
-            this->_atlasNew->copy(this->_atlas);
-          }
-          this->_atlasNew->setFiberDimension(patch, point, size);
+        //if (chart.find(point) == chart.end()) {
+        if (this->_atlasNew.isNull()) {
+          this->_atlasNew = new atlas_type(this->getTopology());
+          this->_atlasNew->copy(this->_atlas);
         }
+        const index_type idx(dim, -1);
+        this->_atlasNew->updatePatch(patch, point);
+        this->_atlasNew->update(patch, point, &idx);
       };
       void reallocate() {
         if (this->_atlasNew.isNull()) return;
-        this->_atlasNew->orderPatches();
+        this->orderPatches(_atlasNew);
         const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const patch_type&                      patch    = p_iter->first;
-          const typename atlas_type::chart_type& chart    = this->_atlas->getChart(patch);
+          value_type                            *newArray = new value_type[this->size(this->_atlasNew, patch)];
+
+          this->_arrays[patch] = newArray;
+          if (!this->_atlas->hasPatch(patch)) continue;
+          const typename atlas_type::chart_type& chart    = this->_atlas->getPatch(patch);
           const value_type                      *array    = this->_arrays[patch];
-          value_type                            *newArray = new value_type[this->size(patch)];
 
           for(typename atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            const int& size      = c_iter->second.index;
-            const int& offset    = c_iter->second.prefix;
-            const int& newOffset = this->_atlasNew->getIndex(patch, c_iter->first).prefix;
+            const index_type& idx       = this->_atlas->restrict(patch, *c_iter)[0];
+            const int&        size      = idx.prefix;
+            const int&        offset    = idx.index;
+            const int&        newOffset = this->_atlasNew->restrict(patch, *c_iter)[0].index;
 
             for(int i = 0; i < size; ++i) {
               newArray[newOffset+i] = array[offset+i];
             }
           }
           delete [] this->_arrays[patch];
-          this->_arrays[patch] = newArray;
         }
         this->_atlas    = this->_atlasNew;
         this->_atlasNew = NULL;
@@ -1530,7 +1663,7 @@ namespace ALE {
         const value_type *a      = this->_arrays[patch];
         value_type       *values = this->getRawArray(this->size(patch, p));
 
-        if (this->getTopology()->height(patch) == 1) {
+        if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
@@ -1577,18 +1710,18 @@ namespace ALE {
         this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
-        if (this->getTopology()->height(patch) == 1) {
+        if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
-          const index_type&                             pInd = this->_atlas->restrict(patch, p);
+          const index_type&                             pInd = this->_atlas->restrict(patch, p)[0];
           int                                           j    = -1;
 
           for(int i = pInd.index; i < pInd.prefix + pInd.index; ++i) {
             a[i] = v[++j];
           }
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
-            const index_type& ind    = this->_atlas->restrict(patch, *p_iter);
+            const index_type& ind    = this->_atlas->restrict(patch, *p_iter)[0];
             const int&        start  = ind.index;
             const int&        length = ind.prefix;
 
@@ -1618,7 +1751,7 @@ namespace ALE {
         this->checkPatch(patch);
         value_type *a = this->_arrays[patch];
 
-        if (this->getTopology()->height(patch) == 1) {
+        if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
@@ -1748,6 +1881,9 @@ namespace ALE {
             }
           }
         }
+        if (this->_arrays.empty()) {
+          txt << "[" << this->commRank() << "]: empty" << std::endl;
+        }
         PetscSynchronizedPrintf(comm, txt.str().c_str());
         PetscSynchronizedFlush(comm);
       };
@@ -1758,7 +1894,7 @@ namespace ALE {
     //     For XSifter, this should change to (local patch, local point) ---> (remote rank, remote patch, remote point)
 
     template<typename Atlas_, typename Value_>
-    class Section : public ALE::ParallelObject {
+    class SectionOld : public ALE::ParallelObject {
     public:
       typedef Atlas_                             atlas_type;
       typedef typename atlas_type::patch_type    patch_type;
@@ -1773,12 +1909,12 @@ namespace ALE {
       Obj<atlas_type> _atlasNew;
       values_type     _arrays;
     public:
-      Section(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+      SectionOld(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
         this->_atlas    = new atlas_type(comm, debug);
         this->_atlasNew = NULL;
       };
-      Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {};
-      virtual ~Section() {
+      SectionOld(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {};
+      virtual ~SectionOld() {
         for(typename values_type::iterator a_iter = this->_arrays.begin(); a_iter != this->_arrays.end(); ++a_iter) {
           delete [] a_iter->second;
           a_iter->second = NULL;
@@ -2240,26 +2376,27 @@ namespace ALE {
     };
 
 
-    template<typename Overlap_, typename Atlas_, typename Value_>
-    class OverlapValues : public Section<Atlas_, Value_> {
+    template<typename Overlap_, typename Topology_, typename Value_>
+    class OverlapValues : public Section<Topology_, Value_> {
     public:
-      typedef typename Section<Atlas_, Value_>::patch_type    patch_type;
-      typedef typename Section<Atlas_, Value_>::topology_type topology_type;
-      typedef Overlap_                            overlap_type;
-      typedef Atlas_                              atlas_type;
-      typedef Value_                              value_type;
-      typedef enum {SEND, RECEIVE}                request_type;
-      typedef std::map<patch_type, MPI_Request>   requests_type;
+      typedef Overlap_                          overlap_type;
+      typedef Section<Topology_, Value_>        base_type;
+      typedef typename base_type::patch_type    patch_type;
+      typedef typename base_type::topology_type topology_type;
+      typedef typename base_type::atlas_type    atlas_type;
+      typedef typename base_type::value_type    value_type;
+      typedef enum {SEND, RECEIVE}              request_type;
+      typedef std::map<patch_type, MPI_Request> requests_type;
     protected:
       int           _tag;
       MPI_Datatype  _datatype;
       requests_type _requests;
     public:
-      OverlapValues(MPI_Comm comm, const int debug = 0) : Section<Atlas_, Value_>(comm, debug) {
-        this->_tag = this->getNewTag();
+      OverlapValues(MPI_Comm comm, const int debug = 0) : Section<Topology_, Value_>(comm, debug) {
+        this->_tag      = this->getNewTag();
         this->_datatype = this->getMPIDatatype();
       };
-      OverlapValues(MPI_Comm comm, const int tag, const int debug) : Section<Atlas_, Value_>(comm, debug), _tag(tag) {
+      OverlapValues(MPI_Comm comm, const int tag, const int debug) : Section<Topology_, Value_>(comm, debug), _tag(tag) {
         this->_datatype = this->getMPIDatatype();
       };
       virtual ~OverlapValues() {};
@@ -2304,27 +2441,27 @@ namespace ALE {
       void setTag(const int tag) {this->_tag = tag;};
     public:
       void construct(const int size) {
-        const typename topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
+        const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const Obj<typename topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
           int                                  rank = p_iter->first;
 
           for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            this->_atlas->setFiberDimension(rank, *b_iter, size);
+            this->setFiberDimension(rank, *b_iter, size);
           }
         }
       };
       template<typename Sizer>
       void construct(const Obj<Sizer>& sizer) {
-        const typename topology_type::sheaf_type& patches = this->_atlas->getTopology()->getPatches();
+        const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const Obj<typename topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
           int                                  rank = p_iter->first;
 
           for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            this->_atlas->setFiberDimension(rank, *b_iter, *(sizer->restrict(rank, *b_iter)));
+            this->setFiberDimension(rank, *b_iter, *(sizer->restrict(rank, *b_iter)));
           }
         }
       };
@@ -2336,11 +2473,11 @@ namespace ALE {
           MPI_Request request;
 
           if (requestType == RECEIVE) {
-            if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Receiving data(" << this->_atlas->size(patch) << ") from " << patch << " tag " << this->_tag << std::endl;}
-            MPI_Recv_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
+            if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Receiving data(" << this->size(patch) << ") from " << patch << " tag " << this->_tag << std::endl;}
+            MPI_Recv_init(this->_arrays[patch], this->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
           } else {
-            if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Sending data (" << this->_atlas->size(patch) << ") to " << patch << " tag " << this->_tag << std::endl;}
-            MPI_Send_init(this->_arrays[patch], this->_atlas->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
+            if (this->_debug) {std::cout <<"["<<this->commRank()<<"] Sending data (" << this->size(patch) << ") to " << patch << " tag " << this->_tag << std::endl;}
+            MPI_Send_init(this->_arrays[patch], this->size(patch), this->_datatype, patch, this->_tag, this->_comm, &request);
           }
           this->_requests[patch] = request;
         }

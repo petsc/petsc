@@ -7,13 +7,12 @@ namespace ALE {
 
     class Builder {
     public:
-      typedef ALE::Sieve<int, int, int>             sieve_type;
-      typedef ALE::New::Topology<int, sieve_type>   topology_type;
-      typedef ALE::New::Atlas<topology_type, Point> atlas_type;
-      typedef ALE::New::Section<atlas_type, double> section_type;
-      //typedef struct {double x, y, z;}              split_value;
-      typedef ALE::Mesh::split_value                split_value;
-      typedef ALE::New::Section<atlas_type, ALE::pair<sieve_type::point_type, split_value> > split_section_type;
+      typedef ALE::Sieve<int, int, int>                sieve_type;
+      typedef ALE::New::Topology<int, sieve_type>      topology_type;
+      typedef ALE::New::Section<topology_type, double> section_type;
+      //typedef struct {double x, y, z;}               split_value;
+      typedef ALE::Mesh::split_value                   split_value;
+      typedef ALE::New::Section<topology_type, ALE::pair<sieve_type::point_type, split_value> > split_section_type;
     public:
       Builder() {};
       virtual ~Builder() {};

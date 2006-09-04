@@ -13,20 +13,21 @@ namespace ALE {
     typedef ALE::Sieve<point_type,int,int> sieve_type;
     typedef ALE::Point patch_type;
     typedef ALE::New::Topology<int, sieve_type>         topology_type;
-    typedef ALE::New::Atlas<topology_type, ALE::Point>  atlas_type;
-    typedef ALE::New::Section<atlas_type, double>       section_type;
+    typedef ALE::New::Section<topology_type, double>    section_type;
+    typedef section_type::atlas_type                    atlas_type;
     typedef std::map<std::string, Obj<section_type> >   SectionContainer;
-    typedef ALE::New::NewNumbering<atlas_type>          numbering_type;
+    typedef ALE::New::Numbering<topology_type>          numbering_type;
     typedef std::map<int, Obj<numbering_type> >         NumberingContainer;
-    typedef std::map<std::string, Obj<numbering_type> > OrderContainer;
-    typedef ALE::New::Section<atlas_type, ALE::pair<int,double> > foliated_section_type;
+    typedef ALE::New::GlobalOrder<topology_type, section_type::atlas_type> order_type;
+    typedef std::map<std::string, Obj<order_type> >          OrderContainer;
+    typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
     typedef struct {double x, y, z;}                                           split_value;
-    typedef ALE::New::Section<atlas_type, ALE::pair<point_type, split_value> > split_section_type;
+    typedef ALE::New::Section<topology_type, ALE::pair<point_type, split_value> > split_section_type;
     typedef ALE::New::Completion<topology_type, point_type>::send_overlap_type send_overlap_type;
     typedef ALE::New::Completion<topology_type, point_type>::recv_overlap_type recv_overlap_type;
-    typedef ALE::New::Completion<topology_type, point_type>::atlas_type        comp_atlas_type;
-    typedef ALE::New::OverlapValues<send_overlap_type, comp_atlas_type, point_type> send_section_type;
-    typedef ALE::New::OverlapValues<recv_overlap_type, comp_atlas_type, point_type> recv_section_type;
+    typedef ALE::New::Completion<topology_type, point_type>::topology_type     comp_topology_type;
+    typedef ALE::New::OverlapValues<send_overlap_type, comp_topology_type, point_type> send_section_type;
+    typedef ALE::New::OverlapValues<recv_overlap_type, comp_topology_type, point_type> recv_section_type;
     int debug;
   private:
     Obj<sieve_type>            topology;
@@ -50,7 +51,7 @@ namespace ALE {
     Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
       this->setComm(comm);
       this->topology    = new sieve_type(comm, debug);
-      this->_boundaries = new foliated_section_type(comm, debug);
+      this->_boundaries = NULL;
       this->distributed = false;
     };
 
@@ -62,11 +63,15 @@ namespace ALE {
     void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
     int             getDimension() const {return this->dim;};
     void            setDimension(int dim) {this->dim = dim;};
-    const Obj<foliated_section_type>& getBoundariesNew() const {return this->_boundaries;};
+    const Obj<foliated_section_type>& getBoundariesNew() {
+      if (this->_boundaries.isNull()) {
+        this->_boundaries = new foliated_section_type(this->getTopologyNew());
+      }
+      return this->_boundaries;
+    };
     const Obj<section_type>& getSection(const std::string& name) {
       if (this->sections.find(name) == this->sections.end()) {
-        Obj<section_type> section = new section_type(this->_comm, this->debug);
-        section->getAtlas()->setTopology(this->_topology);
+        Obj<section_type> section = new section_type(this->_topology);
 
         std::cout << "Creating new section: " << name << std::endl;
         this->sections[name] = section;
@@ -86,7 +91,7 @@ namespace ALE {
     };
     const Obj<numbering_type>& getNumbering(const int depth) {
       if (this->numberings.find(depth) == this->numberings.end()) {
-        Obj<numbering_type> numbering = new numbering_type(new atlas_type(this->getTopologyNew()), "depth", depth);
+        Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
         numbering->construct();
 
         std::cout << "Creating new numbering: " << depth << std::endl;
@@ -96,7 +101,7 @@ namespace ALE {
     };
     const Obj<numbering_type>& getLocalNumbering(const int depth) {
       if (this->localNumberings.find(depth) == this->localNumberings.end()) {
-        Obj<numbering_type> numbering = new numbering_type(new atlas_type(this->getTopologyNew()), "depth", depth);
+        Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
         numbering->constructLocalOrder(numbering->getSendOverlap());
 
         std::cout << "Creating new local numbering: " << depth << std::endl;
@@ -104,12 +109,13 @@ namespace ALE {
       }
       return this->localNumberings[depth];
     };
-    const Obj<numbering_type>& getGlobalOrder(const std::string& name) {
+    const Obj<order_type>& getGlobalOrder(const std::string& name) {
       if (this->orders.find(name) == this->orders.end()) {
-        Obj<numbering_type> numbering = ALE::New::GlobalOrder::createIndices(this->getSection(name)->getAtlas(), this->getNumbering(0));
+        Obj<order_type> order = new order_type(this->getSection(name)->getAtlas(), this->getNumbering(0));
+        order->construct();
 
         std::cout << "Creating new global order: " << name << std::endl;
-        this->orders[name] = numbering;
+        this->orders[name] = order;
       }
       return this->orders[name];
     };

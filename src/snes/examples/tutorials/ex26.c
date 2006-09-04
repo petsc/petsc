@@ -296,7 +296,7 @@ PetscErrorCode FormInitialGuess(AppCtx *user,Vec X)
     Vec          Y;
     ierr = PetscOptionsGetString(PETSC_NULL,"-initialGuess",filename,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,PETSC_FILE_RDONLY,&view_in);CHKERRQ(ierr);
+      ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&view_in);CHKERRQ(ierr);
       ierr = VecLoad(view_in,PETSC_NULL,&Y);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(view_in);CHKERRQ(ierr);
       ierr = VecMax(Y,PETSC_NULL,&user->psi_bdy);CHKERRQ(ierr);
