@@ -182,7 +182,7 @@ PetscErrorCode FieldView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, const std:
       if (doOutput) {
         ALE::Mesh::section_type::patch_type patch = mesh->getTopologyNew()->getPatches().begin()->first;
 
-        fiberDim = field->getAtlas()->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+        fiberDim = field->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
       VTKViewer::writeField(mesh, field, name, fiberDim, numbering, viewer);
@@ -208,7 +208,7 @@ PetscErrorCode FieldView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, const std:
       if (doOutput) {
         ALE::Mesh::section_type::patch_type patch = mesh->getTopologyNew()->getPatches().begin()->first;
 
-        fiberDim = field->getAtlas()->size(patch, *mesh->getTopologyNew()->heightStratum(patch, 0)->begin());
+        fiberDim = field->size(patch, *mesh->getTopologyNew()->heightStratum(patch, 0)->begin());
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
       VTKViewer::writeField(mesh, field, name, fiberDim, numbering, viewer);

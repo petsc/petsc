@@ -226,6 +226,7 @@ namespace ALE {
         splitField->addFiberDimension(patch, splitInd[e*2+0], 1);
         elem2index[splitInd[e*2+0]].insert(e);
       }
+      splitField->getAtlas()->view("Split field atlas");
       splitField->allocate();
       for(std::map<split_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         const split_section_type::point_type& e = e_iter->first;
@@ -243,23 +244,21 @@ namespace ALE {
       }
     };
     void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
-      const section_type::patch_type patch = 0;
-      const Obj<topology_type::label_sequence>& vertices = coords->getAtlas()->getTopology()->depthStratum(patch, 0);
-      const int numCells = coords->getAtlas()->getTopology()->heightStratum(patch, 0)->size();
+      const section_type::patch_type            patch    = 0;
+      const Obj<topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
+      const int numCells = coords->getTopology()->heightStratum(patch, 0)->size();
 
-      coords->getAtlas()->setFiberDimensionByDepth(patch, 0, embedDim);
-      coords->getAtlas()->orderPatches();
+      coords->setFiberDimensionByDepth(patch, 0, embedDim);
       coords->allocate();
       for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
       }
     };
     void Builder::buildMaterials(const Obj<Mesh::section_type>& matField, const int materials[]) {
-      const Mesh::section_type::patch_type patch = 0;
-      const Obj<Mesh::section_type::topology_type::label_sequence>& elements = matField->getAtlas()->getTopology()->heightStratum(patch, 0);
+      const Mesh::section_type::patch_type                          patch    = 0;
+      const Obj<Mesh::section_type::topology_type::label_sequence>& elements = matField->getTopology()->heightStratum(patch, 0);
 
-      matField->getAtlas()->setFiberDimensionByHeight(patch, 0, 1);
-      matField->getAtlas()->orderPatches();
+      matField->setFiberDimensionByHeight(patch, 0, 1);
       matField->allocate();
       for(Mesh::section_type::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         double mat = (double) materials[*e_iter];
@@ -290,7 +289,7 @@ namespace ALE {
       if (hasSplit) {
         Obj<split_section_type> splitField = new split_section_type(comm, debug);
 
-        splitField->getAtlas()->setTopology(topology);
+        splitField->setTopology(topology);
         buildSplit(splitField, numCells, numSplit, splitInd, splitValues);
         mesh->setSplitSection(splitField);
       }
@@ -501,7 +500,7 @@ namespace ALE {
       const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering  = mesh->getLocalNumbering(0);
-      int            embedDim = coordinates->getAtlas()->getFiberDimension(patch, *vertices->begin());
+      int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -562,7 +561,9 @@ namespace ALE {
       ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       for(Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        Obj<Mesh::sieve_type::traits::coneSequence> cone = sieve->cone(*e_iter);
+        const Obj<Mesh::sieve_type::traits::coneSequence> cone  = sieve->cone(*e_iter);
+        Mesh::sieve_type::traits::coneSequence::iterator  begin = cone->begin();
+        Mesh::sieve_type::traits::coneSequence::iterator  end   = cone->end();
 
         ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", eNumbering->getIndex(*e_iter)+1, elementType);CHKERRQ(ierr);
         if (hasMaterial) {
@@ -572,7 +573,7 @@ namespace ALE {
           // No infinite elements
           ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", 1, 0);CHKERRQ(ierr);
         }
-        for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+        for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
           //FIX: Need a global ordering here
           ierr = PetscViewerASCIIPrintf(viewer, " %6d", vNumbering->getIndex(*c_iter)+1);CHKERRQ(ierr);
         }
@@ -591,12 +592,12 @@ namespace ALE {
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
-      const Builder::split_section_type::atlas_type::chart_type& chart = splitField->getAtlas()->getPatch(patch);
+      const Builder::split_section_type::atlas_type::chart_type& chart = splitField->getPatch(patch);
 
       for(Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         const Builder::split_section_type::point_type& e      = *c_iter;
         const Builder::split_section_type::value_type *values = splitField->restrict(patch, e);
-        const int                                      size   = splitField->getAtlas()->getFiberDimension(patch, e);
+        const int                                      size   = splitField->getFiberDimension(patch, e);
 
         for(int i = 0; i < size; i++) {
           const Builder::split_section_type::point_type& v      = values[i].first;

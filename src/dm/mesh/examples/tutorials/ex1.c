@@ -184,7 +184,7 @@ PetscErrorCode DistributeMesh(Obj<ALE::Mesh>& mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(mesh);
+    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh);
     if (options->partition) {
       ierr = CreatePartition(mesh);CHKERRQ(ierr);
     }
@@ -286,13 +286,13 @@ PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& mesh)
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  partition->getAtlas()->setFiberDimensionByHeight(patch, 0, 1);
-  partition->getAtlas()->orderPatches();
+  partition->setFiberDimensionByHeight(patch, 0, 1);
   partition->allocate();
-  const Obj<ALE::Mesh::topology_type::label_sequence>& cells = partition->getAtlas()->getTopology()->heightStratum(patch, 0);
+  const Obj<ALE::Mesh::topology_type::label_sequence>& cells = partition->getTopology()->heightStratum(patch, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator   end   = cells->end();
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    partition->update(patch, *c_iter, &rank);
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    partition->updatePoint(patch, *c_iter, &rank);
   }
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
