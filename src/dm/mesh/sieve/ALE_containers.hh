@@ -163,6 +163,14 @@ namespace ALE {
     };
   };
 
+  template <typename X>
+  struct singleton {
+    X first;
+    //
+    singleton(const X& x)         : first(x) {};
+    singleton(const singleton& s) : first(s.first) {};
+  };
+
   template <typename X, typename Y>
   struct pair : public std::pair<X,Y> {
     pair() : std::pair<X,Y>(){};
