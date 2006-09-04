@@ -15,9 +15,9 @@
 #endif
 
 
-namespace ALE_X { 
+namespace ALE { 
   
-  namespace SifterDef {
+  namespace XSifterDef {
     
     
     // 
@@ -76,42 +76,7 @@ namespace ALE_X {
       };
     };// struct Arrow
     
-    //
-    // Order and Compare definitions
-    //
-    // Definitions of wrappers for comparison predicates:
-    // The most basic predicates, called 'orders', for our purposes is a lexicographical order on one or two keys.
-    //
-    // lex1 simply delegates to the underlying Order_; defined purely for aesthetic purposes only
-    template <typename Key_, typename Order_ = std::less<Key_> >
-    struct lex1 {
-    private:
-      Order_ _less;
-    public:
-      bool operator()(const Key_& keyA, const Key_& keyB) const
-      {
-        return  (_less(keyA,keyB));
-      };
-    };
-    //
-    template <typename Key1_, typename Key2_,typename Order1_ = std::less<Key1_>, typename Order2_ = std::less<Key2_> >
-    struct lex2 {
-    private:
-      Order1_ _less1;
-      Order2_ _less2;
-    public:
-      bool operator()(const Key1_& key1A, const Key2_& key2A, const Key1_& key1B, const Key2_& key2B) const
-      {
-        // In the following (key1A < key1B) || ((key1A == key1B)&&(key2A < key2B)) is computed.
-        // Since we don't have equivalence '==' explicitly, it is defined by !(key1A < key1B) && !(key1B < key1A).
-        // Furthermore, the expression to the right of '||' is evaluated only if that to the left of '||' fails (C semantics),
-        // which means that !(key1A < key1B) is true, and we only need to test the other possibility to establish 
-        // key equivalence key1A == key1B
-        return  (_less1(key1A,key1B) || 
-                 (!_less1(key1B,key1A) &&  _less2(key2A,key2B)) );
-      };
-    };
-
+    
     //
     // Rec orders
     //
@@ -119,21 +84,28 @@ namespace ALE_X {
     // In addition, a recordcan be compared to a single Key_ or another CompatibleKey_.
     template<typename Rec_, typename KeyExtractor_, typename KeyOrder_ = std::less<typename KeyExtractor_::result_type> >
     struct RecKeyOrder {
-      typedef Rec_                                rec_type;
-      typedef typename KeyExtractor_::result_type Key_;
+      typedef Rec_                                     rec_type;
+      typedef KeyExtractor_                            key_extractor_type;
+      typedef typename key_extractor_type::result_type key_type;
+      typedef KeyOrder_                                key_order_type;
     protected:
-      KeyOrder_ _key_order;
+      key_order_type     _key_order;
+      key_extractor_type _kex;
     public:
-      bool operator()(const Rec_& rec1, const Rec_& rec2) const {
-        return _key_order(_key(rec1), _key(rec2));
+      bool operator()(const rec_type& rec1, const rec_type& rec2) const {
+        return this->_key_order(this->_kex(rec1), this->_kex(rec2));
       };
       template <typename CompatibleKey_>
-      bool operator()(const Rec_& rec, const CompatibleKey_ key) const {
-        return _key_order(_key(rec), key);
+      bool operator()(const rec_type& rec, const ALE::singleton<CompatibleKey_> keySingleton) const {
+        // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
+        // and must be unwrapped before the ordering operator is applied
+        return this->_key_order(this->_kex(rec), keySingleton.first);
       };
       template <typename CompatibleKey_>
-      bool operator()(const CompatibleKey_ key, const Rec_& rec) const {
-        return _key_order(key,_key(rec));
+      bool operator()(const ALE::singleton<CompatibleKey_> keySingleton, const rec_type& rec) const {
+        // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
+        // and must be unwrapped before the ordering operator is applied
+        return this->_key_order(keySingleton.first, this->_kex(rec));
       };
     };// RecKeyOrder
 
@@ -152,35 +124,52 @@ namespace ALE_X {
       typedef typename key_extractor_type::result_type                         key_type;
       typedef XXXOrder_                                                        xxx_order_type;
       //
-      typedef lex1<key_type, key_order_type>                                   order1_type;
-      typedef lex2<key_type, rec_type, key_order_type, xxx_order_type>         order2_type;
     private:
-      order1_type        _order1;
-      order2_type        _order2;
+      key_order_type     _compare_keys;
+      xxx_order_type     _compare_xxx;
       key_extractor_type _kex;
     public:
       bool operator()(const rec_type& rec1, const rec_type& rec2) const { 
-        return this->_order2(this->_kex(rec1),rec1,this->_kex(rec2),rec2);
+        //
+        return this->_compare_keys(_kex(rec1),_kex(rec2)) ||
+          (!this->_compare_keys(_kex(rec2),_kex(rec1)) && this->_compare_xxx(rec1,rec2));
       };
       template <typename CompatibleKey_>
-      bool operator()(const CompatibleKey_& key, const rec_type& rec1) const {
+      bool operator()(const ALE::singleton<CompatibleKey_>& keySingleton, const rec_type& rec1) const {
+        // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
+        // and must be unwrapped before the ordering operator is applied
+        //
         // We want key to be less than any (key, ...)
-        return this->_order1(key,this->_kex(rec1));
+        return this->_compare_keys(keySingleton.first, this->_kex(rec1));
       };
       template <typename CompatibleKey_>
-      bool operator()(const rec_type& rec1, const CompatibleKey_& key) const {
+      bool operator()(const rec_type& rec1, const ALE::singleton<CompatibleKey_>& keySingleton) const {
+        // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
+        // and must be unwrapped before the ordering operator is applied
+        //
         // We want key to be less than any (key, ...)
-        return !this->_order1(key,this->_kex(rec1));
+        return !this->_compare_keys(keySingleton.first, this->_kex(rec1));
       };
       template <typename CompatibleKey_, typename CompatibleXXXKey_>
-      bool operator()(const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair, const rec_type& rec1) const {
+      bool operator()(const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair, const rec_type& rec) const {
+        // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
+        // and must be unwrapped before the ordering operator is applied
+        //
         // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
-        return this->_order2(keyPair.first,keyPair.second,this->_kex(rec1),rec1);
+        return this->_compare_keys(keyPair.first, _kex(rec)) ||
+          (!this->_compare_keys(_kex(rec), keyPair.first) && this->_compare_xxx(ALE::singleton<CompatibleXXXKey_>(keyPair.second),rec));
+        // Note that CompatibleXXXKey_ -- the second key in the pair -- must be wrapped up as a singleton before being passed for comparison against rec
+        // to compare_xxx.  This is necessary for compare_xxx to disamiguate comparison of recs to elements of differents types.  In particular, 
+        // this is necessary if compare_xxx is of the RecKeyXXXOrder type. Specialization doesn't work, or I don't know how to make it work in this context.
       };
       template <typename CompatibleKey_, typename CompatibleXXXKey_>
-      bool operator()(const rec_type& rec1, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) const {
+      bool operator()(const rec_type& rec, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) const {
         // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
-        return !this->_order2(keyPair.first,keyPair.second,this->_kex(rec1),rec1);
+        return _compare_keys(_kex(rec), keyPair.first) ||
+          (!this->_compare_keys(keyPair.first, _kex(rec)) && this->_compare_xxx(rec, ALE::singleton<CompatibleXXXKey_>(keyPair.second)));
+        // Note that CompatibleXXXKey_ -- the second key in the pair -- must be wrapped up as a singleton before being passed for comparison against rec
+        // to compare_xxx.  This is necessary for compare_xxx to disamiguate comparison of recs to elements of differents types.  In particular, 
+        // this is necessary if compare_xxx is of the RecKeyXXXOrder type. Specialization doesn't work, or I don't know how to make it work in this context.
       };
     };// class RecKeyXXXOrder
 
@@ -305,10 +294,10 @@ namespace ALE_X {
     protected:
       index_type      *_index;
       //
-      outer_key_type  _ohigh, _olow;
-      bool            _have_olow, _have_ohigh;
-      outer_key_type  _ihigh, _ilow;
-      bool            _have_ilow, _have_ihigh;
+      outer_key_type      _olow, _ohigh;
+      bool                _have_olow, _have_ohigh;
+      inner_key_type      _ilow, _ihigh;
+      bool                _have_ilow, _have_ihigh;
       //
       outer_key_extractor_type _okex;
       inner_key_extractor_type _ikex;
@@ -368,8 +357,8 @@ namespace ALE_X {
         static itor_type itor;
         // Determine the lower outer limit iterator
         if(this->_have_olow) {
-          // ASSUMPTION: index ordering operator can compare against outer_keys
-          itor = this->_index->lower_bound(this->_olow);
+          // ASSUMPTION: index ordering operator can compare against outer_key singleton
+          itor = this->_index->lower_bound(ALE::singleton<outer_key_type>(this->_olow));
         }
         else {
           itor = this->_index->begin();
@@ -414,7 +403,7 @@ namespace ALE_X {
             olow = this->_okex(*itor);
             // Compute the lower boundary of the new segment
             // ASSUMPTION: index ordering operator can compare against outer_keys
-            itor = this->_index->upper_bound(olow);
+            itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(olow));
             // Extract the new outer key
             olow = this->_okex(*itor);
             // Now determine the inner lower limit and set the iterator to that limit within the new segment
@@ -454,8 +443,8 @@ namespace ALE_X {
           itor = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(ohigh,ihigh));
         }
         else {
-          // ASSUMPTION: index ordering operator can compare against outer_keys
-          itor = this->_index->upper_bound(ohigh);
+          // ASSUMPTION: index ordering operator can compare against outer_key singletons.
+          itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(ohigh));
         }
         // use segBndry == itor
         return iterator(this, itor, itor); 
@@ -503,15 +492,15 @@ namespace ALE_X {
         os << " ]" << std::endl;
       };
     };// class StridedIndexSequence    
-  }; // namespace SifterDef
+  }; // namespace XSifterDef
   
   //
-  // Sifter definition
+  // XSifter definition
   template<typename Arrow_, 
-           typename ArrowSupportOrder_= SifterDef::TargetColorOrder<Arrow_>, 
-           typename ArrowConeOrder_   = SifterDef::SourceColorOrder<Arrow_>, 
+           typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
+           typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
            typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
-  struct Sifter { // struct Sifter
+  struct XSifter { // struct XSifter
     //
     // Encapsulated types
     //
@@ -561,10 +550,10 @@ namespace ALE_X {
     //
     // Rec 'downward' order type: first order by predicate, then source, then support
     struct downward_order_type : public 
-    SifterDef::RecKeyXXXOrder<rec_type, 
+    XSifterDef::RecKeyXXXOrder<rec_type, 
                               typename ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>, 
                               predicate_order_type, 
-                              SifterDef::RecKeyXXXOrder<rec_type,
+                              XSifterDef::RecKeyXXXOrder<rec_type,
                                                         ::boost::multi_index::const_mem_fun<rec_type,
                                                                                             typename rec_type::source_type,
                                                                                             &rec_type::source>,
@@ -573,12 +562,12 @@ namespace ALE_X {
     //
     // Rec Cone order
     struct upward_order_type : public 
-    SifterDef::RecKeyXXXOrder<rec_type, 
+    XSifterDef::RecKeyXXXOrder<rec_type, 
                               typename ::boost::multi_index::const_mem_fun<rec_type, 
                                                                            predicate_type, 
                                                                            &rec_type::predicate>, 
                               predicate_order_type,
-                              SifterDef::RecKeyXXXOrder<rec_type,
+                              XSifterDef::RecKeyXXXOrder<rec_type,
                                                         ::boost::multi_index::const_mem_fun<rec_type,
                                                                                             typename rec_type::target_type,
                                                                                             &rec_type::target>,
@@ -609,11 +598,11 @@ namespace ALE_X {
     template <typename Index_, 
               typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_, bool inner_strided_flag = false>
     class ArrowSequence : 
-      public SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
+      public XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
       // ArrowSequence extends StridedIndexSequence with extra iterator methods.
     public:
-      typedef SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
-      typedef Sifter                                                                                                               container_type;
+      typedef XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
+      typedef XSifter                                                                                                               container_type;
       typedef typename super::index_type                                                                                           index_type;
       typedef typename super::outer_key_type                                                                                       outer_key_type;
       typedef typename super::inner_key_type                                                                                       inner_key_type;
@@ -724,9 +713,9 @@ namespace ALE_X {
     // set of arrow records
     rec_set_type _rec_set;
     
-  }; // class Sifter
+  }; // class XSifter
 
 
-} // namespace ALE_X
+} // namespace ALE
 
 #endif

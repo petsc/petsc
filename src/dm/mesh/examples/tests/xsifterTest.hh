@@ -1,23 +1,24 @@
 #ifndef included_ALE_xsifterTest_hh
 #define included_ALE_xsifterTest_hh
 
+#include <petsc.h>
 #include <XSifter.hh>
 
-namespace ALE_X {
+namespace ALE {
   namespace Test {
-    typedef ALE_X::SifterDef::Arrow<double,int,char>    arrow_type;
-    typedef ALE_X::Sifter<arrow_type>                   sifter_type;
-    class SifterTest {
+    typedef ALE::XSifterDef::Arrow<double,int,char>    arrow_type;
+    typedef ALE::XSifter<arrow_type>                   xsifter_type;
+    class XSifterTest {
     public:
-      static ALE::Obj<sifter_type> createForkSifter(const int capSize = 10, const int debug = 0) {
-        ALE::Obj<sifter_type>   sifter = new sifter_type();
+      static ALE::Obj<xsifter_type> createForkXSifter(MPI_Comm comm, const int capSize = 10, const int debug = 0) {
+        ALE::Obj<xsifter_type>   xsifter = new xsifter_type();
         for(int i = 0; i < capSize; i++) {
           // Add an arrow from i to i mod 3 with color 'X'.
-          sifter->addArrow(arrow_type((double)i,i % 3,'X'));
+          xsifter->addArrow(arrow_type((double)i,i % 3,'X'));
         }
-        return sifter;
+        return xsifter;
       };
-    };// class SifterTest
+    };// class XSifterTest
 
     struct Options {
       int      debug; // The debugging level
@@ -37,7 +38,7 @@ namespace ALE_X {
         options->debug = debug;
         options->iters = 1;
         
-        ierr = PetscOptionsBegin(comm, "", "Options for sifter basic test", "Sieve");CHKERRQ(ierr);
+        ierr = PetscOptionsBegin(comm, "", "Options for xsifter basic test", "XSifter");CHKERRQ(ierr);
         ierr = PetscOptionsInt("-debug", "The debugging level", "xsifter0.cxx", 0, &options->debug, PETSC_NULL);CHKERRQ(ierr);
         ierr = PetscOptionsInt("-iterations", "The number of test repetitions", "xsifter0.cxx", options->iters, &options->iters, 
                                PETSC_NULL);CHKERRQ(ierr);
@@ -46,6 +47,6 @@ namespace ALE_X {
       }
     };
   };// namespace Test
-};// namespace ALE_X
+};// namespace ALE
 
 #endif
