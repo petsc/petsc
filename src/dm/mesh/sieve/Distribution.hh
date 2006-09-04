@@ -429,7 +429,7 @@ namespace ALE {
       template<typename RecvSection>
       static void updateSieve(const Obj<RecvSection>& recvSection, const Obj<topology_type>& topology) {
         const typename RecvSection::patch_type                 patch = 0;
-        const typename RecvSection::topology_type::sheaf_type& ranks = recvSection->getAtlas()->getTopology()->getPatches();
+        const typename RecvSection::topology_type::sheaf_type& ranks = recvSection->getTopology()->getPatches();
         const Obj<typename topology_type::sieve_type>&         sieve = topology->getPatch(patch);
 
         for(typename RecvSection::topology_type::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
@@ -438,7 +438,7 @@ namespace ALE {
 
           for(typename RecvSection::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             const typename RecvSection::value_type *points = recvSection->restrict(rank, *b_iter);
-            int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+            int size = recvSection->getFiberDimension(rank, *b_iter);
             int c = 0;
 
             for(int p = 0; p < size; p++) {
@@ -452,8 +452,8 @@ namespace ALE {
       #define __FUNCT__ "updateOverlap"
       template<typename SendSection, typename RecvSection>
       static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
-        const typename SendSection::topology_type::sheaf_type& sendRanks = sendSection->getAtlas()->getTopology()->getPatches();
-        const typename RecvSection::topology_type::sheaf_type& recvRanks = recvSection->getAtlas()->getTopology()->getPatches();
+        const typename SendSection::topology_type::sheaf_type& sendRanks = sendSection->getTopology()->getPatches();
+        const typename RecvSection::topology_type::sheaf_type& recvRanks = recvSection->getTopology()->getPatches();
 
         for(typename SendSection::topology_type::sheaf_type::const_iterator p_iter = sendRanks.begin(); p_iter != sendRanks.end(); ++p_iter) {
           int                                                                       rank = p_iter->first;
@@ -461,7 +461,7 @@ namespace ALE {
 
           for(typename SendSection::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             const typename SendSection::value_type *points = sendSection->restrict(rank, *b_iter);
-            int size = sendSection->getAtlas()->getFiberDimension(rank, *b_iter);
+            int size = sendSection->getFiberDimension(rank, *b_iter);
 
             for(int p = 0; p < size; p++) {
               sendOverlap->addArrow(points[p], rank, points[p]);
@@ -474,7 +474,7 @@ namespace ALE {
 
           for(typename RecvSection::topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             const typename RecvSection::value_type *points = recvSection->restrict(rank, *b_iter);
-            int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+            int size = recvSection->getFiberDimension(rank, *b_iter);
 
             for(int p = 0; p < size; p++) {
               recvOverlap->addArrow(rank, points[p], points[p]);
