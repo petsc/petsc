@@ -15,9 +15,9 @@
 #endif
 
 
-namespace ALE_X { 
+namespace ALE { 
   
-  namespace SifterDef {
+  namespace XSifterDef {
     
     
     // 
@@ -492,15 +492,15 @@ namespace ALE_X {
         os << " ]" << std::endl;
       };
     };// class StridedIndexSequence    
-  }; // namespace SifterDef
+  }; // namespace XSifterDef
   
   //
-  // Sifter definition
+  // XSifter definition
   template<typename Arrow_, 
-           typename ArrowSupportOrder_= SifterDef::TargetColorOrder<Arrow_>, 
-           typename ArrowConeOrder_   = SifterDef::SourceColorOrder<Arrow_>, 
+           typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
+           typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
            typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
-  struct Sifter { // struct Sifter
+  struct XSifter { // struct XSifter
     //
     // Encapsulated types
     //
@@ -550,10 +550,10 @@ namespace ALE_X {
     //
     // Rec 'downward' order type: first order by predicate, then source, then support
     struct downward_order_type : public 
-    SifterDef::RecKeyXXXOrder<rec_type, 
+    XSifterDef::RecKeyXXXOrder<rec_type, 
                               typename ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>, 
                               predicate_order_type, 
-                              SifterDef::RecKeyXXXOrder<rec_type,
+                              XSifterDef::RecKeyXXXOrder<rec_type,
                                                         ::boost::multi_index::const_mem_fun<rec_type,
                                                                                             typename rec_type::source_type,
                                                                                             &rec_type::source>,
@@ -562,12 +562,12 @@ namespace ALE_X {
     //
     // Rec Cone order
     struct upward_order_type : public 
-    SifterDef::RecKeyXXXOrder<rec_type, 
+    XSifterDef::RecKeyXXXOrder<rec_type, 
                               typename ::boost::multi_index::const_mem_fun<rec_type, 
                                                                            predicate_type, 
                                                                            &rec_type::predicate>, 
                               predicate_order_type,
-                              SifterDef::RecKeyXXXOrder<rec_type,
+                              XSifterDef::RecKeyXXXOrder<rec_type,
                                                         ::boost::multi_index::const_mem_fun<rec_type,
                                                                                             typename rec_type::target_type,
                                                                                             &rec_type::target>,
@@ -598,11 +598,11 @@ namespace ALE_X {
     template <typename Index_, 
               typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_, bool inner_strided_flag = false>
     class ArrowSequence : 
-      public SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
+      public XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
       // ArrowSequence extends StridedIndexSequence with extra iterator methods.
     public:
-      typedef SifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
-      typedef Sifter                                                                                                               container_type;
+      typedef XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
+      typedef XSifter                                                                                                               container_type;
       typedef typename super::index_type                                                                                           index_type;
       typedef typename super::outer_key_type                                                                                       outer_key_type;
       typedef typename super::inner_key_type                                                                                       inner_key_type;
@@ -713,9 +713,9 @@ namespace ALE_X {
     // set of arrow records
     rec_set_type _rec_set;
     
-  }; // class Sifter
+  }; // class XSifter
 
 
-} // namespace ALE_X
+} // namespace ALE
 
 #endif
