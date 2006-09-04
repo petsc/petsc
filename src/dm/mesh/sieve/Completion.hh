@@ -674,9 +674,9 @@ namespace ALE {
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
         Obj<send_sizer_type>   sendSizer     = new send_sizer_type(topology->comm(), topology->debug());
-        Obj<recv_sizer_type>   recvSizer     = new recv_sizer_type(topology->comm(), topology->debug());
+        Obj<recv_sizer_type>   recvSizer     = new recv_sizer_type(topology->comm(), sendSizer->getTag(), topology->debug());
         Obj<send_section_type> sendSection   = new send_section_type(topology->comm(), topology->debug());
-        Obj<recv_section_type> recvSection   = new recv_section_type(topology->comm(), topology->debug());
+        Obj<recv_section_type> recvSection   = new recv_section_type(topology->comm(), sendSection->getTag(), topology->debug());
         Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, topology->debug());
         int numElements = topology->heightStratum(0, 0)->size();
         int rank        = topology->commRank();
@@ -693,8 +693,8 @@ namespace ALE {
           recvOverlap->addCone(0, rank, rank);
         }
         if (debug) {
-          sendOverlap->view(std::cout, "Send overlap for partition");
-          recvOverlap->view(std::cout, "Receive overlap for partition");
+          sendOverlap->view("Send overlap for partition");
+          recvOverlap->view("Receive overlap for partition");
         }
         // 2) Partition the mesh
         short *assignment = ALE::New::Partitioner<mesh_topology_type>::partitionSieve_Chaco(topology, dim);
@@ -726,7 +726,7 @@ namespace ALE {
 
             for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
               const typename send_section_type::value_type *points = sendSection->restrict(p_iter->first, *b_iter);
-              int size = sendSection->getAtlas()->size(p_iter->first, *b_iter);
+              int size = sendSection->size(p_iter->first, *b_iter);
 
               for(int p = 0; p < size; p++) {
                 sendOverlap->addArrow(points[p], p_iter->first, points[p]);
@@ -742,7 +742,7 @@ namespace ALE {
 
             for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
               const typename recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
-              int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
+              int size = recvSection->getFiberDimension(rank, *b_iter);
               
               for(int p = 0; p < size; p++) {
                 recvOverlap->addArrow(rank, points[p], points[p]);
@@ -750,7 +750,10 @@ namespace ALE {
             }
           }
         }
-        if (debug) {recvOverlap->view(std::cout, "Receive overlap for points");}
+        if (debug) {
+          sendOverlap->view(std::cout, "Send overlap for points");
+          recvOverlap->view(std::cout, "Receive overlap for points");
+        }
         // 4) Receive the point section
         secTopology = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
         Obj<cone_size_section> coneSizeSection = new cone_size_section(secTopology, sieve);
@@ -762,12 +765,12 @@ namespace ALE {
 
         for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
-          int                                                     rank = p_iter->first;
+          int                                                 rank = p_iter->first;
 
           for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             const typename recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
-            int size = recvSection->getAtlas()->getFiberDimension(rank, *b_iter);
-            int c = 0;
+            int size = recvSection->getFiberDimension(rank, *b_iter);
+            int c    = 0;
 
             for(int p = 0; p < size; p++) {
               sieveNew->addArrow(points[p], *b_iter, c++);

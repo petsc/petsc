@@ -920,17 +920,10 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         std::cout << "viewing a Sifter, comm = " << this->comm() << ", PETSC_COMM_SELF = " << PETSC_COMM_SELF << ", commRank = " << this->commRank() << std::endl;
       }
       if(label != NULL) {
-        if(this->commRank() == 0) {
-          txt << "viewing Sifter :'" << label << "'" << std::endl;
-        }
-      } 
-      else {
-        if(this->commRank() == 0) {
-          txt << "viewing a Sifter" << std::endl;
-        }
+        PetscPrintf(this->comm(), "viewing Sifter: '%s'\n", label);
+      } else {
+        PetscPrintf(this->comm(), "viewing a Sifter: \n");
       }
-      ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-      ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       if(!raw) {
         ostringstream txt;
         if(this->commRank() == 0) {

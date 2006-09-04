@@ -66,8 +66,7 @@ namespace ALE {
     const Obj<foliated_section_type>& getBoundariesNew() const {return this->_boundaries;};
     const Obj<section_type>& getSection(const std::string& name) {
       if (this->sections.find(name) == this->sections.end()) {
-        Obj<section_type> section = new section_type(this->_comm, this->debug);
-        section->getAtlas()->setTopology(this->_topology);
+        Obj<section_type> section = new section_type(this->_topology);
 
         std::cout << "Creating new section: " << name << std::endl;
         this->sections[name] = section;
