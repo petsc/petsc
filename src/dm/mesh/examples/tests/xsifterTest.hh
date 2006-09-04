@@ -1,6 +1,7 @@
 #ifndef included_ALE_xsifterTest_hh
 #define included_ALE_xsifterTest_hh
 
+#include <petsc.h>
 #include <XSifter.hh>
 
 namespace ALE {
@@ -9,7 +10,7 @@ namespace ALE {
     typedef ALE::XSifter<arrow_type>                   xsifter_type;
     class XSifterTest {
     public:
-      static ALE::Obj<xsifter_type> createForkXSifter(const int capSize = 10, const int debug = 0) {
+      static ALE::Obj<xsifter_type> createForkXSifter(MPI_Comm comm, const int capSize = 10, const int debug = 0) {
         ALE::Obj<xsifter_type>   xsifter = new xsifter_type();
         for(int i = 0; i < capSize; i++) {
           // Add an arrow from i to i mod 3 with color 'X'.

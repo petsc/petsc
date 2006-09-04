@@ -34,13 +34,13 @@ PetscErrorCode BasicBaseTest(const ALE::Obj<xsifter_type>& xsifter, ALE::Test::O
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
-  ALE::Test::Options        options;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   {
-    ALE::Test::Options options(PETSC_COMM_WORLD);
+    ALE::Test::Options        options;
+    //ALE::Test::Options options(PETSC_COMM_WORLD);
     ALE::Obj<xsifter_type> xsifter = ALE::Test::XSifterTest::createForkXSifter(PETSC_COMM_WORLD);
 
     ierr = BasicBaseTest(xsifter, options);CHKERRQ(ierr);
