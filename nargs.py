@@ -493,6 +493,7 @@ class ArgDownload(Arg):
 
   def setValue(self, value):
     '''Set the value. SHOULD MAKE THIS A PROPERTY'''
+    import os
     try:
       if   value == '0':        value = 0
       elif value == '1':        value = 1
