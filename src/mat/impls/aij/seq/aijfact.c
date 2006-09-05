@@ -579,25 +579,24 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
 #define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_InplaceWithPerm"
 PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *info,Mat *B)
 {
-  Mat            C=*B;
-  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ *)C->data;
-  IS             isrow = b->row,isicol = b->icol;
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data; 
+  IS             isrow = a->row,isicol = a->icol;
   PetscErrorCode ierr;
-  PetscInt       *r,*ic,i,j,n=A->rmap.n,*bi=b->i,*bj=b->j;
-  PetscInt       *ajtmp,*bjtmp,nz,row,*ics;
-  PetscInt       *diag_offset = b->diag,diag,*pj;
-  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,*rtmps;
-  PetscScalar    d;
+  PetscInt       *r,*ic,i,j,n=A->rmap.n,*ai=a->i,*aj=a->j;
+  PetscInt       *ajtmp,nz,row,*ics;
+  PetscInt       *diag = a->diag,nbdiag,*pj;
+  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,d;
   PetscReal      rs;
   LUShift_Ctx    sctx;
-  PetscInt       newshift,*ddiag;
+  PetscInt       newshift;
 
   PetscFunctionBegin;
+  if (A != *B) SETERRQ(PETSC_ERR_ARG_INCOMP,"input and output matrix must have same address");
   ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
   ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
   ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
   ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  rtmps = rtmp; ics = ic;
+  ics = ic;
 
   sctx.shift_top  = 0;
   sctx.nshift_max = 0;
@@ -607,15 +606,13 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *in
   /* if both shift schemes are chosen by user, only use info->shiftpd */
   if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
   if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
-    PetscInt *aai = a->i;
-    ddiag          = a->diag;
     sctx.shift_top = 0;
     for (i=0; i<n; i++) {
       /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
-      d  = (a->a)[ddiag[i]];
+      d  = (a->a)[diag[i]];
       rs = -PetscAbsScalar(d) - PetscRealPart(d);
-      v  = a->a+aai[i];
-      nz = aai[i+1] - aai[i];
+      v  = a->a+ai[i];
+      nz = ai[i+1] - ai[i];
       for (j=0; j<nz; j++) 
 	rs += PetscAbsScalar(v[j]);
       if (rs>sctx.shift_top) sctx.shift_top = rs;
@@ -632,58 +629,52 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *in
   do {
     sctx.lushift = PETSC_FALSE;
     for (i=0; i<n; i++){
-      nz    = bi[r[i]+1] - bi[r[i]];
-      bjtmp = bj + bi[r[i]];
-      for  (j=0; j<nz; j++) rtmps[ics[bjtmp[j]]] = 0.0; /* intializing sorted column */
-
-      /* load in initial (unfactored row) */
-      nz    = a->i[r[i]+1] - a->i[r[i]];
-      ajtmp = a->j + a->i[r[i]];
-      v     = a->a + a->i[r[i]];
+      /* load in initial unfactored row */
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = a->a + ai[r[i]];
       /* sort permuted ajtmp and values v accordingly */
-      for (j=0; j<nz; j++) {
-        ajtmp[j] = ics[ajtmp[j]];
-      }
+      for (j=0; j<nz; j++) ajtmp[j] = ics[ajtmp[j]];
       ierr = PetscSortIntWithScalarArray(nz,ajtmp,v);CHKERRQ(ierr);
 
-      diag_offset[r[i]] = bi[r[i]]; 
+      diag[r[i]] = ai[r[i]]; 
       for (j=0; j<nz; j++) {
         rtmp[ajtmp[j]] = v[j];
-        if (ajtmp[j] < i) diag_offset[r[i]]++; /* update diag_offset */
+        if (ajtmp[j] < i) diag[r[i]]++; /* update a->diag */
       }
       rtmp[r[i]] += sctx.shift_amount; /* shift the diagonal of the matrix */
 
-      row = *bjtmp++;
+      row = *ajtmp++;
       while  (row < i) {
         pc = rtmp + row;
         if (*pc != 0.0) {
-          pv         = b->a + diag_offset[r[row]];
-          pj         = b->j + diag_offset[r[row]] + 1;
+          pv         = a->a + diag[r[row]];
+          pj         = aj + diag[r[row]] + 1;
 
           multiplier = *pc / *pv++;
           *pc        = multiplier;
-          nz         = bi[r[row]+1] - diag_offset[r[row]] - 1;
-          for (j=0; j<nz; j++) rtmps[pj[j]] -= multiplier * pv[j];
+          nz         = ai[r[row]+1] - diag[r[row]] - 1;
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
           ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
         }
-        row = *bjtmp++;
+        row = *ajtmp++;
       }
-      /* finished row so stick it into b->a */
-      pv   = b->a + bi[r[i]] ;
-      pj   = b->j + bi[r[i]] ;
-      nz   = bi[r[i]+1] - bi[r[i]];
-      diag = diag_offset[r[i]] - bi[r[i]];
+      /* finished row so overwrite it onto a->a */
+      pv   = a->a + ai[r[i]] ;
+      pj   = aj + ai[r[i]] ;
+      nz   = ai[r[i]+1] - ai[r[i]];
+      nbdiag = diag[r[i]] - ai[r[i]]; /* num of entries before the diagonal */
       
       rs   = 0.0;
       for (j=0; j<nz; j++) {
-        pv[j] = rtmps[pj[j]];
-        if (j != diag) rs += PetscAbsScalar(pv[j]);
+        pv[j] = rtmp[pj[j]];
+        if (j != nbdiag) rs += PetscAbsScalar(pv[j]);
       }
 
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
-      sctx.pv  = pv[diag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,a->diag,newshift);CHKERRQ(ierr);
+      sctx.pv  = pv[nbdiag];
+      ierr = MatLUCheckShift_inline(info,sctx,i,PETSC_NULL,newshift);CHKERRQ(ierr);
       if (newshift == 1) break;
     } 
 
@@ -702,16 +693,16 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *in
 
   /* invert diagonal entries for simplier triangular solves */
   for (i=0; i<n; i++) {
-    b->a[diag_offset[r[i]]] = 1.0/b->a[diag_offset[r[i]]];
+    a->a[diag[r[i]]] = 1.0/a->a[diag[r[i]]];
   }
 
   ierr = PetscFree(rtmp);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
   ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
-  C->factor = FACTOR_LU;
-  (*B)->ops->solve = MatSolve_SeqAIJ_InplaceWithPerm;
-  C->assembled = PETSC_TRUE;
-  ierr = PetscLogFlops(C->cmap.n);CHKERRQ(ierr);
+  A->factor     = FACTOR_LU;
+  A->ops->solve = MatSolve_SeqAIJ_InplaceWithPerm;
+  A->assembled = PETSC_TRUE;
+  ierr = PetscLogFlops(A->cmap.n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (info->shiftnz) {
       ierr = PetscInfo2(0,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
