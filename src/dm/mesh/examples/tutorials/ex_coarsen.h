@@ -16,7 +16,7 @@ using ALE::Obj;
 
 char baseFile[2048]; //stores the base file name.
 double c_factor, r_factor;
-
+int debug;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
@@ -25,6 +25,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, std::string, std::string, bool c
 PetscErrorCode OutputMesh(const Obj<ALE::Mesh>&);
 PetscErrorCode GenerateMesh (MPI_Comm, Obj<ALE::Mesh>&, double);
 PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>&, int);
+
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm)
@@ -34,8 +35,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm)
   ierr = PetscStrcpy(baseFile, "data/ex1_2d");CHKERRQ(ierr);
   c_factor = 2; //default
   r_factor = 0;
+  debug = 0;
   ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");CHKERRQ(ierr);
-//    ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "ex1.c", debug, &debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", "ex_coarsen", baseFile, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-coarsen", "The coarsening factor", "ex_coarsen.c", c_factor, &c_factor, PETSC_NULL);    
     ierr = PetscOptionsReal("-generate", "Generate the mesh with refinement limit placed after this.", "ex_coarsen.c", r_factor, &r_factor, PETSC_NULL);
@@ -53,7 +55,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh)
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
 if (r_factor <= 0.0) {
-    mesh = ALE::PCICE::Builder::readMesh(comm, 2, baseFile, true, true, false);
+    mesh = ALE::PCICE::Builder::readMesh(comm, 2, baseFile, true, true, debug);
     IdentifyBoundary(mesh, 2);
   } else {
     mesh = new ALE::Mesh(comm, 2, 0);
@@ -164,30 +166,29 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
 
 //REINVENTING THE WHEEL ABOVE: NOW JUST BUILD THE SUCKER.
 //make the sieve and the topology actually count for something
-ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
+  ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
   sieve->stratify();
   topology->setPatch(patch, sieve);
   topology->stratify();
   mesh->setTopologyNew(topology);
-    int nvertices = topology->depthStratum(patch, 0)->size();
-    int nedges = topology->depthStratum(patch, 1)->size();
-    int ncells = topology->heightStratum(patch, 0)->size();
-    ierr = PetscPrintf(mesh->comm(), "NEW MESH: %d vertices, %d edges, %d cells\n", nvertices, nedges, ncells);
+  int nvertices = topology->depthStratum(patch, 0)->size();
+  int nedges = topology->depthStratum(patch, 1)->size();
+  int ncells = topology->heightStratum(patch, 0)->size();
+  ierr = PetscPrintf(mesh->comm(), "NEW MESH: %d vertices, %d edges, %d cells\n", nvertices, nedges, ncells);
   //create the coordinate section and dump in the coordinates.  At the same time set the boundary markers.
   Obj<ALE::Mesh::section_type> coordinates = mesh->getSection("coordinates");
-  coordinates->getAtlas()->setFiberDimensionByDepth(patch, 0, 2);  //puts two doubles on each node.
-  coordinates->getAtlas()->orderPatches();
+  coordinates->setFiberDimensionByDepth(patch, 0, 2);  //puts two doubles on each node.
   coordinates->allocate();
-  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = coordinates->getAtlas()->getTopology()->depthStratum(patch, 0);
+  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = coordinates->getTopology()->depthStratum(patch, 0);
   
-	ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
-	ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
-	const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
-	while(v_iter != v_iter_end) {
-		topology->setValue(markers, *v_iter, src->pointmarkerlist[*v_iter - src->numberoftriangles]);
-		coordinates->update(patch, *v_iter, src->pointlist+2*(*v_iter-src->numberoftriangles));
-		v_iter++;
-	}
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
+  const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+  while(v_iter != v_iter_end) {
+    topology->setValue(markers, *v_iter, src->pointmarkerlist[*v_iter - src->numberoftriangles]);
+    coordinates->update(patch, *v_iter, src->pointlist+2*(*v_iter-src->numberoftriangles));
+    v_iter++;
+  }
 
   PetscFunctionReturn(0);
 }

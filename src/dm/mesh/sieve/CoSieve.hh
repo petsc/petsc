@@ -1202,6 +1202,7 @@ namespace ALE {
         value_type *values = this->getRawArray(size);
         int         j      = -1;
 
+        // We could actually ask for the height of the individual point
         if (this->getTopology()->height(patch) < 2) {
           // Only avoids the copy of closure()
           const int& dim = this->_atlas->restrict(patch, p)[0];
@@ -1578,7 +1579,7 @@ namespace ALE {
       void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset) {
         const Obj<typename sieve_type::coneSequence>& cone = sieve->cone(point);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
-        index_type                                    idx  = atlas->restrict(patch, point)[0];
+        index_type                                    idx  = atlas->restrictPoint(patch, point)[0];
         const int&                                    dim  = idx.prefix;
         const index_type                              defaultIdx(0, -1);
 
@@ -1593,7 +1594,7 @@ namespace ALE {
           if (dim > 0) {
             if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
             idx.index = offset;
-            atlas->update(patch, point, &idx);
+            atlas->updatePoint(patch, point, &idx);
             offset += dim;
           }
         }
