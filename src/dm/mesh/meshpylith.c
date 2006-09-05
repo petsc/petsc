@@ -535,7 +535,8 @@ namespace ALE {
       const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
       Obj<Mesh::section_type>                         material;
       int            dim          = mesh->getDimension();
-      int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
+      //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
+      int            corners      = sieve->cone(*elements->begin())->size();
       bool           hasMaterial  = mesh->hasSection("material");
       int            elementType  = -1;
       PetscErrorCode ierr;

@@ -131,13 +131,13 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
 
     if (order->isLocal(point)) {
       const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
-      const ALE::Mesh::order_type::value_type&                rIdx  = order->restrict(patch, point)[0];
+      const ALE::Mesh::order_type::value_type&                rIdx  = order->restrictPoint(patch, point)[0];
       const int                                               row   = rIdx.prefix;
       const int                                               rSize = rIdx.index;
 
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::atlas_type::point_type& neighbor = *v_iter;
-        const ALE::Mesh::order_type::value_type& cIdx     = order->restrict(patch, neighbor)[0];
+        const ALE::Mesh::order_type::value_type& cIdx     = order->restrictPoint(patch, neighbor)[0];
         const int&                               cSize    = cIdx.index;
         
         if (order->isLocal(neighbor)) {

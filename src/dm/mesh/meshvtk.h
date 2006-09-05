@@ -140,7 +140,8 @@ class VTKViewer {
     const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopologyNew()->heightStratum(patch, 0);
     Obj<numbering_type>                                  vNumbering = new numbering_type(mesh->getTopologyNew(), "depth", 0);
     Obj<numbering_type>                                  cNumbering = new numbering_type(mesh->getTopologyNew(), "height", 0);
-    int            corners = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
+    //int            corners = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
+    int            corners = topology->cone(*elements->begin())->size();
     int            numElements;
     PetscErrorCode ierr;
 

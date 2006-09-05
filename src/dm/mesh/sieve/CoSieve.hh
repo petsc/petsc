@@ -1806,9 +1806,9 @@ namespace ALE {
             }
           }
         } else {
-          const Obj<typename atlas_type::IndexArray>& ind = this->getIndices(patch, p);
+          const Obj<IndexArray>& ind = this->getIndices(patch, p);
 
-          for(typename atlas_type::IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
+          for(typename IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
             const int& start  = i_iter->index;
             const int& length = i_iter->prefix;
 
