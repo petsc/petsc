@@ -762,8 +762,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const cha
   const ALE::Obj<ALE::Mesh::atlas_type>&     atlas       = field->getAtlas();
   const ALE::Obj<ALE::Mesh::order_type>&     globalOrder = mesh->getGlobalOrder(fieldName);
   const ALE::Mesh::section_type::patch_type  patch       = 0;
-  const ALE::Mesh::atlas_type::chart_type&   chart       = field->getAtlas()->getPatch(patch);
-  int                                        localSize   = field->getAtlas()->size(patch);
+  const ALE::Mesh::atlas_type::chart_type&   chart       = atlas->getPatch(patch);
+  int                                        localSize   = field->size(patch);
   int *localIndices, *globalIndices;
   int  localIndx = 0, globalIndx = 0;
   Vec  localVec;
@@ -773,7 +773,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const cha
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
   for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-    const ALE::Mesh::section_type::index_type& idx = atlas->restrict(patch, *p_iter)[0];
+    const ALE::Mesh::section_type::index_type& idx = atlas->restrictPoint(patch, *p_iter)[0];
 
     // Map local indices to global indices
     ExpandInterval(idx, localIndices, localIndx);
