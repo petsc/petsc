@@ -526,7 +526,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[diag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,a->diag,newshift);CHKERRQ(ierr);
+      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
       if (newshift == 1) break;
     } 
 
@@ -674,7 +674,7 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *in
       /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
       sctx.rs  = rs;
       sctx.pv  = pv[nbdiag];
-      ierr = MatLUCheckShift_inline(info,sctx,i,PETSC_NULL,newshift);CHKERRQ(ierr);
+      ierr = MatLUCheckShift_inline(info,sctx,i,newshift);CHKERRQ(ierr);
       if (newshift == 1) break;
     } 
 
