@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,dec,cray_x1,hpux'))
+    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,dec,cray_x1,hpux,lahey'))
     return
 
   def getDispatchNames(self):
@@ -854,8 +854,10 @@ class Configure(config.base.Configure):
       elif self.setCompilers.vendor == 'intel':
         #headerGuess = 'f90_intel.h'
         f90Guess = 'intel8'
-      elif self.setCompilers.vendor in ['lahaye', 'nag']:
+      elif self.setCompilers.vendor == 'nag':
         f90Guess = 'nag'
+      elif self.setCompilers.vendor == 'lahaye':
+        f90Guess = 'lahaye'        
 ##    This interface is not finished
 ##      elif self.setCompilers.vendor == 'portland':
 ##        f90Guess = 'pgi'
