@@ -17,11 +17,14 @@ int main(int argc,char **args)
   Mat            C,A; 
   PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
   PetscErrorCode ierr;
-  PetscTruth     flg1;
+  PetscTruth     LU=PETSC_FALSE,flg;
   PetscScalar    v;
   IS             row,col;
   PetscViewer    viewer1,viewer2;
   MatFactorInfo  info;
+  Vec            x,y,b;
+  PetscReal      norm2,norm2_inplace;
+  PetscRandom    rdm;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -51,7 +54,39 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  /* Create vectors for error checking */
+  ierr = MatGetVecs(C,&x,&b);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
+  ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
+  ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
+  ierr = MatMult(C,x,b);CHKERRQ(ierr);
+
   ierr = MatGetOrdering(C,MATORDERING_RCM,&row,&col);CHKERRQ(ierr);
+  /* replace row or col with natural ordering for testing */
+  ierr = PetscOptionsHasName(PETSC_NULL,"-no_rowperm",&flg);CHKERRQ(ierr);
+  if (flg){
+    ierr = ISDestroy(row);CHKERRQ(ierr);
+    PetscInt *ii;
+    ierr = PetscMalloc(m*n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    for (i=0; i<m*n; i++) ii[i] = i;
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,m*n,ii,&row);CHKERRQ(ierr);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
+    ierr = ISSetIdentity(row);CHKERRQ(ierr);
+    ierr = ISSetPermutation(row);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-no_colperm",&flg);CHKERRQ(ierr);
+  if (flg){
+    ierr = ISDestroy(col);CHKERRQ(ierr);
+    PetscInt *ii;
+    ierr = PetscMalloc(m*n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+    for (i=0; i<m*n; i++) ii[i] = i;
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,m*n,ii,&col);CHKERRQ(ierr);
+    ierr = PetscFree(ii);CHKERRQ(ierr);
+    ierr = ISSetIdentity(col);CHKERRQ(ierr);
+    ierr = ISSetPermutation(col);CHKERRQ(ierr);
+  }
+
   printf("original matrix:\n");
   ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_SELF,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
@@ -60,8 +95,8 @@ int main(int argc,char **args)
   ierr = MatView(C,viewer1);CHKERRQ(ierr);
 
   /* Compute factorization */
-  ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&flg1);CHKERRQ(ierr);
-  if (flg1){ 
+  ierr = PetscOptionsHasName(PETSC_NULL,"-lu",&LU);CHKERRQ(ierr);
+  if (LU){ 
     ierr = MatLUFactorSymbolic(C,row,col,PETSC_NULL,&A);CHKERRQ(ierr);
   } else {
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
@@ -81,6 +116,23 @@ int main(int argc,char **args)
   ierr = MatView(A,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatView(A,viewer2);CHKERRQ(ierr);
 
+  /* Solve A*y = b, then check the error */
+  ierr = MatSolve(A,b,y);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
+
+  /* Test in-place ILU(0) */
+  if (!LU){
+    ierr = MatILUFactor(C,row,col,&info);CHKERRQ(ierr);
+    /*
+    printf("In-place factored matrix:\n");
+    ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    */  
+    ierr = MatSolve(C,b,y);CHKERRQ(ierr);
+    ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+    ierr = VecNorm(y,NORM_2,&norm2_inplace);CHKERRQ(ierr);
+    if (PetscAbs(norm2 - norm2_inplace) > 1.e-16) SETERRQ2(1,"ILU(0) %G and in-place ILU(0) %G give different errors",norm2,norm2_inplace);
+  }
   /* Free data structures */
   ierr = MatDestroy(C);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
@@ -88,6 +140,10 @@ int main(int argc,char **args)
   ierr = ISDestroy(col);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer2);CHKERRQ(ierr);
+  ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -157,7 +157,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   if (jac->ij) { ierr = HYPRE_IJMatrixDestroy(jac->ij);CHKERRQ(ierr); }
   if (jac->b) { ierr = HYPRE_IJVectorDestroy(jac->b);CHKERRQ(ierr); }
   if (jac->x) { ierr = HYPRE_IJVectorDestroy(jac->x);CHKERRQ(ierr); }
-  ierr = PetscStrFree(jac->hypre_type);CHKERRQ(ierr);
+  ierr = PetscStrfree(jac->hypre_type);CHKERRQ(ierr);
   ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
@@ -637,6 +637,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
   jac->tol                = PETSC_DEFAULT;
   jac->printstatistics    = PetscLogPrintInfo;
 
+  ierr = PetscStrallocpy(name, &jac->hypre_type);CHKERRQ(ierr);
   ierr = PetscStrcmp("pilut",name,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr                    = HYPRE_ParCSRPilutCreate(jac->comm_hypre,&jac->hsolver);
@@ -726,7 +727,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     PetscFunctionReturn(0);
   }
   SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown HYPRE preconditioner %s; Choices are pilut, parasails, euclid, boomeramg",name);
-  ierr = PetscStrallocpy(name, &jac->hypre_type);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -814,7 +814,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
 {
-  PetscErrorCode ierr,(*f)(PC,const char[]);
+  PetscErrorCode ierr,(*f)(PC,const char*[]);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
@@ -873,6 +873,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC pc)
   /* Com_dup for hypre */
   ierr = MPI_Comm_dup(pc->comm,&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","PCHYPRESetType_HYPRE",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPREGetType_C","PCHYPREGetType_HYPRE",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

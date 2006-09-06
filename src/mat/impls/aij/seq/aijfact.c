@@ -565,6 +565,154 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscFunctionReturn(0);
 }
 
+/* 
+   This routine implements inplace ILU(0) with row or/and column permutations. 
+   Input: 
+     A - original matrix
+   Output;
+     A - a->i (rowptr) is same as original rowptr, but factored i-the row is stored in rowperm[i] 
+         a->j (col index) is permuted by the inverse of colperm, then sorted
+         a->a reordered accordingly with a->j
+         a->diag (ptr to diagonal elements) is updated.
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatLUFactorNumeric_SeqAIJ_InplaceWithPerm"
+PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *info,Mat *B)
+{
+  Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data; 
+  IS             isrow = a->row,isicol = a->icol;
+  PetscErrorCode ierr;
+  PetscInt       *r,*ic,i,j,n=A->rmap.n,*ai=a->i,*aj=a->j;
+  PetscInt       *ajtmp,nz,row,*ics;
+  PetscInt       *diag = a->diag,nbdiag,*pj;
+  PetscScalar    *rtmp,*v,*pc,multiplier,*pv,d;
+  PetscReal      rs;
+  LUShift_Ctx    sctx;
+  PetscInt       newshift;
+
+  PetscFunctionBegin;
+  if (A != *B) SETERRQ(PETSC_ERR_ARG_INCOMP,"input and output matrix must have same address");
+  ierr  = ISGetIndices(isrow,&r);CHKERRQ(ierr);
+  ierr  = ISGetIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr  = PetscMalloc((n+1)*sizeof(PetscScalar),&rtmp);CHKERRQ(ierr);
+  ierr  = PetscMemzero(rtmp,(n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
+  ics = ic;
+
+  sctx.shift_top  = 0;
+  sctx.nshift_max = 0;
+  sctx.shift_lo   = 0;
+  sctx.shift_hi   = 0;
+
+  /* if both shift schemes are chosen by user, only use info->shiftpd */
+  if (info->shiftpd && info->shiftnz) info->shiftnz = 0.0; 
+  if (info->shiftpd) { /* set sctx.shift_top=max{rs} */
+    sctx.shift_top = 0;
+    for (i=0; i<n; i++) {
+      /* calculate sum(|aij|)-RealPart(aii), amt of shift needed for this row */
+      d  = (a->a)[diag[i]];
+      rs = -PetscAbsScalar(d) - PetscRealPart(d);
+      v  = a->a+ai[i];
+      nz = ai[i+1] - ai[i];
+      for (j=0; j<nz; j++) 
+	rs += PetscAbsScalar(v[j]);
+      if (rs>sctx.shift_top) sctx.shift_top = rs;
+    }
+    if (sctx.shift_top < info->zeropivot) sctx.shift_top = info->zeropivot;
+    sctx.shift_top    *= 1.1;
+    sctx.nshift_max   = 5;
+    sctx.shift_lo     = 0.;
+    sctx.shift_hi     = 1.;
+  }
+
+  sctx.shift_amount = 0;
+  sctx.nshift       = 0;
+  do {
+    sctx.lushift = PETSC_FALSE;
+    for (i=0; i<n; i++){
+      /* load in initial unfactored row */
+      nz    = ai[r[i]+1] - ai[r[i]];
+      ajtmp = aj + ai[r[i]];
+      v     = a->a + ai[r[i]];
+      /* sort permuted ajtmp and values v accordingly */
+      for (j=0; j<nz; j++) ajtmp[j] = ics[ajtmp[j]];
+      ierr = PetscSortIntWithScalarArray(nz,ajtmp,v);CHKERRQ(ierr);
+
+      diag[r[i]] = ai[r[i]]; 
+      for (j=0; j<nz; j++) {
+        rtmp[ajtmp[j]] = v[j];
+        if (ajtmp[j] < i) diag[r[i]]++; /* update a->diag */
+      }
+      rtmp[r[i]] += sctx.shift_amount; /* shift the diagonal of the matrix */
+
+      row = *ajtmp++;
+      while  (row < i) {
+        pc = rtmp + row;
+        if (*pc != 0.0) {
+          pv         = a->a + diag[r[row]];
+          pj         = aj + diag[r[row]] + 1;
+
+          multiplier = *pc / *pv++;
+          *pc        = multiplier;
+          nz         = ai[r[row]+1] - diag[r[row]] - 1;
+          for (j=0; j<nz; j++) rtmp[pj[j]] -= multiplier * pv[j];
+          ierr = PetscLogFlops(2*nz);CHKERRQ(ierr);
+        }
+        row = *ajtmp++;
+      }
+      /* finished row so overwrite it onto a->a */
+      pv   = a->a + ai[r[i]] ;
+      pj   = aj + ai[r[i]] ;
+      nz   = ai[r[i]+1] - ai[r[i]];
+      nbdiag = diag[r[i]] - ai[r[i]]; /* num of entries before the diagonal */
+      
+      rs   = 0.0;
+      for (j=0; j<nz; j++) {
+        pv[j] = rtmp[pj[j]];
+        if (j != nbdiag) rs += PetscAbsScalar(pv[j]);
+      }
+
+      /* 9/13/02 Victor Eijkhout suggested scaling zeropivot by rs for matrices with funny scalings */
+      sctx.rs  = rs;
+      sctx.pv  = pv[nbdiag];
+      ierr = MatLUCheckShift_inline(info,sctx,i,PETSC_NULL,newshift);CHKERRQ(ierr);
+      if (newshift == 1) break;
+    } 
+
+    if (info->shiftpd && !sctx.lushift && info->shift_fraction>0 && sctx.nshift<sctx.nshift_max) {
+      /*
+       * if no shift in this attempt & shifting & started shifting & can refine,
+       * then try lower shift
+       */
+      sctx.shift_hi        = info->shift_fraction;
+      info->shift_fraction = (sctx.shift_hi+sctx.shift_lo)/2.;
+      sctx.shift_amount    = info->shift_fraction * sctx.shift_top;
+      sctx.lushift         = PETSC_TRUE;
+      sctx.nshift++;
+    }
+  } while (sctx.lushift);
+
+  /* invert diagonal entries for simplier triangular solves */
+  for (i=0; i<n; i++) {
+    a->a[diag[r[i]]] = 1.0/a->a[diag[r[i]]];
+  }
+
+  ierr = PetscFree(rtmp);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isicol,&ic);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(isrow,&r);CHKERRQ(ierr);
+  A->factor     = FACTOR_LU;
+  A->ops->solve = MatSolve_SeqAIJ_InplaceWithPerm;
+  A->assembled = PETSC_TRUE;
+  ierr = PetscLogFlops(A->cmap.n);CHKERRQ(ierr);
+  if (sctx.nshift){
+    if (info->shiftnz) {
+      ierr = PetscInfo2(0,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+    } else if (info->shiftpd) {
+      ierr = PetscInfo4(0,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatUsePETSc_SeqAIJ"
 PetscErrorCode MatUsePETSc_SeqAIJ(Mat A)
@@ -696,6 +844,59 @@ PetscErrorCode MatMatSolve_SeqAIJ(Mat A,Mat B,Mat X)
   ierr = PetscLogFlops(n*(2*a->nz - n));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatSolve_SeqAIJ_InplaceWithPerm"
+PetscErrorCode MatSolve_SeqAIJ_InplaceWithPerm(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  IS             iscol = a->col,isrow = a->row;
+  PetscErrorCode ierr;
+  PetscInt       *r,*c,i, n = A->rmap.n,*vi,*ai = a->i,*aj = a->j;
+  PetscInt       nz,*rout,*cout,row;
+  PetscScalar    *x,*b,*tmp,*tmps,*aa = a->a,sum,*v;
+
+  PetscFunctionBegin;
+  if (!n) PetscFunctionReturn(0);
+
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  tmp  = a->solve_work;
+
+  ierr = ISGetIndices(isrow,&rout);CHKERRQ(ierr); r = rout;
+  ierr = ISGetIndices(iscol,&cout);CHKERRQ(ierr); c = cout + (n-1);
+
+  /* forward solve the lower triangular */
+  tmp[0] = b[*r++];
+  tmps   = tmp;
+  for (row=1; row<n; row++) {
+    i   = rout[row]; /* permuted row */
+    v   = aa + ai[i] ;
+    vi  = aj + ai[i] ;
+    nz  = a->diag[i] - ai[i];
+    sum = b[*r++];
+    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+    tmp[row] = sum;
+  }
+
+  /* backward solve the upper triangular */
+  for (row=n-1; row>=0; row--){
+    i   = rout[row]; /* permuted row */
+    v   = aa + a->diag[i] + 1;
+    vi  = aj + a->diag[i] + 1;
+    nz  = ai[i+1] - a->diag[i] - 1;
+    sum = tmp[row];
+    SPARSEDENSEMDOT(sum,tmps,v,vi,nz); 
+    x[*c--] = tmp[row] = sum*aa[a->diag[i]];
+  }
+
+  ierr = ISRestoreIndices(isrow,&rout);CHKERRQ(ierr);
+  ierr = ISRestoreIndices(iscol,&cout);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - A->cmap.n);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 /* ----------------------------------------------------------- */
 #undef __FUNCT__  
