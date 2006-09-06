@@ -380,15 +380,14 @@ EXTERN PetscErrorCode MatFactorDumpMatrix(Mat);
    Input Parameters:
 +  info - information about the matrix factorization 
 .  sctx - pointer to the struct LUShift_Ctx
-.  row  - active row index
--  idiag - index of diagonals in array aval
+-  row  - active row index
 
    Output  Parameter:
 +  newshift - 0: shift is unchanged; 1: shft is updated; -1: zeropivot  
 
    Level: developer
 @*/
-#define MatLUCheckShift_inline(info,sctx,row,idiag,newshift) 0;\
+#define MatLUCheckShift_inline(info,sctx,row,newshift) 0;\
 {\
   PetscInt  _newshift;\
   PetscReal _rs   = sctx.rs;\

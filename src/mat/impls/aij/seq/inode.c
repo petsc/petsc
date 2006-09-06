@@ -1311,7 +1311,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (idx != row) rs += PetscAbsScalar(pc1[j]);
         }
         sctx.rs  = rs; 
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
       
@@ -1373,7 +1373,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (idx != prow) rs += PetscAbsScalar(rtmp1[idx]);
         }
         sctx.rs = rs;  
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
 
         if (*pc2 != 0.0){
@@ -1405,7 +1405,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (idx != row+1) rs += PetscAbsScalar(pc2[j]);
         }
         sctx.rs = rs;
-        ierr = MatLUCheckShift_inline(info,sctx,row+1,a->diag,newshift);CHKERRQ(ierr);
+        ierr = MatLUCheckShift_inline(info,sctx,row+1,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
 
@@ -1478,7 +1478,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (idx != row) rs += PetscAbsScalar(rtmp1[idx]);
         }
         sctx.rs = rs;    
-        ierr = MatLUCheckShift_inline(info,sctx,row,a->diag,newshift);CHKERRQ(ierr);
+        ierr = MatLUCheckShift_inline(info,sctx,row,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
 
         if (*pc2 != 0.0 || *pc3 != 0.0){     
@@ -1508,7 +1508,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
           if (idx != prow) rs += PetscAbsScalar(rtmp2[idx]);
         }
         sctx.rs = rs;    
-        ierr = MatLUCheckShift_inline(info,sctx,row+1,a->diag,newshift);CHKERRQ(ierr);
+        ierr = MatLUCheckShift_inline(info,sctx,row+1,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
 
         if (*pc3 != 0.0){
@@ -1544,7 +1544,7 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
         }
 
         sctx.rs = rs;
-        ierr = MatLUCheckShift_inline(info,sctx,row+2,a->diag,newshift);CHKERRQ(ierr);
+        ierr = MatLUCheckShift_inline(info,sctx,row+2,newshift);CHKERRQ(ierr);
         if (newshift == 1) goto endofwhile;
         break;
 
