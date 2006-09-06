@@ -116,6 +116,24 @@ namespace ALE {
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       return mesh;
     };
+    Obj<Mesh> Builder::readMeshBoundary(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+      Obj<Mesh>          mesh     = Mesh(comm, dim-1, debug);
+      Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
+      Obj<topology_type> topology = new topology_type(comm, debug);
+      int    *cells;
+      double *coordinates;
+      int     numCells = 0, numVertices = 0, numCorners = dim;
+
+      ALE::PCICE::Builder::readConnectivity(comm, basename+".lcon", numCorners, useZeroBase, numCells, &cells);
+      ALE::PCICE::Builder::readCoordinates(comm, basename+".nodes", dim, numVertices, &coordinates);
+      ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim-1, numCells, cells, numVertices, interpolate, numCorners);
+      sieve->stratify();
+      topology->setPatch(0, sieve);
+      topology->stratify();
+      mesh->setTopologyNew(topology);
+      buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
+      return mesh;
+    };
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteVertices"
     PetscErrorCode Viewer::writeVertices(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer) {

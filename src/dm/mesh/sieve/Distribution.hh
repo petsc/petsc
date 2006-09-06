@@ -96,7 +96,7 @@ namespace ALE {
           const typename Section::atlas_type::chart_type&         chart = serialAtlas->getPatch(patch);
 
           for(typename Section::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            const typename Section::point_type& point = c_iter->first;
+            const typename Section::point_type& point = *c_iter;
 
             if (sieve->hasPoint(point)) {
               atlas->setFiberDimension(patch, point, serialAtlas->getFiberDimension(patch, point));

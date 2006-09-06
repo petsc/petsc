@@ -165,7 +165,11 @@ namespace ALE {
       static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const Obj<Mesh::section_type>& maxVolumes, const bool interpolate = false) {
         int                  dim        = 2;
         Obj<Mesh>            refMesh    = Mesh(mesh->comm(), dim, mesh->debug);
+#ifdef PARALLEL
         Obj<Mesh>            serialMesh = ALE::New::Distribution<Mesh::topology_type>::unify(mesh);
+#else
+        Obj<Mesh>            serialMesh = mesh;
+#endif
         struct triangulateio in;
         struct triangulateio out;
         PetscErrorCode       ierr;
@@ -174,14 +178,16 @@ namespace ALE {
         const Obj<Mesh::sieve_type>&          serialSieve    = serialTopology->getPatch(patch);
 
         // maxVolumes->unify();
+        const Obj<Mesh::section_type> serialMaxVolumes = maxVolumes;
 
-        initInput(&in);
-        initOutput(&out);
+        Generator::initInput(&in);
+        Generator::initOutput(&out);
         if (mesh->commRank() == 0) {
           std::string args("pqenzQra");
           const Obj<Mesh::topology_type::label_sequence>&   faces       = serialTopology->heightStratum(patch, 0);
           const Obj<Mesh::topology_type::label_sequence>&   vertices    = serialTopology->depthStratum(patch, 0);
           const Obj<Mesh::topology_type::patch_label_type>& markers     = serialTopology->getLabel(patch, "marker");
+          const Obj<Mesh::numbering_type>&                  vNumbering  = serialMesh->getLocalNumbering(0);
           const Obj<Mesh::numbering_type>&                  fNumbering  = serialMesh->getLocalNumbering(serialTopology->depth());
           const int                                         numFaces    = faces->size();
 
@@ -195,8 +201,7 @@ namespace ALE {
 
           in.numberofpoints = vertices->size();
           if (in.numberofpoints > 0) {
-            const Obj<Mesh::section_type>&   coordinates = serialMesh->getSection("coordinates");
-            const Obj<Mesh::numbering_type>& vNumbering  = serialMesh->getLocalNumbering(0);
+            const Obj<Mesh::section_type>& coordinates = serialMesh->getSection("coordinates");
 
             ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
             ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
@@ -215,8 +220,7 @@ namespace ALE {
           in.numberoftriangles = faces->size();
           ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
           for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-            //Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *f_itor);
-            const Obj<Mesh::sieve_type::traits::coneSequence>& cone = sieve;
+            const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*f_iter);
             const int                                          idx  = fNumbering->getIndex(*f_iter);
             int                                                v    = 0;
 
@@ -228,29 +232,30 @@ namespace ALE {
             const Obj<Mesh::topology_type::label_sequence>& edges    = serialTopology->depthStratum(patch, 1);
             const Obj<Mesh::topology_type::label_sequence>& boundary = markers->support(1);
 
-          in.numberofsegments = 0;
-          for(Mesh::topology_type::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
-            for(Mesh::topology_type::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
-              if (*b_iter == *e_iter) {
-                in.numberofsegments++;
-              }
-            }
-          }
-          if (in.numberofsegments > 0) {
-            int s = 0;
-
-            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
-            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            in.numberofsegments = 0;
             for(Mesh::topology_type::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
               for(Mesh::topology_type::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
                 if (*b_iter == *e_iter) {
-                  const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*e_iter);
-                  int                                                p    = 0;
+                  in.numberofsegments++;
+                }
+              }
+            }
+            if (in.numberofsegments > 0) {
+              int s = 0;
 
-                  for(Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
-                    in.segmentlist[s*2 + (p++)] = vNumbering(*v_iter);
+              ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+              ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+              for(Mesh::topology_type::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
+                for(Mesh::topology_type::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+                  if (*b_iter == *e_iter) {
+                    const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*e_iter);
+                    int                                                p    = 0;
+
+                    for(Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
+                      in.segmentlist[s*2 + (p++)] = vNumbering->getIndex(*v_iter);
+                    }
+                    in.segmentmarkerlist[s++] = serialTopology->getValue(markers, *e_iter);
                   }
-                  in.segmentmarkerlist[s++] = serialTopology->getValue(markers, *e_iter);
                 }
               }
             }
@@ -286,7 +291,7 @@ namespace ALE {
 
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              topology->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              newTopology->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
             }
           }
           if (interpolate) {
@@ -294,17 +299,17 @@ namespace ALE {
               if (out.edgemarkerlist[e]) {
                 const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
                 const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
-                const Obj<Mesh::sieve_type::supportSet> edge = sieve->nJoin(vertexA, vertexB, 1);
+                const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
 
-                topology->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+                newTopology->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
               }
             }
           }
         }
 
-        finiOutput(&out);
+        Generator::finiOutput(&out);
         if (mesh->distributed) {
-          refMesh = ALE::New::Distribution<Mesh::topology_type>::distributeMesh(refMesh);
+          refMesh = ALE::New::Distribution<Mesh::topology_type>::redistributeMesh(refMesh);
         }
         return refMesh;
       };
@@ -323,13 +328,13 @@ namespace ALE {
     };
     class Refiner {
     public:
-      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const Obj<Mesh::secton_type>& maxVolumes, const bool interpolate = false) {
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const Obj<Mesh::section_type>& maxVolumes, const bool interpolate = false) {
         int                  dim     = 3;
         Obj<Mesh>            refMesh = Mesh(mesh->comm(), dim, mesh->debug);
         return refMesh;
       };
     };
-  }
+  };
 #endif
   class Generator {
   public:

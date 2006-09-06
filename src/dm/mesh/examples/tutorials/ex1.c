@@ -129,7 +129,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex1.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output", "Output the mesh", "ex1.c", options->output, &options->output, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
@@ -280,9 +280,9 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh, Options *options)
 */
 PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& mesh)
 {
-  Obj<ALE::Mesh::section_type>        partition = mesh->getSection("partition");
-  ALE::Mesh::section_type::patch_type patch     = 0;
-  ALE::Mesh::section_type::value_type rank      = mesh->commRank();
+  const Obj<ALE::Mesh::section_type>&       partition = mesh->getSection("partition");
+  const ALE::Mesh::section_type::patch_type patch     = 0;
+  const ALE::Mesh::section_type::value_type rank      = mesh->commRank();
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;

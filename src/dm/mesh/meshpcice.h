@@ -18,7 +18,7 @@ namespace ALE {
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
-      static Obj<Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase, int debug);
+      static Obj<Mesh> readMeshBoundary(MPI_Comm comm, const int dim, const std::string& basename, bool useZeroBase, const bool interpolate, int debug);
     };
 
     class Viewer {
