@@ -368,8 +368,8 @@
       PetscErrorCode     ierr
 
 !  Local variables:
-      PetscInt     i,j,hxdhy,hydhx
-      PetscScalar temp1,temp,hx,hy,sc,one
+      PetscInt     i,j
+      PetscScalar temp1,temp,hx,hy,one
 
 !  Set parameters
 
@@ -377,9 +377,6 @@
       one    = 1.0
       hx     = one/(dble(mx-1))
       hy     = one/(dble(my-1))
-      sc     = hx*hy*lambda
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
       temp1  = lambda/(lambda + one)
 
       do 20 j=1,my

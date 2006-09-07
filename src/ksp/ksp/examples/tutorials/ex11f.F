@@ -245,6 +245,8 @@
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
+#if !defined(PETSC_USE_COMPLEX)
  200  continue
+#endif
       call PetscFinalize(ierr)
       end

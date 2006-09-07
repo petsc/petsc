@@ -38,7 +38,7 @@
       PetscInt  n,dim,istart,iend
       PetscInt  i,j,jj,ii,one,zero
       PetscErrorCode ierr
-      double precision v,h2
+      double precision v
       external         MyResidual
       PetscScalar      pfive
       KSP              ksp
@@ -79,8 +79,6 @@
 !     locally (but any non-local elements will be sent to the
 !     appropriate processor during matrix assembly). 
 !   - Always specify global rows and columns of matrix entries.
-
-      h2 = 1.0/((n+1)*(n+1))
 
       do 10, II=Istart,Iend-1
         v = -1.0
