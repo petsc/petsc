@@ -293,10 +293,11 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
-      void checkLabel(const std::string& name) {
-        if (this->_labels.find(name) == this->_labels.end()) {
+      void checkLabel(const std::string& name, const patch_type& patch) {
+        this->checkPatch(patch);
+        if ((this->_labels.find(name) == this->_labels.end()) || (this->_labels[name].find(patch) == this->_labels[name].end())) {
           ostringstream msg;
-          msg << "Invalid label name: " << name << std::endl;
+          msg << "Invalid label name: " << name << " for patch " << patch << std::endl;
           throw ALE::Exception(msg.str().c_str());
         }
       };
@@ -328,19 +329,17 @@ namespace ALE {
       };
       const Obj<patch_label_type>& createLabel(const patch_type& patch, const std::string& name) {
         this->checkPatch(patch);
-        if (this->_labels.find(name) == this->_labels.end()) {
+        if ((this->_labels.find(name) == this->_labels.end()) || (this->_labels[name].find(patch) == this->_labels[name].end())) {
           this->_labels[name][patch] = new patch_label_type(this->comm(), this->debug());
         }
         return this->_labels[name][patch];
       };
       const Obj<patch_label_type>& getLabel(const patch_type& patch, const std::string& name) {
-        this->checkLabel(name);
-        this->checkPatch(patch);
+        this->checkLabel(name, patch);
         return this->_labels[name][patch];
       };
       const Obj<label_sequence>& getLabelStratum(const patch_type& patch, const std::string& name, int label) {
-        this->checkLabel(name);
-        this->checkPatch(patch);
+        this->checkLabel(name, patch);
         return this->_labels[name][patch]->support(label);
       };
       const sheaf_type& getPatches() {
@@ -380,7 +379,7 @@ namespace ALE {
 
         this->_maxHeight = -1;
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
-          Obj<patch_label_type> label = this->createLabel(s_iter->first, name);
+          const Obj<patch_label_type>& label = this->createLabel(s_iter->first, name);
 
           this->_maxHeights[s_iter->first] = -1;
           this->computeHeight(label, s_iter->second, s_iter->second->leaves(), this->_maxHeights[s_iter->first]);
@@ -423,7 +422,7 @@ namespace ALE {
 
         this->_maxDepth = -1;
         for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
-          Obj<patch_label_type> label = this->createLabel(s_iter->first, name);
+          const Obj<patch_label_type>& label = this->createLabel(s_iter->first, name);
 
           this->_maxDepths[s_iter->first] = -1;
           this->computeDepth(label, s_iter->second, s_iter->second->roots(), this->_maxDepths[s_iter->first]);

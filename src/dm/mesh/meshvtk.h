@@ -26,16 +26,15 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteVertices"
   static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
     typedef ALE::New::Numbering<ALE::Mesh::topology_type> numbering_type;
-    Obj<ALE::Mesh::section_type>        coordinates = mesh->getSection("coordinates");
-    Obj<numbering_type>                 numbering   = new numbering_type(mesh->getTopologyNew(), "depth", 0);
-    ALE::Mesh::section_type::patch_type patch       = 0;
-    int embedDim = coordinates->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+    const Obj<ALE::Mesh::section_type>&       coordinates = mesh->getSection("coordinates");
+    const Obj<numbering_type>&                vNumbering  = mesh->getNumbering(0);
+    const ALE::Mesh::section_type::patch_type patch       = 0;
+    const int embedDim = coordinates->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    numbering->construct();
-    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", numbering->getGlobalSize());CHKERRQ(ierr);
-    ierr = writeSection(mesh, coordinates, embedDim, numbering, viewer, 3);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", vNumbering->getGlobalSize());CHKERRQ(ierr);
+    ierr = writeSection(mesh, coordinates, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
@@ -138,16 +137,14 @@ class VTKViewer {
     ALE::Mesh::topology_type::patch_type                 patch      = 0;
     const Obj<ALE::Mesh::sieve_type>&                    topology   = mesh->getTopologyNew()->getPatch(patch);
     const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopologyNew()->heightStratum(patch, 0);
-    Obj<numbering_type>                                  vNumbering = new numbering_type(mesh->getTopologyNew(), "depth", 0);
-    Obj<numbering_type>                                  cNumbering = new numbering_type(mesh->getTopologyNew(), "height", 0);
+    const Obj<numbering_type>&                           vNumbering = mesh->getNumbering(0);
+    const Obj<numbering_type>&                           cNumbering = mesh->getNumbering(mesh->getTopologyNew()->depth());
     //int            corners = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
     int            corners = topology->cone(*elements->begin())->size();
     int            numElements;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    vNumbering->construct();
-    cNumbering->construct();
     numElements = cNumbering->getGlobalSize();
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {

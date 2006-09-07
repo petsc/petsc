@@ -5,6 +5,8 @@
 #include <CoSieve.hh>
 #endif
 
+extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
+
 namespace ALE {
   namespace New {
     template<typename Section_>
@@ -859,10 +861,11 @@ namespace ALE {
         for(typename topology_type::label_sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
           sendBuf[size++] = *l_iter;
         }
-        int *sizes   = new int[this->commSize()];
-        int *offsets = new int[this->commSize()+1];
-        point_type *remotePoints = NULL;
-        int        *remoteRanks  = NULL;
+        int *sizes   = new int[this->commSize()];   // The number of points coming from each process
+        int *offsets = new int[this->commSize()+1]; // Prefix sums for sizes
+        int *oldOffs = new int[this->commSize()+1]; // Temporary storage
+        point_type *remotePoints = NULL;            // The points from each process
+        int        *remoteRanks  = NULL;            // The rank and number of overlap points of each process that overlaps another
 
         // Change to Allgather() for the correct binning algorithm
         MPI_Gather(&size, 1, MPI_INT, sizes, 1, MPI_INT, 0, this->comm());
@@ -874,16 +877,19 @@ namespace ALE {
           remotePoints = new point_type[offsets[this->commSize()]];
         }
         MPI_Gatherv(sendBuf, size, MPI_INT, remotePoints, sizes, offsets, MPI_INT, 0, this->comm());
-        std::map<int, std::map<int, std::set<point_type> > > overlapInfo;
+        std::map<int, std::map<int, std::set<point_type> > > overlapInfo; // Maps (p,q) to their set of overlap points
 
         if (this->commRank() == 0) {
           for(int p = 0; p < this->commSize(); p++) {
             std::sort(&remotePoints[offsets[p]], &remotePoints[offsets[p+1]]);
           }
+          for(int p = 0; p <= this->commSize(); p++) {
+            oldOffs[p] = offsets[p];
+          }
           for(int p = 0; p < this->commSize(); p++) {
             for(int q = p+1; q < this->commSize(); q++) {
-              std::set_intersection(&remotePoints[offsets[p]], &remotePoints[offsets[p+1]],
-                                    &remotePoints[offsets[q]], &remotePoints[offsets[q+1]],
+              std::set_intersection(&remotePoints[oldOffs[p]], &remotePoints[oldOffs[p+1]],
+                                    &remotePoints[oldOffs[q]], &remotePoints[oldOffs[q+1]],
                                     std::insert_iterator<std::set<point_type> >(overlapInfo[p][q], overlapInfo[p][q].begin()));
               overlapInfo[q][p] = overlapInfo[p][q];
             }
@@ -900,10 +906,11 @@ namespace ALE {
             }
           }
         }
-        int numOverlaps;
+        int numOverlaps;                          // The number of processes overlapping this process
         MPI_Scatter(sizes, 1, MPI_INT, &numOverlaps, 1, MPI_INT, 0, this->comm());
-        int *overlapRanks = new int[numOverlaps];
+        int *overlapRanks = new int[numOverlaps]; // The rank and overlap size for each overlapping process
         MPI_Scatterv(remoteRanks, sizes, offsets, MPI_INT, overlapRanks, numOverlaps, MPI_INT, 0, this->comm());
+        point_type *sendPoints = NULL;            // The points to send to each process
         if (this->commRank() == 0) {
           for(int p = 0, k = 0; p < this->commSize(); p++) {
             sizes[p] = 0;
@@ -913,11 +920,12 @@ namespace ALE {
             }
             offsets[p+1] = offsets[p] + sizes[p];
           }
+          sendPoints = new point_type[offsets[this->commSize()]];
           for(int p = 0, k = 0; p < this->commSize(); p++) {
             for(typename std::map<int, std::set<point_type> >::iterator r_iter = overlapInfo[p].begin(); r_iter != overlapInfo[p].end(); ++r_iter) {
               int rank = r_iter->first;
               for(typename std::set<point_type>::iterator p_iter = (overlapInfo[p][rank]).begin(); p_iter != (overlapInfo[p][rank]).end(); ++p_iter) {
-                remotePoints[k++] = *p_iter;
+                sendPoints[k++] = *p_iter;
               }
             }
           }
@@ -927,7 +935,7 @@ namespace ALE {
           numOverlapPoints += overlapRanks[r*2+1];
         }
         point_type *overlapPoints = new point_type[numOverlapPoints];
-        MPI_Scatterv(remotePoints, sizes, offsets, MPI_INT, overlapPoints, numOverlapPoints, MPI_INT, 0, this->comm());
+        MPI_Scatterv(sendPoints, sizes, offsets, MPI_INT, overlapPoints, numOverlapPoints, MPI_INT, 0, this->comm());
 
         for(int r = 0, k = 0; r < numOverlaps/2; r++) {
           int rank = overlapRanks[r*2];
@@ -944,9 +952,11 @@ namespace ALE {
         delete [] overlapRanks;
         delete [] sizes;
         delete [] offsets;
+        delete [] oldOffs;
         if (this->commRank() == 0) {
           delete [] remoteRanks;
           delete [] remotePoints;
+          delete [] sendPoints;
         }
         if (this->debug()) {
           sendOverlap->view("Send overlap");
@@ -1048,6 +1058,8 @@ namespace ALE {
             }
           }
         }
+        PetscErrorCode ierr;
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
       };
       void construct() {
         this->constructOverlap(this->_sendOverlap, this->_recvOverlap);
