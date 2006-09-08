@@ -435,9 +435,9 @@
       integer ierr
 
 !  Local variables:
-      integer  i,j,hxdhy,hydhx
+      integer  i,j
       PetscScalar   temp1,temp,hx,hy
-      PetscScalar   sc,one
+      PetscScalar   one
 
 !  Set parameters
 
@@ -445,9 +445,6 @@
       one    = 1.0
       hx     = one/(dble(user%mx-1))
       hy     = one/(dble(user%my-1))
-      sc     = hx*hy*user%lambda
-      hxdhy  = hx/hy
-      hydhx  = hy/hx
       temp1  = user%lambda/(user%lambda + one)
 
       do 20 j=user%ys,user%ye
