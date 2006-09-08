@@ -258,9 +258,9 @@
       x    = userctx(1)
       b    = userctx(2)
       A    = userctx(3)
-      ksp = userctx(4)
-      m    = userctx(5)
-      n    = userctx(6)
+      ksp  = userctx(4)
+      m    = int(userctx(5))
+      n    = int(userctx(6))
 
 !  This is not the most efficient way of generating the matrix,
 !  but let's not worry about it.  We should have separate code for
