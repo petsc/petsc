@@ -31,14 +31,14 @@ void PETSC_STDCALL meshrestorecoordinatesf90_(Mesh *x,F90Array2d *ptr,int *__ier
 }
 void PETSC_STDCALL meshgetelementsf90_(Mesh *mesh,F90Array2d *ptr,int *__ierr)
 {
-  PetscReal *v;
+  PetscInt   *v;
   PetscInt   n, c;
-  *__ierr = MeshGetCoordinates(*mesh,PETSC_TRUE,&n,&c,&v); if (*__ierr) return;
-  *__ierr = F90Array2dCreate(v,PETSC_REAL,1,n,1,c,ptr);
+  *__ierr = MeshGetElements(*mesh,PETSC_TRUE,&n,&c,&v); if (*__ierr) return;
+  *__ierr = F90Array2dCreate(v,PETSC_INT,1,n,1,c,ptr);
 }
 void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr)
 {
-  PetscReal *v;
+  PetscInt   *v;
   *__ierr = F90Array2dAccess(ptr,(void**)&v);if (*__ierr) return;
   *__ierr = F90Array2dDestroy(ptr);if (*__ierr) return;
   *__ierr = PetscFree(v);
