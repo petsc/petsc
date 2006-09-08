@@ -142,6 +142,7 @@ namespace ALE {
       const Obj<Mesh::section_type>&                  coordSec   = mesh->getSection("coordinates");
       const Obj<Mesh::topology_type::label_sequence>& vertices   = mesh->getTopologyNew()->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
+      int            size     = vertices->size();
       int            embedDim = coordSec->getFiberDimension(patch, *vertices->begin());
       double        *coords;
       PetscErrorCode ierr;
@@ -153,7 +154,7 @@ namespace ALE {
 
         if (columnMajor) {
           for(int d = 0; d < embedDim; d++) {
-            coords[d*embedDim + row] = array[d];
+            coords[d*size + row] = array[d];
           }
         } else {
           for(int d = 0; d < embedDim; d++) {
@@ -161,7 +162,7 @@ namespace ALE {
           }
         }
       }
-      *numVertices = vertices->size();
+      *numVertices = size;
       *dim         = embedDim;
       *coordinates = coords;
     };
@@ -172,6 +173,7 @@ namespace ALE {
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                eNumbering = mesh->getLocalNumbering(topology->depth());
       const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
+      int            size         = elements->size();
       //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
       int            corners      = sieve->cone(*elements->begin())->size();
       int           *v;
@@ -187,15 +189,15 @@ namespace ALE {
         int       c   = -1;
         if (columnMajor) {
           for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
-            v[(++c)*corners + row] = vNumbering->getIndex(*c_iter)+1;
+            v[(++c)*size + row] = vNumbering->getIndex(*c_iter)+1;
           }
         } else {
           for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
-            v[row*corners + ++c]   = vNumbering->getIndex(*c_iter)+1;
+            v[row*corners + ++c] = vNumbering->getIndex(*c_iter)+1;
           }
         }
       }
-      *numElements = elements->size();
+      *numElements = size;
       *numCorners  = corners;
       *vertices    = v;
     };
