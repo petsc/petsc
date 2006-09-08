@@ -162,27 +162,20 @@ namespace ALE {
     };
     class Refiner {
     public:
-      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const Obj<Mesh::section_type>& maxVolumes, const bool interpolate = false) {
-        int                  dim        = 2;
-        Obj<Mesh>            refMesh    = Mesh(mesh->comm(), dim, mesh->debug);
-#ifdef PARALLEL
-        Obj<Mesh>            serialMesh = ALE::New::Distribution<Mesh::topology_type>::unify(mesh);
-#else
-        Obj<Mesh>            serialMesh = mesh;
-#endif
-        struct triangulateio in;
-        struct triangulateio out;
-        PetscErrorCode       ierr;
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& serialMesh, const double maxVolumes[], const bool interpolate = false) {
+        const int                             dim            = serialMesh->getDimension();
+        const Obj<Mesh>                       refMesh        = Mesh(serialMesh->comm(), dim, serialMesh->debug);
         const Mesh::topology_type::patch_type patch          = 0;
         const Obj<Mesh::topology_type>&       serialTopology = serialMesh->getTopologyNew();
         const Obj<Mesh::sieve_type>&          serialSieve    = serialTopology->getPatch(patch);
+        struct triangulateio in;
+        struct triangulateio out;
+        PetscErrorCode       ierr;
 
-        // maxVolumes->unify();
-        const Obj<Mesh::section_type> serialMaxVolumes = maxVolumes;
 
         Generator::initInput(&in);
         Generator::initOutput(&out);
-        if (mesh->commRank() == 0) {
+        if (serialMesh->commRank() == 0) {
           std::string args("pqenzQra");
           const Obj<Mesh::topology_type::label_sequence>&   faces       = serialTopology->heightStratum(patch, 0);
           const Obj<Mesh::topology_type::label_sequence>&   vertices    = serialTopology->depthStratum(patch, 0);
@@ -191,13 +184,7 @@ namespace ALE {
           const Obj<Mesh::numbering_type>&                  fNumbering  = serialMesh->getLocalNumbering(serialTopology->depth());
           const int                                         numFaces    = faces->size();
 
-          ierr = PetscMalloc(numFaces * sizeof(double), &in.trianglearealist);
-          for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-            const Mesh::section_type::value_type *array = serialMaxVolumes->restrict(patch, *f_iter);
-            const int                             idx   = fNumbering->getIndex(*f_iter);
-
-            in.trianglearealist[idx] = array[0];
-          }
+          in.trianglearealist = (double *) maxVolumes;
 
           in.numberofpoints = vertices->size();
           if (in.numberofpoints > 0) {
@@ -217,7 +204,7 @@ namespace ALE {
           }
 
           in.numberofcorners   = 3;
-          in.numberoftriangles = faces->size();
+          in.numberoftriangles = numFaces;
           ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
           for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
             const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*f_iter);
@@ -266,14 +253,13 @@ namespace ALE {
             ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
           }
           triangulate((char *) args.c_str(), &in, &out, NULL);
-          ierr = PetscFree(in.trianglearealist);
           ierr = PetscFree(in.pointlist);
           ierr = PetscFree(in.pointmarkerlist);
           ierr = PetscFree(in.segmentlist);
           ierr = PetscFree(in.segmentmarkerlist);
         }
-        const Obj<Mesh::topology_type>& newTopology = new Mesh::topology_type(mesh->comm(), mesh->debug);
-        const Obj<Mesh::sieve_type>     newSieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug);
+        const Obj<Mesh::topology_type>& newTopology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug);
+        const Obj<Mesh::sieve_type>     newSieve    = new Mesh::sieve_type(serialMesh->comm(), serialMesh->debug);
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;
         int    *cells       = out.trianglelist;
@@ -284,9 +270,9 @@ namespace ALE {
         newSieve->stratify();
         newTopology->setPatch(patch, newSieve);
         newTopology->stratify();
-        mesh->setTopologyNew(newTopology);
-        ALE::PyLith::Builder::buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
-        if (mesh->commRank() == 0) {
+        refMesh->setTopologyNew(newTopology);
+        ALE::PyLith::Builder::buildCoordinates(refMesh->getSection("coordinates"), dim, coordinates);
+        if (refMesh->commRank() == 0) {
           const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
 
           for(int v = 0; v < out.numberofpoints; v++) {
@@ -308,9 +294,34 @@ namespace ALE {
         }
 
         Generator::finiOutput(&out);
-        if (mesh->distributed) {
-          refMesh = ALE::New::Distribution<Mesh::topology_type>::redistributeMesh(refMesh);
+        return ALE::New::Distribution<Mesh::topology_type>::redistributeMesh(refMesh);
+      };
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const Obj<Mesh::section_type>& maxVolumes, const bool interpolate = false) {
+        const Mesh::topology_type::patch_type patch    = 0;
+#ifdef PARALLEL
+        Obj<Mesh>                     serialMesh       = ALE::New::Distribution<Mesh::topology_type>::unifyMesh(mesh);
+        const Obj<Mesh::section_type> serialMaxVolumes = ALE::New::Distribution<Mesh::topology_type>::unifySection(maxVolumes);
+#else
+        Obj<Mesh>                     serialMesh       = mesh;
+        const Obj<Mesh::section_type> serialMaxVolumes = maxVolumes;
+#endif
+        return refineMesh(serialMesh, serialMaxVolumes->restrict(patch), interpolate);
+      };
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+        const Mesh::topology_type::patch_type patch = 0;
+#ifdef PARALLEL
+        const Obj<Mesh> serialMesh       = ALE::New::Distribution<Mesh::topology_type>::unifyMesh(mesh);
+#else
+        const Obj<Mesh> serialMesh       = mesh;
+#endif
+        const int       numFaces         = serialMesh->getTopologyNew()->heightStratum(patch, 0)->size();
+        double         *serialMaxVolumes = new double[numFaces];
+
+        for(int f = 0; f < numFaces; f++) {
+          serialMaxVolumes[f] = maxVolume;
         }
+        const Obj<Mesh> refMesh = refineMesh(serialMesh, serialMaxVolumes, interpolate);
+        delete [] serialMaxVolumes;
         return refMesh;
       };
     };
@@ -329,6 +340,11 @@ namespace ALE {
     class Refiner {
     public:
       static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const Obj<Mesh::section_type>& maxVolumes, const bool interpolate = false) {
+        int                  dim     = 3;
+        Obj<Mesh>            refMesh = Mesh(mesh->comm(), dim, mesh->debug);
+        return refMesh;
+      };
+      static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
         int                  dim     = 3;
         Obj<Mesh>            refMesh = Mesh(mesh->comm(), dim, mesh->debug);
         return refMesh;
@@ -368,6 +384,24 @@ namespace ALE {
       } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
         return ALE::TetGen::Refiner::refineMesh(mesh, maxVolumes, interpolate);
+#else
+        throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+      }
+      return NULL;
+    };
+    static Obj<Mesh> refineMesh(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+      int dim = mesh->getDimension();
+
+      if (dim == 2) {
+#ifdef PETSC_HAVE_TRIANGLE
+        return ALE::Triangle::Refiner::refineMesh(mesh, maxVolume, interpolate);
+#else
+        throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
+#endif
+      } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
+        return ALE::TetGen::Refiner::refineMesh(mesh, maxVolume, interpolate);
 #else
         throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
 #endif

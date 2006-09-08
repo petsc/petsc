@@ -1,0 +1,19 @@
+!
+!
+!  Additional Mesh include file for use of PETSc with Fortran 90/HPF
+!
+      Interface 
+        Subroutine MeshGetCoordinatesF90(m,array,ierr)
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface
+
+      Interface 
+        Subroutine MeshRestoreCoordinatesF90(m,array,ierr)
+          PetscReal, pointer :: array(:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface

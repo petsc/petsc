@@ -343,14 +343,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
 .seealso MeshCreate(), MeshSetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh> *m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
-  if (m) {
-    PetscValidPointer(m,2);
-    *m = mesh->m;
-  }
+  m = mesh->m;
   PetscFunctionReturn(0);
 }
 
@@ -370,7 +367,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh> *m)
 .seealso MeshCreate(), MeshGetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, ALE::Obj<ALE::Mesh> m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
@@ -414,7 +411,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
   PetscErrorCode         ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   //localSize = m->getSection("u")->getGlobalOrder()->getSize(ALE::Mesh::field_type::patch_type());
 
   ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
@@ -713,7 +710,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
 #ifdef __cplusplus
   ALE::Obj<ALE::Mesh> m;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshCreateVector(m, gvec);CHKERRQ(ierr);
 #endif
 #if 0
@@ -905,7 +902,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) b, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   //firstElement = elementBundle->getLocalSizes()[bundle->getCommRank()];
   firstElement = 0;
   // Must relate b to field
@@ -1098,7 +1095,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return VTKViewer::writeVertices(m, viewer);
 }
 
@@ -1109,7 +1106,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return VTKViewer::writeElements(m, viewer);
 }
 
@@ -1120,7 +1117,7 @@ PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PCICE::Viewer::writeVertices(m, viewer);
 }
 
@@ -1131,8 +1128,104 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PCICE::Viewer::writeElements(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCreatePCICE"
+/*@C
+  MeshCreatePCICE - Create a Mesh from PCICE files.
+
+  Not Collective
+
+  Input Parameters:
++ dim - The topological mesh dimension
+. coordFilename - The file containing vertex coordinates
+- adjFilename - The file containing the vertices for each element
+
+  Output Parameter:
+. mesh - The Mesh object
+
+  Level: beginner
+
+.keywords: mesh, PCICE
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], Mesh *mesh)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  m    = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, false, 0);
+  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetCoordinates"
+/*@C
+  MeshGetCoordinates - Creates an array holding the coordinates.
+
+  Not Collective
+
+  Input Parameter:
++ mesh - The Mesh object
+- columnMajor - Flag for column major order
+
+  Output Parameter:
++ numVertices - The number of vertices
+. dim - The embedding dimension
+- coords - The array holding local coordinates
+
+  Level: intermediate
+
+.keywords: mesh, coordinates
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ALE::PCICE::Builder::outputVerticesLocal(m, numVertices, dim, coords, columnMajor);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetElements"
+/*@C
+  MeshGetElements - Creates an array holding the vertices on each element.
+
+  Not Collective
+
+  Input Parameter:
++ mesh - The Mesh object
+- columnMajor - Flag for column major order
+
+  Output Parameter:
++ numElements - The number of elements
+. numCorners - The nubmer of vertices per element
+- vertices - The array holding vertices on each local element
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ALE::PCICE::Builder::outputElementsLocal(m, numElements, numCorners, vertices, columnMajor);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
@@ -1142,7 +1235,7 @@ PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PyLith::Viewer::writeVertices(m, viewer);
 }
 
@@ -1153,7 +1246,7 @@ PetscErrorCode WritePyLithElements(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PyLith::Viewer::writeElements(m, viewer);
 }
 
@@ -1164,7 +1257,7 @@ PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PyLith::Viewer::writeVerticesLocal(m, viewer);
 }
 
@@ -1175,7 +1268,7 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PyLith::Viewer::writeElementsLocal(m, viewer);
 }
 
@@ -1186,6 +1279,6 @@ PetscErrorCode WritePyLithSplitLocal(Mesh mesh, PetscViewer viewer)
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
-  ierr = MeshGetMesh(mesh, &m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PyLith::Viewer::writeSplitLocal(m, m->getSplitSection(), viewer);
 }

@@ -495,7 +495,7 @@ namespace ALE {
     #define __FUNCT__ "PyLithWriteVerticesLocal"
     PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
       const Mesh::section_type::patch_type            patch       = 0;
-      Obj<Mesh::section_type>                         coordinates = mesh->getSection("coordinates");
+      const Obj<Mesh::section_type>&                  coordinates = mesh->getSection("coordinates");
       const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering  = mesh->getLocalNumbering(0);

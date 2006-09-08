@@ -18,7 +18,10 @@ namespace ALE {
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
+      static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase, const bool interpolate, const int debug);
       static Obj<Mesh> readMeshBoundary(MPI_Comm comm, const int dim, const std::string& basename, bool useZeroBase, const bool interpolate, int debug);
+      static void outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], bool columnMajor);
+      static void outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], bool columnMajor);
     };
 
     class Viewer {
@@ -26,8 +29,9 @@ namespace ALE {
       Viewer() {};
       virtual ~Viewer() {};
     public:
-      static PetscErrorCode writeVertices(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
-      static PetscErrorCode writeElements(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+      static PetscErrorCode writeVertices(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeElements(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeVerticesLocal(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer);
     };
   };
 };

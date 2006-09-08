@@ -435,7 +435,7 @@ PetscErrorCode RefineMesh(Obj<ALE::Mesh>& mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshRefinement");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Refining mesh\n");CHKERRQ(ierr);
-    //mesh = ALE::Generator::refineMesh(mesh, options->refinementLimit, options->interpolate);
+    mesh = ALE::Generator::refineMesh(mesh, options->refinementLimit, options->interpolate);
     if (options->partition) {
       ierr = CreatePartition(mesh);CHKERRQ(ierr);
     }

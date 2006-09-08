@@ -1,5 +1,5 @@
-#include "petsc.h"
-#include "petscfix.h"
+#include "zpetsc.h"
+#include "petscmesh.h"
 /* mesh.c */
 /* Fortran interface file */
 
@@ -26,39 +26,32 @@ extern void PetscRmPointer(void*);
 #define PetscRmPointer(a)
 #endif
 
-#include "petscmat.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
+#define meshcreatepcice_ MESHCREATEPCICE
 #define restrictvector_ RESTRICTVECTOR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define restrictvector_ restrictvector
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define assemblevectorcomplete_ assemblevectorcomplete
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define assemblevector_ ASSEMBLEVECTOR
-#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define assemblevector_ assemblevector
-#endif
-#ifdef PETSC_HAVE_FORTRAN_CAPS
 #define assemblematrix_ ASSEMBLEMATRIX
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
+#define meshcreatepcice_ meshcreatepcice
+#define restrictvector_ restrictvector
+#define assemblevectorcomplete_ assemblevectorcomplete
+#define assemblevector_ assemblevector
 #define assemblematrix_ assemblematrix
 #endif
 
-PETSC_EXTERN_CXX_BEGIN
-PetscErrorCode restrictVector(Vec, Vec, InsertMode);
-PetscErrorCode assembleVectorComplete(Vec, Vec, InsertMode);
-PetscErrorCode assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
-PetscErrorCode assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
-PETSC_EXTERN_CXX_END
-
 /* Definitions of Fortran Wrapper routines */
-#if defined(__cplusplus)
-extern "C" {
-#endif
+EXTERN_C_BEGIN
+
+void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilename PETSC_MIXED_LEN(lenC), CHAR adjFilename PETSC_MIXED_LEN(lenA), Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenC) PETSC_END_LEN(lenA))
+{
+  char *cF, *aF;
+  FIXCHAR(coordFilename,lenC,cF);
+  FIXCHAR(adjFilename,lenA,aF);
+  *ierr = MeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,mesh);
+  FREECHAR(coordFilename,cF);
+  FREECHAR(adjFilename,aF);
+}
 void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
 *__ierr = restrictVector(
 	(Vec)PetscToPointer((g) ),
@@ -77,6 +70,5 @@ void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode
 *__ierr = assembleMatrix(
 	(Mat)PetscToPointer((A) ),*e,v,*mode);
 }
-#if defined(__cplusplus)
-}
-#endif
+
+EXTERN_C_END

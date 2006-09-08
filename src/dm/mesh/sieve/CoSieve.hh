@@ -301,6 +301,12 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
+      bool hasLabel(const std::string& name, const patch_type& patch) {
+        if ((this->_labels.find(name) != this->_labels.end()) && (this->_labels[name].find(patch) != this->_labels[name].end())) {
+          return true;
+        }
+        return false;
+      };
     public: // Accessors
       const Obj<sieve_type>& getPatch(const patch_type& patch) {
         this->checkPatch(patch);
@@ -343,6 +349,9 @@ namespace ALE {
         return this->_labels[name][patch]->support(label);
       };
       const sheaf_type& getPatches() {
+        return this->_sheaf;
+      };
+      const labels_type& getLabels() {
         return this->_sheaf;
       };
       void clear() {
