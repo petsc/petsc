@@ -81,7 +81,7 @@
       external mymult
 
 !     --------------- Data to define nonlinear solver -------------- 
-      double precision   rtol,xtol,ttol
+      double precision   rtol,ttol
       double precision   fnorm,ynorm,xnorm
       PetscInt            max_nonlin_its,one
       PetscInt            lin_its
@@ -91,7 +91,6 @@
 
       mone           = -1.d0
       rtol           = 1.d-8
-      xtol           = 1.d-8
       max_nonlin_its = 10
       one            = 1
       ifive          = 5
@@ -317,7 +316,6 @@
       PetscInt  my, xs,ys,xm
       PetscInt  ym,gxm,gym,gxs,gys
       double precision one,lambda,temp1,temp,hx,hy
-      double precision hxdhy,hydhx,sc
       PetscScalar      xx(1)
       DA               da
       Mat              B
@@ -327,9 +325,6 @@
       lambda = 6.d0
       hx     = one/(mx-1)
       hy     = one/(my-1)
-      sc     = hx*hy*lambda  
-      hxdhy  = hx/hy 
-      hydhx  = hy/hx
       temp1  = lambda/(lambda + one)
 
 !  Get a pointer to vector data.

@@ -576,7 +576,7 @@
      &     "nlocal = ", nlocal,", offl = ",fa%offl,", indices = "
       DO i=0,nlocal-1
          k=k+1
-         indices(i)= 2*localarray(k)
+         indices(i)= int(2*localarray(k))
          IF(diagnose)WRITE(*,'(2i4)')i,indices(i)
       ENDDO
       CALL VecRestoreArray(localvec,localarray,il,ierr)
@@ -675,7 +675,7 @@
       TYPE(fa_type), INTENT(IN) :: fa
       Vec, INTENT(IN) :: v
 
-      INTEGER :: iv,vn,ln,j,offset,psize
+      INTEGER :: iv,vn,ln,j,offset
       REAL(8), DIMENSION(1) :: va
       TYPE(patch_type), DIMENSION(0:2) :: patch
       PetscDraw :: draw
@@ -712,7 +712,6 @@
             patch(j)%my=fa%ng(j)-1
          ENDIF
          ALLOCATE(patch(j)%xy(2,0:patch(j)%mx,0:patch(j)%my))
-         psize=SIZE(patch(j)%xy)
          patch(j)%xy=RESHAPE(va(offset+1:offset+SIZE(patch(j)%xy)),                &
      &        (/2,patch(j)%mx+1,patch(j)%my+1/))
       ENDDO
@@ -877,7 +876,7 @@
       Vec, INTENT(INOUT) :: g
 
       INTEGER :: i,j,k,x,y,m,n,ig
-      REAL(8) :: r0=1,theta0=pi/6,r,theta,dr,dt1,dt3
+      REAL(8) :: r0=1,r,theta,dr,dt1,dt3
       REAL(8), DIMENSION(1) :: ga
 !-----------------------------------------------------------------------
 !     format statements.
