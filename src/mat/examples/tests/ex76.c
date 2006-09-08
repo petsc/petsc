@@ -1,5 +1,5 @@
 
-static char help[] = "Tests cholesky/icc factorization and solve on sequential aij, baij and sbaij matrices. \n";
+static char help[] = "Tests cholesky, icc factorization and solve on sequential aij, baij and sbaij matrices. \n";
 
 #include "petscmat.h"
 
@@ -15,7 +15,7 @@ int main(int argc,char **args)
   PetscMPIInt    size;
   PetscReal      norm2,tol=1.e-10,err[10];
   PetscScalar    neg_one = -1.0,four=4.0,value[3];  
-  IS             perm;
+  IS             perm,cperm;
   PetscRandom    rdm;
   PetscInt       reorder=0,displ=0;
   MatFactorInfo  factinfo;
@@ -41,14 +41,6 @@ int main(int argc,char **args)
     ierr=MatCreateSeqBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL,&A);CHKERRQ(ierr);
     TestAIJ = PETSC_FALSE;
   }
-  ierr = MatCreateSeqSBAIJ(PETSC_COMM_WORLD,bs,n,n,nz,PETSC_NULL,&sA);CHKERRQ(ierr);
-
-  /* Test MatGetOwnershipRange() */
-  ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
-  if (i-Ii || j-J){
-    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");
-  }
 
   /* Assemble matrix */
   if (bs == 1){
@@ -58,17 +50,14 @@ int main(int argc,char **args)
       for (i=1; i<n-1; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
         ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
       }
       i = n - 1; col[0]=0; col[1] = n - 2; col[2] = n - 1;
       value[0]= 0.1; value[1]=-1; value[2]=2;
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
 
       i = 0; col[0] = 0; col[1] = 1; col[2]=n-1;
       value[0] = 2.0; value[1] = -1.0; value[2]=0.1;
       ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
     } else if (prob ==2){ /* matrix for the five point stencil */
       n1 = (int) (sqrt((PetscReal)n) + 0.001); 
       if (n1*n1 - n) SETERRQ(PETSC_ERR_ARG_WRONG,"sqrt(n) must be a positive interger!"); 
@@ -78,25 +67,20 @@ int main(int argc,char **args)
           if (i>0)   {
             J = Ii - n1; 
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr); 
-            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (i<n1-1) {
             J = Ii + n1; 
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (j>0)   {
             J = Ii - 1; 
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           if (j<n1-1) {
             J = Ii + 1; 
             ierr = MatSetValues(A,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
-            ierr = MatSetValues(sA,1,&Ii,1,&J,&neg_one,INSERT_VALUES);CHKERRQ(ierr);
           }
           ierr = MatSetValues(A,1,&Ii,1,&Ii,&four,INSERT_VALUES);CHKERRQ(ierr);
-          ierr = MatSetValues(sA,1,&Ii,1,&Ii,&four,INSERT_VALUES);CHKERRQ(ierr);
         }
       }                   
     }
@@ -106,28 +90,23 @@ int main(int argc,char **args)
       value[0] = -1.0; value[1] = 4.0; value[2] = -1.0;
       for (i=1+block*bs; i<bs-1+block*bs; i++) {
         col[0] = i-1; col[1] = i; col[2] = i+1;
-        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatSetValues(sA,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);    
+        ierr = MatSetValues(A,1,&i,3,col,value,INSERT_VALUES);CHKERRQ(ierr);   
       }
       i = bs - 1+block*bs; col[0] = bs - 2+block*bs; col[1] = bs - 1+block*bs;
       value[0]=-1.0; value[1]=4.0;  
       ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr); 
 
       i = 0+block*bs; col[0] = 0+block*bs; col[1] = 1+block*bs; 
       value[0]=4.0; value[1] = -1.0; 
-      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(sA,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);  
+      ierr = MatSetValues(A,1,&i,2,col,value,INSERT_VALUES);CHKERRQ(ierr);  
     }
     /* off-diagonal blocks */
     value[0]=-1.0;
     for (i=0; i<(n/bs-1)*bs; i++){
       col[0]=i+bs;
       ierr = MatSetValues(A,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(sA,1,&i,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
       col[0]=i; row=i+bs;
       ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-      ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
     }
   }
 
@@ -136,18 +115,23 @@ int main(int argc,char **args)
      for (i=0; i<bs; i++){
        row = i; col[0] = i; value[0] = 0.0;
        ierr = MatSetValues(A,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
-       ierr = MatSetValues(sA,1,&row,1,col,value,INSERT_VALUES);CHKERRQ(ierr);
      }
    }
 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-  ierr = MatAssemblyBegin(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatAssemblyEnd(sA,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
 
-  ierr = MatMultEqual(A,sA,5,&equal);CHKERRQ(ierr);
+  /* Test MatConvert */
+  ierr = MatConvert(A,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sA);CHKERRQ(ierr); 
+  ierr = MatMultEqual(A,sA,20,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_USER,"A != sA");
+
+  /* Test MatGetOwnershipRange() */
+  ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(sA,&i,&j);CHKERRQ(ierr);
+  if (i-Ii || j-J){
+    PetscPrintf(PETSC_COMM_SELF,"Error: MatGetOwnershipRange() in MatSBAIJ format\n");
+  }
 
   /* Vectors */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
@@ -157,21 +141,13 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
-  /* Test MatReordering() on a symmetric ordering */
-  ierr = PetscMalloc(mbs*sizeof(PetscInt),&ip_ptr);CHKERRQ(ierr);
-  for (i=0; i<mbs; i++) ip_ptr[i] = i;
-  switch (reorder){
-  case 0: break;
-  case 1:
-    i = ip_ptr[2]; ip_ptr[2] = ip_ptr[mbs-3]; ip_ptr[mbs-3] = i;
-  case 2:
-    i = ip_ptr[1]; ip_ptr[1] = ip_ptr[mbs-2]; ip_ptr[mbs-2] = i;
-  case 3:
-    i = ip_ptr[0]; ip_ptr[0] = ip_ptr[mbs-1]; ip_ptr[mbs-1] = i;
+  /* Test MatReordering() - not work on sbaij matrix */
+  if (reorder){
+    ierr = MatGetOrdering(A,MATORDERING_RCM,&perm,&cperm);CHKERRQ(ierr);
+  } else {
+    ierr = MatGetOrdering(A,MATORDERING_NATURAL,&perm,&cperm);CHKERRQ(ierr);
   }
-
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,mbs,ip_ptr,&perm);CHKERRQ(ierr);
-  ierr = ISSetPermutation(perm);CHKERRQ(ierr);
+  ierr = ISDestroy(cperm);CHKERRQ(ierr);
 
   /* initialize factinfo */
   factinfo.shiftnz   = 0.0;
@@ -199,6 +175,7 @@ int main(int argc,char **args)
         ierr = MatICCFactorSymbolic(A,perm,&factinfo,&sC);CHKERRQ(ierr);
       }      
       ierr = MatCholeskyFactorNumeric(A,&factinfo,&sC);CHKERRQ(ierr);  
+
       ierr = MatMult(A,x,b);CHKERRQ(ierr);
       ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
       ierr = MatDestroy(sC);CHKERRQ(ierr);
@@ -251,6 +228,18 @@ int main(int argc,char **args)
       ierr = MatICCFactorSymbolic(sA,perm,&factinfo,&sC);CHKERRQ(ierr);
     }      
     ierr = MatCholeskyFactorNumeric(sA,&factinfo,&sC);CHKERRQ(ierr);  
+
+    if (lvl==0 && bs==1){ /* Test inplace ICC(0) for sbaij sA */
+        Mat B;
+        ierr = MatDuplicate(sA,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+        ierr = MatICCFactor(B,perm,&factinfo);CHKERRQ(ierr);
+        ierr = MatEqual(sC,B,&equal);CHKERRQ(ierr);
+        if (!equal){
+          SETERRQ(PETSC_ERR_USER,"in-place Cholesky factor != out-place Cholesky factor");
+        }
+        ierr = MatDestroy(B);CHKERRQ(ierr);
+    }
+
     ierr = MatMult(sA,x,b);CHKERRQ(ierr);
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr); 
 
@@ -274,7 +263,6 @@ int main(int argc,char **args)
   } 
 
   ierr = ISDestroy(perm);CHKERRQ(ierr);
-  ierr = PetscFree(ip_ptr);CHKERRQ(ierr);
   ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = MatDestroy(sA);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
