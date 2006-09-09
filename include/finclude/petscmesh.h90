@@ -17,3 +17,19 @@
           Mesh m
         End Subroutine
       End Interface
+
+      Interface 
+        Subroutine MeshGetElementsF90(m,array,ierr)
+          integer, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface
+
+      Interface 
+        Subroutine MeshRestoreElementsF90(m,array,ierr)
+          integer, pointer :: array(:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface
