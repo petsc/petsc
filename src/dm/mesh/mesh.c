@@ -1333,7 +1333,7 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const Obj<ALE::Mesh::section_type>&        section = m->getSection(std::string(name));
   const ALE::Mesh::section_type::chart_type& chart   = section->getPatch(0);
-  const int                                  depth   = m->getTopologyNew()->depth(*chart.begin());
+  const int                                  depth   = m->getTopologyNew()->depth(0, *chart.begin());
   *numElements = m->getTopologyNew()->depthStratum(0, depth)->size();
   *fiberDim    = section->getFiberDimension(0, *chart.begin());
   *array       = (PetscScalar *) section->restrict(0);
