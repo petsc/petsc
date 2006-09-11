@@ -28,16 +28,22 @@ extern void PetscRmPointer(void*);
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define meshcreatepcice_ MESHCREATEPCICE
+#define vertexsectioncreate_ VERTEXSECTIONCREATE
+#define cellsectioncreate_ CELLSECTIONCREATE
 #define restrictvector_ RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
 #define assemblevector_ ASSEMBLEVECTOR
 #define assemblematrix_ ASSEMBLEMATRIX
+#define writepcicerestart_ WRITEPCICERESTART
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepcice_ meshcreatepcice
+#define vertexsectioncreate_ vertexsectioncreate
+#define cellsectioncreate_ cellsectioncreate
 #define restrictvector_ restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
 #define assemblevector_ assemblevector
 #define assemblematrix_ assemblematrix
+#define writepcicerestart_ writepcicerestart
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -51,6 +57,18 @@ void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilena
   *ierr = MeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,mesh);
   FREECHAR(coordFilename,cF);
   FREECHAR(adjFilename,aF);
+}
+void PETSC_STDCALL  vertexsectioncreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscInt *fiberDim, int *ierr PETSC_END_LEN(len)){
+  char *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = VertexSectionCreate((Mesh) PetscToPointer(mesh), nF, *fiberDim);
+  FREECHAR(name,nF);
+}
+void PETSC_STDCALL  cellsectioncreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscInt *fiberDim, int *ierr PETSC_END_LEN(len)){
+  char *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = CellSectionCreate((Mesh) PetscToPointer(mesh), nF, *fiberDim);
+  FREECHAR(name,nF);
 }
 void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
 *__ierr = restrictVector(
@@ -69,6 +87,9 @@ void PETSC_STDCALL  assemblevector_(Vec b,PetscInt *e,PetscScalar v[],InsertMode
 void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode *mode, int *__ierr ){
 *__ierr = assembleMatrix(
 	(Mat)PetscToPointer((A) ),*e,v,*mode);
+}
+void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
+  *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
 }
 
 EXTERN_C_END

@@ -24,14 +24,23 @@ namespace ALE {
       static void outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], bool columnMajor);
     };
 
+    typedef struct {
+      Mesh::point_type               vertex;
+      Mesh::section_type::value_type veln_x;
+      Mesh::section_type::value_type veln_y;
+      Mesh::section_type::value_type pn;
+      Mesh::section_type::value_type tn;
+    } RestartType;
+
     class Viewer {
     public:
       Viewer() {};
       virtual ~Viewer() {};
     public:
-      static PetscErrorCode writeVertices(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer);
-      static PetscErrorCode writeElements(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer);
-      static PetscErrorCode writeVerticesLocal(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeElements(const Obj<Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer);
     };
   };
 };

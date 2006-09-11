@@ -395,5 +395,77 @@ namespace ALE {
       }
       PetscFunctionReturn(0);
     };
+    #undef __FUNCT__  
+    #define __FUNCT__ "PCICEWriteRestart"
+    PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
+      const Mesh::section_type::patch_type patch = 0;
+      const Obj<Mesh::section_type>& velocity    = mesh->getSection("VELN");
+      const Obj<Mesh::section_type>& pressure    = mesh->getSection("PN");
+      const Obj<Mesh::section_type>& temperature = mesh->getSection("TN");
+      const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
+      const Obj<Mesh::numbering_type>& vNumbering = mesh->getNumbering(0);
+      PetscErrorCode ierr;
+
+      PetscFunctionBegin;
+      int          blen[2];
+      MPI_Aint     indices[2];
+      MPI_Datatype oldtypes[2], newtype;
+      blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_INT;
+      blen[1] = 4; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
+      ierr = MPI_Type_struct(2, blen, indices, oldtypes, &newtype);CHKERRQ(ierr);
+      ierr = MPI_Type_commit(&newtype);CHKERRQ(ierr);
+
+      if (mesh->commRank() == 0) {
+        for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          if (vNumbering->isLocal(*v_iter)) {
+            const ALE::Mesh::section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
+
+            ierr = PetscViewerASCIIPrintf(viewer, "%6d %16.8g %16.8g %16.8g %16.8g\n", *v_iter, veln[0], veln[1], pn[0], tn[0]);CHKERRQ(ierr);
+          }
+        }
+        for(int p = 1; p < mesh->commSize(); p++) {
+          RestartType *remoteValues;
+          int          numLocalElements;
+          MPI_Status   status;
+
+          ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+          ierr = PetscMalloc(numLocalElements * sizeof(RestartType), &remoteValues);CHKERRQ(ierr);
+          ierr = MPI_Recv(remoteValues, numLocalElements, newtype, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+          for(int e = 0; e < numLocalElements; e++) {
+            ierr = PetscViewerASCIIPrintf(viewer, "%6d %16.8g %16.8g %16.8g %16.8g\n", remoteValues[e].vertex, remoteValues[e].veln_x, remoteValues[e].veln_y, remoteValues[e].pn, remoteValues[e].tn);CHKERRQ(ierr);
+          }
+        }
+      } else {
+        RestartType *localValues;
+        int numLocalElements = vNumbering->getLocalSize();
+        int k = 0;
+
+        ierr = PetscMalloc(numLocalElements * sizeof(RestartType), &localValues);CHKERRQ(ierr);
+        for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          if (vNumbering->isLocal(*v_iter)) {
+            const ALE::Mesh::section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
+
+            localValues[k].vertex = *v_iter;
+            localValues[k].veln_x = veln[0];
+            localValues[k].veln_y = veln[1];
+            localValues[k].pn     = pn[0];
+            localValues[k].tn     = tn[0];
+            k++;
+          }
+        }
+        if (k != numLocalElements) {
+          SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, numLocalElements);
+        }
+        ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+        ierr = MPI_Send(localValues, numLocalElements, newtype, 0, 1, mesh->comm());CHKERRQ(ierr);
+        ierr = PetscFree(localValues);CHKERRQ(ierr);
+      }
+      ierr = MPI_Type_free(&newtype);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    };
   };
 };

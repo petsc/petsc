@@ -1133,6 +1133,17 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "WritePCICERestart"
+PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  return ALE::PCICE::Viewer::writeRestart(m, viewer);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshCreatePCICE"
 /*@C
   MeshCreatePCICE - Create a Mesh from PCICE files.
@@ -1203,13 +1214,13 @@ PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *n
 
   Not Collective
 
-  Input Parameter:
+  Input Parameters:
 + mesh - The Mesh object
 - columnMajor - Flag for column major order
 
-  Output Parameter:
+  Output Parameters:
 + numElements - The number of elements
-. numCorners - The nubmer of vertices per element
+. numCorners - The number of vertices per element
 - vertices - The array holding vertices on each local element
 
   Level: intermediate
@@ -1225,6 +1236,107 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ALE::PCICE::Builder::outputElementsLocal(m, numElements, numCorners, vertices, columnMajor);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VertexSectionCreate"
+/*@C
+  VertexSectionCreate - Create a Section over the vertices with the specified fiber dimension
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The section name
+- fiberDim - The section name
+
+  Output Parameter:
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode VertexSectionCreate(Mesh mesh, const char name[], PetscInt fiberDim)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::section_type>& section = m->getSection(std::string(name));
+  section->setFiberDimensionByDepth(0, 0, fiberDim);
+  section->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "CellSectionCreate"
+/*@C
+  CellSectionCreate - Create a Section over the cells with the specified fiber dimension
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The section name
+- fiberDim - The section name
+
+  Output Parameter:
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode CellSectionCreate(Mesh mesh, const char name[], PetscInt fiberDim)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::section_type>& section = m->getSection(std::string(name));
+  section->setFiberDimensionByHeight(0, 0, fiberDim);
+  section->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionGetArray"
+/*@C
+  SectionGetArray - Returns the array underlying the Section.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+- name - The section name
+
+  Output Parameters:
++ numElements - The number of mesh element with values
+. fiberDim - The number of values per element
+- array - The array
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::section_type>&        section = m->getSection(std::string(name));
+  const ALE::Mesh::section_type::chart_type& chart   = section->getPatch(0);
+  const int                                  depth   = m->getTopologyNew()->depth(*chart.begin());
+  *numElements = m->getTopologyNew()->depthStratum(0, depth)->size();
+  *fiberDim    = section->getFiberDimension(0, *chart.begin());
+  *array       = (PetscScalar *) section->restrict(0);
   PetscFunctionReturn(0);
 }
 

@@ -82,12 +82,12 @@ class VTKViewer {
         }
       }
       for(int p = 1; p < mesh->commSize(); p++) {
-        double    *remoteValues;
+        ALE::Mesh::section_type::value_type *remoteValues;
         int        numLocalElements;
         MPI_Status status;
 
         ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
-        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(double), &remoteValues);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &remoteValues);CHKERRQ(ierr);
         ierr = MPI_Recv(remoteValues, numLocalElements*fiberDim, MPI_DOUBLE, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElements; e++) {
           for(int d = 0; d < fiberDim; d++) {
@@ -103,9 +103,9 @@ class VTKViewer {
         }
       }
     } else {
-      int     numLocalElements = numbering->getLocalSize();
-      double *localValues;
-      int     k = 0;
+      ALE::Mesh::section_type::value_type *localValues;
+      int numLocalElements = numbering->getLocalSize();
+      int k = 0;
 
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &localValues);CHKERRQ(ierr);
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {

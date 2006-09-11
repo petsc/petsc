@@ -33,3 +33,12 @@
           Mesh m
         End Subroutine
       End Interface
+
+      Interface 
+        Subroutine SectionGetArrayF90(m,name,array,ierr)
+          CHARACTER*80 name
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface
