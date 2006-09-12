@@ -55,7 +55,7 @@ void PETSC_STDCALL sectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len)
   char        *nF;
   FIXCHAR(name,len,nF);
   *ierr = SectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
-  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,n,1,d,ptr);
+  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr);
   FREECHAR(name,nF);
 }
 void PETSC_STDCALL sectiongetarray1df90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array1d *ptr,int *ierr PETSC_END_LEN(len))

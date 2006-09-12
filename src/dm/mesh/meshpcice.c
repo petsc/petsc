@@ -399,11 +399,12 @@ namespace ALE {
     #define __FUNCT__ "PCICEWriteRestart"
     PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
       const Mesh::section_type::patch_type patch = 0;
-      const Obj<Mesh::section_type>& velocity    = mesh->getSection("VELN");
-      const Obj<Mesh::section_type>& pressure    = mesh->getSection("PN");
-      const Obj<Mesh::section_type>& temperature = mesh->getSection("TN");
-      const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>& vNumbering = mesh->getNumbering(0);
+      const Obj<Mesh::section_type>&   velocity    = mesh->getSection("VELN");
+      const Obj<Mesh::section_type>&   pressure    = mesh->getSection("PN");
+      const Obj<Mesh::section_type>&   temperature = mesh->getSection("TN");
+      const Obj<Mesh::numbering_type>& vNumbering  = mesh->getNumbering(0);
+      const Obj<Mesh::numbering_type>& cNumbering  = mesh->getNumbering(mesh->getTopologyNew()->depth());
+      const int                        numCells    = cNumbering->getGlobalSize();
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -416,13 +417,15 @@ namespace ALE {
       ierr = MPI_Type_commit(&newtype);CHKERRQ(ierr);
 
       if (mesh->commRank() == 0) {
+        const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
+
         for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
             const ALE::Mesh::section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
             const ALE::Mesh::section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
             const ALE::Mesh::section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
 
-            ierr = PetscViewerASCIIPrintf(viewer, "%6d %16.8g %16.8g %16.8g %16.8g\n", *v_iter, veln[0], veln[1], pn[0], tn[0]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, "%6d% 16.8E% 16.8E% 16.8E% 16.8E\n", *v_iter-numCells+1, veln[0], veln[1], pn[0], tn[0]);CHKERRQ(ierr);
           }
         }
         for(int p = 1; p < mesh->commSize(); p++) {
@@ -434,10 +437,11 @@ namespace ALE {
           ierr = PetscMalloc(numLocalElements * sizeof(RestartType), &remoteValues);CHKERRQ(ierr);
           ierr = MPI_Recv(remoteValues, numLocalElements, newtype, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
           for(int e = 0; e < numLocalElements; e++) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%6d %16.8g %16.8g %16.8g %16.8g\n", remoteValues[e].vertex, remoteValues[e].veln_x, remoteValues[e].veln_y, remoteValues[e].pn, remoteValues[e].tn);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, "%6d% 16.8E% 16.8E% 16.8E% 16.8E\n", remoteValues[e].vertex-numCells+1, remoteValues[e].veln_x, remoteValues[e].veln_y, remoteValues[e].pn, remoteValues[e].tn);CHKERRQ(ierr);
           }
         }
       } else {
+        const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
         RestartType *localValues;
         int numLocalElements = vNumbering->getLocalSize();
         int k = 0;

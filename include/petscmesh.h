@@ -22,6 +22,7 @@ typedef struct _p_Mesh* Mesh;
 extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView(Mesh,const char[],PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh,Vec*);
@@ -34,7 +35,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(ALE::Obj<ALE::Mesh>,Vec
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh*,const char [],Vec,VecScatter *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<ALE::Mesh>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUnify(Mesh, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVectorComplete(Vec, Vec, InsertMode);

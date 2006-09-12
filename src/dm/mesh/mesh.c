@@ -303,6 +303,17 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "FieldView"
+PetscErrorCode FieldView(Mesh mesh, const char name[], PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = FieldView_Sieve(mesh->m, std::string(name), viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshLoad" 
 /*@C
     MeshLoad - Create a mesh topology from the saved data in a viewer.
@@ -1236,6 +1247,37 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ALE::PCICE::Builder::outputElementsLocal(m, numElements, numCorners, vertices, columnMajor);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshDistribute"
+/*@C
+  MeshDistribute - Distributes the mesh and any associated sections.
+
+  Not Collective
+
+  Input Parameter:
+. serialMesh - The original Mesh object
+
+  Output Parameter:
+. parallelMesh - The distributed Mesh object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshDistribute(Mesh serialMesh, Mesh *parallelMesh)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
+  ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(oldMesh);
+  ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

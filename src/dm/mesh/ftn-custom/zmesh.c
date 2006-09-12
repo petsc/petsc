@@ -27,23 +27,29 @@ extern void PetscRmPointer(void*);
 #endif
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
-#define meshcreatepcice_ MESHCREATEPCICE
-#define vertexsectioncreate_ VERTEXSECTIONCREATE
-#define cellsectioncreate_ CELLSECTIONCREATE
-#define restrictvector_ RESTRICTVECTOR
+#define meshcreatepcice_        MESHCREATEPCICE
+#define meshdistribute_         MESHDISTRIBUTE
+#define meshview_               MESHVIEW
+#define fieldview_              FIELDVIEW
+#define vertexsectioncreate_    VERTEXSECTIONCREATE
+#define cellsectioncreate_      CELLSECTIONCREATE
+#define restrictvector_         RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
-#define assemblevector_ ASSEMBLEVECTOR
-#define assemblematrix_ ASSEMBLEMATRIX
-#define writepcicerestart_ WRITEPCICERESTART
+#define assemblevector_         ASSEMBLEVECTOR
+#define assemblematrix_         ASSEMBLEMATRIX
+#define writepcicerestart_      WRITEPCICERESTART
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
-#define meshcreatepcice_ meshcreatepcice
-#define vertexsectioncreate_ vertexsectioncreate
-#define cellsectioncreate_ cellsectioncreate
-#define restrictvector_ restrictvector
+#define meshcreatepcice_        meshcreatepcice
+#define meshdistribute_         meshdistribute
+#define meshview_               meshview
+#define fieldview_              fieldview
+#define vertexsectioncreate_    vertexsectioncreate
+#define cellsectioncreate_      cellsectioncreate
+#define restrictvector_         restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
-#define assemblevector_ assemblevector
-#define assemblematrix_ assemblematrix
-#define writepcicerestart_ writepcicerestart
+#define assemblevector_         assemblevector
+#define assemblematrix_         assemblematrix
+#define writepcicerestart_      writepcicerestart
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -57,6 +63,21 @@ void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilena
   *ierr = MeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,mesh);
   FREECHAR(coordFilename,cF);
   FREECHAR(adjFilename,aF);
+}
+void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, Mesh *parallelMesh, PetscErrorCode *ierr)
+{
+  *ierr = MeshDistribute((Mesh) PetscToPointer(serialMesh),parallelMesh);
+}
+void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ierr)
+{
+  *ierr = MeshView((Mesh) PetscToPointer(mesh),(PetscViewer) PetscToPointer(viewer));
+}
+void PETSC_STDCALL  fieldview_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscViewer viewer, PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+  char *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = FieldView((Mesh) PetscToPointer(mesh), nF,(PetscViewer) PetscToPointer(viewer));
+  FREECHAR(name,nF);
 }
 void PETSC_STDCALL  vertexsectioncreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscInt *fiberDim, int *ierr PETSC_END_LEN(len)){
   char *nF;
