@@ -45,6 +45,10 @@ ex_coarsen: ex_coarsen.o   chkopts
 	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}
 	${RM} -f ex_coarsen.o
 
+ex_coarsen_2: ex_coarsen_2.o   chkopts
+	-${CLINKER} -o ex_coarsen_2 ex_coarsen_2.o  ${PETSC_DM_LIB}
+	${RM} -f ex_coarsen_2.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
