@@ -936,6 +936,10 @@ namespace ALE {
         }
         return true;
       };
+      bool hasPoint(const patch_type& patch, const point_type& point) {
+        this->checkPatch(patch);
+        return this->_atlas[patch].count(point) > 0;
+      };
     public: // Accessors
       const Obj<topology_type>& getTopology() const {return this->_topology;};
       void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
@@ -1097,6 +1101,9 @@ namespace ALE {
       };
       bool hasPatch(const patch_type& patch) {
         return this->_atlas->hasPatch(patch);
+      };
+      bool hasPoint(const patch_type& patch, const point_type& point) {
+        return this->_atlas->hasPoint(patch, point);
       };
       void checkDimension(const int& dim) {
         if (dim != fiberDim) {

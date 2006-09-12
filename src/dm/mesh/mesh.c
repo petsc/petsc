@@ -968,7 +968,14 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::section_type>& se
       printf("\n");
     }
   }
-  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);CHKERRQ(ierr);
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
+  if (ierr) {
+    printf("[%d]ERROR in updateOperator: point %d\n", section->commRank(), e);
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
+    }
+    CHKERRQ(ierr);
+  }
   ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

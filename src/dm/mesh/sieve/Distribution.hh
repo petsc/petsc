@@ -124,6 +124,8 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "updateOverlap"
+      // This is just crappy. WE could introduce another phase to find out exactly what
+      //   indices people do not have in the global order after communication
       template<typename SendSection, typename RecvSection>
       static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
         const typename SendSection::topology_type::sheaf_type& sendRanks = sendSection->getTopology()->getPatches();

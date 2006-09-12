@@ -1082,7 +1082,10 @@ namespace ALE {
         Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
-          this->setFiberDimension(0, *r_iter, 1);
+          if (!this->hasPoint(0, *r_iter)) {
+            this->setFiberDimension(0, *r_iter, 1);
+            this->update(0, *r_iter, &this->_unknownNumber);
+          }
         }
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
           const Obj<typename recv_overlap_type::traits::coneSequence>& recvPatches = recvOverlap->cone(*r_iter);
@@ -1090,19 +1093,21 @@ namespace ALE {
           for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
             const typename recv_section_type::value_type *values = recvSection->restrict(*p_iter, *r_iter);
 
+            if (values[0].index == 0) continue;
             if (values[0].prefix >= 0) {
-              if (this->isLocal(*r_iter) && !allowDuplicates) {
-                ostringstream msg;
-                msg << "["<<this->commRank()<<"]Multiple indices for point " << *r_iter << " from " << *p_iter << " with index " << values[0];
-                throw ALE::Exception(msg.str().c_str());
-              }
-              if (this->_atlas->getFiberDimension(0, *r_iter) == 0) {
-                ostringstream msg;
-                msg << "["<<this->commRank()<<"]Unexpected point " << *r_iter << " from " << *p_iter << " with index " << values[0];
-                throw ALE::Exception(msg.str().c_str());
+              if (this->isLocal(*r_iter)) {
+                if (!allowDuplicates) {
+                  ostringstream msg;
+                  msg << "["<<this->commRank()<<"]Multiple indices for point " << *r_iter << " from " << *p_iter << " with index " << values[0];
+                  throw ALE::Exception(msg.str().c_str());
+                }
+                continue;
               }
               const value_type val(-(values[0].prefix+1), values[0].index);
               this->update(0, *r_iter, &val);
+            } else {
+              if (this->isLocal(*r_iter)) continue;
+              this->update(0, *r_iter, values);
             }
           }
         }
