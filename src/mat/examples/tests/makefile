@@ -603,6 +603,11 @@ runex30:
 	   if (${DIFF} output/ex30_1.out ex30_1.tmp) then true; \
 	   else echo "Possible problem with ex30_1, diffs above"; fi; \
 	   ${RM} -f ex30_1.tmp
+runex30_2:
+	-@${MPIRUN} -np 1  ./ex30 -nox -lu > ex30_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex30_2.out ex30_2.tmp) then true; \
+	   else echo "Possible problem with ex30_2, diffs above"; fi; \
+	   ${RM} -f ex30_2.tmp
 runex31:
 	-@${MPIRUN} -np 1  ./ex31 > ex31_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex31_1.out ex31_1.tmp) then true; \
@@ -1021,7 +1026,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
-                                 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex30.PETSc runex30 ex30.rm ex31.PETSc \
+                                 ex25.rm ex27.PETSc ex27.rm ex28.PETSc ex28.rm ex30.PETSc runex30 runex30_2 ex30.rm ex31.PETSc \
                                  runex31 runex31_2 ex31.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
                                  ex35.rm ex37.PETSc runex37 ex37.rm ex38.PETSc ex38.rm ex43.PETSc ex43.rm ex48.PETSc \
                                  runex48 ex48.rm ex49.PETSc ex49.rm ex51.PETSc runex51 ex51.rm ex52.PETSc ex52.rm \
