@@ -151,13 +151,17 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
    //in this function we will assume that the original mesh is given to us in patch 0, and that its boundary has been identified with IdentifyBoundary.  We will put nMesh - 1 coarsenings in patches 1 through nMeshes.
    
   for (int curLevel = nMeshes; curLevel > 0; curLevel--) {
-      printf("Creating coarsening level: %d\n", curLevel);
-      bool isTopLevel = (curLevel == nMeshes);
-      double crsBeta = pow(1.41, curLevel);
-      printf("Creating coarsening level: %d with beta = %f\n", curLevel, crsBeta);
-      LevelCoarsen(mesh, dim, curLevel, !isTopLevel,crsBeta);
+    bool isTopLevel = (curLevel == nMeshes);
+    double crsBeta = pow(1.41, curLevel);
+    printf("Creating coarsening level: %d with beta = %f\n", curLevel, crsBeta);
+    LevelCoarsen(mesh, dim, curLevel, !isTopLevel, crsBeta);
+    if (mesh->debug) {
+      ostringstream txt;
+      txt << "Sieve for coarsening level " << curLevel;
+      mesh->getTopologyNew()->getPatch(curLevel)->view(txt.str().c_str());
+    }
   }
-   mesh->getTopologyNew()->stratify();
+  //mesh->getTopologyNew()->stratify();
   PetscFunctionReturn(0);
 }
 
@@ -364,8 +368,9 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
 //preprocess the triangle list so that the triangles are built over the same sieve point list we started from.
 
   for (int i = 0; i != src->numberoftriangles; i++) {
-     src->trianglelist[i] = src->pointmarkerlist[src->trianglelist[i]];
-     src->trianglelist[i+1] = src->pointmarkerlist[src->trianglelist[i+1]];
+    src->trianglelist[i*3+0] = src->pointmarkerlist[src->trianglelist[i*3+0]];
+    src->trianglelist[i*3+1] = src->pointmarkerlist[src->trianglelist[i*3+1]];
+    src->trianglelist[i*3+2] = src->pointmarkerlist[src->trianglelist[i*3+2]];
   }
 
   Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
@@ -375,6 +380,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
   sieve->stratify();
   topology->setPatch(patch, sieve);
+  // Actually we probably only want to stratify at the end, so that we do not recalculate a lot
   topology->stratify();
   
   PetscFunctionReturn(0);
