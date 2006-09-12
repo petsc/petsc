@@ -8,7 +8,7 @@
 
 /* Usage: 
    ./ex1 -nox -ts_type beuler -ts_view 
-   ./ex1 -nox -linear_constant_matrix -ts_type beuler
+   ./ex1 -nox -linear_constant_matrix -ts_type beuler -pc_type lu
    ./ex1 -nox -linear_variable_matrix -ts_type beuler
 */
 
@@ -49,12 +49,12 @@ extern PetscErrorCode RHSJacobianHeat(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       time_steps = 100,steps,m;
+  PetscInt       maxsteps = 100,steps,m;
   PetscMPIInt    size;
   PetscInt       problem = linear_no_matrix;
   PetscTruth     flg;
   AppCtx         appctx;
-  PetscReal      dt,ftime;
+  PetscReal      dt,ftime,maxtime=100.;
   TS             ts;
   Mat            A=0,Alhs=0;
   MatStructure   A_structure;
@@ -70,7 +70,7 @@ int main(int argc,char **argv)
 
   appctx.M = 60;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&appctx.M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&maxsteps,PETSC_NULL);CHKERRQ(ierr);
     
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&appctx.nox);CHKERRQ(ierr); 
   appctx.norm_2 = 0.0; appctx.norm_max = 0.0;
@@ -82,14 +82,12 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(appctx.da,&appctx.local);CHKERRQ(ierr);
 
   /* Set up display to show wave graph */
-
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,380,400,160,&appctx.viewer1);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer1,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",80,0,400,160,&appctx.viewer2);CHKERRQ(ierr);
   ierr = PetscViewerDrawGetDraw(appctx.viewer2,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawSetDoubleBuffer(draw);CHKERRQ(ierr);   
-
 
   /* make work array for evaluating right hand side function */
   ierr = VecDuplicate(appctx.local,&appctx.localwork);CHKERRQ(ierr);
@@ -136,9 +134,11 @@ int main(int argc,char **argv)
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
-  ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
-
-  dt = appctx.h*appctx.h/2.01;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-monitor",&flg);CHKERRQ(ierr);
+  if (flg){
+    ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  }
+  dt = appctx.h*appctx.h/2.01; /* initial time step */
 
   if (problem == linear_no_matrix) {
     /*
@@ -207,9 +207,8 @@ int main(int argc,char **argv)
   }
  
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,time_steps,100.);CHKERRQ(ierr);
+  ierr = TSSetDuration(ts,maxsteps,maxtime);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,appctx.global);CHKERRQ(ierr);
-
 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
@@ -251,6 +250,9 @@ int main(int argc,char **argv)
 }
 
 /* -------------------------------------------------------------------*/
+/*
+  Set initial condition: u(t=0) = sin(6*pi*x) + 3*sin(2*pi*x)
+*/
 #undef __FUNCT__
 #define __FUNCT__ "Initial" 
 PetscErrorCode Initial(Vec global,void *ctx)
@@ -275,7 +277,8 @@ PetscErrorCode Initial(Vec global,void *ctx)
 #undef __FUNCT__
 #define __FUNCT__ "Solution"
 /*
-       Exact solution 
+       Exact solution: 
+         u = sin(6*pi*x)*exp(-36*pi*pi*t) + 3*sin(2*pi*x)*exp(-4*pi*pi*t)
 */
 PetscErrorCode Solution(PetscReal t,Vec solution,void *ctx)
 {
@@ -289,7 +292,8 @@ PetscErrorCode Solution(PetscReal t,Vec solution,void *ctx)
 
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t); 
   ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
-  sc1 = PETSC_PI*6.*h;                 sc2 = PETSC_PI*2.*h;
+  sc1 = PETSC_PI*6.*h;                 
+  sc2 = PETSC_PI*2.*h;
   ierr = VecGetArray(solution,&localptr);CHKERRQ(ierr);
   for (i=mybase; i<myend; i++) {
     localptr[i-mybase] = PetscSinScalar(sc1*(PetscReal)i)*ex1 + 3.*PetscSinScalar(sc2*(PetscReal)i)*ex2;
@@ -298,6 +302,11 @@ PetscErrorCode Solution(PetscReal t,Vec solution,void *ctx)
   return 0;
 }
 
+/*
+  step   - iteration number
+  ltime  - current time
+  global - current iterate
+ */
 #undef __FUNCT__
 #define __FUNCT__ "Monitor"
 PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal ltime,Vec global,void *ctx)
@@ -308,24 +317,21 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal ltime,Vec global,void *ctx)
   MPI_Comm       comm;
 
   ierr = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-
-  ierr = VecView(global,appctx->viewer2);CHKERRQ(ierr);
-
-  ierr = Solution(ltime,appctx->solution,ctx);CHKERRQ(ierr);
+  if (!appctx->nox) {
+    ierr = VecView(global,appctx->viewer2);CHKERRQ(ierr); /* show wave graph */
+  }
+  ierr = Solution(ltime,appctx->solution,ctx);CHKERRQ(ierr); /* get true solution at current time */
   ierr = VecAXPY(appctx->solution,-1.0,global);CHKERRQ(ierr);
   ierr = VecNorm(appctx->solution,NORM_2,&norm_2);CHKERRQ(ierr);
   norm_2 = sqrt(appctx->h)*norm_2;
   ierr = VecNorm(appctx->solution,NORM_MAX,&norm_max);CHKERRQ(ierr);
-
-  if (!appctx->nox) {
-    ierr = PetscPrintf(comm,"timestep %D time %G norm of error %G %G\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
-  }
+  ierr = PetscPrintf(comm,"timestep %D time %G norm of error %G %G\n",step,ltime,norm_2,norm_max);CHKERRQ(ierr);
 
   appctx->norm_2   += norm_2;
   appctx->norm_max += norm_max;
-
-  ierr = VecView(appctx->solution,appctx->viewer1);CHKERRQ(ierr);
-
+  if (!appctx->nox) {
+    ierr = VecView(appctx->solution,appctx->viewer1);CHKERRQ(ierr);
+  }
   return 0;
 }
 
@@ -434,7 +440,6 @@ PetscErrorCode RHSJacobianHeat(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStruct
 PetscErrorCode LHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str,void *ctx)
 {
   *str = SAME_NONZERO_PATTERN;
-  /* printf("  LHSMatrixHeat t: %g\n",t); */
   return 0;
 }  
 
