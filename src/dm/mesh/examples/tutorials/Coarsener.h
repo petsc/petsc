@@ -82,77 +82,78 @@ namespace Coarsener {
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim) {
-
+PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
+{
   ALE::Mesh::section_type::patch_type patch = 0;
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
   const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->createLabel(patch, "boundary");
 
-
   if (dim == 2) {
-    const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
+    //initialize all the vertices
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
-
-
-    ALE::Mesh::topology_type::label_sequence::iterator e_iter = edges->begin();
-    ALE::Mesh::topology_type::label_sequence::iterator e_iter_end = edges->end();
-
     ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
-
-//initialize all the vertices
 
     while (v_iter != v_iter_end) {
       topology->setValue(boundary, *v_iter, 0);
       v_iter++;
     }
 
-//trace through the edges, initializing them to be non-boundary, then setting them as boundary.
+    //trace through the edges, initializing them to be non-boundary, then setting them as boundary.
+    const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->depthStratum(patch, 1);
+    ALE::Mesh::topology_type::label_sequence::iterator e_iter = edges->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator e_iter_end = edges->end();
 
     // int nBoundaryVertices = 0;
     while (e_iter != e_iter_end) {
       topology->setValue(boundary, *e_iter, 0);
-//find out if the edge is not supported on both sides, if so, this is a boundary node
-       //printf("Edge %d supported by %d faces", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());
+      //find out if the edge is not supported on both sides, if so, this is a boundary node
+      if (mesh->debug) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
       if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
-	topology->setValue(boundary, *e_iter, 1);
-	ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
-	ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter = endpoints->begin();
-	ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter_end = endpoints->end();
-	while (p_iter != p_iter_end) {
-	  topology->setValue(boundary, *p_iter, -1);
-           //boundVerts++;
-	  p_iter++;
-	}
+        topology->setValue(boundary, *e_iter, 1);
+        ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter     = endpoints->begin();
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter_end = endpoints->end();
+        while (p_iter != p_iter_end) {
+          if (topology->depth(patch, *p_iter) != 0) {
+            throw ALE::Exception("Bad point");
+          }
+          topology->setValue(boundary, *p_iter, -1);
+          //boundVerts++;
+          p_iter++;
+        }
       }
       e_iter++;
     }
+    boundary->view(std::cout, "Boundary label before reset");
 
-//determine if the edge is straight or not.
+    //determine if the edge is straight or not.
+    const Obj<ALE::Mesh::topology_type::label_sequence>& vertices2 = topology->depthStratum(patch, 0);
 
-    v_iter = vertices->begin();
-    v_iter_end = vertices->end();
+    v_iter     = vertices2->begin();
+    v_iter_end = vertices2->end();
     while(v_iter != v_iter_end) {
       if (topology->getValue(boundary, *v_iter) == -1) {
-      topology->setValue(boundary, *v_iter, BoundaryNodeDimension_2D(mesh, *v_iter));
-      //printf("set boundary dimension for %d as %d\n", *v_iter, topology->getValue(boundary, *v_iter));
+        topology->setValue(boundary, *v_iter, BoundaryNodeDimension_2D(mesh, *v_iter));
+        if (mesh->debug) {printf("set boundary dimension for %d as %d\n", *v_iter, topology->getValue(boundary, *v_iter));}
       }
       v_iter++;
     }
+    boundary->view(std::cout, "Boundary label");
   } else if (dim == 3) {  //loop over the faces to determine the 
       
   } else {
       
   }
-PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
-PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMeshes, float beta) {
+PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMeshes, float beta = 1.41) {
    //in this function we will assume that the original mesh is given to us in patch 0, and that its boundary has been identified with IdentifyBoundary.  We will put nMesh - 1 coarsenings in patches 1 through nMeshes.
    
   for (int curLevel = nMeshes; curLevel > 0; curLevel--) {
     bool isTopLevel = (curLevel == nMeshes);
-    double crsBeta = pow(1.41, curLevel);
+    double crsBeta = pow(beta, curLevel);
     printf("Creating coarsening level: %d with beta = %f\n", curLevel, crsBeta);
     LevelCoarsen(mesh, dim, curLevel, !isTopLevel, crsBeta);
     if (mesh->debug) {
@@ -161,40 +162,40 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
       mesh->getTopologyNew()->getPatch(curLevel)->view(txt.str().c_str());
     }
   }
-  //mesh->getTopologyNew()->stratify();
+  mesh->getTopologyNew()->stratify();
   PetscFunctionReturn(0);
 }
 
 PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim,  ALE::Mesh::section_type::patch_type newPatch, bool includePrevious, float beta) {
   PetscFunctionBegin;
-    
   ALE::Mesh::section_type::patch_type originalPatch = 0;
   std::list<ALE::Mesh::point_type> incPoints;
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
   double v_coord[dim], c_coord[dim];
-  Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
+  Obj<ALE::Mesh::section_type> coords  = mesh->getSection("coordinates");
   Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");
 
-  const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->getLabel(originalPatch, "boundary");
+  //const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->getLabel(originalPatch, "boundary");
   if(includePrevious) {
 
     ALE::Mesh::section_type::patch_type coarserPatch = newPatch+1;
     const Obj<ALE::Mesh::topology_type::label_sequence>& previousVertices = topology->depthStratum(coarserPatch, 0);
 
-      //Add the vertices from the next coarser patch to the list of included vertices.
-      ALE::Mesh::topology_type::label_sequence::iterator v_iter = previousVertices->begin();
-      ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = previousVertices->end();
+    //Add the vertices from the next coarser patch to the list of included vertices.
+    ALE::Mesh::topology_type::label_sequence::iterator v_iter = previousVertices->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = previousVertices->end();
     while(v_iter != v_iter_end) {
       incPoints.push_front(*v_iter);
       v_iter++;
     }
   } else {
-      //get the essential boundary nodes and add them to the set.
+    //get the essential boundary nodes and add them to the set.
     const Obj<ALE::Mesh::topology_type::label_sequence>& essVertices = topology->getLabelStratum(originalPatch, "boundary", dim);
     printf("- adding %d boundary nodes.\n", essVertices->size());
-    ALE::Mesh::topology_type::label_sequence::iterator v_iter = essVertices->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator v_iter     = essVertices->begin();
     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = essVertices->end();
     while (v_iter != v_iter_end) {
+      if (mesh->debug) {std::cout << "--> added " << *v_iter << std::endl;}
       incPoints.push_front(*v_iter);
       v_iter++;
     }
@@ -361,28 +362,24 @@ bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::po
 }
 
 PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::section_type::patch_type patch) {
-
-  PetscErrorCode ierr;
   PetscFunctionBegin;
-
-//preprocess the triangle list so that the triangles are built over the same sieve point list we started from.
-
+  // We store the global vertex numbers as markers to preserve them in the coarse mesh
+  //   Here we convert from the new Triangle numbering to the original fine mesh numbering (same sieve points we started from)
   for (int i = 0; i != src->numberoftriangles; i++) {
     src->trianglelist[i*3+0] = src->pointmarkerlist[src->trianglelist[i*3+0]];
     src->trianglelist[i*3+1] = src->pointmarkerlist[src->trianglelist[i*3+1]];
     src->trianglelist[i*3+2] = src->pointmarkerlist[src->trianglelist[i*3+2]];
   }
 
-  Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::sieve_type>           sieve    = new ALE::Mesh::sieve_type(mesh->comm(), 0);
+  const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopologyNew();
 
-//make the sieve and the topology actually count for something
+  //make the sieve and the topology actually count for something
   ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
   sieve->stratify();
   topology->setPatch(patch, sieve);
   // Actually we probably only want to stratify at the end, so that we do not recalculate a lot
   topology->stratify();
-  
   PetscFunctionReturn(0);
 }
 
