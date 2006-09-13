@@ -772,12 +772,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
   PetscReal          fill = info->fill;
-  PetscInt           *rip,*riip,i,mbs=a->mbs,bs=A->rmap.bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
+  PetscInt           *rip,i,mbs=a->mbs,bs=A->rmap.bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,ncols_upper,*cols,*uj,**ui_ptr,*uj_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  IS                 iperm; 
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
