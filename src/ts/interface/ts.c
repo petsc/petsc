@@ -121,7 +121,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     /* Should check for implicit/explicit */
   case TS_LINEAR:
     if (ts->ksp) {
-      ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetOperators(ts->ksp,ts->Arhs,ts->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
     }
     break;
@@ -130,7 +130,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
       /* this is a bit of a hack, but it gets the matrix information into SNES earlier
          so that SNES and KSP have more information to pick reasonable defaults
          before they allow users to set options */
-      ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,0,ts);CHKERRQ(ierr);
+      ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,0,ts);CHKERRQ(ierr);
       ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
     }
     break;
@@ -280,10 +280,10 @@ PetscErrorCode TSComputeRHSFunction(TS ts,PetscReal t,Vec x,Vec y)
     if (ts->ops->rhsmatrix) { /* assemble matrix for this timestep */
       MatStructure flg;
       PetscStackPush("TS user right-hand-side matrix function");
-      ierr = (*ts->ops->rhsmatrix)(ts,t,&ts->A,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
+      ierr = (*ts->ops->rhsmatrix)(ts,t,&ts->Arhs,&ts->B,&flg,ts->jacP);CHKERRQ(ierr);
       PetscStackPop;
     }
-    ierr = MatMult(ts->A,x,y);CHKERRQ(ierr);
+    ierr = MatMult(ts->Arhs,x,y);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventEnd(TS_FunctionEval,ts,x,y,0);CHKERRQ(ierr);
@@ -395,9 +395,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode
 
   ts->ops->rhsmatrix = f;
   ts->jacP           = ctx;
-  ts->A              = A;
+  ts->Arhs           = A;
   ts->B              = B;
-
   PetscFunctionReturn(0);
 }
 
@@ -412,7 +411,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode
    Input Parameters:
 +  ts  - the TS context obtained from TSCreate()
 .  A   - matrix
-.  B   - preconditioner matrix (usually same as A)
+.  B   - ignored
 .  f   - the matrix evaluation routine; use PETSC_NULL (PETSC_NULL_FUNCTION in fortran)
          if A is not a function of t.
 -  ctx - [optional] user-defined context for private data for the 
@@ -423,7 +422,7 @@ $     func (TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
 
 +  t - current timestep
 .  A - matrix A, where A U_t = F(U)
-.  B - preconditioner matrix, usually the same as A
+.  B - ignored
 .  flag - flag indicating information about the preconditioner matrix
           structure (same as flag in KSPSetOperators())
 -  ctx - [optional] user-defined context for matrix evaluation routine
@@ -470,7 +469,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetLHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode
   ts->ops->lhsmatrix = f;
   ts->jacPlhs        = ctx; 
   ts->Alhs           = A;
-  ts->Blhs           = B;
   PetscFunctionReturn(0);
 }
 
@@ -534,7 +532,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
 
   ts->ops->rhsjacobian = f;
   ts->jacP             = ctx;
-  ts->A                = A;
+  ts->Arhs             = A;
   ts->B                = B;
   PetscFunctionReturn(0);
 }
@@ -937,7 +935,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
-
+  if (ts->A) {ierr = MatDestroy(ts->A);CHKERRQ(ierr)}
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
   if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
@@ -1707,7 +1705,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  if (A)   *A = ts->A;
+  if (A)   *A = ts->Arhs;
   if (M)   *M = ts->B;
   if (ctx) *ctx = ts->jacP;
   PetscFunctionReturn(0);

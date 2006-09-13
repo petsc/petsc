@@ -90,7 +90,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
     /* set rhs = 1/dt*Alhs(t_mid)*sol */
     if (ts->Alhs){
       t_mid = ts->ptime+ts->time_step/2.0;
-      ierr = (*ts->ops->lhsmatrix)(ts,t_mid,&ts->Alhs,&ts->Blhs,&str,ts->jacPlhs);CHKERRQ(ierr);
+      ierr = (*ts->ops->lhsmatrix)(ts,t_mid,&ts->Alhs,PETSC_NULL,&str,ts->jacPlhs);CHKERRQ(ierr);
       ierr = MatMult(ts->Alhs,sol,rhs);CHKERRQ(ierr);
     } else {
       ierr = VecCopy(sol,rhs);CHKERRQ(ierr);
@@ -102,9 +102,9 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
     /*
         evaluate rhs matrix function at current ptime. 
     */
-    ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->A,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = TSScaleShiftMatrices(ts,ts->A,ts->B,str);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,str);CHKERRQ(ierr);
+    ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->Arhs,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
+    ierr = TSScaleShiftMatrices(ts,ts->Arhs,ts->B,str);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ts->ksp,ts->Arhs,ts->B,str);CHKERRQ(ierr);
 
     /* solve (1/dt*Alhs(t_mid) - A(t_n+1))*update = rhs */
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
@@ -242,9 +242,9 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
   /* build linear system to be solved */
-  /* ts->A = 1/dt*Alhs - A, ts->B = 1/dt*Blhs - B */
-  ierr = TSScaleShiftMatrices(ts,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ts->ksp,ts->A,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  /* ts->Arhs = 1/dt*Alhs - Arhs, ts->B = 1/dt*Blhs - Brhs */
+  ierr = TSScaleShiftMatrices(ts,ts->Arhs,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ts->ksp,ts->Arhs,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -273,7 +273,7 @@ static PetscErrorCode TSSetUp_BEuler_Nonlinear(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,beuler->func,TSBEulerFunction,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,TSBEulerJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -324,7 +324,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
   ts->ops->view    = TSView_BEuler;
 
   if (ts->problem_type == TS_LINEAR) {
-    if (!ts->A) {
+    if (!ts->Arhs) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
     if (!ts->ops->rhsmatrix) {
