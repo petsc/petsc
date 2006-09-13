@@ -17,7 +17,8 @@ namespace ALE {
     typedef section_type::atlas_type                    atlas_type;
     typedef std::map<std::string, Obj<section_type> >   SectionContainer;
     typedef ALE::New::Numbering<topology_type>          numbering_type;
-    typedef std::map<int, Obj<numbering_type> >         NumberingContainer;
+    typedef std::map<int, Obj<numbering_type> >                 NumberingContainer;
+    typedef std::map<int, std::map<int, Obj<numbering_type> > > NewNumberingContainer;
     typedef ALE::New::GlobalOrder<topology_type, section_type::atlas_type> order_type;
     typedef std::map<std::string, Obj<order_type> >          OrderContainer;
     typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
@@ -32,7 +33,7 @@ namespace ALE {
   private:
     Obj<sieve_type>            topology;
     SectionContainer           sections;
-    NumberingContainer         localNumberings;
+    NewNumberingContainer      localNumberings;
     NumberingContainer         numberings;
     OrderContainer             orders;
     Obj<topology_type>         _topology;
@@ -99,15 +100,16 @@ namespace ALE {
       }
       return this->numberings[depth];
     };
-    const Obj<numbering_type>& getLocalNumbering(const int depth) {
-      if (this->localNumberings.find(depth) == this->localNumberings.end()) {
+    const Obj<numbering_type>& getLocalNumbering(const int depth, const topology_type::patch_type& patch = 0) {
+      if ((this->localNumberings.find(depth) == this->localNumberings.end()) ||
+          (this->localNumberings[depth].find(patch) == this->localNumberings[depth].end())) {
         Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
-        numbering->constructLocalOrder(numbering->getSendOverlap());
+        numbering->constructLocalOrder(numbering->getSendOverlap(), patch);
 
-        std::cout << "Creating new local numbering: " << depth << std::endl;
-        this->localNumberings[depth] = numbering;
+        std::cout << "Creating new local numbering: depth " << depth << " patch " << patch << std::endl;
+        this->localNumberings[depth][patch] = numbering;
       }
-      return this->localNumberings[depth];
+      return this->localNumberings[depth][patch];
     };
     const Obj<order_type>& getGlobalOrder(const std::string& name) {
       if (this->orders.find(name) == this->orders.end()) {

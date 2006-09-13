@@ -43,7 +43,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, PetscInt, PetscScala
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScalar [], InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrix(ALE::Mesh *, const ALE::Obj<ALE::Mesh::section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, Mat);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], const char[], const int, const int, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscReal *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElements(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscInt *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT VertexSectionCreate(Mesh, const char [], PetscInt);

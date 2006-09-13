@@ -664,10 +664,14 @@ namespace ALE {
       const int *getGlobalOffsets() const {return this->_offsets;};
     public: // Indices
       virtual int getIndex(const point_type& point) {
-        if (this->restrictPoint(0, point)[0] >= 0) {
-          return this->restrictPoint(0, point)[0];
+        return getIndex(0, point);
+      };
+      virtual int getIndex(const patch_type& patch, const point_type& point) {
+        const int& idx = this->restrictPoint(patch, point)[0];
+        if (idx >= 0) {
+          return idx;
         }
-        return -(this->restrictPoint(0, point)[0]+1);
+        return -(idx+1);
       };
       virtual void setIndex(const point_type& point, const int index) {this->updatePoint(0, point, &index);};
       virtual bool isLocal(const point_type& point) {return this->restrictPoint(0, point)[0] >= 0;};
@@ -791,8 +795,7 @@ namespace ALE {
       };
       // Number all locals points with the given label value
       //   points in the overlap are only numbered by the owner with the lowest rank
-      virtual void constructLocalOrder(const Obj<send_overlap_type>& sendOverlap) {
-        const patch_type patch = 0;
+      virtual void constructLocalOrder(const Obj<send_overlap_type>& sendOverlap, const patch_type patch = 0) {
         const Obj<typename topology_type::label_sequence>& points = this->getTopology()->getLabelStratum(patch, this->_label, this->_value);
 
         this->setFiberDimensionByLabel(patch, this->_label, this->_value, 1);

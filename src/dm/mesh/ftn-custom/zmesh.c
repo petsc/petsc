@@ -55,14 +55,16 @@ extern void PetscRmPointer(void*);
 /* Definitions of Fortran Wrapper routines */
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilename PETSC_MIXED_LEN(lenC), CHAR adjFilename PETSC_MIXED_LEN(lenA), Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenC) PETSC_END_LEN(lenA))
+void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilename PETSC_MIXED_LEN(lenC), CHAR adjFilename PETSC_MIXED_LEN(lenA), CHAR bcFilename PETSC_MIXED_LEN(lenB), int *numBdFaces, int *numBdVertices, Mesh *mesh, PetscErrorCode *ierr PETSC_END_LEN(lenC) PETSC_END_LEN(lenA) PETSC_END_LEN(lenB))
 {
-  char *cF, *aF;
+  char *cF, *aF, *bF;
   FIXCHAR(coordFilename,lenC,cF);
   FIXCHAR(adjFilename,lenA,aF);
-  *ierr = MeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,mesh);
+  FIXCHAR(bcFilename,lenB,bF);
+  *ierr = MeshCreatePCICE(MPI_Comm_f2c( *(comm) ),*dim,cF,aF,bF,*numBdFaces,*numBdVertices,mesh);
   FREECHAR(coordFilename,cF);
   FREECHAR(adjFilename,aF);
+  FREECHAR(bcFilename,bF);
 }
 void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, Mesh *parallelMesh, PetscErrorCode *ierr)
 {
