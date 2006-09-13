@@ -64,16 +64,19 @@ ex12: ex12.o  chkopts
 	${RM} ex12.o
 #----------------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler  -linear_no_matrix 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -nonlinear_no_jacobian 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -linear_constant_matrix 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler  -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none  -ksp_rtol 1.e-8 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler  -linear_no_matrix > ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -nonlinear_no_jacobian >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -linear_constant_matrix >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler -linear_variable_matrix >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type euler  -nonlinear_jacobian >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none  -ksp_rtol 1.e-8 >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix >> ex1_1.tmp 2>&1; 
+	-@${MPIRUN} -np 1 ./ex1 -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian >> ex1_1.tmp 2>&1; \
+         if (${DIFF} output/ex1_1.out ex1_1.tmp) then true; \
+           else echo "Possible problem with ex1_1, diffs above"; fi; \
+           ${RM} -f ex1_1.tmp
 
 runex1_euler:
 	-@${MPIRUN} -np 1  ./ex1 -test -ts_type euler -linear_constant_matrix -monitor -nox> ex1_euler.tmp 2>&1;   \

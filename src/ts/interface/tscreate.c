@@ -94,6 +94,7 @@ PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
   PetscScalar    mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
+  /* this function requires additional work! */
   ierr = PetscTypeCompare((PetscObject)A,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) {
     ierr = MatScale(A,-1.0);CHKERRQ(ierr);
@@ -104,15 +105,8 @@ PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
     }
   }
   if (B != A && str != SAME_PRECONDITIONER) {
-    SETERRQ(PETSC_ERR_SUP,"No support for different preconditioner");
-    /* this function requires additional work! 
     ierr = MatScale(B,-1.0);CHKERRQ(ierr);
-    if (ts->Blhs){
-      ierr = MatAXPY(B,mdt,ts->Blhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    } else {
-      ierr = MatShift(B,mdt);CHKERRQ(ierr);
-    }
-    */
+    ierr = MatShift(B,mdt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

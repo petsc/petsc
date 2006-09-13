@@ -1,0 +1,10 @@
+Error in Euler method: 2-norm 0 expecting: 0.00257244
+Error in Euler method: 2-norm 0 expecting: 0.00257244
+Error in Euler method: 2-norm 0 expecting: 0.00257244
+Error in Euler method: 2-norm 0 expecting: 0.00257244
+Error in Euler method: 2-norm 0 expecting: 0.00257244
+Error in  beuler Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement restart 30 none    method: 2-norm 0 expecting: 0.00506174
+Error in  beuler  ls Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement restart 30 none method: 2-norm 0 expecting: 0.00506174
+Error in  beuler Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement restart 30 lu       method: 2-norm 0 expecting: 0.00506174
+Error in  beuler Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement restart 30 ilu      method: 2-norm 0 expecting: 0.00506174
+Error in  beuler  ls Classical (unmodified) Gram-Schmidt Orthogonalization with one step of iterative refinement restart 30 ilu  method: 2-norm 0 expecting: 0.00506174
