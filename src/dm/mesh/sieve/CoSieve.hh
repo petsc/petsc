@@ -256,6 +256,18 @@ namespace ALE {
         }
         ALE_LOG_EVENT_END;
       };
+      template<typename Section>
+      static void buildCoordinates(const Obj<Section>& coords, const int embedDim, const double coordinates[]) {
+        const typename Section::patch_type                          patch    = 0;
+        const Obj<typename Section::topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
+        const int numCells = coords->getTopology()->heightStratum(patch, 0)->size();
+
+        coords->setFiberDimensionByDepth(patch, 0, embedDim);
+        coords->allocate();
+        for(typename Section::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
+        }
+      };
     };
 
     // A Topology is a collection of Sieves
