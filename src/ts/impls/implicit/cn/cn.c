@@ -25,7 +25,7 @@ static PetscErrorCode TSStep_CN_Linear_Constant_Matrix(TS ts,PetscInt *steps,Pet
   Vec            rhs = cn->rhs;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
-  PetscScalar    dt = ts->time_step,two = 2.0;
+  //PetscScalar    dt = ts->time_step,two = 2.0;
   KSP            ksp;
   PetscScalar    mdt = 1.0/ts->time_step;
 
