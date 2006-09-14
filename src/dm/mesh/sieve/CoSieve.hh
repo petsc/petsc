@@ -658,9 +658,9 @@ namespace ALE {
           ALE_LOG_EVENT_END;
           return assignment;
         };
-#endif
       };
     };
+#endif
 #ifdef PETSC_HAVE_PARMETIS
     namespace ParMetis {
       template<typename Topology_>
@@ -710,8 +710,8 @@ namespace ALE {
           return assignment;
         };
       };
-#endif
     };
+#endif
 
     template<typename Topology_, typename Index_>
     class Atlas : public ALE::ParallelObject {
