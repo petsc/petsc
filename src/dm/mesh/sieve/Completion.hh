@@ -496,9 +496,17 @@ namespace ALE {
       // Partition a topology on process 0 and scatter to all processes
       static void scatterTopology(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const std::string& partitioner) {
         if (partitioner == "chaco") {
+#ifdef PETSC_HAVE_CHACO
           scatterTopology<ALE::New::Chaco::Partitioner<mesh_topology_type> >(topology, dim, topologyNew, sendOverlap, recvOverlap);
+#else
+          throw ALE::Exception("Chaco is not installed. Reconfigure with the flag --download-chaco");
+#endif
         } else if (partitioner == "parmetis") {
+#ifdef PETSC_HAVE_PARMETIS
           scatterTopology<ALE::New::ParMetis::Partitioner<mesh_topology_type> >(topology, dim, topologyNew, sendOverlap, recvOverlap);
+#else
+          throw ALE::Exception("ParMetis is not installed. Reconfigure with the flag --download-parmetis");
+#endif
         } else {
           throw ALE::Exception("Unknown partitioner");
         }
