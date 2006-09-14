@@ -88,7 +88,28 @@ runex1_beuler:
 	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -linear_constant_matrix -pc_type lu -monitor -nox> ex1_beuler.tmp 2>&1;   \
            if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_beuler, diffs above"; fi; \
-           ${RM} -f ex1_beuler.tmp
+           ${RM} -f ex1_beuler.tmp; 
+runex1_beuler_2:
+	-@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -linear_variable_matrix -monitor -nox> ex1_beuler.tmp 2>&1;   \
+           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+           else echo "Possible problem with ex1_beuler_2, diffs above"; fi; \
+           ${RM} -f ex1_beuler.tmp; 
+runex1_beuler_3:
+	-@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -nonlinear_jacobian -monitor -nox> ex1_beuler.tmp 2>&1;   \
+           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+           else echo "Possible problem with ex1_beuler_3, diffs above"; fi; \
+           ${RM} -f ex1_beuler.tmp; 
+runex1_beuler_4:
+	-@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -nonlinear_no_jacobian -monitor -nox> ex1_beuler.tmp 2>&1;   \
+           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+           else echo "Possible problem with ex1_4, diffs above"; fi; \
+           ${RM} -f ex1_beuler.tmp; 
+
+runex1_beuler_5:
+	 -@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -linear_no_matrix -monitor -nox> ex1_beuler.tmp 2>&1;   \
+           if (${DIFF} output/ex1_beuler_no_matrix.out ex1_beuler.tmp) then true; \
+           else echo "Possible problem with ex1_beuler_5, diffs above"; fi; \
+           ${RM} -f ex1_beuler.tmp 
 
 runex1_cn:
 	-@${MPIRUN} -np 1 ./ex1 -test -ts_type crank-nicholson -linear_constant_matrix -monitor -nox> ex1_cn.tmp 2>&1;   \
@@ -108,7 +129,7 @@ runex1f:
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
-TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_euler runex1_beuler runex1_cn ex1.rm 
+TESTEXAMPLES_C		  = ex1.PETSc runex1 runex1_euler runex1_beuler runex1_beuler_2 runex1_beuler_3 runex1_beuler_4 runex1_beuler_5 runex1_cn ex1.rm 
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 

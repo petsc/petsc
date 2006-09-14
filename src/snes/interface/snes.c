@@ -802,8 +802,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
 
    Input Parameters:
 +  snes - the SNES context
-.  func - function evaluation routine
 .  r - vector to store function value
+.  func - function evaluation routine
 -  ctx - [optional] user-defined context for private data for the 
          function evaluation routine (may be PETSC_NULL)
 

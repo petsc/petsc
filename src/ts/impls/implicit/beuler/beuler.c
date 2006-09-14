@@ -12,6 +12,30 @@ typedef struct {
 } TS_BEuler;
 
 /*------------------------------------------------------------------------------*/
+/* 
+   Set ts->A = ts->Arhs = 1/dt*Alhs - Arhs, used in KSPSolve() 
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetKSPOperators_BEuler"
+PetscErrorCode TSSetKSPOperators_BEuler(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscScalar    mdt = 1.0/ts->time_step;
+
+  PetscFunctionBegin;
+  if (!ts->A){
+    ts->A = ts->Arhs;
+    ierr  = PetscObjectReference((PetscObject)ts->Arhs);CHKERRQ(ierr);
+  }
+
+  ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);
+  if (ts->Alhs){
+    ierr = MatAXPY(ts->A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  } else {
+    ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
 
 /*
     Version for linear PDE where RHS does not depend on time. Has built a
@@ -89,6 +113,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   for (i=0; i<max_steps; i++) {
     /* set rhs = 1/dt*Alhs(t_mid)*sol */
     if (ts->Alhs){
+      /* evaluate lhs matrix function at t_mid */
       t_mid = ts->ptime+ts->time_step/2.0;
       ierr = (*ts->ops->lhsmatrix)(ts,t_mid,&ts->Alhs,PETSC_NULL,&str,ts->jacPlhs);CHKERRQ(ierr);
       ierr = MatMult(ts->Alhs,sol,rhs);CHKERRQ(ierr);
@@ -99,12 +124,13 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
 
     ts->ptime += ts->time_step;
     if (ts->ptime > ts->max_time) break;
-    /*
-        evaluate rhs matrix function at current ptime. 
-    */
+
+    /* evaluate rhs matrix function at current ptime */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->Arhs,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = TSScaleShiftMatrices(ts,ts->Arhs,ts->B,str);CHKERRQ(ierr);
-    ierr = KSPSetOperators(ts->ksp,ts->Arhs,ts->B,str);CHKERRQ(ierr);
+
+    /* set ts->A = ts->Arhs = 1/dt*Alhs - Arhs, used in KSPSolve() */
+    ierr = TSSetKSPOperators_BEuler(ts);CHKERRQ(ierr);
+    ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
     /* solve (1/dt*Alhs(t_mid) - A(t_n+1))*update = rhs */
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
@@ -169,11 +195,8 @@ static PetscErrorCode TSDestroy_BEuler(TS ts)
   PetscFunctionReturn(0);
 }
 
-
-
 /* 
     This defines the nonlinear equation that is to be solved with SNES
-
               U^{n+1} - dt*F(U^{n+1}) - U^{n}
 */
 #undef __FUNCT__  
@@ -205,8 +228,10 @@ PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 
 /*
    This constructs the Jacobian needed for SNES 
-
-             J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
+     J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
+   x  - input vector
+   AA - Jacobian matrix 
+   BB - preconditioner matrix, usually the same as AA
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSBEulerJacobian"
@@ -241,10 +266,10 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
-  /* build linear system to be solved */
-  /* ts->Arhs = 1/dt*Alhs - Arhs, ts->B = 1/dt*Blhs - Brhs */
-  ierr = TSScaleShiftMatrices(ts,ts->Arhs,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = KSPSetOperators(ts->ksp,ts->Arhs,ts->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+  /* build linear system to be solved - should move into TSStep() if dt changes! */
+  /* Set ts->A = ts->Arhs = 1/dt*Alhs - Arhs, used in KSPSolve() */
+  ierr = TSSetKSPOperators_BEuler(ts);CHKERRQ(ierr);
+  ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
