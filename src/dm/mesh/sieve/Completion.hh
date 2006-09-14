@@ -403,8 +403,6 @@ namespace ALE {
       typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int>     recv_sizer_type;
       typedef typename ALE::New::ConstantSection<topology_type, int>                      constant_sizer;
       typedef typename ALE::New::ConstantSection<topology_type, value_type>               constant_section;
-      typedef typename ALE::New::PartitionSizeSection<topology_type, short int>           partition_size_section;
-      typedef typename ALE::New::PartitionSection<topology_type, short int>               partition_section;
       typedef typename ALE::New::ConeSizeSection<topology_type, sieve_type>               cone_size_section;
       typedef typename ALE::New::ConeSection<topology_type, sieve_type>                   cone_section;
     public:
@@ -496,9 +494,20 @@ namespace ALE {
         if (recvSection->debug()) {recvSection->view("Receive Section in Completion", MPI_COMM_SELF);}
       };
       // Partition a topology on process 0 and scatter to all processes
+      static void scatterTopology(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const std::string& partitioner) {
+        if (partitioner == "chaco") {
+          scatterTopology<ALE::New::Chaco::Partitioner<mesh_topology_type> >(topology, dim, topologyNew, sendOverlap, recvOverlap);
+        } else if (partitioner == "parmetis") {
+          scatterTopology<ALE::New::ParMetis::Partitioner<mesh_topology_type> >(topology, dim, topologyNew, sendOverlap, recvOverlap);
+        } else {
+          throw ALE::Exception("Unknown partitioner");
+        }
+      };
+      template<typename Partitioner>
       static void scatterTopology(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
         typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, value_type> send_section_type;
         typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, value_type> recv_section_type;
+        typedef typename Partitioner::part_type part_type;
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
         Obj<send_sizer_type>   sendSizer     = new send_sizer_type(topology->comm(), topology->debug());
@@ -525,7 +534,9 @@ namespace ALE {
           recvOverlap->view("Receive overlap for partition");
         }
         // 2) Partition the mesh
-        short *assignment = ALE::New::Partitioner<mesh_topology_type>::partitionSieve_Chaco(topology, dim);
+        part_type *assignment;
+
+        assignment = Partitioner::partitionSieve(topology, dim);
         // 3) Create local sieve
         for(int e = 0; e < numElements; e++) {
           if (assignment[e] == rank) {
@@ -538,6 +549,8 @@ namespace ALE {
         }
         sieveNew->stratify();
         // 2) Complete sizer section
+        typedef typename ALE::New::PartitionSizeSection<topology_type, part_type> partition_size_section;
+        typedef typename ALE::New::PartitionSection<topology_type, part_type>     partition_section;
         Obj<topology_type>          secTopology          = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
         Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numElements, assignment);
         Obj<partition_section>      partitionSection     = new partition_section(secTopology, numElements, assignment);

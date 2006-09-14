@@ -55,6 +55,7 @@ typedef struct {
   PetscTruth     outputLocal;        // Output the local form of the mesh
   PetscTruth     outputVTK;          // Output the mesh in VTK
   PetscTruth     distribute;         // Distribute the mesh among processes
+  char           partitioner[2048];  // The partitioner name
   PetscTruth     interpolate;        // Construct missing elements of the mesh
   PetscTruth     partition;          // Construct field over cells indicating process number
   PetscTruth     material;           // Construct field over cells indicating material type
@@ -116,6 +117,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->outputLocal    = PETSC_FALSE;
   options->outputVTK      = PETSC_TRUE;
   options->distribute     = PETSC_TRUE;
+  ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   options->interpolate    = PETSC_TRUE;
   options->partition      = PETSC_TRUE;
   options->material       = PETSC_FALSE;
@@ -134,6 +136,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex1.c", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-partition", "Create the partition field", "ex1.c", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-material", "Create the material field", "ex1.c", options->material, &options->material, PETSC_NULL);CHKERRQ(ierr);
@@ -184,7 +187,7 @@ PetscErrorCode DistributeMesh(Obj<ALE::Mesh>& mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh);
+    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh, std::string(options->partitioner));
     if (options->partition) {
       ierr = CreatePartition(mesh);CHKERRQ(ierr);
     }

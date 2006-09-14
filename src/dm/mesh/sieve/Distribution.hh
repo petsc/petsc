@@ -257,7 +257,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "redistributeMesh"
-      static Obj<Mesh> redistributeMesh(const Obj<Mesh>& serialMesh) {
+      static Obj<Mesh> redistributeMesh(const Obj<Mesh>& serialMesh, const std::string& partitioner = "chaco") {
         Obj<Mesh> parallelMesh = Mesh(serialMesh->comm(), serialMesh->getDimension(), serialMesh->debug);
         const Obj<Mesh::topology_type>& serialTopology   = serialMesh->getTopologyNew();
         const Obj<Mesh::topology_type>& parallelTopology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug);
@@ -283,7 +283,7 @@ namespace ALE {
         // Distribute cones
         Obj<send_overlap_type> cellSendOverlap   = new send_overlap_type(serialTopology->comm(), serialTopology->debug());
         Obj<recv_overlap_type> cellRecvOverlap   = new recv_overlap_type(serialTopology->comm(), serialTopology->debug());
-        sieveCompletion::scatterTopology(serialTopology, serialMesh->getDimension(), parallelTopology, cellSendOverlap, cellRecvOverlap);
+        sieveCompletion::scatterTopology(serialTopology, serialMesh->getDimension(), parallelTopology, cellSendOverlap, cellRecvOverlap, partitioner);
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelMesh->debug) {parallelTopology->view("Parallel topology");}

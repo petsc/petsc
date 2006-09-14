@@ -19,7 +19,11 @@ extern "C" {
   extern int FREE_GRAPH;
 }
 #endif
-
+#ifdef PETSC_HAVE_CHACO
+extern "C" {
+  extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
+}
+#endif
 
 namespace ALE {
   class ParallelObject {
@@ -550,86 +554,145 @@ namespace ALE {
         *adjacency = adj;
         ALE_LOG_EVENT_END;
       };
+    };
 #ifdef PETSC_HAVE_CHACO
-      #undef __FUNCT__
-      #define __FUNCT__ "partitionSieve_Chaco"
-      static short *partitionSieve_Chaco(const Obj<topology_type>& topology, const int dim) {
-        short *assignment = NULL; /* set number of each vtx (length n) */
+    namespace Chaco {
+      template<typename Topology_>
+      class Partitioner {
+      public:
+        typedef Topology_                          topology_type;
+        typedef typename topology_type::sieve_type sieve_type;
+        typedef typename topology_type::patch_type patch_type;
+        typedef typename topology_type::point_type point_type;
+        typedef short int                          part_type;
+      public:
+        #undef __FUNCT__
+        #define __FUNCT__ "ChacoPartitionSieve"
+        static part_type *partitionSieve(const Obj<topology_type>& topology, const int dim) {
+          part_type *assignment = NULL; /* set number of each vtx (length n) */
 
-        ALE_LOG_EVENT_BEGIN;
-        if (topology->commRank() == 0) {
-          /* arguments for Chaco library */
-          FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
-          int nvtxs;                              /* number of vertices in full graph */
-          int *start;                             /* start of edge list for each vertex */
-          int *adjacency;                         /* = adj -> j; edge list data  */
-          int *vwgts = NULL;                      /* weights for all vertices */
-          float *ewgts = NULL;                    /* weights for all edges */
-          float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
-          char *outassignname = NULL;             /*  name of assignment output file */
-          char *outfilename = NULL;               /* output file name */
-          int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
-          int ndims_tot = 0;                      /* total number of cube dimensions to divide */
-          int mesh_dims[3];                       /* dimensions of mesh of processors */
-          double *goal = NULL;                    /* desired set sizes for each set */
-          int global_method = 1;                  /* global partitioning algorithm */
-          int local_method = 1;                   /* local partitioning algorithm */
-          int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
-          int vmax = 200;                         /* how many vertices to coarsen down to? */
-          int ndims = 1;                          /* number of eigenvectors (2^d sets) */
-          double eigtol = 0.001;                  /* tolerance on eigenvectors */
-          long seed = 123636512;                  /* for random graph mutations */
-          int patch = 0;
-          PetscErrorCode ierr;
+          ALE_LOG_EVENT_BEGIN;
+          if (topology->commRank() == 0) {
+            /* arguments for Chaco library */
+            FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
+            int nvtxs;                              /* number of vertices in full graph */
+            int *start;                             /* start of edge list for each vertex */
+            int *adjacency;                         /* = adj -> j; edge list data  */
+            int *vwgts = NULL;                      /* weights for all vertices */
+            float *ewgts = NULL;                    /* weights for all edges */
+            float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
+            char *outassignname = NULL;             /*  name of assignment output file */
+            char *outfilename = NULL;               /* output file name */
+            int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+            int ndims_tot = 0;                      /* total number of cube dimensions to divide */
+            int mesh_dims[3];                       /* dimensions of mesh of processors */
+            double *goal = NULL;                    /* desired set sizes for each set */
+            int global_method = 1;                  /* global partitioning algorithm */
+            int local_method = 1;                   /* local partitioning algorithm */
+            int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
+            int vmax = 200;                         /* how many vertices to coarsen down to? */
+            int ndims = 1;                          /* number of eigenvectors (2^d sets) */
+            double eigtol = 0.001;                  /* tolerance on eigenvectors */
+            long seed = 123636512;                  /* for random graph mutations */
+            int patch = 0;
+            PetscErrorCode ierr;
 
-          nvtxs = topology->heightStratum(patch, 0)->size();
-          mesh_dims[0] = topology->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
-          ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &start, &adjacency);
-          for(int e = 0; e < start[nvtxs]; e++) {
-            adjacency[e]++;
-          }
-          assignment = new short int[nvtxs];
-          ierr = PetscMemzero(assignment, nvtxs * sizeof(short));CHKERROR(ierr, "Error in PetscMemzero");
+            nvtxs = topology->heightStratum(patch, 0)->size();
+            mesh_dims[0] = topology->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+            ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &start, &adjacency);
+            for(int e = 0; e < start[nvtxs]; e++) {
+              adjacency[e]++;
+            }
+            assignment = new part_type[nvtxs];
+            ierr = PetscMemzero(assignment, nvtxs * sizeof(part_type));CHKERROR(ierr, "Error in PetscMemzero");
 
-          /* redirect output to buffer: chaco -> msgLog */
+            /* redirect output to buffer: chaco -> msgLog */
 #ifdef PETSC_HAVE_UNISTD_H
-          char *msgLog;
-          int fd_stdout, fd_pipe[2], count;
+            char *msgLog;
+            int fd_stdout, fd_pipe[2], count;
 
-          fd_stdout = dup(1);
-          pipe(fd_pipe);
-          close(1);
-          dup2(fd_pipe[1], 1);
-          msgLog = new char[16284];
+            fd_stdout = dup(1);
+            pipe(fd_pipe);
+            close(1);
+            dup2(fd_pipe[1], 1);
+            msgLog = new char[16284];
 #endif
 
-          ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
-                           outassignname, outfilename, assignment, architecture, ndims_tot,
-                           mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
-                           eigtol, seed);
+            ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
+                             outassignname, outfilename, assignment, architecture, ndims_tot,
+                             mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
+                             eigtol, seed);
 
 #ifdef PETSC_HAVE_UNISTD_H
-          int SIZE_LOG  = 10000;
+            int SIZE_LOG  = 10000;
 
-          fflush(stdout);
-          count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
-          if (count < 0) count = 0;
-          msgLog[count] = 0;
-          close(1);
-          dup2(fd_stdout, 1);
-          close(fd_stdout);
-          close(fd_pipe[0]);
-          close(fd_pipe[1]);
-          if (topology->debug()) {
-            std::cout << msgLog << std::endl;
-          }
-          delete [] msgLog;
+            fflush(stdout);
+            count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
+            if (count < 0) count = 0;
+            msgLog[count] = 0;
+            close(1);
+            dup2(fd_stdout, 1);
+            close(fd_stdout);
+            close(fd_pipe[0]);
+            close(fd_pipe[1]);
+            if (topology->debug()) {
+              std::cout << msgLog << std::endl;
+            }
+            delete [] msgLog;
 #endif
-          delete [] adjacency;
-          delete [] start;
-        }
-        ALE_LOG_EVENT_END;
-        return assignment;
+            delete [] adjacency;
+            delete [] start;
+          }
+          ALE_LOG_EVENT_END;
+          return assignment;
+        };
+#endif
+      };
+    };
+#ifdef PETSC_HAVE_PARMETIS
+    namespace ParMetis {
+      template<typename Topology_>
+      class Partitioner {
+      public:
+        typedef Topology_                          topology_type;
+        typedef typename topology_type::sieve_type sieve_type;
+        typedef typename topology_type::patch_type patch_type;
+        typedef typename topology_type::point_type point_type;
+        typedef int                                part_type;
+      public:
+        #undef __FUNCT__
+        #define __FUNCT__ "ParMetisPartitionSieve"
+        static part_type *partitionSieve(const Obj<topology_type>& topology, const int dim) {
+          int    nvtxs;      // The number of vertices in full graph
+          int   *xadj;       // Start of edge list for each vertex
+          int   *adjncy;     // Edge lists for all vertices
+          int   *vwgt;       // Vertex weights
+          int   *adjwgt;     // Edge weights
+          int    wgtflag;    // Indicates which weights are present
+          int    numflag;    // Indicates initial offset (0 or 1)
+          int    nparts;     // The number of partitions
+          int    options[5]; // Options
+          // Outputs
+          int    edgeCut;    // The number of edges cut by the partition
+          int   *assignment; // The vertex partition
+          const typename topology_type::patch_type patch = 0;
+
+          if (topology->commRank() == 0) {
+            nvtxs = topology->heightStratum(patch, 0)->size();
+            ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &xadj, &adjncy);
+            vwgt       = NULL;
+            adjwgt     = NULL;
+            wgtflag    = 0;
+            numflag    = 0;
+            nparts     = topology->commSize();
+            options[0] = 0; // Use all defaults
+            assignment = new part_type[nvtxs];
+            METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+            delete [] xadj;
+            delete [] adjncy;
+          }
+          return assignment;
+        };
       };
 #endif
     };

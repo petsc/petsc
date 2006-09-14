@@ -286,9 +286,8 @@ namespace ALE {
       buildMaterials(mesh->getSection("material"), materials);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
       if (hasSplit) {
-        Obj<split_section_type> splitField = new split_section_type(comm, debug);
+        Obj<split_section_type> splitField = new split_section_type(topology);
 
-        splitField->setTopology(topology);
         buildSplit(splitField, numCells, numSplit, splitInd, splitValues);
         mesh->setSplitSection(splitField);
       }
