@@ -679,7 +679,6 @@ namespace ALE {
 
           if (topology->commRank() == 0) {
             nvtxs = topology->heightStratum(patch, 0)->size();
-            ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &xadj, &adjncy);
             vwgt       = NULL;
             adjwgt     = NULL;
             wgtflag    = 0;
@@ -687,9 +686,14 @@ namespace ALE {
             nparts     = topology->commSize();
             options[0] = 0; // Use all defaults
             assignment = new part_type[nvtxs];
-            METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
-            delete [] xadj;
-            delete [] adjncy;
+            if (topology->commSize() == 1) {
+              PetscMemzero(assignment, nvtxs * sizeof(part_type));
+            } else {
+              ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &xadj, &adjncy);
+              METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+              delete [] xadj;
+              delete [] adjncy;
+            }
           }
           return assignment;
         };
