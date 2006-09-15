@@ -839,7 +839,7 @@ namespace ALE {
           } else {
             val = this->_localSize++;
           }
-          this->update(patch, *l_iter, &val);
+          this->updatePoint(patch, *l_iter, &val);
         }
       };
       // Construct the inverse map from numbers to points

@@ -189,35 +189,35 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim,  ALE::Mesh::section_t
       v_iter++;
     }
   }
-//for now just loop over the points
-    const Obj<ALE::Mesh::topology_type::label_sequence>& verts = topology->depthStratum(originalPatch, 0);
-    ALE::Mesh::topology_type::label_sequence::iterator v_iter = verts->begin();
-    ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = verts->end();
-    while (v_iter != v_iter_end) {
-      PetscMemcpy(v_coord, coords->restrict(originalPatch, *v_iter), dim*sizeof(double));
-      double v_space = *spacing->restrict(originalPatch, *v_iter);
-      std::list<ALE::Mesh::point_type>::iterator c_iter = incPoints.begin(), c_iter_end = incPoints.end();
-      bool isOk = true;
-	  while (c_iter != c_iter_end) {
-	    PetscMemcpy(c_coord, coords->restrict(originalPatch, *c_iter), dim*sizeof(double));
-	    double dist = 0;
-	    double c_space = *spacing->restrict(originalPatch, *c_iter);
-	    for (int d = 0; d < dim; d++) {
-	      dist += (v_coord[d] - c_coord[d])*(v_coord[d] - c_coord[d]);
-	    }
-	    double mdist = c_space + v_space;
-	    if (dist < beta*beta*mdist*mdist/4) {
-	      isOk = false;
-              break;
-	    }
-            c_iter++;
-	  }
-	  if (isOk) {
-	    incPoints.push_front(*v_iter);
-            //printf("  - Adding point %d to the new mesh\n", *v_iter);
-	  }
-	  v_iter++;
+  //for now just loop over the points
+  const Obj<ALE::Mesh::topology_type::label_sequence>& verts = topology->depthStratum(originalPatch, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter = verts->begin();
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = verts->end();
+  while (v_iter != v_iter_end) {
+    PetscMemcpy(v_coord, coords->restrict(originalPatch, *v_iter), dim*sizeof(double));
+    double v_space = *spacing->restrict(originalPatch, *v_iter);
+    std::list<ALE::Mesh::point_type>::iterator c_iter = incPoints.begin(), c_iter_end = incPoints.end();
+    bool isOk = true;
+    while (c_iter != c_iter_end) {
+      PetscMemcpy(c_coord, coords->restrict(originalPatch, *c_iter), dim*sizeof(double));
+      double dist = 0;
+      double c_space = *spacing->restrict(originalPatch, *c_iter);
+      for (int d = 0; d < dim; d++) {
+        dist += (v_coord[d] - c_coord[d])*(v_coord[d] - c_coord[d]);
+      }
+      double mdist = c_space + v_space;
+      if (dist < beta*beta*mdist*mdist/4) {
+        isOk = false;
+        break;
+      }
+      c_iter++;
     }
+    if (isOk) {
+      incPoints.push_front(*v_iter);
+      //printf("  - Adding point %d to the new mesh\n", *v_iter);
+    }
+    v_iter++;
+  }
 
   printf("- creating input to triangle: %d points\n", incPoints.size());
   //At this point we will set up the triangle(tetgen) calls (with preservation of vertex order.  This is why I do not use the functions build in).
@@ -354,10 +354,11 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   PetscFunctionBegin;
   // We store the global vertex numbers as markers to preserve them in the coarse mesh
   //   Here we convert from the new Triangle numbering to the original fine mesh numbering (same sieve points we started from)
+  //   We also offset them by the number of coarse triangles, to preserve the numbers after buildTopology()
   for (int i = 0; i != src->numberoftriangles; i++) {
-    src->trianglelist[i*3+0] = src->pointmarkerlist[src->trianglelist[i*3+0]];
-    src->trianglelist[i*3+1] = src->pointmarkerlist[src->trianglelist[i*3+1]];
-    src->trianglelist[i*3+2] = src->pointmarkerlist[src->trianglelist[i*3+2]];
+    src->trianglelist[i*3+0] = src->pointmarkerlist[src->trianglelist[i*3+0]] - src->numberoftriangles;
+    src->trianglelist[i*3+1] = src->pointmarkerlist[src->trianglelist[i*3+1]] - src->numberoftriangles;
+    src->trianglelist[i*3+2] = src->pointmarkerlist[src->trianglelist[i*3+2]] - src->numberoftriangles;
   }
 
   Obj<ALE::Mesh::sieve_type>           sieve    = new ALE::Mesh::sieve_type(mesh->comm(), 0);

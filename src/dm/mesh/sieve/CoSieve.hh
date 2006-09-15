@@ -351,9 +351,7 @@ namespace ALE {
       };
       const Obj<patch_label_type>& createLabel(const patch_type& patch, const std::string& name) {
         this->checkPatch(patch);
-        if ((this->_labels.find(name) == this->_labels.end()) || (this->_labels[name].find(patch) == this->_labels[name].end())) {
-          this->_labels[name][patch] = new patch_label_type(this->comm(), this->debug());
-        }
+        this->_labels[name][patch] = new patch_label_type(this->comm(), this->debug());
         return this->_labels[name][patch];
       };
       const Obj<patch_label_type>& getLabel(const patch_type& patch, const std::string& name) {
@@ -411,7 +409,7 @@ namespace ALE {
           if (this->_maxHeights[s_iter->first] > this->_maxHeight) this->_maxHeight = this->_maxHeights[s_iter->first];
         }
       };
-      int height() {return this->_maxHeight;};
+      int height() const {return this->_maxHeight;};
       int height(const patch_type& patch) {
         this->checkPatch(patch);
         return this->_maxHeights[patch];
@@ -454,7 +452,7 @@ namespace ALE {
           if (this->_maxDepths[s_iter->first] > this->_maxDepth) this->_maxDepth = this->_maxDepths[s_iter->first];
         }
       };
-      int depth() {return this->_maxDepth;};
+      int depth() const {return this->_maxDepth;};
       int depth(const patch_type& patch) {
         this->checkPatch(patch);
         return this->_maxDepths[patch];
@@ -474,7 +472,7 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
     public: // Viewers
-      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
         if (comm == MPI_COMM_NULL) {
           comm = this->comm();
         }
@@ -483,11 +481,13 @@ namespace ALE {
         } else {
           PetscPrintf(comm, "viewing Topology '%s'\n", name.c_str());
         }
+        PetscPrintf(comm, "  maximum height %d maximum depth %d\n", this->height(), this->depth());
         for(typename sheaf_type::const_iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
           ostringstream txt;
 
           txt << "Patch " << s_iter->first;
           s_iter->second->view(txt.str().c_str(), comm);
+          PetscPrintf(comm, "  maximum height %d maximum depth %d\n", this->height(s_iter->first), this->depth(s_iter->first));
         }
         for(typename labels_type::const_iterator l_iter = this->_labels.begin(); l_iter != this->_labels.end(); ++l_iter) {
           PetscPrintf(comm, "  label %s constructed\n", l_iter->first.c_str());
