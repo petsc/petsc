@@ -6,15 +6,18 @@ static char help[] = "Global Ordering Tests.\n\n";
 using ALE::Obj;
 typedef ALE::Test::OverlapTest::sieve_type        sieve_type;
 typedef ALE::Test::OverlapTest::topology_type     topology_type;
+typedef ALE::Test::OverlapTest::atlas_type        atlas_type;
 typedef ALE::Test::OverlapTest::dsieve_type       dsieve_type;
 typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
 typedef ALE::Test::OverlapTest::send_section_type send_section_type;
 typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
 typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
 typedef ALE::New::Numbering<topology_type>        numbering_type;
+typedef ALE::New::NewNumbering<atlas_type>        new_numbering_type;
 
 typedef struct {
-  int debug; // The debugging level
+  int        debug;       // The debugging level
+  PetscTruth interpolate; // Construct missing elements of the mesh
 } Options;
 
 #undef __FUNCT__
@@ -22,8 +25,10 @@ typedef struct {
 // This test has
 //  - A mesh overlapping itself
 //  - Single points overlapping single points
-PetscErrorCode DoubletTest(const Obj<send_section_type>& sendSection, const Obj<recv_section_type>& recvSection, Options *options)
+PetscErrorCode DoubletTest(MPI_Comm comm, Options *options)
 {
+  Obj<send_section_type> sendSection = new send_section_type(comm, options->debug);
+  Obj<recv_section_type> recvSection = new recv_section_type(comm, sendSection->getTag(), options->debug);
   Obj<topology_type>     topology    = new topology_type(sendSection->comm(), options->debug);
   Obj<send_overlap_type> sendOverlap = new send_overlap_type(sendSection->comm(), options->debug);
   Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(recvSection->comm(), options->debug);
@@ -159,7 +164,19 @@ PetscErrorCode NumberingTest(const Obj<topology_type>& topology, Options *option
   Obj<numbering_type> numbering = new numbering_type(topology, "depth", 0);
 
   PetscFunctionBegin;
-  ALE::Test::OverlapTest::constructDoublet(topology);
+  numbering->construct();
+  numbering->view("Vertex numbering");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "NewNumberingTest"
+PetscErrorCode NewNumberingTest(const Obj<topology_type>& topology, Options *options)
+{
+  Obj<atlas_type>         atlas     = new atlas_type(topology);
+  Obj<new_numbering_type> numbering = new new_numbering_type(atlas, "depth", 0);
+
+  PetscFunctionBegin;
   numbering->construct();
   numbering->view("Vertex numbering");
   PetscFunctionReturn(0);
@@ -172,10 +189,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug = 0;
+  options->debug       = 0;
+  options->interpolate = PETSC_TRUE;
 
   ierr = PetscOptionsBegin(comm, "", "Options for sifter stress test", "Sieve");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "overlap1.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "overlap1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -193,11 +212,11 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<send_section_type> sendSection = new send_section_type(comm, options.debug);
-    Obj<recv_section_type> recvSection = new recv_section_type(comm, sendSection->getTag(), options.debug);
-    Obj<topology_type>     topology    = new topology_type(comm, options.debug);
+    Obj<topology_type> topology = new topology_type(comm, options.debug);
 
-    //ierr = DoubletTest(sendSection, recvSection, &options);CHKERRQ(ierr);
+    ALE::Test::OverlapTest::constructDoublet2(topology, options.interpolate);
+    //ierr = DoubletTest(comm, &options);CHKERRQ(ierr);
+    ierr = NewNumberingTest(topology, &options);CHKERRQ(ierr);
     ierr = NumberingTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;

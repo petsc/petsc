@@ -1,11 +1,9 @@
+/* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
+
 #ifndef PETSC_INTERFACE_HEADER
 #define PETSC_INTERFACE_HEADER
 
 #include "interpreter.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 int PETSC_dpotrf_interface (char *uplo, int *n, double *a, int * lda, int *info);
 
@@ -47,9 +45,5 @@ LOBPCG_DestroyRandomContext(void);
 
 int
 PETSCSetupInterpreter( mv_InterfaceInterpreter *ii );
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* PETSC_INTERFACE_HEADER */

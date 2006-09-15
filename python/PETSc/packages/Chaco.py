@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions    = ['interface']
     self.includes     = [] #Chaco does not have an include file
     self.includedir   = ''
+    self.needsMath    = 1
     self.liblist      = [['libchaco.a']]
     self.license      = 'http://www.cs.sandia.gov/~web9200/9200_download.html'
     return
@@ -27,6 +28,8 @@ class Configure(PETSc.package.Package):
     g = open(os.path.join(chacoDir,'make.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CFLAGS = '+self.setCompilers.getCompilerFlags()+'\n')
+    g.write('OFLAGS = '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.close()
     

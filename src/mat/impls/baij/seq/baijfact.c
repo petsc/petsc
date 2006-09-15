@@ -772,12 +772,11 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
   PetscReal          fill = info->fill;
-  PetscInt           *rip,*riip,i,mbs=a->mbs,bs=A->rmap.bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
+  PetscInt           *rip,i,mbs=a->mbs,bs=A->rmap.bs,*ai=a->i,*aj=a->j,reallocs=0,prow;
   PetscInt           *jl,jmin,jmax,nzk,*ui,k,j,*il,nextprow;
   PetscInt           nlnk,*lnk,ncols,ncols_upper,*cols,*uj,**ui_ptr,*uj_ptr;
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT            lnkbt;
-  IS                 iperm; 
 
   PetscFunctionBegin;
   if (bs > 1) { /* convert to seqsbaij */
@@ -792,18 +791,8 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat A,IS perm,MatFactorInfo *in
 
   /* check whether perm is the identity mapping */
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
+  if (!perm_identity) SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported");
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
-
-  if (!perm_identity){
-    /* check if perm is symmetric! */
-    ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);  
-    ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
-    for (i=0; i<mbs; i++) {
-      if (rip[i] != riip[i]) SETERRQ(PETSC_ERR_ARG_INCOMP,"Non-symmetric permutation, must use symmetric permutation");
-    }
-    ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
-    ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  } 
 
   /* initialization */
   ierr  = PetscMalloc((mbs+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr);

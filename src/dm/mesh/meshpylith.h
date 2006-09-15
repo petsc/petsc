@@ -7,13 +7,12 @@ namespace ALE {
 
     class Builder {
     public:
-      typedef ALE::Sieve<int, int, int>             sieve_type;
-      typedef ALE::New::Topology<int, sieve_type>   topology_type;
-      typedef ALE::New::Atlas<topology_type, Point> atlas_type;
-      typedef ALE::New::Section<atlas_type, double> section_type;
-      //typedef struct {double x, y, z;}              split_value;
-      typedef ALE::Mesh::split_value                split_value;
-      typedef ALE::New::Section<atlas_type, ALE::pair<sieve_type::point_type, split_value> > split_section_type;
+      typedef ALE::Sieve<int, int, int>                sieve_type;
+      typedef ALE::New::Topology<int, sieve_type>      topology_type;
+      typedef ALE::New::Section<topology_type, double> section_type;
+      //typedef struct {double x, y, z;}               split_value;
+      typedef ALE::Mesh::split_value                   split_value;
+      typedef ALE::New::Section<topology_type, ALE::pair<sieve_type::point_type, split_value> > split_section_type;
     public:
       Builder() {};
       virtual ~Builder() {};
@@ -25,7 +24,7 @@ namespace ALE {
       static void readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]);
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static void buildMaterials(const Obj<ALE::Mesh::section_type>& matField, const int materials[]);
-      static void buildSplit(const Obj<split_section_type>& splitField, int numSplit, int splitInd[], double splitVals[]);
+      static void buildSplit(const Obj<split_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]);
       static Obj<ALE::Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
     };
 
@@ -38,7 +37,7 @@ namespace ALE {
       static PetscErrorCode writeVerticesLocal(const Obj<ALE::Mesh>& mesh, PetscViewer viewer);
       static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer);
       static PetscErrorCode writeElementsLocal(const Obj<ALE::Mesh>& mesh, PetscViewer viewer);
-      static PetscErrorCode writeSplitLocal(const Obj<Builder::split_section_type>& splitField, PetscViewer viewer);
+      static PetscErrorCode writeSplitLocal(const Obj<ALE::Mesh>& mesh, const Obj<Builder::split_section_type>& splitField, PetscViewer viewer);
     };
   };
 };

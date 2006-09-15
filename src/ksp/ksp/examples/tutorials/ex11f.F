@@ -185,7 +185,7 @@
       if (use_random) then
          call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)                        
          call PetscRandomSetFromOptions(rctx,ierr)
-         call VecSetRandom(rctx,u,ierr)
+         call VecSetRandom(u,rctx,ierr)
       else
          pfive = 0.5
          call VecSet(u,pfive,ierr)
@@ -245,6 +245,8 @@
       call VecDestroy(b,ierr)
       call MatDestroy(A,ierr)
 
+#if !defined(PETSC_USE_COMPLEX)
  200  continue
+#endif
       call PetscFinalize(ierr)
       end

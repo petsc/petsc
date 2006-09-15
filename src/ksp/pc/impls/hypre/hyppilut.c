@@ -28,6 +28,7 @@ typedef struct {
   PetscErrorCode     (*setup)(HYPRE_Solver,HYPRE_ParCSRMatrix,HYPRE_ParVector,HYPRE_ParVector);
   
   MPI_Comm           comm_hypre;
+  char              *hypre_type;
 
   /* options for pilut and BoomerAMG*/
   int                maxiter;
@@ -156,6 +157,7 @@ static PetscErrorCode PCDestroy_HYPRE(PC pc)
   if (jac->ij) { ierr = HYPRE_IJMatrixDestroy(jac->ij);CHKERRQ(ierr); }
   if (jac->b) { ierr = HYPRE_IJVectorDestroy(jac->b);CHKERRQ(ierr); }
   if (jac->x) { ierr = HYPRE_IJVectorDestroy(jac->x);CHKERRQ(ierr); }
+  ierr = PetscStrfree(jac->hypre_type);CHKERRQ(ierr);
   ierr = (*jac->destroy)(jac->hsolver);CHKERRQ(ierr);
   ierr = MPI_Comm_free(&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscFree(jac);CHKERRQ(ierr);
@@ -601,6 +603,19 @@ static PetscErrorCode PCView_HYPRE_ParaSails(PC pc,PetscViewer viewer)
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
+#define __FUNCT__ "PCHYPREGetType_HYPRE"
+PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType_HYPRE(PC pc,const char *name[])
+{
+  PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
+
+  PetscFunctionBegin;
+  *name = jac->hypre_type;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
 #define __FUNCT__ "PCHYPRESetType_HYPRE"
 PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
 {
@@ -622,6 +637,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
   jac->tol                = PETSC_DEFAULT;
   jac->printstatistics    = PetscLogPrintInfo;
 
+  ierr = PetscStrallocpy(name, &jac->hypre_type);CHKERRQ(ierr);
   ierr = PetscStrcmp("pilut",name,&flag);CHKERRQ(ierr);
   if (flag) {
     ierr                    = HYPRE_ParCSRPilutCreate(jac->comm_hypre,&jac->hsolver);
@@ -779,6 +795,37 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType(PC pc,const char name[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCHYPREGetType"
+/*@C
+     PCHYPREGetType - Gets which hypre preconditioner you are using
+
+   Input Parameter:
+.     pc - the preconditioner context
+
+   Output Parameter:
+.     name - either  pilut, parasails, boomeramg, euclid
+
+   Level: intermediate
+
+.seealso:  PCCreate(), PCHYPRESetType(), PCType (for list of available types), PC,
+           PCHYPRE
+
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
+{
+  PetscErrorCode ierr,(*f)(PC,const char*[]);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(name,2);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCHYPREGetType_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,name);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
 /*MC
      PCHYPRE - Allows you to use the matrix element based preconditioners in the LLNL package hypre
 
@@ -822,9 +869,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC pc)
   ierr                     = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);
   pc->data                 = jac;
   pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;
+  jac->hypre_type          = PETSC_NULL;
   /* Com_dup for hypre */
   ierr = MPI_Comm_dup(pc->comm,&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","PCHYPRESetType_HYPRE",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPREGetType_C","PCHYPREGetType_HYPRE",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

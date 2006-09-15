@@ -60,8 +60,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->ksp                = PETSC_NULL;
   t->A                  = PETSC_NULL;
   t->B                  = PETSC_NULL;
+  t->Arhs               = PETSC_NULL;
   t->Alhs               = PETSC_NULL;
-  t->Blhs               = PETSC_NULL;
   t->snes               = PETSC_NULL;
   t->funP               = PETSC_NULL;
   t->jacP               = PETSC_NULL;
@@ -94,22 +94,19 @@ PetscErrorCode TSScaleShiftMatrices(TS ts,Mat A,Mat B,MatStructure str)
   PetscScalar    mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
-  ierr = PetscTypeCompare((PetscObject)ts->A,MATMFFD,&flg);CHKERRQ(ierr);
+  /* this function requires additional work! */
+  ierr = PetscTypeCompare((PetscObject)A,MATMFFD,&flg);CHKERRQ(ierr);
   if (!flg) {
-    ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);
+    ierr = MatScale(A,-1.0);CHKERRQ(ierr);
     if (ts->Alhs){
-      ierr = MatAXPY(ts->A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = MatAXPY(A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     } else {
-      ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
+      ierr = MatShift(A,mdt);CHKERRQ(ierr);
     }
   }
-  if (ts->B != ts->A && str != SAME_PRECONDITIONER) {
-    ierr = MatScale(ts->B,-1.0);CHKERRQ(ierr);
-    if (ts->Blhs){
-      ierr = MatAXPY(ts->B,mdt,ts->Blhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-    } else {
-      ierr = MatShift(ts->B,mdt);CHKERRQ(ierr);
-    }
+  if (B != A && str != SAME_PRECONDITIONER) {
+    ierr = MatScale(B,-1.0);CHKERRQ(ierr);
+    ierr = MatShift(B,mdt);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

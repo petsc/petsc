@@ -99,12 +99,11 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   PetscLogObjectState((PetscObject)A,"Rows=%D, NZ=%D",A->rmap.N,a->nz);
 #endif
   ierr = MatSeqXAIJFreeAIJ(A,&a->a,&a->j,&a->i);CHKERRQ(ierr);
-  if (a->row) {
-    ierr = ISDestroy(a->row);CHKERRQ(ierr);
-  }
+  if (a->row) {ierr = ISDestroy(a->row);CHKERRQ(ierr);}
+  if (a->col){ierr = ISDestroy(a->col);CHKERRQ(ierr);}
+  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
-  if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   ierr = PetscFree(a->relax_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solves_work);CHKERRQ(ierr);
@@ -938,8 +937,6 @@ EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_6(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_7(Mat,Vec,Vec,Vec);
 EXTERN PetscErrorCode MatMultAdd_SeqSBAIJ_N(Mat,Vec,Vec,Vec);
 
-#ifdef HAVE_MatICCFactor
-/* modified from MatILUFactor_SeqSBAIJ, needs further work!  */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactor_SeqSBAIJ"
 PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
@@ -947,79 +944,90 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)inA->data;
   Mat            outA;
   PetscErrorCode ierr;
-  PetscTruth     row_identity,col_identity;
+  PetscTruth     row_identity;
   
   PetscFunctionBegin;
-  outA          = inA; 
-  inA->factor   = FACTOR_CHOLESKY;
+  if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only levels=0 is supported for in-place icc");
+  ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
+  if (!row_identity) SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported");
+  if (inA->rmap.bs != 1) SETERRQ1(PETSC_ERR_SUP,"Matrix block size %D is not supported",inA->rmap.bs); /* Need to replace MatCholeskyFactorSymbolic_SeqSBAIJ_MSR()! */
+
+  outA        = inA; 
+  inA->factor = FACTOR_CHOLESKY;
   
   ierr = MatMarkDiagonal_SeqSBAIJ(inA);CHKERRQ(ierr);
   /*
-    Blocksize 2, 3, 4, 5, 6 and 7 have a special faster factorization/solver 
-    for ILU(0) factorization with natural ordering
-  */
-  switch (a->rmap.bs) {
+    Blocksize < 8 have a special faster factorization/solver 
+    for ICC(0) factorization with natural ordering
+  */   
+  switch (inA->rmap.bs){ /* Note: row_identity = PETSC_TRUE! */
   case 1:
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solve            = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solves           = MatSolves_SeqSBAIJ_1;
-    ierr = PetscInfo((inA,"Using special in-place natural ordering solvetrans BS=1\n");CHKERRQ(ierr);
+    ierr = PetscInfo(inA,"Using special in-place natural ordering solvetrans BS=1\n");CHKERRQ(ierr);
+    break;           
   case 2:
-    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_2_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=2\n");CHKERRQ(ierr);
-    break;
+    break; 
   case 3:
-     inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
+     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_3_NaturalOrdering;
      ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=3\n");CHKERRQ(ierr);
      break; 
   case 4:
-    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_4_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=4\n");CHKERRQ(ierr);
     break;
   case 5:
-    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_5_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=5\n");CHKERRQ(ierr);
     break;
   case 6: 
-    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_6_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=6\n");CHKERRQ(ierr);
-    break; 
+    break;  
   case 7:
-    inA->ops->lufactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_7_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=7\n");CHKERRQ(ierr);
     break; 
   default:
-    a->row        = row;
-    a->icol       = col;
-    ierr          = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-    ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
+    inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering;
+    inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_N_NaturalOrdering;
+    inA->ops->solve           = MatSolve_SeqSBAIJ_N_NaturalOrdering;
+    break;
+  } 
+           
+  a->row = row;
+  a->col = row;
+  ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
     
-    /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
-    ierr = ISInvertPermutation(col,PETSC_DECIDE, &(a->icol));CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
+  /* Create the invert permutation so that it can be used in MatCholeskyFactorNumeric() */
+  if (a->icol) {ierr = ISInvertPermutation(row,PETSC_DECIDE, &a->icol);CHKERRQ(ierr);}
+  ierr = PetscLogObjectParent(inA,a->icol);CHKERRQ(ierr);
     
-    if (!a->solve_work) {
-      ierr = PetscMalloc((A->rmap.N+a->rmap.bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
-      ierr = PetscLogObjectMemory(inA,(A->rmap.N+a->rmap.bs)*sizeof(PetscScalar));CHKERRQ(ierr);
-    }
+  if (!a->solve_work) {
+    ierr = PetscMalloc((inA->rmap.N+inA->rmap.bs)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(inA,(inA->rmap.N+inA->rmap.bs)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
-  
+   
   ierr = MatCholeskyFactorNumeric(inA,info,&outA);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-#endif
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -1269,7 +1277,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        0,
        0,
        0,
-       0,
+       MatICCFactor_SeqSBAIJ,
 /*40*/ MatAXPY_SeqSBAIJ,
        MatGetSubMatrices_SeqSBAIJ,
        MatIncreaseOverlap_SeqSBAIJ,

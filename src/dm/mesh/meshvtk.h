@@ -26,16 +26,15 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteVertices"
   static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
     typedef ALE::New::Numbering<ALE::Mesh::topology_type> numbering_type;
-    Obj<ALE::Mesh::section_type> coordinates = mesh->getSection("coordinates");
-    Obj<numbering_type>          numbering   = new numbering_type(mesh->getTopologyNew(), "depth", 0);
-    ALE::Mesh::section_type::patch_type patch       = 0;
-    int embedDim = coordinates->getAtlas()->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+    const Obj<ALE::Mesh::section_type>&       coordinates = mesh->getSection("coordinates");
+    const Obj<numbering_type>&                vNumbering  = mesh->getNumbering(0);
+    const ALE::Mesh::section_type::patch_type patch       = 0;
+    const int embedDim = coordinates->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    numbering->construct();
-    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", numbering->getGlobalSize());CHKERRQ(ierr);
-    ierr = writeSection(mesh, coordinates, embedDim, numbering, viewer, 3);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", vNumbering->getGlobalSize());CHKERRQ(ierr);
+    ierr = writeSection(mesh, coordinates, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
@@ -60,20 +59,21 @@ class VTKViewer {
   static PetscErrorCode writeSection(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::section_type>& field, const int fiberDim, const Obj<ALE::New::Numbering<ALE::Mesh::topology_type> >& numbering, PetscViewer viewer, int enforceDim = -1) {
     const ALE::Mesh::section_type::patch_type  patch = 0;
     const ALE::Mesh::section_type::value_type *array = field->restrict(patch);
-    const ALE::Mesh::atlas_type::chart_type&   chart = field->getAtlas()->getChart(patch);
+    const ALE::Obj<ALE::Mesh::atlas_type>&     atlas = field->getAtlas();
+    const ALE::Mesh::atlas_type::chart_type&   chart = atlas->getPatch(patch);
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     if (mesh->commRank() == 0) {
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const ALE::Mesh::atlas_type::index_type& idx = p_iter->second;
+        const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
 
-        if (idx.index > 0) {
+        if (idx.prefix > 0) {
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer, "%G", array[idx.prefix+d]);CHKERRQ(ierr);
+            ierr = PetscViewerASCIIPrintf(viewer, "%G", array[idx.index+d]);CHKERRQ(ierr);
           }
           for(int d = fiberDim; d < enforceDim; d++) {
             ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
@@ -82,12 +82,12 @@ class VTKViewer {
         }
       }
       for(int p = 1; p < mesh->commSize(); p++) {
-        double    *remoteValues;
+        ALE::Mesh::section_type::value_type *remoteValues;
         int        numLocalElements;
         MPI_Status status;
 
         ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
-        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(double), &remoteValues);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &remoteValues);CHKERRQ(ierr);
         ierr = MPI_Recv(remoteValues, numLocalElements*fiberDim, MPI_DOUBLE, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElements; e++) {
           for(int d = 0; d < fiberDim; d++) {
@@ -103,16 +103,17 @@ class VTKViewer {
         }
       }
     } else {
-      int     numLocalElements = numbering->getLocalSize();
-      double *localValues;
-      int     k = 0;
+      ALE::Mesh::section_type::value_type *localValues;
+      int numLocalElements = numbering->getLocalSize();
+      int k = 0;
 
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &localValues);CHKERRQ(ierr);
       for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        int offset = p_iter->second.prefix;
-        int dim    = p_iter->second.index;
+        const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
+        const int& dim    = idx.prefix;
+        const int& offset = idx.index;
 
-        if (numbering->isLocal(p_iter->first)) {
+        if (numbering->isLocal(*p_iter)) {
           for(int i = offset; i < offset+dim; ++i) {
             localValues[k++] = array[i];
           }
@@ -128,6 +129,28 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
+  static int getCellType(const int dim, const int corners) {
+    if (corners == 2) {
+      // VTK_LINE
+      return 3;
+    } else if (corners == 3) {
+      // VTK_TRIANGLE
+      return 5;
+    } else if (corners == 4) {
+      if (dim == 3) {
+        // VTK_TETRA
+        return 10;
+      } else if (dim == 2) {
+        // VTK_QUAD
+        return 9;
+      }
+    } else if (corners == 8) {
+      // VTK_HEXAHEDRON
+      return 12;
+    }
+    return -1;
+  };
+
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer)
@@ -136,15 +159,14 @@ class VTKViewer {
     ALE::Mesh::topology_type::patch_type                 patch      = 0;
     const Obj<ALE::Mesh::sieve_type>&                    topology   = mesh->getTopologyNew()->getPatch(patch);
     const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopologyNew()->heightStratum(patch, 0);
-    Obj<numbering_type>                                  vNumbering = new numbering_type(mesh->getTopologyNew(), "depth", 0);
-    Obj<numbering_type>                                  cNumbering = new numbering_type(mesh->getTopologyNew(), "height", 0);
-    int            corners = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
+    const Obj<numbering_type>&                           vNumbering = mesh->getNumbering(0);
+    const Obj<numbering_type>&                           cNumbering = mesh->getNumbering(mesh->getTopologyNew()->depth());
+    //int            corners = topology->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
+    int            corners = topology->cone(*elements->begin())->size();
     int            numElements;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    vNumbering->construct();
-    cNumbering->construct();
     numElements = cNumbering->getGlobalSize();
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
@@ -197,33 +219,97 @@ class VTKViewer {
       ierr = PetscFree(localVertices);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
-    if (corners == 2) {
-      // VTK_LINE
-      for(int e = 0; e < numElements; e++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "3\n");CHKERRQ(ierr);
-      }
-    } else if (corners == 3) {
-      // VTK_TRIANGLE
-      for(int e = 0; e < numElements; e++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "5\n");CHKERRQ(ierr);
-      }
-    } else if (corners == 4) {
-      if (mesh->getDimension() == 3) {
-        // VTK_TETRA
-        for(int e = 0; e < numElements; e++) {
-          ierr = PetscViewerASCIIPrintf(viewer, "10\n");CHKERRQ(ierr);
+    const int cellType = getCellType(mesh->getDimension(), corners);
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%d\n", cellType);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteHierarchyVertices"
+  static PetscErrorCode writeHierarchyVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer, double zScale = 1.0) {
+    const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopologyNew();
+    const ALE::Mesh::topology_type::sheaf_type& patches     = topology->getPatches();
+    const ALE::Mesh::topology_type::patch_type  firstPatch  = patches.begin()->first;
+    const Obj<ALE::Mesh::section_type>&    coordinates = mesh->getSection("coordinates");
+    const int      embedDim    = coordinates->getFiberDimension(firstPatch, *topology->depthStratum(firstPatch, 0)->begin());
+    int            totalPoints = 0;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    for(ALE::Mesh::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+      // This should be a Numbering, not just the stratum
+      totalPoints += topology->depthStratum(p_iter->first, 0)->size();
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", totalPoints);CHKERRQ(ierr);
+    if (mesh->commRank() == 0) {
+      for(ALE::Mesh::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+        const ALE::Mesh::topology_type::patch_type           patch    = p_iter->first;
+        const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
+
+        for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          const ALE::Mesh::section_type::value_type *array = coordinates->restrictPoint(firstPatch, *v_iter);
+
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", *v_iter);CHKERRQ(ierr);
+          for(int d = 0; d < embedDim; d++) {
+            if (d > 0) {
+              ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+            }
+            ierr = PetscViewerASCIIPrintf(viewer, "%G", array[d]);CHKERRQ(ierr);
+          }
+          for(int d = embedDim; d < 3; d++) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %G", (double) patch*zScale);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
-      } else if (mesh->getDimension() == 2) {
-        // VTK_QUAD
-        for(int e = 0; e < numElements; e++) {
-          ierr = PetscViewerASCIIPrintf(viewer, "9\n");CHKERRQ(ierr);
+      }
+    }
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteHierarchyElements"
+  static PetscErrorCode writeHierarchyElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
+    const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopologyNew();
+    const ALE::Mesh::topology_type::sheaf_type& patches     = topology->getPatches();
+    const ALE::Mesh::topology_type::patch_type  firstPatch  = patches.begin()->first;
+    const int      corners = topology->getPatch(0)->nCone(*topology->heightStratum(firstPatch, 0)->begin(), topology->depth())->size();
+    int            numElements = 0;
+    int            numVertices = 0;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    for(ALE::Mesh::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+      // This should be a Numbering, not just the stratum
+      numElements += topology->heightStratum(p_iter->first, 0)->size();
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
+    if (mesh->commRank() == 0) {
+      for(ALE::Mesh::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+        const ALE::Mesh::topology_type::patch_type           patch      = p_iter->first;
+        const Obj<ALE::Mesh::topology_type::sieve_type>&     sieve      = topology->getPatch(patch);
+        const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
+        const Obj<ALE::Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0, patch);
+        //const int                                            depth      = topology->depth(patch);
+        const int                                            depth      = 2 - patch;
+
+        for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          const Obj<ALE::Mesh::sieve_type::coneArray>& cone = sieve->nCone(*e_iter, depth);
+
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+          for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(patch, *c_iter) + numVertices);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
+        numVertices += topology->depthStratum(p_iter->first, 0)->size();
       }
-    } else if (corners == 8) {
-      // VTK_HEXAHEDRON
-      for(int e = 0; e < numElements; e++) {
-        ierr = PetscViewerASCIIPrintf(viewer, "12\n");CHKERRQ(ierr);
-      }
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+    const int cellType = getCellType(mesh->getDimension(), corners);
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%d\n", cellType);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
   };

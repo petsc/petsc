@@ -265,7 +265,7 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(ts->snes,ts->Arhs,ts->B,TSPseudoJacobian,ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -555,7 +555,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
   if (ts->problem_type == TS_LINEAR) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Only for nonlinear problems");
   }
-  if (!ts->A) {
+  if (!ts->Arhs) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set Jacobian");
   }
 

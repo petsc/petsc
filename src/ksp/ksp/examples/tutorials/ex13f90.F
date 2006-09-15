@@ -56,7 +56,7 @@
 
       PetscScalar  hx,hy,x,y
       PetscFortranAddr userctx(6)
-      integer ierr,m,n,t,tmax,flg,i,j,Ntot
+      integer ierr,m,n,t,tmax,flg,i,j
       integer size,rank
       double precision  enorm
       PetscScalar,ALLOCATABLE :: userx(:,:)
@@ -94,7 +94,6 @@
 !  Create the empty sparse matrix and linear solver data structures
 
       call UserInitializeLinearSolver(m,n,userctx,ierr)
-      Ntot = m*n
 
 !  Allocate arrays to hold the solution to the linear system.  This
 !  approach is not normally done in PETSc programs, but in this case, 
@@ -259,9 +258,9 @@
       x    = userctx(1)
       b    = userctx(2)
       A    = userctx(3)
-      ksp = userctx(4)
-      m    = userctx(5)
-      n    = userctx(6)
+      ksp  = userctx(4)
+      m    = int(userctx(5))
+      n    = int(userctx(6))
 
 !  This is not the most efficient way of generating the matrix,
 !  but let's not worry about it.  We should have separate code for

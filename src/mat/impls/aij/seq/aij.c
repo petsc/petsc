@@ -1737,9 +1737,6 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only levels=0 supported for in-place ilu");
   ierr = ISIdentity(row,&row_identity);CHKERRQ(ierr);
   ierr = ISIdentity(col,&col_identity);CHKERRQ(ierr);
-  if (!row_identity || !col_identity) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Row and column permutations must be identity for in-place ILU");
-  }
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
@@ -1758,7 +1755,11 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
   }
 
   ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
-  ierr = MatLUFactorNumeric_SeqAIJ(inA,info,&outA);CHKERRQ(ierr);
+  if (row_identity && col_identity) {
+    ierr = MatLUFactorNumeric_SeqAIJ(inA,info,&outA);CHKERRQ(ierr);
+  } else {
+    ierr = MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(inA,info,&outA);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

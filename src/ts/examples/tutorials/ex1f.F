@@ -86,7 +86,7 @@
         dt = .5/user(lmy)
       endif
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-dt',dt,flg,ierr)
-      N          = user(lmx)*user(lmy)
+      N          = int(user(lmx)*user(lmy))
   
 !
 !      Create vectors to hold the solution and function value
@@ -207,25 +207,20 @@
       PetscInt  i,j,row,mx,my
       PetscErrorCode ierr
       PetscOffset      xidx
-      double precision two,one,lambda
-      double precision temp1,temp,hx,hy,hxdhy,hydhx
-      double precision sc
+      double precision one,lambda
+      double precision temp1,temp,hx,hy
       PetscScalar      xx(1)
       PetscInt          param,lmx,lmy
       parameter (param = 1,lmx = 2,lmy = 3)
 
-      two = 2.0
       one = 1.0
 
-      mx     = user(lmx) 
-      my     = user(lmy)
+      mx     = int(user(lmx))
+      my     = int(user(lmy))
       lambda = user(param)
 
       hy    = one / (my-1)
       hx    = one / (mx-1)
-      sc    = hx*hy
-      hxdhy = hx/hy
-      hydhx = hy/hx
 
       call VecGetArray(X,xx,xidx,ierr) 
       temp1 = lambda/(lambda + one)
@@ -262,7 +257,7 @@
       PetscErrorCode     ierr
       PetscInt         i,j,row,mx,my
       PetscOffset       xidx,fidx
-      double precision  two,one,lambda
+      double precision  two,lambda
       double precision  hx,hy,hxdhy,hydhx
       PetscScalar  ut,ub,ul,ur,u
       PetscScalar  uxx,uyy,sc
@@ -271,10 +266,9 @@
       parameter (param = 1,lmx = 2,lmy = 3)
 
       two = 2.0
-      one = 1.0
 
-      mx     = user(lmx) 
-      my     = user(lmy)
+      mx     = int(user(lmx))
+      my     = int(user(lmy))
       lambda = user(param)
 
       hx    = 1.0 / dble(mx-1)
@@ -342,8 +336,8 @@
       two = 2.0
       one = 1.0
 
-      mx     = user(lmx) 
-      my     = user(lmy)
+      mx     = int(user(lmx))
+      my     = int(user(lmy))
       lambda = user(param)
 
       hx    = 1.0 / dble(mx-1)
@@ -363,17 +357,17 @@
      &        i .eq. mx .or. j .eq. my) then
             call MatSetValues(jac,i1,row,i1,row,one,INSERT_VALUES,ierr) 
           else
-            v(1)   = hxdhy 
+            v(1)   = hxdhy
             col(1) = row(1) - mx
-            v(2)   = hydhx 
+            v(2)   = hydhx
             col(2) = row(1) - 1
-            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)+1+xidx)) 
+            v(3)   = -two*(hydhx+hxdhy)+sc*lambda*exp(xx(row(1)+1+xidx))
             col(3) = row(1)
-            v(4)   = hydhx 
+            v(4)   = hydhx
             col(4) = row(1) + 1
-            v(5)   = hxdhy 
+            v(5)   = hxdhy
             col(5) = row(1) + mx
-            call MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr) 
+            call MatSetValues(jac,i1,row,i5,col,v,INSERT_VALUES,ierr)
           endif
  20     continue
  10   continue

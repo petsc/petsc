@@ -120,7 +120,7 @@ static PetscErrorCode FormInitialGuess(DMMG dmmg,Vec f)
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::InitialGuess system;
 
-  system = babel_cast< TOPS::System::Compute::InitialGuess >(
+  system = ::babel_cast< TOPS::System::Compute::InitialGuess >(
   	solver->getServices().getPort("TOPS.System.Compute.InitialGuess"));
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -183,7 +183,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   solver->setLength(1,my);
   solver->setLength(2,mz);
 
-  system = babel_cast< TOPS::System::Compute::Matrix >(
+  system = ::babel_cast< TOPS::System::Compute::Matrix >(
   	solver->getServices().getPort("TOPS.System.Compute.Matrix"));
   if (system._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
@@ -218,7 +218,7 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
   TOPS::StructuredSolver *solver = (TOPS::StructuredSolver*) dmmg->user;
   TOPS::System::Compute::RightHandSide system;
 
-  system = babel_cast< TOPS::System::Compute::RightHandSide >(
+  system = ::babel_cast< TOPS::System::Compute::RightHandSide >(
   	solver->getServices().getPort("TOPS.System.Compute.RightHandSide"));
 
   DAGetInfo((DA)dmmg->dm,0,&mx,&my,&mz,0,0,0,0,0,0,0);
@@ -426,7 +426,7 @@ TOPS::StructuredSolver_impl::Initialize_impl (
   PetscInitialize(&argc,&argv,0,0); 
 
   // Process runtime parameters
-  params = babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
+  params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
 
@@ -447,7 +447,7 @@ TOPS::StructuredSolver_impl::solve_impl ()
 
   if (!this->dmmg) {
     TOPS::System::Initialize::Once once;
-    once = babel_cast< TOPS::System::Initialize::Once >( myServices.getPort("TOPS.System.Initialize.Once"));
+    once = ::babel_cast< TOPS::System::Initialize::Once >( myServices.getPort("TOPS.System.Initialize.Once"));
     if (once._not_nil()) {    
       once.initializeOnce();
     }
@@ -461,7 +461,7 @@ TOPS::StructuredSolver_impl::solve_impl ()
     DMMGSetDM(this->dmmg,(DM)this->da);
 
     TOPS::System::Compute::Residual residual;
-    residual = babel_cast< TOPS::System::Compute::Residual >( myServices.getPort("TOPS.System.Compute.Residual"));
+    residual = ::babel_cast< TOPS::System::Compute::Residual >( myServices.getPort("TOPS.System.Compute.Residual"));
     if (residual._not_nil()) {
       ierr = DMMGSetSNES(this->dmmg, FormFunction, 0);
     } else {
@@ -470,7 +470,7 @@ TOPS::StructuredSolver_impl::solve_impl ()
     myServices.releasePort("TOPS.System.Compute.Residual");
 
     TOPS::System::Compute::InitialGuess guess;
-    guess = babel_cast< TOPS::System::Compute::InitialGuess >( myServices.getPort("TOPS.System.Compute.InitialGuess") );
+    guess = ::babel_cast< TOPS::System::Compute::InitialGuess >( myServices.getPort("TOPS.System.Compute.InitialGuess") );
 
     if (guess._not_nil()) {
       ierr = DMMGSetInitialGuess(this->dmmg, FormInitialGuess);
@@ -479,7 +479,7 @@ TOPS::StructuredSolver_impl::solve_impl ()
   myServices.releasePort("TOPS.System.Compute.InitialGuess");
   
   TOPS::System::Initialize::EverySolve every;
-  every = babel_cast< TOPS::System::Initialize::EverySolve >( myServices.getPort("TOPS.System.Initialize.EverySolve") );
+  every = ::babel_cast< TOPS::System::Initialize::EverySolve >( myServices.getPort("TOPS.System.Initialize.EverySolve") );
   if (every._not_nil()) {    
     every.initializeEverySolve();
   }
@@ -524,110 +524,6 @@ TOPS::StructuredSolver_impl::setSolution_impl (
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setSolution)
   // Insert-Code-Here {TOPS.StructuredSolver.setSolution} (setSolution method)
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setSolution)
-}
-
-/**
- * Method:  setValue[]
- */
-void
-TOPS::StructuredSolver_impl::setValue_impl (
-  /* in */const ::std::string& key,
-  /* in */const ::std::string& value ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValue)
-  // Insert-Code-Here {TOPS.StructuredSolver.setValue} (setValue method)
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValue)
-}
-
-/**
- * Method:  setValue[Int]
- */
-void
-TOPS::StructuredSolver_impl::setValue_impl (
-  /* in */const ::std::string& key,
-  /* in */int32_t value ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValueInt)
-  // Insert-Code-Here {TOPS.StructuredSolver.setValueInt} (setValue method)
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValueInt)
-}
-
-/**
- * Method:  setValue[Bool]
- */
-void
-TOPS::StructuredSolver_impl::setValue_impl (
-  /* in */const ::std::string& key,
-  /* in */bool value ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValueBool)
-  // Insert-Code-Here {TOPS.StructuredSolver.setValueBool} (setValue method)
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValueBool)
-}
-
-/**
- * Method:  setValue[Double]
- */
-void
-TOPS::StructuredSolver_impl::setValue_impl (
-  /* in */const ::std::string& key,
-  /* in */double value ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.setValueDouble)
-  // Insert-Code-Here {TOPS.StructuredSolver.setValueDouble} (setValue method)
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setValueDouble)
-}
-
-/**
- * Method:  getValue[]
- */
-::std::string
-TOPS::StructuredSolver_impl::getValue_impl (
-  /* in */const ::std::string& key ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValue)
-  // Insert-Code-Here {TOPS.StructuredSolver.getValue} (getValue method)
-  return ""; // temporary default implementation to prevent compiler warnings
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValue)
-}
-
-/**
- * Method:  getValueInt[]
- */
-int32_t
-TOPS::StructuredSolver_impl::getValueInt_impl (
-  /* in */const ::std::string& key ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueInt)
-  // Insert-Code-Here {TOPS.StructuredSolver.getValueInt} (getValueInt method)
-    return 0; // temporary default implementation to prevent compiler warnings
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueInt)
-}
-
-/**
- * Method:  getValueBool[]
- */
-bool
-TOPS::StructuredSolver_impl::getValueBool_impl (
-  /* in */const ::std::string& key ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueBool)
-  // Insert-Code-Here {TOPS.StructuredSolver.getValueBool} (getValueBool method)
-  return false; // temporary default implementation to prevent compiler warnings
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueBool)
-}
-
-/**
- * Method:  getValueDouble[]
- */
-double
-TOPS::StructuredSolver_impl::getValueDouble_impl (
-  /* in */const ::std::string& key ) 
-{
-  // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.getValueDouble)
-  // Insert-Code-Here {TOPS.StructuredSolver.getValueDouble} (getValueDouble method)
-  return 0.0; // temporary default implementation to prevent compiler warnings
-  // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.getValueDouble)
 }
 
 /**
@@ -729,9 +625,11 @@ TOPS::StructuredSolver_impl::updateParameterPort_impl (
 
   std::cout << "TOPS::StructuredSolver_impl::updatedParameterPort called" << std::endl;
   // Get the runtime parameters
-  params = babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
+  params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
+  SNES snes = DMMGGetSNES(dmmg);
+  if (snes) SNESSetFromOptions(snes);
   return true;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updateParameterPort)
 }
@@ -751,12 +649,15 @@ TOPS::StructuredSolver_impl::updatedParameterValue_impl (
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.updatedParameterValue)
   // Insert-Code-Here {TOPS.StructuredSolver.updatedParameterValue} (updatedParameterValue method)
   std::cout << "TOPS::StructuredSolver_impl::updatedParameterValue called" << std::endl;
-  /*
-  int ierr = PetscInitializeVoid();
-  params = myServices.getPort("tops_options");
+  PetscTruth flg;
+  PetscInt ierr;
+  ierr = PetscInitialized(&flg); 
+  if (!flg) ierr = PetscInitializeNoArguments();
+  params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );
   std::string options = params.readConfigurationMap().getString("options","-help");
   processTOPSOptions(options);
-  */
+  SNES snes = DMMGGetSNES(dmmg);
+  if (snes)  SNESSetFromOptions(snes);
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.updatedParameterValue)
 }
 
@@ -769,7 +670,7 @@ int TOPS::StructuredSolver_impl::setupParameterPort() {
 #define __FUNCT__ "TOPS::StructuredSolver_impl::setupParameterPort"
 
   // First, get parameters
-  ppf = babel_cast< gov::cca::ports::ParameterPortFactory >( myServices.getPort("ParameterPortFactory") );
+  ppf = ::babel_cast< gov::cca::ports::ParameterPortFactory >( myServices.getPort("ParameterPortFactory") );
   if (ppf._is_nil()) {
     std::cerr << "TOPS::StructuredSolver_impl::setupParameterPort: called without ParameterPortFactory connected." << std::endl;
     return -1;

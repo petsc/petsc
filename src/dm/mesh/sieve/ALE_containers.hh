@@ -57,6 +57,10 @@ namespace ALE {
     bool operator<(const Point& q) const {
       return( (this->prefix < q.prefix) || ((this->prefix == q.prefix) && (this->index < q.index)));
     };
+    void operator+=(const Point& q) {
+      this->prefix += q.prefix;
+      this->index  += q.index;
+    };
     // Printing
     friend std::ostream& operator<<(std::ostream& os, const Point& p) {
       os << "(" << p.prefix << ", "<< p.index << ")";
@@ -161,6 +165,14 @@ namespace ALE {
       }
       os << " ]" << std::endl;
     };
+  };
+
+  template <typename X>
+  struct singleton {
+    X first;
+    //
+    singleton(const X& x)         : first(x) {};
+    singleton(const singleton& s) : first(s.first) {};
   };
 
   template <typename X, typename Y>

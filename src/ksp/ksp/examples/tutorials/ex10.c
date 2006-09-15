@@ -162,9 +162,10 @@ int main(int argc,char **args)
       const PetscInt    *cols;
       const PetscScalar *vals;
       PetscTruth        flg1=PETSC_FALSE;
+      PetscScalar       *zeros;
       row = 0;      
       ierr = MatGetRow(A,row,&ncols,&cols,&vals);CHKERRQ(ierr);     
-      PetscScalar zeros[ncols+1];
+      ierr = PetscMalloc(sizeof(PetscScalar)*(ncols+1),&zeros);
       ierr = PetscMemzero(zeros,(ncols+1)*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = PetscOptionsHasName(PETSC_NULL, "-set_row_zero", &flg1);CHKERRQ(ierr);
       if (flg1){ /* set entire row as zero */

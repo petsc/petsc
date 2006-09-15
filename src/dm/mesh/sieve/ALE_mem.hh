@@ -341,9 +341,9 @@ namespace ALE {
   }
 
 #ifdef ALE_USE_LOGGING
-#define ALE_ALLOCATOR logged_allocator
+#define ALE_ALLOCATOR ::ALE::logged_allocator
 #else
-#define ALE_ALLOCATOR polymorphic_allocator
+#define ALE_ALLOCATOR ::ALE::polymorphic_allocator
 #endif
 
   //

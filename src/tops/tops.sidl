@@ -18,15 +18,6 @@ package TOPS version 0.0.0 {
       array<double> getSolution();
       void          setSolution(in array<double> location);
 
-      // Allows setting/accessing solver parameters
-      void   setValue(in string key, in string value);
-      void   setValue[Int](in string key, in int value);
-      void   setValue[Bool](in string key, in bool value);
-      void   setValue[Double](in string key, in double value);
-      string getValue(in string key);
-      int    getValueInt(in string key);
-      bool   getValueBool(in string key);
-      double getValueDouble(in string key);
   }
 
   // Interfaces inherited by the user to define the algebraic problem 

@@ -302,6 +302,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *i
     a->permute = PETSC_FALSE; 
     ai = a->i; aj = a->j;
   } else {
+    SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
+    /* There are bugs for reordeing. Needs further work. 
+       MatReordering for sbaij cannot be efficient. User should use aij formt! */
     a->permute = PETSC_TRUE;
     ierr = MatReorderingSeqSBAIJ(A,perm);CHKERRQ(ierr);   
     ai = a->inew; aj = a->jnew;

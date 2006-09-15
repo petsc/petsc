@@ -344,7 +344,8 @@ namespace ALE {
       typedef pointArray              supportArray;
     public:
       Sieve(MPI_Comm comm = PETSC_COMM_SELF, const int& debug = 0) : ALE::Sifter<Point_, Point_, Color_, ::boost::multi_index::composite_key_compare<std::less<Point_>, std::less<Color_>, std::less<Point_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> >, SieveDef::RecContainer<Point_, SieveDef::Rec<Point_, Marker_> > >(comm, debug), doStratify(false), maxDepth(-1), maxHeight(-1), graphDiameter(-1) {
-        this->_markers = markerSet();
+        this->_markers = new markerSet();
+        this->_meetSet = new coneSet();
       };
       virtual ~Sieve() {};
       // Printing
@@ -386,6 +387,10 @@ namespace ALE {
         }
         s->stratify();
         return s;
+      };
+      bool hasPoint(const point_type& point) {
+        if (this->baseContains(point) || this->capContains(point)) return true;
+        return false;
       };
     private:
       template<class InputSequence> Obj<coneSet> __nCone(Obj<InputSequence>& cone, int n, const Color_& color, bool useColor);
@@ -487,26 +492,26 @@ namespace ALE {
       //
       // Lattice methods
       //
-      Obj<coneSet> meet(const Point_& p, const Point_& q);
+      const Obj<coneSet>& meet(const Point_& p, const Point_& q);
 
-      Obj<coneSet> meet(const Point_& p, const Point_& q, const Color_& color);
-
-      template<class InputSequence> 
-      Obj<coneSet> meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1);
+      const Obj<coneSet>& meet(const Point_& p, const Point_& q, const Color_& color);
 
       template<class InputSequence> 
-      Obj<coneSet> meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color);
-
-      Obj<coneSet> nMeet(const Point_& p, const Point_& q, int n);
-
-      Obj<coneSet> nMeet(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor = true);
+      const Obj<coneSet>& meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1);
 
       template<class InputSequence> 
-      Obj<coneSet> nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n);
+      const Obj<coneSet>& meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color);
+
+      const Obj<coneSet>& nMeet(const Point_& p, const Point_& q, int n);
+
+      const Obj<coneSet>& nMeet(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor = true);
 
       template<class InputSequence> 
-      Obj<coneSet> nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, 
-                          const Color_& color, bool useColor = true);
+      const Obj<coneSet>& nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n);
+
+      template<class InputSequence> 
+      const Obj<coneSet>& nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, 
+                                const Color_& color, bool useColor = true);
 
       Obj<supportSet> join(const Point_& p, const Point_& q);
 
@@ -566,8 +571,9 @@ namespace ALE {
       bool getStratification() {return this->doStratify;};
 
       void stratify(bool show = false);
-    private:
+    protected:
       Obj<markerSet> _markers;
+      Obj<coneSet>   _meetSet;
     public:
       //
       // Structural manipulation
@@ -978,36 +984,53 @@ namespace ALE {
     //
 
     template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::meet(const Point_& p, const Point_& q) {
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::meet(const Point_& p, const Point_& q) {
       return nMeet(p, q, this->depth());
     };
     
     template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::meet(const Point_& p, const Point_& q, const Color_& color) {
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::meet(const Point_& p, const Point_& q, const Color_& color) {
       return nMeet(p, q, this->depth(), color);
     };
 
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1) {
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1) {
       return nMeet(chain0, chain1, this->depth());
     };
 
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color) {
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::meet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color) {
         return nMeet(chain0, chain1, this->depth(), color);
     };
 
     template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n) {
-        return nMeet(p, q, n, Color_(), false);
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n) {
+      if (n == 1) {
+        std::vector<point_type> vecA, vecB;
+        const Obj<typename traits::coneSequence>&     coneA  = this->cone(p);
+        const typename traits::coneSequence::iterator beginA = coneA->begin();
+        const typename traits::coneSequence::iterator endA   = coneA->end();
+        const Obj<typename traits::coneSequence>&     coneB  = this->cone(q);
+        const typename traits::coneSequence::iterator beginB = coneB->begin();
+        const typename traits::coneSequence::iterator endB   = coneB->end();
+
+        vecA.insert(vecA.begin(), beginA, endA);
+        std::sort(vecA.begin(), vecA.end());
+        vecB.insert(vecB.begin(), beginB, endB);
+        std::sort(vecB.begin(), vecB.end());
+        this->_meetSet->clear();
+        std::set_intersection(vecA.begin(), vecA.end(), vecB.begin(), vecB.end(), std::insert_iterator<typename Sieve<Point_,Marker_,Color_>::coneSet>(*this->_meetSet, this->_meetSet->begin()));
+        return this->_meetSet;
+      }
+      return nMeet(p, q, n, Color_(), false);
     };
 
     template <typename Point_, typename Marker_, typename Color_> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor ) {
-      Obj<coneSet> chain0 = coneSet();
-      Obj<coneSet> chain1 = coneSet();
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::nMeet(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor ) {
+      Obj<coneSet> chain0 = new coneSet();
+      Obj<coneSet> chain1 = new coneSet();
       chain0->insert(p);
       chain1->insert(q);
       return this->nMeet(chain0, chain1, n, color, useColor);
@@ -1015,27 +1038,27 @@ namespace ALE {
 
     template <typename Point_, typename Marker_, typename Color_>     
     template<class InputSequence> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n) {
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n) {
       return this->nMeet(chain0, chain1, n, Color_(), false);
     };
     
     template <typename Point_, typename Marker_, typename Color_> 
     template<class InputSequence> 
-    Obj<typename Sieve<Point_,Marker_,Color_>::coneSet> Sieve<Point_,Marker_,Color_>::nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1,int n,const Color_& color, bool useColor){
+    const Obj<typename Sieve<Point_,Marker_,Color_>::coneSet>& Sieve<Point_,Marker_,Color_>::nMeet(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1,int n,const Color_& color, bool useColor){
       // The strategy is to compute the intersection of cones over the chains, remove the intersection 
       // and use the remaining two parts -- two disjoined components of the symmetric difference of cones -- as the new chains.
       // The intersections at each stage are accumulated and their union is the meet.
       // The iteration stops after n steps in addition to the meet of the initial chains or sooner if at least one of the chains is empty.
-      Obj<coneSet> meet = coneSet(); 
       Obj<coneSet> cone;
-      
+
+      this->_meetSet->clear();
       if((chain0->size() != 0) && (chain1->size() != 0)) {
         for(int i = 0; i <= n; ++i) {
           // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
           std::set<point_type> intersect;
           //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<coneSet>(meet, meet->begin()));
           std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<std::set<point_type> >(intersect, intersect.begin()));
-          meet->insert(intersect.begin(), intersect.end());
+          this->_meetSet->insert(intersect.begin(), intersect.end());
           for(typename std::set<point_type>::iterator i_iter = intersect.begin(); i_iter != intersect.end(); ++i_iter) {
             chain0->erase(chain0->find(*i_iter));
             chain1->erase(chain1->find(*i_iter));
@@ -1054,7 +1077,7 @@ namespace ALE {
           // If both cones are empty, we should quit
         }
       }
-      return meet;
+      return this->_meetSet;
     };
     
     template <typename Point_, typename Marker_, typename Color_> 

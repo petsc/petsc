@@ -7,16 +7,16 @@ PETSC_EXTERN_CXX_BEGIN
 /* 
    Current PETSc version number and release date, also listed in
     Web page
-    docs/tex/manual/intro.tex,
-    docs/tex/manual/manual.tex.
-    docs/website/index.html.
+    src/docs/tex/manual/intro.tex,
+    src/docs/tex/manual/manual.tex.
+    src/docs/website/index.html.
 */
 #define PETSC_VERSION_RELEASE    0
 #define PETSC_VERSION_MAJOR      2
 #define PETSC_VERSION_MINOR      3
-#define PETSC_VERSION_SUBMINOR   1
-#define PETSC_VERSION_PATCH      14
-#define PETSC_VERSION_DATE       "February, 3, 2006"
+#define PETSC_VERSION_SUBMINOR   2
+#define PETSC_VERSION_PATCH      1
+#define PETSC_VERSION_DATE       "Septenber, 1, 2006"
 #define PETSC_VERSION_PATCH_DATE "unknown"
 #define PETSC_VERSION_HG         "unknown"
 #define PETSC_AUTHOR_INFO        "\

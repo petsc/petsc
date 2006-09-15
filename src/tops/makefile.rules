@@ -56,6 +56,8 @@ client-debug:
 	@echo $(SIDL_PACKAGES_TARGETS)
 
 #-------------------------------------------------------------------------------
+# Server build
+
 server-cxx:  server/cxx/obj/makefile 
 	-@cd server/cxx/obj; make TLIBNAME=${TLIBNAME} libserver-cxx.${SOSUFFIX}
 
@@ -66,6 +68,7 @@ server/cxx/obj/makefile: ${SIDLFILES}
 		${SIDLEXCLUDE} --server=cxx --output-directory=./server/cxx ${SIDLFILES}
 	@-${RM} ${REMOVEFILES} server/cxx/obj/makefile
 	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/cxx/obj/makefile; fi
+	@-if [ ! -f "../babel.make" ]; then echo "include ../babel.make" >> server/cxx/obj/makefile; fi
 	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/cxx/obj/makefile
 
 libserver-cxx.${SOSUFFIX}: 
@@ -88,31 +91,41 @@ libserver-cxx.${SOSUFFIX}:
 
 cca: 
 	-@echo "Generating *.cca files for ${EXNAME}"
-	-@${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
-		${EXNAME}.System cxx dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in
+	-@if [ "`grep SystemProxy ${EXNAME}.sidl | wc -l`" == "1" ]; then \
+	     ${PETSC_DIR}/src/tops/utils/genSCLCCAmulti.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
+		${EXNAME}.System cxx dynamic global now ${EXNAME}.System ${EXNAME}.SystemProxy > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in; \
+	else \
+	     ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
+		${EXNAME}.System cxx dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in; \
+ 	fi
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
 		lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in > ${PETSC_LIB_DIR}/cca/lib${EXNAME}.${SL_LINKER_SUFFIX}.cca
 	@-${RM} *.cca.in
 	-@echo "Creating simple Ccaffeine script"
-	@-if [ -f ${EXNAME}_rc.in ]; then\
-	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ; fi
-	@-if [ -f ${EXNAME}_gui_rc.in ]; then\
+	@-cd run; \
+	if [ -f ${EXNAME}_rc.in ]; then\
+	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_rc.in > ${EXNAME}_rc ; fi; \
+	if [ -f ${EXNAME}_proxy_rc.in ]; then\
+	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_proxy_rc.in > ${EXNAME}_proxy_rc ; fi ;\
+	if [ -f ${EXNAME}_gui_rc.in ]; then\
 	  sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" ${EXNAME}_gui_rc.in > ${EXNAME}_gui_rc; fi
 
 test-cca: cca
 	@-echo "Testing component example ${EXNAME} with Ccaffeine"
 	@if [ -z "${CCA_PARALLEL}" ]; then \
+	  cd run; \
 	  ${CCAFE_HOME}/bin/ccafe-single --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
 	  if [ "`egrep \"(specific|1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "2" ]; then \
-	    echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
-	  else echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; fi; \
+	    echo "=== ${EXNAME}: Component test succeeded (see `pwd`/${EXNAME}_rc.log)."; \
+	  else echo "*** ${EXNAME}: Component test failed (see `pwd`/${EXNAME}_rc.log)."; fi; \
         else \
-          ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc ${EXNAME}_rc > ${EXNAME}_rc.log  2>&1 ; \
+	  cd run; \
+          mpirun -np 2 ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc `pwd`/${EXNAME}_rc > `pwd`/${EXNAME}_rc.log  2>&1 ; \
 	  if [ "`egrep \"(1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "1" ]; then \
-	    echo "=== ${EXNAME}: Component test succeeded (see ${EXNAME}_rc.log)."; \
-	  else echo "*** ${EXNAME}: Component test failed (see ${EXNAME}_rc.log)."; fi; \
+	    echo "=== ${EXNAME}: Component test succeeded (see `pwd`/${EXNAME}_rc.log)."; \
+	  else echo "*** ${EXNAME}: Component test failed (see `pwd`/${EXNAME}_rc.log)."; fi; \
 	fi
 
 gui-cca: cca
@@ -127,7 +140,7 @@ kill-gui:
 
 #-------------------------------------------------------------------------------
 
-examples: 
+examples: clients
 	-@for dir in `ls -d examples/cxx/ex*`; do \
 	  echo -e "\n### Building and testing in $$dir"; \
 	  make -C $$dir server-cxx test-cca; \

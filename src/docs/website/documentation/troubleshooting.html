@@ -917,11 +917,18 @@ be at MPI_DIR/bin/mpdboot].<br>
 
   </li>
 
-  <li><font color="#ff0000"><strong>Symptom: </strong></font>
-    <p><font color="#ff0000"><strong>Problem: </strong></font>
+  <li><font color="#ff0000"><strong>Symptom: </strong></font>On Windows, <font face="Terminal"><b>make test</b></font> fails to
+      launch programs with the error "<font face="Terminal">Logon failure: unknown user name or bad password</font>"
+    <p><font color="#ff0000"><strong>Problem: </strong></font>You have not 
     </p>
 
-    <p><font color="#ff0000"><strong>Cure: </strong></font>
+    <p><font color="#ff0000"><strong>Cure: </strong></font>You must have the same account credentials on all the nodes
+        participating in the mpich job.  If your cluster is set up with a domain controller then you can use a domain
+        account to launch an mpich job.  If you do not have a domain controller then you must set up user accounts on
+        all the nodes individually with the same credentials on each node.  Each user can have whatever password they
+        choose, but they must use the same password on all the nodes.  In other words, UserA-PasswordA must be the same
+        on all the nodes and UserB-PasswordB must be the same on all the nodes, etc. In addition, you must pus the
+        username/password in the registry or make it available in the environment.
     </p>
 
   </li>

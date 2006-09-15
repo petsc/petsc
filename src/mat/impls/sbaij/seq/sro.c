@@ -12,7 +12,8 @@ in SBAIJ format.
 
 The permutation is assumed to be symmetric, i.e., 
 P = P^T (= inv(P)),
-so the permuted matrix P*A*inv(P)=P*A*P^T is ensured to be symmetric.
+so the permuted matrix P*A*inv(P)=P*A*P^T is ensured to be symmetric. 
+ - a wrong assumption! This code needs rework!  -- Hong
 
 The function is modified from sro.f of YSMP. The description from YSMP:
 C    THE NONZERO ENTRIES OF THE MATRIX M ARE ASSUMED TO BE STORED
@@ -44,8 +45,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
   IS             iperm;  /* inverse of perm */
 
   PetscFunctionBegin;
-  if (!mbs) PetscFunctionReturn(0);  
+  if (!mbs) PetscFunctionReturn(0); 
+  SETERRQ(PETSC_ERR_SUP,"Matrix reordering is not supported for sbaij matrix. Use aij format");
   ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
+
   ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);  
   ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
 
@@ -54,7 +57,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
   }
   ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
   ierr = ISDestroy(iperm);CHKERRQ(ierr);
-  
+
   if (!a->inew){ 
     len  = (mbs+1 + 2*(a->i[mbs]))*sizeof(PetscInt);
     ierr = PetscMalloc(len,&ai);CHKERRQ(ierr);

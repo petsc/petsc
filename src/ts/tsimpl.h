@@ -50,8 +50,8 @@ struct _p_TS {
 
   /* ---------------------Linear Iteration---------------------------------*/
   KSP ksp;
-  Mat A, B;                                         /* user provided matrix and preconditioner */
-  Mat Alhs, Blhs;                    /* user provided left hand side matrix and preconditioner */
+  Mat A,B;           /* internel matrix and preconditioner used for KSPSolve() */
+  Mat Arhs,Alhs;     /* user provided right/left hand side matrix and preconditioner */
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;

@@ -707,6 +707,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       //}
       return cap.contains(p);
     };
+    bool baseContains(const typename traits::target_type& p) {
+      typename traits::baseSequence base(::boost::multi_index::get<typename traits::baseInd>(this->_base.set));
+
+      //for(typename traits::capSequence::iterator c_iter = cap.begin(); c_iter != cap.end(); ++c_iter) {
+      //}
+      return base.contains(p);
+    };
     // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
     Obj<typename traits::arrowSequence> 
     arrows(const typename traits::source_type& s, const typename traits::target_type& t) {
@@ -847,11 +854,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
 
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL, bool rawData = false){
+      int rank = this->commRank();
+
       if(label != NULL) {
-        os << "Viewing Sifter '" << label << "':" << std::endl;
+        os << "["<<rank<<"]Viewing Sifter '" << label << "':" << std::endl;
       } 
       else {
-        os << "Viewing a Sifter:" << std::endl;
+        os << "["<<rank<<"]Viewing a Sifter:" << std::endl;
       }
       if(!rawData) {
         os << "cap --> base:" << std::endl;
@@ -911,17 +920,10 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
         std::cout << "viewing a Sifter, comm = " << this->comm() << ", PETSC_COMM_SELF = " << PETSC_COMM_SELF << ", commRank = " << this->commRank() << std::endl;
       }
       if(label != NULL) {
-        if(this->commRank() == 0) {
-          txt << "viewing Sifter :'" << label << "'" << std::endl;
-        }
-      } 
-      else {
-        if(this->commRank() == 0) {
-          txt << "viewing a Sifter" << std::endl;
-        }
+        PetscPrintf(this->comm(), "viewing Sifter: '%s'\n", label);
+      } else {
+        PetscPrintf(this->comm(), "viewing a Sifter: \n");
       }
-      ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-      ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       if(!raw) {
         ostringstream txt;
         if(this->commRank() == 0) {
@@ -1120,9 +1122,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     template<class sourceInputSequence> 
     void 
     addCone(const Obj<sourceInputSequence>& sources, const typename traits::target_type& target, const typename traits::color_type& color){
-      if (debug) {std::cout << "Adding a cone " << std::endl;}
+      if (debug > 1) {std::cout << "Adding a cone " << std::endl;}
       for(typename sourceInputSequence::iterator iter = sources->begin(); iter != sources->end(); ++iter) {
-        if (debug) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
+        if (debug > 1) {std::cout << "Adding arrow from " << *iter << " to " << target << "(" << color << ")" << std::endl;}
         this->addArrow(*iter, target, color);
       }
     };

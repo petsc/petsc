@@ -6,7 +6,7 @@
 T*/
 
 /*
-  Generate a simple square mesh using the builtin mesh generator.
+  Generate a simple square or cube mesh using the builtin mesh generator.
 
   Partition the mesh and distribute it to each process.
 
@@ -16,113 +16,104 @@ T*/
 
 static char help[] = "Generates, partitions, and outputs an unstructured mesh.\n\n";
 
-#include <Mesh.hh>
+#include <Generator.hh>
 #include "petscmesh.h"
 #include "petscviewer.h"
+#include "src/dm/mesh/meshpcice.h"
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve_Newer(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh>);
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh>, Vec *);
+using ALE::Obj;
+
+typedef enum {PCICE, PYLITH} FileType;
+
+typedef struct {
+  int        debug;              // The debugging level
+  PetscInt   dim;                // The topological mesh dimension
+  PetscTruth inputBd;            // Read mesh boundary from a file
+  PetscTruth useZeroBase;        // Use zero-based indexing
+  FileType   inputFileType;      // The input file type, e.g. PCICE
+  char       baseFilename[2048]; // The base filename for mesh files
+  PetscTruth outputVTK;          // Output the mesh in VTK
+  PetscTruth distribute;         // Distribute the mesh among processes
+  PetscTruth interpolate;        // Construct missing elements of the mesh
+  PetscTruth partition;          // Construct field over cells indicating process number
+  PetscReal  refinementLimit;    // The maximum volume of a cell after refinement
+} Options;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
+PetscErrorCode ProcessOptions(MPI_Comm, Options *);
+PetscErrorCode CreateMeshBoundary(MPI_Comm, Obj<ALE::Mesh>&, Options *);
+PetscErrorCode CreateMesh(const Obj<ALE::Mesh>&, Obj<ALE::Mesh>&, Options *);
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>&);
+PetscErrorCode DistributeMesh(Obj<ALE::Mesh>&, Options *);
+PetscErrorCode RefineMesh(Obj<ALE::Mesh>&, Options *);
+PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, Options *);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
-  Vec            partition;
-  PetscViewer    viewer;
-  char           baseFilename[2048];
-  PetscInt       dim, debug;
-  PetscReal      refinementLimit;
-  PetscTruth     interpolate, readFile, outputPCICE;
+  Options        options;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
-  ierr = PetscOptionsBegin(comm, "", "Options for mesh generation", "DMMG");CHKERRQ(ierr);
-    debug = 0;
-    ierr = PetscOptionsInt("-debug", "The debugging flag", "ex2.c", 0, &debug, PETSC_NULL);CHKERRQ(ierr);
-    dim  = 2;
-    ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex2.c", 2, &dim, PETSC_NULL);CHKERRQ(ierr);
-    interpolate = PETSC_TRUE;
-    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", PETSC_TRUE, &interpolate, PETSC_NULL);CHKERRQ(ierr);
-    outputPCICE = PETSC_FALSE;
-    ierr = PetscOptionsTruth("-output_pcice", "Output the mesh in PCICE format", "ex2.c", PETSC_FALSE, &outputPCICE, PETSC_NULL);CHKERRQ(ierr);
-    refinementLimit = 0.0;
-    ierr = PetscOptionsReal("-refinement_limit", "The area of the largest triangle in the mesh", "ex2.c", 1.0, &refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscStrcpy(baseFilename, "none");CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", "ex2", baseFilename, 2048, &readFile);CHKERRQ(ierr);
-  ierr = PetscOptionsEnd();
-
-  ALE::Obj<ALE::Mesh> meshBoundary = ALE::Mesh(comm, dim-1, debug);
-  ALE::Obj<ALE::Mesh> mesh;
 
   try {
-    ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
-    if (readFile) {
-      meshBoundary = ALE::PCICEBuilder::createNewBd(comm, baseFilename, dim-1, PETSC_TRUE, debug);
-    } else {
-      ierr = CreateMeshBoundary(meshBoundary);CHKERRQ(ierr);
-    }
-    if (debug) {
-      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer, "testBoundary.vtk");CHKERRQ(ierr);
-      ierr = MeshView_Sieve_Newer(meshBoundary, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    }
-    mesh = ALE::Generator::generate(meshBoundary, interpolate);
-    ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
-    ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0)->size());CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0)->size());CHKERRQ(ierr);
+    Obj<ALE::Mesh> meshBoundary;
+    Obj<ALE::Mesh> mesh;
 
-    stage = ALE::LogStageRegister("MeshDistribution");
-    ALE::LogStagePush(stage);
-    ierr = PetscPrintf(comm, "Distributing mesh\n");CHKERRQ(ierr);
-    mesh = mesh->distribute();
-    ALE::LogStagePop(stage);
-
-    if (refinementLimit > 0.0) {
-      stage = ALE::LogStageRegister("MeshRefine");
-      ALE::LogStagePush(stage);
-      ierr = PetscPrintf(comm, "Refining mesh\n");CHKERRQ(ierr);
-      mesh = ALE::Generator::refine(mesh, refinementLimit, interpolate);
-      ALE::LogStagePop(stage);
-      ierr = PetscPrintf(comm, "  Read %d elements\n", mesh->getTopology()->heightStratum(0)->size());CHKERRQ(ierr);
-      ierr = PetscPrintf(comm, "  Read %d vertices\n", mesh->getTopology()->depthStratum(0)->size());CHKERRQ(ierr);
-    }
-
-    stage = ALE::LogStageRegister("MeshOutput");
-    ALE::LogStagePush(stage);
-    ierr = CreatePartitionVector(mesh, &partition);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Creating VTK mesh file\n");CHKERRQ(ierr);
-    ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
-    ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
-    ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-    ierr = VecView(partition, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    if (outputPCICE) {
-      ierr = PetscPrintf(comm, "Creating PCICE mesh file\n");CHKERRQ(ierr);
-      ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
-      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_PCICE);CHKERRQ(ierr);
-      ierr = PetscViewerFileSetName(viewer, "testMesh.lcon");CHKERRQ(ierr);
-      ierr = MeshView_Sieve_Newer(mesh, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    }
-    ALE::LogStagePop(stage);
+    ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
+    ierr = CreateMeshBoundary(comm, meshBoundary, &options);CHKERRQ(ierr);
+    ierr = CreateMesh(meshBoundary, mesh, &options);CHKERRQ(ierr);
+    ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
+    ierr = RefineMesh(mesh, &options);CHKERRQ(ierr);
+    ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
-    std::cout << e.msg() << std::endl;
+    std::cout << e << std::endl;
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ProcessOptions"
+PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
+{
+  const char    *fileTypes[2] = {"pcice", "pylith"};
+  PetscInt       inputFt;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  options->debug           = 0;
+  options->dim             = 2;
+  options->inputBd         = PETSC_FALSE;
+  options->useZeroBase     = PETSC_TRUE;
+  options->inputFileType   = PCICE;
+  ierr = PetscStrcpy(options->baseFilename, "illinois/stbnd_w_lake");CHKERRQ(ierr);
+  options->outputVTK       = PETSC_TRUE;
+  options->distribute      = PETSC_TRUE;
+  options->interpolate     = PETSC_TRUE;
+  options->partition       = PETSC_TRUE;
+  options->refinementLimit = -1.0;
+
+  ierr = PetscOptionsBegin(comm, "", "Options for mesh loading", "DMMG");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "ex2.c", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "ex2.c", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-input_bd", "Read mesh boundary from a file", "ex2.c", options->inputBd, &options->inputBd, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex2.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-file_type", "Type of input files", "ex2.c", fileTypes, 2, fileTypes[0], &inputFt, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex2.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex2.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex2.c", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex2.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-partition", "Create the partition field", "ex2.c", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The maximum cell volume", "ex2.c", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+
+  options->inputFileType = (FileType) inputFt;
   PetscFunctionReturn(0);
 }
 
@@ -140,74 +131,76 @@ int main(int argc, char *argv[])
   16   17    11
   |     |     |
   0--9--1--10-2
+
+ 18--5-17--4--16
+  |     |     |
+  6    10     3
+  |     |     |
+ 19-11-20--9--15
+  |     |     |
+  7     8     2
+  |     |     |
+ 12--0-13--1--14
 */
-PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Mesh> mesh)
+PetscErrorCode CreateSquareBoundary(const ALE::Obj<ALE::Mesh>& mesh)
 {
-  ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
-  PetscScalar       coords[18] = {0.0, 0.0,
-                                  1.0, 0.0,
-                                  2.0, 0.0,
-                                  2.0, 1.0,
-                                  2.0, 2.0,
-                                  1.0, 2.0,
-                                  0.0, 2.0,
-                                  0.0, 1.0,
-                                  1.0, 1.0};
-  PetscInt    connectivity[24] = {0, 1,
-                                  1, 2,
-                                  2, 3,
-                                  3, 4,
-                                  4, 5,
-                                  5, 6,
-                                  6, 7,
-                                  7, 0,
-                                  1, 8,
-                                  3, 8,
-                                  5, 8,
-                                  7, 8};
+  PetscScalar coords[18] = {0.0, 0.0,
+                            1.0, 0.0,
+                            2.0, 0.0,
+                            2.0, 1.0,
+                            2.0, 2.0,
+                            1.0, 2.0,
+                            0.0, 2.0,
+                            0.0, 1.0,
+                            1.0, 1.0};
+  const ALE::Mesh::topology_type::patch_type patch = 0;
+  int                   dim   = 1;
+  int                   order = 0;
   ALE::Mesh::point_type vertices[9];
-  PetscInt order = 0;
+  const Obj<ALE::Mesh::sieve_type>    sieve    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
+  const Obj<ALE::Mesh::topology_type> topology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug);
 
   PetscFunctionBegin;
   if (mesh->commRank() == 0) {
     ALE::Mesh::point_type edge;
 
     /* Create topology and ordering */
-    for(int v = 0; v < 9; v++) {
-      vertices[v] = ALE::Mesh::point_type(0, v);
+    for(int v = 12; v < 21; v++) {
+      vertices[v-12] = ALE::Mesh::point_type(v);
     }
-    for(int e = 9; e < 17; e++) {
-      edge = ALE::Mesh::point_type(0, e);
-      topology->addArrow(vertices[e-9],     edge, order++);
-      topology->addArrow(vertices[(e-8)%8], edge, order++);
+    for(int e = 0; e < 8; e++) {
+      edge = ALE::Mesh::point_type(e);
+      sieve->addArrow(vertices[e],       edge, order++);
+      sieve->addArrow(vertices[(e+1)%8], edge, order++);
     }
-    edge = ALE::Mesh::point_type(0, 17);
-    topology->addArrow(vertices[1], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
-    edge = ALE::Mesh::point_type(0, 18);
-    topology->addArrow(vertices[3], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
-    edge = ALE::Mesh::point_type(0, 19);
-    topology->addArrow(vertices[5], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
-    edge = ALE::Mesh::point_type(0, 20);
-    topology->addArrow(vertices[7], edge, order++);
-    topology->addArrow(vertices[8], edge, order++);
+    edge = ALE::Mesh::point_type(8);
+    sieve->addArrow(vertices[1], edge, order++);
+    sieve->addArrow(vertices[8], edge, order++);
+    edge = ALE::Mesh::point_type(9);
+    sieve->addArrow(vertices[3], edge, order++);
+    sieve->addArrow(vertices[8], edge, order++);
+    edge = ALE::Mesh::point_type(10);
+    sieve->addArrow(vertices[5], edge, order++);
+    sieve->addArrow(vertices[8], edge, order++);
+    edge = ALE::Mesh::point_type(11);
+    sieve->addArrow(vertices[7], edge, order++);
+    sieve->addArrow(vertices[8], edge, order++);
   }
+  sieve->stratify();
+  topology->setPatch(patch, sieve);
   topology->stratify();
-  mesh->createVertexBundle(12, connectivity, 9);
-  mesh->createSerialCoordinates(2, 0, coords);
+  mesh->setTopologyNew(topology);
+  ALE::PyLith::Builder::buildCoordinates(mesh->getSection("coordinates"), dim+1, coords);
   /* Create boundary conditions */
   if (mesh->commRank() == 0) {
-    ALE::Obj<ALE::Mesh::sieve_type::pointSet> cone = ALE::Mesh::sieve_type::pointSet();
+    const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
 
-    for(int v = 0; v < 8; v++) {
-      cone->insert(ALE::Mesh::point_type(0, v));
+    for(int v = 12; v < 20; v++) {
+      topology->setValue(markers, v, 1);
     }
-    for(int e = 9; e < 17; e++) {
-      cone->insert(ALE::Mesh::point_type(0, e));
+    for(int e = 0; e < 8; e++) {
+      topology->setValue(markers, e, 1);
     }
-    topology->setMarker(cone, 1);
   }
   PetscFunctionReturn(0);
 }
@@ -225,8 +218,9 @@ PetscErrorCode CreateSquareBoundary(ALE::Obj<ALE::Mesh> mesh)
     |/    |/
     0-----1
 */
-PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Mesh> mesh)
+PetscErrorCode CreateCubeBoundary(const ALE::Obj<ALE::Mesh>& mesh)
 {
+#if 0
   ALE::Obj<ALE::Mesh::sieve_type> topology = mesh->getTopology();
   PetscScalar       coords[24] = {0.0, 0.0, 0.0,
                                   1.0, 0.0, 0.0,
@@ -350,63 +344,155 @@ PetscErrorCode CreateCubeBoundary(ALE::Obj<ALE::Mesh> mesh)
     /* set marker to the vertices -- the 0-depth stratum */
     topology->setMarker(topology->depthStratum(0), 1);
   }
-
+#endif
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMeshBoundary"
-/*
-  Simple square boundary:
-
-  6--14-5--13-4
-  |     |     |
-  15   19    12
-  |     |     |
-  7--20-8--18-3
-  |     |     |
-  16   17    11
-  |     |     |
-  0--9--1--10-2
-*/
-PetscErrorCode CreateMeshBoundary(ALE::Obj<ALE::Mesh> mesh)
+PetscErrorCode CreateMeshBoundary(MPI_Comm comm, ALE::Obj<ALE::Mesh>& meshBoundary, Options *options)
 {
-  int            dim = mesh->getDimension();
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dim == 1) {
-    ierr = CreateSquareBoundary(mesh);
-  } else if (dim == 2) {
-    ierr = CreateCubeBoundary(mesh);
+  if (options->inputBd) {
+    meshBoundary = ALE::PCICE::Builder::readMeshBoundary(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
+    if (meshBoundary->commRank() == 0) {
+      const Obj<ALE::Mesh::topology_type>&                   topology = meshBoundary->getTopologyNew();
+      const Obj<ALE::Mesh::topology_type::label_sequence>&   vertices = topology->depthStratum(0, 0);
+      const Obj<ALE::Mesh::topology_type::label_sequence>&   edges    = topology->depthStratum(0, 1);
+      const Obj<ALE::Mesh::topology_type::patch_label_type>& markers  = topology->createLabel(0, "marker");
+
+      for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        topology->setValue(markers, *v_iter, 1);
+      }
+      for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+        topology->setValue(markers, *e_iter, 1);
+      }
+    }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", dim);
+    meshBoundary = new ALE::Mesh(comm, options->dim-1, options->debug);
+    if (options->dim == 2) {
+      ierr = CreateSquareBoundary(meshBoundary);
+    } else if (options->dim == 3) {
+      ierr = CreateCubeBoundary(meshBoundary);
+    } else {
+      SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", options->dim);
+    }
+  }
+  if (options->debug) {
+    meshBoundary->view("Boundary");
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "CreatePartitionVector"
-/*
-  Creates a vector whose value is the processor rank on each element
-*/
-PetscErrorCode CreatePartitionVector(ALE::Obj<ALE::Mesh> mesh, Vec *partition)
+#define __FUNCT__ "CreateMesh"
+PetscErrorCode CreateMesh(const Obj<ALE::Mesh>& meshBoundary, Obj<ALE::Mesh>& mesh, Options *options)
 {
-  PetscScalar   *array;
-  int            rank = mesh->commRank();
-  PetscInt       n, i;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ALE::LogStage stage = ALE::LogStageRegister("MeshGeneration");
+  ALE::LogStagePush(stage);
+  ierr = PetscPrintf(meshBoundary->comm(), "Generating mesh\n");CHKERRQ(ierr);
+  mesh = ALE::Generator::generateMesh(meshBoundary, options->interpolate);
+  ALE::LogStagePop(stage);
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  ierr = PetscPrintf(mesh->comm(), "  Made %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(mesh->comm(), "  Made %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
+  if (options->debug) {
+    topology->view("Serial topology");
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DistributeMesh"
+PetscErrorCode DistributeMesh(Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (options->distribute) {
+    ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(mesh->comm(), "Distributing mesh\n");CHKERRQ(ierr);
+    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh);
+    if (options->partition) {
+      ierr = CreatePartition(mesh);CHKERRQ(ierr);
+    }
+    ALE::LogStagePop(stage);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RefineMesh"
+PetscErrorCode RefineMesh(Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  if (options->refinementLimit > 0.0) {
+    ALE::LogStage stage = ALE::LogStageRegister("MeshRefinement");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(mesh->comm(), "Refining mesh\n");CHKERRQ(ierr);
+    mesh = ALE::Generator::refineMesh(mesh, options->refinementLimit, options->interpolate);
+    if (options->partition) {
+      ierr = CreatePartition(mesh);CHKERRQ(ierr);
+    }
+    ALE::LogStagePop(stage);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "OutputVTK"
+PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
+{
+  PetscViewer    viewer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ALE_LOG_EVENT_BEGIN;
-  ierr = MeshCreateVector(mesh, mesh->getBundle(mesh->getDimension()), partition);CHKERRQ(ierr);
-  ierr = VecSetBlockSize(*partition, 1);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(*partition, &n);CHKERRQ(ierr);
-  ierr = VecGetArray(*partition, &array);CHKERRQ(ierr);
-  for(i = 0; i < n; i++) {
-    array[i] = rank;
+  if (options->outputVTK) {
+    ALE::LogStage stage = ALE::LogStageRegister("VTKOutput");
+    ALE::LogStagePush(stage);
+    ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh file\n");CHKERRQ(ierr);
+    ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+    ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+    ierr = PetscViewerFileSetName(viewer, "testMesh.vtk");CHKERRQ(ierr);
+    ierr = MeshView_Sieve(mesh, viewer);CHKERRQ(ierr);
+    if (options->partition) {
+      ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+      ierr = FieldView_Sieve(mesh, "partition", viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    ALE::LogStagePop(stage);
   }
-  ierr = VecRestoreArray(*partition, &array);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreatePartition"
+/*
+  Creates a field whose value is the processor rank on each element
+*/
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& mesh)
+{
+  const Obj<ALE::Mesh::section_type>&       partition = mesh->getSection("partition");
+  const ALE::Mesh::section_type::patch_type patch     = 0;
+  const ALE::Mesh::section_type::value_type rank      = mesh->commRank();
+
+  PetscFunctionBegin;
+  ALE_LOG_EVENT_BEGIN;
+  partition->setFiberDimensionByHeight(patch, 0, 1);
+  partition->allocate();
+  const Obj<ALE::Mesh::topology_type::label_sequence>& cells = partition->getTopology()->heightStratum(patch, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator   end   = cells->end();
+
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    partition->update(patch, *c_iter, &rank);
+  }
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }

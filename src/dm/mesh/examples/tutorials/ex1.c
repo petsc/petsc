@@ -55,16 +55,17 @@ typedef struct {
   PetscTruth     outputLocal;        // Output the local form of the mesh
   PetscTruth     outputVTK;          // Output the mesh in VTK
   PetscTruth     distribute;         // Distribute the mesh among processes
+  char           partitioner[2048];  // The partitioner name
   PetscTruth     interpolate;        // Construct missing elements of the mesh
   PetscTruth     partition;          // Construct field over cells indicating process number
   PetscTruth     material;           // Construct field over cells indicating material type
 } Options;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(Obj<ALE::Mesh>, PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(Obj<ALE::Mesh>, const std::string&, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView_Sieve(const Obj<ALE::Mesh>&, const std::string&, PetscViewer);
 PetscErrorCode ProcessOptions(MPI_Comm, Options *);
 PetscErrorCode CreateMesh(MPI_Comm, Obj<ALE::Mesh>&, Options *);
-PetscErrorCode CreatePartition(Obj<ALE::Mesh>);
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>&);
 PetscErrorCode DistributeMesh(Obj<ALE::Mesh>&, Options *);
 PetscErrorCode OutputVTK(const Obj<ALE::Mesh>&, Options *);
 PetscErrorCode OutputMesh(const Obj<ALE::Mesh>&, Options *);
@@ -112,11 +113,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->inputFileType  = PCICE;
   options->outputFileType = PCICE;
   ierr = PetscStrcpy(options->baseFilename, "data/ex1_2d");CHKERRQ(ierr);
-  options->distribute     = PETSC_TRUE;
   options->output         = PETSC_TRUE;
   options->outputLocal    = PETSC_FALSE;
   options->outputVTK      = PETSC_TRUE;
   options->distribute     = PETSC_TRUE;
+  ierr = PetscStrcpy(options->partitioner, "chaco");CHKERRQ(ierr);
   options->interpolate    = PETSC_TRUE;
   options->partition      = PETSC_TRUE;
   options->material       = PETSC_FALSE;
@@ -130,11 +131,12 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-file_type", "Type of input files", "ex1.c", fileTypes, 2, fileTypes[0], &inputFt, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsEList("-output_file_type", "Type of output files", "ex1.c", fileTypes, 2, fileTypes[0], &outputFt, &setOutputType);CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex33.c", "ex1", options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex1.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output", "Output the mesh", "ex1.c", options->output, &options->output, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output_local", "Output the local form of the mesh", "ex1.c", options->outputLocal, &options->outputLocal, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex1.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-distribute", "Distribute the mesh among processes", "ex1.c", options->distribute, &options->distribute, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-partition", "Create the partition field", "ex1.c", options->partition, &options->partition, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-material", "Create the material field", "ex1.c", options->material, &options->material, PETSC_NULL);CHKERRQ(ierr);
@@ -185,7 +187,7 @@ PetscErrorCode DistributeMesh(Obj<ALE::Mesh>& mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(mesh);
+    mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh, std::string(options->partitioner));
     if (options->partition) {
       ierr = CreatePartition(mesh);CHKERRQ(ierr);
     }
@@ -279,21 +281,21 @@ PetscErrorCode OutputMesh(const Obj<ALE::Mesh>& mesh, Options *options)
 /*
   Creates a field whose value is the processor rank on each element
 */
-PetscErrorCode CreatePartition(Obj<ALE::Mesh> mesh)
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& mesh)
 {
-  Obj<ALE::Mesh::section_type>        partition = mesh->getSection("partition");
-  ALE::Mesh::section_type::patch_type patch     = 0;
-  ALE::Mesh::section_type::value_type rank      = mesh->commRank();
+  const Obj<ALE::Mesh::section_type>&       partition = mesh->getSection("partition");
+  const ALE::Mesh::section_type::patch_type patch     = 0;
+  const ALE::Mesh::section_type::value_type rank      = mesh->commRank();
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  partition->getAtlas()->setFiberDimensionByHeight(patch, 0, 1);
-  partition->getAtlas()->orderPatches();
+  partition->setFiberDimensionByHeight(patch, 0, 1);
   partition->allocate();
-  const Obj<ALE::Mesh::topology_type::label_sequence>& cells = partition->getAtlas()->getTopology()->heightStratum(patch, 0);
+  const Obj<ALE::Mesh::topology_type::label_sequence>& cells = partition->getTopology()->heightStratum(patch, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator   end   = cells->end();
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    partition->update(patch, *c_iter, &rank);
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    partition->updatePoint(patch, *c_iter, &rank);
   }
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);

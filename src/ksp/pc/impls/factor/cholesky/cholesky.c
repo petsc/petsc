@@ -228,10 +228,12 @@ static PetscErrorCode PCSetUp_Cholesky(PC pc)
     MatInfo info;
     if (!pc->setupcalled) {
       ierr = MatGetOrdering(pc->pmat,dir->ordering,&dir->row,&dir->col);CHKERRQ(ierr);
-      if (dir->col && (dir->row != dir->col)) {  /* only use row ordering for SBAIJ */
-        ierr = ISDestroy(dir->col);CHKERRQ(ierr); 
-        dir->col=0; 
-      }
+      /* check if dir->row == dir->col */
+      ierr = ISEqual(dir->row,dir->col,&flg);CHKERRQ(ierr);
+      if (!flg) SETERRQ(PETSC_ERR_ARG_INCOMP,"row and column permutations must equal");
+      ierr = ISDestroy(dir->col);CHKERRQ(ierr); /* only pass one ordering into CholeskyFactor */
+      dir->col=0; 
+
       ierr = PetscOptionsHasName(pc->prefix,"-pc_factor_nonzeros_along_diagonal",&flg);CHKERRQ(ierr);
       if (flg) {
         PetscReal tol = 1.e-10;

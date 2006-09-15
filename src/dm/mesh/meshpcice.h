@@ -7,10 +7,9 @@ namespace ALE {
   namespace PCICE {
     class Builder {
     public:
-      typedef ALE::Sieve<int, int, int>             sieve_type;
-      typedef ALE::New::Topology<int, sieve_type>   topology_type;
-      typedef ALE::New::Atlas<topology_type, Point> atlas_type;
-      typedef ALE::New::Section<atlas_type, double> section_type;
+      typedef ALE::Sieve<int, int, int>                sieve_type;
+      typedef ALE::New::Topology<int, sieve_type>      topology_type;
+      typedef ALE::New::Section<topology_type, double> section_type;
     public:
       Builder() {};
       virtual ~Builder() {};
@@ -19,16 +18,29 @@ namespace ALE {
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
-      static Obj<Mesh> createNewBd(MPI_Comm comm, const std::string& baseFilename, int dim, bool useZeroBase, int debug);
+      static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase, const bool interpolate, const int debug);
+      static void readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename, const int numBdFaces, const int numBdVertices);
+      static void outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], bool columnMajor);
+      static void outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], bool columnMajor);
     };
+
+    typedef struct {
+      Mesh::point_type               vertex;
+      Mesh::section_type::value_type veln_x;
+      Mesh::section_type::value_type veln_y;
+      Mesh::section_type::value_type pn;
+      Mesh::section_type::value_type tn;
+    } RestartType;
 
     class Viewer {
     public:
       Viewer() {};
       virtual ~Viewer() {};
     public:
-      static PetscErrorCode writeVertices(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
-      static PetscErrorCode writeElements(ALE::Obj<ALE::Mesh> mesh, PetscViewer viewer);
+      static PetscErrorCode writeVertices(const Obj<Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeElements(const Obj<Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer);
+      static PetscErrorCode writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer);
     };
   };
 };

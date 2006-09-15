@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex_abstract_Nov_2005.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/blopex_abstract_Aug_2006.tar.gz']
     self.functions  = ['lobpcg_solve']
     self.includes   = ['interpreter.h']
     self.liblist    = [['libBLOPEX.a']]
