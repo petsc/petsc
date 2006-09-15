@@ -9,4 +9,4 @@ timestep 7 time 0.00100046 norm of error 0.00579 0.00839
 timestep 8 time 0.00114338 norm of error 0.00630 0.00913
 timestep 9 time 0.0012863 norm of error 0.00674 0.00979
 timestep 10 time 0.00142922 norm of error 0.00712 0.01036
-Error in  beuler Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement restart 30 none    method: 2-norm 0.00458398 expecting: 0.00506174
+Error in  beuler  ls Classical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement restart 30 none    method: 2-norm 0.00458398 expecting: 0.00506174

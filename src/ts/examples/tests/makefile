@@ -79,34 +79,34 @@ runex1:
            ${RM} -f ex1_1.tmp
 
 runex1_euler:
-	-@${MPIRUN} -np 1  ./ex1 -test -ts_type euler -linear_constant_matrix -monitor -nox> ex1_euler.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type euler -linear_constant_matrix -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
            if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
            else echo "Possible problem with ex1_euler, diffs above"; fi; \
            ${RM} -f ex1_euler.tmp
 
 runex1_beuler:
-	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -linear_constant_matrix -pc_type lu -monitor -nox> ex1_beuler.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -linear_constant_matrix -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
            if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_beuler, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_2:
-	-@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -linear_variable_matrix -monitor -nox> ex1_beuler.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -linear_variable_matrix -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
            if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_beuler_2, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_3:
-	-@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -nonlinear_jacobian -monitor -nox> ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -nonlinear_jacobian -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
+           if (${DIFF} output/ex1_beuler_nonlinear.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_beuler_3, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_4:
-	-@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -nonlinear_no_jacobian -monitor -nox> ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -nonlinear_no_jacobian -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
+           if (${DIFF} output/ex1_beuler_nonlinear_no_jacobian.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_4, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp; 
 
 runex1_beuler_5:
-	 -@${MPIRUN} -np 1  ./ex1 -test -ts_type beuler -linear_no_matrix -monitor -nox> ex1_beuler.tmp 2>&1;   \
+	 -@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -linear_no_matrix -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
            if (${DIFF} output/ex1_beuler_no_matrix.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_beuler_5, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp 
