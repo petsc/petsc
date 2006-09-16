@@ -20,7 +20,6 @@ typedef struct {
 #define __FUNCT__ "TSSetKSPOperators_CN"
 PetscErrorCode TSSetKSPOperators_CN(TS ts)
 {
-  PetscTruth     flg;
   PetscErrorCode ierr;
   PetscScalar    mdt = 1.0/ts->time_step;
 
@@ -260,7 +259,6 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN          *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
-  PetscScalar    mdt = 1.0/ts->time_step;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
@@ -307,8 +305,6 @@ static PetscErrorCode TSSetUp_CN_Nonlinear(TS ts)
 #define __FUNCT__ "TSSetFromOptions_CN_Linear"
 static PetscErrorCode TSSetFromOptions_CN_Linear(TS ts)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
