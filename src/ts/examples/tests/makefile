@@ -112,9 +112,14 @@ runex1_beuler_5:
            ${RM} -f ex1_beuler.tmp 
 
 runex1_cn:
-	-@${MPIRUN} -np 1 ./ex1 -test -ts_type crank-nicholson -linear_constant_matrix -monitor -nox> ex1_cn.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type crank-nicholson -linear_constant_matrix -monitor -nox -time 10 > ex1_cn.tmp 2>&1;   \
            if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
            else echo "Possible problem with ex1_cn, diffs above"; fi; \
+           ${RM} -f ex1_cn.tmp
+runex1_cn_2:
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type crank-nicholson -linear_variable_matrix -monitor -nox -time 10 > ex1_cn.tmp 2>&1;   \
+           if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
+           else echo "Possible problem with ex1_cn_2, diffs above"; fi; \
            ${RM} -f ex1_cn.tmp
 
 runex1f:
