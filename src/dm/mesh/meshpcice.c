@@ -139,9 +139,12 @@ namespace ALE {
       // Create IBC section
       const Obj<Mesh::bc_section_type>& ibc = mesh->getBCSection("IBC");
       int *tmpIBC = new int[numBdFaces*4];
+      std::map<int,std::set<int> > elem2Idx;
       for(int bf = 0; bf < numBdFaces; bf++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
 
+        // Ignore boundary face number
+        x = strtok(NULL, " ");
         tmpIBC[bf*4+0] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBC[bf*4+1] = atoi(x);
@@ -149,11 +152,28 @@ namespace ALE {
         tmpIBC[bf*4+2] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBC[bf*4+3] = atoi(x);
-        ibc->setFiberDimension(patch, tmpIBC[bf*4+0], 4);
+        ibc->addFiberDimension(patch, tmpIBC[bf*4+0], 4);
       }
       ibc->allocate();
       for(int bf = 0; bf < numBdFaces; bf++) {
-        ibc->update(patch, tmpIBC[bf*4], &tmpIBC[bf*4]);
+        const int elem = tmpIBC[bf*4];
+
+        if (elem2Idx[elem].size() > 1) {
+          if (*elem2Idx[elem].begin() == bf) {
+            int values[8];
+            int k = 0;
+
+            for(std::set<int>::const_iterator i_iter = elem2Idx[elem].begin(); i_iter != elem2Idx[elem].end(); ++i_iter) {
+              for(int v = 0; v < 4; ++v) {
+                values[k*4+v] = tmpIBC[*i_iter*4+v];
+              }
+              k++;
+            }
+            ibc->update(patch, elem, values);
+          }
+        } else {
+          ibc->update(patch, elem, &tmpIBC[bf*4]);
+        }
       }
       delete [] tmpIBC;
       // Create BCFUNC section
@@ -178,6 +198,8 @@ namespace ALE {
       for(int bv = 0; bv < numBdVertices; bv++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
 
+        // Ignore boundary node number
+        x = strtok(NULL, " ");
         tmpIBNDFS[bv*3+0] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBNDFS[bv*3+1] = atoi(x);
@@ -190,8 +212,8 @@ namespace ALE {
         int values[5];
 
         values[0] = tmpIBNDFS[bv*3+0];
-        values[1] = tmpIBNDFS[bv*3+0];
-        values[2] = tmpIBNDFS[bv*3+0];
+        values[1] = tmpIBNDFS[bv*3+1];
+        values[2] = tmpIBNDFS[bv*3+2];
         values[3] = 0;
         values[4] = 0;
         ibndfs->update(patch, values[0], values);
