@@ -159,9 +159,11 @@ namespace ALE {
       // Create BCFUNC section
       int     numBcFunc = atoi(strtok(fgets(buf, 2048, f), " "));
       double *BCFUNC    = new double[numBcFunc*4];
-      for(int bc = 0; bc < numBcFunc*4; bc++) {
+      for(int bc = 0; bc < numBcFunc; bc++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
 
+        // Ignore function number
+        x = strtok(NULL, " ");
         BCFUNC[bc*4+0] = atof(x);
         x = strtok(NULL, " ");
         BCFUNC[bc*4+1] = atof(x);
