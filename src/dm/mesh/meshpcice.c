@@ -178,20 +178,21 @@ namespace ALE {
       }
       delete [] tmpIBC;
       // Create BCFUNC section
-      int     numBcFunc = atoi(strtok(fgets(buf, 2048, f), " "));
-      double *BCFUNC    = new double[numBcFunc*4];
+      int numBcFunc = atoi(strtok(fgets(buf, 2048, f), " "));
       for(int bc = 0; bc < numBcFunc; bc++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
+        Mesh::bc_value_type value;
 
         // Ignore function number
         x = strtok(NULL, " ");
-        BCFUNC[bc*4+0] = atof(x);
+        value.rho = atof(x);
         x = strtok(NULL, " ");
-        BCFUNC[bc*4+1] = atof(x);
+        value.u   = atof(x);
         x = strtok(NULL, " ");
-        BCFUNC[bc*4+2] = atof(x);
+        value.v   = atof(x);
         x = strtok(NULL, " ");
-        BCFUNC[bc*4+3] = atof(x);
+        value.p   = atof(x);
+        mesh->setBCValue(bc+1, value);
       }
       // Create IBNDFS section
       const Obj<Mesh::bc_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
