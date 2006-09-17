@@ -153,6 +153,7 @@ namespace ALE {
         x = strtok(NULL, " ");
         tmpIBC[bf*4+3] = atoi(x);
         ibc->addFiberDimension(patch, tmpIBC[bf*4+0], 4);
+        elem2Idx[tmpIBC[bf*4+0]].insert(bf);
       }
       ibc->allocate();
       for(int bf = 0; bf < numBdFaces; bf++) {
