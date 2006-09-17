@@ -151,6 +151,7 @@ namespace ALE {
         tmpIBC[bf*4+3] = atoi(x);
         ibc->setFiberDimension(patch, tmpIBC[bf*4+0], 4);
       }
+      ibc->allocate();
       for(int bf = 0; bf < numBdFaces; bf++) {
         ibc->update(patch, tmpIBC[bf*4], &tmpIBC[bf*4]);
       }
@@ -182,6 +183,7 @@ namespace ALE {
         tmpIBNDFS[bv*3+2] = atoi(x);
         ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0], 5);
       }
+      ibndfs->allocate();
       for(int bv = 0; bv < numBdVertices; bv++) {
         int values[5];
 
