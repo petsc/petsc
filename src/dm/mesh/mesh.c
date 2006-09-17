@@ -1394,6 +1394,64 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "BCSectionGetArray"
+/*@C
+  BCSectionGetArray - Returns the array underlying the BCSection.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+- name - The section name
+
+  Output Parameters:
++ numElements - The number of mesh element with values
+. fiberDim - The number of values per element
+- array - The array
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::bc_section_type>&     section = m->getBCSection(std::string(name));
+  const ALE::Mesh::section_type::chart_type& chart   = section->getPatch(0);
+  *numElements = chart.size();
+  *fiberDim    = section->getFiberDimension(0, *chart.begin());
+  *array       = (PetscInt *) section->restrict(0);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "BCFUNCGetArray"
+PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ALE::Mesh::bc_values_type& bcValues = m->getBCValues();
+  *numElements = bcValues.size();
+  *fiberDim    = 4;
+  *array       = new PetscScalar[(*numElements)*(*fiberDim)];
+  for(int bcf = 1; bcf <= (int) bcValues.size(); ++bcf) {
+    (*array)[(bcf-1)*4+0] = bcValues[bcf].rho;
+    (*array)[(bcf-1)*4+1] = bcValues[bcf].u;
+    (*array)[(bcf-1)*4+2] = bcValues[bcf].v;
+    (*array)[(bcf-1)*4+3] = bcValues[bcf].p;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "WritePyLithVertices"
 PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 {

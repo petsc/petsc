@@ -9,6 +9,8 @@
 #define meshrestoreelementsf90_    MESHRESTOREELEMENTSF90
 #define sectiongetarrayf90_        SECTIONGETARRAYF90
 #define sectiongetarray1df90_      SECTIONGETARRAY1DF90
+#define bcsectiongetarrayf90_      BCSECTIONGETARRAYF90
+#define bcfuncgetarrayf90_         BCFUNCGETARRAYF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define meshgetcoordinatesf90_     meshgetcoordinatesf90
 #define meshrestorecoordinatesf90_ meshrestorecoordinatesf90
@@ -16,6 +18,8 @@
 #define meshrestoreelementsf90_    meshrestoreelementsf90
 #define sectiongetarrayf90_        sectiongetarrayf90
 #define sectiongetarray1df90_      sectiongetarray1df90
+#define bcsectiongetarrayf90_      bcsectiongetarrayf90
+#define bcfuncgetarrayf90_         bcfuncgetarrayf90
 #endif
 
 EXTERN_C_BEGIN
@@ -67,6 +71,23 @@ void PETSC_STDCALL sectiongetarray1df90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(le
   *ierr = SectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
   *ierr = F90Array1dCreate(a,PETSC_SCALAR,1,n*d,ptr);
   FREECHAR(name,nF);
+}
+void PETSC_STDCALL bcsectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len))
+{
+  PetscInt *a;
+  PetscInt  n, d;
+  char     *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = BCSectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
+  *ierr = F90Array2dCreate(a,PETSC_INT,1,d,1,n,ptr);
+  FREECHAR(name,nF);
+}
+void PETSC_STDCALL bcfuncgetarrayf90_(Mesh *mesh,F90Array2d *ptr,int *ierr)
+{
+  PetscScalar *a;
+  PetscInt     n, d;
+  *ierr = BCFUNCGetArray(*mesh,&n,&d,&a); if (*ierr) return;
+  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr);
 }
 
 EXTERN_C_END

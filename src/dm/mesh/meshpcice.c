@@ -120,31 +120,11 @@ namespace ALE {
       return mesh;
     };
     // Creates boundary sections:
-    //   BL[NBFS]:      LENGTH OF BOUNDARY ELEMENT FACES
-    //   BNVEC[NBFS,2]: OUTWARD NORMAL VECTORS FOR THE ELEMENT FACES ON THE BOUNDARY
-    //   BNNV[NBN,2]:   OUTWARD NORMAL VECTORS FOR THE NODES ON THE BOUNDARY
-    //   IBC[NBFS,2]:   NEED 3-4
-    //   IBNDFS[NBN,2]: NEED 4-5
+    //   IBC[NBFS,2]:     ALL
+    //   BCFUNC[NBCF,NV]: ALL
+    //   IBNDFS[NBN,2]:   STILL NEED 4-5
     void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename, const int numBdFaces, const int numBdVertices) {
-#if 0
-C READ BOUNDARY CONDITION CONTROL FOR EACH BOUNDARY FACE
-      DO 85 I=1,NBFS
-      READ(11,*)IFDUM,IBC(I,1),IBC(I,2),IBC(I,3),IBC(I,4)
-   85 CONTINUE
-C READ FUNCTION BLOCKS
-      READ(11,*)NBCF
-      IF(NBCF.NE.0)THEN
-      DO 95 I=1,NBCF
-      READ(11,*)IDUM,(BCFUNC(I,J),J=1,NV)
-   95 CONTINUE
-      ENDIF
-      DO 105 I=1,NBN
-      READ(11,*)IFDUM,IBNDFS(I,1),IBNDFS(I,2),IBNDFS(I,3)
-  105 CONTINUE
-#endif
-      typedef ALE::New::UniformSection<Mesh::topology_type,int,4> ibcType;
       const Mesh::topology_type::patch_type patch = 0;
-      const int                             dim   = mesh->getDimension();
       PetscViewer    viewer;
       FILE          *f;
       char           buf[2048];
@@ -156,22 +136,64 @@ C READ FUNCTION BLOCKS
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
-      //ierr = PetscMalloc(numBdFaces*dim * sizeof(int), &coords);
-      const Obj<ibcType>& ibc = new ibcType(mesh->getTopologyNew());
+      // Create IBC section
+      const Obj<Mesh::bc_section_type>& ibc = mesh->getBCSection("IBC");
+      int *tmpIBC = new int[numBdFaces*4];
       for(int bf = 0; bf < numBdFaces; bf++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
-        int values[4];
 
-        values[0] = atoi(x);
+        tmpIBC[bf*4+0] = atoi(x);
         x = strtok(NULL, " ");
-        values[1] = atoi(x);
+        tmpIBC[bf*4+1] = atoi(x);
         x = strtok(NULL, " ");
-        values[2] = atoi(x);
+        tmpIBC[bf*4+2] = atoi(x);
         x = strtok(NULL, " ");
-        values[3] = atoi(x);
-        ibc->setFiberDimension(patch, values[0], 4);
-        ibc->update(patch, values[0], values);
+        tmpIBC[bf*4+3] = atoi(x);
+        ibc->setFiberDimension(patch, tmpIBC[bf*4+0], 4);
       }
+      for(int bf = 0; bf < numBdFaces; bf++) {
+        ibc->update(patch, tmpIBC[bf*4], &tmpIBC[bf*4]);
+      }
+      delete [] tmpIBC;
+      // Create BCFUNC section
+      int     numBcFunc = atoi(strtok(fgets(buf, 2048, f), " "));
+      double *BCFUNC    = new double[numBcFunc*4];
+      for(int bc = 0; bc < numBcFunc*4; bc++) {
+        const char *x = strtok(fgets(buf, 2048, f), " ");
+
+        BCFUNC[bc*4+0] = atof(x);
+        x = strtok(NULL, " ");
+        BCFUNC[bc*4+1] = atof(x);
+        x = strtok(NULL, " ");
+        BCFUNC[bc*4+2] = atof(x);
+        x = strtok(NULL, " ");
+        BCFUNC[bc*4+3] = atof(x);
+      }
+      // Create IBNDFS section
+      const Obj<Mesh::bc_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
+      int *tmpIBNDFS = new int[numBdVertices*3];
+      for(int bv = 0; bv < numBdVertices; bv++) {
+        const char *x = strtok(fgets(buf, 2048, f), " ");
+
+        tmpIBNDFS[bv*3+0] = atoi(x);
+        x = strtok(NULL, " ");
+        tmpIBNDFS[bv*3+1] = atoi(x);
+        x = strtok(NULL, " ");
+        tmpIBNDFS[bv*3+2] = atoi(x);
+        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0], 5);
+      }
+      for(int bv = 0; bv < numBdVertices; bv++) {
+        int values[5];
+
+        values[0] = tmpIBNDFS[bv*3+0];
+        values[1] = tmpIBNDFS[bv*3+0];
+        values[2] = tmpIBNDFS[bv*3+0];
+        values[3] = 0;
+        values[4] = 0;
+        ibndfs->update(patch, values[0], values);
+      }
+      delete [] tmpIBNDFS;
+      ierr = PetscViewerDestroy(viewer);
     };
     void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
       const Mesh::section_type::patch_type            patch      = 0;
