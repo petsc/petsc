@@ -12,7 +12,7 @@
 
       Interface 
         Subroutine MeshRestoreCoordinatesF90(m,array,ierr)
-          PetscReal, pointer :: array(:)
+          PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr
           Mesh m
         End Subroutine
@@ -28,7 +28,7 @@
 
       Interface 
         Subroutine MeshRestoreElementsF90(m,array,ierr)
-          integer, pointer :: array(:)
+          integer, pointer :: array(:,:)
           PetscErrorCode ierr
           Mesh m
         End Subroutine

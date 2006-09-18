@@ -241,8 +241,16 @@ namespace ALE {
         values[4] = 0;
         ibndfs->update(patch, values[0]-1, values);
       }
-      delete [] tmpIBNDFS;
       ierr = PetscViewerDestroy(viewer);
+      // Create BNNV[NBN,2]
+      const Obj<Mesh::section_type>& bnnv = mesh->getSection("BNNV");
+      const int dim = mesh->getDimension();
+
+      for(int bv = 0; bv < numBdVertices; bv++) {
+        bnnv->setFiberDimension(patch, tmpIBNDFS[bv*3+0], dim);
+      }
+      bnnv->allocate();
+      delete [] tmpIBNDFS;
     };
     void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
       const Mesh::section_type::patch_type            patch      = 0;
