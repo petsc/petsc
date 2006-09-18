@@ -106,40 +106,29 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
 
     // int nBoundaryVertices = 0;
     while (e_iter != e_iter_end) {
-      topology->setValue(boundary, *e_iter, 0);
+      //topology->setValue(boundary, *e_iter, 0);
       //find out if the edge is not supported on both sides, if so, this is a boundary node
       if (mesh->debug) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
       if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
-        topology->setValue(boundary, *e_iter, 1);
+        //topology->setValue(boundary, *e_iter, 1);
         ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
         ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter     = endpoints->begin();
         ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter_end = endpoints->end();
         while (p_iter != p_iter_end) {
           if (topology->depth(patch, *p_iter) != 0) {
             throw ALE::Exception("Bad point");
-          }
-          topology->setValue(boundary, *p_iter, -1);
+          } 
+          if (topology->getValue(boundary, *p_iter) == 0) {
+	    topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(mesh, *p_iter));
+	    if (mesh->debug) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
+	  }
           //boundVerts++;
           p_iter++;
         }
       }
       e_iter++;
     }
-    boundary->view(std::cout, "Boundary label before reset");
-
-    //determine if the edge is straight or not.
-    const Obj<ALE::Mesh::topology_type::label_sequence>& vertices2 = topology->depthStratum(patch, 0);
-
-    v_iter     = vertices2->begin();
-    v_iter_end = vertices2->end();
-    while(v_iter != v_iter_end) {
-      if (topology->getValue(boundary, *v_iter) == -1) {
-        topology->setValue(boundary, *v_iter, BoundaryNodeDimension_2D(mesh, *v_iter));
-        if (mesh->debug) {printf("set boundary dimension for %d as %d\n", *v_iter, topology->getValue(boundary, *v_iter));}
-      }
-      v_iter++;
-    }
-    boundary->view(std::cout, "Boundary label");
+    //boundary->view(std::cout, "Boundary label");
   } else if (dim == 3) {  //loop over the faces to determine the 
       
   } else {
@@ -200,35 +189,35 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim,  ALE::Mesh::section_t
       v_iter++;
     }
   }
-//for now just loop over the points
-    const Obj<ALE::Mesh::topology_type::label_sequence>& verts = topology->depthStratum(originalPatch, 0);
-    ALE::Mesh::topology_type::label_sequence::iterator v_iter = verts->begin();
-    ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = verts->end();
-    while (v_iter != v_iter_end) {
-      PetscMemcpy(v_coord, coords->restrict(originalPatch, *v_iter), dim*sizeof(double));
-      double v_space = *spacing->restrict(originalPatch, *v_iter);
-      std::list<ALE::Mesh::point_type>::iterator c_iter = incPoints.begin(), c_iter_end = incPoints.end();
-      bool isOk = true;
-	  while (c_iter != c_iter_end) {
-	    PetscMemcpy(c_coord, coords->restrict(originalPatch, *c_iter), dim*sizeof(double));
-	    double dist = 0;
-	    double c_space = *spacing->restrict(originalPatch, *c_iter);
-	    for (int d = 0; d < dim; d++) {
-	      dist += (v_coord[d] - c_coord[d])*(v_coord[d] - c_coord[d]);
-	    }
-	    double mdist = c_space + v_space;
-	    if (dist < beta*beta*mdist*mdist/4) {
-	      isOk = false;
-              break;
-	    }
-            c_iter++;
-	  }
-	  if (isOk) {
-	    incPoints.push_front(*v_iter);
-            //printf("  - Adding point %d to the new mesh\n", *v_iter);
-	  }
-	  v_iter++;
+  //for now just loop over the points
+  const Obj<ALE::Mesh::topology_type::label_sequence>& verts = topology->depthStratum(originalPatch, 0);
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter = verts->begin();
+  ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = verts->end();
+  while (v_iter != v_iter_end) {
+    PetscMemcpy(v_coord, coords->restrict(originalPatch, *v_iter), dim*sizeof(double));
+    double v_space = *spacing->restrict(originalPatch, *v_iter);
+    std::list<ALE::Mesh::point_type>::iterator c_iter = incPoints.begin(), c_iter_end = incPoints.end();
+    bool isOk = true;
+    while (c_iter != c_iter_end) {
+      PetscMemcpy(c_coord, coords->restrict(originalPatch, *c_iter), dim*sizeof(double));
+      double dist = 0;
+      double c_space = *spacing->restrict(originalPatch, *c_iter);
+      for (int d = 0; d < dim; d++) {
+        dist += (v_coord[d] - c_coord[d])*(v_coord[d] - c_coord[d]);
+      }
+      double mdist = c_space + v_space;
+      if (dist < beta*beta*mdist*mdist/4) {
+        isOk = false;
+        break;
+      }
+      c_iter++;
     }
+    if (isOk) {
+      incPoints.push_front(*v_iter);
+      //printf("  - Adding point %d to the new mesh\n", *v_iter);
+    }
+    v_iter++;
+  }
 
   printf("- creating input to triangle: %d points\n", incPoints.size());
   //At this point we will set up the triangle(tetgen) calls (with preservation of vertex order.  This is why I do not use the functions build in).
@@ -327,7 +316,7 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   ALE::Mesh::topology_type::label_sequence::iterator s_iter = support->begin();
   ALE::Mesh::topology_type::label_sequence::iterator s_iter_end = support->end();
   while(s_iter != s_iter_end) {
-      if (topology->getValue(markers, *s_iter) == 1) {
+      if (topology->getPatch(patch)->support(*s_iter)->size() < 2) {
       ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(patch)->cone(*s_iter);
       ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
       ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
@@ -342,7 +331,7 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
 	    double n_x = nCoords[0], n_y = nCoords[1];
 	    double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
 	    if (parArea > .0000001) isEssential = 2;
-	   // printf("Parallelogram area: %f\n", parArea);
+	   if(mesh->debug) printf("Parallelogram area: %f\n", parArea);
 	  }
 	}
 	n_iter++;
@@ -365,10 +354,11 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   PetscFunctionBegin;
   // We store the global vertex numbers as markers to preserve them in the coarse mesh
   //   Here we convert from the new Triangle numbering to the original fine mesh numbering (same sieve points we started from)
+  //   We also offset them by the number of coarse triangles, to preserve the numbers after buildTopology()
   for (int i = 0; i != src->numberoftriangles; i++) {
-    src->trianglelist[i*3+0] = src->pointmarkerlist[src->trianglelist[i*3+0]];
-    src->trianglelist[i*3+1] = src->pointmarkerlist[src->trianglelist[i*3+1]];
-    src->trianglelist[i*3+2] = src->pointmarkerlist[src->trianglelist[i*3+2]];
+    src->trianglelist[i*3+0] = src->pointmarkerlist[src->trianglelist[i*3+0]] - src->numberoftriangles;
+    src->trianglelist[i*3+1] = src->pointmarkerlist[src->trianglelist[i*3+1]] - src->numberoftriangles;
+    src->trianglelist[i*3+2] = src->pointmarkerlist[src->trianglelist[i*3+2]] - src->numberoftriangles;
   }
 
   Obj<ALE::Mesh::sieve_type>           sieve    = new ALE::Mesh::sieve_type(mesh->comm(), 0);

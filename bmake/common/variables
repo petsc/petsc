@@ -36,7 +36,7 @@ F_SH_LIB_PATH	= ${PETSC_F_SH_LIB_PATH}
 # The following variables define PETSc compile procedures
 #
 PETSC_COMPILE         = ${PCC} -c ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}  ${SOURCEC} ${SSOURCE}
-PETSC_COMPILE_SINGLE  = ${PCC} -c ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} 
+PETSC_COMPILE_SINGLE  = ${PCC} -o $*.o -c ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} 
 #
 # The following additional variables are used by PETSc targets and should not be redefined
 #

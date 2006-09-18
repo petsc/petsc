@@ -29,6 +29,11 @@ namespace ALE {
     typedef ALE::New::Completion<topology_type, point_type>::topology_type     comp_topology_type;
     typedef ALE::New::OverlapValues<send_overlap_type, comp_topology_type, point_type> send_section_type;
     typedef ALE::New::OverlapValues<recv_overlap_type, comp_topology_type, point_type> recv_section_type;
+    // PCICE: Big fucking hack
+    typedef ALE::New::Section<topology_type, int>        bc_section_type;
+    typedef std::map<std::string, Obj<bc_section_type> > BCSectionContainer;
+    typedef struct {double rho,u,v,p;}                   bc_value_type;
+    typedef std::map<int, bc_value_type>                 bc_values_type;
     int debug;
   private:
     Obj<sieve_type>            topology;
@@ -45,9 +50,11 @@ namespace ALE {
     int             _commRank;
     int             _commSize;
     int             dim;
-    //FIX:
+    // PCICE: Big fucking hack
+    BCSectionContainer bcSections;
+    bc_values_type     bcValues;
   public:
-    bool            distributed;
+    bool distributed;
   public:
     Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
       this->setComm(comm);
@@ -129,6 +136,25 @@ namespace ALE {
     void                           setVertexSendOverlap(const Obj<send_overlap_type>& vertexOverlap) {this->_vertexSendOverlap = vertexOverlap;};
     const Obj<recv_overlap_type>&  getVertexRecvOverlap() const {return this->_vertexRecvOverlap;};
     void                           setVertexRecvOverlap(const Obj<recv_overlap_type>& vertexOverlap) {this->_vertexRecvOverlap = vertexOverlap;};
+    // PCICE: Big fucking hack
+    const Obj<bc_section_type>& getBCSection(const std::string& name) {
+      if (this->bcSections.find(name) == this->bcSections.end()) {
+        Obj<bc_section_type> section = new bc_section_type(this->_topology);
+
+        std::cout << "Creating new bc section: " << name << std::endl;
+        this->bcSections[name] = section;
+      }
+      return this->bcSections[name];
+    };
+    const bc_value_type& getBCValue(const int bcFunc) {
+      return this->bcValues[bcFunc];
+    };
+    void setBCValue(const int bcFunc, const bc_value_type& value) {
+      this->bcValues[bcFunc] = value;
+    };
+    bc_values_type& getBCValues() {
+      return this->bcValues;
+    };
     // Printing
     template <typename Stream_>
     friend Stream_& operator<<(Stream_& os, const split_value& v) {

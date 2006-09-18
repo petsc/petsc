@@ -251,7 +251,6 @@ class VTKViewer {
         for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           const ALE::Mesh::section_type::value_type *array = coordinates->restrictPoint(firstPatch, *v_iter);
 
-          ierr = PetscViewerASCIIPrintf(viewer, "%d ", *v_iter);CHKERRQ(ierr);
           for(int d = 0; d < embedDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
@@ -274,7 +273,7 @@ class VTKViewer {
     const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopologyNew();
     const ALE::Mesh::topology_type::sheaf_type& patches     = topology->getPatches();
     const ALE::Mesh::topology_type::patch_type  firstPatch  = patches.begin()->first;
-    const int      corners = topology->getPatch(0)->nCone(*topology->heightStratum(firstPatch, 0)->begin(), topology->depth())->size();
+    const int      corners = topology->getPatch(firstPatch)->nCone(*topology->heightStratum(firstPatch, 0)->begin(), topology->depth())->size();
     int            numElements = 0;
     int            numVertices = 0;
     PetscErrorCode ierr;
@@ -291,8 +290,7 @@ class VTKViewer {
         const Obj<ALE::Mesh::topology_type::sieve_type>&     sieve      = topology->getPatch(patch);
         const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
         const Obj<ALE::Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0, patch);
-        //const int                                            depth      = topology->depth(patch);
-        const int                                            depth      = 2 - patch;
+        const int                                            depth      = topology->depth(patch);
 
         for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
           const Obj<ALE::Mesh::sieve_type::coneArray>& cone = sieve->nCone(*e_iter, depth);

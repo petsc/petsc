@@ -1399,7 +1399,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       rs   = 0.0;
       jmin = bi[k]+1; 
       nz   = bi[k+1] - jmin; 
-      if (nz){
+      if (nz > 0){
         bcol = bj + jmin;
         while (nz--){
           rs += PetscAbsScalar(rtmp[*bcol]);

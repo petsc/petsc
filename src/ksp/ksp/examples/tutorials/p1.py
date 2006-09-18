@@ -17,7 +17,7 @@ class P1(script.Script):
 
     # -------------------------------
     self.shape = FIAT.shapes.TRIANGLE
-    self.order = 2
+    self.order = 1
     # -------------------------------
     
     return

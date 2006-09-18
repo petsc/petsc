@@ -98,7 +98,7 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   Vec            sol = ts->vec_sol,update = beuler->update,rhs = beuler->rhs;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
-  PetscReal      mdt = 1.0/ts->time_step,t_mid;
+  PetscScalar    mdt = 1.0/ts->time_step,t_mid;
   MatStructure   str;
   KSP            ksp;
 
@@ -248,8 +248,9 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
   /* this test is a undesirable hack, we assume that if it is MATMFFD then it is
      obtained from -snes_mf_operator and there is computed directly from the 
      FormFunction() SNES is given and therefor does not need to be shifted/scaled
-     BUT maybe it could be MATMFFD and does require shift in some other case? */
-  ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr);
+     BUT maybe it could be MATMFFD and does require shift in some other case??? */
+  //ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr);
+  ierr = TSSetKSPOperators_BEuler(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

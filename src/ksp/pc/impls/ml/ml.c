@@ -545,7 +545,6 @@ PetscErrorCode MatMultAdd_ML(Mat A,Vec x,Vec w,Vec y)
   PetscErrorCode    ierr;
   Mat_MLShell       *shell;
   PetscScalar       *xarray,*yarray;
-  const PetscScalar one=1.0;
   PetscInt          x_length,y_length;
   
   PetscFunctionBegin;
@@ -614,7 +613,9 @@ PetscErrorCode MatConvert_MPIAIJ_ML(Mat A,MatType newtype,MatReuse scall,Mat *Al
     /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
     /* Since these are PETSc arrays, change flags to free them as necessary. */
     mat = (Mat_SeqAIJ*)(*Aloc)->data;
-    mat->freedata = PETSC_TRUE;
+    mat->free_a       = PETSC_TRUE;
+    mat->free_ij      = PETSC_TRUE;
+
     mat->nonew    = 0;
   } else if (scall == MAT_REUSE_MATRIX){
     mat=(Mat_SeqAIJ*)(*Aloc)->data; 
