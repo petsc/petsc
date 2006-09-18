@@ -40,9 +40,7 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   {
     ALE::Test::Options        options;
-    //ALE::Test::Options options(PETSC_COMM_WORLD);
-    ALE::Obj<xsifter_type> xsifter = ALE::Test::XSifterTest::createForkXSifter(PETSC_COMM_WORLD);
-
+    ALE::Obj<xsifter_type> xsifter = ALE::Test::XSifterTest::createForkXSifter(options);
     ierr = BasicBaseTest(xsifter, options);CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
