@@ -4,10 +4,11 @@
 #include "petscviewer.h"
 #include "src/dm/mesh/meshpcice.h"
 #include "src/dm/mesh/meshpylith.h"
+#include "tree_mis.h"
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <triangle.h>
+//#include <triangle.h>
 #include <tetgen.h>
   
   
@@ -144,7 +145,8 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
     bool isTopLevel = (curLevel == nMeshes);
     double crsBeta = pow(beta, curLevel);
     printf("Creating coarsening level: %d with beta = %f\n", curLevel, crsBeta);
-    LevelCoarsen(mesh, dim, curLevel, !isTopLevel, crsBeta);
+    //LevelCoarsen(mesh, dim, curLevel, !isTopLevel, crsBeta);
+    tree_mis(mesh, dim, curLevel, !isTopLevel, crsBeta);
     if (mesh->debug) {
       ostringstream txt;
       txt << "Sieve for coarsening level " << curLevel;
@@ -303,7 +305,6 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
 
   ALE::Mesh::section_type::patch_type patch = 0; 
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
-  const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->getLabel(patch, "boundary");
   Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
   const double *vCoords = coords->restrict(patch, vertex);
   double v_x = vCoords[0], v_y = vCoords[1];
