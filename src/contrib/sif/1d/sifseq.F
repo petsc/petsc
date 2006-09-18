@@ -4,7 +4,7 @@ C/*T
 C   Concepts: TS^time-dependent nonlinear problems
 C   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
 C   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
-C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
+C   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSMonitorSet();
 C   Routines: PetscPrintf();
 C   Processors: n
 CT*/
@@ -188,7 +188,7 @@ C - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       write (6,*) 'errabs, errrel = ', errabs, errrel
 1     format (1x,2e18.8)
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_DOUBLE,ierr)
+      call TSMonitorSet(ts,Monitor,PETSC_NULL_DOUBLE,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL_DOUBLE,ierr)
       call TSSetType(ts,TS_SUNDIALS,ierr)
       call TSSundialsSetTolerance(ts,errabs,errrel,ierr)

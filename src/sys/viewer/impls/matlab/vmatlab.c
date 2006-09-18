@@ -39,8 +39,8 @@ $                xnew(:) = x;    % reshape one dimensional vector back to two di
 M*/
 
 typedef struct {
-  MATFile             *ep;
-  PetscMPIInt         rank;
+  MATFile       *ep;
+  PetscMPIInt   rank;
   PetscFileMode btype;
 } PetscViewer_Matlab;
 
@@ -152,7 +152,7 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Matlab(PetscViewer viewer,const char name[])
 {
   PetscViewer_Matlab  *vmatlab = (PetscViewer_Matlab*)viewer->data;
-  PetscFileMode type = vmatlab->btype;
+  PetscFileMode       type = vmatlab->btype;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {

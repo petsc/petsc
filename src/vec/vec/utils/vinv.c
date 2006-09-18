@@ -695,7 +695,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode add
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   bs   = v->map.bs;
   if (bs < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Input vector does not have a valid blocksize set");
-
   ierr = PetscMalloc2(bs,PetscReal*,&y,bs,PetscInt,&bss);CHKERRQ(ierr);
   nv   = 0;
   nvc  = 0;
@@ -749,6 +748,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGatherAll(Vec v,Vec *s,InsertMode add
   for (i=0; i<nv; i++) {
     ierr = VecRestoreArray(s[i],&y[i]);CHKERRQ(ierr);
   }
+
   ierr = PetscFree2(y,bss);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

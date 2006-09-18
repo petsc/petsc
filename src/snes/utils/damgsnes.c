@@ -458,7 +458,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   if (!jacobian) jacobian = DMMGComputeJacobianWithFD;
 
   ierr = PetscOptionsBegin(dmmg[0]->comm,PETSC_NULL,"DMMG Options","SNES");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-dmmg_snes_monitor","Monitor nonlinear convergence","SNESSetMonitor",&snesmonitor);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-dmmg_snes_monitor","Monitor nonlinear convergence","SNESMonitorSet",&snesmonitor);CHKERRQ(ierr);
 
 
     ierr = PetscOptionsName("-dmmg_jacobian_fd","Compute sparse Jacobian explicitly with finite differencing","DMMGSetSNES",&fdjacobian);CHKERRQ(ierr);
@@ -494,7 +494,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       ierr = PetscObjectGetComm((PetscObject)dmmg[i]->snes,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
       ierr = PetscViewerASCIISetTab(ascii,nlevels-i);CHKERRQ(ierr);
-      ierr = SNESSetMonitor(dmmg[i]->snes,SNESDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(dmmg[i]->snes,SNESMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
 
     if (mffdoperator) {

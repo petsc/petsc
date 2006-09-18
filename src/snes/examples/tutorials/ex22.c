@@ -89,7 +89,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetSNES(dmmg,FormFunction,PETSC_NULL);CHKERRQ(ierr);
   /*
   for (i=0; i<DMMGGetLevels(dmmg); i++) {
-    ierr = SNESSetMonitor(dmmg[i]->snes,Monitor,dmmg[i],0);CHKERRQ(ierr); 
+    ierr = SNESMonitorSet(dmmg[i]->snes,Monitor,dmmg[i],0);CHKERRQ(ierr); 
   }*/
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);

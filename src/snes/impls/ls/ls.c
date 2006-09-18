@@ -417,7 +417,7 @@ $     -snes_no_convergence_test -snes_max_it <its>
    using pseudo-timestepping.
 
    The residual norms printed by monitoring routines such as
-   SNESDefaultMonitor() (as activated via -snes_monitor) will not be 
+   SNESMonitorDefault() (as activated via -snes_monitor) will not be 
    correct, since they are not computed.
 
    Level: advanced

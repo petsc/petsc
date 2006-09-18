@@ -182,7 +182,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
       
    /*..Set KSP solver type..*/ 
    ierr = KSPSetType(ksp,KSPRICHARDSON);CHKERRQ(ierr);  
-   ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,PETSC_NULL, PETSC_NULL); 
+   ierr = KSPMonitorSet(ksp,KSPMonitorDefault,PETSC_NULL, PETSC_NULL); 
           CHKERRQ(ierr); 
    /*..Set MG preconditioner..*/
    ierr = PCSetType(pc,PCMG);CHKERRQ(ierr);

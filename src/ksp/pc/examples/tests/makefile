@@ -49,12 +49,12 @@ runex1:
 	   else echo "Possible problem with ex1_1, diffs above"; fi; \
 	   ${RM} -f ex1_1.tmp 
 runex2:
-	-@${MPIRUN} -np 1 ./ex2 -ksp_type cg -ksp_smonitor > ex2_1.tmp 2>&1;	 \
+	-@${MPIRUN} -np 1 ./ex2 -ksp_type cg -ksp_monitor_short > ex2_1.tmp 2>&1;	 \
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp 
 runex3:
-	-@${MPIRUN} -np 1 ./ex3 -ksp_type gmres -ksp_smonitor -pc_type sor\
+	-@${MPIRUN} -np 1 ./ex3 -ksp_type gmres -ksp_monitor_short -pc_type sor\
 			     -pc_sor_symmetric > ex3_1.tmp 2>&1;   \
 	   if (${DIFF} output/ex3_1.out ex3_1.tmp) then true; \
 	   else echo "Possible problem with ex3_1, diffs above"; fi; \

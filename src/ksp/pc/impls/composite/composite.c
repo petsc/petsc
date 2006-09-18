@@ -43,10 +43,10 @@ static PetscErrorCode PCApply_Composite_Multiplicative(PC pc,Vec x,Vec y)
     next = next->next;
     ierr = MatMult(mat,y,jac->work1);CHKERRQ(ierr);
     ierr = VecWAXPY(jac->work2,-1.0,jac->work1,x);CHKERRQ(ierr);
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
     ierr = PCApply(next->pc,jac->work2,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -91,6 +91,7 @@ static PetscErrorCode PCApply_Composite_Additive(PC pc,Vec x,Vec y)
   ierr = PCApply(next->pc,x,y);CHKERRQ(ierr);
   while (next->next) {
     next = next->next;
+    ierr = VecSet(jac->work1,0.0);CHKERRQ(ierr);  /* zero since some PC's may not set all entries in the result */        
     ierr = PCApply(next->pc,x,jac->work1);CHKERRQ(ierr);
     ierr = VecAXPY(y,1.0,jac->work1);CHKERRQ(ierr);
   }
@@ -113,7 +114,6 @@ static PetscErrorCode PCSetUp_Composite(PC pc)
     ierr = PCSetOperators(next->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
     next = next->next;
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -150,7 +150,10 @@ static PetscErrorCode PCSetFromOptions_Composite(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Composite preconditioner options");CHKERRQ(ierr);
-  ierr = PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-pc_composite_type","Type of composition","PCCompositeSetType",PCCompositeTypes,(PetscEnum)jac->type,(PetscEnum*)&jac->type,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PCCompositeSetType(pc,jac->type);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsName("-pc_composite_true","Use true matrix for inner solves","PCCompositeSetUseTrue",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCCompositeSetUseTrue(pc);CHKERRQ(ierr);
@@ -271,7 +274,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC_Composite(PC pc,PCType type)
   ierr = PCAppendOptionsPrefix(ilink->pc,newprefix);CHKERRQ(ierr);
   /* type is set after prefix, because some methods may modify prefix, e.g. pcksp */
   ierr = PCSetType(ilink->pc,type);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -482,8 +484,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetUseTrue(PC pc)
      PCCOMPOSITE - Build a preconditioner by composing together several preconditioners 
 
    Options Database Keys:
-.  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
++  -pc_composite_type <type: one of multiplicative, additive, special> - Sets composite preconditioner type
 .  -pc_composite_true - Activates PCCompositeSetUseTrue()
+-  -pc_composite_pcs - <pc0,pc1,...> list of PCs to compose
 
    Level: intermediate
 

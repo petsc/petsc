@@ -9,10 +9,10 @@
 #define tsgetrhsmatrix_                      TSGETRHSMATRIX
 #define tsview_                              TSVIEW
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
-#define tssetmonitor_                        TSSETMONITOR
+#define tsmonitorset_                        TSMONITORSET
 #define tsdefaultcomputejacobian_            TSDEFAULTCOMPUTEJACOBIAN
 #define tsdefaultcomputejacobiancolor_       TSDEFAULTCOMPUTEJACOBIANCOLOR
-#define tsdefaultmonitor_                    TSDEFAULTMONITOR
+#define tsmonitordefault_                    TSMONITORDEFAULT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tssetrhsmatrix_                      tssetrhsmatrix
@@ -21,10 +21,10 @@
 #define tsgetrhsmatrix_                      tsgetrhsmatrix
 #define tsview_                              tsview
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
-#define tssetmonitor_                        tssetmonitor
+#define tsmonitorset_                        tsmonitorset
 #define tsdefaultcomputejacobian_            tsdefaultcomputejacobian
 #define tsdefaultcomputejacobiancolor_       tsdefaultcomputejacobiancolor
-#define tsdefaultmonitor_                    tsdefaultmonitor
+#define tsmonitordefault_                    tsmonitordefault
 #endif
 
 static PetscErrorCode ourtsfunction(TS ts,PetscReal d,Vec x,Vec f,void *ctx)
@@ -107,20 +107,20 @@ void PETSC_STDCALL tssetrhsjacobian_(TS *ts,Mat *A,Mat *B,void (PETSC_STDCALL *f
 
 /* ---------------------------------------------------------*/
 
-extern void PETSC_STDCALL tsdefaultmonitor_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*);
+extern void PETSC_STDCALL tsmonitordefault_(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*);
 
-void PETSC_STDCALL tssetmonitor_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL tsmonitorset_(TS *ts,void (PETSC_STDCALL *func)(TS*,PetscInt*,PetscReal*,Vec*,void*,PetscErrorCode*),void (*mctx)(void),void (PETSC_STDCALL *d)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
-  if ((PetscVoidFunction)func == (PetscVoidFunction)tsdefaultmonitor_) {
-    *ierr = TSSetMonitor(*ts,TSDefaultMonitor,0,0);
+  if ((PetscVoidFunction)func == (PetscVoidFunction)tsmonitordefault_) {
+    *ierr = TSMonitorSet(*ts,TSMonitorDefault,0,0);
   } else {
     ((PetscObject)*ts)->fortran_func_pointers[4] = (PetscVoidFunction)func;
     ((PetscObject)*ts)->fortran_func_pointers[5] = (PetscVoidFunction)d;
     ((PetscObject)*ts)->fortran_func_pointers[6] = (PetscVoidFunction)mctx;
     if (FORTRANNULLFUNCTION(d)) {
-      *ierr = TSSetMonitor(*ts,ourtsmonitor,*ts,0);
+      *ierr = TSMonitorSet(*ts,ourtsmonitor,*ts,0);
     } else {
-      *ierr = TSSetMonitor(*ts,ourtsmonitor,*ts,ourtsdestroy);
+      *ierr = TSMonitorSet(*ts,ourtsmonitor,*ts,ourtsdestroy);
     }
   }
 }

@@ -140,6 +140,10 @@ namespace ALE {
       const Obj<Mesh::bc_section_type>& ibc = mesh->getBCSection("IBC");
       int *tmpIBC = new int[numBdFaces*4];
       std::map<int,std::set<int> > elem2Idx;
+      std::map<int,int> elem2Num;
+
+      std::map<int,int> bfReorder;
+
       for(int bf = 0; bf < numBdFaces; bf++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
 
@@ -152,12 +156,24 @@ namespace ALE {
         tmpIBC[bf*4+2] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBC[bf*4+3] = atoi(x);
-        ibc->addFiberDimension(patch, tmpIBC[bf*4+0], 4);
-        elem2Idx[tmpIBC[bf*4+0]].insert(bf);
+        const int elem = tmpIBC[bf*4+0]-1;
+
+        ibc->addFiberDimension(patch, elem, 4);
+        elem2Idx[elem].insert(bf);
       }
       ibc->allocate();
+      const Mesh::bc_section_type::chart_type& chart = ibc->getPatch(patch);
+      int num = 0;
+
+      for(Mesh::bc_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const int elem = *p_iter;
+
+        for(std::set<int>::const_iterator i_iter = elem2Idx[elem].begin(); i_iter != elem2Idx[elem].end(); ++i_iter) {
+          bfReorder[(*i_iter)+1] = ++num;
+        }
+      }
       for(int bf = 0; bf < numBdFaces; bf++) {
-        const int elem = tmpIBC[bf*4];
+        const int elem = tmpIBC[bf*4]-1;
 
         if (elem2Idx[elem].size() > 1) {
           if (*elem2Idx[elem].begin() == bf) {
@@ -207,18 +223,19 @@ namespace ALE {
         tmpIBNDFS[bv*3+1] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBNDFS[bv*3+2] = atoi(x);
-        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0], 5);
+        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0]-1, 5);
       }
       ibndfs->allocate();
       for(int bv = 0; bv < numBdVertices; bv++) {
         int values[5];
 
         values[0] = tmpIBNDFS[bv*3+0];
-        values[1] = tmpIBNDFS[bv*3+1];
-        values[2] = tmpIBNDFS[bv*3+2];
+        // Covert to new boundary face numbers
+        values[1] = bfReorder[tmpIBNDFS[bv*3+1]];
+        values[2] = bfReorder[tmpIBNDFS[bv*3+2]];
         values[3] = 0;
         values[4] = 0;
-        ibndfs->update(patch, values[0], values);
+        ibndfs->update(patch, values[0]-1, values);
       }
       delete [] tmpIBNDFS;
       ierr = PetscViewerDestroy(viewer);

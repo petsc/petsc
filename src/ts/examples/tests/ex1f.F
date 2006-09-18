@@ -146,7 +146,7 @@
 
       call TSCreate(PETSC_COMM_WORLD,ts,ierr) 
       call TSSetProblemType(ts,tsproblem,ierr) 
-      call TSSetMonitor(ts,Monitor,PETSC_NULL_OBJECT,                   &
+      call TSMonitorSet(ts,Monitor,PETSC_NULL_OBJECT,                   &
      &                  PETSC_NULL_FUNCTION, ierr) 
 
       dt = h*h/2.01

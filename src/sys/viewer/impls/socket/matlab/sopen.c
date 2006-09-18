@@ -1,11 +1,14 @@
 /* 
-  Usage: A = openport(portnumber);  [ 5000 < portnumber < 5010 ]
+  Usage: A = sopen(portnumber);  [ 5000 < portnumber < 5010 ]
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
+	 Updated by Barry Smith, bsmith@mcs.anl.gov 8/11/06
 
-   This code has not been tested on all machines, the function prototypes may not
-exist for certain systems. Only compiles as C code.
+ Similar to Matlab's sopen() only does not take file name, instead optional
+ port to listen at.
+
+ Only compiles as C code.
 */
 
 #include "petsc.h"
@@ -69,38 +72,7 @@ typedef unsigned long   u_long;
 #include "petscfix.h"
 #include "mex.h"
 
-EXTERN PetscErrorCode SOCKConnect_Private(int);
-#define PETSC_MEX_ERROR(a) {fprintf(stdout,"OPENPORT: %s \n",a); return ;}
-/*-----------------------------------------------------------------*/
-/*                                                                 */
-/*-----------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "mexFunction"
-void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
-{
-  int t,portnumber;
-
-  /* check output parameters */
-  if (nlhs != 1) PETSC_MEX_ERROR("Open requires one output argument.");
-
-  /* figure out portnumber user wants to use; default to 5005 */
-  if (!nrhs) {
-    char *str;
-    str = getenv("PETSC_VIEWER_SOCKET_PORT");
-    if (str) portnumber = atoi(str);
-    else portnumber = DEFAULTPORT;  
-  } else {
-    portnumber = (int)*mxGetPr(prhs[0]);
-  }
-
-  /* open connection */
-  t = SOCKConnect_Private(portnumber); if (t == -1)  PETSC_MEX_ERROR("opening socket");
-
-  plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
- 
-  *mxGetPr(plhs[0]) = t;
-  return;
-}
+#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}
 
 /*-----------------------------------------------------------------*/
 /* The listenport variable is an ugly hack. If the user hits a         */
@@ -127,15 +99,15 @@ PetscErrorCode SOCKConnect_Private(int portnumber)
 /* open port*/
   listenport = establish((u_short) portnumber);
   if (listenport == -1) {
-       fprintf(stdout,"RECEIVE: unable to establish port\n");
-       return -1;
+    PETSC_MEX_ERROR("RECEIVE: unable to establish port\n");
+    return -1;
   }
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
   if ((t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
-     fprintf(stdout,"RECEIVE: error from accept\n");
-     return(-1);
+    PETSC_MEX_ERROR("RECEIVE: error from accept\n");
+    return(-1);
   }
   close(listenport);  
   return(t);
@@ -171,7 +143,7 @@ PetscErrorCode establish(u_short portnum)
 #endif
   hp = gethostbyname(myname);
   if (!hp) {
-     fprintf(stdout,"RECEIVE: error from gethostbyname\n");
+    PETSC_MEX_ERROR("RECEIVE: error from gethostbyname\n");
      return(-1);
   }
 
@@ -179,8 +151,8 @@ PetscErrorCode establish(u_short portnum)
   sa.sin_port = htons(portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-     fprintf(stdout,"RECEIVE: error from socket\n");
-     return(-1);
+    PETSC_MEX_ERROR("RECEIVE: error from socket\n");
+    return(-1);
   }
   {
   int optval = 1; /* Turn on the option */
@@ -195,11 +167,42 @@ PetscErrorCode establish(u_short portnum)
     if (errno != EADDRINUSE) { 
 #endif
       close(s);
-      fprintf(stdout,"RECEIVE: error from bind\n");
+      PETSC_MEX_ERROR("RECEIVE: error from bind\n");
       return(-1);
     }
     close(listenport); 
   }
   listen(s,0);
   return(s);
+}
+
+/*-----------------------------------------------------------------*/
+/*                                                                 */
+/*-----------------------------------------------------------------*/
+#undef __FUNCT__  
+#define __FUNCT__ "mexFunction"
+void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
+{
+  int        t,portnumber;
+
+  /* check output parameters */
+  if (nlhs != 1) PETSC_MEX_ERROR("Open requires one output argument.");
+
+  /* figure out portnumber user wants to use; default to 5005 */
+  if (!nrhs) {
+    char *str;
+    str = getenv("PETSC_VIEWER_SOCKET_PORT");
+    if (str) portnumber = atoi(str);
+    else portnumber = DEFAULTPORT;  
+  } else {
+    portnumber = (int)*mxGetPr(prhs[0]);
+  }
+
+  /* open connection */
+  t = SOCKConnect_Private(portnumber); if (t == -1)  PETSC_MEX_ERROR("opening socket");
+
+  plhs[0]  = mxCreateDoubleMatrix(1,1,mxREAL);
+ 
+  *mxGetPr(plhs[0]) = t;
+  return;
 }

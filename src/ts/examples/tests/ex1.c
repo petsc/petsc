@@ -134,11 +134,9 @@ int main(int argc,char **argv)
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-monitor",&flg);CHKERRQ(ierr);
-  if (flg){
-    ierr = TSSetMonitor(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
-  }
-  dt = appctx.h*appctx.h/2.01; /* initial time step */
+  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+
+  dt = appctx.h*appctx.h/2.01;
 
   if (problem == linear_no_matrix) {
     /*

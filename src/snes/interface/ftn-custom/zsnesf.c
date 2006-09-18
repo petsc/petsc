@@ -27,11 +27,11 @@
 #define snessettype_                     SNESSETTYPE
 #define snesappendoptionsprefix_         SNESAPPENDOPTIONSPREFIX 
 #define snessetoptionsprefix_            SNESSETOPTIONSPREFIX 
-#define snesdefaultmonitor_              SNESDEFAULTMONITOR
-#define snesvecviewmonitor_              SNESVECVIEWMONITOR
-#define sneslgmonitor_                   SNESLGMONITOR
-#define snesvecviewupdatemonitor_        SNESVECVIEWUPDATEMONITOR
-#define snessetmonitor_                  SNESSETMONITOR
+#define snesmonitordefault_              SNESMONITORDEFAULT
+#define snesmonitorsolution_             SNESMONITORSOLUTION
+#define snesmonitorlg_                   SNESMONITORLG
+#define snesmonitorsolutionupdate_       SNESMONITORSOLUTIONUPDATE
+#define snesmonitorset_                  SNESMONITORSET
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define snessolve_                       snessolve
 #define snesdefaultcomputejacobian_      snesdefaultcomputejacobian
@@ -53,11 +53,11 @@
 #define snessettype_                     snessettype
 #define snesappendoptionsprefix_         snesappendoptionsprefix
 #define snessetoptionsprefix_            snessetoptionsprefix 
-#define sneslgmonitor_                   sneslgmonitor
-#define snesdefaultmonitor_              snesdefaultmonitor
-#define snesvecviewmonitor_              snesvecviewmonitor
-#define snesvecviewupdatemonitor_        snesvecviewupdatemonitor
-#define snessetmonitor_                  snessetmonitor
+#define snesmonitorlg_                   snesmonitorlg
+#define snesmonitordefault_              snesmonitordefault
+#define snesmonitorsolution_             snesmonitorsolution
+#define snesmonitorsolutionupdate_       snesmonitorsolutionupdate
+#define snesmonitorset_                  snesmonitorset
 #endif
 
 EXTERN_C_BEGIN
@@ -309,46 +309,46 @@ void PETSC_STDCALL snessetoptionsprefix_(SNES *snes,CHAR prefix PETSC_MIXED_LEN(
 /*----------------------------------------------------------------------*/
 /* functions, hence no STDCALL */
 
-void sneslgmonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesmonitorlg_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESLGMonitor(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorLG(*snes,*its,*fgnorm,dummy);
 }
 
-void snesdefaultmonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesmonitordefault_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESDefaultMonitor(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorDefault(*snes,*its,*fgnorm,dummy);
 }
 
-void snesvecviewmonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesmonitorsolution_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESVecViewMonitor(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorSolution(*snes,*its,*fgnorm,dummy);
 }
 
-void snesvecviewupdatemonitor_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
+void snesmonitorsolutionupdate_(SNES *snes,PetscInt *its,PetscReal *fgnorm,void *dummy,PetscErrorCode *ierr)
 {
-  *ierr = SNESVecViewUpdateMonitor(*snes,*its,*fgnorm,dummy);
+  *ierr = SNESMonitorSolutionUpdate(*snes,*its,*fgnorm,dummy);
 }
 
 
-void PETSC_STDCALL snessetmonitor_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
+void PETSC_STDCALL snesmonitorset_(SNES *snes,void (PETSC_STDCALL *func)(SNES*,PetscInt*,PetscReal*,void*,PetscErrorCode*),
                     void *mctx,void (PETSC_STDCALL *mondestroy)(void*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(mctx);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultmonitor_) {
-    *ierr = SNESSetMonitor(*snes,SNESDefaultMonitor,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesvecviewmonitor_) {
-    *ierr = SNESSetMonitor(*snes,SNESVecViewMonitor,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesvecviewupdatemonitor_) {
-    *ierr = SNESSetMonitor(*snes,SNESVecViewUpdateMonitor,0,0);
-  } else if ((PetscVoidFunction)func == (PetscVoidFunction)sneslgmonitor_) {
-    *ierr = SNESSetMonitor(*snes,SNESLGMonitor,0,0);
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitordefault_) {
+    *ierr = SNESMonitorSet(*snes,SNESMonitorDefault,0,0);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolution_) {
+    *ierr = SNESMonitorSet(*snes,SNESMonitorSolution,0,0);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorsolutionupdate_) {
+    *ierr = SNESMonitorSet(*snes,SNESMonitorSolutionUpdate,0,0);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesmonitorlg_) {
+    *ierr = SNESMonitorSet(*snes,SNESMonitorLG,0,0);
   } else {
     f7 = func;
     if (FORTRANNULLFUNCTION(mondestroy)){
-      *ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,0);
+      *ierr = SNESMonitorSet(*snes,oursnesmonitor,mctx,0);
     } else {
       f71 = mondestroy;
-      *ierr = SNESSetMonitor(*snes,oursnesmonitor,mctx,ourmondestroy);
+      *ierr = SNESMonitorSet(*snes,oursnesmonitor,mctx,ourmondestroy);
     }
   }
 }

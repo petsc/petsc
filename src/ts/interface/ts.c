@@ -63,7 +63,7 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 .  -ts_max_time time - maximum time to compute to
 .  -ts_dt dt - initial time step
 .  -ts_monitor - print information at each timestep
--  -ts_xmonitor - plot information at each timestep
+-  -ts_monitor_draw - plot information at each timestep
 
    Level: beginner
 
@@ -93,18 +93,18 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     }
 
     /* Monitor options */
-    ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSDefaultMonitor","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIOpen(ts->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TSSetMonitor(ts,TSDefaultMonitor,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_xmonitor","Monitor timestep size graphically","TSLGMonitor",&opt);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",&opt);CHKERRQ(ierr);
     if (opt) {
-      ierr = TSSetMonitor(ts,TSLGMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorLG,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsName("-ts_vecmonitor","Monitor solution graphically","TSVecViewMonitor",&opt);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-ts_monitor_solution","Monitor solution graphically","TSMonitorSolution",&opt);CHKERRQ(ierr);
     if (opt) {
-      ierr = TSSetMonitor(ts,TSVecViewMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorSolution,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     }
 
     /* Handle TS type options */
@@ -939,7 +939,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
   if (ts->ksp) {ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);}
   if (ts->snes) {ierr = SNESDestroy(ts->snes);CHKERRQ(ierr);}
   if (ts->ops->destroy) {ierr = (*(ts)->ops->destroy)(ts);CHKERRQ(ierr);}
-  ierr = TSClearMonitor(ts);CHKERRQ(ierr);
+  ierr = TSMonitorCancel(ts);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1260,9 +1260,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDefaultPostStep(TS ts)
 /* ------------ Routines to set performance monitoring options ----------- */
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSSetMonitor"
+#define __FUNCT__ "TSMonitorSet"
 /*@C
-   TSSetMonitor - Sets an ADDITIONAL function that is to be used at every
+   TSMonitorSet - Sets an ADDITIONAL function that is to be used at every
    timestep to display the iteration's  progress.   
 
    Collective on TS
@@ -1292,9 +1292,9 @@ $    int func(TS ts,PetscInt steps,PetscReal time,Vec x,void *mctx)
 
 .keywords: TS, timestep, set, monitor
 
-.seealso: TSDefaultMonitor(), TSClearMonitor()
+.seealso: TSMonitorDefault(), TSMonitorCancel()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSet(TS ts,PetscErrorCode (*monitor)(TS,PetscInt,PetscReal,Vec,void*),void *mctx,PetscErrorCode (*mdestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
@@ -1308,9 +1308,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSClearMonitor"
+#define __FUNCT__ "TSMonitorCancel"
 /*@C
-   TSClearMonitor - Clears all the monitors that have been set on a time-step object.   
+   TSMonitorCancel - Clears all the monitors that have been set on a time-step object.   
 
    Collective on TS
 
@@ -1324,9 +1324,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMonitor(TS ts,PetscErrorCode (*monitor)(TS
 
 .keywords: TS, timestep, set, monitor
 
-.seealso: TSDefaultMonitor(), TSSetMonitor()
+.seealso: TSMonitorDefault(), TSMonitorSet()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSClearMonitor(TS ts)
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitorCancel(TS ts)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1343,11 +1343,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSClearMonitor(TS ts)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSDefaultMonitor"
+#define __FUNCT__ "TSMonitorDefault"
 /*@
-   TSDefaultMonitor - Sets the Default monitor
+   TSMonitorDefault - Sets the Default monitor
 @*/
-PetscErrorCode TSDefaultMonitor(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
+PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer)ctx;
@@ -1420,9 +1420,9 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 /* ------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSLGMonitorCreate"
+#define __FUNCT__ "TSMonitorLGCreate"
 /*@C
-   TSLGMonitorCreate - Creates a line graph context for use with 
+   TSMonitorLGCreate - Creates a line graph context for use with 
    TS to monitor convergence of preconditioned residual norms.
 
    Collective on TS
@@ -1437,19 +1437,19 @@ PetscErrorCode TSMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x)
 .  draw - the drawing context
 
    Options Database Key:
-.  -ts_xmonitor - automatically sets line graph monitor
+.  -ts_monitor_draw - automatically sets line graph monitor
 
    Notes: 
-   Use TSLGMonitorDestroy() to destroy this line graph, not PetscDrawLGDestroy().
+   Use TSMonitorLGDestroy() to destroy this line graph, not PetscDrawLGDestroy().
 
    Level: intermediate
 
 .keywords: TS, monitor, line graph, residual, seealso
 
-.seealso: TSLGMonitorDestroy(), TSSetMonitor()
+.seealso: TSMonitorLGDestroy(), TSMonitorSet()
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSLGMonitorCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitorLGCreate(const char host[],const char label[],int x,int y,int m,int n,PetscDrawLG *draw)
 {
   PetscDraw      win;
   PetscErrorCode ierr;
@@ -1465,8 +1465,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSLGMonitorCreate(const char host[],const char 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSLGMonitor"
-PetscErrorCode TSLGMonitor(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
+#define __FUNCT__ "TSMonitorLG"
+PetscErrorCode TSMonitorLG(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 {
   PetscDrawLG    lg = (PetscDrawLG) monctx;
   PetscReal      x,y = ptime;
@@ -1492,10 +1492,10 @@ PetscErrorCode TSLGMonitor(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 } 
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSLGMonitorDestroy" 
+#define __FUNCT__ "TSMonitorLGDestroy" 
 /*@C
-   TSLGMonitorDestroy - Destroys a line graph context that was created 
-   with TSLGMonitorCreate().
+   TSMonitorLGDestroy - Destroys a line graph context that was created 
+   with TSMonitorLGCreate().
 
    Collective on PetscDrawLG
 
@@ -1506,9 +1506,9 @@ PetscErrorCode TSLGMonitor(TS ts,PetscInt n,PetscReal ptime,Vec v,void *monctx)
 
 .keywords: TS, monitor, line graph, destroy
 
-.seealso: TSLGMonitorCreate(),  TSSetMonitor(), TSLGMonitor();
+.seealso: TSMonitorLGCreate(),  TSMonitorSet(), TSMonitorLG();
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSLGMonitorDestroy(PetscDrawLG drawlg)
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitorLGDestroy(PetscDrawLG drawlg)
 {
   PetscDraw      draw;
   PetscErrorCode ierr;
@@ -1746,9 +1746,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "TSVecViewMonitor"
+#define __FUNCT__ "TSMonitorSolution"
 /*@C
-   TSVecViewMonitor - Monitors progress of the TS solvers by calling 
+   TSMonitorSolution - Monitors progress of the TS solvers by calling 
    VecView() for the solution at each timestep
 
    Collective on TS
@@ -1763,9 +1763,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx
 
 .keywords: TS,  vector, monitor, view
 
-.seealso: TSSetMonitor(), TSDefaultMonitor(), VecView()
+.seealso: TSMonitorSet(), TSMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSVecViewMonitor(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
+PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal ptime,Vec x,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;

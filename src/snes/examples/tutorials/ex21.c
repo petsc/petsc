@@ -80,7 +80,7 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetFunction(snes,FU,FormFunction,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
-  ierr = SNESSetMonitor(snes,Monitor,&user,0);CHKERRQ(ierr);
+  ierr = SNESMonitorSet(snes,Monitor,&user,0);CHKERRQ(ierr);
   ierr = SNESSolve(snes,PETSC_NULL,U);CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = SNESDestroy(snes);CHKERRQ(ierr);

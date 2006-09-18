@@ -47,7 +47,7 @@ int main(int argc,char **args)
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac;
+  PetscInt       its,num_numfac,m,n;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
@@ -141,7 +141,7 @@ int main(int argc,char **args)
 
     /* Add a shift to A */
     ierr = PetscOptionsGetScalar(PETSC_NULL,"-mat_sigma",&sigma,&flg);CHKERRQ(ierr);
-    if(flg) {
+    if (flg) {
       ierr = PetscOptionsGetString(PETSC_NULL,"-fB",file[2],PETSC_MAX_PATH_LEN-1,&flgB);CHKERRQ(ierr);
       if (flgB){
         /* load B to get A = A + sigma*B */
@@ -195,17 +195,19 @@ int main(int argc,char **args)
        If the loaded matrix is larger than the vector (due to being padded 
        to match the block size of the system), then create a new padded vector.
     */
-    { 
-      PetscInt    m,n,j,mvec,start,end,indx;
+    ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
+    if (m != n) {
+      SETERRQ2(PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
+    }
+    ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
+    if (m != n) {
+      PetscInt    j,mvec,start,end,indx;
       Vec         tmp;
       PetscScalar *bold;
 
       /* Create a new vector b by padding the old one */
-      ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
-      if (m != n) {
-        SETERRQ2(PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
-      }
       ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
+
       ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);

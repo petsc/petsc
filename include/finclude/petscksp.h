@@ -88,7 +88,7 @@
       parameter (KSP_UNPRECONDITIONED_NORM=2)
       parameter (KSP_NATURAL_NORM=3) 
 !
-!   Possible arguments to KSPSetMonitor()
+!   Possible arguments to KSPMonitorSet()
 !
       external KSPDEFAULTCONVERGED
       external KSPDEFAULTMONITOR

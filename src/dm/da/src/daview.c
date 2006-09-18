@@ -12,7 +12,7 @@ EXTERN_C_END
 #endif
 
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 #include "mat.h"   /* Matlab include file */
 
 #undef __FUNCT__  
@@ -182,10 +182,10 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscInt i,dof = da->w;
-  PetscTruth iascii,fieldsnamed = PETSC_FALSE,isbinary;
-#if defined(PETSC_HAVE_MATLAB)
-  PetscTruth ismatlab;
+  PetscInt       i,dof = da->w;
+  PetscTruth     iascii,fieldsnamed = PETSC_FALSE,isbinary;
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
+  PetscTruth     ismatlab;
 #endif
 
   PetscFunctionBegin;
@@ -195,7 +195,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii) {
@@ -219,7 +219,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
   }
   if (isbinary){
     ierr = DAView_Binary(da,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   } else if (ismatlab) {
     ierr = DAView_Matlab(da,viewer);CHKERRQ(ierr);
 #endif

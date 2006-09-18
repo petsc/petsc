@@ -48,9 +48,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsGetenv(MPI_Comm,const char[],
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtoi(const char[],PetscInt*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscOptionsAtod(const char[],PetscReal*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetMonitor(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsClearMonitor();
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsDefaultMonitor(const char[], const char[], void *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*)(const char[], const char[], void*), void *, PetscErrorCode (*)(void*));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel();
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorDefault(const char[], const char[], void *);
 
 extern PETSC_DLLEXPORT PetscTruth PetscOptionsPublish;
 extern PETSC_DLLEXPORT PetscInt   PetscOptionsPublishCount;
