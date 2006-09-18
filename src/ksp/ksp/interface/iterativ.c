@@ -91,9 +91,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSingularValueMonitor"
+#define __FUNCT__ "KSPMonitorSingularValue"
 /*@C
-    KSPSingularValueMonitor - Prints the two norm of the true residual and
+    KSPMonitorSingularValue - Prints the two norm of the true residual and
     estimation of the extreme singular values of the preconditioned problem
     at each iteration.
  
@@ -105,7 +105,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 -   rnorm - the two norm of the residual
 
     Options Database Key:
-.   -ksp_singmonitor - Activates KSPSingularValueMonitor()
+.   -ksp_monitor_singular_value - Activates KSPMonitorSingularValue()
 
     Notes:
     The CG solver uses the Lanczos technique for eigenvalue computation, 
@@ -118,7 +118,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetIterationNumber(KSP ksp,PetscInt *its)
 
 .seealso: KSPComputeExtremeSingularValues()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscReal      emin,emax,c;
   PetscErrorCode ierr;
@@ -138,9 +138,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPVecViewMonitor"
+#define __FUNCT__ "KSPMonitorSolution"
 /*@C
-   KSPVecViewMonitor - Monitors progress of the KSP solvers by calling 
+   KSPMonitorSolution - Monitors progress of the KSP solvers by calling 
    VecView() for the approximate solution at each iteration.
 
    Collective on KSP
@@ -159,9 +159,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSingularValueMonitor(KSP ksp,PetscInt n,Pet
 
 .keywords: KSP, nonlinear, vector, monitor, view
 
-.seealso: KSPSetMonitor(), KSPDefaultMonitor(), VecView()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), VecView()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSolution(KSP ksp,PetscInt its,PetscReal fgnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            x;
@@ -180,9 +180,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscRe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDefaultMonitor"
+#define __FUNCT__ "KSPMonitorDefault"
 /*@C
-   KSPDefaultMonitor - Print the residual norm at each iteration of an
+   KSPMonitorDefault - Print the residual norm at each iteration of an
    iterative solver.
 
    Collective on KSP
@@ -197,9 +197,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPVecViewMonitor(KSP ksp,PetscInt its,PetscRe
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPSetMonitor(), KSPTrueMonitor(), KSPLGMonitorCreate()
+.seealso: KSPMonitorSet(), KSPMonitorTrueResidualNorm(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;
@@ -211,9 +211,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPTrueMonitor"
+#define __FUNCT__ "KSPMonitorTrueResidualNorm"
 /*@C
-   KSPTrueMonitor - Prints the true residual norm as well as the preconditioned
+   KSPMonitorTrueResidualNorm - Prints the true residual norm as well as the preconditioned
    residual norm at each iteration of an iterative solver.
 
    Collective on KSP
@@ -225,7 +225,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal
 -  dummy - unused monitor context 
 
    Options Database Key:
-.  -ksp_truemonitor - Activates KSPTrueMonitor()
+.  -ksp_monitor_true_residual_norm - Activates KSPMonitorTrueResidualNorm()
 
    Notes:
    When using right preconditioning, these values are equivalent.
@@ -239,9 +239,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultMonitor(KSP ksp,PetscInt n,PetscReal
 
 .keywords: KSP, default, monitor, residual
 
-.seealso: KSPSetMonitor(), KSPDefaultMonitor(), KSPLGMonitorCreate()
+.seealso: KSPMonitorSet(), KSPMonitorDefault(), KSPMonitorLGCreate()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)
 {
   PetscErrorCode ierr;
   Vec            resid,work;
@@ -274,15 +274,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPTrueMonitor(KSP ksp,PetscInt n,PetscReal rn
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPDefaultSMonitor"
+#define __FUNCT__ "KSPMonitorDefaultShort"
 /*
-  Default (short) KSP Monitor, same as KSPDefaultMonitor() except
+  Default (short) KSP Monitor, same as KSPMonitorDefault() except
   it prints fewer digits of the residual as the residual gets smaller.
   This is because the later digits are meaningless and are often 
   different on different machines; by using this routine different 
   machines will usually generate the same output.
 */
-PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultSMonitor(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,PetscReal fnorm,void *dummy)
 {
   PetscErrorCode ierr;
   PetscViewer    viewer = (PetscViewer) dummy;

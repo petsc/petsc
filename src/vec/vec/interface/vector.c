@@ -170,42 +170,20 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecAssemblyEnd"
-/*@
-   VecAssemblyEnd - Completes assembling the vector.  This routine should
-   be called after VecAssemblyBegin().
+#define __FUNCT__ "VecView_Private"
+/*
+  Processes command line options to determine if/how a matrix
+  is to be viewed. Called by VecAssemblyEnd().
 
-   Collective on Vec
+.seealso: MatView_Private()
 
-   Input Parameter:
-.  vec - the vector
-
-   Options Database Keys:
-+  -vec_view - Prints vector in ASCII format
-.  -vec_view_matlab - Prints vector in ASCII Matlab format to stdout
-.  -vec_view_matlab_file - Prints vector in Matlab format to matlaboutput.mat
-.  -vec_view_draw - Activates vector viewing using drawing tools
-.  -display <name> - Sets display name (default is host)
-.  -draw_pause <sec> - Sets number of seconds to pause after display
--  -vec_view_socket - Activates vector viewing using a socket
- 
-   Level: beginner
-
-.seealso: VecAssemblyBegin(), VecSetValues()
-@*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
+*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
-  ierr = PetscLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
-  PetscValidType(vec,1);
-  if (vec->ops->assemblyend) {
-    ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
-  }
-  ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
   ierr = PetscOptionsBegin(vec->comm,vec->prefix,"Vector Options","Vec");CHKERRQ(ierr);
     ierr = PetscOptionsName("-vec_view","Print vector to stdout","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -217,7 +195,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
       ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
     }
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
     ierr = PetscOptionsName("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = VecView(vec,PETSC_VIEWER_MATLAB_(vec->comm));CHKERRQ(ierr);
@@ -249,6 +227,46 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
     ierr = VecView(vec,PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
     ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(vec->comm));CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecAssemblyEnd"
+/*@
+   VecAssemblyEnd - Completes assembling the vector.  This routine should
+   be called after VecAssemblyBegin().
+
+   Collective on Vec
+
+   Input Parameter:
+.  vec - the vector
+
+   Options Database Keys:
++  -vec_view - Prints vector in ASCII format
+.  -vec_view_matlab - Prints vector in ASCII Matlab format to stdout
+.  -vec_view_matlab_file - Prints vector in Matlab format to matlaboutput.mat
+.  -vec_view_draw - Activates vector viewing using drawing tools
+.  -display <name> - Sets display name (default is host)
+.  -draw_pause <sec> - Sets number of seconds to pause after display
+-  -vec_view_socket - Activates vector viewing using a socket
+ 
+   Level: beginner
+
+.seealso: VecAssemblyBegin(), VecSetValues()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyEnd(Vec vec)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
+  ierr = PetscLogEventBegin(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
+  PetscValidType(vec,1);
+  if (vec->ops->assemblyend) {
+    ierr = (*vec->ops->assemblyend)(vec);CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(VEC_AssemblyEnd,vec,0,0,0);CHKERRQ(ierr);
+  ierr = VecView_Private(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

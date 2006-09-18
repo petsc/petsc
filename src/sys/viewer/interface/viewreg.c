@@ -77,26 +77,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer viewer,PetscViewer
   ierr = PetscTypeCompare((PetscObject)viewer,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
+  /* cleanup any old type that may be there */
   if (viewer->data) {
-    /* destroy the old private PetscViewer context */
-    ierr = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
-    viewer->data      = 0;
+    ierr         = (*viewer->ops->destroy)(viewer);CHKERRQ(ierr);
+    viewer->data = 0;
   }
-  CHKMEMQ;
-  /* Get the function pointers for the graphics method requested */
+  ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
+
   if (!PetscViewerList) {
     ierr = PetscViewerRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  CHKMEMQ;
   ierr =  PetscFListFind(viewer->comm,PetscViewerList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscViewer type given: %s",type);
-  viewer->data        = 0;
-  CHKMEMQ;
-  ierr = PetscMemzero(viewer->ops,sizeof(struct _PetscViewerOps));CHKERRQ(ierr);
-  CHKMEMQ;
-  ierr = (*r)(viewer);CHKERRQ(ierr);
-  CHKMEMQ;
+
   ierr = PetscObjectChangeTypeName((PetscObject)viewer,type);CHKERRQ(ierr);
+  ierr = (*r)(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

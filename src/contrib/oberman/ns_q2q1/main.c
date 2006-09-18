@@ -70,7 +70,7 @@ int AppCtxSolve(AppCtx* appctx)
   /*      Set Jacobian   */ 
   ierr = SNESSetJacobian(snes, algebra->J, algebra->J, FormStationaryJacobian,(void *)appctx);CHKERRQ(ierr);
   /* set monintor functions */
-  if(appctx->view.monitor) {ierr = SNESSetMonitor(snes, MonitorFunction, (void *)appctx,0);CHKERRQ(ierr);}
+  if(appctx->view.monitor) {ierr = SNESMonitorSet(snes, MonitorFunction, (void *)appctx,0);CHKERRQ(ierr);}
 
 /* Need this call, otherwise the defaults don't get set, and solve won't work */
  /*      Set Solver Options, could put internal options here      */

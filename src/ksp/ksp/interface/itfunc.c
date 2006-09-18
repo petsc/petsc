@@ -25,14 +25,14 @@
    (or use the option -ksp_compute_eigenvalues) in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
-   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the extreme singular values at each iteration of the linear solve.
 
    Level: advanced
 
 .keywords: KSP, compute, extreme, singular, values
 
-.seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeEigenvalues()
+.seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeEigenvalues()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscReal *emax,PetscReal *emin)
 {
@@ -92,14 +92,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExtremeSingularValues(KSP ksp,PetscR
    in order for this routine to work correctly.
 
    Many users may just want to use the monitoring routine
-   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
    Level: advanced
 
 .keywords: KSP, compute, extreme, singular, values
 
-.seealso: KSPSetComputeSingularValues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues()
+.seealso: KSPSetComputeSingularValues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvalues(KSP ksp,PetscInt n,PetscReal *r,PetscReal *c,PetscInt *neig)
 {
@@ -281,7 +281,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
    for more details.
 
    Understanding Convergence:
-   The routines KSPSetMonitor(), KSPComputeEigenvalues(), and
+   The routines KSPMonitorSet(), KSPComputeEigenvalues(), and
    KSPComputeEigenvaluesExplicitly() provide information on additional
    options to monitor convergence and print eigenvalue information.
 
@@ -602,7 +602,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
-  ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
+  ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
@@ -900,20 +900,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *fl
 .  flg - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -ksp_singmonitor - Activates KSPSetComputeSingularValues()
+.  -ksp_monitor_singular_value - Activates KSPSetComputeSingularValues()
 
    Notes:
    Currently this option is not valid for all iterative methods.
 
    Many users may just want to use the monitoring routine
-   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
    Level: advanced
 
 .keywords: KSP, set, compute, singular values
 
-.seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
+.seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth *flg)
 {
@@ -938,20 +938,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetComputeSingularValues(KSP ksp,PetscTruth
 -  flg - PETSC_TRUE or PETSC_FALSE
 
    Options Database Key:
-.  -ksp_singmonitor - Activates KSPSetComputeSingularValues()
+.  -ksp_monitor_singular_value - Activates KSPSetComputeSingularValues()
 
    Notes:
    Currently this option is not valid for all iterative methods.
 
    Many users may just want to use the monitoring routine
-   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
    Level: advanced
 
 .keywords: KSP, set, compute, singular values
 
-.seealso: KSPComputeExtremeSingularValues(), KSPSingularValueMonitor()
+.seealso: KSPComputeExtremeSingularValues(), KSPMonitorSingularValue()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetComputeSingularValues(KSP ksp,PetscTruth flg)
 {
@@ -1148,9 +1148,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetPC(KSP ksp,PC *pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPSetMonitor"
+#define __FUNCT__ "KSPMonitorSet"
 /*@C
-   KSPSetMonitor - Sets an ADDITIONAL function to be called at every iteration to monitor 
+   KSPMonitorSet - Sets an ADDITIONAL function to be called at every iteration to monitor 
    the residual/error etc.
       
    Collective on KSP
@@ -1169,39 +1169,39 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 +  ksp - iterative context obtained from KSPCreate()
 .  it - iteration number
 .  rnorm - (estimated) 2-norm of (preconditioned) residual
--  mctx  - optional monitoring context, as set by KSPSetMonitor()
+-  mctx  - optional monitoring context, as set by KSPMonitorSet()
 
    Options Database Keys:
-+    -ksp_monitor        - sets KSPDefaultMonitor()
-.    -ksp_truemonitor    - sets KSPTrueMonitor()
-.    -ksp_xmonitor       - sets line graph monitor,
-                           uses KSPLGMonitorCreate()
-.    -ksp_xtruemonitor   - sets line graph monitor,
-                           uses KSPLGMonitorCreate()
-.    -ksp_singmonitor    - sets KSPSingularValueMonitor()
--    -ksp_cancelmonitors - cancels all monitors that have
++    -ksp_monitor        - sets KSPMonitorDefault()
+.    -ksp_monitor_true_residual_norm    - sets KSPMonitorTrueResidualNorm()
+.    -ksp_monitor_draw    - sets line graph monitor,
+                           uses KSPMonitorLGCreate()
+.    -ksp_monitor_draw_true_residual   - sets line graph monitor,
+                           uses KSPMonitorLGCreate()
+.    -ksp_monitor_singular_value    - sets KSPMonitorSingularValue()
+-    -ksp_monitor_cancel - cancels all monitors that have
                           been hardwired into a code by 
-                          calls to KSPSetMonitor(), but
+                          calls to KSPMonitorSet(), but
                           does not cancel those set via
                           the options database.
 
    Notes:  
    The default is to do nothing.  To print the residual, or preconditioned 
    residual if KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM) was called, use 
-   KSPDefaultMonitor() as the monitoring routine, with a null monitoring 
+   KSPMonitorDefault() as the monitoring routine, with a null monitoring 
    context. 
 
    Several different monitoring routines may be set by calling
-   KSPSetMonitor() multiple times; all will be called in the 
+   KSPMonitorSet() multiple times; all will be called in the 
    order in which they were set.
 
    Level: beginner
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPClearMonitor()
+.seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorCancel()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -1215,9 +1215,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "KSPClearMonitor"
+#define __FUNCT__ "KSPMonitorCancel"
 /*@
-   KSPClearMonitor - Clears all monitors for a KSP object.
+   KSPMonitorCancel - Clears all monitors for a KSP object.
 
    Collective on KSP
 
@@ -1225,17 +1225,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetMonitor(KSP ksp,PetscErrorCode (*monitor
 .  ksp - iterative context obtained from KSPCreate()
 
    Options Database Key:
-.  -ksp_cancelmonitors - Cancels all monitors that have
-    been hardwired into a code by calls to KSPSetMonitor(), 
+.  -ksp_monitor_cancel - Cancels all monitors that have
+    been hardwired into a code by calls to KSPMonitorSet(), 
     but does not cancel those set via the options database.
 
    Level: intermediate
 
 .keywords: KSP, set, monitor
 
-.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate(), KSPSetMonitor()
+.seealso: KSPMonitorDefault(), KSPMonitorLGCreate(), KSPMonitorSet()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPClearMonitor(KSP ksp)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorCancel(KSP ksp)
 {
   PetscErrorCode ierr;
   PetscInt       i;
@@ -1255,7 +1255,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPClearMonitor(KSP ksp)
 #define __FUNCT__ "KSPGetMonitorContext"
 /*@C
    KSPGetMonitorContext - Gets the monitoring context, as set by 
-   KSPSetMonitor() for the FIRST monitor only.
+   KSPMonitorSet() for the FIRST monitor only.
 
    Not Collective
 
@@ -1269,7 +1269,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPClearMonitor(KSP ksp)
 
 .keywords: KSP, get, monitor, context
 
-.seealso: KSPDefaultMonitor(), KSPLGMonitorCreate()
+.seealso: KSPMonitorDefault(), KSPMonitorLGCreate()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP ksp,void **ctx)
 {

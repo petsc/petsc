@@ -532,7 +532,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFromOptions(Mat mat)
     if (flg) {
       KSP ksp;
       ierr = SNESGetKSP(mfctx->snes,&ksp);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,MatSNESMFKSPMonitor,PETSC_NULL,0);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsName("-snes_mf_check_positivity","Insure that U + h*a is nonnegative","MatSNESMFSetCheckh",&flg);CHKERRQ(ierr);
@@ -738,9 +738,9 @@ _    dummy  - unused argument
   Options Database:
 .   -snes_mf_ksp_monitor - turn this monitor on
 
-   Notes: Use KSPSetMonitor(ksp,MatSNESMFKSPMonitor,PETSC_NULL,PETSC_NULL); 
+   Notes: Use KSPMonitorSet(ksp,MatSNESMFKSPMonitor,PETSC_NULL,PETSC_NULL); 
 
-.seealso:  KSPSetMonitor()
+.seealso:  KSPMonitorSet()
 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP ksp,PetscInt n,PetscReal rnorm,void *dummy)

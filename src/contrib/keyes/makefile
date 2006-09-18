@@ -55,7 +55,7 @@ ex17: ex17.o  chkopts
 	${RM} ex17.o
 
 runex11s:
-	-@${MPIRUN} -np 1 ex11 -Mx 20 -My 20 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 1 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 \
@@ -64,7 +64,7 @@ runex11s:
 	-optionsleft
 
 runex11p:
-	-@${MPIRUN} -np 4 ex11 -Mx 20 -My 20 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 4 ex11 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_pc_type redundant -coarse_ksp_type preonly \
 	-coarse_redundant_pc_type lu \
 	-fine_ksp_type richardson \
@@ -74,7 +74,7 @@ runex11p:
 	-optionsleft
 
 runex15linear:
-	-@${MPIRUN} -np 1 ex15 -Mx 20 -My 20 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-beta 0. -bm1 0. -coef 0. \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
@@ -85,7 +85,7 @@ runex15linear:
 	-optionsleft
 
 runex15quasi:
-	-@${MPIRUN} -np 1 ex15 -Mx 20 -My 20 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-beta 1.5 -bm1 0.5 -coef 0.75 \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
@@ -96,7 +96,7 @@ runex15quasi:
 	-optionsleft
 
 runex15:
-	-@${MPIRUN} -np 1 ex15 -Mx 10 -My 10 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 1 ex15 -Mx 10 -My 10 -snes_monitor_short -ksp_monitor \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type gmres \
 	-fine_ksp_max_it 1 \
@@ -106,7 +106,7 @@ runex15:
 	-snes_view -optionsleft
 
 runex15s:
-	-@${MPIRUN} -np 1 ex15 -Mx 20 -My 20 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 1 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_ksp_type preonly -coarse_pc_type lu \
 	-fine_ksp_type richardson \
 	-fine_ksp_max_it 1 \
@@ -116,7 +116,7 @@ runex15s:
 	-optionsleft
 
 runex15p:
-	-@${MPIRUN} -np 4 ex15 -Mx 20 -My 20 -snes_smonitor -ksp_monitor \
+	-@${MPIRUN} -np 4 ex15 -Mx 20 -My 20 -snes_monitor_short -ksp_monitor \
 	-coarse_pc_type redundant -coarse_ksp_type preonly  \
 	-coarse_redundant_pc_type lu \
 	-fine_ksp_type richardson \

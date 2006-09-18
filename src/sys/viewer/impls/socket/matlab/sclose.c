@@ -1,4 +1,4 @@
-/* This was part of the MatlabSockettool package. 
+/* 
  
         Written by Barry Smith, bsmith@mcs.anl.gov 4/14/92
 	 Updated by Ridhard Katz, katz@ldeo.columbia.edu 9/28/03
@@ -45,7 +45,7 @@ extern int close(int);
 EXTERN_C_END
 
 #include "mex.h"
-#define PETSC_MEX_ERROR(a) {fprintf(stdout,"CLOSEPORT: %s \n",a); return ;}
+#define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}
 typedef struct { int onoff; int time; } Linger;
 /*-----------------------------------------------------------------*/
 /*                                                                 */

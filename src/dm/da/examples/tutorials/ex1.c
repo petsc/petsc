@@ -18,13 +18,13 @@ int main(int argc,char **argv)
   PetscScalar    value;
   DAPeriodicType ptype = DA_NONPERIODIC;
   DAStencilType  stype = DA_STENCIL_BOX;
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   PetscViewer    mviewer;
 #endif
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,0,"",300,0,300,300,&viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
 #endif
 
@@ -53,13 +53,13 @@ int main(int argc,char **argv)
 
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = VecView(global,viewer);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = DAView(da,mviewer);CHKERRQ(ierr);
   ierr = VecView(global,mviewer);CHKERRQ(ierr);
 #endif
 
   /* Free memory */
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerDestroy(mviewer);CHKERRQ(ierr);
 #endif
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);

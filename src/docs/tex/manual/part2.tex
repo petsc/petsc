@@ -2360,12 +2360,12 @@ about the iterations. The user can indicate that the norms of the residuals
 should be displayed by using \findex{-ksp_monitor}
 \trl{-ksp_monitor} within the options database.  
 To display the residual norms in a graphical window (running under X Windows),
-one should use \trl{-ksp_xmonitor} \trl{[x,y,w,h]}, where either all or none of 
-the options must be specified. \findex{-ksp_xmonitor}
+one should use \trl{-ksp_monitor_draw} \trl{[x,y,w,h]}, where either all or none of 
+the options must be specified. \findex{-ksp_monitor_draw}
 Application programmers can also provide their own routines to perform 
-the monitoring by using the command \findex{KSPSetMonitor()}
+the monitoring by using the command \findex{KSPMonitorSet()}
 \begin{tabbing}
-  KSPSetMonitor(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
+  KSPMonitorSet(\=KSP ksp,PetscErrorCode (*mon)(KSP ksp,int it,double rnorm,void *ctx),\\
                 \>        void *ctx,PetscErrorCode (*mondestroy)(void*));
 \end{tabbing}
 The final routine argument, \trl{ctx}, is an optional context for private
@@ -2379,52 +2379,52 @@ MPI communicator for the KSP context.  See section ~\ref{sec_writing}
 for more discussion of the use of MPI communicators within PETSc.
 
 Several monitoring routines are supplied with PETSc, 
-including \findex{KSPDefaultMonitor()} \findex{KSPSingularValueMonitor()}
+including \findex{KSPMonitorDefault()} \findex{KSPMonitorSingularValue()}
 \begin{tabbing}
-  KSPDefaultMonitor(KSP,int,double, void *);\\
-  KSPSingularValueMonitor(KSP,int,double, void *);\\
-  KSPTrueMonitor(KSP,int,double, void *);
+  KSPMonitorDefault(KSP,int,double, void *);\\
+  KSPMonitorSingularValue(KSP,int,double, void *);\\
+  KSPMonitorTrueResidualNorm(KSP,int,double, void *);
 \end{tabbing}
 The default monitor simply prints an estimate of the $l_2$-norm of the 
 residual at each iteration. The routine
-KSPSingularValueMonitor() is appropriate only for use with the conjugate 
+KSPMonitorSingularValue() is appropriate only for use with the conjugate 
 gradient method or GMRES, since it prints estimates of the extreme singular 
 values of the preconditioned operator at each iteration. Since
-KSPTrueMonitor() prints \findex{KSPTrueMonitor()}
+KSPMonitorTrueResidualNorm() prints \findex{KSPMonitorTrueResidualNorm()}
 the true residual at each iteration by 
 actually computing the residual using the formula $ r = b - Ax $, the routine
 is slow and should be used only for testing or convergence studies,
 not for timing. These monitors may be accessed with the command line options
-\trl{-ksp_monitor}, \trl{-ksp_singmonitor}, and \trl{-ksp_truemonitor}.
-\findex{-ksp_monitor} \findex{-ksp_singmonitor} \findex{-ksp_truemonitor}
+\trl{-ksp_monitor}, \trl{-ksp_monitor_singular_value}, and \trl{-ksp_monitor_true_residual}.
+\findex{-ksp_monitor} \findex{-ksp_monitor_singular_value} \findex{-ksp_monitor_true_residual}
 
 To employ the default graphical monitor, one should use the 
-commands \findex{KSPLGMonitorCreate()} \findex{KSPLGMonitorDestroy()}
+commands \findex{KSPMonitorLGCreate()} \findex{KSPMonitorLGDestroy()}
 \begin{tabbing}
    PetscDrawLG lg;\\
-  KSPLGMonitorCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
-  KSPSetMonitor(KSP ksp,KSPLGMonitor,lg,0);
+  KSPMonitorLGCreate(char *display,char *title,int x,int y,int w,int h,PetscDrawLG *lg);\\
+  KSPMonitorSet(KSP ksp,KSPMonitorLG,lg,0);
 \end{tabbing}
 When no longer needed, the line graph should be destroyed 
 with the command
 \begin{tabbing}
-  KSPLGMonitorDestroy(PetscDrawLG lg);
+  KSPMonitorLGDestroy(PetscDrawLG lg);
 \end{tabbing}
 The user can change aspects of the graphs with the \trl{PetscDrawLG*()} and 
 \trl{PetscDrawAxis*()} routines. \findex{PetscDrawAxis*()} \findex{PetscDrawLG*()}
 One can also access this functionality from the options database 
-with the command \trl{-ksp_xmonitor} \trl{[x,y,w,h]}. \findex{-ksp_xmonitor}, 
+with the command \trl{-ksp_monitor_draw} \trl{[x,y,w,h]}. \findex{-ksp_monitor_draw}, 
 where \trl{x, y, w, h} are the optional location and size of the window.
 
 One can cancel hardwired monitoring routines for KSP at runtime with 
-\trl{-ksp_cancelmonitors}. \findex{-ksp_cancelmonitors}
+\trl{-ksp_monitor_cancel}. \findex{-ksp_monitor_cancel}
 
 Unless the Krylov method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-ksp_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
-difficult. The option \trl{-ksp_smonitor} \findex{-ksp_smonitor}
+difficult. The option \trl{-ksp_monitor_short} \findex{-ksp_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross system testing easier.
@@ -2668,7 +2668,7 @@ D^{-1/2} b$ .  PETSc handles the internal scaling and permutation of
 $ x $ and $ b $, so the user does {\em not} deal with these conversions, 
 but instead always works with the original linear system.  In
 this case, by default the scaled residual norm is monitored; one must use the
-option \trl{-ksp_truemonitor} \findex{-ksp_truemonitor} to print both the
+option \trl{-ksp_monitor_true_residual} \findex{-ksp_monitor_true_residual} to print both the
 scaled and unscaled residual norms. {\em Note}: If one is using ILU/ICC via
 BlockSolve95 and the \trl{MATMPIROWBS} matrix format for the 
 preconditioner matrix, but using a different format for a different
@@ -3619,9 +3619,9 @@ for a list of values for SNESConvergedReason. \findex{SNESConvergedReason}
 
 By default the SNES solvers run silently without displaying information
 about the iterations. The user can initiate monitoring with the
-command \findex{SNESSetMonitor()} 
+command \findex{SNESMonitorSet()} 
 \begin{tabbing}
-  SNESSetMonitor(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
+  SNESMonitorSet(\=SNES snes,PetscErrorCode (*mon)(SNES,int its,double norm,void* mctx),\\
                  \>        void *mctx,PetscErrorCode (*monitordestroy)(void*));
 \end{tabbing}
 The routine, \trl{mon}, indicates a user-defined monitoring routine,
@@ -3629,24 +3629,24 @@ where \trl{its} and \trl{mctx} respectively denote the iteration
 number and an optional user-defined context for private data for the
 monitor routine.  The argument \trl{norm} is the function norm.
 
-The routine set by SNESSetMonitor() is called once after every
+The routine set by SNESMonitorSet() is called once after every
 successful step computation within the nonlinear solver.  Hence, the
 user can employ this routine for any application-specific computations
 that should be done after the solution update. The option
 \trl{-snes_monitor} \findex{-snes_monitor} activates the default
-SNES monitor routine, SNESDefaultMonitor(), \findex{SNESDefaultMonitor()}
-while \trl{-snes_xmonitor} \findex{-snes_xmonitor} draws
+SNES monitor routine, SNESMonitorDefault(), \findex{SNESMonitorDefault()}
+while \trl{-snes_monitor_draw} \findex{-snes_monitor_draw} draws
 a simple line graph of the residual norm's convergence.
 
 Once can cancel hardwired monitoring routines for SNES at runtime with 
-\trl{-snes_cancelmonitors}. \findex{-snes_cancelmonitors}
+\trl{-snes_monitor_cancel}. \findex{-snes_monitor_cancel}
 
 As the Newton method converges so that the residual norm is small,
 say $ 10^{-10} $, many of the final digits printed with the \trl{-snes_monitor}
 option are meaningless. Worse, they are different on different 
 machines; due to different round-off rules used by, say, the IBM RS6000
 and the Sun Sparc. This makes testing between different machines
-difficult. The option \trl{-snes_smonitor} \findex{-snes_smonitor}
+difficult. The option \trl{-snes_monitor_short} \findex{-snes_monitor_short}
 causes PETSc to print fewer of the digits of the residual norm 
 as it gets smaller; thus on most of the machines it will always
 print the same numbers making cross process testing easier.
@@ -4610,20 +4610,15 @@ and then sends matrices or vectors via
   VecView(Vec A,v);\\
   MatView(Mat B,v);
 \end{tabbing}
-One can also send arrays or integer arrays via
-\begin{tabbing}
-  PetscViewerSocketPutScalar(v,int m,int n,PetscScalar *array);\\
-  PetscViewerSocketPutReal(v,int m,int n,double *array);\\
-  PetscViewerSocketPutInt(v,int m,int *array);
-\end{tabbing}
+One can also send arrays or integer arrays via PetscIntView(), PetscRealView() and PetscScalarView().
 One may start the Matlab program manually or use the PETSc command
 \trl{PetscStartMatlab(MPI_Comm,char *machine,char *script,FILE **fp);} where machine and script may be \trl{PETSC_NULL}.
 
 To receive the objects in Matlab you must first make sure that \trl{${PETSC_DIR}/bin/matlab}
-is in your Matlab path. Use \trl{p = openport;} (or \trl{p = openport(portnum)} if you provided a port number in
-your call to PetscViewerSocketOpen()), then \trl{a = receive(p);} returns the object you have passed from PETSc.
-\trl{receive()} may be called any number of times. Each call should correspond on the PETSc side with
-viewing a single vector or matrix. You many call \trl{closeport()} to close the connection from Matlab.
+is in your Matlab path. Use \trl{p = sopen;} (or \trl{p = sopen(portnum)} if you provided a port number in
+your call to PetscViewerSocketOpen()), then \trl{a = PetscBinaryRead(p);} returns the object you have passed from PETSc.
+\trl{PetscBinaryRead()} may be called any number of times. Each call should correspond on the PETSc side with
+viewing a single vector or matrix. You many call \trl{sclose()} to close the connection from Matlab.
 It is also possible to start your PETSc program from Matlab via \trl{launch()}.
 
 \section{Using the Matlab Compute Engine}
@@ -6226,15 +6221,15 @@ predefined viewers:
 \item Vector and matrix objects can be passed to a running Matlab process
       with a viewer created by 
 \begin{tabbing}
-     PetscViewerMatlabOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerMatlabOpen()}
+     PetscViewerSocketOpen(MPI\_Comm comm,char *machine,int port,PetscViewer *viewer). \findex{PetscViewerSocketOpen()}
 \end{tabbing} 
-      On the Matlab side, one must first run \trl{v = openport(int port)}
-      and then \trl{A = receive(v)} to obtain the matrix or vector. Once all
+      On the Matlab side, one must first run \trl{v = sreader(int port)}
+      and then \trl{A = PetscBinaryRead(v)} to obtain the matrix or vector. Once all
       objects have been received, the port can be closed from the Matlab end
-      with \trl{closeport(v)}. On the PETSc side, one should destroy
+      with \trl{close(v)}. On the PETSc side, one should destroy
       the viewer object with \findex{PetscViewerDestroy()} \trl{
       PetscViewerDestroy()}. The corresponding Matlab \trl{mex}
-      files are located in \trl{${PETSC_DIR}/src/viewer/impls/matlab}.
+      files are located in \trl{${PETSC_DIR}/src/sys/viewer/impls/socket/matlab}.
 \end{itemize}
 
 The user can control the format of ASCII printed objects with viewers 
@@ -6754,12 +6749,12 @@ large, or for timing.
 For both the linear and nonlinear solvers default routines
 allow one to graphically monitor convergence of the iterative method.
 These are accessed via the command line with 
-\trl{-ksp_xmonitor} and \trl{-snes_xmonitor}. \findex{-ksp_xmonitor}
-\findex{-snes_xmonitor} See also Sections \ref{sec_kspmonitor} and
+\trl{-ksp_monitor_draw} and \trl{-snes_monitor_draw}. \findex{-ksp_monitor_draw}
+\findex{-snes_monitor_draw} See also Sections \ref{sec_kspmonitor} and
 \ref{sec_snesmonitor}. 
 
-The two functions used are KSPLGMonitor() \findex{KSPLGMonitor()}
-and KSPLGMonitorCreate()  \findex{KSPLGMonitorCreate()}. These 
+The two functions used are KSPMonitorLG() \findex{KSPMonitorLG()}
+and KSPMonitorLGCreate()  \findex{KSPMonitorLGCreate()}. These 
 can easily be modified to serve specialized needs.
 
 

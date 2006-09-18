@@ -232,7 +232,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUp(DMMG *dmmg)
 
     Options Database:
 +   -dmmg_grid_sequence - use grid sequencing to get the initial solution for each level from the previous
--   -dmmg_vecmonitor - display the solution at each iteration
+-   -dmmg_monitor_solution - display the solution at each iteration
 
      Notes: For linear (KSP) problems may be called more than once, uses the same 
     matrices but recomputes the right hand side for each new solve. Call DMMGSetKSP()
@@ -249,7 +249,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(0,"-dmmg_grid_sequence",&gridseq);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(0,"-dmmg_vecmonitor",&vecmonitor);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(0,"-dmmg_monitor_solution",&vecmonitor);CHKERRQ(ierr);
   if (gridseq) {
     if (dmmg[0]->initialguess) {
       ierr = (*dmmg[0]->initialguess)(dmmg[0],dmmg[0]->x);CHKERRQ(ierr);
@@ -331,7 +331,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
     ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-nlevels);CHKERRQ(ierr);
-    ierr = KSPSetMonitor(ksp,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
   }
 
   /* use fgmres on outer iteration by default */
@@ -365,7 +365,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
         ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-i);CHKERRQ(ierr);
-        ierr = KSPSetMonitor(lksp,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = KSPMonitorSet(lksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
       }
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 

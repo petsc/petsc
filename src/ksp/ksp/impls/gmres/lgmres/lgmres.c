@@ -913,7 +913,7 @@ EXTERN_C_END
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPFGMRES, KSPGMRES,
           KSPGMRESSetRestart(), KSPGMRESSetHapTol(), KSPGMRESSetPreAllocateVectors(), KSPGMRESSetOrthogonalization()
           KSPGMRESClassicalGramSchmidtOrthogonalization(), KSPGMRESModifiedGramSchmidtOrthogonalization(),
-          KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESKrylovMonitor(), KSPLGMRESSetAugDim(),
+          KSPGMRESCGSRefinementType, KSPGMRESSetCGSRefinementType(), KSPGMRESMonitorKrylov(), KSPLGMRESSetAugDim(),
           KSPGMRESSetConstant()
 
 M*/

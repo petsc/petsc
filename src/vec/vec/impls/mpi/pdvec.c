@@ -591,44 +591,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_MPI_Draw(Vec xin,PetscViewer viewer)
 }
 EXTERN_C_END
 
-#if defined(PETSC_USE_SOCKET_VIEWER)
-#undef __FUNCT__  
-#define __FUNCT__ "VecView_MPI_Socket"
-PetscErrorCode VecView_MPI_Socket(Vec xin,PetscViewer viewer)
-{
-#if defined(PETSC_USE_64BIT_INDICES)
-  PetscFunctionBegin;
-  SETERRQ(PETSC_ERR_SUP,"Not supported with 64 bit integers");
-#else
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size;
-  int            i,N = xin->map.N,*lens;
-  PetscScalar    *xx,*xarray;
-
-  PetscFunctionBegin;
-  ierr = VecGetArray(xin,&xarray);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(xin->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(xin->comm,&size);CHKERRQ(ierr);
-  if (!rank) {
-    ierr = PetscMalloc((N+1)*sizeof(PetscScalar),&xx);CHKERRQ(ierr);
-    ierr = PetscMalloc(size*sizeof(PetscInt),&lens);CHKERRQ(ierr);
-    for (i=0; i<size; i++) {
-      lens[i] = xin->map.range[i+1] - xin->map.range[i];
-    }
-    ierr = MPI_Gatherv(xarray,xin->map.n,MPIU_SCALAR,xx,lens,xin->map.range,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
-    ierr = PetscFree(lens);CHKERRQ(ierr);
-    ierr = PetscViewerSocketPutScalar(viewer,N,1,xx);CHKERRQ(ierr);
-    ierr = PetscFree(xx);CHKERRQ(ierr);
-  } else {
-    ierr = MPI_Gatherv(xarray,xin->map.n,MPIU_SCALAR,0,0,0,MPIU_SCALAR,0,xin->comm);CHKERRQ(ierr);
-  }
-  ierr = VecRestoreArray(xin,&xarray);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-#endif
-
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI_Matlab"
 PetscErrorCode VecView_MPI_Matlab(Vec xin,PetscViewer viewer)
@@ -764,7 +727,7 @@ PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode ierr;
-  PetscTruth     iascii,issocket,isbinary,isdraw;
+  PetscTruth     iascii,isbinary,isdraw;
 #if defined(PETSC_HAVE_MATHEMATICA)
   PetscTruth     ismathematica;
 #endif
@@ -774,13 +737,12 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF4)
   PetscTruth     ishdf4;
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   PetscTruth     ismatlab;
 #endif
 
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_SOCKET,&issocket);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_BINARY,&isbinary);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MATHEMATICA)
@@ -792,15 +754,11 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF4)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
 #endif
   if (iascii){
     ierr = VecView_MPI_ASCII(xin,viewer);CHKERRQ(ierr);
-#if defined(PETSC_USE_SOCKET_VIEWER)
-  } else if (issocket) {
-    ierr = VecView_MPI_Socket(xin,viewer);CHKERRQ(ierr);
-#endif
   } else if (isbinary) {
     ierr = VecView_MPI_Binary(xin,viewer);CHKERRQ(ierr);
   } else if (isdraw) {
@@ -824,7 +782,7 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
   } else if (ishdf4) {
     ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
 #endif
-#if defined(PETSC_HAVE_MATLAB) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
+#if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   } else if (ismatlab) {
     ierr = VecView_MPI_Matlab(xin,viewer);CHKERRQ(ierr);
 #endif

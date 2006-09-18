@@ -1078,7 +1078,7 @@ PetscErrorCode ReportParams(Parameter *param, GridInfo *grid)
     }    
 
     if (param->output_to_file)
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       Mat file \"%s\"\n",param->filename);
 #else
       PetscPrintf(PETSC_COMM_WORLD,"Output Destination:       PETSc binary file \"%s\"\n",param->filename);
@@ -1201,7 +1201,7 @@ PetscErrorCode DoOutput(DMMG *dmmg, PetscInt its)
     ierr = VecAssemblyBegin(pars);CHKERRQ(ierr); ierr = VecAssemblyEnd(pars);CHKERRQ(ierr); 
 
     /* create viewer */
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
     ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
 #else
     ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,param->filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
@@ -1501,11 +1501,11 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
     param->toggle_kspmon = PETSC_FALSE;
     ierr = SNESGetKSP(snes, &ksp);CHKERRQ(ierr);
     if (param->kspmon) {
-      ierr = KSPClearMonitor(ksp);CHKERRQ(ierr);
+      ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
       param->kspmon = PETSC_FALSE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: deactivating ksp singular value monitor. \n");
     } else {
-      ierr = KSPSetMonitor(ksp,KSPSingularValueMonitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
       param->kspmon = PETSC_TRUE;
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }

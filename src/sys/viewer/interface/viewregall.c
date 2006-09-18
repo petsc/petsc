@@ -48,7 +48,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *path)
 #if defined(PETSC_HAVE_HDF4)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_HDF4,       path,"PetscViewerCreate_HDF4",       PetscViewerCreate_HDF4);CHKERRQ(ierr); 
 #endif
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscViewerRegisterDynamic(PETSC_VIEWER_MATLAB,     path,"PetscViewerCreate_Matlab",     PetscViewerCreate_Matlab);CHKERRQ(ierr); 
 #endif
   PetscFunctionReturn(0);

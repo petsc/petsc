@@ -4,7 +4,7 @@
 !   Concepts: TS^time-dependent nonlinear problems
 !   Routines: TSCreate(); TSSetSolution(); TSSetRHSFunction(); TSSetRHSJacobian();
 !   Routines: TSSetType(); TSSetInitialTimeStep(); TSSetDuration();
-!   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSSetMonitor();
+!   Routines: TSSetFromOptions(); TSStep(); TSDestroy(); TSMonitorSet();
 !   Routines: PetscPrintf();
 !   Processors: n
 !T*/
@@ -232,7 +232,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       call TSCreate(comm,TS_NONLINEAR,ts,ierr)
-      call TSSetMonitor(ts,Monitor,PETSC_NULL,ierr)
+      call TSMonitorSet(ts,Monitor,PETSC_NULL,ierr)
       call TSSetRHSFunction(ts,RHSFunction,PETSC_NULL,ierr)
       call TSSetType(ts,TS_SUNDIALS,ierr)
 

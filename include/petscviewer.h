@@ -334,15 +334,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutArray(PetscViewer,int,
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabGetArray(PetscViewer,int,int,PetscScalar*,char*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMatlabPutVariable(PetscViewer,const char*,void*);
 
-/* 
-    PetscViewer utility routines used by PETSc that are not normally used
-   by users.
-*/
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutScalar(PetscViewer,PetscInt,PetscInt,PetscScalar*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutReal(PetscViewer,PetscInt,PetscInt,PetscReal*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutInt(PetscViewer,PetscInt,PetscInt*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscViewerSocketPutSparse_Private(PetscViewer,PetscInt,PetscInt,PetscInt,PetscScalar*,PetscInt*,PetscInt *);
-
 /*S
      PetscViewers - Abstract collection of PetscViewers
 

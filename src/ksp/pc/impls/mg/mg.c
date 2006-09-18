@@ -339,7 +339,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   PetscInt       i,n = mg[0]->levels;
   PC             cpc;
   PetscTruth     preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump,opsset;
-  PetscViewer    ascii;
+  PetscViewer    ascii,viewer = PETSC_NULL;
   MPI_Comm       comm;
   Mat            dA,dB;
   MatStructure   uflag;
@@ -387,7 +387,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
         ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-        ierr = KSPSetMonitor(mg[i]->smoothd,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = KSPMonitorSet(mg[i]->smoothd,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
       }
       ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
     }
@@ -397,7 +397,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothu,&comm);CHKERRQ(ierr);
           ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
           ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPSetMonitor(mg[i]->smoothu,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+          ierr = KSPMonitorSet(mg[i]->smoothu,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
         }
         ierr = KSPSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
       }
@@ -489,7 +489,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       ierr = PetscObjectGetComm((PetscObject)mg[0]->smoothd,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
       ierr = PetscViewerASCIISetTab(ascii,n);CHKERRQ(ierr);
-      ierr = KSPSetMonitor(mg[0]->smoothd,KSPDefaultMonitor,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(mg[0]->smoothd,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
   }
@@ -498,31 +498,31 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   ierr = KSPSetUp(mg[0]->smoothd);CHKERRQ(ierr);
   if (mg[0]->eventsetup) {ierr = PetscLogEventEnd(mg[0]->eventsetup,0,0,0,0);CHKERRQ(ierr);}
 
-#if defined(PETSC_USE_SOCKET_VIEWER)
   /*
-     Dump the interpolation/restriction matrices to matlab plus the 
+     Dump the interpolation/restriction matrices plus the 
    Jacobian/stiffness on each level. This allows Matlab users to 
-   easily check if the Galerkin condition A_c = R A_f R^T is satisfied */
+   easily check if the Galerkin condition A_c = R A_f R^T is satisfied.
+
+   Only support one or the other at the same time.
+  */
+#if defined(PETSC_USE_SOCKET_VIEWER)
   ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_matlab",&dump);CHKERRQ(ierr);
   if (dump) {
-    for (i=1; i<n; i++) {
-      ierr = MatView(mg[i]->restrct,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
-    }
-    for (i=0; i<n; i++) {
-      ierr = KSPGetPC(mg[i]->smoothd,&pc);CHKERRQ(ierr);
-      ierr = MatView(pc->mat,PETSC_VIEWER_SOCKET_(pc->comm));CHKERRQ(ierr);
-    }
+    viewer = PETSC_VIEWER_SOCKET_(pc->comm);
   }
 #endif
-
   ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_binary",&dump);CHKERRQ(ierr);
   if (dump) {
+    viewer = PETSC_VIEWER_BINARY_(pc->comm);
+  }
+
+  if (viewer) {
     for (i=1; i<n; i++) {
-      ierr = MatView(mg[i]->restrct,PETSC_VIEWER_BINARY_(pc->comm));CHKERRQ(ierr);
+      ierr = MatView(mg[i]->restrct,viewer);CHKERRQ(ierr);
     }
     for (i=0; i<n; i++) {
       ierr = KSPGetPC(mg[i]->smoothd,&pc);CHKERRQ(ierr);
-      ierr = MatView(pc->mat,PETSC_VIEWER_BINARY_(pc->comm));CHKERRQ(ierr);
+      ierr = MatView(pc->mat,viewer);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);

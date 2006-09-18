@@ -1,4 +1,4 @@
-#requirespackage   'PETSC_HAVE_MATLAB'
+#requirespackage   'PETSC_HAVE_MATLAB_ENGINE'
 #requiresscalar    real
 #requiresprecision double
 

@@ -30,14 +30,24 @@ class Configure(PETSc.package.Package):
       # follow any symbolic link of this path
       self.matlab = os.path.realpath(self.matlab)
       yield os.path.dirname(os.path.dirname(self.matlab))
+    for dir in os.listdir('/Applications'):
+      print
+      print dir
+      print
+      if dir.startswith('MATLAB'):
+        print dir
+        print os.path.isfile(os.path.join('/Applications',dir,'bin','matlab'))
+        print
+        if os.path.isfile(os.path.join('/Applications',dir,'bin','matlab')):
+          yield os.path.join('/Applications',dir)
     return
 
   def configureLibrary(self):
     '''Find a Matlab installation and check if it can work with PETSc'''
     import re
 
-    if config.setCompilers.Configure.isDarwin():
-      raise RuntimeError('Sorry, we have not been able to get Matlab working with PETSc on the Mac;\n messy Matlab dynamic libraries')
+#    if config.setCompilers.Configure.isDarwin():
+#      raise RuntimeError('Sorry, we have not been able to get Matlab working with PETSc on the Mac;\n messy Matlab dynamic libraries')
     if self.setCompilers.staticLibraries:
       raise RuntimeError('Matlab Interface requires shared library support. Please rerun with --with-shared=1\n')
           

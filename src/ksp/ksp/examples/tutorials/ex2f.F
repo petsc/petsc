@@ -256,7 +256,7 @@
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-my_ksp_monitor',  &
      &                    flg,ierr)
       if (flg .eq. 1) then
-        call KSPSetMonitor(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
+        call KSPMonitorSet(ksp,MyKSPMonitor,PETSC_NULL_OBJECT,          &
      &                     PETSC_NULL_FUNCTION,ierr)
       endif
 

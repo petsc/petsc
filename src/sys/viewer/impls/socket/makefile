@@ -6,10 +6,10 @@ ALL: lib
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  = 
-SOURCEC   = senddense.c send.c sendsparse.c
+SOURCEC   = send.c 
 SOURCEF   =
 SOURCEH   = socket.h 
-OBJSC     = senddense.o send.o  sendsparse.o
+OBJSC     = send.o 
 OBJSF     =
 MANSEC    = Viewer
 LIBBASE   = libpetsc

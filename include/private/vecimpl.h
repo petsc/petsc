@@ -298,7 +298,7 @@ extern PetscEvent    VEC_AssemblyEnd, VEC_PointwiseMult, VEC_SetValues, VEC_Load
 extern PetscEvent    VEC_SetRandom, VEC_ReduceArithmetic, VEC_ReduceBarrier, VEC_ReduceCommunication;
 extern PetscEvent    VEC_Swap, VEC_AssemblyBegin, VEC_NormBarrier;
 
-#if defined(PETSC_HAVE_MATLAB)
+#if defined(PETSC_HAVE_MATLAB_ENGINE)
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode VecMatlabEnginePut_Default(PetscObject,void*);
 EXTERN PetscErrorCode VecMatlabEngineGet_Default(PetscObject,void*);

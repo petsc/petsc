@@ -148,7 +148,7 @@
 
 
       if (monitor .eq. 1) then
-        call TSSetMonitor(ts,MyMonitor,PETSC_NULL_OBJECT,               &
+        call TSMonitorSet(ts,MyMonitor,PETSC_NULL_OBJECT,               &
      &                    PETSC_NULL_FUNCTION,ierr)
       endif
 

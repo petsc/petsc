@@ -16,10 +16,39 @@
 
 
 namespace ALE { 
+
+  class XObject {
+  protected:
+    int      _debug;
+  public:
+    XObject(const int debug = 0)    : _debug(debug) {};
+    XObject(const XObject& xobject) : _debug(xobject._debug) {};
+    //
+    int      debug() {return this->_debug;};
+  };// class XObject
+
+  class XParallelObject : public XObject {
+  protected:
+    MPI_Comm _comm;
+    int      _commRank, _commSize;
+  protected:
+    void __setupComm(const MPI_Comm& comm) {
+      this->_comm = comm;
+      PetscErrorCode ierr;
+      ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_size");
+      ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
+    }
+  public:
+    XParallelObject(const MPI_Comm& comm, const int debug)   : XObject(debug) {this->__setupComm(comm);};
+    XParallelObject(const MPI_Comm& comm = PETSC_COMM_WORLD) : XObject()      {this->__setupComm(comm);};
+    XParallelObject(const XParallelObject& xpobject)         : XObject(xpobject), _comm(xpobject._comm) {};
+    //
+    MPI_Comm comm()     {return this->_comm;};
+    int      commSize() {return this->_commSize;};
+    int      commRank() {return this->_commRank;};
+  };// class XParallelObject
   
   namespace XSifterDef {
-    
-    
     // 
     // Arrow definition
     // 
@@ -292,6 +321,7 @@ namespace ALE {
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
       };// class iterator
     protected:
+      int              _debug;
       index_type      *_index;
       //
       outer_key_type      _olow, _ohigh;
@@ -305,13 +335,13 @@ namespace ALE {
       //
       // Basic interface
       //
-      StridedIndexSequence() : _index(NULL) {};
-      StridedIndexSequence(const StridedIndexSequence& seq) : _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
-      {};
-      StridedIndexSequence(index_type *index)  :  _index(index) {
+      StridedIndexSequence(index_type *index, const int& debug = 0)  :  _debug(debug), _index(index) {
         this->_have_olow = false; this->_have_ohigh = false;
         this->_have_ilow = false; this->_have_ihigh = false;
       };
+      StridedIndexSequence(const int& debug = 0) : _debug(debug), _index(NULL) {};
+      StridedIndexSequence(const StridedIndexSequence& seq) : _debug(0), _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
+      {};
       virtual ~StridedIndexSequence() {};
       void copy(const StridedIndexSequence& seq, StridedIndexSequence cseq) {
         cseq._index = seq._index; 
@@ -501,7 +531,7 @@ namespace ALE {
            typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
            typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
            typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
-  struct XSifter { // struct XSifter
+  struct XSifter : XParallelObject { // struct XSifter
     //
     // Encapsulated types
     //
@@ -624,9 +654,9 @@ namespace ALE {
       //
       // Basic ArrowSequence interface
       //
-      ArrowSequence() : super(), _container(NULL) {};
+      ArrowSequence(const int& debug = 0) : super(debug), _container(NULL) {};
       ArrowSequence(const ArrowSequence& seq) : super(seq), _container(seq._container) {};
-      ArrowSequence(container_type *container, index_type *index) : super(index), _container(container) {};
+      ArrowSequence(container_type *container, index_type *index, const int& debug = 0) : super(index, debug), _container(container) {};
       virtual ~ArrowSequence() {};
       void copy(const ArrowSequence& seq, ArrowSequence& cseq) {
         super::copy(seq,cseq);
@@ -687,6 +717,14 @@ namespace ALE {
                           ::boost::multi_index::const_mem_fun<rec_type, source_type, &rec_type::source> >     
     ConeSequence;
     //
+    // Basic interface
+    //
+    XSifter(int debug = 0) : XParallelObject(debug) {
+      PetscErrorCode ierr;
+      ierr = PetscPrintf(this->comm(), "debug: Creating an XSifter\n"); 
+      CHKERROR(ierr, "Error in PetscPrintf"); 
+    };
+    //
     // Extended interface
     //
     void addArrow(const arrow_type& a) {
@@ -702,7 +740,7 @@ namespace ALE {
       seq.setInnerLimits(t,t);
     };
     ConeSequence& cone(const target_type& t) {
-      static ConeSequence cseq;
+      static ConeSequence cseq(this->debug());
       this->cone(t,cseq);
       return cseq;
     };
@@ -710,7 +748,7 @@ namespace ALE {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set));
     };
     BaseSequence& base() {
-      static BaseSequence bseq;
+      static BaseSequence bseq(this->debug());
       this->base(bseq);
       return bseq;
     };

@@ -6,7 +6,7 @@
 
 const char *PCSides[]          = {"LEFT","RIGHT","SYMMETRIC","PCSide","PC_",0};
 const char *PCASMTypes[]       = {"NONE","RESTRICT","INTERPOLATE","BASIC","PCASMType","PC_ASM_",0};
-const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SPECIAL","PCCompositeType","PC_COMPOSITE",0};
+const char *PCCompositeTypes[] = {"ADDITIVE","MULTIPLICATIVE","SYMMETRIC_MULTIPLICATIVE","SPECIAL","PCCompositeType","PC_COMPOSITE",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCInitializePackage"

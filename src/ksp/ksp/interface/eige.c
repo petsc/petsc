@@ -114,7 +114,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
    problems, say n < 500.
 
    Many users may just want to use the monitoring routine
-   KSPSingularValueMonitor() (which can be set with option -ksp_singmonitor)
+   KSPMonitorSingularValue() (which can be set with option -ksp_monitor_singular_value)
    to print the singular values at each iteration of the linear solve.
 
    The preconditoner operator, rhs vector, solution vectors should be
@@ -125,7 +125,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
 
 .keywords: KSP, compute, eigenvalues, explicitly
 
-.seealso: KSPComputeEigenvalues(), KSPSingularValueMonitor(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
+.seealso: KSPComputeEigenvalues(), KSPMonitorSingularValue(), KSPComputeExtremeSingularValues(), KSPSetOperators(), KSPSolve()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscInt nmax,PetscReal *r,PetscReal *c) 
 {

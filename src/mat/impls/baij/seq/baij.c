@@ -125,6 +125,7 @@ PetscErrorCode MatPBRelax_SeqBAIJ_2(Mat A,Vec bb,PetscReal omega,MatSORType flag
   const PetscInt     *diag,*ai = a->i,*aj = a->j,*vi;
 
   PetscFunctionBegin;
+  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support yet for Eisenstat");
   its = its*lits;
   if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
   if (fshift) SETERRQ(PETSC_ERR_SUP,"Sorry, no support for diagonal shift");
