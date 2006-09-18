@@ -8,7 +8,9 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void *array,PetscDataType type,P
   PetscInt size;
 
   PetscFunctionBegin;
-  PetscValidPointer(array,1);
+  if (len != 0) {
+    PetscValidPointer(array,1);
+  }
   PetscValidPointer(ptr,5);  
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = array;
@@ -29,7 +31,9 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dCreate(void *array,PetscDataType type,P
   PetscInt size;
 
   PetscFunctionBegin;
-  PetscValidPointer(array,1);
+  if ((len1 != 0) || (len2 != 0)) {
+    PetscValidPointer(array,1);
+  }
   PetscValidPointer(ptr,7);
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = array;
@@ -52,7 +56,9 @@ PetscErrorCode PETSC_DLLEXPORT F90Array3dCreate(void *array,PetscDataType type,P
   PetscInt size;
 
   PetscFunctionBegin;
-  PetscValidPointer(array,1);
+  if ((len1 != 0) || (len2 != 0) || (len3 != 0)) {
+    PetscValidPointer(array,1);
+  }
   PetscValidPointer(ptr,9);
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = array;
@@ -81,7 +87,9 @@ PetscErrorCode PETSC_DLLEXPORT F90Array4dCreate(void *array,PetscDataType type,P
   PetscInt size;
 
   PetscFunctionBegin;
-  PetscValidPointer(array,1);
+  if ((len1 != 0) || (len2 != 0) || (len3 != 0) || (len4 != 0)) {
+    PetscValidPointer(array,1);
+  }
   PetscValidPointer(ptr,11);
   ierr               = PetscDataTypeGetSize(type,&size);CHKERRQ(ierr);
   ptr->addr          = array;

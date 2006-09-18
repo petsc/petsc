@@ -1187,11 +1187,14 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], const char bcFilename[], const int numBdFaces, const int numBdVertices, Mesh *mesh)
 {
   ALE::Obj<ALE::Mesh> m;
+  PetscInt            debug = 0;
+  PetscTruth          flag;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
-  m    = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, false, 0);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  m    = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, false, debug);
   ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename), numBdFaces, numBdVertices);
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1385,11 +1388,18 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const Obj<ALE::Mesh::section_type>&        section = m->getSection(std::string(name));
-  const ALE::Mesh::section_type::chart_type& chart   = section->getPatch(0);
-  const int                                  depth   = m->getTopologyNew()->depth(0, *chart.begin());
-  *numElements = m->getTopologyNew()->depthStratum(0, depth)->size();
-  *fiberDim    = section->getFiberDimension(0, *chart.begin());
-  *array       = (PetscScalar *) section->restrict(0);
+  const ALE::Mesh::section_type::patch_type  patch   = 0;
+  if (!section->hasPatch(patch)) {
+    *numElements = 0;
+    *fiberDim    = 0;
+    *array       = NULL;
+    PetscFunctionReturn(0);
+  }
+  const ALE::Mesh::section_type::chart_type& chart   = section->getPatch(patch);
+  const int                                  depth   = m->getTopologyNew()->depth(patch, *chart.begin());
+  *numElements = m->getTopologyNew()->depthStratum(patch, depth)->size();
+  *fiberDim    = section->getFiberDimension(patch, *chart.begin());
+  *array       = (PetscScalar *) section->restrict(patch);
   PetscFunctionReturn(0);
 }
 
@@ -1421,11 +1431,18 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::bc_section_type>&     section = m->getBCSection(std::string(name));
-  const ALE::Mesh::section_type::chart_type& chart   = section->getPatch(0);
+  const Obj<ALE::Mesh::bc_section_type>&       section = m->getBCSection(std::string(name));
+  const ALE::Mesh::bc_section_type::patch_type patch   = 0;
+  if (!section->hasPatch(patch)) {
+    *numElements = 0;
+    *fiberDim    = 0;
+    *array       = NULL;
+    PetscFunctionReturn(0);
+  }
+  const ALE::Mesh::section_type::chart_type&   chart   = section->getPatch(patch);
   *numElements = chart.size();
-  *fiberDim    = section->getFiberDimension(0, *chart.begin());
-  *array       = (PetscInt *) section->restrict(0);
+  *fiberDim    = section->getFiberDimension(patch, *chart.begin());
+  *array       = (PetscInt *) section->restrict(patch);
   PetscFunctionReturn(0);
 }
 

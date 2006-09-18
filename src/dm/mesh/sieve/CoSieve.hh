@@ -317,6 +317,12 @@ namespace ALE {
           throw ALE::Exception(msg.str().c_str());
         }
       };
+      bool hasPatch(const patch_type& patch) {
+        if (this->_sheaf.find(patch) != this->_sheaf.end()) {
+          return true;
+        }
+        return false;
+      };
       bool hasLabel(const std::string& name, const patch_type& patch) {
         if ((this->_labels.find(name) != this->_labels.end()) && (this->_labels[name].find(patch) != this->_labels[name].end())) {
           return true;

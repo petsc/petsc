@@ -137,6 +137,14 @@ namespace ALE {
     const Obj<recv_overlap_type>&  getVertexRecvOverlap() const {return this->_vertexRecvOverlap;};
     void                           setVertexRecvOverlap(const Obj<recv_overlap_type>& vertexOverlap) {this->_vertexRecvOverlap = vertexOverlap;};
     // PCICE: Big fucking hack
+    Obj<std::set<std::string> > getBCSections() {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(BCSectionContainer::iterator s_iter = this->bcSections.begin(); s_iter != this->bcSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    }
     const Obj<bc_section_type>& getBCSection(const std::string& name) {
       if (this->bcSections.find(name) == this->bcSections.end()) {
         Obj<bc_section_type> section = new bc_section_type(this->_topology);
@@ -154,6 +162,28 @@ namespace ALE {
     };
     bc_values_type& getBCValues() {
       return this->bcValues;
+    };
+    void distributeBCValues() {
+      int size = this->bcValues.size();
+
+      MPI_Bcast(&size, 1, MPI_INT, 0, this->comm()); 
+      if (this->commRank()) {
+        for(int bc = 0; bc < size; ++bc) {
+          int           funcNum;
+          bc_value_type funcVal;
+
+          MPI_Bcast((void *) &funcNum, 1, MPI_INT,    0, this->comm());
+          MPI_Bcast((void *) &funcVal, 4, MPI_DOUBLE, 0, this->comm());
+          this->bcValues[funcNum] = funcVal;
+        }
+      } else {
+        for(bc_values_type::iterator bc_iter = this->bcValues.begin(); bc_iter != this->bcValues.end(); ++bc_iter) {
+          const int&           funcNum = bc_iter->first;
+          const bc_value_type& funcVal = bc_iter->second;
+          MPI_Bcast((void *) &funcNum, 1, MPI_INT,    0, this->comm());
+          MPI_Bcast((void *) &funcVal, 4, MPI_DOUBLE, 0, this->comm());
+        }
+      }
     };
     // Printing
     template <typename Stream_>

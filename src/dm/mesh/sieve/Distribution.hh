@@ -335,6 +335,32 @@ namespace ALE {
             updateSectionRemote(parallelMesh->getVertexRecvOverlap(), recvSection, parallelSection);
           }
         }
+        // Distribute boundary condition sections
+        sections = serialMesh->getBCSections();
+
+        for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+          typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::bc_section_type::value_type> send_section_type;
+          typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::bc_section_type::value_type> recv_section_type;
+          typedef SizeSection<Mesh::bc_section_type>      SectionSizer;
+          typedef PatchlessSection<Mesh::bc_section_type> SectionFiller;
+          const Mesh::bc_section_type::patch_type patch           = 0;
+          const Obj<Mesh::bc_section_type>&       serialSection   = serialMesh->getBCSection(*name);
+          const Obj<Mesh::bc_section_type>&       parallelSection = parallelMesh->getBCSection(*name);
+          const Obj<send_section_type>            sendSection     = new send_section_type(serialMesh->comm(), serialMesh->debug);
+          const Obj<recv_section_type>            recvSection     = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug);
+          const Obj<SectionSizer>                 sizer           = new SectionSizer(serialSection, patch);
+          const Obj<SectionFiller>                filler          = new SectionFiller(serialSection, patch);
+          // Need to associate overlaps with sections somehow (through the atlas?)
+          if (*name == "material") {
+            updateSectionLocal(serialSection, parallelSection);
+            sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
+            updateSectionRemote(cellRecvOverlap, recvSection, parallelSection);
+          } else {
+            updateSectionLocal(serialSection, parallelSection);
+            sieveCompletion::completeSection(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), sizer, filler, sendSection, recvSection);
+            updateSectionRemote(parallelMesh->getVertexRecvOverlap(), recvSection, parallelSection);
+          }
+        }
         if (!serialMesh->getSplitSection().isNull()) {
           typedef ALE::New::SizeSection<Mesh::split_section_type>      SplitSizer;
           typedef ALE::New::PatchlessSection<Mesh::split_section_type> SplitFiller;

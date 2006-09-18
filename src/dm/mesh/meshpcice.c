@@ -130,7 +130,10 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
-      if (mesh->commRank() != 0) return;
+      if (mesh->commRank() != 0) {
+        mesh->distributeBCValues();
+        return;
+      }
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
@@ -210,6 +213,7 @@ namespace ALE {
         value.p   = atof(x);
         mesh->setBCValue(bc+1, value);
       }
+      mesh->distributeBCValues();
       // Create IBNDFS section
       const Obj<Mesh::bc_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
       int *tmpIBNDFS = new int[numBdVertices*3];
@@ -243,6 +247,12 @@ namespace ALE {
     void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
       const Mesh::section_type::patch_type            patch      = 0;
       const Obj<Mesh::section_type>&                  coordSec   = mesh->getSection("coordinates");
+      if (!coordSec->hasPatch(patch)) {
+        *numVertices = 0;
+        *dim         = 0;
+        *coordinates = NULL;
+        return;
+      }
       const Obj<Mesh::topology_type::label_sequence>& vertices   = mesh->getTopologyNew()->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
       int            size     = vertices->size();
@@ -272,6 +282,12 @@ namespace ALE {
     void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
       const Mesh::topology_type::patch_type           patch      = 0;
       const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
+      if (!topology->hasPatch(patch)) {
+        *numElements = 0;
+        *numCorners  = 0;
+        *vertices    = NULL;
+        return;
+      }
       const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                eNumbering = mesh->getLocalNumbering(topology->depth());
