@@ -1139,9 +1139,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
     vj = aj + ai[k] + 1;    
     xk = t[k];
     nz = ai[k+1] - ai[k] - 1; 
-    if (nz > 0){
-      while (nz--) t[*vj++] += (*v++) * xk;
-    }
+    while (nz--) t[*vj++] += (*v++) * xk;
     t[k] = xk*aa[ai[k]];  /* aa[k] = 1/D(k) */
   }
 
@@ -1151,9 +1149,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
     vj = aj + ai[k] + 1; 
     xk = t[k];   
     nz = ai[k+1] - ai[k] - 1;    
-    if (nz > 0){
-      while (nz--) xk += (*v++) * t[*vj++]; 
-    }
+    while (nz--) xk += (*v++) * t[*vj++]; 
     t[k]      = xk;
     x[rip[k]] = xk; 
   }

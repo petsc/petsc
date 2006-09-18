@@ -1399,12 +1399,10 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       rs   = 0.0;
       jmin = bi[k]+1; 
       nz   = bi[k+1] - jmin; 
-      if (nz > 0){
-        bcol = bj + jmin;
-        while (nz--){
-          rs += PetscAbsScalar(rtmp[*bcol]);
-          bcol++;
-        }
+      bcol = bj + jmin;
+      while (nz--){
+        rs += PetscAbsScalar(rtmp[*bcol]);
+        bcol++;
       }
 
       sctx.rs = rs;
@@ -1452,7 +1450,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   Mat                B;
   PetscErrorCode     ierr;
   PetscTruth         perm_identity;
-  PetscInt           reallocs=0,*rip,i,*ai=a->i,*aj=a->j,am=A->rmap.n,*ui;
+  PetscInt           reallocs=0,*rip,*riip,i,*ai=a->i,*aj=a->j,am=A->rmap.n,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL;
   PetscInt           ncols,ncols_upper,*cols,*ajtmp,*uj,**uj_ptr,**uj_lvl_ptr;
@@ -1460,15 +1458,16 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscFreeSpaceList free_space_lvl=PETSC_NULL,current_space_lvl=PETSC_NULL;
   PetscBT            lnkbt;
+  IS                 iperm;  
   
   PetscFunctionBegin;   
   ierr = ISIdentity(perm,&perm_identity);CHKERRQ(ierr);
-  ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
+  ierr = ISInvertPermutation(perm,PETSC_DECIDE,&iperm);CHKERRQ(ierr);
 
   ierr = PetscMalloc((am+1)*sizeof(PetscInt),&ui);CHKERRQ(ierr); 
   ui[0] = 0;
 
-  /* special case that simply copies fill pattern */
+  /* ICC(0) without matrix ordering: simply copies fill pattern */
   if (!levels && perm_identity) { 
     for (i=0; i<am; i++) {
       ui[i+1] = ui[i] + ai[i+1] - a->diag[i]; 
@@ -1481,6 +1480,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
       for (j=0; j<ncols; j++) *cols++ = *aj++; 
     }
   } else { /* case: levels>0 || (levels=0 && !perm_identity) */
+    ierr = ISGetIndices(iperm,&riip);CHKERRQ(ierr);
+    ierr = ISGetIndices(perm,&rip);CHKERRQ(ierr);
+
     /* initialization */
     ierr  = PetscMalloc((am+1)*sizeof(PetscInt),&ajtmp);CHKERRQ(ierr); 
 
@@ -1508,15 +1510,16 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
       /* initialize lnk by the column indices of row rip[k] of A */
       nzk   = 0;
       ncols = ai[rip[k]+1] - ai[rip[k]]; 
+      if (!ncols) SETERRQ(PETSC_ERR_MAT_CH_ZRPVT,"Empty row in matrix");
       ncols_upper = 0;
       for (j=0; j<ncols; j++){
-        i = *(aj + ai[rip[k]] + j);
-        if (rip[i] >= k){ /* only take upper triangular entry */
+        i = *(aj + ai[rip[k]] + j); /* unpermuted column index */
+        if (riip[i] >= k){ /* only take upper triangular entry */
           ajtmp[ncols_upper] = i; 
           ncols_upper++;
         }
       }
-      ierr = PetscIncompleteLLInit(ncols_upper,ajtmp,am,rip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
+      ierr = PetscIncompleteLLInit(ncols_upper,ajtmp,am,riip,nlnk,lnk,lnk_lvl,lnkbt);CHKERRQ(ierr);
       nzk += nlnk;
 
       /* update lnk by computing fill-in for each pivot row to be merged in */
@@ -1554,6 +1557,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
       }
 
       /* copy data into free_space and free_space_lvl, then initialize lnk */
+      if (nzk == 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Empty row %D in ICC matrix factor",k);
       ierr = PetscIncompleteLLClean(am,am,nzk,lnk,lnk_lvl,current_space->array,current_space_lvl->array,lnkbt);CHKERRQ(ierr);
 
       /* add the k-th row into il and jl */
@@ -1588,6 +1592,7 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
 #endif
 
     ierr = ISRestoreIndices(perm,&rip);CHKERRQ(ierr);
+    ierr = ISRestoreIndices(iperm,&riip);CHKERRQ(ierr);
     ierr = PetscFree(jl);CHKERRQ(ierr);
     ierr = PetscFree(ajtmp);CHKERRQ(ierr);
 
@@ -1615,13 +1620,14 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   b->ilen = 0;
   b->imax = 0;
   b->row  = perm;
+  b->col  = perm;
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
+  b->icol = iperm;
   b->pivotinblocks = PETSC_FALSE; /* need to get from MatFactorInfo */
-  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
-  b->icol = perm;
-  ierr    = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr); 
   ierr    = PetscMalloc((am+1)*sizeof(PetscScalar),&b->solve_work);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(B,(ui[am]-am)*(sizeof(PetscInt)+sizeof(MatScalar)));CHKERRQ(ierr);
-  b->maxnz = b->nz = ui[am];
+  b->maxnz   = b->nz = ui[am];
   b->free_a  = PETSC_TRUE; 
   b->free_ij = PETSC_TRUE; 
   
@@ -1635,8 +1641,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *info,Mat
   }
   (*fact)->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqAIJ;
   if (perm_identity){
-    B->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-    B->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solve          = MatSolve_SeqSBAIJ_1_NaturalOrdering;
+    B->ops->solvetranspose = MatSolve_SeqSBAIJ_1_NaturalOrdering;
   } 
   PetscFunctionReturn(0); 
 }
