@@ -108,7 +108,7 @@ for l=1:narg
     end
 
   else 
-    disp('Found unrecongnized header in file. If your file contains complex numbers')
+    disp('Found unrecogonized header in file. If your file contains complex numbers')
     disp(' then call PetscBinaryRead() with "complex" as the second argument')
     return
   end
@@ -116,4 +116,4 @@ for l=1:narg
 end
 
 % close the reader if we opened it
-if ischar(inarg) or isinteger(inarg) close(fd); end;
+if ischar(inarg) | isinteger(inarg) close(fd); end;

@@ -386,7 +386,7 @@ PetscErrorCode PCSetFromOptions_ML(PC pc)
 .  -pc_mg_smoothdown <1>: Number of pre-smoothing steps (MGSetNumberSmoothDown)
 -  -pc_mg_type <multiplicative> (one of) additive multiplicative full cascade kascade
    
-   ML options
+   ML options:
 +  -pc_ml_PrintLevel <0>: Print level (ML_Set_PrintLevel)
 .  -pc_ml_maxNlevels <10>: Maximum number of levels (None)
 .  -pc_ml_maxCoarseSize <1>: Maximum coarsest mesh size (ML_Aggregate_Set_MaxCoarseSize)

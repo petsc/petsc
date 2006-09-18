@@ -1379,8 +1379,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
 {
   char           *value;
   PetscErrorCode ierr;
-  PetscInt       n = 0;
-  PetscTruth     flag;
+  PetscInt       n = 0,i,start,end;
+  size_t         len;
+  PetscTruth     flag,foundrange;
   PetscToken     *token;
 
   PetscFunctionBegin;
@@ -1396,10 +1397,33 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
   ierr = PetscTokenFind(token,&value);CHKERRQ(ierr);
   while (n < *nmax) {
     if (!value) break;
-    ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
-    dvalue++;
+    
+    /* look for form  d-D where d and D are integers */
+    foundrange = PETSC_FALSE;
+    ierr      = PetscStrlen(value,&len);CHKERRQ(ierr); 
+    if (value[0] == '-') i=2;
+    else i=1;
+    for (;i<len; i++) {
+      if (value[i] == '-') {
+        if (i == len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+        value[i] = 0;
+        ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
+        ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
+        if (end <= start) SETERRQ3(PETSC_ERR_USER,"Error in %D-th array entry, %s-%s cannot have decreasing list",n,value,value+i+1);
+        if (n + end - start - 1 >= *nmax) SETERRQ4(PETSC_ERR_USER,"Error in %D-th array entry, not enough space in left in array (%D) to contain entire range from %D to %D",n,*nmax-n,start,end);
+        for (;start<end; start++) {
+          *dvalue = start; dvalue++;n++;
+        }
+        foundrange = PETSC_TRUE;
+        break;
+      }
+    }
+    if (!foundrange) {
+      ierr      = PetscOptionsAtoi(value,dvalue);CHKERRQ(ierr);
+      dvalue++;
+      n++;
+    }
     ierr      = PetscTokenFind(token,&value);CHKERRQ(ierr);
-    n++;
   }
   ierr      = PetscTokenDestroy(token);CHKERRQ(ierr);
   *nmax = n;
