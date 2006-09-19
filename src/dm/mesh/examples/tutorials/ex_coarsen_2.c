@@ -8,6 +8,7 @@ using ALE::Obj;
 
 typedef struct {
   int        debug;              // The debugging level
+  PetscTruth useZeroBase;        // Use zero-based indexing
   char       baseFilename[2048]; // The base filename for mesh files
   PetscInt   levels;             // The number of levels in the hierarchy
   PetscReal  coarseFactor;       // The maximum coarsening factor
@@ -23,6 +24,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   PetscFunctionBegin;
   options->debug        = 0;
+  options->useZeroBase  = PETSC_TRUE;
   ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
   options->levels       = 6;
   options->coarseFactor = 1.41;
@@ -31,6 +33,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "ex_coarsen", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex1.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen.c", options->levels, &options->levels, PETSC_NULL);    
     ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);    
@@ -49,7 +52,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-  mesh = ALE::PCICE::Builder::readMesh(comm, 2, options->baseFilename, true, true, options->debug);
+  mesh = ALE::PCICE::Builder::readMesh(comm, 2, options->baseFilename, options->useZeroBase, true, options->debug);
   ALE::Coarsener::IdentifyBoundary(mesh, 2);
   ALE::LogStagePop(stage);
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
