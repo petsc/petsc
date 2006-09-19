@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
+#include <ctime>
 
 namespace ALE {
   namespace Coarsener {
@@ -31,10 +32,12 @@ namespace ALE {
     };
     bool isOverlap(mis_node *, mis_node *, int); //calculates if there is an intersection or overlap of these two domains
     extern PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, ALE::Mesh::section_type::patch_type);
-    
+    void randPush(std::list<ALE::Mesh::point_type> *, ALE::Mesh::point_type); //breaks up patterns in the mesh that cause oddness
+
     PetscErrorCode tree_mis (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_type::patch_type patch, bool includePrevious, double beta) {
       //build the quadtree
       PetscFunctionBegin;
+      srand((unsigned int)time(0));
       ALE::Mesh::section_type::patch_type rPatch = 0; //the patch on which everything is stored.. we restrict to this patch
       Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
       const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(rPatch, 0);
@@ -72,13 +75,14 @@ namespace ALE {
 
 	    //if it's essential, push it to the ColPoints stack, which will be the pool that is compared with during the traversal-MIS algorithm.
 	if (!includePrevious) {
-	  if(topology->getValue(boundary, *v_iter) == dim) { tmpPoint->childColPoints.push_front(*v_iter);
-	  } else { tmpPoint->childPoints.push_front(*v_iter);} 
+	  if(topology->getValue(boundary, *v_iter) == dim) { randPush(&tmpPoint->childColPoints, *v_iter);
+	  } else { randPush(&tmpPoint->childPoints, *v_iter);} 
 	} else { //enforce the node-nested condition.
 	  if(topology->getPatch(patch+1)->capContains(*v_iter)) {
-	    tmpPoint->childColPoints.push_front(*v_iter);
+	    randPush(&tmpPoint->childColPoints, *v_iter);
+           // printf("Got one from the last");
 	  } else {
-	    tmpPoint->childPoints.push_front(*v_iter);
+	    randPush(&tmpPoint->childPoints, *v_iter);
 	  }
 	}
 	v_iter++;
@@ -104,7 +108,7 @@ namespace ALE {
 	    //PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]), beta*tmpPoint->maxSpacing);
 	  }
 	}
-	if (tmpPoint->childPoints.size() + tmpPoint->childColPoints.size() < 8) canRefine = false;  //the threshhold at which we do not care to not do the greedy thing as comparison is cheap enough
+	if (tmpPoint->childPoints.size() + tmpPoint->childColPoints.size() < 20) canRefine = false;  //the threshhold at which we do not care to not do the greedy thing as comparison is cheap enough
 	if (canRefine) {
 	  //PetscPrintf(mesh->comm(), "-- refining an area containing %d nodes..\n", tmpPoint->childPoints.size() + tmpPoint->childColPoints.size());
 	  tmpPoint->isLeaf = false;
@@ -141,7 +145,7 @@ namespace ALE {
 	      if ((tmpPoint->boundaries[2*d] + tmpPoint->boundaries[2*d+1])/2 > cur_coords[d]) index += change;
 	      change = change * 2;
 	    }
-	    newBlocks[index]->childPoints.push_front(*p_iter);
+	    randPush(&newBlocks[index]->childPoints, *p_iter);
 	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
 	    p_iter++;
 	  }
@@ -157,7 +161,7 @@ namespace ALE {
 	      change = change * 2;
 	    }
 	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
-	    newBlocks[index]->childColPoints.push_front(*p_iter);
+	    randPush(&newBlocks[index]->childColPoints, *p_iter);
 	    p_iter++;
 	  }
 		//add all the new blocks to the refinement queue.
@@ -365,6 +369,12 @@ namespace ALE {
       }
       if (sharedDim == dim) {return true;
       } else return false;
+    }
+    void randPush(std::list<ALE::Mesh::point_type> * p_list, ALE::Mesh::point_type p) {
+      int r = std::rand();
+      if (r > (RAND_MAX)/2) { p_list->push_front(p);
+      } else p_list->push_back(p);
+      return;
     }
   } //ending Coarsener
 }  //ending ALE
