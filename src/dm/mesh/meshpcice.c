@@ -121,8 +121,11 @@ namespace ALE {
     };
     // Creates boundary sections:
     //   IBC[NBFS,2]:     ALL
+    //     BL[NBFS,1]:
+    //     BNVEC[NBFS,2]:
     //   BCFUNC[NBCF,NV]: ALL
     //   IBNDFS[NBN,2]:   STILL NEED 4-5
+    //     BNNV[NBN,2]
     void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename, const int numBdFaces, const int numBdVertices) {
       const Mesh::topology_type::patch_type patch = 0;
       PetscViewer    viewer;
@@ -130,6 +133,12 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
+      const Obj<Mesh::bc_section_type>& ibc    = mesh->getBCSection("IBC");
+      const Obj<Mesh::bc_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
+      const Obj<Mesh::bc_section_type>& ibcnum = mesh->getBCSection("IBCNUM");
+      const Obj<Mesh::section_type>&    bl     = mesh->getSection("BL");
+      const Obj<Mesh::section_type>&    bnvec  = mesh->getSection("BNVEC");
+      const Obj<Mesh::section_type>&    bnnv   = mesh->getSection("BNNV");
       if (mesh->commRank() != 0) {
         mesh->distributeBCValues();
         return;
@@ -140,11 +149,6 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       // Create IBC section
-      //   BL[NBFS,1]
-      //   BNVEC[NBFS,2]
-      const Obj<Mesh::bc_section_type>& ibc   = mesh->getBCSection("IBC");
-      const Obj<Mesh::section_type>&    bl    = mesh->getSection("BL");
-      const Obj<Mesh::section_type>&    bnvec = mesh->getSection("BNVEC");
       int *tmpIBC = new int[numBdFaces*4];
       std::map<int,std::set<int> > elem2Idx;
       std::map<int,int> bfReorder;
@@ -163,22 +167,29 @@ namespace ALE {
         const int elem = tmpIBC[bf*4+0]-1;
 
         ibc->addFiberDimension(patch, elem, 4);
+        ibcnum->addFiberDimension(patch, elem, 1);
         bl->addFiberDimension(patch, elem, 1);
         bnvec->addFiberDimension(patch, elem, 2);
         elem2Idx[elem].insert(bf);
       }
       ibc->allocate();
+      ibcnum->allocate();
       bl->allocate();
       bnvec->allocate();
       const Mesh::bc_section_type::chart_type& chart = ibc->getPatch(patch);
-      int num = 0;
+      int num = 1;
 
       for(Mesh::bc_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const int elem = *p_iter;
+        int bfNum[2];
+        int k = 0;
 
         for(std::set<int>::const_iterator i_iter = elem2Idx[elem].begin(); i_iter != elem2Idx[elem].end(); ++i_iter) {
-          bfReorder[(*i_iter)+1] = ++num;
+          bfReorder[(*i_iter)+1] = num;
+          bfNum[k++] = num;
+          num++;
         }
+        ibcnum->update(patch, elem, bfNum);
       }
       for(int bf = 0; bf < numBdFaces; bf++) {
         const int elem = tmpIBC[bf*4]-1;
@@ -220,8 +231,9 @@ namespace ALE {
       }
       mesh->distributeBCValues();
       // Create IBNDFS section
-      const Obj<Mesh::bc_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
-      int *tmpIBNDFS = new int[numBdVertices*3];
+      const int numElements = mesh->getTopologyNew()->heightStratum(patch, 0)->size();
+      int      *tmpIBNDFS   = new int[numBdVertices*3];
+
       for(int bv = 0; bv < numBdVertices; bv++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
 
@@ -232,7 +244,7 @@ namespace ALE {
         tmpIBNDFS[bv*3+1] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBNDFS[bv*3+2] = atoi(x);
-        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0]-1, 5);
+        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0]-1+numElements, 5);
       }
       ibndfs->allocate();
       for(int bv = 0; bv < numBdVertices; bv++) {
@@ -244,15 +256,14 @@ namespace ALE {
         values[2] = bfReorder[tmpIBNDFS[bv*3+2]];
         values[3] = 0;
         values[4] = 0;
-        ibndfs->update(patch, values[0]-1, values);
+        ibndfs->update(patch, values[0]-1+numElements, values);
       }
       ierr = PetscViewerDestroy(viewer);
       // Create BNNV[NBN,2]
-      const Obj<Mesh::section_type>& bnnv = mesh->getSection("BNNV");
       const int dim = mesh->getDimension();
 
       for(int bv = 0; bv < numBdVertices; bv++) {
-        bnnv->setFiberDimension(patch, tmpIBNDFS[bv*3+0], dim);
+        bnnv->setFiberDimension(patch, tmpIBNDFS[bv*3+0]-1+numElements, dim);
       }
       bnnv->allocate();
       delete [] tmpIBNDFS;

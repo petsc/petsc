@@ -186,7 +186,7 @@ namespace ALE {
           const typename Section::atlas_type::chart_type& newChart = newSection->getPatch(patch);
 
           for(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
-            newSection->update(patch, *c_iter, oldSection->restrict(patch, *c_iter));
+            newSection->updatePoint(patch, *c_iter, oldSection->restrictPoint(patch, *c_iter));
           }
         }
       };
@@ -211,7 +211,9 @@ namespace ALE {
           const typename recv_overlap_type::traits::coneSequence::iterator end         = recvPatches->end();
 
           for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != end; ++p_iter) {
-            newSection->update(patch, *r_iter, recvSection->restrict(*p_iter, *r_iter));
+            if (recvSection->getFiberDimension(*p_iter, *r_iter)) {
+              newSection->updatePoint(patch, *r_iter, recvSection->restrictPoint(*p_iter, *r_iter));
+            }
           }
         }
       };
@@ -266,6 +268,8 @@ namespace ALE {
 
         if (serialMesh->distributed) return serialMesh;
         ALE_LOG_EVENT_BEGIN;
+        // Why in the hell do I need this here????
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setPatch(0, sieve);
         parallelMesh->setTopologyNew(parallelTopology);
         if (serialMesh->debug) {
@@ -277,6 +281,11 @@ namespace ALE {
           }
           if (!serialMesh->getSplitSection().isNull()) {
             serialMesh->getSplitSection()->view("Serial split field");
+          }
+          Obj<std::set<std::string> > bcSections = serialMesh->getBCSections();
+
+          for(std::set<std::string>::iterator name = bcSections->begin(); name != bcSections->end(); ++name) {
+            serialMesh->getBCSection(*name)->view(*name);
           }
         }
 
@@ -325,7 +334,7 @@ namespace ALE {
           const Obj<SectionSizer>              sizer           = new SectionSizer(serialSection, patch);
           const Obj<SectionFiller>             filler          = new SectionFiller(serialSection, patch);
           // Need to associate overlaps with sections somehow (through the atlas?)
-          if (*name == "material") {
+          if ((*name == "material") || (*name == "BL") || (*name == "BNVEC") || (*name == "UE") || (*name == "odd")) {
             updateSectionLocal(serialSection, parallelSection);
             sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
             updateSectionRemote(cellRecvOverlap, recvSection, parallelSection);
@@ -351,7 +360,7 @@ namespace ALE {
           const Obj<SectionSizer>                 sizer           = new SectionSizer(serialSection, patch);
           const Obj<SectionFiller>                filler          = new SectionFiller(serialSection, patch);
           // Need to associate overlaps with sections somehow (through the atlas?)
-          if (*name == "material") {
+          if ((*name == "IBC") || (*name == "IBCNUM") || (*name == "odd")) {
             updateSectionLocal(serialSection, parallelSection);
             sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
             updateSectionRemote(cellRecvOverlap, recvSection, parallelSection);
@@ -383,7 +392,7 @@ namespace ALE {
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelMesh->debug) {
-          Obj<std::set<std::string> > sections = serialMesh->getSections();
+          Obj<std::set<std::string> > sections = parallelMesh->getSections();
 
           for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
             parallelMesh->getSection(*name)->view(*name);
@@ -391,6 +400,11 @@ namespace ALE {
           if (!parallelMesh->getSplitSection().isNull()) {
             parallelMesh->getSplitSection()->view("Parallel split field");
           }
+        }
+        sections = parallelMesh->getBCSections();
+
+        for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+          parallelMesh->getBCSection(*name)->view(*name);
         }
         parallelMesh->distributed = true;
         ALE_LOG_EVENT_END;

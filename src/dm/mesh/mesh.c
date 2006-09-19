@@ -21,8 +21,8 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK) {
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
-    ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
-    ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeVertices(mesh, 0, viewer);CHKERRQ(ierr);
+    ierr = VTKViewer::writeElements(mesh, 0, viewer);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
     char *filename;
     char  connectFilename[2048];
@@ -1114,7 +1114,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return VTKViewer::writeVertices(m, viewer);
+  return VTKViewer::writeVertices(m, 0, viewer);
 }
 
 #undef __FUNCT__  
@@ -1125,7 +1125,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  return VTKViewer::writeElements(m, viewer);
+  return VTKViewer::writeElements(m, 0, viewer);
 }
 
 #undef __FUNCT__  

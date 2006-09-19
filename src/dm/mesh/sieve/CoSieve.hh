@@ -1732,6 +1732,7 @@ namespace ALE {
         }
       };
       void addPoint(const patch_type& patch, const point_type& point, const int dim) {
+        if (dim == 0) return;
         //const typename atlas_type::chart_type& chart = this->_atlas->getPatch(patch);
 
         //if (chart.find(point) == chart.end()) {

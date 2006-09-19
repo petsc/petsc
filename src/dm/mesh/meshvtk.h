@@ -24,17 +24,16 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteVertices"
-  static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
+  static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::topology_type::patch_type& patch, PetscViewer viewer) {
     typedef ALE::New::Numbering<ALE::Mesh::topology_type> numbering_type;
-    const Obj<ALE::Mesh::section_type>&       coordinates = mesh->getSection("coordinates");
-    const Obj<numbering_type>&                vNumbering  = mesh->getNumbering(0);
-    const ALE::Mesh::section_type::patch_type patch       = 0;
+    const Obj<ALE::Mesh::section_type>& coordinates = mesh->getSection("coordinates");
+    const Obj<numbering_type>&          vNumbering  = mesh->getNumbering(0);
     const int embedDim = coordinates->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", vNumbering->getGlobalSize());CHKERRQ(ierr);
-    ierr = writeSection(mesh, coordinates, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
+    ierr = writeSection(mesh, coordinates, patch, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
@@ -50,14 +49,13 @@ class VTKViewer {
       ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), fiberDim);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
     }
-    ierr = writeSection(mesh, field, fiberDim, numbering, viewer);CHKERRQ(ierr);
+    ierr = writeSection(mesh, field, 0, fiberDim, numbering, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteSection"
-  static PetscErrorCode writeSection(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::section_type>& field, const int fiberDim, const Obj<ALE::New::Numbering<ALE::Mesh::topology_type> >& numbering, PetscViewer viewer, int enforceDim = -1) {
-    const ALE::Mesh::section_type::patch_type  patch = 0;
+  static PetscErrorCode writeSection(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh::section_type>& field, const ALE::Mesh::topology_type::patch_type& patch, const int fiberDim, const Obj<ALE::New::Numbering<ALE::Mesh::topology_type> >& numbering, PetscViewer viewer, int enforceDim = -1) {
     const ALE::Mesh::section_type::value_type *array = field->restrict(patch);
     const ALE::Obj<ALE::Mesh::atlas_type>&     atlas = field->getAtlas();
     const ALE::Mesh::atlas_type::chart_type&   chart = atlas->getPatch(patch);
@@ -153,10 +151,9 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
-  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer)
+  static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::topology_type::patch_type& patch, PetscViewer viewer)
   {
     typedef ALE::New::Numbering<ALE::Mesh::topology_type> numbering_type;
-    ALE::Mesh::topology_type::patch_type                 patch      = 0;
     const Obj<ALE::Mesh::sieve_type>&                    topology   = mesh->getTopologyNew()->getPatch(patch);
     const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopologyNew()->heightStratum(patch, 0);
     const Obj<numbering_type>&                           vNumbering = mesh->getNumbering(0);

@@ -17,8 +17,7 @@ namespace ALE {
     typedef section_type::atlas_type                    atlas_type;
     typedef std::map<std::string, Obj<section_type> >   SectionContainer;
     typedef ALE::New::Numbering<topology_type>          numbering_type;
-    typedef std::map<int, Obj<numbering_type> >                 NumberingContainer;
-    typedef std::map<int, std::map<int, Obj<numbering_type> > > NewNumberingContainer;
+    typedef std::map<int, std::map<int, Obj<numbering_type> > > NumberingContainer;
     typedef ALE::New::GlobalOrder<topology_type, section_type::atlas_type> order_type;
     typedef std::map<std::string, Obj<order_type> >          OrderContainer;
     typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
@@ -38,7 +37,7 @@ namespace ALE {
   private:
     Obj<sieve_type>            topology;
     SectionContainer           sections;
-    NewNumberingContainer      localNumberings;
+    NumberingContainer         localNumberings;
     NumberingContainer         numberings;
     OrderContainer             orders;
     Obj<topology_type>         _topology;
@@ -97,15 +96,16 @@ namespace ALE {
     bool hasSection(const std::string& name) const {
       return(this->sections.find(name) != this->sections.end());
     };
-    const Obj<numbering_type>& getNumbering(const int depth) {
-      if (this->numberings.find(depth) == this->numberings.end()) {
+    const Obj<numbering_type>& getNumbering(const int depth, const topology_type::patch_type& patch = 0) {
+      if ((this->numberings.find(depth) == this->numberings.end()) ||
+          (this->numberings[depth].find(patch) == this->numberings[depth].end())) {
         Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
         numbering->construct();
 
-        std::cout << "Creating new numbering: " << depth << std::endl;
-        this->numberings[depth] = numbering;
+        std::cout << "Creating new numbering: " << depth << " patch " << patch << std::endl;
+        this->numberings[depth][patch] = numbering;
       }
-      return this->numberings[depth];
+      return this->numberings[depth][patch];
     };
     const Obj<numbering_type>& getLocalNumbering(const int depth, const topology_type::patch_type& patch = 0) {
       if ((this->localNumberings.find(depth) == this->localNumberings.end()) ||
