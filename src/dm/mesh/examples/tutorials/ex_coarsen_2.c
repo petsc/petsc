@@ -75,7 +75,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
   if (options->outputVTK) {
     ALE::LogStage stage = ALE::LogStageRegister("VTKOutput");
     ALE::LogStagePush(stage);
-    ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh file\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(mesh->comm(), "Creating VTK mesh files\n");CHKERRQ(ierr);
     ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
     ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
     ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
@@ -84,7 +84,23 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
     ierr = VTKViewer::writeHierarchyVertices(mesh, viewer, options->zScale);CHKERRQ(ierr);
     ierr = VTKViewer::writeHierarchyElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    ALE::LogStagePop(stage);
+    const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopologyNew()->getPatches();
+#if 0
+    for(ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+      ostringstream filename;
+
+      filename << "coarseMesh." << *p_iter << ".vtk";
+      ierr = PetscViewerCreate(mesh->comm(), &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(viewer, filename.str().c_str());CHKERRQ(ierr);
+      ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+      ierr = VTKViewer::writeVertices(mesh, *p_iter, viewer);CHKERRQ(ierr);
+      ierr = VTKViewer::writeElements(mesh, *p_iter, viewer);CHKERRQ(ierr);
+      //ierr = FieldView_Sieve(mesh, "spacing", viewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+    }
+#endif
   }
   PetscFunctionReturn(0);
 }
