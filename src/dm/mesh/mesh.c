@@ -1439,9 +1439,22 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
     *array       = NULL;
     PetscFunctionReturn(0);
   }
-  const ALE::Mesh::section_type::chart_type&   chart   = section->getPatch(patch);
-  *numElements = chart.size();
-  *fiberDim    = section->getFiberDimension(patch, *chart.begin());
+  const ALE::Mesh::section_type::chart_type& chart = section->getPatch(patch);
+  int fiberDimMin = section->getFiberDimension(patch, *chart.begin());
+  int numElem     = 0;
+
+  for(ALE::Mesh::section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const int fiberDim = section->getFiberDimension(patch, *c_iter);
+
+    if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
+  }
+  for(ALE::Mesh::section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const int fiberDim = section->getFiberDimension(patch, *c_iter);
+
+    numElem += fiberDim/fiberDimMin;
+  }
+  *numElements = numElem;
+  *fiberDim    = fiberDimMin;
   *array       = (PetscInt *) section->restrict(patch);
   PetscFunctionReturn(0);
 }

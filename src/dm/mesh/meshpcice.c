@@ -140,13 +140,14 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       // Create IBC section
-      const Obj<Mesh::bc_section_type>& ibc = mesh->getBCSection("IBC");
+      //   BL[NBFS,1]
+      //   BNVEC[NBFS,2]
+      const Obj<Mesh::bc_section_type>& ibc   = mesh->getBCSection("IBC");
+      const Obj<Mesh::section_type>&    bl    = mesh->getSection("BL");
+      const Obj<Mesh::section_type>&    bnvec = mesh->getSection("BNVEC");
       int *tmpIBC = new int[numBdFaces*4];
       std::map<int,std::set<int> > elem2Idx;
-      std::map<int,int> elem2Num;
-
       std::map<int,int> bfReorder;
-
       for(int bf = 0; bf < numBdFaces; bf++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
 
@@ -162,9 +163,13 @@ namespace ALE {
         const int elem = tmpIBC[bf*4+0]-1;
 
         ibc->addFiberDimension(patch, elem, 4);
+        bl->addFiberDimension(patch, elem, 1);
+        bnvec->addFiberDimension(patch, elem, 2);
         elem2Idx[elem].insert(bf);
       }
       ibc->allocate();
+      bl->allocate();
+      bnvec->allocate();
       const Mesh::bc_section_type::chart_type& chart = ibc->getPatch(patch);
       int num = 0;
 
