@@ -334,7 +334,7 @@ namespace ALE {
           const Obj<SectionSizer>              sizer           = new SectionSizer(serialSection, patch);
           const Obj<SectionFiller>             filler          = new SectionFiller(serialSection, patch);
           // Need to associate overlaps with sections somehow (through the atlas?)
-          if ((*name == "material") || (*name == "BL") || (*name == "BNVEC") || (*name == "UE") || (*name == "odd")) {
+          if ((*name == "material") || (*name == "BL") || (*name == "BNVEC") || (*name == "BCVEC") || (*name == "UE") || (*name == "odd")) {
             updateSectionLocal(serialSection, parallelSection);
             sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
             updateSectionRemote(cellRecvOverlap, recvSection, parallelSection);
