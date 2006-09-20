@@ -199,7 +199,7 @@ namespace ALE {
       //   (0, 0)        ... (0, numCells-1):  dim-dimensional cells
       //   (0, numCells) ... (0, numVertices): vertices
       // The other cells are numbered as they are requested
-      static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1) {
+      static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1) {
         int debug = sieve->debug;
 
         ALE_LOG_EVENT_BEGIN;
@@ -207,13 +207,14 @@ namespace ALE {
           ALE_LOG_EVENT_END;
           return;
         }
+        if (firstVertex < 0) firstVertex = numCells;
         // Create a map from dimension to the current element number for that dimension
         std::map<int,int*>       curElement;
         std::map<int,PointArray> bdVertices;
         std::map<int,PointArray> faces;
         int                      curCell    = 0;
-        int                      curVertex  = numCells;
-        int                      newElement = numCells+numVertices;
+        int                      curVertex  = firstVertex;
+        int                      newElement = firstVertex+numVertices;
 
         if (corners < 0) corners = dim+1;
         curElement[0]   = &curVertex;
@@ -228,7 +229,7 @@ namespace ALE {
           if (interpolate) {
             bdVertices[dim].clear();
             for(int b = 0; b < corners; b++) {
-              typename sieve_type::point_type vertex(cells[c*corners+b]+numCells);
+              typename sieve_type::point_type vertex(cells[c*corners+b]+firstVertex);
 
               if (debug > 1) {std::cout << "Adding boundary vertex " << vertex << std::endl;}
               bdVertices[dim].push_back(vertex);
@@ -242,12 +243,12 @@ namespace ALE {
             }
           } else {
             for(int b = 0; b < corners; b++) {
-              sieve->addArrow(typename sieve_type::point_type(cells[c*corners+b]+numCells), cell, b);
+              sieve->addArrow(typename sieve_type::point_type(cells[c*corners+b]+firstVertex), cell, b);
             }
             if (debug) {
               if (debug > 1) {
                 for(int b = 0; b < corners; b++) {
-                  std::cout << "  Adding vertex " << typename sieve_type::point_type(cells[c*corners+b]+numCells) << std::endl;
+                  std::cout << "  Adding vertex " << typename sieve_type::point_type(cells[c*corners+b]+firstVertex) << std::endl;
                 }
               }
               std::cout << "Adding cell " << cell << " dim " << dim << std::endl;

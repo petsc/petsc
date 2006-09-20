@@ -22,10 +22,12 @@ namespace ALE {
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[], int *materials[]);
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
       static void readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]);
+      static void readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]);
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static void buildMaterials(const Obj<ALE::Mesh::section_type>& matField, const int materials[]);
       static void buildSplit(const Obj<split_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]);
       static Obj<ALE::Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
+      static void buildTractions(const Obj<section_type>& tractionField, const Obj<topology_type>& boundaryTopology, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]);
     };
 
     class Viewer {
@@ -38,6 +40,7 @@ namespace ALE {
       static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer);
       static PetscErrorCode writeElementsLocal(const Obj<ALE::Mesh>& mesh, PetscViewer viewer);
       static PetscErrorCode writeSplitLocal(const Obj<ALE::Mesh>& mesh, const Obj<Builder::split_section_type>& splitField, PetscViewer viewer);
+      static PetscErrorCode writeTractionsLocal(const Obj<Mesh>& mesh, const Obj<Builder::section_type>& tractionField, PetscViewer viewer);
     };
   };
 };
