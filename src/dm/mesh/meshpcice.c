@@ -139,6 +139,7 @@ namespace ALE {
       const Obj<Mesh::section_type>&    bl     = mesh->getSection("BL");
       const Obj<Mesh::section_type>&    bnvec  = mesh->getSection("BNVEC");
       const Obj<Mesh::section_type>&    bnnv   = mesh->getSection("BNNV");
+      const Obj<Mesh::section_type>&    bcvec  = mesh->getSection("BCVEC");
       if (mesh->commRank() != 0) {
         mesh->distributeBCValues();
         return;
@@ -170,12 +171,14 @@ namespace ALE {
         ibcnum->addFiberDimension(patch, elem, 1);
         bl->addFiberDimension(patch, elem, 1);
         bnvec->addFiberDimension(patch, elem, 2);
+        bcvec->addFiberDimension(patch, elem, 4);
         elem2Idx[elem].insert(bf);
       }
       ibc->allocate();
       ibcnum->allocate();
       bl->allocate();
       bnvec->allocate();
+      bcvec->allocate();
       const Mesh::bc_section_type::chart_type& chart = ibc->getPatch(patch);
       int num = 1;
 
