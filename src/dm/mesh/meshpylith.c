@@ -242,6 +242,129 @@ namespace ALE {
         splitField->update(patch, e, values);
       }
     };
+    void Builder::readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]) {
+      PetscViewer    viewer;
+      FILE          *f;
+      PetscInt       maxTractions = 1024, tractionCount = 0;
+      PetscInt      *tractionVerts;
+      PetscScalar   *tractionVals;
+      double         scaleFactor = 1.0;
+      char           buf[2048];
+      PetscInt       c;
+      PetscInt       commRank;
+      PetscErrorCode ierr;
+
+      ierr = MPI_Comm_rank(comm, &commRank);
+      if (dim != 3) {
+        throw ALE::Exception("PyLith only works in 3D");
+      }
+      if (commRank != 0) return;
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
+      ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
+      if (PetscExceptionValue(ierr)) {
+        // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
+      } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
+        // File does not exist
+        return;
+      } 
+      /* Logic right now is only good for linear tets and hexes, and should be fixed in the future. */
+      if (corners == 4) {
+	vertsPerFace = 3;
+      } else if (corners == 8) {
+	vertsPerFace = 4;
+      } else {
+	throw ALE::Exception("Unrecognized element type");
+      }
+
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      /* Ignore comments */
+      ignoreComments(buf, 2048, f);
+      /* Read units */
+      const char *units = strtok(buf, " ");
+      if (strcmp(units, "traction_units")) {
+	throw ALE::Exception("Invalid traction units line");
+      }
+      units = strtok(NULL, " ");
+      if (strcmp(units, "=")) {
+	throw ALE::Exception("Invalid traction units line");
+      }
+      units = strtok(NULL, " ");
+      if (!strcmp(units, "MPa")) {
+	/* Should use Pythia to do units conversion */
+	scaleFactor = 1.0e6;
+      }
+      /* Ignore comments */
+      ignoreComments(buf, 2048, f);
+      // Allocate memory.
+      ierr = PetscMalloc2(maxTractions*vertsPerFace,PetscInt,&tractionVerts,maxTractions*dim,PetscScalar,&tractionVals);
+      do {
+        const char *s = strtok(buf, " ");
+
+        if (tractionCount == maxTractions) {
+          PetscInt    *titmp;
+          PetscScalar *tvtmp;
+
+          titmp = tractionVerts;
+          tvtmp = tractionVals;
+          ierr = PetscMalloc2(maxTractions*vertsPerFace*2,PetscInt,&tractionVerts,maxTractions*dim*2,PetscScalar,&tractionVals);
+          ierr = PetscMemcpy(tractionVerts,  titmp, maxTractions*vertsPerFace   * sizeof(PetscInt));
+          ierr = PetscMemcpy(tractionVals, tvtmp, maxTractions*dim * sizeof(PetscScalar));
+          ierr = PetscFree2(titmp,tvtmp);
+          maxTractions *= 2;
+        }
+        /* Get vertices */
+        int v1 = atoi(s);
+        if (!useZeroBase) v1 -= 1;
+        tractionVerts[tractionCount*vertsPerFace+0] = v1;
+        s = strtok(NULL, " ");
+        int v2 = atoi(s);
+        if (!useZeroBase) v2 -= 1;
+        tractionVerts[tractionCount*vertsPerFace+1] = v2;
+        s = strtok(NULL, " ");
+        int v3 = atoi(s);
+        if (!useZeroBase) v3 -= 1;
+        tractionVerts[tractionCount*vertsPerFace+2] = v3;
+        s = strtok(NULL, " ");
+        /* Get traction values */
+        for(c = 0; c < dim; c++) {
+          tractionVals[tractionCount*dim+c] = atof(s);
+          s = strtok(NULL, " ");
+        }
+        tractionCount++;
+      } while(fgets(buf, 2048, f) != NULL);
+      ierr = PetscViewerDestroy(viewer);
+      numTractions     = tractionCount;
+      *tractionVertices    = tractionVerts;
+      *tractionValues = tractionVals;
+    };
+    void Builder::buildTractions(const Obj<section_type>& tractionField, const Obj<topology_type>& boundaryTopology, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]) {
+      const section_type::patch_type                  patch = 0;
+      section_type::value_type                        values[3];
+      // Make boundary topology
+      Obj<sieve_type> boundarySieve = new sieve_type(tractionField->comm(), tractionField->debug());
+
+      ALE::New::SieveBuilder<sieve_type>::buildTopology(boundarySieve, 2, numTractions, tractionVertices, 0, false, vertsPerFace, numCells);
+      boundaryTopology->setPatch(patch, boundarySieve);
+      boundaryTopology->stratify();
+      // Make traction field
+      tractionField->setTopology(boundaryTopology);
+      tractionField->setFiberDimensionByHeight(patch, 0, 3);
+      tractionField->allocate();
+      const Obj<topology_type::label_sequence>& faces = boundaryTopology->heightStratum(patch, 0);
+      int k = 0;
+
+      for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+        const topology_type::point_type& face = *f_iter;
+
+        values[0] = tractionValues[k*3+0];
+        values[1] = tractionValues[k*3+1];
+        values[2] = tractionValues[k*3+2];
+	k++;
+        tractionField->update(patch, face, values);
+      }
+    };
     void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
       const section_type::patch_type            patch    = 0;
       const Obj<topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
@@ -272,11 +395,14 @@ namespace ALE {
       double *coordinates;
       int    *splitInd;
       double *splitValues;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1, numSplit = 0, hasSplit;
+      int    *tractionVertices;
+      double *tractionValues;
+      int     numCells = 0, numVertices = 0, numCorners = dim+1, numSplit = 0, hasSplit, numTractions = 0, vertsPerFace = 0, hasTractions;
 
       ALE::PyLith::Builder::readConnectivity(comm, basename+".connect", numCorners, useZeroBase, numCells, &cells, &materials);
       ALE::PyLith::Builder::readCoordinates(comm, basename+".coord", dim, numVertices, &coordinates);
       ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
+      ALE::PyLith::Builder::readTractions(comm, basename+".traction", dim, numCorners, useZeroBase, numTractions, vertsPerFace, &tractionVertices, &tractionValues);
       ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
       sieve->stratify();
       topology->setPatch(0, sieve);
@@ -290,6 +416,12 @@ namespace ALE {
 
         buildSplit(splitField, numCells, numSplit, splitInd, splitValues);
         mesh->setSplitSection(splitField);
+      }
+      MPI_Allreduce(&numTractions, &hasTractions, 1, MPI_INT, MPI_MAX, comm);
+      if (hasTractions) {
+        Obj<topology_type> boundaryTopology = new topology_type(topology->comm(), topology->debug());
+
+        buildTractions(mesh->getSection("tractions"), boundaryTopology, numCells, numTractions, vertsPerFace, tractionVertices, tractionValues);
       }
       return mesh;
     };
@@ -605,6 +737,37 @@ namespace ALE {
           // No time history
           ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", eNumbering->getIndex(e)+1, vNumbering->getIndex(v)+1, split.x, split.y, split.z);CHKERRQ(ierr);
         }
+      }
+      PetscFunctionReturn(0);
+    };
+    #undef __FUNCT__  
+    #define __FUNCT__ "PyLithWriteTractionsLocal"
+    PetscErrorCode Viewer::writeTractionsLocal(const Obj<Mesh>& mesh, const Obj<Builder::section_type>& tractionField, PetscViewer viewer) {
+      typedef Builder::topology_type topology_type;
+      typedef Builder::section_type section_type;
+      const section_type::patch_type            patch    = 0;
+      const Obj<topology_type>&         boundaryTopology = tractionField->getTopology();
+      const Obj<topology_type::sieve_type>&     sieve    = boundaryTopology->getPatch(patch);
+      const Obj<topology_type::label_sequence>& faces    = boundaryTopology->heightStratum(patch, 0);
+      const Obj<Mesh::numbering_type>&        vNumbering = mesh->getLocalNumbering(0);
+
+      PetscFunctionBegin;
+      for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+        const topology_type::point_type& face = *f_iter;
+        const Obj<topology_type::sieve_type::traits::coneSequence>& cone = sieve->cone(face);
+
+        for(topology_type::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          const topology_type::point_type& vertex = *c_iter;
+
+          std::cout << vNumbering->getIndex(vertex) << " ("<<vertex<<") ";
+        }
+        const section_type::value_type *values = tractionField->restrict(patch, face);
+
+        for(int i = 0; i < mesh->getDimension(); ++i) {
+          if (i > 0) std::cout << " ";
+          std::cout << values[i];
+        }
+        std::cout << std::endl;
       }
       PetscFunctionReturn(0);
     };

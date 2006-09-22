@@ -108,9 +108,12 @@ namespace ALE {
       return this->numberings[depth][patch];
     };
     const Obj<numbering_type>& getLocalNumbering(const int depth, const topology_type::patch_type& patch = 0) {
+      return this->getLocalNumbering(depth, this->getTopologyNew(), patch);
+    };
+    const Obj<numbering_type>& getLocalNumbering(const int depth, const Obj<topology_type>& topology, const topology_type::patch_type& patch = 0) {
       if ((this->localNumberings.find(depth) == this->localNumberings.end()) ||
           (this->localNumberings[depth].find(patch) == this->localNumberings[depth].end())) {
-        Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
+        Obj<numbering_type> numbering = new numbering_type(topology, "depth", depth);
         numbering->constructLocalOrder(numbering->getSendOverlap(), patch);
 
         std::cout << "Creating new local numbering: depth " << depth << " patch " << patch << std::endl;

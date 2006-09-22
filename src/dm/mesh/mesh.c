@@ -47,7 +47,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer
     } 
     CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
-    PetscViewer connectViewer, coordViewer, splitViewer;
+    PetscViewer connectViewer, coordViewer, splitViewer, tractionViewer;
     char       *filename;
     char        localFilename[2048];
     int         rank = mesh->commRank();
@@ -78,6 +78,16 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer
       ierr = PetscViewerFileSetName(splitViewer, localFilename);CHKERRQ(ierr);
       ierr = ALE::PyLith::Viewer::writeSplitLocal(mesh, mesh->getSplitSection(), splitViewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(splitViewer);CHKERRQ(ierr);
+    }
+
+    if (mesh->hasSection("tractions")) {
+      sprintf(localFilename, "%s.%d.traction", filename, rank);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &tractionViewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(tractionViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(tractionViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(tractionViewer, localFilename);CHKERRQ(ierr);
+      ierr = ALE::PyLith::Viewer::writeTractionsLocal(mesh, mesh->getSection("tractions"), tractionViewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(tractionViewer);CHKERRQ(ierr);
     }
   } else if (format == PETSC_VIEWER_ASCII_PCICE) {
     char      *filename;
@@ -1550,4 +1560,15 @@ PetscErrorCode WritePyLithSplitLocal(Mesh mesh, PetscViewer viewer)
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PyLith::Viewer::writeSplitLocal(m, m->getSplitSection(), viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "WritePyLithTractionsLocal"
+PetscErrorCode WritePyLithTractionsLocal(Mesh mesh, PetscViewer viewer)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  return ALE::PyLith::Viewer::writeTractionsLocal(m, m->getSection("tractions"), viewer);
 }

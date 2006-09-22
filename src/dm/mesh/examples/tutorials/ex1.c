@@ -195,10 +195,10 @@ PetscErrorCode DistributeMesh(Obj<ALE::Mesh>& mesh, Options *options)
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(mesh->comm(), "Distributing mesh\n");CHKERRQ(ierr);
     mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh, std::string(options->partitioner));
-    if (options->partition) {
-      ierr = CreatePartition(mesh);CHKERRQ(ierr);
-    }
     ALE::LogStagePop(stage);
+  }
+  if (options->partition) {
+    ierr = CreatePartition(mesh);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
