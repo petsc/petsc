@@ -99,6 +99,16 @@ runxsifter1:
 debugxsifter1:
 	-@${MPIRUN} -np ${NP} ./xsifter1 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
+#-----------------------------------------------------------------
+xsifter2: xsifter2.o chkopts
+	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB}
+	${RM} -f xsifter2.o
+NP = 1
+runxsifter2:
+	-@${MPIRUN} -np ${NP} ./xsifter2 ${EXTRA_ARGS}
+debugxsifter2:
+	-@${MPIRUN} -np ${NP} ./xsifter2 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
 
 #-----------------------------------------------------------------
 runex00:

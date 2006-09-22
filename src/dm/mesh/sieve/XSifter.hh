@@ -658,6 +658,91 @@ namespace ALE {
         os << " ]" << std::endl;
       };
     };// class StridedIndexSequence    
+
+    //
+    // PredicateTraits encapsulates Predicate types encoding object subsets with a given Predicate value or within a value range.
+    template<typename Predicate_> 
+    struct PredicateTraits {};
+    // Traits of different predicate types are defined via specialization of PredicateTraits.
+    // We require that the predicate type act like a signed int.
+    template<>
+    struct PredicateTraits<int> {
+      typedef      int  predicate_type;
+      typedef      int  printable_type;
+      //
+      static const predicate_type third;
+      static const predicate_type max;
+      static const predicate_type min;
+    };
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::max   = INT_MAX;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::min   = INT_MIN;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::third = (abs(INT_MIN)<abs(INT_MAX))?abs(INT_MIN)/3:abs(INT_MAX)/3;
+    //
+    template<>
+    struct PredicateTraits<short> {
+      typedef      short  predicate_type;
+      typedef      short  printable_type;
+      //
+      static const predicate_type third;
+      static const predicate_type max;
+      static const predicate_type min;
+    };
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::max   = SHRT_MAX;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::min   = SHRT_MIN;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::third = (abs(SHRT_MIN)<abs(SHRT_MAX))?abs(SHRT_MIN)/3:abs(SHRT_MAX)/3;;
+    //
+    template<>
+    struct PredicateTraits<char> {
+      typedef char  predicate_type;
+      typedef short printable_type;
+      //
+      static const predicate_type third;
+      static const predicate_type max;
+      static const predicate_type min;
+    };
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::max   = CHAR_MAX;
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::min   = CHAR_MIN;
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::third = (abs(CHAR_MIN)<abs(CHAR_MAX))?abs(CHAR_MIN)/3:abs(CHAR_MAX)/3;
+
+    //
+    // Filter handler
+    template <typename FilterContainer_>
+    class Filter {
+    public:
+      typedef FilterContainer_                               filter_container_type;
+      typedef typename filter_container_type::predicate_type predicate_type;
+      typedef PredicateTraits<predicate_type>                predicate_traits;
+    protected:
+      filter_container_type& _container;
+      predicate_type _low, _high;
+    public:
+      Filter(filter_container_type& container) : _container(container) {};
+      Filter(filter_container_type& container, const predicate_type& low, const predicate_type& high) : _container(container), _low(low), _high(high) {};
+      Filter(const Filter& f) : _container(f._container), _low(f._low), _high(f._high) {};
+      ~Filter(){if((this->low()!=0)||(this->high()!=0)){this->_container.freeFilter(*this);}};
+      //
+      predicate_type         low()       const {return this->_low;};
+      predicate_type         high()      const {return this->_high;};
+      filter_container_type  container() const {return this->_container;};
+      void extend(const predicate_type& width) {this->_container.extendFilter(*this, width);};
+      void contract(const predicate_type& width) {this->_container.contractFilter(*this, width);};
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const Filter& f) {
+        os << "[";
+        os << ((typename predicate_traits::printable_type)(f.low())) << ",";
+        os << ((typename predicate_traits::printable_type)(f.high())); 
+        os << "]";
+        return os;
+      };
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const Obj<Filter>& s) {
+        os << "[";
+        os << ((typename predicate_traits::printable_type)(s->low())) << ",";
+        os << ((typename predicate_traits::printable_type)(s->high())); 
+        os << "]";
+        return os;
+      };
+    };// Filter
   }; // namespace XSifterDef
   
   //
@@ -909,6 +994,20 @@ namespace ALE {
         }
       os << ")" << std::endl;
     };
+    //
+    // Filter interface (stubs)
+    //
+    template <typename Filter_>
+    void allocFilter(Filter_& f){};
+    //
+    template <typename Filter_>
+    void freeFilter(Filter_& f){};
+    //
+    template <typename Filter_>
+    void extendFilter(Filter_& f, const predicate_type& width){};
+    //
+    template <typename Filter_>
+    void contractFilter(Filter_& f, const predicate_type& width){};
   protected:
     // set of arrow records
     rec_set_type _rec_set;
