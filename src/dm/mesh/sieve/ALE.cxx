@@ -37,7 +37,7 @@ namespace ALE {
   // Error/exception handling helper functions (ALE_exception.hh).
   //
 
-  // A helper function that throws an ALE::Exception with a message identifying the function that returned the given error code, 
+  // A helper function for converting PETSc errors to exception
   // including the function and the line where the error occured.
   void ERROR(PetscErrorCode ierr, const char *func, int line, const char *msg) {
     if(ierr) {

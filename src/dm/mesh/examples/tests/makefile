@@ -79,12 +79,25 @@ overlap1: overlap1.o chkopts
 overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
-
+#-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}
 	${RM} -f xsifter0.o
+NP = 1
 runxsifter0:
-	-@${MPIRUN} -np ${NP} ./xsifter0 -log_summary ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./xsifter0 ${EXTRA_ARGS}
+debugxsifter0:
+	-@${MPIRUN} -np ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
+xsifter1: xsifter1.o chkopts
+	-${CLINKER} -o xsifter1 xsifter1.o ${PETSC_DM_LIB}
+	${RM} -f xsifter1.o
+NP = 1
+runxsifter1:
+	-@${MPIRUN} -np ${NP} ./xsifter1 ${EXTRA_ARGS}
+debugxsifter1:
+	-@${MPIRUN} -np ${NP} ./xsifter1 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 
 #-----------------------------------------------------------------
