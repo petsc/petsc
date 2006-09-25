@@ -54,6 +54,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
   mesh = ALE::PCICE::Builder::readMesh(comm, 2, options->baseFilename, options->useZeroBase, true, options->debug);
   ALE::Coarsener::IdentifyBoundary(mesh, 2);
+  ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
   ALE::LogStagePop(stage);
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
@@ -124,6 +125,9 @@ int main(int argc, char *argv[])
     ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
     ierr = ALE::Coarsener::CreateSpacingFunction(mesh, 2);CHKERRQ(ierr);
     ierr = ALE::Coarsener::CreateCoarsenedHierarchy(mesh, 2, options.levels, options.coarseFactor);CHKERRQ(ierr);
+    Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
+    mesh->getTopologyNew()->setPatch(options.levels+1, sieve);
+    mesh->getTopologyNew()->stratify();
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
