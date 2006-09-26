@@ -28,7 +28,7 @@ namespace ALE {
       std::list<mis_node *> subspaces;
       int depth;
       std::list<ALE::Mesh::point_type> childPoints;
-      std::list<ALE::Mesh::point_type> childBoundPoints;
+      //std::list<ALE::Mesh::point_type> childBoundPoints;
       std::list<ALE::Mesh::point_type> childColPoints;
     };
     bool isOverlap(mis_node *, mis_node *, int); //calculates if there is an intersection or overlap of these two domains
@@ -77,15 +77,15 @@ namespace ALE {
 	    //if it's essential, push it to the ColPoints stack, which will be the pool that is compared with during the traversal-MIS algorithm.
         int boundRank = topology->getValue(boundary, *v_iter);
 	if (!includePrevious) {
-	  if(boundRank == dim) { randPush(&tmpPoint->childColPoints, *v_iter);
-	  } else if (boundRank == 0) {  randPush(&tmpPoint->childPoints, *v_iter);
-          } else randPush(&tmpPoint->childBoundPoints, *v_iter);
+	  if(boundRank == dim) { tmpPoint->childColPoints.push_front(*v_iter);
+	  } else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
+          } else tmpPoint->childPoints.push_front(*v_iter);
 	} else { //enforce the node-nested condition.
 	  if(topology->getPatch(patch+1)->capContains(*v_iter)) {
-	    randPush(&tmpPoint->childColPoints, *v_iter);
+	    tmpPoint->childColPoints.push_front(*v_iter);
            // printf("Got one from the last");
-	  } else if (boundRank == 0) {  randPush(&tmpPoint->childPoints, *v_iter);
-          } else randPush(&tmpPoint->childBoundPoints, *v_iter);
+	  } else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
+          } else tmpPoint->childPoints.push_front(*v_iter);
 	}
 	v_iter++;
       }
@@ -147,22 +147,7 @@ namespace ALE {
 	      if ((tmpPoint->boundaries[2*d] + tmpPoint->boundaries[2*d+1])/2 > cur_coords[d]) index += change;
 	      change = change * 2;
 	    }
-	    randPush(&newBlocks[index]->childPoints, *p_iter);
-	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
-	    p_iter++;
-	  }
-          //handle the boundary node splitting.
-	  p_iter = tmpPoint->childBoundPoints.begin();
-	  p_iter_end = tmpPoint->childBoundPoints.end();
-	  while (p_iter != p_iter_end) {
-	    double ch_space = *spacing->restrict(rPatch, *p_iter);
-	    const double * cur_coords = coords->restrict(rPatch, *p_iter);
-	    int index = 0, change = 1;
-	    for (int d = 0; d < dim; d++) {
-	      if ((tmpPoint->boundaries[2*d] + tmpPoint->boundaries[2*d+1])/2 > cur_coords[d]) index += change;
-	      change = change * 2;
-	    }
-	    randPush(&newBlocks[index]->childBoundPoints, *p_iter);
+	    newBlocks[index]->childPoints.push_back(*p_iter);
 	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
 	    p_iter++;
 	  }
@@ -178,7 +163,7 @@ namespace ALE {
 	      change = change * 2;
 	    }
 	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
-	    randPush(&newBlocks[index]->childColPoints, *p_iter);
+	    newBlocks[index]->childColPoints.push_back(*p_iter);
 	    p_iter++;
 	  }
 		//add all the new blocks to the refinement queue.
@@ -222,11 +207,10 @@ namespace ALE {
 	//PetscPrintf(mesh->comm(), "Region has %d adjacent sections; comparing\n", comparisons.size());
 	    //now loop over the adjacent areas we found to determine the MIS within *leaf_iter with respect to its neighbors.
 	    //begin by looping over the vertices in the leaf.
-	std::list<ALE::Mesh::point_type>::iterator l_points_iter = cur_leaf->childBoundPoints.begin();
-        std::list<ALE::Mesh::point_type>::iterator l_points_intermed = cur_leaf->childBoundPoints.end();
+	std::list<ALE::Mesh::point_type>::iterator l_points_iter = cur_leaf->childPoints.begin();
+        //std::list<ALE::Mesh::point_type>::iterator l_points_intermed = cur_leaf->childBoundPoints.end();
 	std::list<ALE::Mesh::point_type>::iterator l_points_iter_end = cur_leaf->childPoints.end();
 	while (l_points_iter != l_points_iter_end) {
-          if (l_points_intermed == l_points_iter) l_points_iter = cur_leaf->childPoints.begin(); //HACK!
 	  bool l_is_ok = true;
 	  double l_coords[dim];
 	  PetscMemcpy(l_coords, coords->restrict(rPatch, *l_points_iter), dim*sizeof(double));
@@ -272,6 +256,7 @@ namespace ALE {
 	    cur_leaf->childColPoints.push_front(*l_points_iter);
 	  }
 	  l_points_iter++;
+          //if (l_points_intermed == l_points_iter) l_points_iter = cur_leaf->childPoints.begin(); //HACK!
 	} //end while over points
 
 	    //we can now dump the accepted list of points from the current leaf into the global list
