@@ -134,7 +134,10 @@ int main(int argc,char **argv)
   /* make timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
   ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
-  ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-monitor",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
+  }
 
   dt = appctx.h*appctx.h/2.01;
 

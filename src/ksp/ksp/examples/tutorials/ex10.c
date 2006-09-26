@@ -207,8 +207,7 @@ int main(int argc,char **args)
 
       /* Create a new vector b by padding the old one */
       ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
-
-      ierr = VecSetSizes(tmp,m,PETSC_DECIDE);CHKERRQ(ierr);
+      ierr = VecSetSizes(tmp,n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
       ierr = VecGetOwnershipRange(b,&start,&end);CHKERRQ(ierr);
       ierr = VecGetLocalSize(b,&mvec);CHKERRQ(ierr);
@@ -377,6 +376,9 @@ int main(int argc,char **args)
     } /* while ( num_rhs-- ) */
     ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
     tsolve = tsolve2 - tsolve1;
+
+    //ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+    //ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
 
    /* 
        Conclude profiling this stage
