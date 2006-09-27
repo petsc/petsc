@@ -226,7 +226,6 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = PCMGGetSmoother(pc,fine_level,&gridctx[fine_level].ksp);CHKERRQ(ierr);
   ierr = PCMGSetResidual(pc,fine_level,PCMGDefaultResidual,gridctx[fine_level].A);CHKERRQ(ierr); 
   ierr = KSPSetOperators(gridctx[fine_level].ksp,gridctx[level].A,gridctx[fine_level].A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-  ierr = KSPSetOptionsPrefix(gridctx[fine_level].ksp,"mg_fine_");CHKERRQ(ierr);
   
   /* now call PCSetUp_MG()         */
   /*--------------------------------*/

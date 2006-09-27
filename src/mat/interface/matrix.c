@@ -3289,7 +3289,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v)
 .  mat - the matrix to transpose
 
    Output Parameters:
-.  B - the transpose (or pass in PETSC_NULL for an in-place transpose)
+.  B - the transpose 
+
+   Notes:
+     If you  pass in PETSC_NULL for B an in-place transpose in mat will be done
 
    Level: intermediate
 

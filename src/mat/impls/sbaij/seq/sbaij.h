@@ -10,7 +10,7 @@
 */
 
 typedef struct {
-  SEQAIJHEADER;
+  SEQAIJHEADER(PetscScalar);
   SEQBAIJHEADER;
   PetscInt         *inew;        /* pointer to beginning of each row of reordered matrix */
   PetscInt         *jnew;        /* column values: jnew + i[k] is start of row k */

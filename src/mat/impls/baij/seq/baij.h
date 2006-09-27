@@ -30,7 +30,7 @@
 
 
 typedef struct {
-  SEQAIJHEADER;
+  SEQAIJHEADER(PetscScalar);
   SEQBAIJHEADER;
 } Mat_SeqBAIJ;
 
