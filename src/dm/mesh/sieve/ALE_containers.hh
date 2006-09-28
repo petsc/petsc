@@ -36,7 +36,7 @@ namespace ALE {
     int32_t prefix, index;
     // Constructors
     Point() : prefix(0), index(0){};
-    Point(int p) : prefix(p){};
+    Point(int p) : prefix(p), index(0){};
     Point(int p, int i) : prefix(p), index(i){};
     Point(const Point& p) : prefix(p.prefix), index(p.index){};
     // Comparisons

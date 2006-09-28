@@ -16,10 +16,9 @@ namespace ALE {
     typedef ALE::New::Section<topology_type, double>    section_type;
     typedef section_type::atlas_type                    atlas_type;
     typedef std::map<std::string, Obj<section_type> >   SectionContainer;
-    typedef ALE::New::Numbering<topology_type>          numbering_type;
-    typedef std::map<int, std::map<int, Obj<numbering_type> > > NumberingContainer;
-    typedef ALE::New::GlobalOrder<topology_type, section_type::atlas_type> order_type;
-    typedef std::map<std::string, Obj<order_type> >          OrderContainer;
+    typedef ALE::New::NumberingFactory<topology_type> NumberingFactory;
+    typedef NumberingFactory::numbering_type          numbering_type;
+    typedef NumberingFactory::order_type              order_type;
     typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
     typedef struct {double x, y, z;}                                           split_value;
     typedef ALE::New::Section<topology_type, ALE::pair<point_type, split_value> > split_section_type;
@@ -37,9 +36,6 @@ namespace ALE {
   private:
     Obj<sieve_type>            topology;
     SectionContainer           sections;
-    NumberingContainer         localNumberings;
-    NumberingContainer         numberings;
-    OrderContainer             orders;
     Obj<topology_type>         _topology;
     Obj<foliated_section_type> _boundaries;
     Obj<split_section_type>    _splitField;
@@ -95,41 +91,6 @@ namespace ALE {
     }
     bool hasSection(const std::string& name) const {
       return(this->sections.find(name) != this->sections.end());
-    };
-    const Obj<numbering_type>& getNumbering(const int depth, const topology_type::patch_type& patch = 0) {
-      if ((this->numberings.find(depth) == this->numberings.end()) ||
-          (this->numberings[depth].find(patch) == this->numberings[depth].end())) {
-        Obj<numbering_type> numbering = new numbering_type(this->getTopologyNew(), "depth", depth);
-        numbering->construct();
-
-        std::cout << "Creating new numbering: " << depth << " patch " << patch << std::endl;
-        this->numberings[depth][patch] = numbering;
-      }
-      return this->numberings[depth][patch];
-    };
-    const Obj<numbering_type>& getLocalNumbering(const int depth, const topology_type::patch_type& patch = 0) {
-      return this->getLocalNumbering(depth, this->getTopologyNew(), patch);
-    };
-    const Obj<numbering_type>& getLocalNumbering(const int depth, const Obj<topology_type>& topology, const topology_type::patch_type& patch = 0) {
-      if ((this->localNumberings.find(depth) == this->localNumberings.end()) ||
-          (this->localNumberings[depth].find(patch) == this->localNumberings[depth].end())) {
-        Obj<numbering_type> numbering = new numbering_type(topology, "depth", depth);
-        numbering->constructLocalOrder(numbering->getSendOverlap(), patch);
-
-        std::cout << "Creating new local numbering: depth " << depth << " patch " << patch << std::endl;
-        this->localNumberings[depth][patch] = numbering;
-      }
-      return this->localNumberings[depth][patch];
-    };
-    const Obj<order_type>& getGlobalOrder(const std::string& name) {
-      if (this->orders.find(name) == this->orders.end()) {
-        Obj<order_type> order = new order_type(this->getSection(name)->getAtlas(), this->getNumbering(0));
-        order->construct();
-
-        std::cout << "Creating new global order: " << name << std::endl;
-        this->orders[name] = order;
-      }
-      return this->orders[name];
     };
     const Obj<topology_type>& getTopologyNew() const {return this->_topology;};
     void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};

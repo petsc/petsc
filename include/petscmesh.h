@@ -8,18 +8,20 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
-     Mesh - Abstract PETSc object that manages distributed field data for a Sieve.
+   Mesh - Abstract PETSc object that combines a topology (Sieve) and coordinates (Section).
 
    Level: beginner
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), VecPackCreate(), VecPack
+.seealso:  MeshCreate(), MeshDestroy(), Section, SectionCreate()
 S*/
 typedef struct _p_Mesh* Mesh;
 
 /* Logging support */
 extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView(Mesh,const char[],PetscViewer);
@@ -52,6 +54,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetArray(Mesh, const char [], Pet
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscInt *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCFUNCGetArray(Mesh, PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePCICERestart(Mesh, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionComplete(Mesh, const char[]);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WriteVTKHeader(PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WriteVTKVertices(Mesh, PetscViewer);
@@ -62,6 +65,32 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVertices(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElements(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVerticesLocal(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElementsLocal(Mesh, PetscViewer);
+
+/*S
+  Section - Abstract PETSc object that manages distributed field data over a topology (Sieve).
+
+  Level: beginner
+
+  Concepts: distributed mesh, field
+
+.seealso:  SectionCreate(), SectionDestroy(), Mesh, MeshCreate()
+S*/
+typedef struct _p_Section* Section;
+
+/* Logging support */
+extern PetscCookie PETSCDM_DLLEXPORT SECTION_COOKIE;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionCreate(MPI_Comm,Section*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionDestroy(Section);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionView(Section,PetscViewer);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetSection(Section,ALE::Obj<ALE::Mesh::section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetSection(Section,const ALE::Obj<ALE::Mesh::section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetTopology(Section,ALE::Obj<ALE::Mesh::topology_type>&);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRestrict(Section, PetscInt, PetscScalar *[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section, PetscInt, PetscScalar []);
+
 
 PETSC_EXTERN_CXX_END
 #endif

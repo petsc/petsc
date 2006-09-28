@@ -96,11 +96,8 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<topology_type> topology = new topology_type(comm, options.debug);
-    Obj<sieve_type>    sieve = ALE::Test::SieveBuilder<sieve_type>::readSieve(comm, options.dim, options.baseFilename, options.useZeroBase, options.debug);
+    Obj<topology_type> topology = ALE::Test::TopologyBuilder<topology_type>::readTopology(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug, false);
 
-    topology->setPatch(0, sieve);
-    topology->stratify();
     ierr = StratificationTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;

@@ -11,6 +11,15 @@ PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, M
             Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshFinalize"
+PetscErrorCode MeshFinalize()
+{
+  PetscFunctionBegin;
+  ALE::Mesh::NumberingFactory::singleton(0, true);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
 PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
 {
@@ -195,7 +204,7 @@ PetscErrorCode FieldView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, const std:
         fiberDim = field->size(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
-      VTKViewer::writeField(mesh, field, name, fiberDim, numbering, viewer);
+      VTKViewer::writeField(field, name, fiberDim, numbering, viewer);
     } else {
       if (outputState == 0) {
         outputState = 2;
@@ -221,7 +230,7 @@ PetscErrorCode FieldView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, const std:
         fiberDim = field->size(patch, *mesh->getTopologyNew()->heightStratum(patch, 0)->begin());
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
-      VTKViewer::writeField(mesh, field, name, fiberDim, numbering, viewer);
+      VTKViewer::writeField(field, name, fiberDim, numbering, viewer);
     }
     ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
   } else {
@@ -381,7 +390,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh>& m)
 
     Input Parameters:
 +    mesh - the mesh object
--    boundary - the internal mesh object
+-    m - the internal mesh object
  
     Level: advanced
 
@@ -592,6 +601,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscFunctionBegin;
   if (--mesh->refct > 0) PetscFunctionReturn(0);
   if (mesh->globalvector) {ierr = VecDestroy(mesh->globalvector);CHKERRQ(ierr);}
+  mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -777,9 +787,10 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const cha
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::section_type>&   field       = mesh->getSection(std::string(fieldName));
+  const ALE::Obj<ALE::Mesh::topology_type>&  topology    = field->getTopology();
   const ALE::Obj<ALE::Mesh::atlas_type>&     atlas       = field->getAtlas();
-  const ALE::Obj<ALE::Mesh::order_type>&     globalOrder = mesh->getGlobalOrder(fieldName);
   const ALE::Mesh::section_type::patch_type  patch       = 0;
+  const ALE::Obj<ALE::Mesh::order_type>&     globalOrder = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getGlobalOrder(topology, patch, fieldName, field->getAtlas());
   const ALE::Mesh::atlas_type::chart_type&   chart       = atlas->getPatch(patch);
   int                                        localSize   = field->size(patch);
   int *localIndices, *globalIndices;
@@ -1020,7 +1031,11 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
   ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
   try {
-    ierr = updateOperator(A, mesh->getSection("displacement"), mesh->getGlobalOrder("displacement"), mesh->getLocalNumbering(mesh->getTopologyNew()->depth())->getPoint(e), v, mode);CHKERRQ(ierr);
+    const ALE::Obj<ALE::Mesh::topology_type>& topology = mesh->getTopologyNew();
+    const ALE::Obj<ALE::Mesh::numbering_type>& cNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, 0, topology->depth());
+    const ALE::Obj<ALE::Mesh::order_type>& globalOrder = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getGlobalOrder(topology, 0, "displacement", mesh->getSection("displacement")->getAtlas());
+
+    ierr = updateOperator(A, mesh->getSection("displacement"), globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
@@ -1035,7 +1050,8 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
   const ALE::Obj<ALE::Mesh::sieve_type>     adjGraph    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
   const ALE::Obj<ALE::Mesh::topology_type>  adjTopology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug);
   const ALE::Mesh::section_type::patch_type patch       = 0;
-  const ALE::Obj<ALE::Mesh::sieve_type>&    sieve       = mesh->getTopologyNew()->getPatch(patch);
+  const ALE::Obj<ALE::Mesh::topology_type>& topology    = mesh->getTopologyNew();
+  const ALE::Obj<ALE::Mesh::sieve_type>&    sieve       = topology->getPatch(patch);
   PetscInt       numLocalRows, firstRow, lastRow;
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
@@ -1055,9 +1071,9 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
     adjGraph->addCone(sieve->cone(sieve->support(point)), point);
   }
   /* Distribute adjacency graph */
-  const Obj<ALE::Mesh::numbering_type>&    vNumbering        = mesh->getNumbering(0);
-  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = vNumbering->getSendOverlap();
-  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = vNumbering->getRecvOverlap();
+  topology->constructOverlap(patch);
+  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = topology->getSendOverlap();
+  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = topology->getRecvOverlap();
   const Obj<ALE::Mesh::send_overlap_type>  nbrSendOverlap    = new ALE::Mesh::send_overlap_type(mesh->comm(), mesh->debug);
   const Obj<ALE::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALE::Mesh::recv_overlap_type(mesh->comm(), mesh->debug);
   const Obj<ALE::Mesh::send_section_type>  sendSection       = new ALE::Mesh::send_section_type(mesh->comm(), mesh->debug);
@@ -1066,7 +1082,7 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::sect
   ALE::New::Distribution<ALE::Mesh::topology_type>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjTopology, sendSection, recvSection);
   /* Distribute indices for new points */
   ALE::New::Distribution<ALE::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-  globalOrder->complete(nbrSendOverlap, nbrRecvOverlap, true);
+  ALE::Mesh::NumberingFactory::singleton(mesh->debug)->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, patch, true);
   /* Read out adjacency graph */
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjTopology->getPatch(patch);
 
@@ -1204,8 +1220,14 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   PetscFunctionBegin;
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-  m    = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, false, debug);
-  ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename), numBdFaces, numBdVertices);
+  try {
+    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, false, debug);
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
+  }
+  if (bcFilename) {
+    ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename), numBdFaces, numBdVertices);
+  }
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1503,6 +1525,49 @@ PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberD
     (*array)[(bcf-1)*4+1] = bcValues[bcf].u;
     (*array)[(bcf-1)*4+2] = bcValues[bcf].v;
     (*array)[(bcf-1)*4+3] = bcValues[bcf].p;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionComplete"
+PetscErrorCode SectionComplete(Mesh mesh, const char name[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Mesh::section_type::patch_type patch  = 0;
+  const Obj<ALE::Mesh::section_type>&   section    = m->getSection(std::string(name));
+  const Obj<ALE::Mesh::topology_type>&  topology   = m->getTopologyNew();
+  topology->constructOverlap(patch);
+
+  // Restrict to overlap and transfer
+  typedef ALE::New::Distribution<ALE::Mesh::topology_type>::sieveCompletion sieveCompletion;
+  typedef ALE::New::OverlapValues<ALE::Mesh::send_overlap_type, sieveCompletion::topology_type, ALE::Mesh::section_type::value_type> send_section_type;
+  typedef ALE::New::OverlapValues<ALE::Mesh::recv_overlap_type, sieveCompletion::topology_type, ALE::Mesh::section_type::value_type> recv_section_type;
+  typedef ALE::New::SizeSection<ALE::Mesh::section_type>      SectionSizer;
+  typedef ALE::New::PatchlessSection<ALE::Mesh::section_type> SectionFiller;
+  const Obj<send_section_type>              sendSection = new send_section_type(m->comm(), m->debug);
+  const Obj<recv_section_type>              recvSection = new recv_section_type(m->comm(), sendSection->getTag(), m->debug);
+  const Obj<SectionSizer>                   sizer       = new SectionSizer(section, patch);
+  const Obj<SectionFiller>                  filler      = new SectionFiller(section, patch);
+
+  sieveCompletion::completeSection(topology->getSendOverlap(), topology->getRecvOverlap(), sizer, filler, sendSection, recvSection);
+  // Update section with remote data
+  const Obj<ALE::Mesh::recv_overlap_type::traits::baseSequence> recvPoints = topology->getRecvOverlap()->base();
+
+  for(ALE::Mesh::recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+    const Obj<ALE::Mesh::recv_overlap_type::traits::coneSequence>&     recvPatches = topology->getRecvOverlap()->cone(*r_iter);
+    const ALE::Mesh::recv_overlap_type::traits::coneSequence::iterator end         = recvPatches->end();
+
+    for(ALE::Mesh::recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != end; ++p_iter) {
+      if (recvSection->getFiberDimension(*p_iter, *r_iter)) {
+        std::cout << "["<<m->commRank()<<"]Completed point " << *r_iter << std::endl;
+        section->updateAddPoint(patch, *r_iter, recvSection->restrictPoint(*p_iter, *r_iter));
+      }
+    }
   }
   PetscFunctionReturn(0);
 }

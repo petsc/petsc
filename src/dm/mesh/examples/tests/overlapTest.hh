@@ -8,17 +8,15 @@ namespace ALE {
   namespace Test {
     class OverlapTest {
     public:
-      typedef int                                                                        point_type;
-      typedef ALE::Sieve<point_type, int, int>                                           sieve_type;
-      typedef ALE::New::Topology<int, sieve_type>                                        topology_type;
-      typedef ALE::New::Atlas<topology_type, ALE::Point>                                 atlas_type;
-      typedef ALE::New::DiscreteSieve<point_type>                                        dsieve_type;
-      typedef ALE::New::Topology<int, dsieve_type>                                       overlap_topology_type;
-      typedef ALE::New::Atlas<overlap_topology_type, ALE::Point>                         overlap_atlas_type;
-      typedef ALE::Sifter<int,point_type,point_type>                                     send_overlap_type;
-      typedef ALE::New::OverlapValues<send_overlap_type, overlap_atlas_type, point_type> send_section_type;
-      typedef ALE::Sifter<point_type,int,point_type>                                     recv_overlap_type;
-      typedef ALE::New::OverlapValues<recv_overlap_type, overlap_atlas_type, point_type> recv_section_type;
+      typedef int                                                                   point_type;
+      typedef ALE::Sieve<point_type, int, int>                                      sieve_type;
+      typedef ALE::New::Topology<int, sieve_type>                                   topology_type;
+      typedef ALE::New::DiscreteSieve<point_type>                                   dsieve_type;
+      typedef ALE::New::Topology<int, dsieve_type>                                  overlap_topology_type;
+      typedef ALE::Sifter<int,point_type,point_type>                                send_overlap_type;
+      typedef ALE::New::OverlapValues<send_overlap_type, overlap_topology_type, point_type> send_section_type;
+      typedef ALE::Sifter<point_type,int,point_type>                                recv_overlap_type;
+      typedef ALE::New::OverlapValues<recv_overlap_type, overlap_topology_type, point_type> recv_section_type;
     public:
       // The doublet is
       //
@@ -128,13 +126,19 @@ namespace ALE {
     };
 
     class SupportSizer {
+    public:
+      typedef OverlapTest::topology_type::patch_type patch_type;
+      typedef OverlapTest::topology_type::point_type point_type;
+      typedef int                                    value_type;
     protected:
       Obj<OverlapTest::sieve_type> _sieve;
+      value_type                   _value;
     public:
       SupportSizer(const Obj<OverlapTest::sieve_type>& sieve) {this->_sieve = sieve;};
     public:
-      int size(const OverlapTest::sieve_type::point_type& point) const {
-        return this->_sieve->support(point)->size();
+      const value_type *restrict(const patch_type& patch, const point_type& point) {
+        this->_value = this->_sieve->support(point)->size();
+        return &this->_value;
       };
     };
   }

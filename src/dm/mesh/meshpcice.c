@@ -22,6 +22,11 @@ namespace ALE {
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
+      if (ierr) {
+        ostringstream txt;
+        txt << "Could not open PCICE connectivity file: " << filename;
+        throw ALE::Exception(txt.str().c_str());
+      }
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       if (fgets(buf, 2048, f) == NULL) {
         throw ALE::Exception("Invalid connectivity file: Missing number of elements");
@@ -69,6 +74,11 @@ namespace ALE {
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
       ierr = PetscViewerFileSetName(viewer, filename.c_str());
+      if (ierr) {
+        ostringstream txt;
+        txt << "Could not open PCICE coordinate file: " << filename;
+        throw ALE::Exception(txt.str().c_str());
+      }
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       numVerts = atoi(fgets(buf, 2048, f));
       ierr = PetscMalloc(numVerts*dim * sizeof(PetscScalar), &coords);
@@ -105,9 +115,10 @@ namespace ALE {
       Obj<Mesh>          mesh     = Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
       Obj<topology_type> topology = new topology_type(comm, debug);
-      int    *cells;
-      double *coordinates;
+      int    *cells = NULL;
+      double *coordinates = NULL;
       int     numCells = 0, numVertices = 0, numCorners = dim+1;
+      PetscErrorCode ierr;
 
       ALE::PCICE::Builder::readConnectivity(comm, adjFilename, numCorners, useZeroBase, numCells, &cells);
       ALE::PCICE::Builder::readCoordinates(comm, coordFilename, dim, numVertices, &coordinates);
@@ -117,6 +128,8 @@ namespace ALE {
       topology->stratify();
       mesh->setTopologyNew(topology);
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
+      if (cells) {ierr = PetscFree(cells);}
+      if (coordinates) {ierr = PetscFree(coordinates);}
       return mesh;
     };
     // Creates boundary sections:
@@ -280,8 +293,9 @@ namespace ALE {
         *coordinates = NULL;
         return;
       }
-      const Obj<Mesh::topology_type::label_sequence>& vertices   = mesh->getTopologyNew()->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
+      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type::label_sequence>& vertices   = topology->depthStratum(patch, 0);
+      const Obj<Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            size     = vertices->size();
       int            embedDim = coordSec->getFiberDimension(patch, *vertices->begin());
       double        *coords;
@@ -317,8 +331,8 @@ namespace ALE {
       }
       const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                eNumbering = mesh->getLocalNumbering(topology->depth());
-      const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
+      const Obj<Mesh::numbering_type>&                eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            size         = elements->size();
       //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
       int            corners      = sieve->cone(*elements->begin())->size();
@@ -521,7 +535,7 @@ namespace ALE {
       Obj<Mesh::section_type>                         coordinates = mesh->getSection("coordinates");
       const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                vNumbering  = mesh->getLocalNumbering(0);
+      const Obj<Mesh::numbering_type>&                vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
       PetscErrorCode ierr;
 
@@ -548,8 +562,9 @@ namespace ALE {
       const Obj<Mesh::section_type>&   velocity    = mesh->getSection("VELN");
       const Obj<Mesh::section_type>&   pressure    = mesh->getSection("PN");
       const Obj<Mesh::section_type>&   temperature = mesh->getSection("TN");
-      const Obj<Mesh::numbering_type>& vNumbering  = mesh->getNumbering(0);
-      const Obj<Mesh::numbering_type>& cNumbering  = mesh->getNumbering(mesh->getTopologyNew()->depth());
+      const Obj<Mesh::topology_type>&  topology    = mesh->getTopologyNew();
+      const Obj<Mesh::numbering_type>& cNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>& vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, 0);
       const int                        numCells    = cNumbering->getGlobalSize();
       PetscErrorCode ierr;
 
