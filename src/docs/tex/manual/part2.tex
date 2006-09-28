@@ -1849,7 +1849,7 @@ In certain applications it may be necessary for application codes
 to directly access elements of a matrix. This may be done by using the 
 the command (for local rows only)
 \begin{tabbing}
-  MatGetRow(Mat A,int row, int *ncols,const PetscErrorCode (*cols)[],const PetscScalar (*vals)[]);
+  MatGetRow(Mat A,int row, int *ncols,const PetscInt (*cols)[],const PetscScalar (*vals)[]);
 \end{tabbing}
 The argument \trl{ncols} returns the number of nonzeros in that row, 
 while \trl{cols} and \trl{vals} returns the column indices (with indices

@@ -32,7 +32,7 @@ namespace ALE {
   const char *ERRORMSG(const char *fmt, ...);
   // A helper function for converting MPI errors to exception
   void MPIERROR(PetscErrorCode ierr, const char *func, int line, const char *msg);
-}
+}// namespace ALE
 
 // A helper macro that passes __FUNCT__ and __LINE__ with the error msg to the ERROR routine
 #define CHKERROR(ierr, msg) \

@@ -25,7 +25,7 @@ namespace ALE {
         PetscErrorCode ierr;
         
         PetscFunctionBegin;
-        options->debug = debug;
+        options->debug = 0;
         options->iters = 1;
         options->capSize = 10;
         
@@ -40,14 +40,22 @@ namespace ALE {
     //
     class XSifterTest {
     public:
-      static ALE::Obj<xsifter_type> createForkXSifter(const Options& options) {
-        ALE::Obj<xsifter_type>   xsifter = new xsifter_type(options.debug);
+      static ALE::Obj<xsifter_type> createForkXSifter(const MPI_Comm& comm, const Options& options) {
+        ALE::Obj<xsifter_type>   xsifter = new xsifter_type(comm, options.debug);
         for(int i = 0; i < options.capSize; i++) {
-          // Add an arrow from i to i mod 3 with color 'X'.
-          xsifter->addArrow(arrow_type((double)i,i % 3,'X'));
+          // Add an arrow from i to i mod 3 with color 'Y'.
+          xsifter->addArrow(arrow_type((double)i,i % 3,'Y'));
         }
         return xsifter;
-      };
+      };// createForkXSifter()
+       static ALE::Obj<xsifter_type> createHatXSifter(const MPI_Comm& comm, const Options& options) {
+        ALE::Obj<xsifter_type>   xsifter = new xsifter_type(comm, options.debug);
+        for(int i = 0; i < options.capSize; i++) {
+          // Add an arrow from i mod 3 to i with color 'H'.
+          xsifter->addArrow(arrow_type((double)(i % 3),i,'H'));
+        }
+        return xsifter;
+       };// createHatXSifter()
     };// class XSifterTest
 
   };// namespace Test

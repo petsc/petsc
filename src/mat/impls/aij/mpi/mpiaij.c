@@ -55,7 +55,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       if (value == 0.0 && ignorezeroentries) goto a_noinsert; \
       if (nonew == 1) goto a_noinsert; \
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      MatSeqXAIJReallocateAIJ(A,am,1,nrow1,row,col,rmax1,aa,ai,aj,rp1,ap1,aimax,nonew); \
+      MatSeqXAIJReallocateAIJ(A,am,1,nrow1,row,col,rmax1,aa,ai,aj,rp1,ap1,aimax,nonew,MatScalar); \
       N = nrow1++ - 1; a->nz++; high1++; \
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \
@@ -89,7 +89,7 @@ PetscErrorCode CreateColmap_MPIAIJ_Private(Mat mat)
       if (value == 0.0 && ignorezeroentries) goto b_noinsert; \
       if (nonew == 1) goto b_noinsert; \
       if (nonew == -1) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Inserting a new nonzero (%D, %D) into matrix", row, col); \
-      MatSeqXAIJReallocateAIJ(B,bm,1,nrow2,row,col,rmax2,ba,bi,bj,rp2,ap2,bimax,nonew); \
+      MatSeqXAIJReallocateAIJ(B,bm,1,nrow2,row,col,rmax2,ba,bi,bj,rp2,ap2,bimax,nonew,MatScalar); \
       N = nrow2++ - 1; b->nz++; high2++;\
       /* shift up all the later entries in this row */ \
       for (ii=N; ii>=_i; ii--) { \

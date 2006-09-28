@@ -161,7 +161,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 .  -snes_monitor_draw - plots residual norm at each iteration 
 .  -snes_fd - use finite differences to compute Jacobian; very slow, only for testing
 .  -snes_mf_ksp_monitor - if using matrix-free multiply then print h at each KSP iteration
--  -snes_print_converged_reason - print the reason for convergence/divergence after each solve
+-  -snes_converged_reason - print the reason for convergence/divergence after each solve
 
     Options Database for Eisenstat-Walker method:
 +  -snes_ksp_ew_conv - use Eisenstat-Walker method for determining linear system convergence

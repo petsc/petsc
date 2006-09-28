@@ -5,6 +5,7 @@
 #include "src/dm/mesh/meshpcice.h"
 #include "src/dm/mesh/meshpylith.h"
 #include "tree_mis.h"
+#include "id_bound.h"
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -146,7 +147,7 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
     double crsBeta = pow(beta, curLevel);
     printf("Creating coarsening level: %d with beta = %f\n", curLevel, crsBeta);
     //LevelCoarsen(mesh, dim, curLevel, !isTopLevel, crsBeta);
-    tree_mis(mesh, dim, curLevel, !isTopLevel, crsBeta);
+    tree_mis(mesh, dim, curLevel, nMeshes+1, !isTopLevel, crsBeta);
     if (mesh->debug) {
       ostringstream txt;
       txt << "Sieve for coarsening level " << curLevel;
@@ -157,7 +158,7 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim,  ALE::Mesh::section_type::patch_type newPatch, bool includePrevious, float beta) {
+PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_type::patch_type newPatch, bool includePrevious, float beta) {
   PetscFunctionBegin;
   ALE::Mesh::section_type::patch_type originalPatch = 0;
   std::list<ALE::Mesh::point_type> incPoints;
@@ -245,15 +246,20 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim,  ALE::Mesh::section_t
   input->pointattributelist = NULL;
 
 //set up the pointmarkerlist to hold the names of the points
+  input->segmentlist = NULL;
+  input->numberofsegments = 0;
+  input->segmentmarkerlist = NULL;
 
   input->pointmarkerlist = new int[input->numberofpoints];
   c_iter = incPoints.begin();
   c_iter_end = incPoints.end();
   index = 0;
+
   while(c_iter != c_iter_end) {
     input->pointmarkerlist[index] = *c_iter;
     c_iter++;
     index++;
+    
   }
 
 
@@ -263,10 +269,6 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim,  ALE::Mesh::section_t
   input->trianglelist = NULL;
   input->triangleattributelist = NULL;
   input->trianglearealist = NULL;
-
-  input->segmentlist = NULL;
-  input->segmentmarkerlist = NULL;
-  input->numberofsegments = 0;
 
   input->holelist = NULL;
   input->numberofholes = 0;
@@ -343,7 +345,14 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   return isEssential;
 }
 
+int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
 //determines if two triangles are coplanar
+  //given the point,get the support of every element of the point's support and see if it is a "crease".  Count the creases
+//if there are two crease support elements, it is a rank 2, if there are more it's 3, if there are 0 (there cannot be 1) it is rank 1
+//here we must make sure that it is a boundary node as well.
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  
+}
 
 bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::point_type tri2) {
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();

@@ -79,7 +79,7 @@ namespace ALE {
       };
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
-        os << a.source << " --(" << a.color << ")--> " << a.target;
+        os << a._source << " --(" << a._color << ")--> " << a._target;
         return os;
       }
       // Modifying
@@ -269,9 +269,11 @@ namespace ALE {
     // with a given Key_. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
     // the outer keys from a given range and a fixed inner key.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
+    #undef  __CLASS__
+    #define __CLASS__ "StridedIndexSequence"
     template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
               typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type>, bool inner_strided_flag = false >
-    struct StridedIndexSequence {
+    struct StridedIndexSequence : XObject {
       typedef Index_                                           index_type;
       typedef OuterKeyExtractor_                               outer_key_extractor_type;
       typedef typename outer_key_extractor_type::result_type   outer_key_type;
@@ -321,7 +323,6 @@ namespace ALE {
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
       };// class iterator
     protected:
-      int              _debug;
       index_type      *_index;
       //
       outer_key_type      _olow, _ohigh;
@@ -335,12 +336,12 @@ namespace ALE {
       //
       // Basic interface
       //
-      StridedIndexSequence(index_type *index, const int& debug = 0)  :  _debug(debug), _index(index) {
+      StridedIndexSequence(index_type *index, const int& debug = 0)  : XObject(debug), _index(index) {
         this->_have_olow = false; this->_have_ohigh = false;
         this->_have_ilow = false; this->_have_ihigh = false;
       };
-      StridedIndexSequence(const int& debug = 0) : _debug(debug), _index(NULL) {};
-      StridedIndexSequence(const StridedIndexSequence& seq) : _debug(0), _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
+      StridedIndexSequence(const int& debug = 0) : XObject(debug),_index(NULL) {};
+      StridedIndexSequence(const StridedIndexSequence& seq) : XObject(seq), _index(seq._index), _olow(seq._olow), _ohigh(seq._ohigh), _have_olow(seq._have_olow), _have_ohigh(seq._have_ohigh), _ilow(seq._ilow), _ihigh(seq._ihigh), _have_ilow(seq._have_ilow), _have_ihigh(seq._have_ihigh)
       {};
       virtual ~StridedIndexSequence() {};
       void copy(const StridedIndexSequence& seq, StridedIndexSequence cseq) {
@@ -383,7 +384,41 @@ namespace ALE {
         }
         return sz;
       };
+      #undef  __FUNCT__
+      #define __FUNCT__ "begin"
       iterator begin() {
+        if(this->debug()) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "(olow,ohigh): (";
+          if(this->_have_olow){
+            std::cout << this->_olow << ", ";
+          }
+          else {
+            std::cout << "none, ";
+          }
+          if(this->_have_ohigh){
+            std::cout << this->_ohigh;
+          }
+          else {
+            std::cout << "none";
+          }
+          std::cout << "), ";
+          //
+          std::cout << "(ilow,ihigh): (";
+          if(this->_have_ilow){
+            std::cout << this->_ilow << ", ";
+          }
+          else {
+            std::cout << "none, ";
+          }
+          if(this->_have_ihigh){
+            std::cout << this->_ihigh;
+          }
+          else {
+            std::cout << "none";
+          }
+          std::cout << ")" << std::endl;
+        }
         static itor_type itor;
         // Determine the lower outer limit iterator
         if(this->_have_olow) {
@@ -403,16 +438,66 @@ namespace ALE {
         }  
         // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
         static itor_type segBndry;
+        // Segment boundary set to just above the current (outer_key, inner_key) pair.
         segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ikex(*itor)));
+        if(this->debug()){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
+          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*segBndry " << *segBndry;
+          std::cout << ", (okey, ikey): (" << this->_okex(*segBndry) << ", " << this->_ikex(*segBndry) << ") " << std::endl;
+        }
         return iterator(this, itor, segBndry);
       }; // begin()
       //
+      #undef  __FUNCT__
+      #define __FUNCT__ "next"
       void next(itor_type& itor, itor_type& segBndry, bool inner_strided = false) {
+        if(this->debug()) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "(olow,ohigh): (";
+          if(this->_have_olow){
+            std::cout << this->_olow << ", ";
+          }
+          else {
+            std::cout << "none, ";
+          }
+          if(this->_have_ohigh){
+            std::cout << this->_ohigh;
+          }
+          else {
+            std::cout << "none";
+          }
+          std::cout << "), ";
+          //
+          std::cout << "(ilow,ihigh): (";
+          if(this->_have_ilow){
+            std::cout << this->_ilow << ", ";
+          }
+          else {
+            std::cout << "none, ";
+          }
+          if(this->_have_ihigh){
+            std::cout << this->_ihigh;
+          }
+          else {
+            std::cout << "none";
+          }
+          std::cout << ")" << std::endl;
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *itor " << *itor; 
+          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *segBndry " << *segBndry;
+          std::cout << ", (okey, ikey): (" << this->_okex(*segBndry) << ", " << this->_ikex(*segBndry) << ") " << std::endl;
+        }
         outer_key_type olow;
         inner_key_type ilow;
         // If iteration over inner keys is to be strided as well, we advance directly to the segment boundary.
         // Effectively, we iterate over segments.
         if(inner_strided) {
+          if(this->debug()) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "inner key strided " << std::endl;
+          }
           // Advance itor to the segment boundary
           itor = segBndry;
           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
@@ -423,6 +508,9 @@ namespace ALE {
         }// inner strided
         // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
         else {
+          if(this->debug()) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "inner key not strided " << std::endl;
+          }
           // See if our advance would lead to breaching the segment boundary:
           itor_type tmp_itor = ++(itor);
           if(tmp_itor != segBndry) { 
@@ -452,9 +540,50 @@ namespace ALE {
             segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
           }
         }// inner not strided
+        if(this->debug()) {
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
+          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *segBndry " << *segBndry;
+          std::cout << ", (okey, ikey): (" << this->_okex(*segBndry) << ", " << this->_ikex(*segBndry) << ") " << std::endl;
+        }
       };// next()
       //
+      #undef  __FUNCT__
+      #define __FUNCT__ "end"
       iterator end() {
+        if(this->debug()) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "(olow,ohigh): (";
+          if(this->_have_olow){
+            std::cout << this->_olow << ", ";
+          }
+          else {
+            std::cout << "none, ";
+          }
+          if(this->_have_ohigh){
+            std::cout << this->_ohigh;
+          }
+          else {
+            std::cout << "none";
+          }
+          std::cout << "), ";
+          //
+          std::cout << "(ilow,ihigh): (";
+          if(this->_have_ilow){
+            std::cout << this->_ilow << ", ";
+          }
+          else {
+            std::cout << "none, ";
+          }
+          if(this->_have_ihigh){
+            std::cout << this->_ihigh;
+          }
+          else {
+            std::cout << "none";
+          }
+          std::cout << ")" << std::endl;
+        }
         static itor_type itor;
         static ritor_type ritor;
         // Determine the upper outer limit
@@ -478,6 +607,12 @@ namespace ALE {
           itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(ohigh));
         }
         // use segBndry == itor
+        if(this->debug()){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
+          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": segBndry == itor" << std::endl; 
+        }
         return iterator(this, itor, itor); 
       };// end()
       //
@@ -523,6 +658,91 @@ namespace ALE {
         os << " ]" << std::endl;
       };
     };// class StridedIndexSequence    
+
+    //
+    // PredicateTraits encapsulates Predicate types encoding object subsets with a given Predicate value or within a value range.
+    template<typename Predicate_> 
+    struct PredicateTraits {};
+    // Traits of different predicate types are defined via specialization of PredicateTraits.
+    // We require that the predicate type act like a signed int.
+    template<>
+    struct PredicateTraits<int> {
+      typedef      int  predicate_type;
+      typedef      int  printable_type;
+      //
+      static const predicate_type third;
+      static const predicate_type max;
+      static const predicate_type min;
+    };
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::max   = INT_MAX;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::min   = INT_MIN;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::third = (abs(INT_MIN)<abs(INT_MAX))?abs(INT_MIN)/3:abs(INT_MAX)/3;
+    //
+    template<>
+    struct PredicateTraits<short> {
+      typedef      short  predicate_type;
+      typedef      short  printable_type;
+      //
+      static const predicate_type third;
+      static const predicate_type max;
+      static const predicate_type min;
+    };
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::max   = SHRT_MAX;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::min   = SHRT_MIN;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::third = (abs(SHRT_MIN)<abs(SHRT_MAX))?abs(SHRT_MIN)/3:abs(SHRT_MAX)/3;;
+    //
+    template<>
+    struct PredicateTraits<char> {
+      typedef char  predicate_type;
+      typedef short printable_type;
+      //
+      static const predicate_type third;
+      static const predicate_type max;
+      static const predicate_type min;
+    };
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::max   = CHAR_MAX;
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::min   = CHAR_MIN;
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::third = (abs(CHAR_MIN)<abs(CHAR_MAX))?abs(CHAR_MIN)/3:abs(CHAR_MAX)/3;
+
+    //
+    // Filter handler
+    template <typename FilterContainer_>
+    class Filter {
+    public:
+      typedef FilterContainer_                               filter_container_type;
+      typedef typename filter_container_type::predicate_type predicate_type;
+      typedef PredicateTraits<predicate_type>                predicate_traits;
+    protected:
+      filter_container_type& _container;
+      predicate_type _low, _high;
+    public:
+      Filter(filter_container_type& container) : _container(container) {};
+      Filter(filter_container_type& container, const predicate_type& low, const predicate_type& high) : _container(container), _low(low), _high(high) {};
+      Filter(const Filter& f) : _container(f._container), _low(f._low), _high(f._high) {};
+      ~Filter(){if((this->low()!=0)||(this->high()!=0)){this->_container.freeFilter(*this);}};
+      //
+      predicate_type         low()       const {return this->_low;};
+      predicate_type         high()      const {return this->_high;};
+      filter_container_type  container() const {return this->_container;};
+      void extend(const predicate_type& width) {this->_container.extendFilter(*this, width);};
+      void contract(const predicate_type& width) {this->_container.contractFilter(*this, width);};
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const Filter& f) {
+        os << "[";
+        os << ((typename predicate_traits::printable_type)(f.low())) << ",";
+        os << ((typename predicate_traits::printable_type)(f.high())); 
+        os << "]";
+        return os;
+      };
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const Obj<Filter>& s) {
+        os << "[";
+        os << ((typename predicate_traits::printable_type)(s->low())) << ",";
+        os << ((typename predicate_traits::printable_type)(s->high())); 
+        os << "]";
+        return os;
+      };
+    };// Filter
   }; // namespace XSifterDef
   
   //
@@ -531,7 +751,7 @@ namespace ALE {
            typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
            typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
            typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
-  struct XSifter : XParallelObject { // struct XSifter
+  struct XSifter : XObject { // struct XSifter
     //
     // Encapsulated types
     //
@@ -563,6 +783,12 @@ namespace ALE {
       predicate_type predicate() const{return this->_predicate;};
       source_type    source() const {return this->arrow_type::source();};
       target_type    target() const {return this->arrow_type::target();};
+      // Printing
+      friend std::ostream& operator<<(std::ostream& os, const Rec& r) {
+        os << "[" << (arrow_type)r << "]<" << r._predicate << ">";
+        return os;
+      }
+
       // Modifier objects
       struct predicateChanger {
         predicateChanger(const predicate_type& newPredicate) : _newPredicate(newPredicate) {};
@@ -579,30 +805,24 @@ namespace ALE {
     typedef std::less<typename rec_type::source_type> source_order_type; 
     typedef std::less<typename rec_type::target_type> target_order_type;
     //
-    // Rec 'downward' order type: first order by predicate, then source, then support
+    // Rec 'downward' order type: first order by predicate, then source, then target, etc (Support order)
     struct downward_order_type : public 
     XSifterDef::RecKeyXXXOrder<rec_type, 
                               typename ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>, 
                               predicate_order_type, 
                               XSifterDef::RecKeyXXXOrder<rec_type,
-                                                        ::boost::multi_index::const_mem_fun<rec_type,
-                                                                                            typename rec_type::source_type,
-                                                                                            &rec_type::source>,
-                                                        source_order_type, ArrowSupportOrder_> > {};
+                                                        ::boost::multi_index::const_mem_fun<rec_type, typename rec_type::source_type, &rec_type::source>,
+                                                         source_order_type, ArrowSupportOrder_> > {};
     
     //
-    // Rec Cone order
+    // Rec 'upward' order type: first order by predicate, then target, then source, etc (Cone order)
     struct upward_order_type : public 
     XSifterDef::RecKeyXXXOrder<rec_type, 
-                              typename ::boost::multi_index::const_mem_fun<rec_type, 
-                                                                           predicate_type, 
-                                                                           &rec_type::predicate>, 
+                              typename ::boost::multi_index::const_mem_fun<rec_type,predicate_type, &rec_type::predicate>, 
                               predicate_order_type,
                               XSifterDef::RecKeyXXXOrder<rec_type,
-                                                        ::boost::multi_index::const_mem_fun<rec_type,
-                                                                                            typename rec_type::target_type,
-                                                                                            &rec_type::target>,
-                                                        target_order_type, ArrowConeOrder_> >
+                                                        ::boost::multi_index::const_mem_fun<rec_type, typename rec_type::target_type, &rec_type::target>,
+                                                         target_order_type, ArrowConeOrder_> >
     {};
     
     //
@@ -616,14 +836,18 @@ namespace ALE {
       rec_type,
       ::boost::multi_index::indexed_by< 
         ::boost::multi_index::ordered_non_unique<
-          ::boost::multi_index::tag<UpwardTag>, ::boost::multi_index::identity<rec_type>, downward_order_type
+          ::boost::multi_index::tag<DownwardTag>, ::boost::multi_index::identity<rec_type>, downward_order_type
         >,
         ::boost::multi_index::ordered_non_unique<
-          ::boost::multi_index::tag<DownwardTag>, ::boost::multi_index::identity<rec_type>, upward_order_type
+          ::boost::multi_index::tag<UpwardTag>, ::boost::multi_index::identity<rec_type>, upward_order_type
         > 
       >,
       ALE_ALLOCATOR<rec_type> > 
     rec_set_type;
+    //
+    // Index types
+    typedef typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type   upward_index_type;
+    typedef typename ::boost::multi_index::index<rec_set_type, DownwardTag>::type downward_index_type;
     //
     // Sequence types
     template <typename Index_, 
@@ -633,7 +857,7 @@ namespace ALE {
       // ArrowSequence extends StridedIndexSequence with extra iterator methods.
     public:
       typedef XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
-      typedef XSifter                                                                                                               container_type;
+      typedef XSifter                                                                                                              container_type;
       typedef typename super::index_type                                                                                           index_type;
       typedef typename super::outer_key_type                                                                                       outer_key_type;
       typedef typename super::inner_key_type                                                                                       inner_key_type;
@@ -719,11 +943,7 @@ namespace ALE {
     //
     // Basic interface
     //
-    XSifter(int debug = 0) : XParallelObject(debug) {
-      PetscErrorCode ierr;
-      ierr = PetscPrintf(this->comm(), "debug: Creating an XSifter\n"); 
-      CHKERROR(ierr, "Error in PetscPrintf"); 
-    };
+    XSifter(const MPI_Comm comm, int debug = 0) : XObject(debug) {};// FIXIT: Should really inherit from XParallelObject
     //
     // Extended interface
     //
@@ -752,7 +972,42 @@ namespace ALE {
       this->base(bseq);
       return bseq;
     };
-    
+    //
+    template<typename ostream_type>
+    void view(ostream_type& os, const char* label = NULL){
+      if(label != NULL) {
+        os << "Viewing " << label << " XSifter (debug: " << this->debug() << "): " << std::endl;
+      } 
+      else {
+        os << "Viewing a XSifter (debug: " << this->debug() << "): " << std::endl;
+      } 
+      upward_index_type&   upward_index   = ::boost::multi_index::get<UpwardTag>(this->_rec_set);
+      downward_index_type& downward_index = ::boost::multi_index::get<DownwardTag>(this->_rec_set);
+      os << "Downward index: (";
+        for(typename downward_index_type::iterator itor = downward_index.begin(); itor != downward_index.end(); ++itor) {
+          os << *itor << " ";
+        }
+      os << ")" << std::endl;
+      os << "Upward index: (";
+        for(typename upward_index_type::iterator itor = upward_index.begin(); itor != upward_index.end(); ++itor) {
+          os << *itor << " ";
+        }
+      os << ")" << std::endl;
+    };
+    //
+    // Filter interface (stubs)
+    //
+    template <typename Filter_>
+    void allocFilter(Filter_& f){};
+    //
+    template <typename Filter_>
+    void freeFilter(Filter_& f){};
+    //
+    template <typename Filter_>
+    void extendFilter(Filter_& f, const predicate_type& width){};
+    //
+    template <typename Filter_>
+    void contractFilter(Filter_& f, const predicate_type& width){};
   protected:
     // set of arrow records
     rec_set_type _rec_set;

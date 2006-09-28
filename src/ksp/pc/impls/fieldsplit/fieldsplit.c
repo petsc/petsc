@@ -234,13 +234,10 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
       }
       ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
     } else {
-      PetscInt    i = 0;
-
       ierr = VecSet(y,0.0);CHKERRQ(ierr);
       while (ilink) {
         ierr = FieldSplitSplitSolveAdd(ilink,x,y);CHKERRQ(ierr);
 	ilink = ilink->next;
-	i++;
       }
     }
   } else {
@@ -262,6 +259,80 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
         ierr  = MatMult(pc->pmat,y,jac->w1);CHKERRQ(ierr);
         ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
         ierr  = FieldSplitSplitSolveAdd(ilink,jac->w2,y);CHKERRQ(ierr);
+      }
+    }
+  }
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
+
+#define FieldSplitSplitSolveAddTranspose(ilink,xx,yy) \
+    (VecScatterBegin(xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD,ilink->sctx) || \
+     VecScatterEnd(xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD,ilink->sctx) || \
+     KSPSolveTranspose(ilink->ksp,ilink->y,ilink->x) || \
+     VecScatterBegin(ilink->x,yy,ADD_VALUES,SCATTER_REVERSE,ilink->sctx) || \
+     VecScatterEnd(ilink->x,yy,ADD_VALUES,SCATTER_REVERSE,ilink->sctx))
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCApply_FieldSplit"
+static PetscErrorCode PCApplyTranspose_FieldSplit(PC pc,Vec x,Vec y)
+{
+  PC_FieldSplit     *jac = (PC_FieldSplit*)pc->data;
+  PetscErrorCode    ierr;
+  PC_FieldSplitLink ilink = jac->head;
+  PetscInt          bs;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  ierr = VecGetBlockSize(x,&bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(x,jac->bs);CHKERRQ(ierr);
+  ierr = VecSetBlockSize(y,jac->bs);CHKERRQ(ierr);
+
+  if (jac->type == PC_COMPOSITE_ADDITIVE) {
+    if (jac->defaultsplit) {
+      ierr = VecStrideGatherAll(x,jac->x,INSERT_VALUES);CHKERRQ(ierr);
+      while (ilink) {
+	ierr = KSPSolveTranspose(ilink->ksp,ilink->x,ilink->y);CHKERRQ(ierr);
+	ilink = ilink->next;
+      }
+      ierr = VecStrideScatterAll(jac->y,y,INSERT_VALUES);CHKERRQ(ierr);
+    } else {
+      ierr = VecSet(y,0.0);CHKERRQ(ierr);
+      while (ilink) {
+        ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
+	ilink = ilink->next;
+      }
+    }
+  } else {
+    if (!jac->w1) {
+      ierr = VecDuplicate(x,&jac->w1);CHKERRQ(ierr);
+      ierr = VecDuplicate(x,&jac->w2);CHKERRQ(ierr);
+    }
+    ierr = VecSet(y,0.0);CHKERRQ(ierr);
+    if (jac->type == PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE) {
+      ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
+      while (ilink->next) {
+        ilink = ilink->next;
+        ierr  = MatMultTranspose(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+        ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
+        ierr  = FieldSplitSplitSolveAddTranspose(ilink,jac->w2,y);CHKERRQ(ierr);
+      }
+      while (ilink->previous) {
+        ilink = ilink->previous;
+        ierr  = MatMultTranspose(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+        ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
+        ierr  = FieldSplitSplitSolveAddTranspose(ilink,jac->w2,y);CHKERRQ(ierr);
+      }
+    } else {
+      while (ilink->next) {   /* get to last entry in linked list */
+	ilink = ilink->next;
+      }
+      ierr = FieldSplitSplitSolveAddTranspose(ilink,x,y);CHKERRQ(ierr);
+      while (ilink->previous) {
+	ilink = ilink->previous;
+	ierr  = MatMultTranspose(pc->pmat,y,jac->w1);CHKERRQ(ierr);
+	ierr  = VecWAXPY(jac->w2,-1.0,jac->w1,x);CHKERRQ(ierr);
+	ierr  = FieldSplitSplitSolveAddTranspose(ilink,jac->w2,y);CHKERRQ(ierr);
       }
     }
   }
@@ -617,6 +688,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
   pc->data     = (void*)jac;
 
   pc->ops->apply             = PCApply_FieldSplit;
+  pc->ops->applytranspose    = PCApplyTranspose_FieldSplit;
   pc->ops->setup             = PCSetUp_FieldSplit;
   pc->ops->destroy           = PCDestroy_FieldSplit;
   pc->ops->setfromoptions    = PCSetFromOptions_FieldSplit;

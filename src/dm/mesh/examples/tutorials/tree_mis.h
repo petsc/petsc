@@ -28,13 +28,14 @@ namespace ALE {
       std::list<mis_node *> subspaces;
       int depth;
       std::list<ALE::Mesh::point_type> childPoints;
+      //std::list<ALE::Mesh::point_type> childBoundPoints;
       std::list<ALE::Mesh::point_type> childColPoints;
     };
     bool isOverlap(mis_node *, mis_node *, int); //calculates if there is an intersection or overlap of these two domains
     extern PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, ALE::Mesh::section_type::patch_type);
     void randPush(std::list<ALE::Mesh::point_type> *, ALE::Mesh::point_type); //breaks up patterns in the mesh that cause oddness
 
-    PetscErrorCode tree_mis (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_type::patch_type patch, bool includePrevious, double beta) {
+    PetscErrorCode tree_mis (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_type::patch_type patch, ALE::Mesh::section_type::patch_type boundPatch, bool includePrevious, double beta) {
       //build the quadtree
       PetscFunctionBegin;
       srand((unsigned int)time(0));
@@ -74,16 +75,17 @@ namespace ALE {
 	if(tmpPoint->maxSpacing < cur_space) tmpPoint->maxSpacing = cur_space;
 
 	    //if it's essential, push it to the ColPoints stack, which will be the pool that is compared with during the traversal-MIS algorithm.
+        int boundRank = topology->getValue(boundary, *v_iter);
 	if (!includePrevious) {
-	  if(topology->getValue(boundary, *v_iter) == dim) { randPush(&tmpPoint->childColPoints, *v_iter);
-	  } else { randPush(&tmpPoint->childPoints, *v_iter);} 
+	  if(boundRank == dim) { tmpPoint->childColPoints.push_front(*v_iter);
+	  } else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
+          } else tmpPoint->childPoints.push_front(*v_iter);
 	} else { //enforce the node-nested condition.
 	  if(topology->getPatch(patch+1)->capContains(*v_iter)) {
-	    randPush(&tmpPoint->childColPoints, *v_iter);
+	    tmpPoint->childColPoints.push_front(*v_iter);
            // printf("Got one from the last");
-	  } else {
-	    randPush(&tmpPoint->childPoints, *v_iter);
-	  }
+	  } else if (boundRank == 0) {  tmpPoint->childPoints.push_back(*v_iter);
+          } else tmpPoint->childPoints.push_front(*v_iter);
 	}
 	v_iter++;
       }
@@ -145,7 +147,7 @@ namespace ALE {
 	      if ((tmpPoint->boundaries[2*d] + tmpPoint->boundaries[2*d+1])/2 > cur_coords[d]) index += change;
 	      change = change * 2;
 	    }
-	    randPush(&newBlocks[index]->childPoints, *p_iter);
+	    newBlocks[index]->childPoints.push_back(*p_iter);
 	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
 	    p_iter++;
 	  }
@@ -161,7 +163,7 @@ namespace ALE {
 	      change = change * 2;
 	    }
 	    if(ch_space > newBlocks[index]->maxSpacing) newBlocks[index]->maxSpacing = ch_space;
-	    randPush(&newBlocks[index]->childColPoints, *p_iter);
+	    newBlocks[index]->childColPoints.push_back(*p_iter);
 	    p_iter++;
 	  }
 		//add all the new blocks to the refinement queue.
@@ -206,6 +208,7 @@ namespace ALE {
 	    //now loop over the adjacent areas we found to determine the MIS within *leaf_iter with respect to its neighbors.
 	    //begin by looping over the vertices in the leaf.
 	std::list<ALE::Mesh::point_type>::iterator l_points_iter = cur_leaf->childPoints.begin();
+        //std::list<ALE::Mesh::point_type>::iterator l_points_intermed = cur_leaf->childBoundPoints.end();
 	std::list<ALE::Mesh::point_type>::iterator l_points_iter_end = cur_leaf->childPoints.end();
 	while (l_points_iter != l_points_iter_end) {
 	  bool l_is_ok = true;
@@ -253,6 +256,7 @@ namespace ALE {
 	    cur_leaf->childColPoints.push_front(*l_points_iter);
 	  }
 	  l_points_iter++;
+          //if (l_points_intermed == l_points_iter) l_points_iter = cur_leaf->childPoints.begin(); //HACK!
 	} //end while over points
 
 	    //we can now dump the accepted list of points from the current leaf into the global list
@@ -316,7 +320,36 @@ namespace ALE {
 	c_iter++;
 	index++;
       }
-
+      const Obj<ALE::Mesh::topology_type::label_sequence>& boundEdges = topology->heightStratum(boundPatch, 0);
+      ALE::Mesh::topology_type::label_sequence::iterator be_iter = boundEdges->begin();
+      ALE::Mesh::topology_type::label_sequence::iterator be_iter_end = boundEdges->end();
+//set up the boundary segments
+      
+      input->numberofsegments = boundEdges->size();
+      input->segmentlist = new int[2*input->numberofsegments];
+      for (int i = 0; i < 2*input->numberofsegments; i++) {
+        input->segmentlist[i] = -1;  //initialize
+      }
+      index = 0;
+      while (be_iter != be_iter_end) { //loop over the boundary segments
+        ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> neighbors = topology->getPatch(boundPatch)->cone(*be_iter);
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter = neighbors->begin();
+        ALE::Mesh::sieve_type::traits::coneSequence::iterator n_iter_end = neighbors->end();
+        while (n_iter != n_iter_end) {
+          for (int i = 0; i < input->numberofpoints; i++) {
+            if(input->pointmarkerlist[i] == *n_iter) {
+              if (input->segmentlist[2*index] == -1) {
+                input->segmentlist[2*index] = i;
+              } else {
+                input->segmentlist[2*index + 1] = i;
+              }
+            }
+          }
+          n_iter++;
+        }
+        index++;
+        be_iter++;
+      }
 
       input->numberoftriangles = 0;
       input->numberofcorners = 0;
@@ -325,9 +358,9 @@ namespace ALE {
       input->triangleattributelist = NULL;
       input->trianglearealist = NULL;
 
-      input->segmentlist = NULL;
+      //input->segmentlist = NULL;
       input->segmentmarkerlist = NULL;
-      input->numberofsegments = 0;
+      //input->numberofsegments = 0;
 
       input->holelist = NULL;
       input->numberofholes = 0;
@@ -350,7 +383,7 @@ namespace ALE {
       output->edgemarkerlist = NULL;
       output->normlist = NULL;
 
-      string triangleOptions = "-zeQ"; //(z)ero indexing, output (e)dges, Quiet
+      string triangleOptions = "-zpeQ"; //(z)ero indexing, output (e)dges, Quiet
       triangulate((char *)triangleOptions.c_str(), input, output, NULL);
       TriangleToMesh(mesh, output, patch);
       delete input->pointlist;
