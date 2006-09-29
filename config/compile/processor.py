@@ -90,8 +90,8 @@ class Processor(logging.Logger):
 
   def getFlags(self):
     '''Returns a string with the flags specified for running this processor.'''
-    # _flags changed to _flags_dummy untill a proper fix is done for permetis build
-    if not hasattr(self, '_flags_dummy'):
+    # can't change _flags - as this broke triangle build
+    if not hasattr(self, '_flags'):
       if hasattr(self, 'configCompilers'):
         flags = ' '.join([getattr(self.configCompilers, name) for name in self.flagsName])
       else:
