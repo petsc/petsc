@@ -24,7 +24,7 @@ namespace ALE {
     XObject(const int debug = 0)    : _debug(debug) {};
     XObject(const XObject& xobject) : _debug(xobject._debug) {};
     //
-    int      debug() {return this->_debug;};
+    int      debug(const int& debug = -1) {if(debug >= 0) {this->_debug = debug;} return this->_debug;};
   };// class XObject
 
   class XParallelObject : public XObject {
@@ -305,44 +305,70 @@ namespace ALE {
     const PredicateTraits<char>::predicate_type PredicateTraits<char>::min   = CHAR_MIN;
     const PredicateTraits<char>::predicate_type PredicateTraits<char>::third = (abs(CHAR_MIN)<abs(CHAR_MAX))?abs(CHAR_MIN)/3:abs(CHAR_MAX)/3;
 
+
     //
-    // Filter
-    template <typename KeyType_>
+    // IndexFilterers
+    //
+    template <typename Index_, typename FilterKeyExtractor_>
+    class DummyIndexFilterer {
+    public:
+      typedef Index_                                   index_type;
+      typedef FilterKeyExtractor_                      key_extractor_type;
+      typedef typename key_extractor_type::result_type key_type;
+    protected:
+      index_type& _index;
+    public:
+      //
+      DummyIndexFilterer(index_type& index)            : _index(index) {};
+      DummyIndexFilterer(const DummyIndexFilterer& ff) : _index(ff._index) {};
+      //
+      index_type& index() {return this->_index;};
+    };
+    
+    //
+    // Filter classes
+    //
+
+    template <typename IndexFilterer_>
     class Filter {
     public:
-      typedef KeyType_                        predicate_type;
-      typedef PredicateTraits<predicate_type> predicate_traits;
+      typedef IndexFilterer_                                   index_filterer_type;
+      typedef typename index_filterer_type::index_type         index_type;
+      typedef typename index_filterer_type::key_extractor_type key_extractor_type;
+      typedef typename key_extractor_type::result_type         key_type;
+      typedef PredicateTraits<key_type>                        key_traits;
     protected:
-      bool           _have_low, _have_high;
-      predicate_type _low, _high;
+      index_filterer_type *_filterer;
+      bool                _have_low, _have_high;
+      key_type            _low, _high;
     public:
-      Filter() : 
-        _have_low(false), _have_high(false) {};
-      Filter(const predicate_type& low, const predicate_type& high) : 
-        _have_low(true), _have_high(true), _low(low), _high(high)  {};
+      Filter(index_filterer_type* filterer) : 
+        _filterer(filterer), _have_low(false), _have_high(false) {};
+      Filter(index_filterer_type* filterer, const key_type& low, const key_type& high) : 
+        _filterer(filterer), _have_low(true), _have_high(true), _low(low), _high(high)  {};
       Filter(const Filter& f) : 
-        _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
+        _filterer(f._filterer), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
       ~Filter(){};
       //
-      void setLow(const predicate_type& low)   {this->_low  = low;  this->_have_low  = true;};
-      void setHigh(const predicate_type& high) {this->_high = high; this->_have_high = true;};
+      void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
+      void setHigh(const key_type& high) {this->_high = high; this->_have_high = true;};
       //
-      predicate_type         low()       const {return this->_low;};
-      predicate_type         high()      const {return this->_high;};
-      bool                   haveLow()   const {return this->_have_low;};
-      bool                   haveHigh()  const {return this->_have_high;};
+      key_type         low()       const {return this->_low;};
+      key_type         high()      const {return this->_high;};
+      bool             haveLow()   const {return this->_have_low;};
+      bool             haveHigh()  const {return this->_have_high;};
       //
       template <typename Stream_>
       friend Stream_& operator<<(Stream_& os, const Filter& f) {
         os << "[";
         if(f.haveLow()){
-          os << ((typename predicate_traits::printable_type)(f.low())) << ",";
+          os << ((typename key_traits::printable_type)(f.low())) << ",";
         }
         else {
           os << "none, ";
         }
         if(f.haveHigh()) {
-          os << ((typename predicate_traits::printable_type)(f.high())); 
+          os << ((typename key_traits::printable_type)(f.high())); 
         }
         else {
           os << "none";
@@ -363,26 +389,27 @@ namespace ALE {
     // Defines a sequence representing a subset of a multi_index container defined by its Index_ which is ordered lexicographically 
     // starting with an OuterKey_ (obtained from an OuterKeyExtractor_) and then by an InnerKey_ (obtained from an InnerKeyExtractor_).
     // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
-    // This particular sequence traverses all OuterKey_ segements within the given bounds, and within each segment traverses all 
-    // with a given Key_. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
-    // the outer keys from a given range and a fixed inner key.  Key ranges are controlled by Filter objects.
+    // This particular sequence traverses all OuterKey_ segements within a given OuterFilter, and within each segment traverses the segment
+    // of InnerKeys defined by an InnerFilter. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
+    // each of the keys lying within its own filter.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
     #undef  __CLASS__
     #define __CLASS__ "StridedIndexSequence"
-    template <typename Index_, typename OuterKeyExtractor_, typename InnerKeyExtractor_, 
+    template <typename Index_, typename OuterFilter_, typename InnerFilter_, 
               typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type>, bool inner_strided_flag = false >
     struct StridedIndexSequence : XObject {
       typedef Index_                                           index_type;
-      typedef OuterKeyExtractor_                               outer_key_extractor_type;
+      typedef InnerFilter_                                     inner_filter_type;
+      typedef OuterFilter_                                     outer_filter_type;
+      //
+      typedef typename outer_filter_type::key_extractor_type   outer_key_extractor_type;
       typedef typename outer_key_extractor_type::result_type   outer_key_type;
-      typedef InnerKeyExtractor_                               inner_key_extractor_type;
+      typedef typename inner_filter_type::key_extractor_type   inner_key_extractor_type;
       typedef typename inner_key_extractor_type::result_type   inner_key_type;
+      //
       typedef ValueExtractor_                                  value_extractor_type;
       typedef typename value_extractor_type::result_type       value_type;
       typedef typename index_type::size_type                   size_type;
-      //
-      typedef Filter<inner_key_type>                           inner_filter_type;
-      typedef Filter<outer_key_type>                           outer_filter_type;
       //
       typedef typename index_type::iterator                    itor_type;
       typedef typename index_type::reverse_iterator            ritor_type;
@@ -425,10 +452,11 @@ namespace ALE {
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
       };// class iterator
     protected:
+      //
       index_type      *_index;
       //
-      inner_filter_type   _inner_filter;
       outer_filter_type   _outer_filter;
+      inner_filter_type   _inner_filter;
       //
       outer_key_extractor_type _okex;
       inner_key_extractor_type _ikex;
@@ -436,11 +464,13 @@ namespace ALE {
       //
       // Basic interface
       //
-      StridedIndexSequence(index_type *index, const int& debug = 0)  : XObject(debug), _index(index) {};
-      StridedIndexSequence(const int& debug = 0) : XObject(debug),_index(NULL) {};
+      StridedIndexSequence() : XObject(), _index(NULL), _outer_filter(NULL), _inner_filter(NULL) {};
+      StridedIndexSequence(index_type *index, const outer_filter_type& outer_filter, const inner_filter_type& inner_filter) : 
+        XObject(), _index(index), _outer_filter(outer_filter), _inner_filter(inner_filter){};
       StridedIndexSequence(const StridedIndexSequence& seq) : 
-        XObject(seq), _index(seq._index), _inner_filter(seq._inner_filter), _outer_filter(seq._outer_filter){};
+        XObject(seq), _index(seq._index), _outer_filter(seq._outer_filter), _inner_filter(seq._inner_filter) {};
       virtual ~StridedIndexSequence() {};
+      // 
       void copy(const StridedIndexSequence& seq, StridedIndexSequence cseq) {
         cseq._index = seq._index; 
         cseq._inner_filter = seq._inner_filter;
@@ -454,9 +484,6 @@ namespace ALE {
         this->_inner_filter  = inner_filter;
         this->_outer_filter  = outer_filter;
       };
-      void reset(index_type *index) {
-        this->reset(index, inner_filter_type(), outer_filter_type());
-      }
       //
       // Extended interface
       //
@@ -757,16 +784,18 @@ namespace ALE {
     //
     // Sequence types
     template <typename Index_, 
-              typename OuterKeyExtractor_, typename InnerKeyExtractor_, typename ValueExtractor_, bool inner_strided_flag = false>
+              typename OuterFilter_, typename InnerFilter_, typename ValueExtractor_, bool inner_strided_flag = false>
     class ArrowSequence : 
-      public XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> {
+      public XSifterDef::StridedIndexSequence<Index_, OuterFilter_, InnerFilter_, ValueExtractor_, inner_strided_flag> {
       // ArrowSequence extends StridedIndexSequence with extra iterator methods.
     public:
-      typedef XSifterDef::StridedIndexSequence<Index_, OuterKeyExtractor_, InnerKeyExtractor_, ValueExtractor_, inner_strided_flag> super;
-      typedef XSifter                                                                                                              container_type;
-      typedef typename super::index_type                                                                                           index_type;
-      typedef typename super::outer_key_type                                                                                       outer_key_type;
-      typedef typename super::inner_key_type                                                                                       inner_key_type;
+      typedef XSifterDef::StridedIndexSequence<Index_, OuterFilter_, InnerFilter_, ValueExtractor_, inner_strided_flag> super;
+      typedef XSifter                                                                                                               container_type;
+      typedef typename super::index_type                                                                                            index_type;
+      typedef typename super::outer_filter_type                                                                                     outer_filter_type;
+      typedef typename super::inner_filter_type                                                                                     inner_filter_type;
+      typedef typename super::outer_key_type                                                                                        outer_key_type;
+      typedef typename super::inner_key_type                                                                                        inner_key_type;
       
       // Need to extend the inherited iterators to be able to extract arrow color
       class iterator : public super::iterator {
@@ -784,20 +813,21 @@ namespace ALE {
       //
       // Basic ArrowSequence interface
       //
-      ArrowSequence(const int& debug = 0) : super(debug), _container(NULL) {};
+      ArrowSequence() : super(), _container(NULL) {};
       ArrowSequence(const ArrowSequence& seq) : super(seq), _container(seq._container) {};
-      ArrowSequence(container_type *container, index_type *index, const int& debug = 0) : super(index, debug), _container(container) {};
+      ArrowSequence(container_type *container, index_type *index, const outer_filter_type& outer_filter, const inner_filter_type& inner_filter) : 
+        super(index, outer_filter, inner_filter), _container(container) {};
       virtual ~ArrowSequence() {};
       void copy(const ArrowSequence& seq, ArrowSequence& cseq) {
         super::copy(seq,cseq);
         cseq._container = seq._container;
       };
+      void reset(container_type *container, index_type *index, const outer_filter_type& outer_filter, const inner_filter_type& inner_filter) {
+        this->super::reset(index, outer_filter, inner_filter);
+        this->_container = container;
+      };
       ArrowSequence& operator=(const ArrowSequence& seq) {
         copy(seq,*this); return *this;
-      };
-      void reset(container_type *container, index_type *index) {
-        this->super::reset(index);
-        this->_container = container;
       };
       //
       // Extended ArrowSequence interface
@@ -830,26 +860,37 @@ namespace ALE {
       };
       //
     };// class ArrowSequence    
-      
+
+    //
+    // Filterer types
+    //
+    typedef XSifterDef::DummyIndexFilterer<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate> >
+    UpwardPredicateFilterer;
+    //
+    typedef XSifterDef::DummyIndexFilterer<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target> >
+    UpwardTargetFilterer;
     //
     // Specialized sequence types
     //
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
-                          ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>,
+                          ALE::XSifterDef::Filter<UpwardPredicateFilterer>, 
+                          ALE::XSifterDef::Filter<UpwardTargetFilterer>,
                           ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>, 
                           true>                                                       
     BaseSequence;
 
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
-                          ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>,
+                          ALE::XSifterDef::Filter<UpwardPredicateFilterer >,
+                          ALE::XSifterDef::Filter<UpwardTargetFilterer>,
                           ::boost::multi_index::const_mem_fun<rec_type, source_type, &rec_type::source> >     
     ConeSequence;
     //
     // Basic interface
     //
-    XSifter(const MPI_Comm comm, int debug = 0) : XObject(debug) {};// FIXIT: Should really inherit from XParallelObject
+    XSifter(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
+      XObject(debug), _rec_set(), 
+      _upward_predicate_filterer(::boost::multi_index::get<UpwardTag>(_rec_set)),
+      _upward_target_filterer(::boost::multi_index::get<UpwardTag>(_rec_set)){};
     //
     // Extended interface
     //
@@ -862,21 +903,39 @@ namespace ALE {
 #endif
     };
     void cone(const target_type& t, ConeSequence& seq) {
-      seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set));
-      seq.setInnerLimits(t,t);
+      seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
+                XSifterDef::Filter<UpwardPredicateFilterer>(), XSifterDef::Filter<UpwardTargetFilterer>(t,t));
     };
-    ConeSequence& cone(const target_type& t) {
-      static ConeSequence cseq(this->debug());
-      this->cone(t,cseq);
-      return cseq;
-    };
+//     ConeSequence& cone(const target_type& t) {
+//       static ConeSequence cseq;
+// #ifdef ALE_USE_DEBUGGING
+//       cseq.debug(this->debug());
+// #endif
+//       this->cone(t,cseq);
+//       return cseq;
+//     };
+  ConeSequence cone(const target_type& t) {
+      return ConeSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
+                XSifterDef::Filter<UpwardPredicateFilterer>(), XSifterDef::Filter<UpwardTargetFilterer>(t,t));
+  };
     void base(BaseSequence& seq) {
-      seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set));
+      seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 
+                XSifterDef::Filter<UpwardPredicateFilterer>(&this->_upward_predicate_filterer), 
+                XSifterDef::Filter<UpwardTargetFilterer>(&this->_upward_target_filterer));
     };
-    BaseSequence& base() {
-      static BaseSequence bseq(this->debug());
-      this->base(bseq);
-      return bseq;
+//     BaseSequence& base() {
+//       static BaseSequence bseq;
+// #ifdef ALE_USE_DEBUGGING
+//       bseq.debug(this->debug());
+// #endif
+//       this->base(bseq);
+//       return bseq;
+//     };
+    //
+    BaseSequence base() {
+      return BaseSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 
+                XSifterDef::Filter<UpwardPredicateFilterer>(&this->_upward_predicate_filterer), 
+                XSifterDef::Filter<UpwardTargetFilterer>(&this->_upward_target_filterer));
     };
     //
     template<typename ostream_type>
@@ -900,24 +959,12 @@ namespace ALE {
         }
       os << ")" << std::endl;
     };
-    //
-    // Filter interface (stubs)
-    //
-    template <typename Filter_>
-    void allocFilter(Filter_& f){};
-    //
-    template <typename Filter_>
-    void freeFilter(Filter_& f){};
-    //
-    template <typename Filter_>
-    void extendFilter(Filter_& f, const predicate_type& width){};
-    //
-    template <typename Filter_>
-    void contractFilter(Filter_& f, const predicate_type& width){};
   protected:
     // set of arrow records
     rec_set_type _rec_set;
-    
+    // index filter managers
+    UpwardPredicateFilterer _upward_predicate_filterer;
+    UpwardTargetFilterer    _upward_target_filterer;
   }; // class XSifter
 
 
