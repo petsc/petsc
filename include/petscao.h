@@ -66,7 +66,7 @@ typedef enum {AODATA_BASIC=0,AODATA_ADVANCED=1} AODataType;
      AOData - Abstract PETSc object that manages complex parallel data structures intended to 
          hold grid information, etc
 
-   Level: depreciated
+   Level: deprecated
 
 .seealso:  AODataCreateBasic()
 S*/

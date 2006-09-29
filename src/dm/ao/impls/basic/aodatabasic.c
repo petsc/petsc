@@ -887,7 +887,7 @@ static struct _AODataOps myops = {AODataSegmentAdd_Basic,
 +  -ao_data_view - Prints entire database at the conclusion of AODataSegmentAdd()
 -  -ao_data_view_info - Prints info about database at the conclusion of AODataSegmentAdd()
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: AOData, create
 
@@ -937,7 +937,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataCreateBasic(MPI_Comm comm,AOData *aoout)
 +  -ao_data_view - Prints entire database at the conclusion of AODataLoadBasic()
 -  -ao_data_view_info - Prints info about database at the conclusion of AODataLoadBasic()
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: AOData, create, load, basic
 
