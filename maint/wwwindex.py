@@ -289,8 +289,8 @@ def main():
       titles = ['Beginner - Basic usage',
                 'Intermediate - Setting options for algorithms and data structures', 
                 'Advanced - Setting more advanced options and customization',
-                'Deprecated - Functionality scheduled for removal in future versions',
                 'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
+                'Deprecated - Functionality scheduled for removal in future versions',
                 'None: Not yet cataloged']
 
       singlelist = []
