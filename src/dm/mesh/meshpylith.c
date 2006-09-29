@@ -407,7 +407,7 @@ namespace ALE {
       sieve->stratify();
       topology->setPatch(0, sieve);
       topology->stratify();
-      mesh->setTopologyNew(topology);
+      mesh->setTopology(topology);
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       buildMaterials(mesh->getSection("material"), materials);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
@@ -517,7 +517,7 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteElements"
     PetscErrorCode Viewer::writeElements(const Obj<Mesh>& mesh, PetscViewer viewer) {
-      Obj<Mesh::topology_type> topology = mesh->getTopologyNew();
+      Obj<Mesh::topology_type> topology = mesh->getTopology();
 #if 0
       Obj<Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
       Obj<Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
@@ -627,7 +627,7 @@ namespace ALE {
     PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
       const Mesh::section_type::patch_type            patch       = 0;
       const Obj<Mesh::section_type>&                  coordinates = mesh->getSection("coordinates");
-      const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&                 topology    = mesh->getTopology();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
@@ -659,7 +659,7 @@ namespace ALE {
     #define __FUNCT__ "PyLithWriteElementsLocal"
     PetscErrorCode Viewer::writeElementsLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
       const Mesh::topology_type::patch_type           patch      = 0;
-      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopology();
       const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
@@ -717,7 +717,7 @@ namespace ALE {
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
     //   number here by bundle, but we can fix it by traversing the elements like the vertices
     PetscErrorCode Viewer::writeSplitLocal(const Obj<Mesh>& mesh, const Obj<Builder::split_section_type>& splitField, PetscViewer viewer) {
-      const Obj<Mesh::topology_type>&         topology   = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&         topology   = mesh->getTopology();
       Builder::split_section_type::patch_type patch      = 0;
       const Obj<Mesh::numbering_type>&        eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
       const Obj<Mesh::numbering_type>&        vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
@@ -750,7 +750,7 @@ namespace ALE {
       const Obj<topology_type>&         boundaryTopology   = tractionField->getTopology();
       const Obj<topology_type::sieve_type>&     sieve      = boundaryTopology->getPatch(patch);
       const Obj<topology_type::label_sequence>& faces      = boundaryTopology->heightStratum(patch, 0);
-      const Obj<Mesh::topology_type>&           topology   = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&           topology   = mesh->getTopology();
       const Obj<Mesh::numbering_type>&          vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
 
       PetscFunctionBegin;

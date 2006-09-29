@@ -153,12 +153,12 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteElements"
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::topology_type::patch_type& patch, PetscViewer viewer)
   {
-    const Obj<ALE::Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
-    const Obj<ALE::Mesh::sieve_type>&                    sieve   = mesh->getTopologyNew()->getPatch(patch);
-    const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopologyNew()->heightStratum(patch, 0);
+    const Obj<ALE::Mesh::topology_type>&                 topology   = mesh->getTopology();
+    const Obj<ALE::Mesh::sieve_type>&                    sieve   = mesh->getTopology()->getPatch(patch);
+    const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopology()->heightStratum(patch, 0);
     const Obj<ALE::Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, 0);
     const Obj<ALE::Mesh::numbering_type>&                cNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, topology->depth());
-    //int            corners = sieve->nCone(*elements->begin(), mesh->getTopologyNew()->depth())->size();
+    //int            corners = sieve->nCone(*elements->begin(), mesh->getTopology()->depth())->size();
     int            corners = sieve->cone(*elements->begin())->size();
     int            numElements;
     PetscErrorCode ierr;
@@ -226,7 +226,7 @@ class VTKViewer {
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteHierarchyVertices"
   static PetscErrorCode writeHierarchyVertices(const Obj<ALE::Mesh>& mesh, PetscViewer viewer, double zScale = 1.0) {
-    const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopologyNew();
+    const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopology();
     const ALE::Mesh::topology_type::sheaf_type& patches     = topology->getPatches();
     const ALE::Mesh::topology_type::patch_type  firstPatch  = patches.begin()->first;
     const Obj<ALE::Mesh::section_type>&    coordinates = mesh->getSection("coordinates");
@@ -267,7 +267,7 @@ class VTKViewer {
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteHierarchyElements"
   static PetscErrorCode writeHierarchyElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
-    const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopologyNew();
+    const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopology();
     const ALE::Mesh::topology_type::sheaf_type& patches     = topology->getPatches();
     const ALE::Mesh::topology_type::patch_type  firstPatch  = patches.begin()->first;
     const int      corners = topology->getPatch(firstPatch)->nCone(*topology->heightStratum(firstPatch, 0)->begin(), topology->depth())->size();

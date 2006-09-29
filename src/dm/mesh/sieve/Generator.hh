@@ -59,7 +59,7 @@ namespace ALE {
         struct triangulateio out;
         PetscErrorCode       ierr;
         const Mesh::topology_type::patch_type patch    = 0;
-        const Obj<Mesh::topology_type>&       topology = boundary->getTopologyNew();
+        const Obj<Mesh::topology_type>&       topology = boundary->getTopology();
         const Obj<Mesh::sieve_type>&          sieve    = topology->getPatch(patch);
 
         initInput(&in);
@@ -134,7 +134,7 @@ namespace ALE {
         newSieve->stratify();
         newTopology->setPatch(patch, newSieve);
         newTopology->stratify();
-        mesh->setTopologyNew(newTopology);
+        mesh->setTopology(newTopology);
         ALE::PyLith::Builder::buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
         if (mesh->commRank() == 0) {
           const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
@@ -166,7 +166,7 @@ namespace ALE {
         const int                             dim            = serialMesh->getDimension();
         const Obj<Mesh>                       refMesh        = Mesh(serialMesh->comm(), dim, serialMesh->debug);
         const Mesh::topology_type::patch_type patch          = 0;
-        const Obj<Mesh::topology_type>&       serialTopology = serialMesh->getTopologyNew();
+        const Obj<Mesh::topology_type>&       serialTopology = serialMesh->getTopology();
         const Obj<Mesh::sieve_type>&          serialSieve    = serialTopology->getPatch(patch);
         struct triangulateio in;
         struct triangulateio out;
@@ -270,7 +270,7 @@ namespace ALE {
         newSieve->stratify();
         newTopology->setPatch(patch, newSieve);
         newTopology->stratify();
-        refMesh->setTopologyNew(newTopology);
+        refMesh->setTopology(newTopology);
         ALE::PyLith::Builder::buildCoordinates(refMesh->getSection("coordinates"), dim, coordinates);
         if (refMesh->commRank() == 0) {
           const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
@@ -314,7 +314,7 @@ namespace ALE {
 #else
         const Obj<Mesh> serialMesh       = mesh;
 #endif
-        const int       numFaces         = serialMesh->getTopologyNew()->heightStratum(patch, 0)->size();
+        const int       numFaces         = serialMesh->getTopology()->heightStratum(patch, 0)->size();
         double         *serialMaxVolumes = new double[numFaces];
 
         for(int f = 0; f < numFaces; f++) {

@@ -24,6 +24,9 @@ namespace ALE {
       SizeSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
       virtual ~SizeSection() {};
     public:
+      bool hasPoint(const patch_type& patch, const point_type& point) {
+        return this->_section->hasPoint(patch, point);
+      };
       const value_type *restrict(const patch_type& patch, const point_type& p) {
         this->_size = this->_section->getFiberDimension(this->_patch, p); // Could be size()
         return &this->_size;
@@ -46,6 +49,7 @@ namespace ALE {
       typedef typename section_type::sieve_type sieve_type;
       typedef typename section_type::point_type point_type;
       typedef typename section_type::value_type value_type;
+      typedef typename section_type::chart_type chart_type;
     protected:
       Obj<section_type> _section;
       const patch_type  _patch;
@@ -53,6 +57,12 @@ namespace ALE {
       PatchlessSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
       virtual ~PatchlessSection() {};
     public:
+      const chart_type& getPatch(const patch_type& patch) {
+        return this->_section->getAtlas()->getPatch(this->_patch);
+      };
+      bool hasPoint(const patch_type& patch, const point_type& point) {
+        return this->_section->hasPoint(patch, point);
+      };
       const value_type *restrict(const patch_type& patch) {
         return this->_section->restrict(this->_patch);
       };
@@ -107,7 +117,7 @@ namespace ALE {
       PartitionSizeSection(const Obj<topology_type>& topology, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology) {this->_init(numElements, partition);};
       virtual ~PartitionSizeSection() {};
     public:
-      void allocate() {};
+      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
       const value_type *restrict(const patch_type& patch) {
         throw ALE::Exception("Cannot restrict to a patch with a PartitionSizeSection");
       };
@@ -153,6 +163,19 @@ namespace ALE {
       };
     };
 
+    template<typename Topology_>
+    class PartitionDomain {
+    public:
+      typedef Topology_                          topology_type;
+      typedef typename topology_type::patch_type patch_type;
+      typedef typename topology_type::point_type point_type;
+    public:
+      PartitionDomain() {};
+      ~PartitionDomain() {};
+    public:
+      int count(const point_type& point) const {return 1;};
+    };
+
     template<typename Topology_, typename Marker_>
     class PartitionSection : public ALE::ParallelObject {
     public:
@@ -163,9 +186,11 @@ namespace ALE {
       typedef Marker_                            marker_type;
       typedef int                                value_type;
       typedef std::map<patch_type,point_type*>   points_type;
+      typedef PartitionDomain<topology_type>     chart_type;
     protected:
       Obj<topology_type> _topology;
       points_type        _points;
+      chart_type         _domain;
       void _init(const int numElements, const marker_type partition[]) {
         std::map<patch_type,int> sizes;
 
@@ -192,7 +217,8 @@ namespace ALE {
         }
       };
     public:
-      void allocate() {};
+      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
+      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
       const value_type *restrict(const patch_type& patch) {
         throw ALE::Exception("Cannot restrict to a patch with a PartitionSection");
       };
@@ -259,7 +285,7 @@ namespace ALE {
       ConeSizeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve) {};
       virtual ~ConeSizeSection() {};
     public:
-      void allocate() {};
+      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
       const value_type *restrict(const patch_type& patch) {
         throw ALE::Exception("Cannot restrict to a patch with a ConeSizeSection");
       };
@@ -316,11 +342,13 @@ namespace ALE {
       typedef Sieve_                             cone_sieve_type;
       typedef point_type                         value_type;
       typedef std::map<patch_type,int>           sizes_type;
+      typedef PartitionDomain<topology_type>     chart_type;
     protected:
       Obj<topology_type>      _topology;
       Obj<cone_sieve_type>    _sieve;
       int                     _coneSize;
       value_type             *_cone;
+      chart_type              _domain;
       void ensureCone(const int size) {
         if (size > this->_coneSize) {
           if (this->_cone) delete [] this->_cone;
@@ -335,7 +363,8 @@ namespace ALE {
       ConeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve), _coneSize(-1), _cone(NULL) {};
       virtual ~ConeSection() {if (this->_cone) delete [] this->_cone;};
     public:
-      void allocate() {};
+      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
+      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
       const value_type *restrict(const patch_type& patch) {
         throw ALE::Exception("Cannot restrict to a patch with a ConeSection");
       };
@@ -438,7 +467,9 @@ namespace ALE {
           const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
 
           for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            sendSection->update(rank, *b_iter, sendFiller->restrict(patch, *b_iter));
+            if (sendFiller->hasPoint(patch, *b_iter)) {
+              sendSection->update(rank, *b_iter, sendFiller->restrict(patch, *b_iter));
+            }
           }
         }
       };
@@ -447,14 +478,16 @@ namespace ALE {
         // Create section
         const Obj<recv_overlap_type::traits::capSequence> ranks = recvOverlap->cap();
 
-        recvSection->getAtlas()->clear();
+        recvSection->clear();
         for(recv_overlap_type::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           Obj<dsieve_type> recvSieve = new dsieve_type();
           const Obj<recv_overlap_type::supportSequence>& points = recvOverlap->support(*r_iter);
 
           // Want to replace this loop with a slice through color
           for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
-            recvSieve->addPoint(p_iter.color());
+            const dsieve_type::point_type& point = p_iter.color();
+
+            recvSieve->addPoint(point);
           }
           recvSection->getTopology()->setPatch(*r_iter, recvSieve);
         }
@@ -463,8 +496,8 @@ namespace ALE {
         recvSection->allocate();
         recvSection->constructCommunication(Section::RECEIVE);
       };
-      template<typename SizerFiller, typename Filler, typename SendSection, typename RecvSection>
-      static void completeSection(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<SizerFiller>& sizerFiller, const Filler& filler, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+      template<typename Domain, typename SizerFiller, typename Filler, typename SendSection, typename RecvSection>
+      static void completeSection(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Domain& domain, const Obj<SizerFiller>& sizerFiller, const Filler& filler, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
         Obj<send_sizer_type> sendSizer     = new send_sizer_type(sendSection->comm(), sendSection->debug());
         Obj<recv_sizer_type> recvSizer     = new recv_sizer_type(recvSection->comm(), sendSizer->getTag(), recvSection->debug());
         Obj<constant_sizer>  constantSizer = new constant_sizer(recvSection->comm(), 1, sendSection->debug());
@@ -563,7 +596,7 @@ namespace ALE {
         Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numElements, assignment);
         Obj<partition_section>      partitionSection     = new partition_section(secTopology, numElements, assignment);
 
-        ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, partitionSizeSection, partitionSection, sendSection, recvSection);
+        ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, partitionSection->getPatch(0), partitionSizeSection, partitionSection, sendSection, recvSection);
         // 3) Unpack the section into the overlap
         sendOverlap->clear();
         recvOverlap->clear();
@@ -608,7 +641,7 @@ namespace ALE {
         Obj<cone_size_section> coneSizeSection = new cone_size_section(secTopology, sieve);
         Obj<cone_section>      coneSection     = new cone_section(secTopology, sieve);
 
-        ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+        ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, coneSection->getPatch(0), coneSizeSection, coneSection, sendSection, recvSection);
         // 5) Unpack the section into the sieve
         const topology_type::sheaf_type& patches = recvSection->getTopology()->getPatches();
 
@@ -678,10 +711,6 @@ namespace ALE {
       virtual bool isLocal(const point_type& point) {return this->restrictPoint(0, point)[0] >= 0;};
       virtual bool isRemote(const point_type& point) {return this->restrictPoint(0, point)[0] < 0;};
       point_type getPoint(const int& index) {return this->_invOrder[index];};
-      bool hasPoint(const point_type& point) {
-        const typename atlas_type::chart_type& chart = this->getChart(0);
-        return (chart->find(point) != chart->end());
-      };
     };
 
     template<typename Topology_>
@@ -887,9 +916,37 @@ namespace ALE {
         typedef typename ALE::New::ConstantSection<topology_type, int> constant_sizer;
         const Obj<send_section_type> sendSection = new send_section_type(numbering->comm(), this->debug());
         const Obj<recv_section_type> recvSection = new recv_section_type(numbering->comm(), sendSection->getTag(), this->debug());
-        const Obj<constant_sizer>    sizer       = new constant_sizer(numbering->comm(), 1, this->debug());
+        //const Obj<constant_sizer>    sizer       = new constant_sizer(numbering->comm(), 1, this->debug());
 
-        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, sizer, numbering, sendSection, recvSection);
+        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, numbering->getPatch(0), numbering->getAtlas(), numbering, sendSection, recvSection);
+        const typename recv_section_type::topology_type::sheaf_type& patches = recvSection->getTopology()->getPatches();
+
+        for(typename recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const typename recv_section_type::patch_type& rPatch = p_iter->first;
+          const typename recv_section_type::chart_type& points = recvSection->getPatch(rPatch);
+
+          for(typename recv_section_type::chart_type::iterator r_iter = points.begin(); r_iter != points.end(); ++r_iter) {
+            const typename recv_section_type::point_type& point  = *r_iter;
+            const typename recv_section_type::value_type *values = recvSection->restrict(rPatch, point);
+
+            if (recvSection->getFiberDimension(rPatch, point) == 0) continue;
+            if (values[0] >= 0) {
+              if (numbering->isLocal(point) && !allowDuplicates) {
+                ostringstream msg;
+                msg << "["<<numbering->commRank()<<"]Multiple indices for point " << point << " from " << rPatch << " with index " << values[0];
+                throw ALE::Exception(msg.str().c_str());
+              }
+              if (numbering->getAtlas()->getFiberDimension(0, point) == 0) {
+                ostringstream msg;
+                msg << "["<<numbering->commRank()<<"]Unexpected point " << point << " from " << rPatch << " with index " << values[0];
+                throw ALE::Exception(msg.str().c_str());
+              }
+              int val = -(values[0]+1);
+              numbering->updatePoint(patch, point, &val);
+            }
+          }
+        }
+#if 0
         Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
@@ -917,6 +974,7 @@ namespace ALE {
             }
           }
         }
+#endif
         PetscErrorCode ierr;
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
       };
@@ -930,7 +988,7 @@ namespace ALE {
         const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
         const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());
 
-        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, sizer, order, sendSection, recvSection);
+        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, order->getPatch(0), sizer, order, sendSection, recvSection);
         Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
@@ -1040,6 +1098,7 @@ namespace ALE {
       };
     };
 
+#if 0
     // A Numbering is a UniformSection giving each Sieve point a consecutive number
     //   We need to support versions which operate both intra- and inter-patch
     //   We sometimes need an inverse mapping, so those should really be Sifters or labels
@@ -1289,7 +1348,7 @@ namespace ALE {
         const Obj<recv_section_type> recvSection = new recv_section_type(this->comm(), sendSection->getTag(), this->debug());
         const Obj<constant_sizer>    sizer       = new constant_sizer(this->comm(), 1, this->debug());
 
-        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, sizer, this, sendSection, recvSection);
+        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, this->getPatch(0), sizer, this, sendSection, recvSection);
         Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
@@ -1606,6 +1665,7 @@ namespace ALE {
         PetscSynchronizedFlush(comm);
       };
     };
+#endif
   }
 }
 #endif

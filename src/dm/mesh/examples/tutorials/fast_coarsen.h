@@ -21,7 +21,7 @@ namespace ALE { namespace Coarsener {
     	  //build the root node;
     ALE::Mesh::section_type::patch_type rPatch = 0; //the patch on which everything is stored.. we restrict to this patch
     ALE::Mesh::section_type::patch_type boundPatch = nMeshes + 1; //the patch on which everything is stored.. we restrict to this patch
-    Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(rPatch, 0);
     Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
     Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");

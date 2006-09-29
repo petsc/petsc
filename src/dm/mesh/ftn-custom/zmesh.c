@@ -30,8 +30,7 @@ extern void PetscRmPointer(void*);
 #define meshcreatepcice_        MESHCREATEPCICE
 #define meshdistribute_         MESHDISTRIBUTE
 #define meshview_               MESHVIEW
-#define fieldview_              FIELDVIEW
-#define vertexsectioncreate_    VERTEXSECTIONCREATE
+#define meshgetvertexsection_   MESHGETVERTEXSECTION
 #define cellsectioncreate_      CELLSECTIONCREATE
 #define restrictvector_         RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
@@ -43,8 +42,7 @@ extern void PetscRmPointer(void*);
 #define meshcreatepcice_        meshcreatepcice
 #define meshdistribute_         meshdistribute
 #define meshview_               meshview
-#define fieldview_              fieldview
-#define vertexsectioncreate_    vertexsectioncreate
+#define meshgetvertexsection_   meshgetvertexsection
 #define cellsectioncreate_      cellsectioncreate
 #define restrictvector_         restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
@@ -76,18 +74,8 @@ void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ier
 {
   *ierr = MeshView((Mesh) PetscToPointer(mesh),(PetscViewer) PetscToPointer(viewer));
 }
-void PETSC_STDCALL  fieldview_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscViewer viewer, PetscErrorCode *ierr PETSC_END_LEN(len))
-{
-  char *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = FieldView((Mesh) PetscToPointer(mesh), nF,(PetscViewer) PetscToPointer(viewer));
-  FREECHAR(name,nF);
-}
-void PETSC_STDCALL  vertexsectioncreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscInt *fiberDim, int *ierr PETSC_END_LEN(len)){
-  char *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = VertexSectionCreate((Mesh) PetscToPointer(mesh), nF, *fiberDim);
-  FREECHAR(name,nF);
+void PETSC_STDCALL  meshgetvertexsection_(Mesh mesh, PetscInt *fiberDim, Section *section, int *ierr){
+  *ierr = MeshGetVertexSection((Mesh) PetscToPointer(mesh), *fiberDim, section);
 }
 void PETSC_STDCALL  cellsectioncreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscInt *fiberDim, int *ierr PETSC_END_LEN(len)){
   char *nF;

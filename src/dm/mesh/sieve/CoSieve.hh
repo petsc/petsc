@@ -881,19 +881,30 @@ namespace ALE {
     protected:
       Obj<topology_type> _topology;
       atlas_type         _atlas;
+      chart_type         _emptyChart;
       value_type         _value;
+      value_type         _defaultValue;
     public:
-      NewConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+      NewConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _defaultValue(0) {
         this->_topology = new topology_type(comm, debug);
       };
       NewConstantSection(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()), _topology(topology) {};
-      NewConstantSection(const Obj<topology_type>& topology, const value_type& value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value) {};
+      NewConstantSection(const Obj<topology_type>& topology, const value_type& value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value), _defaultValue(value) {};
+      NewConstantSection(const Obj<topology_type>& topology, const value_type& value, const value_type& defaultValue) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value), _defaultValue(defaultValue) {};
     public: // Verifiers
       void checkPatch(const patch_type& patch) const {
         this->_topology->checkPatch(patch);
         if (this->_atlas.find(patch) == this->_atlas.end()) {
           ostringstream msg;
           msg << "Invalid atlas patch " << patch << std::endl;
+          throw ALE::Exception(msg.str().c_str());
+        }
+      };
+      void checkPoint(const patch_type& patch, const point_type& point) const {
+        this->checkPatch(patch);
+        if (this->_atlas.find(patch)->second.find(point) == this->_atlas.find(patch)->second.end()) {
+          ostringstream msg;
+          msg << "Invalid section point " << point << std::endl;
           throw ALE::Exception(msg.str().c_str());
         }
       };
@@ -910,16 +921,18 @@ namespace ALE {
         }
         return true;
       };
-      bool hasPoint(const patch_type& patch, const point_type& point) {
+      bool hasPoint(const patch_type& patch, const point_type& point) const {
         this->checkPatch(patch);
-        return this->_atlas[patch].count(point) > 0;
+        return this->_atlas.find(patch)->second.count(point) > 0;
       };
     public: // Accessors
       const Obj<topology_type>& getTopology() const {return this->_topology;};
       void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
       const chart_type& getPatch(const patch_type& patch) {
-        this->checkPatch(patch);
-        return this->_atlas[patch];
+        if (this->hasPatch(patch)) {
+          return this->_atlas[patch];
+        }
+        return this->_emptyChart;
       };
       void updatePatch(const patch_type& patch, const point_type& point) {
         this->_atlas[patch].insert(point);
@@ -928,11 +941,16 @@ namespace ALE {
       void updatePatch(const patch_type& patch, const Obj<Points>& points) {
         this->_atlas[patch].insert(points->begin(), points->end());
       };
+      value_type getDefaultValue() {return this->_defaultValue;};
+      void setDefaultValue(const value_type value) {this->_defaultValue = value;};
     public: // Sizes
       void clear() {
         this->_atlas.clear(); 
       };
-      int getFiberDimension(const patch_type& patch, const point_type& p) const {return 1;};
+      int getFiberDimension(const patch_type& patch, const point_type& p) const {
+        if (this->hasPoint(patch, p)) return 1;
+        return 0;
+      };
       void setFiberDimension(const patch_type& patch, const point_type& p, int dim) {
         this->checkDimension(dim);
         this->updatePatch(patch, p);
@@ -959,12 +977,17 @@ namespace ALE {
         this->setFiberDimension(patch, this->_topology->getLabelStratum(patch, "height", height), dim);
       };
       int size(const patch_type& patch) {return this->_atlas[patch].size();};
-      int size(const patch_type& patch, const point_type& p) {return 1;};
-      void orderPatches() {};
+      int size(const patch_type& patch, const point_type& p) {return this->getFiberDimension(patch, p);};
     public: // Restriction
       const value_type *restrict(const patch_type& patch, const point_type& p) const {
-        this->checkPatch(patch);
-        return &this->_value;
+        //std::cout <<"["<<this->commRank()<<"]: Constant restrict ("<<patch<<","<<p<<") from " << std::endl;
+        //for(typename chart_type::iterator c_iter = this->_atlas.find(patch)->second.begin(); c_iter != this->_atlas.find(patch)->second.end(); ++c_iter) {
+        //  std::cout <<"["<<this->commRank()<<"]:   point " << *c_iter << std::endl;
+        //}
+        if (this->hasPoint(patch, p)) {
+          return &this->_value;
+        }
+        return &this->_defaultValue;
       };
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) const {return this->restrict(patch, p);};
       void update(const patch_type& patch, const point_type& p, const value_type v[]) {
@@ -1048,7 +1071,7 @@ namespace ALE {
         this->_atlas = new atlas_type(comm, debug);
       };
       UniformSection(const Obj<topology_type>& topology) : ParallelObject(topology->comm(), topology->debug()) {
-        this->_atlas = new atlas_type(topology);
+        this->_atlas = new atlas_type(topology, fiberDim, 0);
       };
       UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {};
     protected:
@@ -1423,6 +1446,9 @@ namespace ALE {
       void setTopology(const Obj<topology_type>& topology) {this->_atlas->setTopology(topology);};
       const chart_type& getPatch(const patch_type& patch) {
         return this->_atlas->getPatch(patch);
+      };
+      bool hasPoint(const patch_type& patch, const point_type& point) {
+        return this->_atlas->hasPoint(patch, point);
       };
     public: // Sizes
       void clear() {
@@ -1946,7 +1972,7 @@ namespace ALE {
       ConstantSection(const Obj<topology_type>& topology, const value_type value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value) {};
       virtual ~ConstantSection() {};
     public:
-      void allocate() {};
+      bool hasPoint(const patch_type& patch, const point_type& point) const {return true;};
       const value_type *restrict(const patch_type& patch) {return &this->_value;};
       // This should return something the size of the closure
       const value_type *restrict(const patch_type& patch, const point_type& p) {return &this->_value;};
@@ -2103,6 +2129,7 @@ namespace ALE {
       typedef Section<Topology_, Value_>        base_type;
       typedef typename base_type::patch_type    patch_type;
       typedef typename base_type::topology_type topology_type;
+      typedef typename base_type::chart_type    chart_type;
       typedef typename base_type::atlas_type    atlas_type;
       typedef typename base_type::value_type    value_type;
       typedef enum {SEND, RECEIVE}              request_type;

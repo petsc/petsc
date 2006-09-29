@@ -34,7 +34,6 @@ namespace ALE {
     typedef std::map<int, bc_value_type>                 bc_values_type;
     int debug;
   private:
-    Obj<sieve_type>            topology;
     SectionContainer           sections;
     Obj<topology_type>         _topology;
     Obj<foliated_section_type> _boundaries;
@@ -53,7 +52,6 @@ namespace ALE {
   public:
     Mesh(MPI_Comm comm, int dimension, int debug = 0) : debug(debug), dim(dimension) {
       this->setComm(comm);
-      this->topology    = new sieve_type(comm, debug);
       this->_boundaries = NULL;
       this->distributed = false;
     };
@@ -62,13 +60,11 @@ namespace ALE {
     void            setComm(MPI_Comm comm) {this->_comm = comm; MPI_Comm_rank(comm, &this->_commRank); MPI_Comm_size(comm, &this->_commSize);};
     int             commRank() const {return this->_commRank;};
     int             commSize() const {return this->_commSize;};
-    Obj<sieve_type> getTopology() const {return this->topology;};
-    void            setTopology(const Obj<sieve_type>& topology) {this->topology = topology;};
     int             getDimension() const {return this->dim;};
     void            setDimension(int dim) {this->dim = dim;};
     const Obj<foliated_section_type>& getBoundariesNew() {
       if (this->_boundaries.isNull()) {
-        this->_boundaries = new foliated_section_type(this->getTopologyNew());
+        this->_boundaries = new foliated_section_type(this->getTopology());
       }
       return this->_boundaries;
     };
@@ -92,8 +88,8 @@ namespace ALE {
     bool hasSection(const std::string& name) const {
       return(this->sections.find(name) != this->sections.end());
     };
-    const Obj<topology_type>& getTopologyNew() const {return this->_topology;};
-    void setTopologyNew(const Obj<topology_type>& topology) {this->_topology = topology;};
+    const Obj<topology_type>& getTopology() const {return this->_topology;};
+    void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
     const Obj<split_section_type>& getSplitSection() const {return this->_splitField;};
     void                           setSplitSection(const Obj<split_section_type>& splitField) {this->_splitField = splitField;};
     const Obj<send_overlap_type>&  getVertexSendOverlap() const {return this->_vertexSendOverlap;};
@@ -164,7 +160,7 @@ namespace ALE {
       } else {
         PetscPrintf(comm, "viewing Mesh '%s'\n", name.c_str());
       }
-      this->getTopologyNew()->view("mesh topology", comm);
+      this->getTopology()->view("mesh topology", comm);
       this->getSection("coordinates")->view("mesh coordinates", comm);
     };
   };

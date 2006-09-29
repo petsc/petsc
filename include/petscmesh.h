@@ -48,7 +48,6 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrix(ALE::Mesh *, const ALE
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], const char[], const int, const int, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscReal *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElements(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscInt *[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT VertexSectionCreate(Mesh, const char [], PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT CellSectionCreate(Mesh, const char [], PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscInt *[]);
@@ -87,10 +86,13 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionView(Section,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetSection(Section,ALE::Obj<ALE::Mesh::section_type>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetSection(Section,const ALE::Obj<ALE::Mesh::section_type>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetTopology(Section,ALE::Obj<ALE::Mesh::topology_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetTopology(Section,const ALE::Obj<ALE::Mesh::topology_type>&);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRestrict(Section, PetscInt, PetscScalar *[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section, PetscInt, PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section, PetscInt, const PetscScalar []);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSection(Mesh, PetscInt, Section *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSection(Mesh, PetscInt, Section *);
 
 PETSC_EXTERN_CXX_END
 #endif

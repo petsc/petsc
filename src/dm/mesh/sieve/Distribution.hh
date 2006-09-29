@@ -84,8 +84,8 @@ namespace ALE {
       static void createConeOverlap(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Mesh>& oldMesh, const Obj<Mesh>& newMesh) {
         Obj<send_overlap_type> coneSendOverlap = new send_overlap_type(newMesh->comm(), newMesh->debug);
         Obj<recv_overlap_type> coneRecvOverlap = new recv_overlap_type(newMesh->comm(), newMesh->debug);
-        const Obj<Mesh::sieve_type>                                 oldSieve = oldMesh->getTopologyNew()->getPatch(0);
-        const Obj<Mesh::sieve_type>                                 newSieve = newMesh->getTopologyNew()->getPatch(0);
+        const Obj<Mesh::sieve_type>                                 oldSieve = oldMesh->getTopology()->getPatch(0);
+        const Obj<Mesh::sieve_type>                                 newSieve = newMesh->getTopology()->getPatch(0);
         const Obj<typename send_overlap_type::traits::capSequence>  cap      = sendOverlap->cap();
         const Obj<typename recv_overlap_type::traits::baseSequence> base     = recvOverlap->base();
 
@@ -241,7 +241,7 @@ namespace ALE {
           }
         }
       };
-      #undef __FUNCT__
+       #undef __FUNCT__
       #define __FUNCT__ "coneCompletion"
       template<typename SendSection, typename RecvSection>
       static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<topology_type>& topology, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
@@ -253,7 +253,7 @@ namespace ALE {
         const Obj<completion_type::topology_type>              secTopology     = completion_type::createSendTopology(sendOverlap);
         const Obj<typename completion_type::cone_size_section> coneSizeSection = new typename completion_type::cone_size_section(secTopology, topology->getPatch(patch));
         const Obj<typename completion_type::cone_section>      coneSection     = new typename completion_type::cone_section(secTopology, topology->getPatch(patch));
-        sectionCompletion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+        sectionCompletion::completeSection(sendOverlap, recvOverlap, coneSection->getPatch(0), coneSizeSection, coneSection, sendSection, recvSection);
         // Update cones
         updateSieve(recvSection, topology);
       };
@@ -261,7 +261,7 @@ namespace ALE {
       #define __FUNCT__ "redistributeMesh"
       static Obj<Mesh> redistributeMesh(const Obj<Mesh>& serialMesh, const std::string& partitioner = "chaco") {
         Obj<Mesh> parallelMesh = Mesh(serialMesh->comm(), serialMesh->getDimension(), serialMesh->debug);
-        const Obj<Mesh::topology_type>& serialTopology   = serialMesh->getTopologyNew();
+        const Obj<Mesh::topology_type>& serialTopology   = serialMesh->getTopology();
         const Obj<Mesh::topology_type>& parallelTopology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug);
         const Obj<Mesh::sieve_type>&    sieve            = new Mesh::sieve_type(serialMesh->comm(), serialMesh->debug);
         PetscErrorCode                  ierr;
@@ -271,11 +271,11 @@ namespace ALE {
         // Why in the hell do I need this here????
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setPatch(0, sieve);
-        parallelMesh->setTopologyNew(parallelTopology);
+        parallelMesh->setTopology(parallelTopology);
         if (serialMesh->debug) {
           Obj<std::set<std::string> > sections = serialMesh->getSections();
 
-          serialMesh->getTopologyNew()->view("Serial topology");
+          serialMesh->getTopology()->view("Serial topology");
           for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
             serialMesh->getSection(*name)->view(*name);
           }
@@ -336,11 +336,11 @@ namespace ALE {
           // Need to associate overlaps with sections somehow (through the atlas?)
           if ((*name == "material") || (*name == "BL") || (*name == "BNVEC") || (*name == "BCVEC") || (*name == "UE") || (*name == "odd")) {
             updateSectionLocal(serialSection, parallelSection);
-            sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
+            sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, filler->getPatch(0), sizer, filler, sendSection, recvSection);
             updateSectionRemote(cellRecvOverlap, recvSection, parallelSection);
           } else {
             updateSectionLocal(serialSection, parallelSection);
-            sieveCompletion::completeSection(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), sizer, filler, sendSection, recvSection);
+            sieveCompletion::completeSection(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), filler->getPatch(0), sizer, filler, sendSection, recvSection);
             updateSectionRemote(parallelMesh->getVertexRecvOverlap(), recvSection, parallelSection);
           }
         }
@@ -362,11 +362,11 @@ namespace ALE {
           // Need to associate overlaps with sections somehow (through the atlas?)
           if ((*name == "IBC") || (*name == "IBCNUM") || (*name == "odd")) {
             updateSectionLocal(serialSection, parallelSection);
-            sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
+            sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, filler->getPatch(0), sizer, filler, sendSection, recvSection);
             updateSectionRemote(cellRecvOverlap, recvSection, parallelSection);
           } else {
             updateSectionLocal(serialSection, parallelSection);
-            sieveCompletion::completeSection(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), sizer, filler, sendSection, recvSection);
+            sieveCompletion::completeSection(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), filler->getPatch(0), sizer, filler, sendSection, recvSection);
             updateSectionRemote(parallelMesh->getVertexRecvOverlap(), recvSection, parallelSection);
           }
         }
@@ -377,14 +377,14 @@ namespace ALE {
           typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::split_section_type::value_type> recv_section_type;
           const Mesh::section_type::patch_type patch              = 0;
           const Obj<Mesh::split_section_type>& serialSplitField   = serialMesh->getSplitSection();
-          Obj<Mesh::split_section_type>        parallelSplitField = new Mesh::split_section_type(parallelMesh->getTopologyNew());
+          Obj<Mesh::split_section_type>        parallelSplitField = new Mesh::split_section_type(parallelMesh->getTopology());
           const Obj<send_section_type>         sendSection        = new send_section_type(serialMesh->comm(), serialMesh->debug);
           const Obj<recv_section_type>         recvSection        = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug);
           const Obj<SplitSizer>                sizer              = new SplitSizer(serialSplitField, patch);
           const Obj<SplitFiller>               filler             = new SplitFiller(serialSplitField, patch);
 
           updateSectionLocal(serialSplitField, parallelSplitField);
-          sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, sizer, filler, sendSection, recvSection);
+          sieveCompletion::completeSection(cellSendOverlap, cellRecvOverlap, filler->getPatch(0), sizer, filler, sendSection, recvSection);
           updateSectionRemote(cellRecvOverlap, recvSection, parallelSplitField);
           parallelMesh->setSplitSection(parallelSplitField);
         }

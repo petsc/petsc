@@ -35,8 +35,8 @@ int main(int argc, char *argv[])
     ierr = CreateCoarsenedMesh(mesh, coarseMesh, c_factor);CHKERRQ(ierr);
     ierr = CreateSpacingFunction(coarseMesh);CHKERRQ(ierr);
 
-//        mesh->getTopologyNew()->view("Serial topology");
-//	coarseMesh->getTopologyNew()->view("Serial topology");
+//        mesh->getTopology()->view("Serial topology");
+//	coarseMesh->getTopology()->view("Serial topology");
 //    ierr = OutputVTK(mesh, "notCoarseMesh.vtk", "spacing", 0); CHKERRQ(ierr);
     ierr = OutputVTK(coarseMesh, "coarseMesh.vtk", "spacing", 0);CHKERRQ(ierr);
     
@@ -55,7 +55,7 @@ PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> mesh) {
 
 
 //grab a new section for the spacing function
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
 
   Obj<ALE::Mesh::section_type>        spacing = mesh->getSection("spacing");
   ALE::Mesh::section_type::patch_type patch = 0;
@@ -126,7 +126,7 @@ PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh> srcMesh, Obj<ALE::Mesh> dstMes
   const double * tmp_point;
   Obj<ALE::Mesh::section_type> coords = srcMesh->getSection("coordinates");
   Obj<ALE::Mesh::section_type> space = srcMesh->getSection("spacing");
-  Obj<ALE::Mesh::topology_type> topology = srcMesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = srcMesh->getTopology();
   const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
 
   ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
@@ -304,7 +304,7 @@ PetscErrorCode CreateCoarsenedMesh(Obj<ALE::Mesh> srcMesh, Obj<ALE::Mesh> dstMes
 bool IsEssentialBoundaryNode(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex, int dim) {
 
   ALE::Mesh::section_type::patch_type patch = 0; 
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   if (dim != 2) {printf("Not Supported for more than 2D yet\n"); return false;}
   const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
   Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");

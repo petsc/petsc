@@ -126,7 +126,7 @@ namespace ALE {
       sieve->stratify();
       topology->setPatch(0, sieve);
       topology->stratify();
-      mesh->setTopologyNew(topology);
+      mesh->setTopology(topology);
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       if (cells) {ierr = PetscFree(cells);}
       if (coordinates) {ierr = PetscFree(coordinates);}
@@ -247,7 +247,7 @@ namespace ALE {
       }
       mesh->distributeBCValues();
       // Create IBNDFS section
-      const int numElements = mesh->getTopologyNew()->heightStratum(patch, 0)->size();
+      const int numElements = mesh->getTopology()->heightStratum(patch, 0)->size();
       int      *tmpIBNDFS   = new int[numBdVertices*3];
 
       for(int bv = 0; bv < numBdVertices; bv++) {
@@ -293,7 +293,7 @@ namespace ALE {
         *coordinates = NULL;
         return;
       }
-      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopology();
       const Obj<Mesh::topology_type::label_sequence>& vertices   = topology->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            size     = vertices->size();
@@ -322,7 +322,7 @@ namespace ALE {
     };
     void Builder::outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], const bool columnMajor) {
       const Mesh::topology_type::patch_type           patch      = 0;
-      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopology();
       if (!topology->hasPatch(patch)) {
         *numElements = 0;
         *numCorners  = 0;
@@ -446,7 +446,7 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteElements"
     PetscErrorCode Viewer::writeElements(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
-      ALE::Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+      ALE::Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
 #if 0
       ALE::Obj<ALE::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
       ALE::Obj<ALE::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
@@ -533,7 +533,7 @@ namespace ALE {
     PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
       const Mesh::section_type::patch_type            patch       = 0;
       Obj<Mesh::section_type>                         coordinates = mesh->getSection("coordinates");
-      const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&                 topology    = mesh->getTopology();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
       const Obj<Mesh::numbering_type>&                vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
@@ -562,7 +562,7 @@ namespace ALE {
       const Obj<Mesh::section_type>&   velocity    = mesh->getSection("VELN");
       const Obj<Mesh::section_type>&   pressure    = mesh->getSection("PN");
       const Obj<Mesh::section_type>&   temperature = mesh->getSection("TN");
-      const Obj<Mesh::topology_type>&  topology    = mesh->getTopologyNew();
+      const Obj<Mesh::topology_type>&  topology    = mesh->getTopology();
       const Obj<Mesh::numbering_type>& cNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, topology->depth());
       const Obj<Mesh::numbering_type>& vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, 0);
       const int                        numCells    = cNumbering->getGlobalSize();
@@ -578,7 +578,7 @@ namespace ALE {
       ierr = MPI_Type_commit(&newtype);CHKERRQ(ierr);
 
       if (mesh->commRank() == 0) {
-        const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
+        const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopology()->depthStratum(patch, 0);
 
         for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
@@ -602,7 +602,7 @@ namespace ALE {
           }
         }
       } else {
-        const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
+        const Obj<Mesh::topology_type::label_sequence>& vertices = mesh->getTopology()->depthStratum(patch, 0);
         RestartType *localValues;
         int numLocalElements = vNumbering->getLocalSize();
         int k = 0;

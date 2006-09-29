@@ -18,7 +18,7 @@ namespace ALE {
       PetscFunctionBegin;
       Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
       ALE::Mesh::section_type::patch_type srcPatch = 0;
-      const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopologyNew();
+      const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopology();
       int nEdges = 0; // just a counter for sanity checking.
       //const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(originalPatch, 0);
       //from here grab the corners

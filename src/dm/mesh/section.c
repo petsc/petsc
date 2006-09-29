@@ -245,6 +245,29 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionGetTopology(Section section, ALE::Obj<AL
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionSetTopology"
+/*@C
+  SectionSetTopology - Sets the internal section topology
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+- t - the internal section topology
+ 
+  Level: advanced
+
+.seealso SectionCreate(), SectionGetSection(), SectionSetSection()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionSetTopology(Section section, const ALE::Obj<ALE::Mesh::topology_type>& t)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTION_COOKIE, 1);
+  section->s->setTopology(t);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SectionCreate"
 /*@C
   SectionCreate - Creates a Section object, used to manage data for an unstructured problem
@@ -281,7 +304,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionCreate(MPI_Comm comm, Section *section)
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
-  s->s             = PETSC_NULL;
+  s->s             = new ALE::Mesh::section_type(comm);
   *section = s;
   PetscFunctionReturn(0);
 }
@@ -355,11 +378,81 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRestrict(Section section, PetscInt point
 
 .seealso SectionRestrict(), SectionCreate(), SectionView()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section section, PetscInt point, PetscScalar values[])
+PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section section, PetscInt point, const PetscScalar values[])
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTION_COOKIE, 1);
   PetscValidScalarPointer(values,3);
   section->s->update(0, point, values);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetVertexSection"
+/*@C
+  MeshGetVertexSection - Create a Section over the vertices with the specified fiber dimension
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+- fiberDim - The section name
+
+  Output Parameter:
+. section - The section
+
+  Level: intermediate
+
+.keywords: mesh, section, vertex
+.seealso: MeshCreate(), SectionCreate()
+@*/
+PetscErrorCode MeshGetVertexSection(Mesh mesh, PetscInt fiberDim, Section *section)
+{
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::section_type> s;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionCreate(m->comm(), section);CHKERRQ(ierr);
+  ierr = SectionSetTopology(*section, m->getTopology());CHKERRQ(ierr);
+  ierr = SectionGetSection(*section, s);CHKERRQ(ierr);
+  s->setFiberDimensionByDepth(0, 0, fiberDim);
+  s->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetCellSection"
+/*@C
+  MeshGetCellSection - Create a Section over the cells with the specified fiber dimension
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+- fiberDim - The section name
+
+  Output Parameter:
+. section - The section
+
+  Level: intermediate
+
+.keywords: mesh, section, cell
+.seealso: MeshCreate(), SectionCreate()
+@*/
+PetscErrorCode MeshGetCellSection(Mesh mesh, PetscInt fiberDim, Section *section)
+{
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::section_type> s;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionCreate(m->comm(), section);CHKERRQ(ierr);
+  ierr = SectionSetTopology(*section, m->getTopology());CHKERRQ(ierr);
+  ierr = SectionGetSection(*section, s);CHKERRQ(ierr);
+  s->setFiberDimensionByHeight(0, 0, fiberDim);
+  s->allocate();
   PetscFunctionReturn(0);
 }

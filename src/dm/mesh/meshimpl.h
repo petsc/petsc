@@ -32,7 +32,7 @@ typedef struct _SectionOps *SectionOps;
 struct _SectionOps {
   PetscErrorCode (*view)(Section,PetscViewer);
   PetscErrorCode (*restrict)(Section,int,PetscScalar**);
-  PetscErrorCode (*update)(Section,int,PetscScalar*);
+  PetscErrorCode (*update)(Section,int,const PetscScalar*);
 };
 
 struct _p_Section {
