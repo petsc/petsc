@@ -250,7 +250,7 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
      obtained from -snes_mf_operator and there is computed directly from the 
      FormFunction() SNES is given and therefor does not need to be shifted/scaled
      BUT maybe it could be MATMFFD and does require shift in some other case??? */
-  //ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr);
+  /* ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr); need further check! */
   ierr = TSSetKSPOperators_BEuler(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
