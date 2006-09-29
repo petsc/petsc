@@ -100,7 +100,8 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
   Vec            sol = ts->vec_sol,update = cn->update,rhs = cn->rhs;
   PetscErrorCode ierr;
   PetscInt       i,max_steps = ts->max_steps,its;
-  PetscScalar    mdt = 1.0/ts->time_step,t_mid;
+  PetscScalar    mdt = 1.0/ts->time_step;
+  PetscReal      t_mid;
   MatStructure   str;
 
   PetscFunctionBegin;

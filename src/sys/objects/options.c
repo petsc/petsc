@@ -1403,9 +1403,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsGetIntArray(const char pre[],const ch
     ierr      = PetscStrlen(value,&len);CHKERRQ(ierr); 
     if (value[0] == '-') i=2;
     else i=1;
-    for (;i<len; i++) {
+    for (;i<(int)len; i++) {
       if (value[i] == '-') {
-        if (i == len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
+        if (i == (int)len-1) SETERRQ2(PETSC_ERR_USER,"Error in %D-th array entry %s\n",n,value);
         value[i] = 0;
         ierr     = PetscOptionsAtoi(value,&start);CHKERRQ(ierr);        
         ierr     = PetscOptionsAtoi(value+i+1,&end);CHKERRQ(ierr);        
@@ -1792,7 +1792,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorSet(PetscErrorCode (*monitor)(
 
 .seealso: PetscOptionsMonitorDefault(), PetscOptionsMonitorSet()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel()
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorCancel(void)
 {
   PetscErrorCode ierr;
   PetscInt       i;

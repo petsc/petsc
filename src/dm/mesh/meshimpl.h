@@ -28,4 +28,19 @@ extern PetscCookie MESH_COOKIE;
 extern PetscEvent Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
                   Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
+typedef struct _SectionOps *SectionOps;
+struct _SectionOps {
+  PetscErrorCode (*view)(Section,PetscViewer);
+  PetscErrorCode (*restrict)(Section,int,PetscScalar**);
+  PetscErrorCode (*update)(Section,int,PetscScalar*);
+};
+
+struct _p_Section {
+  PETSCHEADER(struct _SectionOps);
+  ALE::Obj<ALE::Mesh::section_type> s;
+};
+
+extern PetscCookie SECTION_COOKIE;
+extern PetscEvent Section_View;
+
 #endif

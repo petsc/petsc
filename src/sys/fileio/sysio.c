@@ -424,11 +424,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int fd)
 
    Input Parameters:
 +  fd - the file
-.  whence - if PETSC_BINARY_SEEK_SET then size is an absolute location in the file
-            if PETSC_BINARY_SEEK_CUR then size is offset from current location
-            if PETSC_BINARY_SEEK_END then size is offset from end of file
--  size - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
+.  off - number of bytes to move. Use PETSC_BINARY_INT_SIZE, PETSC_BINARY_SCALAR_SIZE,
             etc. in your calculation rather than sizeof() to compute byte lengths.
+-  whence - if PETSC_BINARY_SEEK_SET then off is an absolute location in the file
+            if PETSC_BINARY_SEEK_CUR then off is an offset from the current location
+            if PETSC_BINARY_SEEK_END then off is an offset from the end of file
 
    Output Parameter:
 .   offset - new offset in file

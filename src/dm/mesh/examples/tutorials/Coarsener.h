@@ -345,7 +345,14 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   return isEssential;
 }
 
+int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
 //determines if two triangles are coplanar
+  //given the point,get the support of every element of the point's support and see if it is a "crease".  Count the creases
+//if there are two crease support elements, it is a rank 2, if there are more it's 3, if there are 0 (there cannot be 1) it is rank 1
+//here we must make sure that it is a boundary node as well.
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  
+}
 
 bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::point_type tri2) {
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();

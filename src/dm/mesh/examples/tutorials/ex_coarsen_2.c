@@ -3,6 +3,7 @@
 #include "Coarsener.h"
 //#include "tree_mis.h"
 #include "src/dm/mesh/meshvtk.h"
+#include "fast_coarsen.h"
 
 using ALE::Obj;
 
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
     ierr = ALE::Coarsener::CreateSpacingFunction(mesh, 2);CHKERRQ(ierr);
-    ierr = ALE::Coarsener::CreateCoarsenedHierarchy(mesh, 2, options.levels, options.coarseFactor);CHKERRQ(ierr);
+    ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(mesh, 2, options.levels, options.coarseFactor);CHKERRQ(ierr);
     Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
     mesh->getTopologyNew()->setPatch(options.levels+1, sieve);
     mesh->getTopologyNew()->stratify();

@@ -629,7 +629,7 @@ namespace ALE {
       const Obj<Mesh::section_type>&                  coordinates = mesh->getSection("coordinates");
       const Obj<Mesh::topology_type>&                 topology    = mesh->getTopologyNew();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                vNumbering  = mesh->getLocalNumbering(0);
+      const Obj<Mesh::numbering_type>&                vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
       PetscErrorCode ierr;
 
@@ -662,8 +662,8 @@ namespace ALE {
       const Obj<Mesh::topology_type>&                 topology   = mesh->getTopologyNew();
       const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                eNumbering = mesh->getLocalNumbering(topology->depth());
-      const Obj<Mesh::numbering_type>&                vNumbering = mesh->getLocalNumbering(0);
+      const Obj<Mesh::numbering_type>&                eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       Obj<Mesh::section_type>                         material;
       int            dim          = mesh->getDimension();
       //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
@@ -717,9 +717,10 @@ namespace ALE {
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
     //   number here by bundle, but we can fix it by traversing the elements like the vertices
     PetscErrorCode Viewer::writeSplitLocal(const Obj<Mesh>& mesh, const Obj<Builder::split_section_type>& splitField, PetscViewer viewer) {
-      const Obj<Mesh::numbering_type>&        eNumbering = mesh->getLocalNumbering(mesh->getTopologyNew()->depth());
-      const Obj<Mesh::numbering_type>&        vNumbering = mesh->getLocalNumbering(0);
+      const Obj<Mesh::topology_type>&         topology   = mesh->getTopologyNew();
       Builder::split_section_type::patch_type patch      = 0;
+      const Obj<Mesh::numbering_type>&        eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>&        vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -745,11 +746,12 @@ namespace ALE {
     PetscErrorCode Viewer::writeTractionsLocal(const Obj<Mesh>& mesh, const Obj<Builder::section_type>& tractionField, PetscViewer viewer) {
       typedef Builder::topology_type topology_type;
       typedef Builder::section_type section_type;
-      const section_type::patch_type            patch    = 0;
-      const Obj<topology_type>&         boundaryTopology = tractionField->getTopology();
-      const Obj<topology_type::sieve_type>&     sieve    = boundaryTopology->getPatch(patch);
-      const Obj<topology_type::label_sequence>& faces    = boundaryTopology->heightStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&        vNumbering = mesh->getLocalNumbering(0);
+      const section_type::patch_type            patch      = 0;
+      const Obj<topology_type>&         boundaryTopology   = tractionField->getTopology();
+      const Obj<topology_type::sieve_type>&     sieve      = boundaryTopology->getPatch(patch);
+      const Obj<topology_type::label_sequence>& faces      = boundaryTopology->heightStratum(patch, 0);
+      const Obj<Mesh::topology_type>&           topology   = mesh->getTopologyNew();
+      const Obj<Mesh::numbering_type>&          vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
 
       PetscFunctionBegin;
       for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {

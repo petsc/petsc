@@ -69,9 +69,10 @@ PetscErrorCode GeometryTest(const Obj<section_type>& coordinates, Options *optio
 #define __FUNCT__ "AllocationTest"
 PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
 {
-  std::string                         name("coordinates");
-  const Obj<ALE::Mesh::order_type>&   order   = mesh->getGlobalOrder(name);
-  const Obj<ALE::Mesh::section_type>& section = mesh->getSection(name);
+  std::string                          name("coordinates");
+  const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopologyNew();
+  const Obj<ALE::Mesh::section_type>&  section  = mesh->getSection(name);
+  const Obj<ALE::Mesh::order_type>&    order    = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getGlobalOrder(topology, 0, name, section->getAtlas());
   Mat                                 A;
   PetscInt                            numLocalRows, firstRow, lastRow;
   PetscInt                           *dnz, *onz;
@@ -99,9 +100,9 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
     adjGraph->addCone(sieve->cone(sieve->support(*c_iter)), *c_iter);
   }
   // Distribute adjacency graph
-  const Obj<ALE::Mesh::numbering_type>&    vNumbering        = mesh->getNumbering(0);
-  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = vNumbering->getSendOverlap();
-  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = vNumbering->getRecvOverlap();
+  const Obj<ALE::Mesh::numbering_type>&    vNumbering        = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, 0, 0);
+  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = topology->getSendOverlap();
+  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = topology->getRecvOverlap();
   const Obj<ALE::Mesh::send_overlap_type>  nbrSendOverlap    = new ALE::Mesh::send_overlap_type(mesh->comm(), mesh->debug);
   const Obj<ALE::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALE::Mesh::recv_overlap_type(mesh->comm(), mesh->debug);
   const Obj<ALE::Mesh::send_section_type>  sendSection       = new ALE::Mesh::send_section_type(mesh->comm(), mesh->debug);
@@ -115,7 +116,7 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   }
   // Distribute indices for new points
   ALE::New::Distribution<ALE::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-  order->complete(nbrSendOverlap, nbrRecvOverlap, true);
+  ALE::Mesh::NumberingFactory::singleton(mesh->debug)->completeOrder(order, nbrSendOverlap, nbrRecvOverlap, patch, true);
   if (mesh->debug) {
     nbrSendOverlap->view("Neighbor Send Overlap");
     nbrRecvOverlap->view("Neighbor Receive Overlap");

@@ -6,14 +6,12 @@ static char help[] = "Global Ordering Tests.\n\n";
 using ALE::Obj;
 typedef ALE::Test::OverlapTest::sieve_type        sieve_type;
 typedef ALE::Test::OverlapTest::topology_type     topology_type;
-typedef ALE::Test::OverlapTest::atlas_type        atlas_type;
 typedef ALE::Test::OverlapTest::dsieve_type       dsieve_type;
 typedef ALE::Test::OverlapTest::send_overlap_type send_overlap_type;
 typedef ALE::Test::OverlapTest::send_section_type send_section_type;
 typedef ALE::Test::OverlapTest::recv_overlap_type recv_overlap_type;
 typedef ALE::Test::OverlapTest::recv_section_type recv_section_type;
 typedef ALE::New::Numbering<topology_type>        numbering_type;
-typedef ALE::New::NewNumbering<atlas_type>        new_numbering_type;
 
 typedef struct {
   int        debug;       // The debugging level
@@ -170,19 +168,6 @@ PetscErrorCode NumberingTest(const Obj<topology_type>& topology, Options *option
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "NewNumberingTest"
-PetscErrorCode NewNumberingTest(const Obj<topology_type>& topology, Options *options)
-{
-  Obj<atlas_type>         atlas     = new atlas_type(topology);
-  Obj<new_numbering_type> numbering = new new_numbering_type(atlas, "depth", 0);
-
-  PetscFunctionBegin;
-  numbering->construct();
-  numbering->view("Vertex numbering");
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
@@ -216,7 +201,6 @@ int main(int argc, char *argv[])
 
     ALE::Test::OverlapTest::constructDoublet2(topology, options.interpolate);
     //ierr = DoubletTest(comm, &options);CHKERRQ(ierr);
-    ierr = NewNumberingTest(topology, &options);CHKERRQ(ierr);
     ierr = NumberingTest(topology, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
