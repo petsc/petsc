@@ -47,7 +47,7 @@ int main(int argc,char **args)
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
   PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
   PetscErrorCode ierr;
-  PetscInt       its,num_numfac,m,n;
+  PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
   PetscLogDouble tsetup,tsetup1,tsetup2,tsolve,tsolve1,tsolve2;
   PetscTruth     preload=PETSC_TRUE,diagonalscale,isSymmetric,cknorm=PETSC_FALSE,Test_MatDuplicate=PETSC_FALSE;
@@ -195,17 +195,18 @@ int main(int argc,char **args)
        If the loaded matrix is larger than the vector (due to being padded 
        to match the block size of the system), then create a new padded vector.
     */
+    
     ierr = MatGetLocalSize(A,&m,&n);CHKERRQ(ierr);
     if (m != n) {
       SETERRQ2(PETSC_ERR_ARG_SIZ, "This example is not intended for rectangular matrices (%d, %d)", m, n);
     }
-    ierr = VecGetLocalSize(b,&m);CHKERRQ(ierr);
-    if (m != n) {
+    ierr = MatGetSize(A,&M,PETSC_NULL);CHKERRQ(ierr);
+    ierr = VecGetSize(b,&m);CHKERRQ(ierr);
+    if (M != m) { /* Create a new vector b by padding the old one */
       PetscInt    j,mvec,start,end,indx;
       Vec         tmp;
       PetscScalar *bold;
 
-      /* Create a new vector b by padding the old one */
       ierr = VecCreate(PETSC_COMM_WORLD,&tmp);CHKERRQ(ierr);
       ierr = VecSetSizes(tmp,n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(tmp);CHKERRQ(ierr);
@@ -281,159 +282,155 @@ int main(int argc,char **args)
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
-      /* ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); */
-    ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
+     
+      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
 
-    /* 
+      /* 
        Here we explicitly call KSPSetUp() and KSPSetUpOnBlocks() to
        enable more precise profiling of setting up the preconditioner.
        These calls are optional, since both will be called within
        KSPSolve() if they haven't been called already.
-    */
-    ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-    ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-    ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
-    tsetup = tsetup2 - tsetup1;
+      */
+      ierr = KSPSetUp(ksp);CHKERRQ(ierr);
+      ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
+      ierr = PetscGetTime(&tsetup2);CHKERRQ(ierr);
+      tsetup = tsetup2 - tsetup1;
 
-    /*
+      /*
       Test MatGetInertia()
       Usage:
       ex10 -f0 <mat_binaryfile> -ksp_type preonly -pc_type cholesky -mat_type seqsbaij -test_inertia -mat_sigma <sigma>
-     */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-test_inertia",&flg);CHKERRQ(ierr);
-    if (flg){
-      PC        pc;
-      PetscInt  nneg, nzero, npos;
-      Mat       F;
+      */
+      ierr = PetscOptionsHasName(PETSC_NULL,"-test_inertia",&flg);CHKERRQ(ierr);
+      if (flg){
+        PC        pc;
+        PetscInt  nneg, nzero, npos;
+        Mat       F;
       
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
-      ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
-    }
+        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+        ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
+        ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
+      }
 
-    /*
+      /*
        Tests "diagonal-scaling of preconditioned residual norm" as used 
        by many ODE integrator codes including SUNDIALS. Note this is different
        than diagonally scaling the matrix before computing the preconditioner
-    */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-diagonal_scale",&diagonalscale);CHKERRQ(ierr);
-    if (diagonalscale) {
-      PC       pc;
-      PetscInt j,start,end,n;
-      Vec      scale;
+      */
+      ierr = PetscOptionsHasName(PETSC_NULL,"-diagonal_scale",&diagonalscale);CHKERRQ(ierr);
+      if (diagonalscale) {
+        PC       pc;
+        PetscInt j,start,end,n;
+        Vec      scale;
       
-      ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-      ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-      ierr = VecDuplicate(x,&scale);CHKERRQ(ierr);
-      ierr = VecGetOwnershipRange(scale,&start,&end);CHKERRQ(ierr);
-      for (j=start; j<end; j++) {
-        ierr = VecSetValue(scale,j,((PetscReal)(j+1))/((PetscReal)n),INSERT_VALUES);CHKERRQ(ierr);
-      }
-      ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
-      ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);
-      ierr = PCDiagonalScaleSet(pc,scale);CHKERRQ(ierr);
-      ierr = VecDestroy(scale);CHKERRQ(ierr);
-
-    }
-
-    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
-                           Solve system
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
-    /*
-       Begin profiling next stage
-    */
-    PreLoadStage("KSPSolve");
-
-    /*
-       Solve linear system; we also explicitly time this stage.
-    */
-    ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
-    if (trans) {
-      ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
-      ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-    } else {
-      PetscInt  num_rhs=1;
-      ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
-      ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
-      while ( num_rhs-- ) {
-        ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-      }
-      ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-      if (cknorm){   /* Check error for each rhs */
-        if (trans) {
-          ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
-        } else {
-          ierr = MatMult(A,x,u);CHKERRQ(ierr);
+        ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+        ierr = VecGetSize(x,&n);CHKERRQ(ierr);
+        ierr = VecDuplicate(x,&scale);CHKERRQ(ierr);
+        ierr = VecGetOwnershipRange(scale,&start,&end);CHKERRQ(ierr);
+        for (j=start; j<end; j++) {
+          ierr = VecSetValue(scale,j,((PetscReal)(j+1))/((PetscReal)n),INSERT_VALUES);CHKERRQ(ierr);
         }
-        ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-        ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
+        ierr = VecAssemblyBegin(scale);CHKERRQ(ierr);
+        ierr = VecAssemblyEnd(scale);CHKERRQ(ierr);
+        ierr = PCDiagonalScaleSet(pc,scale);CHKERRQ(ierr);
+        ierr = VecDestroy(scale);CHKERRQ(ierr);
       }
-    } /* while ( num_rhs-- ) */
-    ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
-    tsolve = tsolve2 - tsolve1;
 
-    //ierr = VecView(b,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-    //ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+      /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+                           Solve system
+        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   /* 
+      /*
+       Begin profiling next stage
+      */
+      PreLoadStage("KSPSolve");
+
+      /*
+       Solve linear system; we also explicitly time this stage.
+      */
+      ierr = PetscGetTime(&tsolve1);CHKERRQ(ierr);
+      if (trans) {
+        ierr = KSPSolveTranspose(ksp,b,x);CHKERRQ(ierr);
+        ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+      } else {
+        PetscInt  num_rhs=1;
+        ierr = PetscOptionsGetInt(PETSC_NULL,"-num_rhs",&num_rhs,PETSC_NULL);CHKERRQ(ierr);
+        ierr = PetscOptionsHasName(PETSC_NULL,"-cknorm",&cknorm);CHKERRQ(ierr);
+        while ( num_rhs-- ) {
+          ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+        }
+        ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+        if (cknorm){   /* Check error for each rhs */
+          if (trans) {
+            ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
+          } else {
+            ierr = MatMult(A,x,u);CHKERRQ(ierr);
+          }
+          ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
+          ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Number of iterations = %3D\n",its);CHKERRQ(ierr);
+          ierr = PetscPrintf(PETSC_COMM_WORLD,"  Residual norm %A\n",norm);CHKERRQ(ierr);
+        }
+      } /* while ( num_rhs-- ) */
+      ierr = PetscGetTime(&tsolve2);CHKERRQ(ierr);
+      tsolve = tsolve2 - tsolve1;
+
+      /* 
        Conclude profiling this stage
-    */
-    PreLoadStage("Cleanup");
+      */
+      PreLoadStage("Cleanup");
 
-    /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
+      /* - - - - - - - - - - - New Stage - - - - - - - - - - - - -
             Check error, print output, free data structures.
-     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /* 
-       Check error
-    */
-    if (trans) {
-      ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
-    } else {
-      ierr = MatMult(A,x,u);CHKERRQ(ierr);
-    }
-    ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
-    ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
+      /* 
+         Check error
+      */
+      if (trans) {
+        ierr = MatMultTranspose(A,x,u);CHKERRQ(ierr);
+      } else {
+        ierr = MatMult(A,x,u);CHKERRQ(ierr);
+      }
+      ierr = VecAXPY(u,-1.0,b);CHKERRQ(ierr);
+      ierr = VecNorm(u,NORM_2,&norm);CHKERRQ(ierr);
 
-    /*
+      /*
        Write output (optinally using table for solver details).
         - PetscPrintf() handles output for multiprocessor jobs 
           by printing from only one processor in the communicator.
         - KSPView() prints information about the linear solver.
-    */
-    if (table) {
-      char        *matrixname,kspinfo[120];
-      PetscViewer viewer;
-
-      /*
-         Open a string viewer; then write info to it.
       */
-      ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
-      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
-      ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
+      if (table) {
+        char        *matrixname,kspinfo[120];
+        PetscViewer viewer;
+
+        /*
+         Open a string viewer; then write info to it.
+        */
+        ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,kspinfo,120,&viewer);CHKERRQ(ierr);
+        ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
+        ierr = PetscStrrchr(file[PreLoadIt],'/',&matrixname);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"%-8.8s %3D %2.0e %2.1e %2.1e %2.1e %s \n",
                 matrixname,its,norm,tsetup+tsolve,tsetup,tsolve,kspinfo);CHKERRQ(ierr);
 
-      /*
-         Destroy the viewer
-      */
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    } else {
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
-      ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
-    }
+        /*
+          Destroy the viewer
+        */
+        ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+      } else {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %3D\n",its);CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD,"Residual norm %A\n",norm);CHKERRQ(ierr);
+      }
 
-    ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_reason", &flg);CHKERRQ(ierr);
-    if (flg){
-      KSPConvergedReason reason;
-      ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
-      PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason); 
-    }
+      ierr = PetscOptionsHasName(PETSC_NULL, "-ksp_reason", &flg);CHKERRQ(ierr);
+      if (flg){
+        KSPConvergedReason reason;
+        ierr = KSPGetConvergedReason(ksp,&reason);CHKERRQ(ierr);
+        PetscPrintf(PETSC_COMM_WORLD,"KSPConvergedReason: %D\n", reason); 
+      }
        
     } /* while ( num_numfac-- ) */
 
