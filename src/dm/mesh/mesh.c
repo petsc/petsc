@@ -1327,24 +1327,24 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::bc_section_type>&       section = m->getBCSection(std::string(name));
-  const ALE::Mesh::bc_section_type::patch_type patch   = 0;
+  const Obj<ALE::Mesh::int_section_type>&       section = m->getBCSection(std::string(name));
+  const ALE::Mesh::int_section_type::patch_type patch   = 0;
   if (!section->hasPatch(patch)) {
     *numElements = 0;
     *fiberDim    = 0;
     *array       = NULL;
     PetscFunctionReturn(0);
   }
-  const ALE::Mesh::bc_section_type::chart_type& chart = section->getPatch(patch);
+  const ALE::Mesh::int_section_type::chart_type& chart = section->getPatch(patch);
   int fiberDimMin = section->getFiberDimension(patch, *chart.begin());
   int numElem     = 0;
 
-  for(ALE::Mesh::bc_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(patch, *c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Mesh::bc_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(patch, *c_iter);
 
     numElem += fiberDim/fiberDimMin;

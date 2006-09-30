@@ -20,24 +20,24 @@ namespace ALE {
     typedef NumberingFactory::numbering_type          numbering_type;
     typedef NumberingFactory::order_type              order_type;
     typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
-    typedef struct {double x, y, z;}                                           split_value;
-    typedef ALE::New::Section<topology_type, ALE::pair<point_type, split_value> > split_section_type;
+    typedef struct {double x, y, z;}                                              split_value;
+    typedef ALE::New::Section<topology_type, ALE::pair<point_type, split_value> > pair_section_type;
     typedef ALE::New::Completion<topology_type, point_type>::send_overlap_type send_overlap_type;
     typedef ALE::New::Completion<topology_type, point_type>::recv_overlap_type recv_overlap_type;
     typedef ALE::New::Completion<topology_type, point_type>::topology_type     comp_topology_type;
     typedef ALE::New::OverlapValues<send_overlap_type, comp_topology_type, point_type> send_section_type;
     typedef ALE::New::OverlapValues<recv_overlap_type, comp_topology_type, point_type> recv_section_type;
     // PCICE: Big fucking hack
-    typedef ALE::New::Section<topology_type, int>        bc_section_type;
-    typedef std::map<std::string, Obj<bc_section_type> > BCSectionContainer;
-    typedef struct {double rho,u,v,p;}                   bc_value_type;
-    typedef std::map<int, bc_value_type>                 bc_values_type;
+    typedef ALE::New::Section<topology_type, int>         int_section_type;
+    typedef std::map<std::string, Obj<int_section_type> > BCSectionContainer;
+    typedef struct {double rho,u,v,p;}                    bc_value_type;
+    typedef std::map<int, bc_value_type>                  bc_values_type;
     int debug;
   private:
     SectionContainer           sections;
     Obj<topology_type>         _topology;
     Obj<foliated_section_type> _boundaries;
-    Obj<split_section_type>    _splitField;
+    Obj<pair_section_type>    _splitField;
     MPI_Comm        _comm;
     int             _commRank;
     int             _commSize;
@@ -91,8 +91,8 @@ namespace ALE {
     };
     const Obj<topology_type>& getTopology() const {return this->_topology;};
     void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
-    const Obj<split_section_type>& getSplitSection() const {return this->_splitField;};
-    void                           setSplitSection(const Obj<split_section_type>& splitField) {this->_splitField = splitField;};
+    const Obj<pair_section_type>& getSplitSection() const {return this->_splitField;};
+    void                           setSplitSection(const Obj<pair_section_type>& splitField) {this->_splitField = splitField;};
     // PCICE: Big fucking hack
     Obj<std::set<std::string> > getBCSections() {
       Obj<std::set<std::string> > names = std::set<std::string>();
@@ -102,9 +102,9 @@ namespace ALE {
       }
       return names;
     }
-    const Obj<bc_section_type>& getBCSection(const std::string& name) {
+    const Obj<int_section_type>& getBCSection(const std::string& name) {
       if (this->bcSections.find(name) == this->bcSections.end()) {
-        Obj<bc_section_type> section = new bc_section_type(this->_topology);
+        Obj<int_section_type> section = new int_section_type(this->_topology);
 
         std::cout << "Creating new bc section: " << name << std::endl;
         this->bcSections[name] = section;

@@ -217,18 +217,18 @@ namespace ALE {
       *splitInd    = splitId;
       *splitValues = splitVal;
     };
-    void Builder::buildSplit(const Obj<split_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]) {
-      const split_section_type::patch_type                     patch = 0;
-      split_section_type::value_type                           values[3];
-      std::map<split_section_type::point_type, std::set<int> > elem2index;
+    void Builder::buildSplit(const Obj<pair_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]) {
+      const pair_section_type::patch_type                     patch = 0;
+      pair_section_type::value_type                           values[3];
+      std::map<pair_section_type::point_type, std::set<int> > elem2index;
 
       for(int e = 0; e < numSplit; e++) {
         splitField->addFiberDimension(patch, splitInd[e*2+0], 1);
         elem2index[splitInd[e*2+0]].insert(e);
       }
       splitField->allocate();
-      for(std::map<split_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
-        const split_section_type::point_type& e = e_iter->first;
+      for(std::map<pair_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
+        const pair_section_type::point_type& e = e_iter->first;
         int                                   k = 0;
 
         for(std::set<int>::const_iterator i_iter = e_iter->second.begin(); i_iter != e_iter->second.end(); ++i_iter, ++k) {
@@ -395,16 +395,10 @@ namespace ALE {
       Obj<topology_type> topology = new topology_type(comm, debug);
       int    *cells, *materials;
       double *coordinates;
-      int    *splitInd;
-      double *splitValues;
-      int    *tractionVertices;
-      double *tractionValues;
-      int     numCells = 0, numVertices = 0, numCorners = dim+1, numSplit = 0, hasSplit, numTractions = 0, vertsPerFace = 0, hasTractions;
+      int     numCells = 0, numVertices = 0, numCorners = dim+1;
 
       ALE::PyLith::Builder::readConnectivity(comm, basename+".connect", numCorners, useZeroBase, numCells, &cells, &materials);
       ALE::PyLith::Builder::readCoordinates(comm, basename+".coord", dim, numVertices, &coordinates);
-      ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
-      ALE::PyLith::Builder::readTractions(comm, basename+".traction", dim, numCorners, useZeroBase, numTractions, vertsPerFace, &tractionVertices, &tractionValues);
       ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
       sieve->stratify();
       topology->setPatch(0, sieve);
@@ -413,20 +407,45 @@ namespace ALE {
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
       material->setTopology(topology);
       buildMaterials(material, materials);
+      return mesh;
+    };
+    Obj<Builder::pair_section_type> Builder::createSplit(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
+      Obj<pair_section_type> split = NULL;
+      MPI_Comm comm     = mesh->comm();
+      int      dim      = mesh->getDimension();
+      int      numCells = mesh->getTopology()->heightStratum(0, 0)->size();
+      int     *splitInd;
+      double  *splitValues;
+      int      numSplit = 0, hasSplit;
+
+      ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
       if (hasSplit) {
-        Obj<split_section_type> splitField = new split_section_type(topology);
-
-        buildSplit(splitField, numCells, numSplit, splitInd, splitValues);
-        mesh->setSplitSection(splitField);
+        split = new pair_section_type(mesh->getTopology());
+        buildSplit(split, numCells, numSplit, splitInd, splitValues);
       }
+      return split;
+    };
+    Obj<ALE::Mesh::section_type> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
+      Obj<section_type> traction = NULL;
+      MPI_Comm comm       = mesh->comm();
+      int      debug      = mesh->debug;
+      int      dim        = mesh->getDimension();
+      int      numCells   = mesh->getTopology()->heightStratum(0, 0)->size();
+      int      numCorners = mesh->getTopology()->getPatch(0)->cone(*mesh->getTopology()->heightStratum(0, 0)->begin())->size();
+      int     *tractionVertices;
+      double  *tractionValues;
+      int      numTractions = 0, vertsPerFace = 0, hasTractions;
+
+      ALE::PyLith::Builder::readTractions(comm, basename+".traction", dim, numCorners, useZeroBase, numTractions, vertsPerFace, &tractionVertices, &tractionValues);
       MPI_Allreduce(&numTractions, &hasTractions, 1, MPI_INT, MPI_MAX, comm);
       if (hasTractions) {
-        Obj<topology_type> boundaryTopology = new topology_type(topology->comm(), topology->debug());
+        Obj<topology_type> boundaryTopology = new topology_type(mesh->comm(), debug);
 
-        buildTractions(mesh->getSection("tractions"), boundaryTopology, numCells, numTractions, vertsPerFace, tractionVertices, tractionValues);
+        traction = new section_type(boundaryTopology);
+        buildTractions(traction, boundaryTopology, numCells, numTractions, vertsPerFace, tractionVertices, tractionValues);
       }
-      return mesh;
+      return traction;
     };
     //
     // Viewer methods
@@ -719,23 +738,23 @@ namespace ALE {
     #define __FUNCT__ "PyLithWriteSplitLocal"
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
     //   number here by bundle, but we can fix it by traversing the elements like the vertices
-    PetscErrorCode Viewer::writeSplitLocal(const Obj<Mesh>& mesh, const Obj<Builder::split_section_type>& splitField, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeSplitLocal(const Obj<Mesh>& mesh, const Obj<Builder::pair_section_type>& splitField, PetscViewer viewer) {
       const Obj<Mesh::topology_type>&         topology   = mesh->getTopology();
-      Builder::split_section_type::patch_type patch      = 0;
+      Builder::pair_section_type::patch_type patch      = 0;
       const Obj<Mesh::numbering_type>&        eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
       const Obj<Mesh::numbering_type>&        vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
-      const Builder::split_section_type::atlas_type::chart_type& chart = splitField->getPatch(patch);
+      const Builder::pair_section_type::atlas_type::chart_type& chart = splitField->getPatch(patch);
 
       for(Mesh::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-        const Builder::split_section_type::point_type& e      = *c_iter;
-        const Builder::split_section_type::value_type *values = splitField->restrict(patch, e);
+        const Builder::pair_section_type::point_type& e      = *c_iter;
+        const Builder::pair_section_type::value_type *values = splitField->restrict(patch, e);
         const int                                      size   = splitField->getFiberDimension(patch, e);
 
         for(int i = 0; i < size; i++) {
-          const Builder::split_section_type::point_type& v      = values[i].first;
+          const Builder::pair_section_type::point_type& v      = values[i].first;
           const Builder::split_value&                    split  = values[i].second;
 
           // No time history

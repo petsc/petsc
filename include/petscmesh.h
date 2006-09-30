@@ -66,34 +66,96 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVerticesLocal(Mesh, PetscView
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElementsLocal(Mesh, PetscViewer);
 
 /*S
-  Section - Abstract PETSc object that manages distributed field data over a topology (Sieve).
+  SectionReal - Abstract PETSc object that manages distributed field data over a topology (Sieve).
 
   Level: beginner
 
   Concepts: distributed mesh, field
 
-.seealso:  SectionCreate(), SectionDestroy(), Mesh, MeshCreate()
+.seealso:  SectionRealCreate(), SectionRealDestroy(), Mesh, MeshCreate()
 S*/
-typedef struct _p_Section* Section;
+typedef struct _p_SectionReal* SectionReal;
 
 /* Logging support */
-extern PetscCookie PETSCDM_DLLEXPORT SECTION_COOKIE;
+extern PetscCookie PETSCDM_DLLEXPORT SECTIONREAL_COOKIE;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionCreate(MPI_Comm,Section*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionDestroy(Section);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionView(Section,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm,SectionReal*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealView(SectionReal,PetscViewer);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetSection(Section,ALE::Obj<ALE::Mesh::section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetSection(Section,const ALE::Obj<ALE::Mesh::section_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetTopology(Section,ALE::Obj<ALE::Mesh::topology_type>&);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetTopology(Section,const ALE::Obj<ALE::Mesh::topology_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal,ALE::Obj<ALE::Mesh::section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal,const ALE::Obj<ALE::Mesh::section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetTopology(SectionReal,ALE::Obj<ALE::Mesh::topology_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetTopology(SectionReal,const ALE::Obj<ALE::Mesh::topology_type>&);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionDistribute(Section, Mesh, Section *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRestrict(Section, PetscInt, PetscScalar *[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section, PetscInt, const PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDistribute(SectionReal, Mesh, SectionReal *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal, PetscInt, PetscScalar *[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal, PetscInt, const PetscScalar []);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSection(Mesh, PetscInt, Section *);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSection(Mesh, PetscInt, Section *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionReal(Mesh, PetscInt, SectionReal *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionReal(Mesh, PetscInt, SectionReal *);
+
+/*S
+  SectionInt - Abstract PETSc object that manages distributed field data over a topology (Sieve).
+
+  Level: beginner
+
+  Concepts: distributed mesh, field
+
+.seealso:  SectionIntCreate(), SectionIntDestroy(), Mesh, MeshCreate()
+S*/
+typedef struct _p_SectionInt* SectionInt;
+
+/* Logging support */
+extern PetscCookie PETSCDM_DLLEXPORT SECTIONINT_COOKIE;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm,SectionInt*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntView(SectionInt,PetscViewer);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt,ALE::Obj<ALE::Mesh::int_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt,const ALE::Obj<ALE::Mesh::int_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetTopology(SectionInt,ALE::Obj<ALE::Mesh::topology_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetTopology(SectionInt,const ALE::Obj<ALE::Mesh::topology_type>&);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDistribute(SectionInt, Mesh, SectionInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt, PetscInt, PetscScalar *[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, const PetscScalar []);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionInt(Mesh, PetscInt, SectionInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionInt(Mesh, PetscInt, SectionInt *);
+
+/*S
+  SectionPair - Abstract PETSc object that manages distributed field data over a topology (Sieve).
+
+  Level: beginner
+
+  Concepts: distributed mesh, field
+
+.seealso:  SectionPairCreate(), SectionPairDestroy(), Mesh, MeshCreate()
+S*/
+typedef struct _p_SectionPair* SectionPair;
+
+/* Logging support */
+extern PetscCookie PETSCDM_DLLEXPORT SECTIONPAIR_COOKIE;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairCreate(MPI_Comm,SectionPair*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairDestroy(SectionPair);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairView(SectionPair,PetscViewer);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetSection(SectionPair,ALE::Obj<ALE::Mesh::pair_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetSection(SectionPair,const ALE::Obj<ALE::Mesh::pair_section_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetTopology(SectionPair,ALE::Obj<ALE::Mesh::topology_type>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetTopology(SectionPair,const ALE::Obj<ALE::Mesh::topology_type>&);
+
+typedef struct {
+  int    i;
+  double x, y, z;
+} PetscPair;
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairDistribute(SectionPair, Mesh, SectionPair *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairRestrict(SectionPair, PetscInt, PetscPair *[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairUpdate(SectionPair, PetscInt, const PetscPair []);
 
 PETSC_EXTERN_CXX_END
 #endif

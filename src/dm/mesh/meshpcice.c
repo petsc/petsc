@@ -146,9 +146,9 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
-      const Obj<Mesh::bc_section_type>& ibc    = mesh->getBCSection("IBC");
-      const Obj<Mesh::bc_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
-      const Obj<Mesh::bc_section_type>& ibcnum = mesh->getBCSection("IBCNUM");
+      const Obj<Mesh::int_section_type>& ibc    = mesh->getBCSection("IBC");
+      const Obj<Mesh::int_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
+      const Obj<Mesh::int_section_type>& ibcnum = mesh->getBCSection("IBCNUM");
       const Obj<Mesh::section_type>&    bl     = mesh->getSection("BL");
       const Obj<Mesh::section_type>&    bnvec  = mesh->getSection("BNVEC");
       const Obj<Mesh::section_type>&    bnnv   = mesh->getSection("BNNV");
@@ -192,10 +192,10 @@ namespace ALE {
       bl->allocate();
       bnvec->allocate();
       bcvec->allocate();
-      const Mesh::bc_section_type::chart_type& chart = ibc->getPatch(patch);
+      const Mesh::int_section_type::chart_type& chart = ibc->getPatch(patch);
       int num = 1;
 
-      for(Mesh::bc_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+      for(Mesh::int_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const int elem = *p_iter;
         int bfNum[2];
         int k = 0;

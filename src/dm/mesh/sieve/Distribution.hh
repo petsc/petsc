@@ -330,30 +330,30 @@ namespace ALE {
         sections = serialMesh->getBCSections();
 
         for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
-          typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::bc_section_type::value_type> send_section_type;
-          typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::bc_section_type::value_type> recv_section_type;
-          typedef SizeSection<Mesh::bc_section_type>      SectionSizer;
-          typedef PatchlessSection<Mesh::bc_section_type> SectionFiller;
-          const Mesh::bc_section_type::patch_type patch           = 0;
-          const Obj<Mesh::bc_section_type>&       serialSection   = serialMesh->getBCSection(*name);
-          const Obj<Mesh::bc_section_type>&       parallelSection = parallelMesh->getBCSection(*name);
-          const Obj<send_section_type>            sendSection     = new send_section_type(serialMesh->comm(), serialMesh->debug);
-          const Obj<recv_section_type>            recvSection     = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug);
-          const Obj<SectionSizer>                 sizer           = new SectionSizer(serialSection, patch);
-          const Obj<SectionFiller>                filler          = new SectionFiller(serialSection, patch);
+          typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::int_section_type::value_type> send_section_type;
+          typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::int_section_type::value_type> recv_section_type;
+          typedef SizeSection<Mesh::int_section_type>      SectionSizer;
+          typedef PatchlessSection<Mesh::int_section_type> SectionFiller;
+          const Mesh::int_section_type::patch_type patch           = 0;
+          const Obj<Mesh::int_section_type>&       serialSection   = serialMesh->getBCSection(*name);
+          const Obj<Mesh::int_section_type>&       parallelSection = parallelMesh->getBCSection(*name);
+          const Obj<send_section_type>             sendSection     = new send_section_type(serialMesh->comm(), serialMesh->debug);
+          const Obj<recv_section_type>             recvSection     = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug);
+          const Obj<SectionSizer>                  sizer           = new SectionSizer(serialSection, patch);
+          const Obj<SectionFiller>                 filler          = new SectionFiller(serialSection, patch);
 
           updateSectionLocal(serialSection, parallelSection);
           sieveCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
           updateSectionRemote(recvOverlap, recvSection, parallelSection);
         }
         if (!serialMesh->getSplitSection().isNull()) {
-          typedef ALE::New::SizeSection<Mesh::split_section_type>      SplitSizer;
-          typedef ALE::New::PatchlessSection<Mesh::split_section_type> SplitFiller;
-          typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::split_section_type::value_type> send_section_type;
-          typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::split_section_type::value_type> recv_section_type;
+          typedef ALE::New::SizeSection<Mesh::pair_section_type>      SplitSizer;
+          typedef ALE::New::PatchlessSection<Mesh::pair_section_type> SplitFiller;
+          typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::pair_section_type::value_type> send_section_type;
+          typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::pair_section_type::value_type> recv_section_type;
           const Mesh::section_type::patch_type patch              = 0;
-          const Obj<Mesh::split_section_type>& serialSplitField   = serialMesh->getSplitSection();
-          Obj<Mesh::split_section_type>        parallelSplitField = new Mesh::split_section_type(parallelMesh->getTopology());
+          const Obj<Mesh::pair_section_type>&  serialSplitField   = serialMesh->getSplitSection();
+          Obj<Mesh::pair_section_type>         parallelSplitField = new Mesh::pair_section_type(parallelMesh->getTopology());
           const Obj<send_section_type>         sendSection        = new send_section_type(serialMesh->comm(), serialMesh->debug);
           const Obj<recv_section_type>         recvSection        = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug);
           const Obj<SplitSizer>                sizer              = new SplitSizer(serialSplitField, patch);
@@ -388,20 +388,21 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "distributeSection"
-      static Obj<Mesh::section_type> distributeSection(const Obj<Mesh::section_type>& serialSection, const Obj<Mesh::topology_type>& parallelTopology, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+      template<typename Section>
+      static Obj<Section> distributeSection(const Obj<Section>& serialSection, const Obj<Mesh::topology_type>& parallelTopology, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
         if (serialSection->debug()) {
           serialSection->view("Serial Section");
         }
-        typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::section_type::value_type> send_section_type;
-        typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::section_type::value_type> recv_section_type;
-        typedef SizeSection<Mesh::section_type>      SectionSizer;
-        typedef PatchlessSection<Mesh::section_type> SectionFiller;
-        Obj<Mesh::section_type>              parallelSection = new Mesh::section_type(parallelTopology);
-        const Mesh::section_type::patch_type patch           = 0;
-        const Obj<send_section_type>         sendSection     = new send_section_type(serialSection->comm(), serialSection->debug());
-        const Obj<recv_section_type>         recvSection     = new recv_section_type(serialSection->comm(), sendSection->getTag(), serialSection->debug());
-        const Obj<SectionSizer>              sizer           = new SectionSizer(serialSection, patch);
-        const Obj<SectionFiller>             filler          = new SectionFiller(serialSection, patch);
+        typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Section::value_type> send_section_type;
+        typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Section::value_type> recv_section_type;
+        typedef SizeSection<Section>      SectionSizer;
+        typedef PatchlessSection<Section> SectionFiller;
+        Obj<Section>                       parallelSection = new Section(parallelTopology);
+        const typename Section::patch_type patch           = 0;
+        const Obj<send_section_type>       sendSection     = new send_section_type(serialSection->comm(), serialSection->debug());
+        const Obj<recv_section_type>       recvSection     = new recv_section_type(serialSection->comm(), sendSection->getTag(), serialSection->debug());
+        const Obj<SectionSizer>            sizer           = new SectionSizer(serialSection, patch);
+        const Obj<SectionFiller>           filler          = new SectionFiller(serialSection, patch);
 
         updateSectionLocal(serialSection, parallelSection);
         sieveCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
@@ -410,7 +411,7 @@ namespace ALE {
           parallelSection->view("Parallel Section");
         }
         // This is necessary since we create types (like PartitionSection) on a subset of processors
-        PetscErrorCode ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+        PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         return parallelSection;
       };
     };
