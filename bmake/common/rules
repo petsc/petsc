@@ -225,7 +225,7 @@ getmpirun:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .dvi .ps .F95 .f95
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .dvi .ps .F95 .f95 .fiat
 
 #
 #
@@ -249,6 +249,9 @@ getmpirun:
 	epstopdf $< -o=$*.pdf
 .dvi.ps:
 	dvips -o $*.ps $<
+# Need to define PYTHON
+.fiat.h:
+	python $< $*.h
 
 .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\

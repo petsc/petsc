@@ -4,29 +4,29 @@ import importer
 import script
 
 class P1(script.Script):
-  def __init__(self):
+  def __init__(self, shape = None, order = 1, filename = ''):
     script.Script.__init__(self)
     self.setupPaths()
     import Cxx, CxxHelper
     import FIAT.shapes
     import os
 
-    self.Cxx = CxxHelper.Cxx()
-    self.baseDir = os.getcwd()
-
-
-    # -------------------------------
-    self.shape = FIAT.shapes.TRIANGLE
-    self.order = 1
-    # -------------------------------
-    
+    if shape is None:
+      shape = FIAT.shapes.TRIANGLE
+    self.Cxx      = CxxHelper.Cxx()
+    self.baseDir  = os.getcwd()
+    self.shape    = shape
+    self.order    = order
+    self.filename = filename
     return
 
   def setupPaths(self):
-    import sys
+    import sys, os
 
-    sys.path.append('/home/ecoon/applications/petsc-dev/python:/home/ecoon/applications/python_modules/c-generator')
-    sys.path.append('/home/ecoon/applications/FIAT-0.2.3')
+    petscDir = os.getenv('PETSC_DIR')
+    sys.path.append(os.path.join(petscDir, 'externalpackages', 'fiat-0.2.3'))
+    sys.path.append(os.path.join(petscDir, 'externalpackages', 'ffc-0.2.3'))
+    sys.path.append(os.path.join(petscDir, 'externalpackages', 'Generator'))
     return
 
   def createElement(self, shape, k):
@@ -96,24 +96,25 @@ class P1(script.Script):
             self.getArray(self.Cxx.getVar(basisName), Numeric.transpose(basis.tabulate(points)), 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
             self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
 
-  def getSkeletonFile(self, basename, decls):
+  def getQuadratureFile(self, filename, decls):
     from Compiler import CodePurpose
     from Cxx import Include
-    from Cxx import Source
+    from Cxx import Header
     import os
 
     # Needed to define NULL
     stdInclude = Include()
     stdInclude.identifier = '<stdlib.h>'
-    source     = Source()
-    source.filename = 'Integration.c'
-    if basename:
-      source.filename = basename+'_'+name
-    source.children = [stdInclude]+decls
-    source.purpose  = CodePurpose.SKELETON
-    return source
+    header            = Header()
+    if filename:
+      header.filename = filename
+    else:
+      header.filename = 'Integration.c'
+    header.children   = [stdInclude]+decls
+    header.purpose    = CodePurpose.SKELETON
+    return header
 
-  def getElementSource(self, shape, k):
+  def getElementSource(self, shape, k, filename):
     from Compiler import CompilerException
 
     self.logPrint('Generating element module')
@@ -126,19 +127,19 @@ class P1(script.Script):
         #name = element.family+str(element.n)
         name = ''
         defns.extend(self.getBasisStructs(name, element, quadrature, mangle = 0))
-      source['Cxx'].append(self.getSkeletonFile(name, defns))
+      source['Cxx'].append(self.getQuadratureFile(filename, defns))
     except CompilerException, e:
       print e
       raise RuntimeError('Quadrature source generation failed')
     return source
 
-  def outputElementSource(self, shape, k):
+  def outputElementSource(self, shape, k, filename):
     from Compiler import CodePurpose
     import CxxVisitor
 
     # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
     outputs = {'Cxx':CxxVisitor.Output()}
-    source  = self.getElementSource(shape, k)
+    source  = self.getElementSource(shape, k, filename)
     self.logPrint('Writing element source')
     for language,output in outputs.items():
       output.setRoot(CodePurpose.STUB, self.baseDir)
@@ -156,7 +157,7 @@ class P1(script.Script):
   def run(self):
     self.setup()
     self.logPrint('Making a P1 element')
-    self.outputElementSource(self.shape, self.order)
+    self.outputElementSource(self.shape, self.order, self.filename)
     return
 
 if __name__ == '__main__':
