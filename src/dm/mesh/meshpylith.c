@@ -387,7 +387,9 @@ namespace ALE {
         matField->update(patch, *e_iter, &mat);
       }
     };
-    Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
+    Obj<Mesh> Builder::readMesh(const Obj<Mesh::section_type>& material, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false) {
+      MPI_Comm           comm     = material->comm();
+      int                debug    = material->debug();
       Obj<Mesh>          mesh     = Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
       Obj<topology_type> topology = new topology_type(comm, debug);
@@ -409,7 +411,8 @@ namespace ALE {
       topology->stratify();
       mesh->setTopology(topology);
       buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
-      buildMaterials(mesh->getSection("material"), materials);
+      material->setTopology(topology);
+      buildMaterials(material, materials);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
       if (hasSplit) {
         Obj<split_section_type> splitField = new split_section_type(topology);

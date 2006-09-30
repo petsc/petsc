@@ -38,8 +38,6 @@ namespace ALE {
     Obj<topology_type>         _topology;
     Obj<foliated_section_type> _boundaries;
     Obj<split_section_type>    _splitField;
-    Obj<send_overlap_type>     _vertexSendOverlap;
-    Obj<recv_overlap_type>     _vertexRecvOverlap;
     MPI_Comm        _comm;
     int             _commRank;
     int             _commSize;
@@ -77,6 +75,9 @@ namespace ALE {
       }
       return this->sections[name];
     };
+    void setSection(const std::string& name, const Obj<section_type>& section) {
+      this->sections[name] = section;
+    };
     Obj<std::set<std::string> > getSections() {
       Obj<std::set<std::string> > names = std::set<std::string>();
 
@@ -92,10 +93,6 @@ namespace ALE {
     void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
     const Obj<split_section_type>& getSplitSection() const {return this->_splitField;};
     void                           setSplitSection(const Obj<split_section_type>& splitField) {this->_splitField = splitField;};
-    const Obj<send_overlap_type>&  getVertexSendOverlap() const {return this->_vertexSendOverlap;};
-    void                           setVertexSendOverlap(const Obj<send_overlap_type>& vertexOverlap) {this->_vertexSendOverlap = vertexOverlap;};
-    const Obj<recv_overlap_type>&  getVertexRecvOverlap() const {return this->_vertexRecvOverlap;};
-    void                           setVertexRecvOverlap(const Obj<recv_overlap_type>& vertexOverlap) {this->_vertexRecvOverlap = vertexOverlap;};
     // PCICE: Big fucking hack
     Obj<std::set<std::string> > getBCSections() {
       Obj<std::set<std::string> > names = std::set<std::string>();

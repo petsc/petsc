@@ -198,6 +198,15 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
     ALE::LogStagePop(stage);
     ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
   }
+  if (options->doMaterial) {
+    Section parallelMaterial;
+
+    ierr = SectionDistribute(options->material, mesh, &parallelMaterial);CHKERRQ(ierr);
+    ierr = SectionDestroy(options->material);CHKERRQ(ierr);
+    options->material = parallelMaterial;
+    Obj<ALE::Mesh::section_type> section;
+    ierr = SectionGetSection(parallelMaterial, section);CHKERRQ(ierr);
+  }
   if (options->doPartition) {
     ierr = CreatePartition(mesh, &options->partition);CHKERRQ(ierr);
   }
@@ -259,7 +268,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   if (options->inputFileType == PCICE) {
     m = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
   } else if (options->inputFileType == PYLITH) {
-    m = ALE::PyLith::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
+    Obj<ALE::Mesh::section_type> material = new ALE::Mesh::section_type(comm, options->debug);
+
+    m    = ALE::PyLith::Builder::readMesh(material, options->dim, options->baseFilename, options->useZeroBase, options->interpolate);
+    ierr = SectionCreate(comm, &options->material);CHKERRQ(ierr);
+    ierr = SectionSetSection(options->material, material);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
   }
@@ -301,7 +314,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate    = PETSC_TRUE;
   options->doPartition    = PETSC_TRUE;
   options->partition      = PETSC_NULL;
-  options->doMaterial     = PETSC_FALSE;
+  options->doMaterial     = PETSC_TRUE;
   options->material       = PETSC_NULL;
   options->doOdd          = PETSC_FALSE;
   options->odd            = PETSC_NULL;
@@ -332,6 +345,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     options->outputFileType = (FileType) outputFt;
   } else {
     options->outputFileType = options->inputFileType;
+  }
+  if (options->doMaterial && options->inputFileType != PYLITH) {
+    options->doMaterial = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }

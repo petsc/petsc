@@ -1402,7 +1402,7 @@ PetscErrorCode SectionComplete(Mesh mesh, const char name[])
   const Obj<SectionSizer>                   sizer       = new SectionSizer(section, patch);
   const Obj<SectionFiller>                  filler      = new SectionFiller(section, patch);
 
-  sieveCompletion::completeSection(topology->getSendOverlap(), topology->getRecvOverlap(), filler->getPatch(0), sizer, filler, sendSection, recvSection);
+  sieveCompletion::completeSection(topology->getSendOverlap(), topology->getRecvOverlap(), sizer, filler, sendSection, recvSection);
   // Update section with remote data
   const Obj<ALE::Mesh::recv_overlap_type::traits::baseSequence> recvPoints = topology->getRecvOverlap()->base();
 

@@ -28,7 +28,6 @@ PetscErrorCode SectionView_Sieve_Ascii(Section section, PetscViewer viewer)
     static PetscInt   stateId     = -1;
     PetscInt          doOutput    = 0;
     PetscInt          outputState = 0;
-    PetscInt          fiberDim    = 0;
     PetscTruth        hasState;
     const char       *name;
 
@@ -54,9 +53,9 @@ PetscErrorCode SectionView_Sieve_Ascii(Section section, PetscViewer viewer)
       }
       const ALE::Mesh::section_type::patch_type  patch     = topology->getPatches().begin()->first;
       const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, 0);
+      PetscInt fiberDim = s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
 
       if (doOutput) {
-        fiberDim = s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
       VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
@@ -76,9 +75,9 @@ PetscErrorCode SectionView_Sieve_Ascii(Section section, PetscViewer viewer)
       }
       ALE::Mesh::section_type::patch_type patch = topology->getPatches().begin()->first;
       const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, topology->depth());
+      PetscInt fiberDim = s->getFiberDimension(patch, *topology->heightStratum(patch, 0)->begin());
 
       if (doOutput) {
-        fiberDim = s->getFiberDimension(patch, *topology->heightStratum(patch, 0)->begin());
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
       VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
@@ -332,6 +331,40 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionDestroy(Section section)
   if (--section->refct > 0) PetscFunctionReturn(0);
   section->s = PETSC_NULL;
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionDistribute"
+/*@C
+  SectionDistribute - Distributes the sections.
+
+  Not Collective
+
+  Input Parameters:
++ serialSection - The original Section object
+- parallelMesh - The parallel Mesh
+
+  Output Parameter:
+. parallelSection - The distributed Section object
+
+  Level: intermediate
+
+.keywords: mesh, section, distribute
+.seealso: MeshCreate()
+@*/
+PetscErrorCode SectionDistribute(Section serialSection, Mesh parallelMesh, Section *parallelSection)
+{
+  ALE::Obj<ALE::Mesh::section_type> oldSection;
+  ALE::Obj<ALE::Mesh>               m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionGetSection(serialSection, oldSection);CHKERRQ(ierr);
+  ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
+  ierr = SectionCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh::section_type> newSection = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeSection(oldSection, m->getTopology(), m->getTopology()->getDistSendOverlap(), m->getTopology()->getDistRecvOverlap());
+  ierr = SectionSetSection(*parallelSection, newSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

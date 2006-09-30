@@ -26,7 +26,7 @@ namespace ALE {
       static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static void buildMaterials(const Obj<ALE::Mesh::section_type>& matField, const int materials[]);
       static void buildSplit(const Obj<split_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]);
-      static Obj<ALE::Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
+      static Obj<ALE::Mesh> readMesh(const Obj<Mesh::section_type>& material, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate);
       static void buildTractions(const Obj<section_type>& tractionField, const Obj<topology_type>& boundaryTopology, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]);
     };
 

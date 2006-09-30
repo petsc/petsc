@@ -301,6 +301,8 @@ namespace ALE {
       bool           _calculatedOverlap;
       Obj<send_overlap_type> _sendOverlap;
       Obj<recv_overlap_type> _recvOverlap;
+      Obj<send_overlap_type> _distSendOverlap;
+      Obj<recv_overlap_type> _distRecvOverlap;
       // Work space
       Obj<point_set_type>    _modifiedPoints;
     public:
@@ -394,6 +396,10 @@ namespace ALE {
       void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
       const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
       void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+      const Obj<send_overlap_type>& getDistSendOverlap() const {return this->_distSendOverlap;};
+      void setDistSendOverlap(const Obj<send_overlap_type>& overlap) {this->_distSendOverlap = overlap;};
+      const Obj<recv_overlap_type>& getDistRecvOverlap() const {return this->_distRecvOverlap;};
+      void setDistRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_distRecvOverlap = overlap;};
     public:
       template<class InputPoints>
       void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {

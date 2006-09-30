@@ -88,6 +88,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetSection(Section,const ALE::Obj
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetTopology(Section,ALE::Obj<ALE::Mesh::topology_type>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionSetTopology(Section,const ALE::Obj<ALE::Mesh::topology_type>&);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionDistribute(Section, Mesh, Section *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRestrict(Section, PetscInt, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionUpdate(Section, PetscInt, const PetscScalar []);
 
