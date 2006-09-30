@@ -20,7 +20,7 @@
 +   nkeys - the number of keys
 -   keys - the names of the keys (or PETSC_NULL)
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: application ordering
 
@@ -61,7 +61,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataGetInfo(AOData ao,PetscInt *nkeys,char **
 +  flag - PETSC_TRUE if found, PETSC_FALSE if not found
 -  key - the associated key
 
-   Level: depreciated
+   Level: deprecated
 
 */
 PetscErrorCode AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTruth *flag,AODataKey **key)
@@ -115,7 +115,7 @@ PetscErrorCode AODataKeyFind_Private(AOData aodata,const char keyname[],PetscTru
    Output Parameter:
 .  flag - PETSC_TRUE if found, otherwise PETSC_FALSE
 
-   Level: depreciated
+   Level: deprecated
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT AODataKeyExists(AOData aodata,const char keyname[],PetscTruth *flag)
@@ -152,7 +152,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyExists(AOData aodata,const char keynam
 
    If it doesn't find it, it returns the last seg in the key (if the key exists)
 
-   Level: depreciated
+   Level: deprecated
 
 */
 PetscErrorCode AODataSegmentFind_Private(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag,AODataKey **key,AODataSegment **seg)
@@ -211,7 +211,7 @@ PetscErrorCode AODataSegmentFind_Private(AOData aodata,const char keyname[],cons
    Output Parameter:
 .  flag - PETSC_TRUE if found, else PETSC_FALSE
 
-   Level: depreciated
+   Level: deprecated
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentExists(AOData aodata,const char keyname[],const char segname[],PetscTruth *flag)
@@ -249,7 +249,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentExists(AOData aodata,const char ke
    Output Parameters:
 .  is - the list of key indices
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -284,7 +284,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActive(AOData aodata,const char nam
    Output Parameters:
 .  IS - the list of key indices
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -323,7 +323,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActiveIS(AOData aodata,const char n
    Output Parameters:
 .  IS - the list of key indices
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -398,7 +398,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetActiveLocalIS(AOData aodata,const c
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -433,7 +433,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGet(AOData aodata,const char name[
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -465,7 +465,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestore(AOData aodata,const char n
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -502,7 +502,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetIS(AOData aodata,const char nam
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -539,7 +539,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreIS(AOData aodata,const char
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -574,7 +574,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetLocal(AOData aodata,const char 
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -606,7 +606,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreLocal(AOData aodata,const c
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -644,7 +644,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetLocalIS(AOData aodata,const cha
    Output Parameters:
 .  data - the actual data
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -680,7 +680,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRestoreLocalIS(AOData aodata,const
    Output Parameters:
 .  is - the indices retrieved
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -725,7 +725,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetNeighbors(AOData aodata,const char 
    Output Parameters:
 .  is - the indices retrieved
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -768,7 +768,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetNeighborsIS(AOData aodata,const cha
    Output Parameters:
 .  is - the indices retrieved
 
-   Level: depreciated
+   Level: deprecated
 
    Example:
 .vb
@@ -809,7 +809,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetReduced(AOData aodata,const cha
 +  vmax - the maximum values (user must provide enough space)
 -  vmin - the minimum values (user must provide enough space)
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database transactions
 
@@ -844,7 +844,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetExtrema(AOData aodata,const cha
    Output Parameters:
 .  isout - the indices retreived
 
-   Level: depreciated
+   Level: deprecated
 
    Example:
 .vb
@@ -889,7 +889,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentGetReducedIS(AOData aodata,const c
 .   name - the name of the key
 -  map - local to global mapping
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database additions
 
@@ -932,7 +932,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeySetLocalToGlobalMapping(AOData aodata,
    Output Parameters:
 .  map - local to global mapping
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database additions
 
@@ -970,7 +970,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetLocalToGlobalMapping(AOData aodata,
 +  rstart - first key owned locally (or PETSC_NULL if not needed) 
 -  rend - last key owned locally + 1 (or PETSC_NULL if not needed)
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database accessing
 
@@ -1011,7 +1011,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetOwnershipRange(AOData aodata,const 
 .  nsegments - number of segments associated with key
 -  segnames - names of the segments or PETSC_NULL
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database accessing
 
@@ -1063,7 +1063,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetInfo(AOData aodata,const char name[
 +  bs - the blocksize
 -  dtype - the datatype
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database accessing
 
@@ -1156,7 +1156,7 @@ static PetscErrorCode AODataAliasDestroy_Private(AODataAlias *aliases)
 /*@C
   AODataAliasAdd - Man page needed.
 
-  Level: depreciated
+  Level: deprecated
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT AODataAliasAdd(AOData aodata,const char alias[],const char name[])
@@ -1189,7 +1189,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataAliasAdd(AOData aodata,const char alias[]
    Input Parameters:
 .  aodata - the database
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: destroy, database
 
@@ -1225,7 +1225,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataDestroy(AOData aodata)
 .  key  - the key to remap
 -  ao - the old to new ordering
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database remapping
 
@@ -1256,7 +1256,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyRemap(AOData aodata,const char key[],A
    Output Parameter:
 .  adj - the adjacency graph
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database, adjacency graph
 
@@ -1286,7 +1286,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyGetAdjacency(AOData aodata,const char 
 +   aodata - the database
 -   key - the key to be partitioned and renumbered
 
-   Level: depreciated
+   Level: deprecated
 
 .seealso: AODataKeyPartition(), AODataPartitionAndSetupLocal()
 
@@ -1320,7 +1320,7 @@ PetscErrorCode AODataPublish_Petsc(PetscObject obj)
 +  aodata - the database
 -  name - the name of the key
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database removal
 
@@ -1348,7 +1348,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyRemove(AOData aodata,const char name[]
 .  name - the name of the key
 -  segname - name of the segment
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database removal
 
@@ -1377,7 +1377,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentRemove(AOData aodata,const char na
 .  nlocal - number of indices to be associated with this processor
 -  N - the number of indices in the key
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database additions
 
@@ -1448,7 +1448,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeyAdd(AOData aodata,const char name[],Pe
 .  data    - the actual data
 -  dtype   - the data type (one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.)
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database additions
 
@@ -1494,7 +1494,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataSegmentAdd(AOData aodata,const char name[
 .  data - the actual data
 -  dtype - the data type, one of PETSC_INT, PETSC_DOUBLE, PETSC_SCALAR, etc.
 
-   Level: depreciated
+   Level: deprecated
 
 .keywords: database additions
 
