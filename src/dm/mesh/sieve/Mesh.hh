@@ -126,22 +126,30 @@ namespace ALE {
     typedef ALE::New::NumberingFactory<topology_type> NumberingFactory;
     typedef NumberingFactory::numbering_type          numbering_type;
     typedef NumberingFactory::order_type              order_type;
-    typedef struct {double rho,u,v,p;}                bc_value_type;
-    typedef std::map<int, bc_value_type>              bc_values_type;
     typedef base_type::send_overlap_type              send_overlap_type;
     typedef base_type::recv_overlap_type              recv_overlap_type;
     typedef base_type::send_section_type              send_section_type;
     typedef base_type::recv_section_type              recv_section_type;
+    // PCICE BC
+    typedef struct {double rho,u,v,p;}                bc_value_type;
+    typedef std::map<int, bc_value_type>              bc_values_type;
+    // PyLith BC
+    typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
   protected:
     int                   _dim;
     Obj<NumberingFactory> _factory;
+    // PCICE BC
     bc_values_type        _bcValues;
+    // PyLith BC
+    Obj<foliated_section_type> _boundaries;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > >(comm, debug), _dim(dim) {
       this->_factory = NumberingFactory::singleton(debug);
+      this->_boundaries = NULL;
     };
     Mesh(const Obj<topology_type>& topology, int dim) : Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > >(topology), _dim(dim) {
       this->_factory = NumberingFactory::singleton(topology->debug());
+      this->_boundaries = NULL;
     };
   public: // Accessors
     int getDimension() const {return this->_dim;};
@@ -178,6 +186,13 @@ namespace ALE {
           MPI_Bcast((void *) &funcVal, 4, MPI_DOUBLE, 0, this->comm());
         }
       }
+    };
+  public: // BC values for PyLith
+    const Obj<foliated_section_type>& getBoundariesNew() {
+      if (this->_boundaries.isNull()) {
+        this->_boundaries = new foliated_section_type(this->getTopology());
+      }
+      return this->_boundaries;
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {

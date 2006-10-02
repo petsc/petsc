@@ -11,31 +11,27 @@ PetscCookie PETSCDM_DLLEXPORT SECTIONPAIR_COOKIE = 0;
 PetscEvent  SectionPair_View = 0;
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionRealView_Sieve_Ascii"
-PetscErrorCode SectionRealView_Sieve_Ascii(SectionReal section, PetscViewer viewer)
+#define __FUNCT__ "SectionView_Sieve_Ascii"
+template<typename Section>
+PetscErrorCode SectionView_Sieve_Ascii(const Obj<Section>& s, const char name[], PetscViewer viewer)
 {
   // state 0: No header has been output
   // state 1: Only POINT_DATA has been output
   // state 2: Only CELL_DATA has been output
   // state 3: Output both, POINT_DATA last
   // state 4: Output both, CELL_DATA last
-  ALE::Obj<ALE::Mesh::real_section_type>  s;
-  ALE::Obj<ALE::Mesh::topology_type> topology;
+  const ALE::Obj<ALE::Mesh::topology_type>& topology = s->getTopology();
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = SectionRealGetTopology(section, topology);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
     static PetscInt   stateId     = -1;
     PetscInt          doOutput    = 0;
     PetscInt          outputState = 0;
     PetscTruth        hasState;
-    const char       *name;
 
-    ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
     if (stateId < 0) {
       ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
       ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, 0);CHKERRQ(ierr);
@@ -55,7 +51,7 @@ PetscErrorCode SectionRealView_Sieve_Ascii(SectionReal section, PetscViewer view
       } else if (outputState == 4) {
         SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
-      const ALE::Mesh::real_section_type::patch_type  patch     = topology->getPatches().begin()->first;
+      const typename Section::patch_type         patch     = topology->getPatches().begin()->first;
       const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, 0);
       PetscInt fiberDim = s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
 
@@ -77,7 +73,7 @@ PetscErrorCode SectionRealView_Sieve_Ascii(SectionReal section, PetscViewer view
       } else if (outputState == 4) {
         doOutput = 0;
       }
-      ALE::Mesh::real_section_type::patch_type patch = topology->getPatches().begin()->first;
+      const typename Section::patch_type         patch     = topology->getPatches().begin()->first;
       const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, topology->depth());
       PetscInt fiberDim = s->getFiberDimension(patch, *topology->heightStratum(patch, 0)->begin());
 
@@ -105,7 +101,12 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ierr = SectionRealView_Sieve_Ascii(section, viewer);CHKERRQ(ierr);
+    ALE::Obj<ALE::Mesh::real_section_type> s;
+    const char                            *name;
+
+    ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
@@ -517,88 +518,6 @@ PetscErrorCode MeshGetCellSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionIntView_Sieve_Ascii"
-PetscErrorCode SectionIntView_Sieve_Ascii(SectionInt section, PetscViewer viewer)
-{
-  // state 0: No header has been output
-  // state 1: Only POINT_DATA has been output
-  // state 2: Only CELL_DATA has been output
-  // state 3: Output both, POINT_DATA last
-  // state 4: Output both, CELL_DATA last
-  ALE::Obj<ALE::Mesh::int_section_type>  s;
-  ALE::Obj<ALE::Mesh::topology_type> topology;
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
-  ierr = SectionIntGetTopology(section, topology);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
-    static PetscInt   stateId     = -1;
-    PetscInt          doOutput    = 0;
-    PetscInt          outputState = 0;
-    PetscTruth        hasState;
-    const char       *name;
-
-    ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
-    if (stateId < 0) {
-      ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
-      ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, 0);CHKERRQ(ierr);
-    }
-    ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_VTK) {
-      if (outputState == 0) {
-        outputState = 1;
-        doOutput = 1;
-      } else if (outputState == 1) {
-        doOutput = 0;
-      } else if (outputState == 2) {
-        outputState = 3;
-        doOutput = 1;
-      } else if (outputState == 3) {
-        doOutput = 0;
-      } else if (outputState == 4) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
-      }
-      const ALE::Mesh::int_section_type::patch_type patch     = topology->getPatches().begin()->first;
-      const ALE::Obj<ALE::Mesh::numbering_type>&    numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, 0);
-      PetscInt fiberDim = s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
-
-      if (doOutput) {
-        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
-      }
-      VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
-    } else {
-      if (outputState == 0) {
-        outputState = 2;
-        doOutput = 1;
-      } else if (outputState == 1) {
-        outputState = 4;
-        doOutput = 1;
-      } else if (outputState == 2) {
-        doOutput = 0;
-      } else if (outputState == 3) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-      } else if (outputState == 4) {
-        doOutput = 0;
-      }
-      ALE::Mesh::int_section_type::patch_type    patch     = topology->getPatches().begin()->first;
-      const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, topology->depth());
-      PetscInt fiberDim = s->getFiberDimension(patch, *topology->heightStratum(patch, 0)->begin());
-
-      if (doOutput) {
-        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
-      }
-      VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
-    }
-    ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
-  } else {
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "SectionIntView_Sieve"
 PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 {
@@ -611,7 +530,12 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ierr = SectionIntView_Sieve_Ascii(section, viewer);CHKERRQ(ierr);
+    ALE::Obj<ALE::Mesh::int_section_type> s;
+    const char                           *name;
+
+    ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
@@ -1023,88 +947,6 @@ PetscErrorCode MeshGetCellSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt *s
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionPairView_Sieve_Ascii"
-PetscErrorCode SectionPairView_Sieve_Ascii(SectionPair section, PetscViewer viewer)
-{
-  // state 0: No header has been output
-  // state 1: Only POINT_DATA has been output
-  // state 2: Only CELL_DATA has been output
-  // state 3: Output both, POINT_DATA last
-  // state 4: Output both, CELL_DATA last
-  ALE::Obj<ALE::Mesh::pair_section_type>  s;
-  ALE::Obj<ALE::Mesh::topology_type> topology;
-  PetscViewerFormat format;
-  PetscErrorCode    ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscViewerGetFormat(viewer, &format);CHKERRQ(ierr);
-  ierr = SectionPairGetSection(section, s);CHKERRQ(ierr);
-  ierr = SectionPairGetTopology(section, topology);CHKERRQ(ierr);
-  if (format == PETSC_VIEWER_ASCII_VTK || format == PETSC_VIEWER_ASCII_VTK_CELL) {
-    static PetscInt   stateId     = -1;
-    PetscInt          doOutput    = 0;
-    PetscInt          outputState = 0;
-    PetscTruth        hasState;
-    const char       *name;
-
-    ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
-    if (stateId < 0) {
-      ierr = PetscObjectComposedDataRegister(&stateId);CHKERRQ(ierr);
-      ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, 0);CHKERRQ(ierr);
-    }
-    ierr = PetscObjectComposedDataGetInt((PetscObject) viewer, stateId, outputState, hasState);CHKERRQ(ierr);
-    if (format == PETSC_VIEWER_ASCII_VTK) {
-      if (outputState == 0) {
-        outputState = 1;
-        doOutput = 1;
-      } else if (outputState == 1) {
-        doOutput = 0;
-      } else if (outputState == 2) {
-        outputState = 3;
-        doOutput = 1;
-      } else if (outputState == 3) {
-        doOutput = 0;
-      } else if (outputState == 4) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
-      }
-      const ALE::Mesh::real_section_type::patch_type  patch     = topology->getPatches().begin()->first;
-      const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, 0);
-      //PetscInt fiberDim = s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
-
-      if (doOutput) {
-        ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
-      }
-      //FIX VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
-    } else {
-      if (outputState == 0) {
-        outputState = 2;
-        doOutput = 1;
-      } else if (outputState == 1) {
-        outputState = 4;
-        doOutput = 1;
-      } else if (outputState == 2) {
-        doOutput = 0;
-      } else if (outputState == 3) {
-        SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output CELL_DATA again after intervening POINT_DATA");
-      } else if (outputState == 4) {
-        doOutput = 0;
-      }
-      ALE::Mesh::real_section_type::patch_type patch = topology->getPatches().begin()->first;
-      const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, topology->depth());
-      //PetscInt fiberDim = s->getFiberDimension(patch, *topology->heightStratum(patch, 0)->begin());
-
-      if (doOutput) {
-        ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
-      }
-      //FIX VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
-    }
-    ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
-  } else {
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "SectionPairView_Sieve"
 PetscErrorCode SectionPairView_Sieve(SectionPair section, PetscViewer viewer)
 {
@@ -1117,7 +959,12 @@ PetscErrorCode SectionPairView_Sieve(SectionPair section, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ierr = SectionPairView_Sieve_Ascii(section, viewer);CHKERRQ(ierr);
+    ALE::Obj<ALE::Mesh::pair_section_type> s;
+    const char                            *name;
+
+    ierr = SectionPairGetSection(section, s);CHKERRQ(ierr);
+    ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+    //FIX ierr = SectionView_Sieve_Ascii(s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
