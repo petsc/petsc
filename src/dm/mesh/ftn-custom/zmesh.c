@@ -31,25 +31,21 @@ extern void PetscRmPointer(void*);
 #define meshdistribute_         MESHDISTRIBUTE
 #define meshview_               MESHVIEW
 #define meshgetvertexsectionreal_   MESHGETVERTEXSECTIONREAL
-#define cellsectioncreate_      CELLSECTIONCREATE
 #define restrictvector_         RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
 #define assemblevector_         ASSEMBLEVECTOR
 #define assemblematrix_         ASSEMBLEMATRIX
 #define writepcicerestart_      WRITEPCICERESTART
-#define sectioncomplete_        SECTIONCOMPLETE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE) && !defined(FORTRANDOUBLEUNDERSCORE)
 #define meshcreatepcice_        meshcreatepcice
 #define meshdistribute_         meshdistribute
 #define meshview_               meshview
 #define meshgetvertexsectionreal_   meshgetvertexsectionreal
-#define cellsectioncreate_      cellsectioncreate
 #define restrictvector_         restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
 #define assemblevector_         assemblevector
 #define assemblematrix_         assemblematrix
 #define writepcicerestart_      writepcicerestart
-#define sectioncomplete_        sectioncomplete
 #endif
 
 /* Definitions of Fortran Wrapper routines */
@@ -77,12 +73,6 @@ void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ier
 void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
   *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
 }
-void PETSC_STDCALL  cellsectioncreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), PetscInt *fiberDim, int *ierr PETSC_END_LEN(len)){
-  char *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = CellSectionCreate((Mesh) PetscToPointer(mesh), nF, *fiberDim);
-  FREECHAR(name,nF);
-}
 void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
 *__ierr = restrictVector(
 	(Vec)PetscToPointer((g) ),
@@ -103,12 +93,6 @@ void PETSC_STDCALL  assemblematrix_(Mat A,PetscInt *e,PetscScalar v[],InsertMode
 }
 void PETSC_STDCALL  writepcicerestart_(Mesh mesh, PetscViewer viewer, int *ierr){
   *ierr = WritePCICERestart((Mesh) PetscToPointer(mesh), (PetscViewer) PetscToPointer(viewer));
-}
-void PETSC_STDCALL  sectioncomplete_(Mesh mesh, CHAR name PETSC_MIXED_LEN(len), int *ierr PETSC_END_LEN(len)){
-  char *nF;
-  FIXCHAR(name,len,nF);
-  *ierr = SectionComplete((Mesh) PetscToPointer(mesh), nF);
-  FREECHAR(name,nF);
 }
 
 EXTERN_C_END

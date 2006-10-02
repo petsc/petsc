@@ -664,6 +664,65 @@ namespace ALE {
       };
     };
 
+    template<typename Value_>
+    class ParallelFactory {
+    public:
+      typedef Value_ value_type;
+    protected:
+      int          _debug;
+      MPI_Datatype _mpiType;
+    protected:
+      MPI_Datatype constructMPIType() {
+        if (sizeof(value_type) == 4) {
+          return MPI_INT;
+        } else if (sizeof(value_type) == 8) {
+          return MPI_DOUBLE;
+        } else if (sizeof(value_type) == 28) {
+          int          blen[2];
+          MPI_Aint     indices[2];
+          MPI_Datatype oldtypes[2], newtype;
+          blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_INT;
+          blen[1] = 3; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
+          MPI_Type_struct(2, blen, indices, oldtypes, &newtype);
+          MPI_Type_commit(&newtype);
+          return newtype;
+        } else if (sizeof(value_type) == 32) {
+          int          blen[2];
+          MPI_Aint     indices[2];
+          MPI_Datatype oldtypes[2], newtype;
+          blen[0] = 1; indices[0] = 0;           oldtypes[0] = MPI_DOUBLE;
+          blen[1] = 3; indices[1] = sizeof(int); oldtypes[1] = MPI_DOUBLE;
+          MPI_Type_struct(2, blen, indices, oldtypes, &newtype);
+          MPI_Type_commit(&newtype);
+          return newtype;
+        }
+        throw ALE::Exception("Cannot determine MPI type for value type");
+      };
+      ParallelFactory(const int debug) : _debug(debug) {
+        this->_mpiType = this->constructMPIType();
+      };
+    public:
+      ~ParallelFactory() {};
+    public:
+      static const Obj<ParallelFactory>& singleton(const int debug, bool cleanup = false) {
+        static Obj<ParallelFactory> *_singleton = NULL;
+
+        if (cleanup) {
+          if (debug) {std::cout << "Destroying ParallelFactory" << std::endl;}
+          if (_singleton) {delete _singleton;}
+          _singleton = NULL;
+        } else if (_singleton == NULL) {
+          if (debug) {std::cout << "Creating new ParallelFactory" << std::endl;}
+          _singleton  = new Obj<ParallelFactory>();
+          *_singleton = new ParallelFactory(debug);
+        }
+        return *_singleton;
+      };
+    public: // Accessors
+      int debug() const {return this->_debug;};
+      MPI_Datatype getMPIType() const {return this->_mpiType;};
+    };
+
     template<typename Topology_, typename Value_ = int>
     class NewNumbering : public UniformSection<Topology_, Value_> {
     public:
@@ -711,6 +770,7 @@ namespace ALE {
       virtual bool isLocal(const point_type& point) {return this->restrictPoint(0, point)[0] >= 0;};
       virtual bool isRemote(const point_type& point) {return this->restrictPoint(0, point)[0] < 0;};
       point_type getPoint(const int& index) {return this->_invOrder[index];};
+      void setPoint(const int& index, const point_type& point) {this->_invOrder[index] = point;};
     };
 
     template<typename Topology_>
@@ -775,7 +835,6 @@ namespace ALE {
     //   GlobalOrder       UniformSection
     //
     // We will use factory types to create objects which satisfy a given concept.
-    
     template<typename Topology_, typename Value_ = int>
     class NumberingFactory {
     public:
@@ -1044,7 +1103,7 @@ namespace ALE {
         const typename numbering_type::chart_type& patch = numbering->getAtlas()->getPatch(0);
 
         for(typename numbering_type::chart_type::iterator p_iter = patch.begin(); p_iter != patch.end(); ++p_iter) {
-          numbering->_invOrder[this->getIndex(*p_iter)] = *p_iter;
+          numbering->setPoint(numbering->getIndex(*p_iter), *p_iter);
         }
       };
     public:

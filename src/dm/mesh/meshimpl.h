@@ -37,7 +37,7 @@ struct _SectionRealOps {
 
 struct _p_SectionReal {
   PETSCHEADER(struct _SectionRealOps);
-  ALE::Obj<ALE::Mesh::section_type> s;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
 };
 
 extern PetscCookie SECTIONREAL_COOKIE;
@@ -46,8 +46,8 @@ extern PetscEvent SectionReal_View;
 typedef struct _SectionIntOps *SectionIntOps;
 struct _SectionIntOps {
   PetscErrorCode (*view)(SectionInt,PetscViewer);
-  PetscErrorCode (*restrict)(SectionInt,int,PetscScalar**);
-  PetscErrorCode (*update)(SectionInt,int,const PetscScalar*);
+  PetscErrorCode (*restrict)(SectionInt,int,PetscInt**);
+  PetscErrorCode (*update)(SectionInt,int,const PetscInt*);
 };
 
 struct _p_SectionInt {

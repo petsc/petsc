@@ -97,22 +97,11 @@ namespace ALE {
       numVertices = numVerts;
       *coordinates = coords;
     };
-    void Builder::buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]) {
-      const section_type::patch_type            patch    = 0;
-      const Obj<topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
-      const int numCells = coords->getTopology()->heightStratum(patch, 0)->size();
-
-      coords->setFiberDimensionByDepth(patch, 0, embedDim);
-      coords->allocate();
-      for(topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
-      }
-    };
     Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
       return readMesh(comm, dim, basename+".nodes", basename+".lcon", useZeroBase, interpolate, debug);
     };
     Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
-      Obj<Mesh>          mesh     = Mesh(comm, dim, debug);
+      Obj<Mesh>          mesh     = new Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
       Obj<topology_type> topology = new topology_type(comm, debug);
       int    *cells = NULL;
@@ -127,7 +116,7 @@ namespace ALE {
       topology->setPatch(0, sieve);
       topology->stratify();
       mesh->setTopology(topology);
-      buildCoordinates(mesh->getSection("coordinates"), dim, coordinates);
+      ALE::New::SieveBuilder<sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coordinates);
       if (cells) {ierr = PetscFree(cells);}
       if (coordinates) {ierr = PetscFree(coordinates);}
       return mesh;
@@ -146,13 +135,13 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
-      const Obj<Mesh::int_section_type>& ibc    = mesh->getBCSection("IBC");
-      const Obj<Mesh::int_section_type>& ibndfs = mesh->getBCSection("IBNDFS");
-      const Obj<Mesh::int_section_type>& ibcnum = mesh->getBCSection("IBCNUM");
-      const Obj<Mesh::section_type>&    bl     = mesh->getSection("BL");
-      const Obj<Mesh::section_type>&    bnvec  = mesh->getSection("BNVEC");
-      const Obj<Mesh::section_type>&    bnnv   = mesh->getSection("BNNV");
-      const Obj<Mesh::section_type>&    bcvec  = mesh->getSection("BCVEC");
+      const Obj<Mesh::int_section_type>& ibc    = mesh->getIntSection("IBC");
+      const Obj<Mesh::int_section_type>& ibndfs = mesh->getIntSection("IBNDFS");
+      const Obj<Mesh::int_section_type>& ibcnum = mesh->getIntSection("IBCNUM");
+      const Obj<Mesh::real_section_type>&    bl     = mesh->getRealSection("BL");
+      const Obj<Mesh::real_section_type>&    bnvec  = mesh->getRealSection("BNVEC");
+      const Obj<Mesh::real_section_type>&    bnnv   = mesh->getRealSection("BNNV");
+      const Obj<Mesh::real_section_type>&    bcvec  = mesh->getRealSection("BCVEC");
       if (mesh->commRank() != 0) {
         mesh->distributeBCValues();
         return;
@@ -285,8 +274,8 @@ namespace ALE {
       delete [] tmpIBNDFS;
     };
     void Builder::outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], const bool columnMajor) {
-      const Mesh::section_type::patch_type            patch      = 0;
-      const Obj<Mesh::section_type>&                  coordSec   = mesh->getSection("coordinates");
+      const Mesh::real_section_type::patch_type            patch      = 0;
+      const Obj<Mesh::real_section_type>&                  coordSec   = mesh->getRealSection("coordinates");
       if (!coordSec->hasPatch(patch)) {
         *numVertices = 0;
         *dim         = 0;
@@ -295,7 +284,7 @@ namespace ALE {
       }
       const Obj<Mesh::topology_type>&                 topology   = mesh->getTopology();
       const Obj<Mesh::topology_type::label_sequence>& vertices   = topology->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
+      const Obj<Mesh::numbering_type>&                vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
       int            size     = vertices->size();
       int            embedDim = coordSec->getFiberDimension(patch, *vertices->begin());
       double        *coords;
@@ -303,7 +292,7 @@ namespace ALE {
 
       ierr = PetscMalloc(vertices->size()*embedDim * sizeof(double), &coords);
       for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const Mesh::section_type::value_type *array = coordSec->restrict(patch, *v_iter);
+        const Mesh::real_section_type::value_type *array = coordSec->restrict(patch, *v_iter);
         const int                             row   = vNumbering->getIndex(*v_iter);
 
         if (columnMajor) {
@@ -331,8 +320,8 @@ namespace ALE {
       }
       const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
       const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                eNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, topology->depth());
-      const Obj<Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
+      const Obj<Mesh::numbering_type>&                eNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>&                vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
       int            size         = elements->size();
       //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
       int            corners      = sieve->cone(*elements->begin())->size();
@@ -364,7 +353,7 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteVertices"
     PetscErrorCode Viewer::writeVertices(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
-      ALE::Obj<ALE::Mesh::section_type> coordinates = mesh->getSection("coordinates");
+      ALE::Obj<ALE::Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
 #if 0
       ALE::Mesh::field_type::patch_type patch;
       const double  *array = coordinates->restrict(patch);
@@ -531,18 +520,18 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteVerticesLocal"
     PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
-      const Mesh::section_type::patch_type            patch       = 0;
-      Obj<Mesh::section_type>                         coordinates = mesh->getSection("coordinates");
+      const Mesh::real_section_type::patch_type            patch       = 0;
+      Obj<Mesh::real_section_type>                         coordinates = mesh->getRealSection("coordinates");
       const Obj<Mesh::topology_type>&                 topology    = mesh->getTopology();
       const Obj<Mesh::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
+      const Obj<Mesh::numbering_type>&                vNumbering  = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
       int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
       ierr = PetscViewerASCIIPrintf(viewer, "%D\n", vertices->size());CHKERRQ(ierr);
       for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const Mesh::section_type::value_type *array = coordinates->restrict(patch, *v_iter);
+        const Mesh::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
 
         PetscViewerASCIIPrintf(viewer, "%7D   ", vNumbering->getIndex(*v_iter)+1);
         for(int d = 0; d < embedDim; d++) {
@@ -558,13 +547,13 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteRestart"
     PetscErrorCode Viewer::writeRestart(const Obj<Mesh>& mesh, PetscViewer viewer) {
-      const Mesh::section_type::patch_type patch = 0;
-      const Obj<Mesh::section_type>&   velocity    = mesh->getSection("VELN");
-      const Obj<Mesh::section_type>&   pressure    = mesh->getSection("PN");
-      const Obj<Mesh::section_type>&   temperature = mesh->getSection("TN");
+      const Mesh::real_section_type::patch_type patch = 0;
+      const Obj<Mesh::real_section_type>&   velocity    = mesh->getRealSection("VELN");
+      const Obj<Mesh::real_section_type>&   pressure    = mesh->getRealSection("PN");
+      const Obj<Mesh::real_section_type>&   temperature = mesh->getRealSection("TN");
       const Obj<Mesh::topology_type>&  topology    = mesh->getTopology();
-      const Obj<Mesh::numbering_type>& cNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, topology->depth());
-      const Obj<Mesh::numbering_type>& vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, 0);
+      const Obj<Mesh::numbering_type>& cNumbering  = mesh->getFactory()->getNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>& vNumbering  = mesh->getFactory()->getNumbering(topology, patch, 0);
       const int                        numCells    = cNumbering->getGlobalSize();
       PetscErrorCode ierr;
 
@@ -582,9 +571,9 @@ namespace ALE {
 
         for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
-            const ALE::Mesh::section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
-            const ALE::Mesh::section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
-            const ALE::Mesh::section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::real_section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
 
             ierr = PetscViewerASCIIPrintf(viewer, "%6d% 16.8E% 16.8E% 16.8E% 16.8E\n", *v_iter-numCells+1, veln[0], veln[1], pn[0], tn[0]);CHKERRQ(ierr);
           }
@@ -610,9 +599,9 @@ namespace ALE {
         ierr = PetscMalloc(numLocalElements * sizeof(RestartType), &localValues);CHKERRQ(ierr);
         for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
-            const ALE::Mesh::section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
-            const ALE::Mesh::section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
-            const ALE::Mesh::section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::real_section_type::value_type *veln = velocity->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(patch, *v_iter);
+            const ALE::Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(patch, *v_iter);
 
             localValues[k].vertex = *v_iter;
             localValues[k].veln_x = veln[0];

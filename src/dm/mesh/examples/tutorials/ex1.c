@@ -58,13 +58,9 @@ typedef struct {
   char           partitioner[2048];  // The partitioner name
   PetscTruth     interpolate;        // Construct missing elements of the mesh
   PetscTruth     doPartition;        // Construct field over cells indicating process number
-  SectionReal    partition;          // Section with partition number in each cell
-  PetscTruth     doMaterial;         // Construct field over cells indicating material type
-  SectionReal    material;           // Section with material number in each cell
-  SectionPair    split;              // Section with split node values in fault cells
-  SectionReal    traction;           // Section with tractions in boundary cells
+  SectionInt     partition;          // Section with partition number in each cell
   PetscTruth     doOdd;              // Construct field over odd cells indicating process number
-  SectionReal    odd;                // Section with cell number in each odd cell
+  SectionInt     odd;                // Section with cell number in each odd cell
 } Options;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView_Sieve(const Obj<ALE::Mesh>&, PetscViewer);
@@ -75,6 +71,7 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
 {
   MPI_Comm       comm;
   PetscViewer    viewer;
+  PetscTruth     flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -90,17 +87,21 @@ PetscErrorCode OutputVTK(Mesh mesh, Options *options)
     ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
     if (options->doPartition) {
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-      ierr = SectionRealView(options->partition, viewer);CHKERRQ(ierr);
+      ierr = SectionIntView(options->partition, viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
-    if (options->doMaterial) {
+    ierr = MeshHasSectionInt(mesh, "material", &flag);CHKERRQ(ierr);
+    if (flag) {
+      SectionInt material;
+
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-      ierr = SectionRealView(options->material, viewer);CHKERRQ(ierr);
+      ierr = MeshGetSectionInt(mesh, "material", &material);CHKERRQ(ierr);
+      ierr = SectionIntView(material, viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
     if (options->odd) {
       ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
-      ierr = SectionRealView(options->odd, viewer);CHKERRQ(ierr);
+      ierr = SectionIntView(options->odd, viewer);CHKERRQ(ierr);
       ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
@@ -161,20 +162,21 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
 #undef __FUNCT__
 #define __FUNCT__ "CreatePartition"
 // Creates a field whose value is the processor rank on each element
-PetscErrorCode CreatePartition(Mesh mesh, SectionReal *partition)
+PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 {
-  Obj<ALE::Mesh::section_type> section;
+  Obj<ALE::Mesh::int_section_type> section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
-  ierr = MeshGetCellSectionReal(mesh, 1, partition);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(*partition, section);CHKERRQ(ierr);
-  const ALE::Mesh::section_type::patch_type                patch    = 0;
+  ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *partition, "partition");CHKERRQ(ierr);
+  ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
+  const ALE::Mesh::int_section_type::patch_type            patch    = 0;
   const Obj<ALE::Mesh::topology_type>&                     topology = section->getTopology();
   const Obj<ALE::Mesh::topology_type::label_sequence>&     cells    = topology->heightStratum(patch, 0);
   const ALE::Mesh::topology_type::label_sequence::iterator end      = cells->end();
-  const ALE::Mesh::section_type::value_type                rank     = section->commRank();
+  const ALE::Mesh::int_section_type::value_type            rank     = section->commRank();
 
   for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     section->updatePoint(patch, *c_iter, &rank);
@@ -188,6 +190,7 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionReal *partition)
 PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
 {
   Obj<ALE::Mesh> m;
+  PetscTruth     flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -196,36 +199,19 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(m->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    m    = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(m, std::string(options->partitioner));
+    m    = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(m, std::string(options->partitioner));
     ALE::LogStagePop(stage);
     ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
   }
-  if (options->doMaterial) {
-    SectionReal parallelMaterial;
-
-    ierr = SectionRealDistribute(options->material, mesh, &parallelMaterial);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(options->material);CHKERRQ(ierr);
-    options->material = parallelMaterial;
-  }
-  if (options->split) {
-    SectionPair parallelSplit;
-
-    ierr = SectionPairDistribute(options->split, mesh, &parallelSplit);CHKERRQ(ierr);
-    ierr = SectionPairDestroy(options->split);CHKERRQ(ierr);
-    options->split = parallelSplit;
+  ierr = MeshHasSectionPair(mesh, "split", &flag);CHKERRQ(ierr);
+  if (flag) {
+    SectionPair                       split;
     Obj<ALE::Mesh::pair_section_type> section;
-    ierr = SectionPairGetSection(parallelSplit, section);CHKERRQ(ierr);
-    section->view("Parallel split section");
-  }
-  if (options->traction) {
-    SectionReal parallelTraction;
 
-    ierr = SectionRealDistribute(options->traction, mesh, &parallelTraction);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(options->traction);CHKERRQ(ierr);
-    options->traction = parallelTraction;
-    Obj<ALE::Mesh::section_type> section;
-    ierr = SectionRealGetSection(parallelTraction, section);CHKERRQ(ierr);
-    section->view("Parallel traction section");
+    ierr = MeshGetSectionPair(mesh, "split", &split);CHKERRQ(ierr);
+    ierr = SectionPairGetSection(split, section);CHKERRQ(ierr);
+    section->view("Parallel split section");
+    ierr = SectionPairDestroy(split);CHKERRQ(ierr);
   }
   if (options->doPartition) {
     ierr = CreatePartition(mesh, &options->partition);CHKERRQ(ierr);
@@ -236,7 +222,7 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
 #undef __FUNCT__
 #define __FUNCT__ "CreateOdd"
 // Creates a field whose value is the element number on each element with an odd number
-PetscErrorCode CreateOdd(Mesh mesh, SectionReal *odd)
+PetscErrorCode CreateOdd(Mesh mesh, SectionInt *odd)
 {
   Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
@@ -244,9 +230,9 @@ PetscErrorCode CreateOdd(Mesh mesh, SectionReal *odd)
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealCreate(m->comm(), odd);CHKERRQ(ierr);
+  ierr = SectionIntCreate(m->comm(), odd);CHKERRQ(ierr);
   const Obj<ALE::Mesh::int_section_type>&              section = new ALE::Mesh::int_section_type(m->getTopology());
-  const ALE::Mesh::section_type::patch_type            patch   = 0;
+  const ALE::Mesh::int_section_type::patch_type        patch   = 0;
   const Obj<ALE::Mesh::topology_type::label_sequence>& cells   = m->getTopology()->heightStratum(patch, 0);
   ALE::Mesh::topology_type::label_sequence::iterator   begin   = cells->begin();
   ALE::Mesh::topology_type::label_sequence::iterator   end     = cells->end();
@@ -268,7 +254,7 @@ PetscErrorCode CreateOdd(Mesh mesh, SectionReal *odd)
       section->updatePoint(patch, num, val);
     }
   }
-  //FIX ierr = SectionRealSetSection(*odd, section);CHKERRQ(ierr);
+  ierr = SectionIntSetSection(*odd, section);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
 }
@@ -288,24 +274,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   if (options->inputFileType == PCICE) {
     m = ALE::PCICE::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
   } else if (options->inputFileType == PYLITH) {
-    Obj<ALE::Mesh::section_type> material = new ALE::Mesh::section_type(comm, options->debug);
-
-    m    = ALE::PyLith::Builder::readMesh(material, options->dim, options->baseFilename, options->useZeroBase, options->interpolate);
-    ierr = SectionRealCreate(comm, &options->material);CHKERRQ(ierr);
-    ierr = SectionRealSetSection(options->material, material);CHKERRQ(ierr);
-    Obj<ALE::Mesh::pair_section_type> split = ALE::PyLith::Builder::createSplit(m, options->baseFilename, options->useZeroBase);
-
-    if (!split.isNull()) {
-      ierr = SectionPairCreate(comm, &options->split);CHKERRQ(ierr);
-      ierr = SectionPairSetSection(options->split, split);CHKERRQ(ierr);
-      split->view("Split section");
-    }
-    Obj<ALE::Mesh::section_type> traction = ALE::PyLith::Builder::createTraction(m, options->baseFilename, options->useZeroBase);
-    if (!traction.isNull()) {
-      ierr = SectionRealCreate(comm, &options->traction);CHKERRQ(ierr);
-      ierr = SectionRealSetSection(options->traction, traction);CHKERRQ(ierr);
-      traction->view("Traction section");
-    }
+    m = ALE::PyLith::Builder::readMesh(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
   } else {
     SETERRQ1(PETSC_ERR_ARG_WRONG, "Invalid mesh input type: %d", options->inputFileType);
   }
@@ -319,6 +288,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   }
   if (options->doOdd) {
     ierr = CreateOdd(*mesh, &options->odd);CHKERRQ(ierr);
+  }
+
+  PetscTruth flag;
+  ierr = MeshHasSectionPair(*mesh, "split", &flag);CHKERRQ(ierr);
+  if (flag) {
+    SectionPair                       split;
+    Obj<ALE::Mesh::pair_section_type> section;
+
+    ierr = MeshGetSectionPair(*mesh, "split", &split);CHKERRQ(ierr);
+    ierr = SectionPairGetSection(split, section);CHKERRQ(ierr);
+    section->view("Serial split section");
+    ierr = SectionPairDestroy(split);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -347,10 +328,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->interpolate    = PETSC_TRUE;
   options->doPartition    = PETSC_TRUE;
   options->partition      = PETSC_NULL;
-  options->doMaterial     = PETSC_TRUE;
-  options->material       = PETSC_NULL;
-  options->split          = PETSC_NULL;
-  options->traction       = PETSC_NULL;
   options->doOdd          = PETSC_FALSE;
   options->odd            = PETSC_NULL;
 
@@ -371,7 +348,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsString("-partitioner", "The partitioner name", "ex1.c", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "ex1.c", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-partition", "Create the partition field", "ex1.c", options->doPartition, &options->doPartition, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-material", "Create the material field", "ex1.c", options->doMaterial, &options->doMaterial, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-odd", "Create the odd field", "ex1.c", options->doOdd, &options->doOdd, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
@@ -380,9 +356,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     options->outputFileType = (FileType) outputFt;
   } else {
     options->outputFileType = options->inputFileType;
-  }
-  if (options->doMaterial && options->inputFileType != PYLITH) {
-    options->doMaterial = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }

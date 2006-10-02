@@ -32,6 +32,7 @@ namespace ALE {
     MPI_Comm    _comm;
     int         _commRank;
     int         _commSize;
+    std::string _name;
     PetscObject _petscObj;
     void __init(MPI_Comm comm) {
       static PetscCookie objType = -1;
@@ -57,12 +58,14 @@ namespace ALE {
       }
     };
   public:
-    int         debug()    const {return this->_debug;};
-    void        setDebug(const int debug) {this->_debug = debug;};
-    MPI_Comm    comm()     const {return this->_comm;};
-    int         commSize() const {return this->_commSize;};
-    int         commRank() const {return this->_commRank;}
-    PetscObject petscObj() const {return this->_petscObj;};
+    int                debug()    const {return this->_debug;};
+    void               setDebug(const int debug) {this->_debug = debug;};
+    MPI_Comm           comm()     const {return this->_comm;};
+    int                commSize() const {return this->_commSize;};
+    int                commRank() const {return this->_commRank;}
+    PetscObject        petscObj() const {return this->_petscObj;};
+    const std::string& getName() const {return this->_name;};
+    void               setName(const std::string& name) {this->_name = name;};
   };
 
   namespace New {
@@ -263,6 +266,7 @@ namespace ALE {
         const Obj<typename Section::topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
         const int numCells = coords->getTopology()->heightStratum(patch, 0)->size();
 
+        coords->setName("coordinates");
         coords->setFiberDimensionByDepth(patch, 0, embedDim);
         coords->allocate();
         for(typename Section::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {

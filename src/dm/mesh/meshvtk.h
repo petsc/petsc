@@ -25,9 +25,9 @@ class VTKViewer {
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteVertices"
   static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::topology_type::patch_type& patch, PetscViewer viewer) {
-    const Obj<ALE::Mesh::section_type>&   coordinates = mesh->getSection("coordinates");
-    const Obj<ALE::Mesh::topology_type>&  topology    = coordinates->getTopology();
-    const Obj<ALE::Mesh::numbering_type>& vNumbering  = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, 0);
+    const Obj<ALE::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+    const Obj<ALE::Mesh::topology_type>&     topology    = coordinates->getTopology();
+    const Obj<ALE::Mesh::numbering_type>&    vNumbering  = mesh->getFactory()->getNumbering(topology, patch, 0);
     const int      embedDim = coordinates->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
     PetscErrorCode ierr;
 
@@ -39,7 +39,8 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteField"
-  static PetscErrorCode writeField(const Obj<ALE::Mesh::section_type>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer) {
+  template<typename Section>
+  static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer) {
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -55,23 +56,30 @@ class VTKViewer {
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteSection"
-  static PetscErrorCode writeSection(const Obj<ALE::Mesh::section_type>& field, const ALE::Mesh::topology_type::patch_type& patch, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
-    const ALE::Mesh::section_type::value_type *array = field->restrict(patch);
-    const ALE::Obj<ALE::Mesh::atlas_type>&     atlas = field->getAtlas();
-    const ALE::Mesh::atlas_type::chart_type&   chart = atlas->getPatch(patch);
+  template<typename Section>
+  static PetscErrorCode writeSection(const Obj<Section>& field, const ALE::Mesh::topology_type::patch_type& patch, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
+    const typename Section::value_type             *array = field->restrict(patch);
+    const ALE::Obj<typename Section::atlas_type>&   atlas = field->getAtlas();
+    const typename Section::atlas_type::chart_type& chart = atlas->getPatch(patch);
+    const MPI_Datatype                              mpiType = ALE::New::ParallelFactory<typename Section::value_type>::singleton(field->debug())->getMPIType();
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
     if (field->commRank() == 0) {
-      for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
+      std::cout << "Outputing field" << std::endl;
+      for(typename Section::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const typename Section::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
 
         if (idx.prefix > 0) {
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer, "%G", array[idx.index+d]);CHKERRQ(ierr);
+            if (mpiType == MPI_INT) {
+              ierr = PetscViewerASCIIPrintf(viewer, "%d", array[idx.index+d]);CHKERRQ(ierr);
+            } else {
+              ierr = PetscViewerASCIIPrintf(viewer, "%G", array[idx.index+d]);CHKERRQ(ierr);
+            }
           }
           for(int d = fiberDim; d < enforceDim; d++) {
             ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
@@ -80,19 +88,23 @@ class VTKViewer {
         }
       }
       for(int p = 1; p < field->commSize(); p++) {
-        ALE::Mesh::section_type::value_type *remoteValues;
-        int        numLocalElements;
-        MPI_Status status;
+        typename Section::value_type *remoteValues;
+        int                           numLocalElements;
+        MPI_Status                    status;
 
         ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
-        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &remoteValues);CHKERRQ(ierr);
-        ierr = MPI_Recv(remoteValues, numLocalElements*fiberDim, MPI_DOUBLE, p, 1, field->comm(), &status);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(typename Section::value_type), &remoteValues);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteValues, numLocalElements*fiberDim, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElements; e++) {
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
-            ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+            if (mpiType == MPI_INT) {
+              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+            } else {
+              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+            }
           }
           for(int d = fiberDim; d < enforceDim; d++) {
             ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
@@ -101,13 +113,13 @@ class VTKViewer {
         }
       }
     } else {
-      ALE::Mesh::section_type::value_type *localValues;
+      typename Section::value_type *localValues;
       int numLocalElements = numbering->getLocalSize();
       int k = 0;
 
-      ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(ALE::Mesh::section_type::value_type), &localValues);CHKERRQ(ierr);
-      for(ALE::Mesh::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const ALE::Mesh::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
+      ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(typename Section::value_type), &localValues);CHKERRQ(ierr);
+      for(typename Section::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const typename Section::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
         const int& dim    = idx.prefix;
         const int& offset = idx.index;
 
@@ -121,7 +133,7 @@ class VTKViewer {
         SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, numLocalElements*fiberDim);
       }
       ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
-      ierr = MPI_Send(localValues, numLocalElements*fiberDim, MPI_DOUBLE, 0, 1, field->comm());CHKERRQ(ierr);
+      ierr = MPI_Send(localValues, numLocalElements*fiberDim, mpiType, 0, 1, field->comm());CHKERRQ(ierr);
       ierr = PetscFree(localValues);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
@@ -156,8 +168,8 @@ class VTKViewer {
     const Obj<ALE::Mesh::topology_type>&                 topology   = mesh->getTopology();
     const Obj<ALE::Mesh::sieve_type>&                    sieve   = mesh->getTopology()->getPatch(patch);
     const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = mesh->getTopology()->heightStratum(patch, 0);
-    const Obj<ALE::Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, 0);
-    const Obj<ALE::Mesh::numbering_type>&                cNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, patch, topology->depth());
+    const Obj<ALE::Mesh::numbering_type>&                vNumbering = mesh->getFactory()->getNumbering(topology, patch, 0);
+    const Obj<ALE::Mesh::numbering_type>&                cNumbering = mesh->getFactory()->getNumbering(topology, patch, topology->depth());
     //int            corners = sieve->nCone(*elements->begin(), mesh->getTopology()->depth())->size();
     int            corners = sieve->cone(*elements->begin())->size();
     int            numElements;
@@ -229,7 +241,7 @@ class VTKViewer {
     const Obj<ALE::Mesh::topology_type>&        topology    = mesh->getTopology();
     const ALE::Mesh::topology_type::sheaf_type& patches     = topology->getPatches();
     const ALE::Mesh::topology_type::patch_type  firstPatch  = patches.begin()->first;
-    const Obj<ALE::Mesh::section_type>&    coordinates = mesh->getSection("coordinates");
+    const Obj<ALE::Mesh::real_section_type>&    coordinates = mesh->getRealSection("coordinates");
     const int      embedDim    = coordinates->getFiberDimension(firstPatch, *topology->depthStratum(firstPatch, 0)->begin());
     int            totalPoints = 0;
     PetscErrorCode ierr;
@@ -246,7 +258,7 @@ class VTKViewer {
         const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
 
         for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-          const ALE::Mesh::section_type::value_type *array = coordinates->restrictPoint(firstPatch, *v_iter);
+          const ALE::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(firstPatch, *v_iter);
 
           for(int d = 0; d < embedDim; d++) {
             if (d > 0) {
@@ -286,7 +298,7 @@ class VTKViewer {
         const ALE::Mesh::topology_type::patch_type           patch      = p_iter->first;
         const Obj<ALE::Mesh::topology_type::sieve_type>&     sieve      = topology->getPatch(patch);
         const Obj<ALE::Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
-        const Obj<ALE::Mesh::numbering_type>&                vNumbering = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getLocalNumbering(topology, patch, 0);
+        const Obj<ALE::Mesh::numbering_type>&                vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
         const int                                            depth      = topology->depth(patch);
 
         for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
