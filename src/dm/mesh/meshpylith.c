@@ -779,8 +779,11 @@ namespace ALE {
         const section_type::value_type *values = tractionField->restrict(patch, face);
 
         for(int i = 0; i < mesh->getDimension(); ++i) {
-          if (i > 0) std::cout << " ";
-          ierr = PetscViewerASCIIPrintf(viewer, "%15.9g %15.9g %15.9g", values[i]);CHKERRQ(ierr);
+          if (i > 0) {
+            ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+            std::cout << " ";
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "%15.9g", values[i]);CHKERRQ(ierr);
           std::cout << values[i];
         }
         ierr = PetscViewerASCIIPrintf(viewer,"\n");CHKERRQ(ierr);

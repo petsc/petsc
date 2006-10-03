@@ -3,21 +3,11 @@ import user
 import importer
 import script
 
-class P1(script.Script):
-  def __init__(self, shape = None, order = 1, filename = ''):
+class QuadratureGenerator(script.Script):
+  def __init__(self):
     script.Script.__init__(self)
-    self.setupPaths()
-    import Cxx, CxxHelper
-    import FIAT.shapes
     import os
-
-    if shape is None:
-      shape = FIAT.shapes.TRIANGLE
-    self.Cxx      = CxxHelper.Cxx()
-    self.baseDir  = os.getcwd()
-    self.shape    = shape
-    self.order    = order
-    self.filename = filename
+    self.baseDir = os.getcwd()
     return
 
   def setupPaths(self):
@@ -27,6 +17,13 @@ class P1(script.Script):
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'fiat-0.2.3'))
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'ffc-0.2.3'))
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'Generator'))
+    return
+
+  def setup(self):
+    script.Script.setup(self)
+    self.setupPaths()
+    import Cxx, CxxHelper
+    self.Cxx = CxxHelper.Cxx()
     return
 
   def createElement(self, shape, k):
@@ -54,24 +51,21 @@ class P1(script.Script):
     arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
 
-  def getQuadratureStructs(self, degree, quadrature, mangle = 1):
+  def getQuadratureStructs(self, degree, quadrature, num):
     '''Return C arrays with the quadrature points and weights
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
 
     self.logPrint('Generating quadrature structures for degree '+str(degree))
+    ext = '_'+str(num)
     numPoints = Define()
-    numPoints.identifier = 'NUM_QUADRATURE_POINTS'
+    numPoints.identifier = 'NUM_QUADRATURE_POINTS'+ext
     numPoints.replacementText = str(len(quadrature.get_points()))
-    if mangle:
-      ext = str(degree)
-    else:
-      ext = ''
     return [numPoints,
             self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)'),
             self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)')]
 
-  def getBasisStructs(self, name, element, quadrature, mangle = 1):
+  def getBasisStructs(self, name, element, quadrature, num):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
@@ -81,17 +75,12 @@ class P1(script.Script):
     points = quadrature.get_points()
     basis = element.function_space()
     dim = FIAT.shapes.dimension(basis.base.shape)
+    ext = '_'+str(num)
     numFunctions = Define()
-    numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'
+    numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
     numFunctions.replacementText = str(len(basis))
-    if mangle:
-      basisName = name+'Basis'+str(quadrature.degree)
-      basisDerName = name+'BasisDerivatives'+str(quadrature.degree)
-    else:
-      basisName = name+'Basis'
-      basisDerName = name+'BasisDerivatives'
-
-    
+    basisName = name+'Basis'+ext
+    basisDerName = name+'BasisDerivatives'+ext
     return [numFunctions,
             self.getArray(self.Cxx.getVar(basisName), Numeric.transpose(basis.tabulate(points)), 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
             self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
@@ -114,32 +103,31 @@ class P1(script.Script):
     header.purpose    = CodePurpose.SKELETON
     return header
 
-  def getElementSource(self, shape, k, filename):
+  def getElementSource(self, elements):
     from Compiler import CompilerException
 
     self.logPrint('Generating element module')
-    source = {'Cxx': []}
     try:
       defns = []
-      for quadrature in [self.createQuadrature(shape, 2*k+1)]:
-        defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, mangle = 0))
-      for element, quadrature in [(self.createElement(shape, k), self.createQuadrature(shape, 2*k+1))]:
-        #name = element.family+str(element.n)
-        name = ''
-        defns.extend(self.getBasisStructs(name, element, quadrature, mangle = 0))
-      source['Cxx'].append(self.getQuadratureFile(filename, defns))
+      for n, (shape, k) in enumerate(elements):
+        for quadrature in [self.createQuadrature(shape, 2*k+1)]:
+          defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
+        for element, quadrature in [(self.createElement(shape, k), self.createQuadrature(shape, 2*k+1))]:
+          #name = element.family+str(element.n)
+          name = ''
+          defns.extend(self.getBasisStructs(name, element, quadrature, n))
     except CompilerException, e:
       print e
       raise RuntimeError('Quadrature source generation failed')
-    return source
+    return defns
 
-  def outputElementSource(self, shape, k, filename):
+  def outputElementSource(self, defns, filename = ''):
     from Compiler import CodePurpose
     import CxxVisitor
 
     # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
-    outputs = {'Cxx':CxxVisitor.Output()}
-    source  = self.getElementSource(shape, k, filename)
+    source = {'Cxx': [self.getQuadratureFile(filename, defns)]}
+    outputs = {'Cxx': CxxVisitor.Output()}
     self.logPrint('Writing element source')
     for language,output in outputs.items():
       output.setRoot(CodePurpose.STUB, self.baseDir)
@@ -151,14 +139,15 @@ class P1(script.Script):
           self.logPrint('Created '+str(language)+' file '+str(f))
       except RuntimeError, e:
         print e
-    del source
     return
-  
+
   def run(self):
     self.setup()
-    self.logPrint('Making a P1 element')
-    self.outputElementSource(self.shape, self.order, self.filename)
+    import FIAT.shapes
+    order = 1
+    self.logPrint('Making a P'+str(order)+' element')
+    self.outputElementSource(self.getElementSource([(self.shape, self.order)]))
     return
 
 if __name__ == '__main__':
-  P1().run()
+  QuadratureGenerator().run()
