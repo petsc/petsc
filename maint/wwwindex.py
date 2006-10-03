@@ -285,12 +285,12 @@ def main():
       dirs      = glob.glob(LOC + '/docs/manualpages/*')
       mandirs   = getallmandirs(dirs)
 
-      levels = ['beginner','intermediate','advanced','developer','depreciated','none']
+      levels = ['beginner','intermediate','advanced','developer','deprecated','none']
       titles = ['Beginner - Basic usage',
                 'Intermediate - Setting options for algorithms and data structures', 
                 'Advanced - Setting more advanced options and customization',
-                'Depreciated - Functionality scheduled for removal in future versions',
                 'Developer - Interfaces intended primarily for library developers, not for typical applications programmers',
+                'Deprecated - Functionality scheduled for removal in future versions',
                 'None: Not yet cataloged']
 
       singlelist = []

@@ -424,10 +424,10 @@ namespace ALE {
     
 
     // depricated methods/operators
-    X* ptr()      {return objPtr;};
-    X* pointer()  {return objPtr;};
-    X  obj()      {assertNull(false); return *objPtr;};
-    X  object()   {assertNull(false); return *objPtr;};
+    X* ptr() const     {return objPtr;};
+    X* pointer() const {return objPtr;};
+    X  obj() const     {assertNull(false); return *objPtr;};
+    X  object() const  {assertNull(false); return *objPtr;};
     
   };// class Obj<X>
 

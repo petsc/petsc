@@ -189,7 +189,7 @@ PetscErrorCode CreateSquareBoundary(const ALE::Obj<ALE::Mesh>& mesh)
   sieve->stratify();
   topology->setPatch(patch, sieve);
   topology->stratify();
-  mesh->setTopologyNew(topology);
+  mesh->setTopology(topology);
   ALE::PyLith::Builder::buildCoordinates(mesh->getSection("coordinates"), dim+1, coords);
   /* Create boundary conditions */
   if (mesh->commRank() == 0) {
@@ -358,7 +358,7 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, ALE::Obj<ALE::Mesh>& meshBounda
   if (options->inputBd) {
     meshBoundary = ALE::PCICE::Builder::readMeshBoundary(comm, options->dim, options->baseFilename, options->useZeroBase, options->interpolate, options->debug);
     if (meshBoundary->commRank() == 0) {
-      const Obj<ALE::Mesh::topology_type>&                   topology = meshBoundary->getTopologyNew();
+      const Obj<ALE::Mesh::topology_type>&                   topology = meshBoundary->getTopology();
       const Obj<ALE::Mesh::topology_type::label_sequence>&   vertices = topology->depthStratum(0, 0);
       const Obj<ALE::Mesh::topology_type::label_sequence>&   edges    = topology->depthStratum(0, 1);
       const Obj<ALE::Mesh::topology_type::patch_label_type>& markers  = topology->createLabel(0, "marker");
@@ -397,7 +397,7 @@ PetscErrorCode CreateMesh(const Obj<ALE::Mesh>& meshBoundary, Obj<ALE::Mesh>& me
   ierr = PetscPrintf(meshBoundary->comm(), "Generating mesh\n");CHKERRQ(ierr);
   mesh = ALE::Generator::generateMesh(meshBoundary, options->interpolate);
   ALE::LogStagePop(stage);
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   ierr = PetscPrintf(mesh->comm(), "  Made %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
   ierr = PetscPrintf(mesh->comm(), "  Made %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
   if (options->debug) {

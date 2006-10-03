@@ -32,9 +32,9 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   const int debug = mesh->debug;
 
   PetscFunctionBegin;
-  Obj<send_overlap_type> cellOverlap   = sieveCompletion::sendDistribution(mesh->getTopologyNew(), dim, meshNew->getTopologyNew());
+  Obj<send_overlap_type> cellOverlap   = sieveCompletion::sendDistribution(mesh->getTopology(), dim, meshNew->getTopology());
   Obj<send_overlap_type> vertexOverlap = new send_overlap_type(mesh->comm(), debug);
-  Obj<ALE::Mesh::sieve_type> sieve = mesh->getTopologyNew()->getPatch(0);
+  Obj<ALE::Mesh::sieve_type> sieve = mesh->getTopology()->getPatch(0);
   const Obj<send_overlap_type::traits::capSequence> cap = cellOverlap->cap();
 
   for(send_overlap_type::traits::baseSequence::iterator p_iter = cap->begin(); p_iter != cap->end(); ++p_iter) {
@@ -54,14 +54,14 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   const Obj<ALE::Mesh::section_type> coordinatesNew = meshNew->getSection("coordinates");
   const Obj<send_section_type>       sendCoords     = new send_section_type(mesh->comm(), debug);
   const Obj<CoordFiller>             coordFiller    = new CoordFiller(coordinates, patch);
-  const int embedDim = coordinates->getAtlas()->getFiberDimension(patch, *mesh->getTopologyNew()->depthStratum(patch, 0)->begin());
+  const int embedDim = coordinates->getAtlas()->getFiberDimension(patch, *mesh->getTopology()->depthStratum(patch, 0)->begin());
   const Obj<sectionCompletion::constant_sizer> constantSizer = new sectionCompletion::constant_sizer(MPI_COMM_SELF, embedDim, debug);
 
   sectionCompletion::sendSection(vertexOverlap, constantSizer, coordFiller, sendCoords);
   coordinatesNew->getAtlas()->setFiberDimensionByDepth(patch, 0, embedDim);
   coordinatesNew->getAtlas()->orderPatches();
   coordinatesNew->allocate();
-  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = mesh->getTopologyNew()->depthStratum(patch, 0);
+  const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = mesh->getTopology()->depthStratum(patch, 0);
 
   for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     coordinatesNew->update(patch, *v_iter, coordinates->restrict(patch, *v_iter));
@@ -72,9 +72,9 @@ PetscErrorCode SendDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
 PetscErrorCode ReceiveDistribution(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>& meshNew)
 {
   PetscFunctionBegin;
-  Obj<recv_overlap_type> cellOverlap   = sieveCompletion::receiveDistribution(mesh->getTopologyNew(), meshNew->getTopologyNew());
+  Obj<recv_overlap_type> cellOverlap   = sieveCompletion::receiveDistribution(mesh->getTopology(), meshNew->getTopology());
   Obj<recv_overlap_type> vertexOverlap = new recv_overlap_type(mesh->comm(), mesh->debug);
-  Obj<ALE::Mesh::sieve_type> sieveNew = meshNew->getTopologyNew()->getPatch(0);
+  Obj<ALE::Mesh::sieve_type> sieveNew = meshNew->getTopology()->getPatch(0);
   const Obj<send_overlap_type::traits::baseSequence> base = cellOverlap->base();
 
   for(send_overlap_type::traits::baseSequence::iterator p_iter = base->begin(); p_iter != base->end(); ++p_iter) {
@@ -123,7 +123,7 @@ PetscErrorCode DistributionTest(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   const Obj<ALE::Mesh::sieve_type>&    sieve    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug);
 
   topology->setPatch(0, sieve);
-  meshNew->setTopologyNew(topology);
+  meshNew->setTopology(topology);
   if (mesh->commRank() == 0) {
     ierr = SendDistribution(mesh, meshNew);CHKERRQ(ierr);
   } else {
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
     Obj<ALE::Mesh> meshNew = new ALE::Mesh(comm, options.dim, options.debug);
 
     if (options.debug) {
-      mesh->getTopologyNew()->view("Mesh");
+      mesh->getTopology()->view("Mesh");
     }
     ierr = DistributionTest(mesh, meshNew, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {

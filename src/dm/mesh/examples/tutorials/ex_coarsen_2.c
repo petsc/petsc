@@ -3,6 +3,7 @@
 #include "Coarsener.h"
 //#include "tree_mis.h"
 #include "src/dm/mesh/meshvtk.h"
+#include "fast_coarsen.h"
 
 using ALE::Obj;
 
@@ -56,7 +57,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   ALE::Coarsener::IdentifyBoundary(mesh, 2);
   ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
   ALE::LogStagePop(stage);
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
   if (options->debug) {
@@ -85,7 +86,7 @@ PetscErrorCode OutputVTK(const Obj<ALE::Mesh>& mesh, Options *options)
     ierr = VTKViewer::writeHierarchyVertices(mesh, viewer, options->zScale);CHKERRQ(ierr);
     ierr = VTKViewer::writeHierarchyElements(mesh, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopologyNew()->getPatches();
+    const ALE::Mesh::topology_type::sheaf_type& patches = mesh->getTopology()->getPatches();
 #if 0
     for(ALE::Mesh::topology_type::sheaf_type::iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
       ostringstream filename;
@@ -124,10 +125,10 @@ int main(int argc, char *argv[])
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
     ierr = ALE::Coarsener::CreateSpacingFunction(mesh, 2);CHKERRQ(ierr);
-    ierr = ALE::Coarsener::CreateCoarsenedHierarchy(mesh, 2, options.levels, options.coarseFactor);CHKERRQ(ierr);
+    ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(mesh, 2, options.levels, options.coarseFactor);CHKERRQ(ierr);
     Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
-    mesh->getTopologyNew()->setPatch(options.levels+1, sieve);
-    mesh->getTopologyNew()->stratify();
+    mesh->getTopology()->setPatch(options.levels+1, sieve);
+    mesh->getTopology()->stratify();
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;

@@ -9,7 +9,7 @@ namespace ALE {
       typedef Topology_                          topology_type;
       typedef typename topology_type::sieve_type sieve_type;
     public:
-      static Obj<topology_type> readTopology(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+      static Obj<topology_type> readTopology(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0, const bool stratify = true) {
         Obj<topology_type> topology = new topology_type(comm, debug);
         Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
         int    *cells;
@@ -21,7 +21,9 @@ namespace ALE {
         ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
         sieve->stratify();
         topology->setPatch(0, sieve);
-        topology->stratify();
+        if (stratify) {
+          topology->stratify();
+        }
         return topology;
       };
     };

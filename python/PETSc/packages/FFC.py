@@ -3,21 +3,22 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download = ['http://www.fenics.org/pub/software/fiat/FIAT-0.2.5.tar.gz']
+    self.download = ['http://www.fenics.org/pub/software/ffc/v0.3/ffc-0.3.3.tar.gz']
     return
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.deps = []
+    self.fiat = self.framework.require('PETSc.packages.FIAT', self)
+    self.deps = [self.fiat]
     return
 
   def Install(self):
     import sys
-    fiatDir = self.getDir()
+    ffcDir = self.getDir()
     # We could make a check of the md5 of the current configure framework
-    self.logPrintBox('FIAT needs no installation')
-    self.framework.actions.addArgument('FIAT', 'Install', 'Installed FIAT into '+fiatDir)
-    return fiatDir
+    self.logPrintBox('FFC needs no installation')
+    self.framework.actions.addArgument('FFC', 'Install', 'Installed FFC into '+ffcDir)
+    return ffcDir
 
   def configureLibrary(self):
     '''Find an installation ando check if it can work with PETSc'''
@@ -26,9 +27,7 @@ class Configure(PETSc.package.Package):
 
     for location, dir, lib, incl in self.generateGuesses():
       try:
-        import FIAT.shapes
-        import FIAT.Lagrange
-        import FIAT.quadrature
+        import FFC
       except ImportError, e:
-        self.framework.logPrint('ERROR: Could not import FIAT: '+str(e))
+        self.framework.logPrint('ERROR: Could not import FFC: '+str(e))
     raise RuntimeError('Could not find a functional '+self.name+'\n')

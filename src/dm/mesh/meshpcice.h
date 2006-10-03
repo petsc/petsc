@@ -16,7 +16,6 @@ namespace ALE {
     public:
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[]);
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
-      static void buildCoordinates(const Obj<section_type>& coords, const int embedDim, const double coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase, const bool interpolate, const int debug);
       static void readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename, const int numBdFaces, const int numBdVertices);
@@ -25,11 +24,11 @@ namespace ALE {
     };
 
     typedef struct {
-      Mesh::point_type               vertex;
-      Mesh::section_type::value_type veln_x;
-      Mesh::section_type::value_type veln_y;
-      Mesh::section_type::value_type pn;
-      Mesh::section_type::value_type tn;
+      Mesh::point_type                    vertex;
+      Mesh::real_section_type::value_type veln_x;
+      Mesh::real_section_type::value_type veln_y;
+      Mesh::real_section_type::value_type pn;
+      Mesh::real_section_type::value_type tn;
     } RestartType;
 
     class Viewer {

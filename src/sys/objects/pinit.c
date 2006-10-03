@@ -587,6 +587,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 #if defined(PETSC_HAVE_MATHEMATICA)
   ierr = PetscViewerMathematicaFinalizePackage();CHKERRQ(ierr);
 #endif
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#if defined(PETSC_HAVE_SIEVE)
+  {
+    PetscErrorCode (*func)(void);
+    char lib[PETSC_MAX_PATH_LEN];
+
+    ierr = PetscStrcpy(lib,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
+    ierr = PetscStrcat(lib,"/libpetscdm");CHKERRQ(ierr);
+    ierr = PetscDLLibrarySym(PETSC_COMM_WORLD,&DLLibrariesLoaded,lib,"DMFinalizePackage",(void **) &func);CHKERRQ(ierr);
+    if (func) {
+      ierr = (*func)();CHKERRQ(ierr);
+    }
+  }
+#endif
+#endif
 
   /*
      Destroy all the function registration lists created

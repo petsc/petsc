@@ -62,7 +62,7 @@ if (r_factor <= 0.0) {
     GenerateMesh(comm, mesh, r_factor);
   }
   ALE::LogStagePop(stage);
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
   if (0) {
@@ -170,7 +170,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   sieve->stratify();
   topology->setPatch(patch, sieve);
   topology->stratify();
-  mesh->setTopologyNew(topology);
+  mesh->setTopology(topology);
   int nvertices = topology->depthStratum(patch, 0)->size();
   int nedges = topology->depthStratum(patch, 1)->size();
   int ncells = topology->heightStratum(patch, 0)->size();
@@ -283,7 +283,7 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim) {
 
 if (dim == 2) {
      ALE::Mesh::section_type::patch_type patch = 0;
-     Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
      const Obj<ALE::Mesh::topology_type::label_sequence>& edges = topology->heightStratum(patch, 1);
      const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
 

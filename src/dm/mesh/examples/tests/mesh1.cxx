@@ -69,9 +69,10 @@ PetscErrorCode GeometryTest(const Obj<section_type>& coordinates, Options *optio
 #define __FUNCT__ "AllocationTest"
 PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
 {
-  std::string                         name("coordinates");
-  const Obj<ALE::Mesh::order_type>&   order   = mesh->getGlobalOrder(name);
-  const Obj<ALE::Mesh::section_type>& section = mesh->getSection(name);
+  std::string                          name("coordinates");
+  const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopology();
+  const Obj<ALE::Mesh::section_type>&  section  = mesh->getSection(name);
+  const Obj<ALE::Mesh::order_type>&    order    = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getGlobalOrder(topology, 0, name, section->getAtlas());
   Mat                                 A;
   PetscInt                            numLocalRows, firstRow, lastRow;
   PetscInt                           *dnz, *onz;
@@ -93,15 +94,15 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   // Create local adjacency graph
   //   In general, we need to get FIAT info that attaches dual basis vectors to sieve points
   const ALE::Mesh::section_type::atlas_type::chart_type& chart = section->getAtlas()->getPatch(patch);
-  const Obj<ALE::Mesh::sieve_type>&                      sieve = mesh->getTopologyNew()->getPatch(patch);
+  const Obj<ALE::Mesh::sieve_type>&                      sieve = mesh->getTopology()->getPatch(patch);
 
   for(ALE::Mesh::section_type::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     adjGraph->addCone(sieve->cone(sieve->support(*c_iter)), *c_iter);
   }
   // Distribute adjacency graph
-  const Obj<ALE::Mesh::numbering_type>&    vNumbering        = mesh->getNumbering(0);
-  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = vNumbering->getSendOverlap();
-  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = vNumbering->getRecvOverlap();
+  const Obj<ALE::Mesh::numbering_type>&    vNumbering        = ALE::Mesh::NumberingFactory::singleton(mesh->debug)->getNumbering(topology, 0, 0);
+  const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = topology->getSendOverlap();
+  const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = topology->getRecvOverlap();
   const Obj<ALE::Mesh::send_overlap_type>  nbrSendOverlap    = new ALE::Mesh::send_overlap_type(mesh->comm(), mesh->debug);
   const Obj<ALE::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALE::Mesh::recv_overlap_type(mesh->comm(), mesh->debug);
   const Obj<ALE::Mesh::send_section_type>  sendSection       = new ALE::Mesh::send_section_type(mesh->comm(), mesh->debug);
@@ -115,7 +116,7 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   }
   // Distribute indices for new points
   ALE::New::Distribution<ALE::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-  order->complete(nbrSendOverlap, nbrRecvOverlap, true);
+  ALE::Mesh::NumberingFactory::singleton(mesh->debug)->completeOrder(order, nbrSendOverlap, nbrRecvOverlap, patch, true);
   if (mesh->debug) {
     nbrSendOverlap->view("Neighbor Send Overlap");
     nbrRecvOverlap->view("Neighbor Receive Overlap");
@@ -159,7 +160,7 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
   // Fill matrix
-  const Obj<ALE::Mesh::topology_type::label_sequence>& elements = mesh->getTopologyNew()->heightStratum(0, 0);
+  const Obj<ALE::Mesh::topology_type::label_sequence>& elements = mesh->getTopology()->heightStratum(0, 0);
   int          size       = options->dim*options->dim*9;
   PetscScalar *elementMat = new PetscScalar[size];
 
@@ -211,7 +212,7 @@ int main(int argc, char *argv[])
     Obj<ALE::Mesh> mesh = ALE::PCICE::Builder::readMesh(comm, options.dim, options.baseFilename, options.useZeroBase, options.interpolate, options.debug);
 
     if (options.debug) {
-      mesh->getTopologyNew()->getPatch(0)->view("Mesh");
+      mesh->getTopology()->getPatch(0)->view("Mesh");
     }
     mesh = ALE::New::Distribution<ALE::Mesh::topology_type>::redistributeMesh(mesh);
     ierr = GeometryTest(mesh->getSection("coordinates"), &options);CHKERRQ(ierr);

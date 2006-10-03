@@ -28,7 +28,7 @@ namespace Coarsener {
   ////////////////////////////////////////////////////////////////
   
   PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> & mesh, int dim) {
-    Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     ALE::Mesh::section_type::patch_type patch = 0;
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
   
@@ -87,7 +87,7 @@ namespace Coarsener {
 PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
 {
   ALE::Mesh::section_type::patch_type patch = 0;
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->createLabel(patch, "boundary");
 
   if (dim == 2) {
@@ -151,10 +151,10 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
     if (mesh->debug) {
       ostringstream txt;
       txt << "Sieve for coarsening level " << curLevel;
-      mesh->getTopologyNew()->getPatch(curLevel)->view(txt.str().c_str());
+      mesh->getTopology()->getPatch(curLevel)->view(txt.str().c_str());
     }
   }
-  mesh->getTopologyNew()->stratify();
+  mesh->getTopology()->stratify();
   PetscFunctionReturn(0);
 }
 
@@ -162,7 +162,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_ty
   PetscFunctionBegin;
   ALE::Mesh::section_type::patch_type originalPatch = 0;
   std::list<ALE::Mesh::point_type> incPoints;
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   double v_coord[dim], c_coord[dim];
   Obj<ALE::Mesh::section_type> coords  = mesh->getSection("coordinates");
   Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");
@@ -306,7 +306,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_ty
 int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
 
   ALE::Mesh::section_type::patch_type patch = 0; 
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
   const double *vCoords = coords->restrict(patch, vertex);
   double v_x = vCoords[0], v_y = vCoords[1];
@@ -345,10 +345,17 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
   return isEssential;
 }
 
+int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
 //determines if two triangles are coplanar
+  //given the point,get the support of every element of the point's support and see if it is a "crease".  Count the creases
+//if there are two crease support elements, it is a rank 2, if there are more it's 3, if there are 0 (there cannot be 1) it is rank 1
+//here we must make sure that it is a boundary node as well.
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
+  
+}
 
 bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::point_type tri2) {
-  Obj<ALE::Mesh::topology_type> topology = mesh->getTopologyNew();
+  Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     
   return false; // stub
 }
@@ -365,7 +372,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   }
 
   Obj<ALE::Mesh::sieve_type>           sieve    = new ALE::Mesh::sieve_type(mesh->comm(), 0);
-  const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopologyNew();
+  const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopology();
 
   //make the sieve and the topology actually count for something
   ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
