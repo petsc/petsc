@@ -110,6 +110,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
   PC_FieldSplitLink ilink;
   PetscInt          i,nsplit,ccsize;
   MatStructure      flag = pc->flag;
+  PetscTruth        sorted;
 
   PetscFunctionBegin;
   ierr   = PCFieldSplitSetDefaults(pc);CHKERRQ(ierr);
@@ -132,19 +133,23 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 	ierr     = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
         jac->csize[i] = ccsize/nsplit;
       } else {
-        PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
-        PetscTruth sorted;
-        ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-        for (j=0; j<nslots; j++) {
-          for (k=0; k<nfields; k++) {
-            ii[nfields*j + k] = rstart + bs*j + fields[k];
-          }
+	printf("ilink nfields %d\n",ilink->nfields);
+        if (ilink->nfields > 1) {
+	  PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
+	  ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+	  for (j=0; j<nslots; j++) {
+	    for (k=0; k<nfields; k++) {
+	      ii[nfields*j + k] = rstart + bs*j + fields[k];
+	    }
+	  }
+	  ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
+	  ierr = PetscFree(ii);CHKERRQ(ierr);
+        } else { 
+          ierr = ISCreateStride(pc->comm,nslots,ilink->fields[0],bs,&jac->is[i]);CHKERRQ(ierr);
         }
-	ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
         jac->csize[i] = (ccsize/bs)*ilink->nfields;
         ierr = ISSorted(jac->is[i],&sorted);CHKERRQ(ierr);
         if (!sorted) SETERRQ(PETSC_ERR_USER,"Fields must be sorted when creating split");
-        ierr = PetscFree(ii);CHKERRQ(ierr);
         ilink = ilink->next;
       }
       ierr = ISAllGather(jac->is[i],&jac->cis[i]);CHKERRQ(ierr);

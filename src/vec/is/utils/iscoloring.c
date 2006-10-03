@@ -459,9 +459,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISPartitioningCount(IS part,PetscInt count[])
 PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 {
   PetscErrorCode ierr;
-  PetscInt       *indices,n,*lindices,i,N;
+  PetscInt       *indices,n,*lindices,i,N,step,first;
   MPI_Comm       comm;
   PetscMPIInt    size,*sizes = PETSC_NULL,*offsets = PETSC_NULL,nn;
+  PetscTruth     stride;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -469,23 +470,29 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISAllGather(IS is,IS *isout)
 
   ierr = PetscObjectGetComm((PetscObject)is,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
-  
   ierr = ISGetLocalSize(is,&n);CHKERRQ(ierr);
-  nn   = (PetscMPIInt)n;
-  ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
-  offsets[0] = 0;
-  for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
-  N = offsets[size-1] + sizes[size-1];
+  ierr = ISStride(is,&stride);CHKERRQ(ierr);
+  if (size == 1 && stride) { /* should handle parallel ISStride also */
+    ierr = ISStrideGetInfo(is,&first,&step);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,n,first,step,isout);CHKERRQ(ierr);
+  } else {
+    ierr = PetscMalloc2(size,PetscMPIInt,&sizes,size,PetscMPIInt,&offsets);CHKERRQ(ierr);
+  
+    nn   = (PetscMPIInt)n;
+    ierr = MPI_Allgather(&nn,1,MPI_INT,sizes,1,MPI_INT,comm);CHKERRQ(ierr);
+    offsets[0] = 0;
+    for (i=1;i<size; i++) offsets[i] = offsets[i-1] + sizes[i-1];
+    N = offsets[size-1] + sizes[size-1];
+    
+    ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
+    ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
+    ierr = MPI_Allgatherv(lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
+    ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
+    ierr = PetscFree(sizes);CHKERRQ(ierr);
 
-  ierr = PetscMalloc(N*sizeof(PetscInt),&indices);CHKERRQ(ierr);
-  ierr = ISGetIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = MPI_Allgatherv(lindices,nn,MPIU_INT,indices,sizes,offsets,MPIU_INT,comm);CHKERRQ(ierr); 
-  ierr = ISRestoreIndices(is,&lindices);CHKERRQ(ierr);
-  ierr = PetscFree(sizes);CHKERRQ(ierr);
-
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
-  ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(PETSC_COMM_SELF,N,indices,isout);CHKERRQ(ierr);
+    ierr = PetscFree2(indices,offsets);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

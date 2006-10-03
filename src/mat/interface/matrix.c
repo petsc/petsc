@@ -5354,8 +5354,9 @@ M*/
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
-   to this routine with a mat of the same nonzero structure and with a cll of MAT_REUSE_MATRIX  
-   will reuse the matrix generated the first time.
+   to this routine with a mat of the same nonzero structure and with a call of MAT_REUSE_MATRIX  
+   will reuse the matrix generated the first time.  You should call MatDestroy() on newmat when 
+   you are finished using it.
 
     Concepts: matrices^submatrices
 
