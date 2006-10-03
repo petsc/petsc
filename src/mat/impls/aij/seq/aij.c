@@ -1243,7 +1243,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       fortranrelaxaijforward_(&m,&omega,x,a->i,a->j,(PetscInt*)diag,a->a,(void*)b);
 #else
       for (i=0; i<m; i++) {
-        d    = fshift + a->a[diag[i]];
         n    = a->i[i+1] - a->i[i]; 
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];
@@ -1259,7 +1258,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
       fortranrelaxaijbackward_(&m,&omega,x,a->i,a->j,(PetscInt*)diag,a->a,(void*)b);
 #else
       for (i=m-1; i>=0; i--) {
-        d    = fshift + a->a[diag[i]];
         n    = a->i[i+1] - a->i[i]; 
         idx  = a->j + a->i[i];
         v    = a->a + a->i[i];

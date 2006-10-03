@@ -91,7 +91,7 @@ PETSC_STATIC_INLINE PetscErrorCode MatSeqXAIJFreeAIJ(Mat AA,PetscScalar **a,Pets
     Allocates larger a, i, and j arrays for the XAIJ (AIJ, BAIJ, and SBAIJ) matrix types
 */
 #define MatSeqXAIJReallocateAIJ(Amat,AM,BS2,NROW,ROW,COL,RMAX,AA,AI,AJ,RP,AP,AIMAX,NONEW,datatype) \
-      if (NROW >= RMAX) { \
+  if (NROW >= RMAX) {\
 	Mat_SeqAIJ *Ain = (Mat_SeqAIJ*)Amat->data;\
         /* there is no extra room in row, therefore enlarge */ \
         PetscInt   new_nz = AI[AM] + CHUNKSIZE,len,*new_i=0,*new_j=0; \

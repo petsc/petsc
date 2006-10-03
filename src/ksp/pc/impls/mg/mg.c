@@ -847,7 +847,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 /* ----------------------------------------------------------------------------------------*/
 
 /*MC
-   PCMG - Use geometric multigrid preconditioning. This preconditioner requires you provide additional
+   PCMG - Use multigrid preconditioning. This preconditioner requires you provide additional
     information about the coarser grid matrices and restriction/interpolation operators.
 
    Options Database Keys:

@@ -14,7 +14,8 @@ PETSC_EXTERN_CXX_BEGIN
    Values:
 +  PC_MG_MULTIPLICATIVE (default) - traditional V or W cycle as determined by PCMGSetCycles()
 .  PC_MG_ADDITIVE - the additive multigrid preconditioner where all levels are
-                smoothed before updating the residual
+                smoothed before updating the residual. This only uses the 
+                down smoother, in the preconditioner the upper smoother is ignored
 .  PC_MG_FULL - same as multiplicative except one also performs grid sequencing, 
             that is starts on the coarsest grid, performs a cycle, interpolates
             to the next, performs a cycle etc
