@@ -130,6 +130,7 @@ namespace ALE {
     typedef base_type::recv_overlap_type              recv_overlap_type;
     typedef base_type::send_section_type              send_section_type;
     typedef base_type::recv_section_type              recv_section_type;
+    typedef base_type::real_sections_type             real_sections_type;
     // PCICE BC
     typedef struct {double rho,u,v,p;}                bc_value_type;
     typedef std::map<int, bc_value_type>              bc_values_type;
@@ -155,6 +156,77 @@ namespace ALE {
     int getDimension() const {return this->_dim;};
     void setDimension(const int dim) {this->_dim = dim;};
     const Obj<NumberingFactory>& getFactory() {return this->_factory;};
+  public: // Mesh geometry
+    static void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const patch_type patch  = 0;
+      const double    *coords = coordinates->restrict(patch, e);
+      const int        dim    = 2;
+      double           invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        detJ = J[0]*J[3] - J[1]*J[2];
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+      }
+    };
+    static void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const patch_type patch  = 0;
+      const double    *coords = coordinates->restrict(patch, e);
+      const int        dim    = 3;
+      double           invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        for(int d = 0; d < dim; d++) {
+          for(int f = 0; f < dim; f++) {
+            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
+          }
+        }
+        detJ = J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+          J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+          J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+        invJ[0*3+1] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+        invJ[0*3+2] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+        invJ[1*3+0] = invDet*(J[0*3+1]*J[2*3+2] - J[0*3+2]*J[2*3+1]);
+        invJ[1*3+1] = invDet*(J[0*3+2]*J[2*3+0] - J[0*3+0]*J[2*3+2]);
+        invJ[1*3+2] = invDet*(J[0*3+0]*J[2*3+1] - J[0*3+1]*J[2*3+0]);
+        invJ[2*3+0] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+        invJ[2*3+1] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+      }
+    };
+    void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      if (this->_dim == 2) {
+        computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else if (this->_dim == 3) {
+        computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else {
+        throw ALE::Exception("Unsupport dimension for element geometry computation");
+      }
+    };
   public: // BC values for PCICE
     const bc_value_type& getBCValue(const int bcFunc) {
       return this->_bcValues[bcFunc];
