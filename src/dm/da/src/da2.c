@@ -1852,6 +1852,58 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DAFormJacobianLocal"
+/*@C 
+   DAFormjacobianLocal - This is a universal Jacobian evaluation routine for
+   a local DA function.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the DA context
+.  func - The local function
+.  X - input vector
+.  J - Jacobian matrix
+-  ctx - A user context
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+          SNESSetFunction(), SNESSetJacobian()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormJacobianLocal(DA da, DALocalFunction1 func, Vec X, Mat J, void *ctx)
+{
+  Vec            localX;
+  DALocalInfo    info;
+  void          *u;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = (*func)(&info,u,J,ctx);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DAMultiplyByJacobian1WithAD"
 /*@C
     DAMultiplyByJacobian1WithAD - Applies a Jacobian function supplied by ADIFOR or ADIC
