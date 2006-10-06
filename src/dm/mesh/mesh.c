@@ -286,6 +286,49 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshCreateMatrix" 
+template<typename Atlas>
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Mesh>& mesh, const Obj<Atlas>& atlas, MatType mtype, Mat *J)
+{
+  const ALE::Obj<ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh->getTopology(), 0, "default", atlas);
+  int localSize  = order->getLocalSize();
+  int globalSize = order->getGlobalSize();
+  PetscObjectContainer c;
+  PetscErrorCode       ierr;
+
+  PetscFunctionBegin;
+  ierr = MatCreate(mesh->comm(), J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
+  ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
+  //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
+
+  ierr = PetscObjectContainerCreate(mesh->comm(), &c);
+  ierr = PetscObjectContainerSetPointer(c, mesh.ptr());
+  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) c);
+  ierr = PetscObjectContainerDestroy(c);
+
+  ierr = preallocateOperator(mesh.ptr(), atlas, order, *J);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetVertexMatrix" 
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, Mat *J)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh::real_section_type> s = new ALE::Mesh::real_section_type(m->getTopology());
+  s->setFiberDimensionByDepth(0, 0, 1);
+  s->allocate();
+  ierr = MeshCreateMatrix(m, s->getAtlas(), mtype, J);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetMatrix" 
 /*@C
     MeshGetMatrix - Creates a matrix with the correct parallel layout required for 
@@ -310,108 +353,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), DASetBlockFills()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype,Mat *J)
-{
-  ALE::Obj<ALE::Mesh> m;
-#if 0
-  ISLocalToGlobalMapping lmap;
-  PetscInt              *globals,rstart,i;
-#endif
-  PetscInt               localSize;
-  PetscErrorCode         ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  //localSize = m->getRealSection("u")->getGlobalOrder()->getSize(ALE::Mesh::field_type::patch_type());
-
-  ierr = MatCreate(mesh->comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,localSize,localSize,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
-  ierr = MatSetBlockSize(*J,1);CHKERRQ(ierr);
-  ierr = MatSeqAIJSetPreallocation(*J,mesh->d_nz,mesh->d_nnz);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(*J,mesh->d_nz,mesh->d_nnz,mesh->o_nz,mesh->o_nnz);CHKERRQ(ierr);
-  ierr = MatSeqBAIJSetPreallocation(*J,mesh->bs,mesh->d_nz,mesh->d_nnz);CHKERRQ(ierr);
-  ierr = MatMPIBAIJSetPreallocation(*J,mesh->bs,mesh->d_nz,mesh->d_nnz,mesh->o_nz,mesh->o_nnz);CHKERRQ(ierr);
-
-#if 0
-  ierr = PetscMalloc((mesh->n+mesh->Nghosts+1)*sizeof(PetscInt),&globals);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(*J,&rstart,PETSC_NULL);CHKERRQ(ierr);
-  for (i=0; i<mesh->n; i++) {
-    globals[i] = rstart + i;
-  }
-  ierr = PetscMemcpy(globals+mesh->n,mesh->ghosts,mesh->Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingCreate(PETSC_COMM_SELF,mesh->n+mesh->Nghosts,globals,&lmap);CHKERRQ(ierr);
-  ierr = PetscFree(globals);CHKERRQ(ierr);
-  ierr = MatSetLocalToGlobalMapping(*J,lmap);CHKERRQ(ierr);
-  ierr = ISLocalToGlobalMappingDestroy(lmap);CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-} 
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetGhosts"
-/*@C
-    MeshSetGhosts - Sets the global indices of other processes elements that will
-      be ghosts on this process
-
-    Not Collective
-
-    Input Parameters:
-+    mesh - the Mesh object
-.    bs - block size
-.    nlocal - number of local (non-ghost) entries
-.    Nghosts - number of ghosts on this process
--    ghosts - indices of all the ghost points
-
-    Level: advanced
-
-.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshGetGlobalIndices()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetGhosts(Mesh mesh,PetscInt bs,PetscInt nlocal,PetscInt Nghosts,const PetscInt ghosts[])
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidPointer(mesh,1);
-  ierr = PetscFree(mesh->ghosts);CHKERRQ(ierr);
-  ierr = PetscMalloc((1+Nghosts)*sizeof(PetscInt),&mesh->ghosts);CHKERRQ(ierr);
-  ierr = PetscMemcpy(mesh->ghosts,ghosts,Nghosts*sizeof(PetscInt));CHKERRQ(ierr);
-  mesh->bs      = bs;
-  mesh->n       = nlocal;
-  mesh->Nghosts = Nghosts;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetPreallocation"
-/*@C
-    MeshSetPreallocation - sets the matrix memory preallocation for matrices computed by Mesh
-
-    Not Collective
-
-    Input Parameters:
-+    mesh - the Mesh object
-.    d_nz - maximum number of nonzeros in any row of diagonal block
-.    d_nnz - number of nonzeros in each row of diagonal block
-.    o_nz - maximum number of nonzeros in any row of off-diagonal block
-.    o_nnz - number of nonzeros in each row of off-diagonal block
-
-
-    Level: advanced
-
-.seealso MeshDestroy(), MeshCreateGlobalVector(), MeshGetGlobalIndices(), MatMPIAIJSetPreallocation(),
-         MatMPIBAIJSetPreallocation()
-
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetPreallocation(Mesh mesh,PetscInt d_nz,const PetscInt d_nnz[],PetscInt o_nz,const PetscInt o_nnz[])
-{
-  PetscFunctionBegin;
-  PetscValidPointer(mesh,1);
-  mesh->d_nz  = d_nz;
-  mesh->d_nnz = (PetscInt*)d_nnz;
-  mesh->o_nz  = o_nz;
-  mesh->o_nnz = (PetscInt*)o_nnz;
+  ierr = MeshGetVertexMatrix(mesh, mtype, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -453,8 +400,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
-  p->m            = PETSC_NULL;
-  p->globalvector = PETSC_NULL;
+  p->m  = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
 }
@@ -480,7 +426,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 
   PetscFunctionBegin;
   if (--mesh->refct > 0) PetscFunctionReturn(0);
-  if (mesh->globalvector) {ierr = VecDestroy(mesh->globalvector);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -519,73 +464,6 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Mesh::real_section_type::IndexArray
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshCreateVector"
-/*
-  Creates a ghosted vector based upon the global ordering in the bundle.
-*/
-PetscErrorCode MeshCreateVector(ALE::Obj<ALE::Mesh> m, Vec *v)
-{
-  // FIX: Must not include ghosts
-  PetscInt       localSize = 0;
-  MPI_Comm       comm = m->comm();
-  PetscMPIInt    rank = m->commRank();
-  PetscInt      *ghostIndices = NULL;
-  PetscInt       ghostSize = 0;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-#ifdef PARALLEL
-  ALE::Obj<ALE::PreSieve> globalIndices = bundle->getGlobalIndices();
-  ALE::Obj<ALE::PreSieve> pointTypes = bundle->getPointTypes();
-  ALE::Obj<ALE::Point_set> rentedPoints = pointTypes->cone(ALE::Point(rank, ALE::rentedPoint));
-
-  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-    if (cone->size()) {
-      ALE::Point interval = *cone->begin();
-
-      ghostSize += interval.index;
-    }
-  }
-#endif
-  if (ghostSize) {
-    ierr = PetscMalloc(ghostSize * sizeof(PetscInt), &ghostIndices);CHKERRQ(ierr);
-  }
-#ifdef PARALLEL
-  PetscInt ghostIdx = 0;
-
-  for(ALE::Point_set::iterator e_itor = rentedPoints->begin(); e_itor != rentedPoints->end(); e_itor++) {
-    ALE::Obj<ALE::Point_set> cone = globalIndices->cone(*e_itor);
-
-    if (cone->size()) {
-      ALE::Point interval = *cone->begin();
-
-      // Must insert into ghostIndices at the index given by localIndices
-      //   However, I think right now its correct because rentedPoints iterates in the same way in both methods
-      ExpandInterval(interval, ghostIndices, &ghostIdx);
-    }
-  }
-#endif
-  ierr = VecCreateGhost(comm, localSize, PETSC_DETERMINE, ghostSize, ghostIndices, v);CHKERRQ(ierr);
-  if (m->debug()) {
-    PetscInt globalSize, g;
-
-    ierr = VecGetSize(*v, &globalSize);CHKERRQ(ierr);
-    ierr = PetscPrintf(comm, "Making an ordering over the vertices\n===============================\n");
-    ierr = PetscSynchronizedPrintf(comm, "[%d]  global size: %d localSize: %d ghostSize: %d\n", rank, globalSize, localSize, ghostSize);CHKERRQ(ierr);
-    ierr = PetscSynchronizedPrintf(comm, "[%d]  ghostIndices:", rank);CHKERRQ(ierr);
-    for(g = 0; g < ghostSize; g++) {
-      ierr = PetscSynchronizedPrintf(comm, "[%d] %d\n", rank, ghostIndices[g]);CHKERRQ(ierr);
-    }
-    ierr = PetscSynchronizedPrintf(comm, "\n");CHKERRQ(ierr);
-    ierr = PetscSynchronizedFlush(comm);CHKERRQ(ierr);
-  }
-  ierr = PetscFree(ghostIndices);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MeshCreateGlobalVector"
 /*@C
     MeshCreateGlobalVector - Creates a vector of the correct size to be gathered into 
@@ -606,28 +484,21 @@ PetscErrorCode MeshCreateVector(ALE::Obj<ALE::Mesh> m, Vec *v)
 .seealso MeshDestroy(), MeshCreate(), MeshGetGlobalIndices()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh,Vec *gvec)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 {
+  ALE::Obj<ALE::Mesh> m;
+  PetscTruth     flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* Turned off caching for this method so that bundle can be reset to make different vectors */
-#if 0
-  if (mesh->globalvector) {
-    ierr = VecDuplicate(mesh->globalvector, gvec);CHKERRQ(ierr);
-    PetscFunctionReturn(0);
-  }
-#endif
-#ifdef __cplusplus
-  ALE::Obj<ALE::Mesh> m;
-
+  ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshCreateVector(m, gvec);CHKERRQ(ierr);
-#endif
-#if 0
-  mesh->globalvector = *gvec;
-  ierr = PetscObjectReference((PetscObject) mesh->globalvector);CHKERRQ(ierr); 
-#endif
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", m->getRealSection("default")->getAtlas());
+
+  ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -924,26 +795,27 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::real_section_type>& field, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+#define __FUNCT__ "preallocateOperator"
+template<typename Atlas>
+PetscErrorCode preallocateOperator(ALE::Mesh *mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
   const ALE::Obj<ALE::Mesh::sieve_type>     adjGraph    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   const ALE::Obj<ALE::Mesh::topology_type>  adjTopology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug());
-  const ALE::Mesh::real_section_type::patch_type patch       = 0;
+  const ALE::Mesh::real_section_type::patch_type patch  = 0;
   const ALE::Obj<ALE::Mesh::topology_type>& topology    = mesh->getTopology();
   const ALE::Obj<ALE::Mesh::sieve_type>&    sieve       = topology->getPatch(patch);
-  PetscInt       numLocalRows, firstRow, lastRow;
+  PetscInt       numLocalRows, firstRow;
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   adjTopology->setPatch(patch, adjGraph);
-  ierr = MatGetLocalSize(A, &numLocalRows, PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatGetOwnershipRange(A, &firstRow, &lastRow);CHKERRQ(ierr);
+  numLocalRows = globalOrder->getLocalSize();
+  firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
   ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
   /* Create local adjacency graph */
   /*   In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
-  const ALE::Mesh::real_section_type::atlas_type::chart_type& chart = field->getAtlas()->getPatch(patch);
+  const ALE::Mesh::real_section_type::atlas_type::chart_type& chart = atlas->getPatch(patch);
 
   for(ALE::Mesh::real_section_type::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const ALE::Mesh::real_section_type::atlas_type::point_type& point = *c_iter;
@@ -1001,6 +873,13 @@ PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::real
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "preallocateMatrix"
+PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+{
+  return preallocateOperator(mesh, atlas, globalOrder, A);
 }
 
 /******************************** C Wrappers **********************************/
@@ -1272,6 +1151,39 @@ PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *sec
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshSetSectionReal"
+/*@C
+  MeshSetSectionReal - Puts a SectionReal of the given name into the Mesh.
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+- section - The SectionReal
+
+  Note: This takes the section name from the PETSc object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
+{
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  const char         *name;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  m->setRealSection(std::string(name), s);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshHasSectionInt"
 /*@C
   MeshHasSectionInt - Determines whether this mesh has a SectionInt with the given name.
@@ -1336,6 +1248,39 @@ PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *secti
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshSetSectionInt"
+/*@C
+  MeshSetSectionInt - Puts a SectionInt of the given name into the Mesh.
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+- section - The SectionInt
+
+  Note: This takes the section name from the PETSc object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
+{
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::int_section_type> s;
+  const char         *name;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+  ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+  m->setIntSection(std::string(name), s);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshHasSectionPair"
 /*@C
   MeshHasSectionPair - Determines whether this mesh has a SectionPair with the given name.
@@ -1396,6 +1341,39 @@ PetscErrorCode MeshGetSectionPair(Mesh mesh, const char name[], SectionPair *sec
   ierr = SectionPairCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionPairSetSection(*section, m->getPairSection(std::string(name)));
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetSectionPair"
+/*@C
+  MeshSetSectionPair - Puts a SectionPair of the given name into the Mesh.
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - The Mesh object
+- section - The SectionPair
+
+  Note: This takes the section name from the PETSc object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshSetSectionPair(Mesh mesh, SectionPair section)
+{
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::pair_section_type> s;
+  const char         *name;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+  ierr = SectionPairGetSection(section, s);CHKERRQ(ierr);
+  m->setPairSection(std::string(name), s);
   PetscFunctionReturn(0);
 }
 

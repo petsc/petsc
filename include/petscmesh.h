@@ -29,11 +29,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh, MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh, MatType, Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetPreallocation(Mesh,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetGhosts(Mesh,PetscInt,PetscInt,PetscInt,const PetscInt[]);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateVector(ALE::Obj<ALE::Mesh>,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh*,const char [],Vec,VecScatter *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<ALE::Mesh>&);
@@ -80,12 +78,14 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetTopology(SectionReal,const
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDistribute(SectionReal, Mesh, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal, PetscInt, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal, PetscInt, const PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal, PetscInt, const PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealComplete(SectionReal);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionReal(Mesh, PetscInt, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionReal(Mesh, PetscInt, SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionReal(Mesh, const char [], PetscTruth *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], SectionReal *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
 
 /*S
   SectionInt - Abstract PETSc object that manages distributed field data over a topology (Sieve).
@@ -113,12 +113,14 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetTopology(SectionInt,const A
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntDistribute(SectionInt, Mesh, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt, PetscInt, PetscInt *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt, PetscInt, const PetscInt []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt, PetscInt, const PetscInt []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionIntComplete(SectionInt);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexSectionInt(Mesh, PetscInt, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionInt(Mesh, PetscInt, SectionInt *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionInt(Mesh, const char [], PetscTruth *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionInt(Mesh, const char [], SectionInt *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionInt(Mesh, SectionInt);
 
 /*S
   SectionPair - Abstract PETSc object that manages distributed field data over a topology (Sieve).
@@ -154,6 +156,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionPairUpdate(SectionPair, PetscInt,
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionPair(Mesh, const char [], PetscTruth *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionPair(Mesh, const char [], SectionPair *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionPair(Mesh, SectionPair);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WriteVTKHeader(PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WriteVTKVertices(Mesh, PetscViewer);

@@ -19,9 +19,6 @@ struct _MeshOps {
 struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
   ALE::Obj<ALE::Mesh> m;
-  Vec                      globalvector;
-  PetscInt                 bs,n,N,Nghosts,*ghosts;
-  PetscInt                 d_nz,o_nz,*d_nnz,*o_nnz;
 };
 
 extern PetscCookie MESH_COOKIE;

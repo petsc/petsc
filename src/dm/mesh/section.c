@@ -423,6 +423,31 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealUpdateAdd"
+/*@C
+  SectionRealUpdateAdd - Updates the array of values associated to a subset of the topology in this Section.
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+- values - The values associated with the submesh
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal section, PetscInt point, const PetscScalar values[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidScalarPointer(values,3);
+  section->s->updateAdd(0, point, values);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SectionRealComplete"
 /*@C
   SectionRealComplete - Exchanges data across the mesh overlap.
@@ -848,6 +873,31 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt p
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidIntPointer(values,3);
   section->s->update(0, point, values);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntUpdateAdd"
+/*@C
+  SectionIntUpdateAdd - Updates the array of values associated to a subset of the topology in this Section.
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+- values - The values associated with the submesh
+
+  Level: advanced
+
+.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt section, PetscInt point, const PetscInt values[])
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidScalarPointer(values,3);
+  section->s->updateAdd(0, point, values);
   PetscFunctionReturn(0);
 }
 
