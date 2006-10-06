@@ -261,6 +261,24 @@ M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
 
 /*MC
+   DMMGGetDM - Gets the DM object on the finest level
+
+   Synopsis:
+   DM DMMGGetDM(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP()
+
+M*/
+#define DMMGGetDM(ctx)             ((ctx)[(ctx)[0]->nlevels-1]->dm)
+
+/*MC
    DMMGGetDA - Gets the DA object on the finest level
 
    Synopsis:

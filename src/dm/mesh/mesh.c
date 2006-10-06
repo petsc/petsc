@@ -355,10 +355,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
 {
-  PetscErrorCode ierr;
+  ALE::Obj<ALE::Mesh> m;
+  PetscTruth          flag;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetVertexMatrix(mesh, mtype, J);CHKERRQ(ierr);
+  ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(m, m->getRealSection("default")->getAtlas(), mtype, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -530,21 +535,26 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const char fieldName[], Vec g, VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, SectionReal section, Vec g, VecScatter *scatter)
 {
   typedef ALE::Mesh::real_section_type::index_type index_type;
-  PetscErrorCode ierr;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  const char         *name;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>&  field       = mesh->getRealSection(std::string(fieldName));
-  const ALE::Obj<ALE::Mesh::topology_type>&      topology    = field->getTopology();
-  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&         atlas       = field->getAtlas();
-  const ALE::Mesh::real_section_type::patch_type patch       = 0;
-  const ALE::Obj<ALE::Mesh::order_type>&     globalOrder = mesh->getFactory()->getGlobalOrder(topology, patch, fieldName, field->getAtlas());
-  const ALE::Mesh::real_section_type::atlas_type::chart_type& chart = atlas->getPatch(patch);
-  int                                        localSize   = field->size(patch);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::topology_type>&                   topology = m->getTopology();
+  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&   atlas    = s->getAtlas();
+  const ALE::Mesh::real_section_type::patch_type              patch    = 0;
+  const ALE::Mesh::real_section_type::atlas_type::chart_type& chart    = atlas->getPatch(patch);
+  const ALE::Obj<ALE::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(topology, patch, name, atlas);
   int *localIndices, *globalIndices;
+  int  localSize = s->size(patch);
   int  localIndx = 0, globalIndx = 0;
   Vec  localVec;
   IS   localIS, globalIS;
@@ -563,9 +573,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(ALE::Mesh *mesh, const cha
   if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,  &localIS);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices, &globalIS);CHKERRQ(ierr);
-  ierr = PetscFree(localIndices);
+  ierr = PetscFree(localIndices);CHKERRQ(ierr);
   ierr = PetscFree(globalIndices);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localSize, field->restrict(patch), &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localSize, s->restrict(patch), &localVec);CHKERRQ(ierr);
   ierr = VecScatterCreate(localVec, localIS, g, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
