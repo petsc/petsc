@@ -1554,7 +1554,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED:
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-    ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
@@ -1579,6 +1579,7 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op)
   case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_NOT_HERMITIAN:
   case MAT_NOT_SYMMETRY_ETERNAL:
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default: 
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);

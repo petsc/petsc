@@ -791,7 +791,7 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
     case MAT_YES_NEW_DIAGONALS:
     case MAT_IGNORE_OFF_PROC_ENTRIES:
     case MAT_USE_HASH_TABLE:
-      ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
+      ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
       break;
     case MAT_NO_NEW_DIAGONALS:
       SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
