@@ -405,7 +405,10 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
-  p->m  = PETSC_NULL;
+  p->m             = PETSC_NULL;
+  p->globalScatter = PETSC_NULL;
+  p->lf            = PETSC_NULL;
+  p->lj            = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
 }
@@ -431,6 +434,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 
   PetscFunctionBegin;
   if (--mesh->refct > 0) PetscFunctionReturn(0);
+  if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -508,6 +512,35 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshCreateLocalVector"
+/*@C
+  MeshCreateLocalVector - Creates a vector with the local piece of the Section
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - the Mesh
+- section - the Section  
+
+  Output Parameter:
+. localVec - the local vector
+
+  Level: advanced
+
+.seealso MeshDestroy(), MeshCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, SectionReal section, Vec *localVec)
+{
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->size(0), s->restrict(0), localVec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetGlobalIndices"
 /*@C
     MeshGetGlobalIndices - Gets the global indices for all the local entries
@@ -534,8 +567,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MeshGetGlobalScatter"
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, SectionReal section, Vec g, VecScatter *scatter)
+#define __FUNCT__ "MeshCreateGlobalScatter"
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
   typedef ALE::Mesh::real_section_type::index_type index_type;
   ALE::Obj<ALE::Mesh> m;
@@ -556,9 +589,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, SectionReal sec
   int *localIndices, *globalIndices;
   int  localSize = s->size(patch);
   int  localIndx = 0, globalIndx = 0;
-  Vec  localVec;
+  Vec  globalVec, localVec;
   IS   localIS, globalIS;
 
+  ierr = VecCreate(m->comm(), &globalVec);CHKERRQ(ierr);
+  ierr = VecSetSizes(globalVec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
   // Loop over all local points
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
@@ -576,10 +612,84 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, SectionReal sec
   ierr = PetscFree(localIndices);CHKERRQ(ierr);
   ierr = PetscFree(globalIndices);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localSize, s->restrict(patch), &localVec);CHKERRQ(ierr);
-  ierr = VecScatterCreate(localVec, localIS, g, globalIS, scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(localVec, localIS, globalVec, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = VecDestroy(globalVec);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetGlobalScatter"
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, VecScatter *scatter)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidPointer(scatter, 2);
+  if (!mesh->globalScatter) {
+    SectionReal section;
+
+    ierr = MeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
+    ierr = MeshCreateGlobalScatter(mesh, section, &mesh->globalScatter);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(section);CHKERRQ(ierr);
+  }
+  *scatter = mesh->globalScatter;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshSetLocalFunction"
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh mesh, PetscErrorCode (*lf)(Mesh, SectionReal, SectionReal, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  mesh->lf = lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshSetLocalJacobian"
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalJacobian(Mesh mesh, PetscErrorCode (*lj)(Mesh, SectionReal, Mat, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  mesh->lj = lj;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshFormFunction"
+PetscErrorCode PETSCDM_DLLEXPORT MeshFormFunction(Mesh mesh, SectionReal X, SectionReal F, void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(X, SECTIONREAL_COOKIE, 2);
+  PetscValidHeaderSpecific(F, SECTIONREAL_COOKIE, 3);
+  if (mesh->lf) {
+    ierr = (*mesh->lf)(mesh, X, F, ctx);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshFormJacobian"
+PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat J, void *ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  PetscValidHeaderSpecific(X, SECTIONREAL_COOKIE, 2);
+  PetscValidHeaderSpecific(J, MAT_COOKIE, 3);
+  if (mesh->lj) {
+    ierr = (*mesh->lj)(mesh, X, J, ctx);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

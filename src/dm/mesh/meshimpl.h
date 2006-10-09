@@ -19,6 +19,9 @@ struct _MeshOps {
 struct _p_Mesh {
   PETSCHEADER(struct _MeshOps);
   ALE::Obj<ALE::Mesh> m;
+  VecScatter          globalScatter;
+  PetscErrorCode    (*lf)(Mesh, SectionReal, SectionReal, void *);
+  PetscErrorCode    (*lj)(Mesh, SectionReal, Mat, void *);
 };
 
 extern PetscCookie MESH_COOKIE;

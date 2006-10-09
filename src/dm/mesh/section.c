@@ -176,6 +176,40 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealDuplicate"
+/*@C
+  SectionRealDuplicate - Create an equivalent Section object
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Output Parameter:
+. newSection - the duplicate
+ 
+  Level: advanced
+
+.seealso SectionRealCreate(), SectionRealSetSection()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, SectionReal *newSection)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  PetscValidPointer(newSection, 2);
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = section->s;
+  ALE::Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->getTopology());
+
+  t->setAtlas(s->getAtlas());
+  t->allocateStorage();
+  ierr = SectionRealCreate(s->comm(), newSection);CHKERRQ(ierr);
+  ierr = SectionRealSetSection(*newSection, t);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SectionRealGetSection"
 /*@C
   SectionRealGetSection - Gets the internal section object

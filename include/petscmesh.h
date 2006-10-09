@@ -24,7 +24,6 @@ extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT FieldView(Mesh,const char[],PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh,Vec*);
@@ -36,6 +35,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUnify(Mesh, Mesh*);
+
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVectorComplete(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVector(Vec, PetscInt, PetscScalar [], InsertMode);
@@ -68,6 +68,7 @@ extern PetscCookie PETSCDM_DLLEXPORT SECTIONREAL_COOKIE;
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm,SectionReal*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealView(SectionReal,PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal,SectionReal*);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal,ALE::Obj<ALE::Mesh::real_section_type>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal,const ALE::Obj<ALE::Mesh::real_section_type>&);
@@ -86,7 +87,13 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionReal(Mesh, const char [], 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,SectionReal,Vec,VecScatter *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh, SectionReal, Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,VecScatter *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh,SectionReal,VecScatter *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh, PetscErrorCode (*)(Mesh, SectionReal, SectionReal, void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalJacobian(Mesh, PetscErrorCode (*)(Mesh, SectionReal, Mat, void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFormFunction(Mesh, SectionReal, SectionReal, void*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh, SectionReal, Mat, void*);
 
 /*S
   SectionInt - Abstract PETSc object that manages distributed field data over a topology (Sieve).
