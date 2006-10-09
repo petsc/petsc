@@ -251,7 +251,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       if (in[l] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap.n-1);
 #endif
       col = in[l]; bcol = col/bs;
-      if (A->symmetric && brow > bcol) continue;
+      if (A->symmetric && row > col) continue;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) {
         value = v[l + k*n]; 
@@ -288,7 +288,11 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       noinsert1:;
       if (!*(ap+i)) {
 	/*        printf("create matrix at i %d rw %d col %d\n",i,brow,bcol);*/
-        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+        if (A->symmetric && brow == bcol) {
+          ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,1,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+        } else {
+          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+        }
       }
       /*      printf("numerical value at i %d row %d col %d cidx %d ridx %d value %g\n",i,brow,bcol,cidx,ridx,value);*/
       ierr = MatSetValues(ap[i],1,&ridx,1,&cidx,&value,is);CHKERRQ(ierr);
