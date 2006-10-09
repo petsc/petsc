@@ -368,6 +368,7 @@ namespace ALE {
         typedef PatchlessSection<Section> SectionFiller;
         const Obj<topology_type>&                topology = section->getTopology();
         const typename topology_type::patch_type patch    = 0;
+        const int                                debug    = section->debug();
         topology->constructOverlap(patch);
 
         const Obj<send_overlap_type> sendOverlap = topology->getSendOverlap();
@@ -387,7 +388,7 @@ namespace ALE {
 
           for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != end; ++p_iter) {
             if (recvSection->getFiberDimension(*p_iter, *r_iter)) {
-              std::cout << "["<<section->commRank()<<"]Completed point " << *r_iter << std::endl;
+              if (debug) {std::cout << "["<<section->commRank()<<"]Completed point " << *r_iter << std::endl;}
               section->updateAddPoint(patch, *r_iter, recvSection->restrictPoint(*p_iter, *r_iter));
             }
           }
