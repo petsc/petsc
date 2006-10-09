@@ -1,6 +1,9 @@
 #define PETSCSNES_DLL
  
 #include "petscda.h"      /*I      "petscda.h"    I*/
+#ifdef PETSC_HAVE_SIEVE
+#include "petscmesh.h"    /*I      "petscmesh.h"    I*/
+#endif
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
 
@@ -133,6 +136,101 @@ PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
+
+#ifdef PETSC_HAVE_SIEVE
+#undef __FUNCT__
+#define __FUNCT__ "DMMGFormFunctionMesh"
+/* 
+   DMMGFormFunctionMesh - This is a universal global FormFunction used by the DMMG code
+   when the user provides a local function.
+
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+-  ptr - This is the DMMG object
+
+   Output Parameter:
+.  F - function vector
+
+ */
+PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
+{
+  DMMG           dmmg = (DMMG) ptr;
+  Mesh           mesh = (Mesh) dmmg->dm;
+  SectionReal    sectionX, section;
+  Vec            localVec;
+  VecScatter     scatter;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(section, &sectionX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  ierr = MeshCreateLocalVector(mesh, sectionX, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = MeshFormFunction(mesh, sectionX, section, dmmg->user);CHKERRQ(ierr);
+  ierr = MeshCreateLocalVector(mesh, section, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(localVec, F, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(localVec, F, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(section);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
+
+#undef __FUNCT__
+#define __FUNCT__ "DMMGComputeJacobianMesh"
+/* 
+   DMMGComputeJacobianMesh - This is a universal global FormJacobian used by the DMMG code
+   when the user provides a local function.
+
+   Input Parameters:
++  snes - the SNES context
+.  X - input vector
+-  ptr - This is the DMMG object
+
+   Output Parameter:
+.  F - function vector
+
+ */
+PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStructure *flag, void *ptr)
+{
+  DMMG           dmmg = (DMMG) ptr;
+  Mesh           mesh = (Mesh) dmmg->dm;
+  SectionReal    sectionX;
+  Vec            localVec;
+  VecScatter     scatter;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetSectionReal(mesh, "default", &sectionX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  ierr = MeshCreateLocalVector(mesh, sectionX, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = MeshFormJacobian(mesh, sectionX, *B, dmmg->user);CHKERRQ(ierr);
+  /* Assemble true Jacobian; if it is different */
+  if (*J != *B) {
+    ierr  = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr  = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  }
+  ierr  = MatSetOption(*B, MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  *flag = SAME_NONZERO_PATTERN;
+  ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunctionFD"
@@ -742,7 +840,7 @@ M*/
 PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscInt       i,nlevels = dmmg[0]->nlevels,cookie;
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
 
 
@@ -752,13 +850,25 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
 
-  ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
-  for (i=0; i<nlevels; i++) {
-    ierr = DASetLocalFunction((DA)dmmg[i]->dm,function);CHKERRQ(ierr);
-    dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
-    ierr = DASetLocalJacobian((DA)dmmg[i]->dm,jacobian);CHKERRQ(ierr);
-    ierr = DASetLocalAdicFunction((DA)dmmg[i]->dm,ad_function);CHKERRQ(ierr);
-    ierr = DASetLocalAdicMFFunction((DA)dmmg[i]->dm,admf_function);CHKERRQ(ierr);
+  ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
+  if (cookie == DA_COOKIE) {
+    ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
+    for (i=0; i<nlevels; i++) {
+      ierr = DASetLocalFunction((DA)dmmg[i]->dm,function);CHKERRQ(ierr);
+      dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
+      ierr = DASetLocalJacobian((DA)dmmg[i]->dm,jacobian);CHKERRQ(ierr);
+      ierr = DASetLocalAdicFunction((DA)dmmg[i]->dm,ad_function);CHKERRQ(ierr);
+      ierr = DASetLocalAdicMFFunction((DA)dmmg[i]->dm,admf_function);CHKERRQ(ierr);
+    }
+  } else {
+#ifdef PETSC_HAVE_SIEVE
+    ierr = DMMGSetSNES(dmmg, DMMGFormFunctionMesh, DMMGComputeJacobianMesh);CHKERRQ(ierr);
+    for (i=0; i<nlevels; i++) {
+      ierr = MeshSetLocalFunction((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
+      dmmg[i]->lfj = (PetscErrorCode (*)(void)) function; 
+      ierr = MeshSetLocalJacobian((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
+    }
+#endif
   }
   PetscFunctionReturn(0);
 }

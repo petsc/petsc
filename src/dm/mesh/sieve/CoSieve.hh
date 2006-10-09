@@ -1643,8 +1643,7 @@ namespace ALE {
       void orderPatches() {
         this->orderPatches(this->_atlas);
       };
-      void allocate() {
-        this->orderPatches();
+      void allocateStorage() {
         const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
@@ -1652,6 +1651,10 @@ namespace ALE {
           this->_arrays[p_iter->first] = new value_type[this->size(p_iter->first)];
           PetscMemzero(this->_arrays[p_iter->first], this->size(p_iter->first) * sizeof(value_type));
         }
+      };
+      void allocate() {
+        this->orderPatches();
+        this->allocateStorage();
       };
       void addPoint(const patch_type& patch, const point_type& point, const int dim) {
         if (dim == 0) return;
