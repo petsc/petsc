@@ -137,6 +137,34 @@ PetscErrorCode DMMGFormFunction(SNES snes,Vec X,Vec F,void *ptr)
   PetscFunctionReturn(0); 
 } 
 
+#undef __FUNCT__
+#define __FUNCT__ "DMMGFormFunctionGhost"
+PetscErrorCode DMMGFormFunctionGhost(SNES snes,Vec X,Vec F,void *ptr)
+{
+  DMMG           dmmg = (DMMG)ptr;
+  PetscErrorCode ierr;
+  Vec            localX, localF;
+  DA             da = (DA)dmmg->dm;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da,&localF);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
+  ierr = VecSet(localF, 0.0);CHKERRQ(ierr);
+  ierr = DAFormFunction1(da,localX,localF,dmmg->user);CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(da,localF,F);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da,localF,F);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localF);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+} 
+
 #ifdef PETSC_HAVE_SIEVE
 #undef __FUNCT__
 #define __FUNCT__ "DMMGFormFunctionMesh"
@@ -852,7 +880,13 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
   if (cookie == DA_COOKIE) {
-    ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
+    PetscTruth flag;
+    ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_form_function_ghost", &flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = DMMGSetSNES(dmmg,DMMGFormFunctionGhost,computejacobian);CHKERRQ(ierr);
+    } else {
+      ierr = DMMGSetSNES(dmmg,DMMGFormFunction,computejacobian);CHKERRQ(ierr);
+    }
     for (i=0; i<nlevels; i++) {
       ierr = DASetLocalFunction((DA)dmmg[i]->dm,function);CHKERRQ(ierr);
       dmmg[i]->lfj = (PetscErrorCode (*)(void))function; 
