@@ -46,7 +46,7 @@ namespace ALE {
       if (this->_realSections.find(name) == this->_realSections.end()) {
         Obj<real_section_type> section = new real_section_type(this->_topology);
 
-        std::cout << "Creating new real section: " << name << std::endl;
+        if (this->_debug) {std::cout << "Creating new real section: " << name << std::endl;}
         this->_realSections[name] = section;
       }
       return this->_realSections[name];
@@ -69,7 +69,7 @@ namespace ALE {
       if (this->_intSections.find(name) == this->_intSections.end()) {
         Obj<int_section_type> section = new int_section_type(this->_topology);
 
-        std::cout << "Creating new int section: " << name << std::endl;
+        if (this->_debug) {std::cout << "Creating new int section: " << name << std::endl;}
         this->_intSections[name] = section;
       }
       return this->_intSections[name];
@@ -92,7 +92,7 @@ namespace ALE {
       if (this->_pairSections.find(name) == this->_pairSections.end()) {
         Obj<pair_section_type> section = new pair_section_type(this->_topology);
 
-        std::cout << "Creating new pair section: " << name << std::endl;
+        if (this->_debug) {std::cout << "Creating new pair section: " << name << std::endl;}
         this->_pairSections[name] = section;
       }
       return this->_pairSections[name];

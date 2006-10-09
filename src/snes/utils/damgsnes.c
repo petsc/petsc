@@ -1,8 +1,9 @@
 #define PETSCSNES_DLL
  
 #include "petscda.h"      /*I      "petscda.h"    I*/
+/* It appears that preprocessor directives are not respected by bfort */
 #ifdef PETSC_HAVE_SIEVE
-#include "petscmesh.h"    /*I      "petscmesh.h"    I*/
+#include "petscmesh.h"
 #endif
 #include "petscmg.h"      /*I      "petscmg.h"    I*/
 #include "petscdmmg.h"    /*I      "petscdmmg.h"  I*/
