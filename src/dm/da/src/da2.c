@@ -1399,6 +1399,69 @@ PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionLocal(DA da, DALocalFunction1 fun
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "DAFormFunctionLocalGhost"
+/*@C 
+   DAFormFunctionLocalGhost - This is a universal function evaluation routine for
+   a local DA function, but the ghost values of the output are communicated and added.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the DA context
+.  func - The local function
+.  X - input vector
+.  F - function vector
+-  ctx - A user context
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+          SNESSetFunction(), SNESSetJacobian()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormFunctionLocalGhost(DA da, DALocalFunction1 func, Vec X, Vec F, void *ctx)
+{
+  Vec            localX, localF;
+  DALocalInfo    info;
+  void          *u;
+  void          *fu;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DAGetLocalVector(da,&localF);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = VecSet(F, 0.0);CHKERRQ(ierr);
+  ierr = VecSet(localF, 0.0);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localF,&fu);CHKERRQ(ierr);
+  ierr = (*func)(&info,u,fu,ctx);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
+    pierr = DAVecRestoreArray(da,localF,&fu);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DALocalToGlobalBegin(da,localF,F);CHKERRQ(ierr);
+  ierr = DALocalToGlobalEnd(da,localF,F);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localF,&fu);CHKERRQ(ierr);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
+  ierr = DARestoreLocalVector(da,&localF);CHKERRQ(ierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localF);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "DAFormFunction1"
 /*@
     DAFormFunction1 - Evaluates a user provided function on each processor that 
@@ -1849,6 +1912,58 @@ PetscErrorCode PETSCDM_DLLEXPORT DAComputeJacobian1WithAdifor(DA da,Vec vu,Mat J
   ierr = PetscFree(g_f);CHKERRQ(ierr);
   ierr = PetscFree(f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "DAFormJacobianLocal"
+/*@C 
+   DAFormjacobianLocal - This is a universal Jacobian evaluation routine for
+   a local DA function.
+
+   Collective on DA
+
+   Input Parameters:
++  da - the DA context
+.  func - The local function
+.  X - input vector
+.  J - Jacobian matrix
+-  ctx - A user context
+
+   Level: intermediate
+
+.seealso: DASetLocalFunction(), DASetLocalJacobian(), DASetLocalAdicFunction(), DASetLocalAdicMFFunction(),
+          SNESSetFunction(), SNESSetJacobian()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAFormJacobianLocal(DA da, DALocalFunction1 func, Vec X, Mat J, void *ctx)
+{
+  Vec            localX;
+  DALocalInfo    info;
+  void          *u;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = DAGetLocalVector(da,&localX);CHKERRQ(ierr);
+  /*
+     Scatter ghost points to local vector, using the 2-step process
+        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
+  */
+  ierr = DAGlobalToLocalBegin(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da,X,INSERT_VALUES,localX);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da,localX,&u);CHKERRQ(ierr);
+  ierr = (*func)(&info,u,J,ctx);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da,localX,&u);CHKERRQ(ierr);
+  if (PetscExceptionValue(ierr)) {
+    PetscErrorCode pierr = DARestoreLocalVector(da,&localX);CHKERRQ(pierr);
+  }
+  CHKERRQ(ierr);
+  ierr = DARestoreLocalVector(da,&localX);CHKERRQ(ierr);
+  PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__

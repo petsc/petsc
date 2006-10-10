@@ -14,7 +14,8 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES()
+.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+           DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
 S*/
 typedef struct _n_DMMG* DMMG;
 struct _n_DMMG {
@@ -28,6 +29,7 @@ struct _n_DMMG {
   PetscErrorCode (*solve)(DMMG*,PetscInt);
   void           *user;         
   PetscTruth     galerkin;                  /* for A_c = R*A*R^T */
+  MatType        mtype;                     /* create matrices of this type */
 
   /* KSP only */
   KSP            ksp;             
@@ -75,6 +77,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG*,DM);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG*,KSP,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUseGalerkinCoarse(DMMG*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,PetscInt,PetscErrorCode (*)(DMMG,Vec[]));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,MatType);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
@@ -259,6 +262,24 @@ M*/
 
 M*/
 #define DMMGGetSNES(ctx)           (ctx)[(ctx)[0]->nlevels-1]->snes
+
+/*MC
+   DMMGGetDM - Gets the DM object on the finest level
+
+   Synopsis:
+   DM DMMGGetDM(DMMG *dmmg)
+
+   Not Collective
+
+   Input Parameter:
+.   dmmg - DMMG solve context
+
+   Level: intermediate
+
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP()
+
+M*/
+#define DMMGGetDM(ctx)             ((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
    DMMGGetDA - Gets the DA object on the finest level

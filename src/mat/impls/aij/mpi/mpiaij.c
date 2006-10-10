@@ -1224,7 +1224,7 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op)
   case MAT_ROWS_SORTED:
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
-    ierr = PetscInfo(A,"Option ignored\n");CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;

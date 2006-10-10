@@ -68,7 +68,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetCoordinates(), DAGetCoordinateDA()
+.seealso: DAGetGhostCorners(), DASetCoordinates(), DASetUniformCoordinates(), DAGetGhostedCoordinates(), DAGetCoordinateDA()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 {

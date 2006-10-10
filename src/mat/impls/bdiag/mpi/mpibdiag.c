@@ -588,8 +588,6 @@ PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
   case MAT_ROWS_UNSORTED:
   case MAT_COLUMNS_SORTED:
   case MAT_COLUMNS_UNSORTED:
-    ierr = PetscInfo1(A,"Option %d ignored\n",op);CHKERRQ(ierr);
-    break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_NOT_SYMMETRIC:
@@ -598,6 +596,7 @@ PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
   case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_NOT_SYMMETRY_ETERNAL:
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);

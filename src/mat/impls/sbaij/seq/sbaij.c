@@ -164,7 +164,7 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   case MAT_YES_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
-    ierr = PetscInfo1(A,"Option %d ignored\n",op);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_NO_NEW_DIAGONALS:
     SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
@@ -177,6 +177,8 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_NOT_SYMMETRY_ETERNAL:
+    ierr = PetscInfo1(A,"Option %s not relevent\n",MatOptions[op]);CHKERRQ(ierr);
+    break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
     a->ignore_ltriangular = PETSC_TRUE;
     break;
@@ -2020,8 +2022,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
  
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
-      for (i=0; i<m; i++)
-        t[i] = b[i];
+      ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
       for (i=0; i<m; i++){
         d  = *(aa + ai[i]);  /* diag[i] */
@@ -2064,8 +2065,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
          
     */ 
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){ 
-      for (i=0; i<m; i++)
-        t[i] = b[i];
+      ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
 
       for (i=0; i<m; i++){
         d  = *(aa + ai[i]);  /* diag[i] */
@@ -2089,8 +2089,7 @@ PetscErrorCode MatRelax_SeqSBAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pe
          x[i]   = (1-omega)x[i] + omega*sum[i];
       */
       /* if there was a forward sweep done above then I thing the next two for loops are not needed */ 
-      for (i=0; i<m; i++)
-        t[i] = b[i];
+      ierr = PetscMemcpy(t,b,m*sizeof(PetscScalar));CHKERRQ(ierr);
   
       for (i=0; i<m-1; i++){  /* update rhs */
         v  = aa + ai[i] + 1; 

@@ -8,8 +8,8 @@ namespace ALE {
   namespace Test {
     class MeshProcessor {
     public:
-      typedef ALE::Mesh::section_type::value_type value_type; 
-      typedef ALE::Mesh::section_type::patch_type patch_type;
+      typedef ALE::Mesh::real_section_type::value_type value_type; 
+      typedef ALE::Mesh::real_section_type::patch_type patch_type;
    public:
       static std::string printMatrix(const std::string& name, const int rows, const int cols, const value_type matrix[], const int rank = -1)
       {
@@ -41,7 +41,7 @@ namespace ALE {
         }
         return output.str();
       }
-      static std::string printElement(const ALE::Mesh::section_type::point_type& e, const int dim, const value_type coords[], const int rank = -1) {
+      static std::string printElement(const ALE::Mesh::real_section_type::point_type& e, const int dim, const value_type coords[], const int rank = -1) {
         ostringstream output;
         ostringstream r;
 
@@ -61,7 +61,7 @@ namespace ALE {
         output << std::endl;
         return output.str();
       };
-      static void computeElementGeometry(const Obj<ALE::Mesh::section_type>& coordinates, int dim, const sieve_type::point_type& e, value_type v0[], value_type J[], value_type invJ[], value_type& detJ)
+      static void computeElementGeometry(const Obj<ALE::Mesh::real_section_type>& coordinates, int dim, const sieve_type::point_type& e, value_type v0[], value_type J[], value_type invJ[], value_type& detJ)
       {
         const patch_type  patch  = 0;
         const value_type *coords = coordinates->restrict(patch, e);

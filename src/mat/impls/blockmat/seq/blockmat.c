@@ -15,8 +15,110 @@ typedef struct {
   SEQBAIJHEADER;
   Mat               *diags;
 
-  Vec  left,right;   /* dummy vectors to perform local parts of product */
+  Vec               left,right,middle;   /* dummy vectors to perform local parts of product */
 } Mat_BlockMat;      
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRelax_BlockMat_Symmetric"
+PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_BlockMat       *a = (Mat_BlockMat*)A->data;
+  PetscScalar        *x;
+  const Mat          *v = a->a;
+  const PetscScalar  *b;
+  PetscErrorCode     ierr;
+  PetscInt           n = A->cmap.n,i,mbs = n/A->rmap.bs,j,bs = A->rmap.bs;
+  const PetscInt     *idx;
+  IS                 row,col;
+  MatFactorInfo      info;
+  Vec                left = a->left,right = a->right, middle;
+  Mat                *diag;
+
+  PetscFunctionBegin;
+  its = its*lits;
+  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
+  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support yet for Eisenstat");
+  if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support yet for omega not equal to 1.0");
+  if (fshift) SETERRQ(PETSC_ERR_SUP,"No support yet for fshift");
+  if ((flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP) && !(flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP))
+    SETERRQ(PETSC_ERR_SUP,"Cannot do backward sweep without forward sweep");
+
+  if (!a->diags) {
+    ierr = PetscMalloc(mbs*sizeof(Mat),&a->diags);CHKERRQ(ierr);
+    ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
+    for (i=0; i<mbs; i++) {
+      ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERING_ND,&row,&col);CHKERRQ(ierr);
+      ierr = MatLUFactorSymbolic(a->a[a->diag[i]],row,col,&info,a->diags+i);CHKERRQ(ierr);
+      ierr = MatLUFactorNumeric(a->a[a->diag[i]],&info,a->diags+i);CHKERRQ(ierr);
+      ierr = ISDestroy(row);CHKERRQ(ierr);
+      ierr = ISDestroy(col);CHKERRQ(ierr);
+    }
+  }
+  middle  = a->middle;
+  diag    = a->diags;
+
+  ierr = VecSet(xx,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  /* copy right hand side because it must be modified during iteration */
+  ierr = VecCopy(bb,middle);CHKERRQ(ierr);
+  ierr = VecGetArray(middle,(PetscScalar**)&b);CHKERRQ(ierr);
+
+  /* need to add code for when initial guess is zero, see MatRelax_SeqAIJ */
+  while (its--) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+
+      for (i=0; i<mbs; i++) {
+        n    = a->i[i+1] - a->i[i]; 
+        idx  = a->j + a->i[i];
+        v    = a->a + a->i[i];
+
+        ierr = VecSet(left,0.0);CHKERRQ(ierr);
+        for (j=0; j<n; j++) {
+          if (idx[j] != i) {
+            ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
+            ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
+            ierr = VecResetArray(right);CHKERRQ(ierr);
+          }
+        }
+        ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
+        ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
+        ierr = VecResetArray(right);CHKERRQ(ierr);
+
+        ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
+        ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
+        ierr = VecResetArray(right);CHKERRQ(ierr);
+      }
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+
+      for (i=mbs-1; i>=0; i--) {
+        n    = a->i[i+1] - a->i[i]; 
+        idx  = a->j + a->i[i];
+        v    = a->a + a->i[i];
+
+        ierr = VecSet(left,0.0);CHKERRQ(ierr);
+        for (j=0; j<n; j++) {
+          if (idx[j] != i) {
+            ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
+            ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
+            ierr = VecResetArray(right);CHKERRQ(ierr);
+          }
+        }
+        ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
+        ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
+        ierr = VecResetArray(right);CHKERRQ(ierr);
+
+        ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
+        ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
+        ierr = VecResetArray(right);CHKERRQ(ierr);
+
+      }
+    }
+  }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+} 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_BlockMat"
@@ -149,6 +251,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       if (in[l] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap.n-1);
 #endif
       col = in[l]; bcol = col/bs;
+      if (A->symmetric && row > col) continue;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) {
         value = v[l + k*n]; 
@@ -185,7 +288,11 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       noinsert1:;
       if (!*(ap+i)) {
 	/*        printf("create matrix at i %d rw %d col %d\n",i,brow,bcol);*/
-        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+        if (A->symmetric && brow == bcol) {
+          ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,1,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+        } else {
+          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+        }
       }
       /*      printf("numerical value at i %d row %d col %d cidx %d ridx %d value %g\n",i,brow,bcol,cidx,ridx,value);*/
       ierr = MatSetValues(ap[i],1,&ridx,1,&cidx,&value,is);CHKERRQ(ierr);
@@ -207,6 +314,7 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
   PetscInt          i,m,n,bs = 1,ncols;
   const PetscInt    *cols;
   const PetscScalar *values;
+  PetscTruth        flg;
 
   PetscFunctionBegin;
   ierr = MatLoad_SeqAIJ(viewer,MATSEQAIJ,&tmpA);CHKERRQ(ierr);
@@ -216,6 +324,12 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
     ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = MatCreateBlockMat(PETSC_COMM_SELF,m,n,bs,A);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-matload_symmetric","Store the matrix as symmetric","MatLoad",&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = MatSetOption(*A,MAT_SYMMETRIC);CHKERRQ(ierr);
+    }
+  ierr = PetscOptionsEnd();CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ierr = MatGetRow(tmpA,i,&ncols,&cols,&values);CHKERRQ(ierr);
     ierr = MatSetValues(*A,1,&i,ncols,cols,values,INSERT_VALUES);CHKERRQ(ierr);
@@ -259,6 +373,9 @@ PetscErrorCode MatDestroy_BlockMat(Mat mat)
   if (bmat->left) {
     ierr = VecDestroy(bmat->left);CHKERRQ(ierr);
   }
+  if (bmat->middle) {
+    ierr = VecDestroy(bmat->middle);CHKERRQ(ierr);
+  }
   if (bmat->diags) {
     for (i=0; i<mat->rmap.n/mat->rmap.bs; i++) {
       if (bmat->diags[i]) {ierr = MatDestroy(bmat->diags[i]);CHKERRQ(ierr);}
@@ -300,7 +417,6 @@ PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
     jrow = ii[i];
     ierr = VecPlaceArray(bmat->left,yy + bs*i);CHKERRQ(ierr);
     n    = ii[i+1] - jrow;
-    ierr = VecSet(bmat->left,0.0);CHKERRQ(ierr);
     for (j=0; j<n; j++) {
       ierr = VecPlaceArray(bmat->right,xx + bs*aj[jrow]);CHKERRQ(ierr);
       ierr = MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left);CHKERRQ(ierr);
@@ -308,6 +424,60 @@ PetscErrorCode MatMult_BlockMat(Mat A,Vec x,Vec y)
       jrow++;
     }
     ierr = VecResetArray(bmat->left);CHKERRQ(ierr);
+  }
+  ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMult_BlockMat_Symmetric"
+PetscErrorCode MatMult_BlockMat_Symmetric(Mat A,Vec x,Vec y)
+{
+  Mat_BlockMat   *bmat = (Mat_BlockMat*)A->data;  
+  PetscErrorCode ierr;
+  PetscScalar    *xx,*yy;
+  PetscInt       *aj,i,*ii,jrow,m = A->rmap.n/A->rmap.bs,bs = A->rmap.bs,n,j;
+  Mat            *aa;
+
+  PetscFunctionBegin;
+  CHKMEMQ;
+  /*
+     Standard CSR multiply except each entry is a Mat
+  */
+  ierr = VecGetArray(x,&xx);CHKERRQ(ierr);
+
+  ierr = VecSet(y,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(y,&yy);CHKERRQ(ierr);
+  aj  = bmat->j;
+  aa  = bmat->a;
+  ii  = bmat->i;
+  for (i=0; i<m; i++) {
+    jrow = ii[i];
+    n    = ii[i+1] - jrow;
+    ierr = VecPlaceArray(bmat->left,yy + bs*i);CHKERRQ(ierr);
+    ierr = VecPlaceArray(bmat->middle,xx + bs*i);CHKERRQ(ierr); 
+    /* if we ALWAYS required a diagonal entry then could remove this if test */
+    if (aj[jrow] == i) {
+      ierr = VecPlaceArray(bmat->right,xx + bs*aj[jrow]);CHKERRQ(ierr);
+      ierr = MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left);CHKERRQ(ierr);
+      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+      jrow++;
+      n--;
+    }
+    for (j=0; j<n; j++) {
+      ierr = VecPlaceArray(bmat->right,xx + bs*aj[jrow]);CHKERRQ(ierr);            /* upper triangular part */
+      ierr = MatMultAdd(aa[jrow],bmat->right,bmat->left,bmat->left);CHKERRQ(ierr);
+      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+
+      ierr = VecPlaceArray(bmat->right,yy + bs*aj[jrow]);CHKERRQ(ierr);            /* lower triangular part */
+      ierr = MatMultTransposeAdd(aa[jrow],bmat->middle,bmat->right,bmat->right);CHKERRQ(ierr);
+      ierr = VecResetArray(bmat->right);CHKERRQ(ierr);
+      jrow++;
+    }
+    ierr = VecResetArray(bmat->left);CHKERRQ(ierr);
+    ierr = VecResetArray(bmat->middle);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(x,&xx);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&yy);CHKERRQ(ierr);
@@ -353,6 +523,7 @@ PetscErrorCode MatSetBlockSize_BlockMat(Mat A,PetscInt bs)
   A->rmap.bs = A->cmap.bs = bs;
 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->middle);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
 
   
@@ -529,6 +700,21 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatSetOption_BlockMat"
+PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt)
+{
+  PetscFunctionBegin;
+  if (opt == MAT_SYMMETRIC) {
+    A->ops->relax = MatRelax_BlockMat_Symmetric;
+    A->ops->mult  = MatMult_BlockMat_Symmetric;
+  } else {
+    PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);
+  }
+  PetscFunctionReturn(0);
+}
+
+
 static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
        0,
        0,
@@ -552,7 +738,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_BlockMat,
 /*20*/ 0,
        MatAssemblyEnd_BlockMat,
        0,
-       0,
+       MatSetOption_BlockMat,
        0,
 /*25*/ 0,
        0,
@@ -644,7 +830,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatCreate_BlockMat"
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
 {
-  Mat_BlockMat    *b;
+  Mat_BlockMat   *b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -659,6 +845,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT);CHKERRQ(ierr);
+
+  ierr = PetscOptionsBegin(A->comm,A->prefix,"Matrix Option","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsEnd();
+
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

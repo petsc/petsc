@@ -770,7 +770,7 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op)
   case MAT_ROWS_UNSORTED:
   case MAT_YES_NEW_DIAGONALS:
   case MAT_USE_HASH_TABLE:
-    ierr = PetscInfo1(A,"Option %d ignored\n",op);CHKERRQ(ierr);
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_COLUMN_ORIENTED:
     a->roworiented = PETSC_FALSE;
@@ -789,6 +789,7 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op)
   case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
   case MAT_NOT_SYMMETRY_ETERNAL:
+    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
