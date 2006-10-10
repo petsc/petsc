@@ -15,7 +15,7 @@ typedef struct {
   SEQBAIJHEADER;
   Mat               *diags;
 
-  Vec               left,right,middle;   /* dummy vectors to perform local parts of product */
+  Vec               left,right,middle,workb;   /* dummy vectors to perform local parts of product */
 } Mat_BlockMat;      
 
 #undef __FUNCT__  
@@ -31,7 +31,7 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
   const PetscInt     *idx;
   IS                 row,col;
   MatFactorInfo      info;
-  Vec                left = a->left,right = a->right, middle;
+  Vec                left = a->left,right = a->right, middle = a->middle;
   Mat                *diag;
 
   PetscFunctionBegin;
@@ -48,37 +48,35 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
     ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
     for (i=0; i<mbs; i++) {
       ierr = MatGetOrdering(a->a[a->diag[i]], MATORDERING_ND,&row,&col);CHKERRQ(ierr);
-      ierr = MatLUFactorSymbolic(a->a[a->diag[i]],row,col,&info,a->diags+i);CHKERRQ(ierr);
-      ierr = MatLUFactorNumeric(a->a[a->diag[i]],&info,a->diags+i);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorSymbolic(a->a[a->diag[i]],row,&info,a->diags+i);CHKERRQ(ierr);
+      ierr = MatCholeskyFactorNumeric(a->a[a->diag[i]],&info,a->diags+i);CHKERRQ(ierr);
       ierr = ISDestroy(row);CHKERRQ(ierr);
       ierr = ISDestroy(col);CHKERRQ(ierr);
     }
+    ierr = VecDuplicate(bb,&a->workb);CHKERRQ(ierr);
   }
-  middle  = a->middle;
   diag    = a->diags;
 
   ierr = VecSet(xx,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   /* copy right hand side because it must be modified during iteration */
-  ierr = VecCopy(bb,middle);CHKERRQ(ierr);
-  ierr = VecGetArray(middle,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecCopy(bb,a->workb);CHKERRQ(ierr);
+  ierr = VecGetArray(a->workb,(PetscScalar**)&b);CHKERRQ(ierr);
 
   /* need to add code for when initial guess is zero, see MatRelax_SeqAIJ */
   while (its--) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 
       for (i=0; i<mbs; i++) {
-        n    = a->i[i+1] - a->i[i]; 
-        idx  = a->j + a->i[i];
-        v    = a->a + a->i[i];
+        n    = a->i[i+1] - a->i[i] - 1; 
+        idx  = a->j + a->i[i] + 1;
+        v    = a->a + a->i[i] + 1;
 
         ierr = VecSet(left,0.0);CHKERRQ(ierr);
         for (j=0; j<n; j++) {
-          if (idx[j] != i) {
-            ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
-            ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
-            ierr = VecResetArray(right);CHKERRQ(ierr);
-          }
+          ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
+          ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
+          ierr = VecResetArray(right);CHKERRQ(ierr);
         }
         ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
         ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
@@ -86,23 +84,30 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
 
         ierr = VecPlaceArray(right,x + i*bs);CHKERRQ(ierr);
         ierr = MatSolve(diag[i],left,right);CHKERRQ(ierr);
+
+        /* now adjust right hand side, see MatRelax_SeqSBAIJ */
+        for (j=0; j<n; j++) {
+          ierr = MatMultTranspose(v[j],right,left);CHKERRQ(ierr);
+          ierr = VecPlaceArray(middle,b + idx[j]*bs);CHKERRQ(ierr);
+          ierr = VecAXPY(middle,-1.0,left);CHKERRQ(ierr);
+          ierr = VecResetArray(middle);CHKERRQ(ierr);
+        }
         ierr = VecResetArray(right);CHKERRQ(ierr);
+
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 
       for (i=mbs-1; i>=0; i--) {
-        n    = a->i[i+1] - a->i[i]; 
-        idx  = a->j + a->i[i];
-        v    = a->a + a->i[i];
+        n    = a->i[i+1] - a->i[i] - 1; 
+        idx  = a->j + a->i[i] + 1;
+        v    = a->a + a->i[i] + 1;
 
         ierr = VecSet(left,0.0);CHKERRQ(ierr);
         for (j=0; j<n; j++) {
-          if (idx[j] != i) {
-            ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
-            ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
-            ierr = VecResetArray(right);CHKERRQ(ierr);
-          }
+          ierr = VecPlaceArray(right,x + idx[j]*bs);CHKERRQ(ierr);
+          ierr = MatMultAdd(v[j],right,left,left);CHKERRQ(ierr);
+          ierr = VecResetArray(right);CHKERRQ(ierr);
         }
         ierr = VecPlaceArray(right,b + i*bs);CHKERRQ(ierr);
         ierr = VecAYPX(left,-1.0,right);CHKERRQ(ierr);
@@ -116,7 +121,7 @@ PetscErrorCode MatRelax_BlockMat_Symmetric(Mat A,Vec bb,PetscReal omega,MatSORTy
     }
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
-  ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  ierr = VecRestoreArray(a->workb,(PetscScalar**)&b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -251,7 +256,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       if (in[l] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap.n-1);
 #endif
       col = in[l]; bcol = col/bs;
-      if (A->symmetric && row > col) continue;
+      if (A->symmetric && brow > bcol) continue;
       ridx = row % bs; cidx = col % bs;
       if (roworiented) {
         value = v[l + k*n]; 
@@ -289,7 +294,8 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       if (!*(ap+i)) {
 	/*        printf("create matrix at i %d rw %d col %d\n",i,brow,bcol);*/
         if (A->symmetric && brow == bcol) {
-          ierr = MatCreateSeqSBAIJ(PETSC_COMM_SELF,1,bs,bs,0,0,ap+i);CHKERRQ(ierr);
+          /* don't use SBAIJ since want to reorder in sparse factorization */
+          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr); 
         } else {
           ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
         }
@@ -375,6 +381,9 @@ PetscErrorCode MatDestroy_BlockMat(Mat mat)
   }
   if (bmat->middle) {
     ierr = VecDestroy(bmat->middle);CHKERRQ(ierr);
+  }
+  if (bmat->workb) {
+    ierr = VecDestroy(bmat->workb);CHKERRQ(ierr);
   }
   if (bmat->diags) {
     for (i=0; i<mat->rmap.n/mat->rmap.bs; i++) {
@@ -523,9 +532,8 @@ PetscErrorCode MatSetBlockSize_BlockMat(Mat A,PetscInt bs)
   A->rmap.bs = A->cmap.bs = bs;
 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
-  ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->middle);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->middle);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
-
   
   ierr = PetscMalloc2(A->rmap.n,PetscInt,&bmat->imax,A->rmap.n,PetscInt,&bmat->ilen);CHKERRQ(ierr);
   for (i=0; i<A->rmap.n; i++) bmat->imax[i] = nz;
@@ -614,8 +622,13 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,PetscInt csize,M
   } else {  
     ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(C,MATSEQAIJ);CHKERRQ(ierr);
-    ierr = MatSeqAIJSetPreallocation_SeqAIJ(C,0,ailen);CHKERRQ(ierr);
+    if (A->symmetric) {
+      ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(C,MATSEQAIJ);CHKERRQ(ierr);
+    }
+    ierr = MatSeqAIJSetPreallocation(C,0,ailen);CHKERRQ(ierr);
+    ierr = MatSeqSBAIJSetPreallocation(C,1,0,ailen);CHKERRQ(ierr);
   }
   c = (Mat_SeqAIJ*)C->data;
   

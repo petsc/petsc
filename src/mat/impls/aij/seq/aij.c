@@ -1089,7 +1089,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     ierr     = PetscMalloc(3*m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
     a->ssor  = a->idiag + m;
     mdiag    = a->ssor + m;
-
     v        = a->a;
 
     /* this is wrong when fshift omega changes each iteration */

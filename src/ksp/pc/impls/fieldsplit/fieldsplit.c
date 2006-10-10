@@ -133,7 +133,6 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 	ierr     = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
         jac->csize[i] = ccsize/nsplit;
       } else {
-	printf("ilink nfields %d\n",ilink->nfields);
         if (ilink->nfields > 1) {
 	  PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
 	  ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
