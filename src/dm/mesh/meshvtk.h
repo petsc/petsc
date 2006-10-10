@@ -66,7 +66,6 @@ class VTKViewer {
 
     PetscFunctionBegin;
     if (field->commRank() == 0) {
-      std::cout << "Outputing field" << std::endl;
       for(typename Section::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const typename Section::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
 

@@ -593,7 +593,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal 
   IS   localIS, globalIS;
 
   ierr = VecCreate(m->comm(), &globalVec);CHKERRQ(ierr);
-  ierr = VecSetSizes(globalVec, localSize, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = VecSetSizes(globalVec, globalOrder->getLocalSize(), PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = VecSetFromOptions(globalVec);CHKERRQ(ierr);
   // Loop over all local points
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
