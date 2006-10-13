@@ -2203,7 +2203,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     nz             = 0;
   }
 
-  ierr = PetscOptionsBegin(B->comm,B->prefix,"Options for SEQBAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(B->comm,B->prefix,"Block options for SEQBAIJ matrix 1","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSeqBAIJSetPreallocation",bs,&newbs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -2236,7 +2236,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   }
 
   b       = (Mat_SeqBAIJ*)B->data;
-  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Options for SEQBAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Optimize options for SEQBAIJ matrix 2 ","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 

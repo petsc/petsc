@@ -326,12 +326,12 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
   ierr = MatLoad_SeqAIJ(viewer,MATSEQAIJ,&tmpA);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(tmpA,&m,&n);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 1","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   ierr = MatCreateBlockMat(PETSC_COMM_SELF,m,n,bs,A);CHKERRQ(ierr);
-  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsName("-matload_symmetric","Store the matrix as symmetric","MatLoad",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(PETSC_COMM_SELF,PETSC_NULL,"Options for loading BlockMat matrix 2","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsName("-matload_symmetric","Store the matrix as symmetric","MatLoad",&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = MatSetOption(*A,MAT_SYMMETRIC);CHKERRQ(ierr);
     }
