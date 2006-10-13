@@ -177,9 +177,9 @@ extern "C" {
   def checkMath(self):
     '''Check for sin() in libm, the math library'''
     self.math = None
-    funcs = ['sin', 'floor', 'log10', 'sqrt']
+    funcs = ['sin', 'floor', 'log10', 'pow']
     prototypes = ['double sin(double);', 'double floor(double);', 'double log10(double);', 'double pow(double, double);']
-    calls = ['double x; sin(x);\n', 'double x; floor(x);\n', 'double x; log10(x);\n', 'double x; pow(x, x);\n']
+    calls = ['double x; sin(x);\n', 'double x; floor(x);\n', 'double x; log10(x);\n', 'double x,y ; y = pow(x, x);\n']
     if self.check('', funcs, prototype = prototypes, call = calls):
       self.logPrint('Math functions are linked in by default')
       self.math = []
