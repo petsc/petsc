@@ -107,7 +107,7 @@ PetscErrorCode PetscOptionsHelpFindList(const char prefix[],const char title[],c
     ierr = PetscStrcmp(help->title,title,&flg2);CHKERRQ(ierr);
     ierr = PetscStrcmp(help->mansec,mansec,&flg3);CHKERRQ(ierr);
     if (flg1 && flg2 && flg3) {
-      *flg = 1;
+      *flg = PETSC_TRUE;
       break;
     }
     help = help->next;
