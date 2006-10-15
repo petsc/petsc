@@ -263,6 +263,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       } else {
         value = v[k + l*m];
       }
+      /*      printf(" brow %d bcol %d\n",brow,bcol);*/
       if (col <= lastcol) low = 0; else high = nrow;
       lastcol = col;
       while (high-low > 7) {
@@ -282,8 +283,8 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       MatSeqXAIJReallocateAIJ(A,a->mbs,1,nrow,brow,bcol,rmax,aa,ai,aj,rp,ap,imax,nonew,Mat);
       N = nrow++ - 1; high++;
       /* shift up all the later entries in this row */
-      /*      printf("N %d i %d\n",N,i);*/
       for (ii=N; ii>=i; ii--) {
+	/* printf("shiffting N %d i %d ii %d brow %d bcol %d\n",N,i,ii,brow,bcol);*/
         rp[ii+1] = rp[ii];
         ap[ii+1] = ap[ii];
       }
@@ -292,7 +293,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       a->nz++;
       noinsert1:;
       if (!*(ap+i)) {
-	/*        printf("create matrix at i %d rw %d col %d\n",i,brow,bcol);*/
+	/*printf("create matrix at i %d rw %d col %d\n",i,brow,bcol);*/
         if (A->symmetric && brow == bcol) {
           /* don't use SBAIJ since want to reorder in sparse factorization */
           ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr); 
@@ -307,6 +308,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
     /*    printf("nrow for row %d %d\n",nrow,brow);*/
     ailen[brow] = nrow;
   }
+  /*printf("nz %d\n",a->nz);*/
   A->same_nonzero = PETSC_FALSE;
   PetscFunctionReturn(0);
 } 
@@ -317,11 +319,12 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
 {
   PetscErrorCode    ierr;
   Mat               tmpA;
-  PetscInt          i,j,m,n,bs = 1,ncols,*lens,currentcol,mbs,**ii,*ilens,nextcol;
+  PetscInt          i,j,m,n,bs = 1,ncols,*lens,currentcol,mbs,**ii,*ilens,nextcol,*llens,cnt = 0;
   const PetscInt    *cols;
   const PetscScalar *values;
   PetscTruth        flg,notdone;
   Mat_SeqAIJ        *a;
+  Mat_BlockMat      *amat;
 
   PetscFunctionBegin;
   ierr = MatLoad_SeqAIJ(viewer,MATSEQAIJ,&tmpA);CHKERRQ(ierr);
@@ -332,6 +335,7 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
     ierr = PetscOptionsName("-matload_symmetric","Store the matrix as symmetric","MatLoad",&flg);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
+  /* Determine number of nonzero blocks for each block row */
   a    = (Mat_SeqAIJ*) tmpA->data;
   mbs  = m/bs;
   ierr = PetscMalloc3(mbs,PetscInt,&lens,bs,PetscInt,&ii,bs,PetscInt,&ilens);CHKERRQ(ierr);
@@ -339,25 +343,21 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
 
   for (i=0; i<mbs; i++) {
     for (j=0; j<bs; j++) {
-      currentcol    = -1;
-      CHKMEMQ;
       ii[j]         = a->j + a->i[i*bs + j];
-      CHKMEMQ;
       ilens[j]      = a->i[i*bs + j + 1] - a->i[i*bs + j];
-      CHKMEMQ;
       /*      printf("j %d length %d\n",j,ilens[j]);*/
     } 
+
+    currentcol = -1;
     notdone = PETSC_TRUE;
     while (PETSC_TRUE) {
       notdone = PETSC_FALSE;
       nextcol = 1000000000;
       for (j=0; j<bs; j++) {
 	/*	printf("loop j %d length %d\n",j,ilens[j]); */
-        while ((ii[j][0]/bs <= currentcol && ilens[j] > 0) || (flg && ii[j][0]/bs < i)) {
+        while ((ilens[j] > 0 && ii[j][0]/bs <= currentcol)) {
           ii[j]++; 
-      CHKMEMQ;
           ilens[j]--; 
-      CHKMEMQ;
         }
         if (ilens[j] > 0) {
           notdone = PETSC_TRUE;
@@ -365,20 +365,75 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
         }
       }
       if (!notdone) break;
+      printf("i %d currentcol %d lens[i] %d\n",i,currentcol,lens[i]);
+      if (!flg || (nextcol >= i)) lens[i]++;
       currentcol = nextcol;
-      CHKMEMQ;
-      lens[i]++;
-      CHKMEMQ;
     }
-    /*    printf("len of i %d %d\n",i,lens[i]);*/
+     printf("len of i %d %d\n",i,lens[i]);
   }
-      CHKMEMQ;
 
   ierr = MatCreateBlockMat(PETSC_COMM_SELF,m,n,bs,0,lens,A);CHKERRQ(ierr);
-  ierr = PetscFree3(lens,ii,ilens);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetOption(*A,MAT_SYMMETRIC);CHKERRQ(ierr);
   }
+  amat = (Mat_BlockMat*)(*A)->data;
+
+  /* preallocate the submatrices */
+  ierr = PetscMalloc(bs*sizeof(PetscInt),&llens);CHKERRQ(ierr);
+  for (i=0; i<mbs; i++) { /* loops for block rows */
+    for (j=0; j<bs; j++) {
+      ii[j]         = a->j + a->i[i*bs + j];
+      ilens[j]      = a->i[i*bs + j + 1] - a->i[i*bs + j];
+      /* printf("j %d length %d\n",j,ilens[j]);*/
+    } 
+
+    currentcol = 1000000000;
+    for (j=0; j<bs; j++) { /* loop over rows in block finding first nonzero block */
+      if (ilens[j] > 0) {
+	currentcol = PetscMin(currentcol,ii[j][0]/bs);
+      }
+    }
+
+    notdone = PETSC_TRUE;
+    while (PETSC_TRUE) {  /* loops over blocks in block row */
+
+      notdone = PETSC_FALSE;
+      nextcol = 1000000000;
+      ierr = PetscMemzero(llens,bs*sizeof(PetscInt));CHKERRQ(ierr);
+      for (j=0; j<bs; j++) { /* loop over rows in block */
+	/*printf("loop j %d length %d\n",j,ilens[j]); */
+	/*printf("current col %d %d\n",currentcol,ii[j][0]/bs);*/
+        while ((ilens[j] > 0 && ii[j][0]/bs <= currentcol)) { /* loop over columns in row */
+	  /*printf("j %d in llens[j] %d\n",j,llens[j]);*/
+          ii[j]++; 
+          ilens[j]--; 
+          llens[j]++;
+        }
+        if (ilens[j] > 0) {
+          notdone = PETSC_TRUE;
+          nextcol = PetscMin(nextcol,ii[j][0]/bs);
+        }
+      }
+      printf("cnt %d llens %d %d %d %d\n",cnt,llens[0],llens[1],llens[2],llens[3]);
+      if (cnt >= amat->maxnz) SETERRQ1(PETSC_ERR_PLIB,"Number of blocks found greater than expected %D",cnt);
+      if (!flg || currentcol >= i) {
+        amat->j[cnt] = currentcol;
+        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,llens,amat->a+cnt++);CHKERRQ(ierr);
+        /*printf("mat %p row %d col %d\n",amat->a[cnt-1],i,currentcol);*/
+      }
+
+      if (!notdone) break;
+      currentcol = nextcol;
+    }
+    amat->ilen[i] = lens[i];
+  }
+  CHKMEMQ;
+  /*printf("total cnt %d\n",cnt);*/
+
+  ierr = PetscFree3(lens,ii,ilens);CHKERRQ(ierr);
+  ierr = PetscFree(llens);CHKERRQ(ierr);
+
+  /* copy over the matrix, one row at a time */
   for (i=0; i<m; i++) {
     ierr = MatGetRow(tmpA,i,&ncols,&cols,&values);CHKERRQ(ierr);
     ierr = MatSetValues(*A,1,&i,ncols,cols,values,INSERT_VALUES);CHKERRQ(ierr);
@@ -697,6 +752,7 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 #if defined(PETSC_USE_DEBUG)
     if (!aa[i]) SETERRQ3(PETSC_ERR_PLIB,"Null matrix at location %D column %D nz %D",i,aj[i],a->nz);
 #endif
+    /*printf("mat assembly %p col %d\n",aa[i],aj[i]);*/
     ierr = MatAssemblyBegin(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(aa[i],MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   }
@@ -894,7 +950,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation_BlockMat(Mat A,Pet
   A->rmap.bs = A->cmap.bs = bs;
   bmat->mbs  = A->rmap.n/bs;
 
-  printf("A->rmap.n%d %d\n",A->rmap.n, bs);
+  /*printf("A->rmap.n%d %d\n",A->rmap.n, bs);*/
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->middle);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
@@ -909,6 +965,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation_BlockMat(Mat A,Pet
   } else {
     SETERRQ(PETSC_ERR_SUP,"Currently requires block row by row preallocation");
   }
+
+  /*printf("nz in p;real %d\n",nz);*/
 
   /* bmat->ilen will count nonzeros in each row so far. */
   for (i=0; i<bmat->mbs; i++) { bmat->ilen[i] = 0;}
