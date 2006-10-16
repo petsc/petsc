@@ -690,6 +690,47 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MeshInterpolatePoints"
+// Here we assume:
+//  - Assumes 3D and tetrahedron
+//  - The section takes values on vertices and is P1
+//  - Points have the same dimension as the mesh
+//  - All values have the same dimension
+PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, double *points, double **values)
+{
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
+  double        *v0, *J, *invJ, detJ;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  int embedDim = coordinates->getFiberDimension(0, *m->getTopology()->depthStratum(0, 0)->begin());
+  int dim      = s->getFiberDimension(0, *m->getTopology()->depthStratum(0, 0)->begin());
+
+  ierr = PetscMalloc3(embedDim,double,&v0,embedDim*embedDim,double,&J,embedDim*embedDim,double,&invJ);CHKERRQ(ierr);
+  ierr = PetscMalloc(numPoints*dim * sizeof(double), &values);CHKERRQ(ierr);
+  for(int p = 0; p < numPoints; p++) {
+    double *point = &points[p*embedDim];
+    ALE::Mesh::point_type e = m->locatePoint(0, point);
+    const ALE::Mesh::real_section_type::value_type *coeff = s->restrict(0, e);
+
+    m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
+    double xi   = (invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]))*0.5;
+    double eta  = (invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]))*0.5;
+    double zeta = (invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]))*0.5;
+
+    for(int d = 0; d < dim; d++) {
+      (*values)[p*dim+d] = coeff[0*dim+d]*(1 - xi - eta - zeta) + coeff[1*dim+d]*xi + coeff[2*dim+d]*eta + coeff[3*dim+d]*zeta;
+    }
+  }
+  ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN PetscErrorCode assembleFullField(VecScatter, Vec, Vec, InsertMode);
 
 #undef __FUNCT__
