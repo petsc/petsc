@@ -577,6 +577,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
     ierr = PetscOptionsReal("-mat_mumps_cntl_1","CNTL(1): relative pivoting threshold","None",lu->id.CNTL(1),&lu->id.CNTL(1),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_2","CNTL(2): stopping criterion of refinement","None",lu->id.CNTL(2),&lu->id.CNTL(2),PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_mumps_cntl_3","CNTL(3): absolute pivoting threshold","None",lu->id.CNTL(3),&lu->id.CNTL(3),PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-mat_mumps_cntl_4","CNTL(4): value for static pivoting","None",lu->id.CNTL(4),&lu->id.CNTL(4),PETSC_NULL);CHKERRQ(ierr);
     PetscOptionsEnd();
   }
 

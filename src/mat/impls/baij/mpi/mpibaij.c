@@ -2322,7 +2322,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
   b->ht_total_ct  = 0;
   b->ht_insert_ct = 0;
 
-  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Options for loading MPIBAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Options for loading MPIBAIJ matrix 1","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { 
       PetscReal fact = 1.39;
@@ -2704,7 +2704,7 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   PetscInt       dcount,kmax,k,nzcount,tmp,mend;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading MPIBAIJ matrix","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm,PETSC_NULL,"Options for loading MPIBAIJ matrix 2","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-matload_block_size","Set the blocksize used to store the matrix","MatLoad",bs,&bs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
