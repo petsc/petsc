@@ -288,27 +288,24 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Atlas>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Mesh>& mesh, const Obj<Atlas>& atlas, MatType mtype, Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& atlas, MatType mtype, Mat *J)
 {
-  const ALE::Obj<ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh->getTopology(), 0, "default", atlas);
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", atlas);
   int localSize  = order->getLocalSize();
   int globalSize = order->getGlobalSize();
-  PetscObjectContainer c;
-  PetscErrorCode       ierr;
 
   PetscFunctionBegin;
-  ierr = MatCreate(mesh->comm(), J);CHKERRQ(ierr);
+  ierr = MatCreate(m->comm(), J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
   //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
+  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);
 
-  ierr = PetscObjectContainerCreate(mesh->comm(), &c);
-  ierr = PetscObjectContainerSetPointer(c, mesh.ptr());
-  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) c);
-  ierr = PetscObjectContainerDestroy(c);
-
-  ierr = preallocateOperator(mesh.ptr(), atlas, order, *J);CHKERRQ(ierr);
+  ierr = preallocateOperator(m.ptr(), atlas, order, *J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -324,7 +321,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
   ALE::Obj<ALE::Mesh::real_section_type> s = new ALE::Mesh::real_section_type(m->getTopology());
   s->setFiberDimensionByDepth(0, 0, 1);
   s->allocate();
-  ierr = MeshCreateMatrix(m, s->getAtlas(), mtype, J);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(mesh, s->getAtlas(), mtype, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -363,7 +360,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(m, m->getRealSection("default")->getAtlas(), mtype, J);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(mesh, m->getRealSection("default")->getAtlas(), mtype, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -893,20 +890,24 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::real_section_type
 @*/
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
-  PetscObjectContainer c;
-  ALE::Mesh           *mesh;
-  PetscErrorCode       ierr;
+  Mesh           mesh;
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_assembleMatrix,0,0,0,0);CHKERRQ(ierr);
-  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &c);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(c, (void **) &mesh);CHKERRQ(ierr);
+  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   try {
-    const ALE::Obj<ALE::Mesh::topology_type>& topology = mesh->getTopology();
-    const ALE::Obj<ALE::Mesh::numbering_type>& cNumbering = mesh->getFactory()->getLocalNumbering(topology, 0, topology->depth());
-    const ALE::Obj<ALE::Mesh::order_type>& globalOrder = mesh->getFactory()->getGlobalOrder(topology, 0, "displacement", mesh->getRealSection("displacement")->getAtlas());
+    const ALE::Obj<ALE::Mesh::topology_type>&     topology    = m->getTopology();
+    const ALE::Obj<ALE::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(topology, 0, topology->depth());
+    const ALE::Obj<ALE::Mesh::real_section_type>& section     = m->getRealSection("default");
+    const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(topology, 0, "default", section->getAtlas());
 
-    ierr = updateOperator(A, mesh->getRealSection("displacement"), globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
+    if (section->debug()) {
+      std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
+    }
+    ierr = updateOperator(A, section, globalOrder, cNumbering->getPoint(e), v, mode);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e.msg() << std::endl;
   }
@@ -1106,6 +1107,46 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   }
   if (bcFilename) {
     ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename), numBdFaces, numBdVertices);
+  }
+  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCreatePyLith"
+/*@C
+  MeshCreatePyLith - Create a Mesh from PyLith files.
+
+  Not Collective
+
+  Input Parameters:
++ dim - The topological mesh dimension
+. baseFilename - The basename for mesh files
+. zeroBase - Use 0 to start numbering
+- interpolate - The flag for mesh interpolation
+
+  Output Parameter:
+. mesh - The Mesh object
+
+  Level: beginner
+
+.keywords: mesh, PCICE
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscTruth zeroBase, PetscTruth interpolate, Mesh *mesh)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscInt            debug = 0;
+  PetscTruth          flag;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  try {
+    m  = ALE::PyLith::Builder::readMesh(comm, dim, std::string(baseFilename), zeroBase, interpolate, debug);
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
   }
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
