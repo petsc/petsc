@@ -6,9 +6,6 @@
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 #include "petscksp.h"
 
-#undef CONTIGUOUS_COLOR
-#define INTER_COLOR
-
 typedef struct {
   PC         pc;                   /* actual preconditioner used on each processor */
   Vec        xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of pc->comm */
@@ -75,7 +72,7 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt
   PC_Redundant   *red=(PC_Redundant*)pc->data;
   PetscInt       nsubcomm=red->nsubcomm,nsends,nrecvs,i,prid=100,itmp;
   PetscMPIInt    *send_rank,*recv_rank;
-  PetscInt       *rowrange=pc->pmat->rmap.range,mlocal_max,nzlocal;
+  PetscInt       *rowrange=pc->pmat->rmap.range,nzlocal;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat            A=aij->A,B=aij->B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
@@ -159,7 +156,6 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt
     rptr[0] = 0;
     for (i=0; i<rend-rstart; i++){
       row = i + rstart;
-      if (rank == prid) printf(" \n row %d: ",row);
       nzA    = a->i[i+1] - a->i[i]; nzB = b->i[i+1] - b->i[i];
       ncols  = nzA + nzB;
       cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i]; 
@@ -170,23 +166,20 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt
         if ((ctmp = bmap[cworkB[l]]) < cstart){
           vals[lwrite]   = aworkB[l];
           cols[lwrite++] = ctmp;
-          if (rank == prid) printf(" (%d,%g)",ctmp,aworkB[l]);
         }
       }
       for (l=0; l<nzA; l++){
         vals[lwrite]   = aworkA[l];
         cols[lwrite++] = cstart + cworkA[l];
-        if (rank == prid) printf(" (%d,%g)",cstart + cworkA[l],aworkA[l]);
       }
       for (l=0; l<nzB; l++) {
         if ((ctmp = bmap[cworkB[l]]) >= cend){
           vals[lwrite]   = aworkB[l];
           cols[lwrite++] = ctmp;
-          if (rank == prid) printf(" (%d,%g)",ctmp,aworkB[l]);
         }
       }
       /* insert local matrix values into C */
-      //ierr = MatSetValues(C,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      /* ierr = MatSetValues(C,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr); */
 
       vals += ncols;
       cols += ncols;
@@ -338,7 +331,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   MPI_Comm       comm;
   Vec            vec;
 
-  PetscMPIInt rank,size_sub,itmp;
   PetscInt    mlocal_sub;
   PetscMPIInt subsize,subrank;
   PetscInt    rstart_sub,rend_sub,mloc_sub;
@@ -354,7 +346,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
     ierr = VecGetOwnershipRange(vec,&mstart,&mend);CHKERRQ(ierr);
 
-#ifdef INTER_COLOR
     /* get local size of xsub/ysub */    
     ierr = MPI_Comm_size(red->subcomm,&subsize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(red->subcomm,&subrank);CHKERRQ(ierr);
@@ -368,12 +359,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecCreateMPI(red->subcomm,mloc_sub,PETSC_DECIDE,&red->ysub);CHKERRQ(ierr);
     /* create xsub with empty local arrays, because xdup's arrays will be placed into it */
     ierr = VecCreateMPIWithArray(red->subcomm,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
-#endif
-#ifdef CONTIGUOUS_COLOR
-    ierr = VecCreateMPI(red->subcomm,PETSC_DECIDE,m,&red->ysub);CHKERRQ(ierr);   
-    ierr = VecGetLocalSize(red->ysub,&mloc_sub);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(red->subcomm,mloc_sub,m,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
-#endif
 
     /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it. 
        Note: we use communicator dupcomm, not pc->comm! */      
@@ -468,7 +453,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   ierr = PCSetUp(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Redundant"
@@ -731,21 +715,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   }
 
   /* find color for this proc */
-#ifdef INTER_COLOR
   color   = rank%nsubcomm;
   subrank = rank/nsubcomm;
-#endif
-
-#ifdef CONTIGUOUS_COLOR
-  color = 0; subrank = 0; i = 0; j=0; 
-  while (i < size){
-    if (rank == i) break; /* my color is found */
-    if (j >= subsize[color]-1){ /* next subcomm */
-      j = -1; subrank = -1; color++;
-    }
-    i++; j++; subrank++;
-  }
-#endif
 
   ierr = MPI_Comm_split(pc->comm,color,subrank,&subcomm);CHKERRQ(ierr);
   red->subcomm  = subcomm; 
