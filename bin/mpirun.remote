@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+#  mpirun for use with the PETSC_ARCH remote
+#
+ssh=`grep SSH ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
+workmachine=`grep WORKMACHINE ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
+workspace=`grep WORKSPACE ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
+workpetscdir=`grep WORKPETSCDIR ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
+workpetscarch=`grep WORKPETSCARCH ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
+progname=$*
+
+$ssh $workmachine "cd $workspace ; setenv PETSC_DIR $workpetscdir ; setenv PETSC_ARCH $workpetscarch; petscmpirun $progname"
+
+exit 0
+
