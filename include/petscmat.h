@@ -77,6 +77,7 @@ E*/
 #define MATPLAPACK         "plapack"
 #define MATSCATTER         "scatter"
 #define MATBLOCKMAT        "blockmat"
+#define MATCOMPOSITE       "composite"
 #define MatType const char*
 
 /* Logging support */
@@ -254,7 +255,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateScatter(MPI_Comm,VecScatter,Ma
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat,VecScatter);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat,VecScatter*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateBlockMat(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,Mat*);
-
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat,Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat);
