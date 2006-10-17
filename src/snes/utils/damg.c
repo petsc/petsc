@@ -302,7 +302,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
         ierr = VecView(dmmg[i]->x,PETSC_VIEWER_DRAW_(dmmg[i]->comm));CHKERRQ(ierr);
       }
       ierr = MatInterpolate(dmmg[i+1]->R,dmmg[i]->x,dmmg[i+1]->x);CHKERRQ(ierr);
-      if (dmmg[i+1]->ksp && !dmmg[i+1]->ksp) {
+      if (dmmg[i+1]->ksp && !dmmg[i+1]->snes) {
         ierr = KSPSetInitialGuessNonzero(dmmg[i+1]->ksp,PETSC_TRUE);CHKERRQ(ierr);
       }
     }
@@ -332,29 +332,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
-  PetscInt       i;
-  PC             pc;
-  PetscTruth     ismg;
-  KSP            lksp;
 
   PetscFunctionBegin;
   if (dmmg[level]->rhs) {
     CHKMEMQ;
     ierr = (*dmmg[level]->rhs)(dmmg[level],dmmg[level]->b);CHKERRQ(ierr); 
     CHKMEMQ;
-  }
-  if (dmmg[level]->matricesset) {
-    /* user has called DMMGSetKSP() again so must tell mg about the new matrices */
-    ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-    ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
-    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
-    if (ismg) {
-      for (i=0; i<=level; i++) {
-	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
-	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-      }
-    }
-    dmmg[level]->matricesset = PETSC_FALSE;
   }
   ierr = KSPSolve(dmmg[level]->ksp,dmmg[level]->b,dmmg[level]->x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -463,8 +446,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(DMMG,Vec),PetscErrorCode (*func)(DMMG,Mat,Mat))
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
-  PetscTruth     galerkin;
+  PetscInt       i,nlevels = dmmg[0]->nlevels,level;
+  PetscTruth     galerkin,ismg;
+  PC             pc;
+  KSP            lksp;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
@@ -510,12 +495,24 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     if (!dmmg[i]->galerkin) {
       ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
     }
-    dmmg[i]->matricesset = PETSC_TRUE;
   }
 
   for (i=0; i<nlevels-1; i++) {
     ierr = KSPSetOptionsPrefix(dmmg[i]->ksp,"dmmg_");CHKERRQ(ierr);
   }
+
+  for (level=0; level<nlevels; level++) {
+    ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+    if (ismg) {
+      for (i=0; i<=level; i++) {
+	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
+	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+    }
+  }
+
   PetscFunctionReturn(0);
 }
 

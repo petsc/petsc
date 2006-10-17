@@ -34,7 +34,6 @@ struct _n_DMMG {
   /* KSP only */
   KSP            ksp;             
   PetscErrorCode (*rhs)(DMMG,Vec);
-  PetscTruth     matricesset;               /* User had called DMMGSetKSP() and the matrices have been computed */
 
   /* SNES only */
   Vec            Rscale;                 /* scaling to restriction before computing Jacobian */
