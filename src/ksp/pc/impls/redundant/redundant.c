@@ -6,15 +6,12 @@
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 #include "petscksp.h"
 
-#undef CONTIGUOUS_COLOR
-#define INTER_COLOR
-
 typedef struct {
   PC         pc;                   /* actual preconditioner used on each processor */
   Vec        xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of pc->comm */
   Vec        xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
   Mat        *pmats;               /* matrix and optional preconditioner matrix */
-  Mat        pmats_sub;            /* matrix and optional preconditioner matrix */
+  Mat        pmats_sub;            /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
   PetscTruth useparallelmat;
   MPI_Comm   subcomm;              /* processors belong to a subcommunicator implement a PC in parallel */
@@ -67,15 +64,14 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRedundantMatrix"
-PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt mlocal_sub,Mat *matredundant)
+PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_sub,MatReuse reuse,Mat *matredundant)
 {
   PetscMPIInt    rank,size,subrank,subsize;
   MPI_Comm       comm=mat->comm;
   PetscErrorCode ierr;
-  PC_Redundant   *red=(PC_Redundant*)pc->data;
-  PetscInt       nsubcomm=red->nsubcomm,nsends,nrecvs,i,prid=100,itmp;
+  PetscInt       nsends,nrecvs,i,prid=100,itmp;
   PetscMPIInt    *send_rank,*recv_rank;
-  PetscInt       *rowrange=pc->pmat->rmap.range,mlocal_max,nzlocal;
+  PetscInt       *rowrange=mat->rmap.range,nzlocal;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat            A=aij->A,B=aij->B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
@@ -88,14 +84,12 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt
   PetscInt       rstart=mat->rmap.rstart,rend=mat->rmap.rend,*bmap=aij->garray,M,N;
   PetscInt       *cols,ctmp,lwrite,*rptr,l;
   PetscScalar    *vals,*aworkA,*aworkB;
-
   PetscMPIInt    tag1,tag2,tag3,imdex;
   MPI_Request    *s_waits1,*s_waits2,*s_waits3,*r_waits1,*r_waits2,*r_waits3;
   MPI_Status     recv_status,*send_status; 
   PetscInt       *sbuf_nz,*rbuf_nz,count;
-
-  PetscInt     **rbuf_j;
-  PetscScalar  **rbuf_a;
+  PetscInt       **rbuf_j;
+  PetscScalar    **rbuf_a;
 
   PetscFunctionBegin;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);
@@ -159,7 +153,6 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt
     rptr[0] = 0;
     for (i=0; i<rend-rstart; i++){
       row = i + rstart;
-      if (rank == prid) printf(" \n row %d: ",row);
       nzA    = a->i[i+1] - a->i[i]; nzB = b->i[i+1] - b->i[i];
       ncols  = nzA + nzB;
       cworkA = a->j + a->i[i]; cworkB = b->j + b->i[i]; 
@@ -170,23 +163,20 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(PC pc,Mat mat,MPI_Comm subcomm,PetscInt
         if ((ctmp = bmap[cworkB[l]]) < cstart){
           vals[lwrite]   = aworkB[l];
           cols[lwrite++] = ctmp;
-          if (rank == prid) printf(" (%d,%g)",ctmp,aworkB[l]);
         }
       }
       for (l=0; l<nzA; l++){
         vals[lwrite]   = aworkA[l];
         cols[lwrite++] = cstart + cworkA[l];
-        if (rank == prid) printf(" (%d,%g)",cstart + cworkA[l],aworkA[l]);
       }
       for (l=0; l<nzB; l++) {
         if ((ctmp = bmap[cworkB[l]]) >= cend){
           vals[lwrite]   = aworkB[l];
           cols[lwrite++] = ctmp;
-          if (rank == prid) printf(" (%d,%g)",ctmp,aworkB[l]);
         }
       }
       /* insert local matrix values into C */
-      //ierr = MatSetValues(C,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
+      /* ierr = MatSetValues(C,1,&row,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr); */
 
       vals += ncols;
       cols += ncols;
@@ -338,7 +328,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   MPI_Comm       comm;
   Vec            vec;
 
-  PetscMPIInt rank,size_sub,itmp;
   PetscInt    mlocal_sub;
   PetscMPIInt subsize,subrank;
   PetscInt    rstart_sub,rend_sub,mloc_sub;
@@ -354,7 +343,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
     ierr = VecGetOwnershipRange(vec,&mstart,&mend);CHKERRQ(ierr);
 
-#ifdef INTER_COLOR
     /* get local size of xsub/ysub */    
     ierr = MPI_Comm_size(red->subcomm,&subsize);CHKERRQ(ierr);
     ierr = MPI_Comm_rank(red->subcomm,&subrank);CHKERRQ(ierr);
@@ -368,12 +356,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecCreateMPI(red->subcomm,mloc_sub,PETSC_DECIDE,&red->ysub);CHKERRQ(ierr);
     /* create xsub with empty local arrays, because xdup's arrays will be placed into it */
     ierr = VecCreateMPIWithArray(red->subcomm,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
-#endif
-#ifdef CONTIGUOUS_COLOR
-    ierr = VecCreateMPI(red->subcomm,PETSC_DECIDE,m,&red->ysub);CHKERRQ(ierr);   
-    ierr = VecGetLocalSize(red->ysub,&mloc_sub);CHKERRQ(ierr);
-    ierr = VecCreateMPIWithArray(red->subcomm,mloc_sub,m,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
-#endif
 
     /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it. 
        Note: we use communicator dupcomm, not pc->comm! */      
@@ -426,41 +408,22 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
       str   = SAME_NONZERO_PATTERN;
     }
        
-    /* ================== matrix ============= */
-    ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);
-    ierr = MatGetRedundantMatrix_AIJ(pc,pc->pmat,red->subcomm,mlocal_sub,&Aredundant);CHKERRQ(ierr);
-    
-    /* grab the parallel matrix and put it into processors of a subcomminicator */
-    ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
-    ierr = ISDestroy(isl);CHKERRQ(ierr);
-
-    /* ------- temporarily set a mpi matrix pmats_sub- provided by user! --*/
-    ierr = MatCreate(red->subcomm,&red->pmats_sub);CHKERRQ(ierr);
-    ierr = MatSetSizes(red->pmats_sub,mlocal_sub,mlocal_sub,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-    ierr = MatSetFromOptions(red->pmats_sub);CHKERRQ(ierr);
-    {
-      PetscInt          Istart,Iend,ncols,i;
-      const PetscInt    *cols;
-      const PetscScalar *vals;
-      PetscTruth flg;
-      ierr = MatGetOwnershipRange(red->pmats_sub,&Istart,&Iend);CHKERRQ(ierr);
-      for (i=Istart; i<Iend; i++) {
-        ierr = MatGetRow(red->pmats[0],i,&ncols,&cols,&vals);CHKERRQ(ierr);
-        ierr = MatSetValues(red->pmats_sub,1,&i,ncols,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
-        ierr = MatRestoreRow(red->pmats[0],i,&ncols,&cols,&vals);CHKERRQ(ierr);
-      }   
-      ierr = MatAssemblyBegin(red->pmats_sub,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-      ierr = MatAssemblyEnd(red->pmats_sub,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-    
-      ierr = MatEqual(red->pmats_sub,Aredundant,&flg);CHKERRQ(ierr);
-      if (!flg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"pmats_sub !=Aredundant ");  
-      ierr = MatDestroy(red->pmats_sub);
+    /* grab the parallel matrix and put it into processors of a subcomminicator */ 
+    /*--------------------------------------------------------------------------*/
+    if (red->nsubcomm == size){ 
+      /* create sequential matrices in each processor */
+      ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
+      ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
+      ierr = ISDestroy(isl);CHKERRQ(ierr);
+      ierr = PCSetOperators(red->pc,red->pmats[0],red->pmats[0],str);CHKERRQ(ierr);
+    } else { 
+      /* create mpi matrices in each subcommunicator */
+      ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);  
+      ierr = MatGetRedundantMatrix_AIJ(pc->pmat,red->nsubcomm,red->subcomm,mlocal_sub,reuse,&Aredundant);CHKERRQ(ierr);
+      red->pmats_sub = Aredundant;
+      /* tell PC of the subcommunicator its operators */
+      ierr = PCSetOperators(red->pc,Aredundant,Aredundant,str);CHKERRQ(ierr);
     }
-    red->pmats_sub = Aredundant;
-
-    /* tell PC of the subcommunicator its operators */
-    ierr = PCSetOperators(red->pc,red->pmats_sub,red->pmats_sub,str);CHKERRQ(ierr);
   } else {
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
@@ -468,7 +431,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   ierr = PCSetUp(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_Redundant"
@@ -731,21 +693,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   }
 
   /* find color for this proc */
-#ifdef INTER_COLOR
   color   = rank%nsubcomm;
   subrank = rank/nsubcomm;
-#endif
-
-#ifdef CONTIGUOUS_COLOR
-  color = 0; subrank = 0; i = 0; j=0; 
-  while (i < size){
-    if (rank == i) break; /* my color is found */
-    if (j >= subsize[color]-1){ /* next subcomm */
-      j = -1; subrank = -1; color++;
-    }
-    i++; j++; subrank++;
-  }
-#endif
 
   ierr = MPI_Comm_split(pc->comm,color,subrank,&subcomm);CHKERRQ(ierr);
   red->subcomm  = subcomm; 

@@ -227,6 +227,26 @@ namespace ALE {
         throw ALE::Exception("Unsupport dimension for element geometry computation");
       }
     };
+    // Find the cell in which this point lies (stupid algorithm)
+    //   Assume a simplex and 3D
+    point_type locatePoint(const patch_type& patch, const real_section_type::value_type point[]) {
+      const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
+      const Obj<topology_type::label_sequence>& cells       = this->getTopology()->heightStratum(patch, 0);
+      const int                                 embedDim    = 3;
+      double v0[3], J[9], invJ[9], detJ;
+
+      for(topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+        this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+        double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]);
+        double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
+        double zeta = invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]);
+
+        if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 1.0)) {
+          return *c_iter;
+        }
+      }
+      throw ALE::Exception("Could not locate point");
+    };
   public: // BC values for PCICE
     const bc_value_type& getBCValue(const int bcFunc) {
       return this->_bcValues[bcFunc];

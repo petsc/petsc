@@ -850,6 +850,8 @@ namespace ALE {
               delete [] xadj;
               delete [] adjncy;
             }
+          } else {
+            assignment = NULL;
           }
           return assignment;
         };

@@ -507,6 +507,35 @@ PetscErrorCode SectionRealComplete(SectionReal section)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealGetLocalVector"
+/*@C
+  SectionRealGetLocalVector - Retrieves the local section storage as a Vec
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Output Parameter:
+. lv - the local vector
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode SectionRealGetLocalVector(SectionReal section, Vec *lv)
+{
+  const ALE::Mesh::real_section_type::patch_type patch = 0;
+  Obj<ALE::Mesh::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->size(patch), s->restrict(patch), lv);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetVertexSectionReal"
 /*@C
   MeshGetVertexSectionReal - Create a Section over the vertices with the specified fiber dimension
