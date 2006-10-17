@@ -332,6 +332,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 {
   PetscErrorCode ierr;
+  PetscInt       i;
+  PC             pc;
+  PetscTruth     ismg;
+  KSP            lksp;
 
   PetscFunctionBegin;
   if (dmmg[level]->rhs) {
@@ -340,7 +344,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
     CHKMEMQ;
   }
   if (dmmg[level]->matricesset) {
+    /* user has called DMMGSetKSP() again so must tell mg about the new matrices */
     ierr = KSPSetOperators(dmmg[level]->ksp,dmmg[level]->J,dmmg[level]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
+    if (ismg) {
+      for (i=0; i<=level; i++) {
+	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
+	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+      }
+    }
     dmmg[level]->matricesset = PETSC_FALSE;
   }
   ierr = KSPSolve(dmmg[level]->ksp,dmmg[level]->b,dmmg[level]->x);CHKERRQ(ierr);
@@ -389,11 +402,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   if (ismg) {
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
-      ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
-      /* set the operator for linear problem */
-      if (dmmg[nlevels-1]->rhs) {
-        ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
-      }
       if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
 	ierr = PCMGSetX(pc,i,dmmg[i]->x);CHKERRQ(ierr); 
 	ierr = PCMGSetRhs(pc,i,dmmg[i]->b);CHKERRQ(ierr); 
@@ -402,6 +410,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
         ierr = PCMGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
       }
       if (monitor) {
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
         ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-i);CHKERRQ(ierr);
@@ -507,7 +516,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   for (i=0; i<nlevels-1; i++) {
     ierr = KSPSetOptionsPrefix(dmmg[i]->ksp,"dmmg_");CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
