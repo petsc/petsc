@@ -1083,8 +1083,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscEr
      snes->jacobian_pre = B;
     ierr               = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
   }
-   ierr = KSPSetOperators(snes->ksp,A,B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
-   PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

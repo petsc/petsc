@@ -68,8 +68,6 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
     PetscTruth galerkin;
 
     ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
-    ierr = PCMGGetSmoother(pc,nlevels-1,&lksp);CHKERRQ(ierr);
-    ierr = KSPSetOperators(lksp,DMMGGetFine(dmmg)->J,DMMGGetFine(dmmg)->B,*flag);CHKERRQ(ierr);
 
     if (!galerkin) {
       for (i=nlevels-1; i>0; i--) {

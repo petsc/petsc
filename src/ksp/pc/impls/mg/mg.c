@@ -347,11 +347,12 @@ static PetscErrorCode PCSetUp_MG(PC pc)
 
   PetscFunctionBegin;
 
-  /* If user did not provide fine grid operators, use those from PC */
-  /* BUG BUG BUG This will work ONLY the first time called: hence if the user changes
-     the PC matrices between solves PCMG will continue to use first set provided */
+  /* If user did not provide fine grid operators OR operator was not updated since last global KSPSetOperators() */
+  /* so use those from global PC */
+  /* Is this what we always want? What if user wants to keep old one? */
   ierr = KSPGetOperatorsSet(mg[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
-  if (!opsset) {
+  ierr = KSPGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
+  if (!opsset || cpc->setupcalled == 2) {
     ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
     ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
@@ -475,7 +476,6 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   */
   ierr = PetscTypeCompare((PetscObject)mg[0]->smoothd,KSPPREONLY,&preonly);CHKERRQ(ierr);
   if (preonly) {
-    ierr = KSPGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCLU,&lu);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCREDUNDANT,&redundant);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)cpc,PCCHOLESKY,&cholesky);CHKERRQ(ierr);

@@ -389,8 +389,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   if (ismg) {
     /* set solvers for each level */
     for (i=0; i<nlevels; i++) {
-      ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr);
-      if (1) {
+      ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
+      /* set the operator for linear problem */
+      if (dmmg[nlevels-1]->rhs) {
         ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
       }
       if (i < nlevels-1) { /* don't set for finest level, they are set in PCApply_MG()*/
