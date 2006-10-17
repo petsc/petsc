@@ -307,10 +307,10 @@ namespace ALE {
 
 
     //
-    // IndexFilterers
+    // FilterManagers
     //
     template <typename Index_, typename FilterKeyExtractor_>
-    class DummyIndexFilterer {
+    class DummyFilterManager {
     public:
       typedef Index_                                   index_type;
       typedef FilterKeyExtractor_                      key_extractor_type;
@@ -319,8 +319,8 @@ namespace ALE {
       index_type& _index;
     public:
       //
-      DummyIndexFilterer(index_type& index)            : _index(index) {};
-      DummyIndexFilterer(const DummyIndexFilterer& ff) : _index(ff._index) {};
+      DummyFilterManager(index_type& index)            : _index(index) {};
+      DummyFilterManager(const DummyFilterManager& ff) : _index(ff._index) {};
       //
       index_type& index() {return this->_index;};
     };
@@ -328,26 +328,25 @@ namespace ALE {
     //
     // Filter classes
     //
-
-    template <typename IndexFilterer_>
+    template <typename FilterManager_>
     class Filter {
     public:
-      typedef IndexFilterer_                                   index_filterer_type;
-      typedef typename index_filterer_type::index_type         index_type;
-      typedef typename index_filterer_type::key_extractor_type key_extractor_type;
-      typedef typename key_extractor_type::result_type         key_type;
-      typedef PredicateTraits<key_type>                        key_traits;
+      typedef FilterManager_                                         index_filter_manager_type;
+      typedef typename index_filter_manager_type::index_type         index_type;
+      typedef typename index_filter_manager_type::key_extractor_type key_extractor_type;
+      typedef typename key_extractor_type::result_type               key_type;
+      typedef PredicateTraits<key_type>                              key_traits;
     protected:
-      index_filterer_type *_filterer;
-      bool                _have_low, _have_high;
-      key_type            _low, _high;
+      index_filter_manager_type *_filter_manager;
+      bool                       _have_low, _have_high;
+      key_type                   _low, _high;
     public:
-      Filter(index_filterer_type* filterer) : 
-        _filterer(filterer), _have_low(false), _have_high(false) {};
-      Filter(index_filterer_type* filterer, const key_type& low, const key_type& high) : 
-        _filterer(filterer), _have_low(true), _have_high(true), _low(low), _high(high)  {};
+      Filter(index_filter_manager_type* filter_manager) : 
+        _filter_manager(filter_manager), _have_low(false), _have_high(false) {};
+      Filter(index_filter_manager_type* filter_manager, const key_type& low, const key_type& high) : 
+        _filter_manager(filter_manager), _have_low(true), _have_high(true), _low(low), _high(high)  {};
       Filter(const Filter& f) : 
-        _filterer(f._filterer), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
+        _filter_manager(f._filter_manager), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
       ~Filter(){};
       //
       void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
@@ -381,7 +380,81 @@ namespace ALE {
         return (os << f.object());
       };
     };// Filter
-
+    //
+    template <typename FilterManager_>
+    class RangeFilter {
+    public:
+      typedef FilterManager_                                   filter_manager_type;
+      typedef typename filter_manager_type::index_type         index_type;
+      typedef typename filter_manager_type::key_extractor_type key_extractor_type;
+      typedef typename key_extractor_type::result_type         key_type;
+      typedef PredicateTraits<key_type>                        key_traits;
+      typedef typename index_type::iterator                    iterator;
+    protected:
+      filter_manager_type *_manager;
+      bool                _have_low, _have_high;
+      key_type            _low, _high;
+    public:
+      RangeFilter(filter_manager_type* manager) : 
+        _manager(manager), _have_low(false), _have_high(false) {};
+      RangeFilter(filter_manager_type* manager, const key_type& low, const key_type& high) : 
+        _manager(manager), _have_low(true), _have_high(true), _low(low), _high(high)  {};
+      RangeFilter(const RangeFilter& f) : 
+        _manager(f._manager), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
+      ~RangeFilter(){};
+      //
+      void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
+      void setHigh(const key_type& high) {this->_high = high; this->_have_high = true;};
+      //
+      key_type         low()       const {return this->_low;};
+      key_type         high()      const {return this->_high;};
+      bool             haveLow()   const {return this->_have_low;};
+      bool             haveHigh()  const {return this->_have_high;};
+      //
+      iterator begin() {
+        if(this->_have_low) {
+          // ASSUMPTION: index ordering operator can compare against key_type singleton
+          return this->_index->lower_bound(ALE::singleton<key_type>(this->_low));
+        }
+        else {
+          return this->_index->begin();
+        }
+      };
+      // CONTINUE: this needs to be fixed to handle an itor and an outer_key_extractor (better yet, another RangeFilter)
+      template<typename OuterKey_>
+      iterator begin(const OuterKey_& outer_key) {
+        if(this->_have_low) {
+          // ASSUMPTION: index ordering operator can compare against (OuterKey_,key_type) pairs
+          return this->_index->lower_bound(ALE::pair<OuterKey_,key_type>(this->_low));
+        }
+        else {
+          return this->_index->begin();
+        }
+      };
+      //
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const RangeFilter& f) {
+        os << "[";
+        if(f.haveLow()){
+          os << ((typename key_traits::printable_type)(f.low())) << ",";
+        }
+        else {
+          os << "none, ";
+        }
+        if(f.haveHigh()) {
+          os << ((typename key_traits::printable_type)(f.high())); 
+        }
+        else {
+          os << "none";
+        }
+        os << "]";
+        return os;
+      };
+      template <typename Stream_>
+      friend Stream_& operator<<(Stream_& os, const Obj<RangeFilter>& f) {
+        return (os << f.object());
+      };
+    };// RangeFilter
 
     //
     // StridedIndexSequence definition
@@ -862,26 +935,26 @@ namespace ALE {
     };// class ArrowSequence    
 
     //
-    // Filterer types
+    // FilterManager types
     //
-    typedef XSifterDef::DummyIndexFilterer<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate> >
-    UpwardPredicateFilterer;
+    typedef XSifterDef::DummyFilterManager<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate> >
+    UpwardPredicateFilterManager;
     //
-    typedef XSifterDef::DummyIndexFilterer<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target> >
-    UpwardTargetFilterer;
+    typedef XSifterDef::DummyFilterManager<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target> >
+    UpwardTargetFilterManager;
     //
     // Specialized sequence types
     //
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ALE::XSifterDef::Filter<UpwardPredicateFilterer>, 
-                          ALE::XSifterDef::Filter<UpwardTargetFilterer>,
+                          ALE::XSifterDef::Filter<UpwardPredicateFilterManager>, 
+                          ALE::XSifterDef::Filter<UpwardTargetFilterManager>,
                           ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>, 
                           true>                                                       
     BaseSequence;
 
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ALE::XSifterDef::Filter<UpwardPredicateFilterer >,
-                          ALE::XSifterDef::Filter<UpwardTargetFilterer>,
+                          ALE::XSifterDef::Filter<UpwardPredicateFilterManager >,
+                          ALE::XSifterDef::Filter<UpwardTargetFilterManager>,
                           ::boost::multi_index::const_mem_fun<rec_type, source_type, &rec_type::source> >     
     ConeSequence;
     //
@@ -889,8 +962,8 @@ namespace ALE {
     //
     XSifter(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
       XObject(debug), _rec_set(), 
-      _upward_predicate_filterer(::boost::multi_index::get<UpwardTag>(_rec_set)),
-      _upward_target_filterer(::boost::multi_index::get<UpwardTag>(_rec_set)){};
+      _upward_predicate_filter_manager(::boost::multi_index::get<UpwardTag>(_rec_set)),
+      _upward_target_filter_manager(::boost::multi_index::get<UpwardTag>(_rec_set)){};
     //
     // Extended interface
     //
@@ -904,7 +977,7 @@ namespace ALE {
     };
     void cone(const target_type& t, ConeSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
-                XSifterDef::Filter<UpwardPredicateFilterer>(), XSifterDef::Filter<UpwardTargetFilterer>(t,t));
+                XSifterDef::Filter<UpwardPredicateFilterManager>(), XSifterDef::Filter<UpwardTargetFilterManager>(t,t));
     };
 //     ConeSequence& cone(const target_type& t) {
 //       static ConeSequence cseq;
@@ -916,12 +989,12 @@ namespace ALE {
 //     };
   ConeSequence cone(const target_type& t) {
       return ConeSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
-                XSifterDef::Filter<UpwardPredicateFilterer>(), XSifterDef::Filter<UpwardTargetFilterer>(t,t));
+                XSifterDef::Filter<UpwardPredicateFilterManager>(), XSifterDef::Filter<UpwardTargetFilterManager>(t,t));
   };
     void base(BaseSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 
-                XSifterDef::Filter<UpwardPredicateFilterer>(&this->_upward_predicate_filterer), 
-                XSifterDef::Filter<UpwardTargetFilterer>(&this->_upward_target_filterer));
+                XSifterDef::Filter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
+                XSifterDef::Filter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager));
     };
 //     BaseSequence& base() {
 //       static BaseSequence bseq;
@@ -934,8 +1007,8 @@ namespace ALE {
     //
     BaseSequence base() {
       return BaseSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 
-                XSifterDef::Filter<UpwardPredicateFilterer>(&this->_upward_predicate_filterer), 
-                XSifterDef::Filter<UpwardTargetFilterer>(&this->_upward_target_filterer));
+                XSifterDef::Filter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
+                XSifterDef::Filter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager));
     };
     //
     template<typename ostream_type>
@@ -963,8 +1036,8 @@ namespace ALE {
     // set of arrow records
     rec_set_type _rec_set;
     // index filter managers
-    UpwardPredicateFilterer _upward_predicate_filterer;
-    UpwardTargetFilterer    _upward_target_filterer;
+    UpwardPredicateFilterManager _upward_predicate_filter_manager;
+    UpwardTargetFilterManager    _upward_target_filter_manager;
   }; // class XSifter
 
 
