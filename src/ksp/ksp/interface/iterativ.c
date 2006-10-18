@@ -448,7 +448,7 @@ $      rnorm > dtol * rnorm_0,
 .keywords: KSP, default, convergence, residual
 
 .seealso: KSPSetConvergenceTest(), KSPSetTolerances(), KSPSkipConverged(), KSPConvergedReason, KSPGetConvergedReason(),
-          KSPDefaultConvergedSetUIRNorm().
+          KSPDefaultConvergedSetUIRNorm(), KSPDefaultConvergedSetUMIRNorm().
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *dummy)
 {

@@ -75,7 +75,7 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat            A=aij->A,B=aij->B;
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data,*b=(Mat_SeqAIJ*)B->data;
-  Mat            C;
+  Mat            C=*matredundant;
 
   PetscInt       nleftover,np_subcomm,j; 
   PetscInt       nz_A,nz_B,*sbuf_j;
@@ -92,6 +92,18 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscScalar    **rbuf_a;
 
   PetscFunctionBegin;
+  if (reuse == MAT_REUSE_MATRIX) {
+    PetscTruth flag;
+    ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
+    if (M != N || M != mat->rmap.N) {
+      SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong global size");
+    }
+    ierr = MatGetLocalSize(C,&M,&N);CHKERRQ(ierr);    
+    if (M != N || M != mlocal_sub) {
+      SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong local size");
+    }
+  }
+
   ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -265,10 +277,13 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   
   /* create redundant matrix */
   /*-------------------------*/
-  ierr = MatCreate(subcomm,&C);CHKERRQ(ierr);
-  ierr = MatSetSizes(C,mlocal_sub,mlocal_sub,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(C);CHKERRQ(ierr);
-  
+  if (reuse == MAT_INITIAL_MATRIX){
+    ierr = MatCreate(subcomm,&C);CHKERRQ(ierr);
+    ierr = MatSetSizes(C,mlocal_sub,mlocal_sub,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
+    ierr = MatSetFromOptions(C);CHKERRQ(ierr);
+  } else {
+    C = *matredundant;
+  }
   /* insert local matrix entries */
   rptr = sbuf_j;
   cols = sbuf_j + rend-rstart + 1;
@@ -300,7 +315,9 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
   if (M != mat->rmap.N || N != mat->cmap.N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"redundant mat size %d != input mat size %d",M,mat->rmap.N);
-  *matredundant = C;
+  if (reuse == MAT_INITIAL_MATRIX){
+    *matredundant = C;
+  }
 
   /* free space */
   ierr = PetscFree(send_rank);CHKERRQ(ierr);
@@ -331,7 +348,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscInt    mlocal_sub;
   PetscMPIInt subsize,subrank;
   PetscInt    rstart_sub,rend_sub,mloc_sub;
-  Mat         Aredundant;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc->pmat,&comm);CHKERRQ(ierr);
@@ -410,20 +426,10 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
        
     /* grab the parallel matrix and put it into processors of a subcomminicator */ 
     /*--------------------------------------------------------------------------*/
-    if (red->nsubcomm == size){ 
-      /* create sequential matrices in each processor */
-      ierr = ISCreateStride(PETSC_COMM_SELF,m,0,1,&isl);CHKERRQ(ierr);
-      ierr = MatGetSubMatrices(pc->pmat,1,&isl,&isl,reuse,&red->pmats);CHKERRQ(ierr);
-      ierr = ISDestroy(isl);CHKERRQ(ierr);
-      ierr = PCSetOperators(red->pc,red->pmats[0],red->pmats[0],str);CHKERRQ(ierr);
-    } else { 
-      /* create mpi matrices in each subcommunicator */
-      ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);  
-      ierr = MatGetRedundantMatrix_AIJ(pc->pmat,red->nsubcomm,red->subcomm,mlocal_sub,reuse,&Aredundant);CHKERRQ(ierr);
-      red->pmats_sub = Aredundant;
-      /* tell PC of the subcommunicator its operators */
-      ierr = PCSetOperators(red->pc,Aredundant,Aredundant,str);CHKERRQ(ierr);
-    }
+    ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);  
+    ierr = MatGetRedundantMatrix_AIJ(pc->pmat,red->nsubcomm,red->subcomm,mlocal_sub,reuse,&red->pmats_sub);CHKERRQ(ierr);
+    /* tell PC of the subcommunicator its operators */
+    ierr = PCSetOperators(red->pc,red->pmats_sub,red->pmats_sub,str);CHKERRQ(ierr);
   } else {
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }

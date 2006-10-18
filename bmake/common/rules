@@ -31,7 +31,7 @@ chklib_dir:
 
 
 # 3. Check if the shared libs are out of date
-chkopts: 
+chkopts: remote
 	@for LIBNAME in ${SHLIBS}; do \
 	  library=${INSTALL_LIB_DIR}/$$LIBNAME.a; \
 	sharedlibrary=${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; \
@@ -91,7 +91,7 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	fi
 
 # Removes garbage files
-clean:
+clean: remoteclean
 	@-${RM} *.o *.lo *~ ex[0-9] ex[0-9][0-9] ex[0-9]f ex[0-9][0-9]f \
 	       ${CLEANFILES} ${TESTS} ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9]c ex[0-9][0-9]c ex[0-9]d ex5d \
 	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out \

@@ -370,6 +370,10 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
+    # dummy rules, always needed except for remote builds
+    self.addMakeRule('remote','')
+    self.addMakeRule('remoteclean','')
+    
     self.Dump()
     self.dumpConfigInfo()
     self.framework.log.write('================================================================================\n')
