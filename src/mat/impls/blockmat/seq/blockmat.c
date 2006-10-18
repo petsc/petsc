@@ -338,7 +338,7 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
   /* Determine number of nonzero blocks for each block row */
   a    = (Mat_SeqAIJ*) tmpA->data;
   mbs  = m/bs;
-  ierr = PetscMalloc3(mbs,PetscInt,&lens,bs,PetscInt,&ii,bs,PetscInt,&ilens);CHKERRQ(ierr);
+  ierr = PetscMalloc3(mbs,PetscInt,&lens,bs,PetscInt*,&ii,bs,PetscInt,&ilens);CHKERRQ(ierr);
   ierr = PetscMemzero(lens,mbs*sizeof(PetscInt));CHKERRQ(ierr);
 
   for (i=0; i<mbs; i++) {
