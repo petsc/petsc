@@ -185,14 +185,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 {
-  KSP                 ksp;
-  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
-  PetscTruth          flg;
-  PetscErrorCode      ierr;
-  PetscInt            i;
-  const char          *deft;
-  char                type[256], monfilename[PETSC_MAX_PATH_LEN];
-  PetscViewer         monviewer;
+  KSP                     ksp;
+  SNES_KSP_EW_ConvCtx     *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
+  PetscTruth              flg;
+  PetscErrorCode          ierr;
+  PetscInt                i;
+  const char              *deft;
+  char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewerASCIIMonitor monviewer;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -242,20 +242,20 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 
     ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESMonitorSetRatio","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = SNESMonitorSetRatio(snes,monviewer);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-snes_monitor_short","Monitor norm of function (fewer digits)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(snes->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-snes_monitor_solution","Plot solution at each iteration","SNESMonitorSolution",&flg);CHKERRQ(ierr);

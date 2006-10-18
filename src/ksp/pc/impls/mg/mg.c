@@ -334,16 +334,17 @@ static PetscErrorCode PCView_MG(PC pc,PetscViewer viewer)
 #define __FUNCT__ "PCSetUp_MG"
 static PetscErrorCode PCSetUp_MG(PC pc)
 {
-  PC_MG          **mg = (PC_MG**)pc->data;
-  PetscErrorCode ierr;
-  PetscInt       i,n = mg[0]->levels;
-  PC             cpc;
-  PetscTruth     preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump,opsset;
-  PetscViewer    ascii,viewer = PETSC_NULL;
-  MPI_Comm       comm;
-  Mat            dA,dB;
-  MatStructure   uflag;
-  Vec            tvec;
+  PC_MG                   **mg = (PC_MG**)pc->data;
+  PetscErrorCode          ierr;
+  PetscInt                i,n = mg[0]->levels;
+  PC                      cpc;
+  PetscTruth              preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump,opsset;
+  PetscViewerASCIIMonitor ascii;
+  PetscViewer             viewer = PETSC_NULL;
+  MPI_Comm                comm;
+  Mat                     dA,dB;
+  MatStructure            uflag;
+  Vec                     tvec;
 
   PetscFunctionBegin;
 
@@ -386,9 +387,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
     for (i=0; i<n; i++) {
       if (monitor) {
         ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothd,&comm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-        ierr = KSPMonitorSet(mg[i]->smoothd,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",n-i,&ascii);CHKERRQ(ierr);
+        ierr = KSPMonitorSet(mg[i]->smoothd,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
       }
       ierr = KSPSetFromOptions(mg[i]->smoothd);CHKERRQ(ierr);
     }
@@ -396,9 +396,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
       if (mg[i]->smoothu && (mg[i]->smoothu != mg[i]->smoothd)) {
         if (monitor) {
           ierr = PetscObjectGetComm((PetscObject)mg[i]->smoothu,&comm);CHKERRQ(ierr);
-          ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-          ierr = PetscViewerASCIISetTab(ascii,n-i);CHKERRQ(ierr);
-          ierr = KSPMonitorSet(mg[i]->smoothu,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",n-i,&ascii);CHKERRQ(ierr);
+          ierr = KSPMonitorSet(mg[i]->smoothu,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
         }
         ierr = KSPSetFromOptions(mg[i]->smoothu);CHKERRQ(ierr);
       }
@@ -487,9 +486,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   if (!pc->setupcalled) {
     if (monitor) {
       ierr = PetscObjectGetComm((PetscObject)mg[0]->smoothd,&comm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISetTab(ascii,n);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(mg[0]->smoothd,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",n,&ascii);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(mg[0]->smoothd,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     ierr = KSPSetFromOptions(mg[0]->smoothd);CHKERRQ(ierr);
   }

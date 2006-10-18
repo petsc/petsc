@@ -43,7 +43,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   PetscInt       i,nlevels = dmmg[0]->nlevels,it;
   KSP            ksp,lksp;
   PC             pc;
-  PetscTruth     ismg;
+  PetscTruth     ismg,galerkin = PETSC_FALSE;
   Vec            W;
   MatStructure   flg;
 
@@ -65,31 +65,31 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
   if (ismg) {
-    PetscTruth galerkin;
-
     ierr = PCMGGetGalerkin(pc,&galerkin);CHKERRQ(ierr);
+  }
 
-    if (!galerkin) {
-      for (i=nlevels-1; i>0; i--) {
-	if (!dmmg[i-1]->w) {
-	  ierr = VecDuplicate(dmmg[i-1]->x,&dmmg[i-1]->w);CHKERRQ(ierr);
-	}
-	W    = dmmg[i-1]->w;
-	/* restrict X to coarser grid */
-	ierr = MatRestrict(dmmg[i]->R,X,W);CHKERRQ(ierr);
-	X    = W;      
-	/* scale to "natural" scaling for that grid */
-	ierr = VecPointwiseMult(X,X,dmmg[i]->Rscale);CHKERRQ(ierr);
-	/* tell the base vector for matrix free multiplies */
-	ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
-	/* compute Jacobian on coarse grid */
-	if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
-	  ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
-	  flg = SAME_NONZERO_PATTERN;
-	} else {
-	  ierr = PetscInfo3(0,"Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1);CHKERRQ(ierr);
-	  flg = SAME_PRECONDITIONER;
-	}
+  if (!galerkin) {
+    for (i=nlevels-1; i>0; i--) {
+      if (!dmmg[i-1]->w) {
+	ierr = VecDuplicate(dmmg[i-1]->x,&dmmg[i-1]->w);CHKERRQ(ierr);
+      }
+      W    = dmmg[i-1]->w;
+      /* restrict X to coarser grid */
+      ierr = MatRestrict(dmmg[i]->R,X,W);CHKERRQ(ierr);
+      X    = W;      
+      /* scale to "natural" scaling for that grid */
+      ierr = VecPointwiseMult(X,X,dmmg[i]->Rscale);CHKERRQ(ierr);
+      /* tell the base vector for matrix free multiplies */
+      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
+      /* compute Jacobian on coarse grid */
+      if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
+	ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
+	flg = SAME_NONZERO_PATTERN;
+      } else {
+	ierr = PetscInfo3(0,"Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[i-1]->updatejacobianperiod,i-1);CHKERRQ(ierr);
+	flg = SAME_PRECONDITIONER;
+      }
+      if (ismg) {
 	ierr = PCMGGetSmoother(pc,i-1,&lksp);CHKERRQ(ierr);
 	ierr = KSPSetOperators(lksp,dmmg[i-1]->J,dmmg[i-1]->B,flg);CHKERRQ(ierr);
       }

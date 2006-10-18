@@ -771,3 +771,144 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
 }
 
 
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIMonitorCreate" 
+/*@C
+   PetscViewerASCIIMonitorCreate - Opens an ASCII file as a monitor object, suitable for the default KSP, SNES and TS monitors
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - the communicator
+.  name - the file name
+-  tabs - how far in the text should be tabbed
+
+   Output Parameter:
+.  lab - the context to be used with KSP/SNES/TSMonitorSet()
+
+   Level: advanced
+
+   Notes:
+   This can be destroyed with PetscViewerASCIIMonitorDestroy().
+
+   See PetscViewerASCIIOpen()
+
+.seealso: KSPMonitorSet(), SNESMonitorSet(), TSMonitorSet(), KSPMonitorDefault(), PetscViewerASCIIMonitor, PetscViewerASCIIMonitorDestroy()
+
+@*/
+PetscErrorCode PetscViewerASCIIMonitorCreate(MPI_Comm comm,const char *filename,PetscInt tabs,PetscViewerASCIIMonitor* ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr         = PetscNew(struct _p_PetscViewerASCIIMonitor,ctx);CHKERRQ(ierr);
+  ierr         = PetscViewerASCIIOpen(comm,filename,&(*ctx)->viewer);CHKERRQ(ierr);
+  (*ctx)->tabs = tabs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIMonitorDestroy" 
+/*@C
+   PetscViewerASCIIMonitorDestroys - removes a monitor context.
+
+   Collective on PetscViewerASCIIMonitor
+
+   Input Parameters:
+.   ctx - the monitor context created with PetscViewerASCIIMonitorCreate()
+
+   Level: advanced
+
+   Notes:
+     This is rarely called by users, it is usually called when the KSP, SNES or TS object is destroyed
+
+.seealso: KSPMonitorSet(), SNESMonitorSet(), TSMonitorSet(), KSPMonitorDefault(), PetscViewerASCIIMonitor, PetscViewerASCIIMonitorCreate()
+
+@*/
+PetscErrorCode PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor ctx)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr         = PetscViewerDestroy(ctx->viewer);CHKERRQ(ierr);
+  ierr         = PetscFree(ctx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerASCIIMonitorPrintf" 
+/*@C
+    PetscViewerASCIIMonitorPrintf - Prints to the viewer associated with this monitor context
+
+    Not Collective, but only first processor in set has any effect
+
+    Input Parameters:
++    ctx - the context obtained with PetscViewerASCIIMonitorCreate()
+-    format - the usual printf() format string 
+
+    Level: developer
+
+    Developer Notes: This code is virtually identical to PetscViewerASCIIPrintf(), however the code
+      could not simply be called from here due to the var args.
+
+.seealso: KSPMonitorSet(), SNESMonitorSet(), TSMonitorSet(), KSPMonitorDefault(), PetscViewerASCIIMonitor, PetscViewerASCIIMonitorCreate(),
+          PetscPrintf(), PetscFPrintf(), PetscViewerASCIIPrintf()
+
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMonitor ctx,const char format[],...)
+{
+  PetscViewer       viewer = ctx->viewer;
+  PetscViewer_ASCII *ascii = (PetscViewer_ASCII*)viewer->data;
+  PetscMPIInt       rank;
+  PetscInt          tab;
+  PetscErrorCode    ierr;
+  FILE              *fd = ascii->fd;
+  PetscTruth        iascii;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  PetscValidCharPointer(format,2);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (!iascii) SETERRQ(PETSC_ERR_ARG_WRONG,"Not ASCII PetscViewer");
+
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  if (ascii->bviewer) {ierr = MPI_Comm_rank(ascii->bviewer->comm,&rank);CHKERRQ(ierr);}
+  if (!rank) {
+    va_list Argp;
+    if (ascii->bviewer) {
+      queuefile = fd;
+    }
+
+    tab = ascii->tab + ctx->tabs;
+    while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
+
+    va_start(Argp,format);
+    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
+    fflush(fd);
+    if (petsc_history) {
+      tab = ascii->tab + ctx->tabs;
+      while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
+      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      fflush(petsc_history);
+    }
+    va_end(Argp);
+  } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
+    va_list     Argp;
+    char        *string;
+
+    PrintfQueue next;
+    ierr = PetscNew(struct _PrintfQueue,&next);CHKERRQ(ierr);
+    if (queue) {queue->next = next; queue = next;}
+    else       {queuebase   = queue = next;}
+    queuelength++;
+    string = next->string;
+    ierr = PetscMemzero(string,QUEUESTRINGSIZE);CHKERRQ(ierr);
+    tab = 2*(ascii->tab + ctx->tabs);
+    while (tab--) {*string++ = ' ';}
+    va_start(Argp,format);
+    ierr = PetscVSNPrintf(string,QUEUESTRINGSIZE-2*ascii->tab,format,Argp);CHKERRQ(ierr);
+    va_end(Argp);
+  }
+  PetscFunctionReturn(0);
+}

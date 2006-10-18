@@ -344,19 +344,24 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolveKSP(DMMG *dmmg,PetscInt level)
 }
 
 /*
-    Sets each of the linear solvers to use multigrid 
+    For each level (of grid sequencing) this sets the interpolation/restriction and 
+    work vectors needed by the multigrid preconditioner within the KSP 
+    (for nonlinear problems the KSP inside the SNES) of that level.
+
+    Also sets the KSP monitoring on all the levels if requested by user.
+
 */
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUpLevel"
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nlevels)
 {
-  PetscErrorCode ierr;
-  PetscInt       i;
-  PC             pc;
-  PetscTruth     ismg,monitor,ismf,isshell,ismffd;
-  KSP            lksp; /* solver internal to the multigrid preconditioner */
-  MPI_Comm       *comms,comm;
-  PetscViewer    ascii;
+  PetscErrorCode          ierr;
+  PetscInt                i;
+  PC                      pc;
+  PetscTruth              ismg,monitor,ismf,isshell,ismffd;
+  KSP                     lksp; /* solver internal to the multigrid preconditioner */
+  MPI_Comm                *comms,comm;
+  PetscViewerASCIIMonitor ascii;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
@@ -364,9 +369,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor",&monitor);CHKERRQ(ierr);
   if (monitor) {
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-nlevels);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",1+dmmg[0]->nlevels-nlevels,&ascii);CHKERRQ(ierr);
+    ierr = KSPMonitorSet(ksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
   }
 
   /* use fgmres on outer iteration by default */
@@ -395,9 +399,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
       if (monitor) {
         ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
-        ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-        ierr = PetscViewerASCIISetTab(ascii,1+dmmg[0]->nlevels-i);CHKERRQ(ierr);
-        ierr = KSPMonitorSet(lksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",1+dmmg[0]->nlevels-i,&ascii);CHKERRQ(ierr);
+        ierr = KSPMonitorSet(lksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
       }
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 
