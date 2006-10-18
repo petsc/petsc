@@ -264,7 +264,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
 
   PetscFunctionBegin;
   if (nmat < 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Must pass in at least one matrix");
-  PetscValidPointer(mat,3);CHKERRQ(ierr);
+  PetscValidPointer(mat,3);
 
   ierr = MatGetLocalSize(mats[0],&m,&n);CHKERRQ(ierr);
   ierr = MatGetSize(mats[0],&M,&N);CHKERRQ(ierr);
