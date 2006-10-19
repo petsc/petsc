@@ -179,6 +179,29 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerPopFormat(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetFormat(PetscViewer,PetscViewerFormat*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFlush(PetscViewer);
 
+/*S
+     PetscViewerASCIIMonitor - Context for the default KSP, SNES and TS monitors that print
+                                  ASCII strings of residual norms etc.
+
+
+   Level: advanced
+
+  Concepts: viewing, monitoring
+
+.seealso:  PetscViewerCreate(), PetscViewerSetType(), PetscViewerType, KSPMonitorSet(), SNESMonitorSet(), TSMonitorSet(),
+           KSPMonitorDefault(), SNESMonitorDefault()
+
+S*/
+struct _p_PetscViewerASCIIMonitor {
+  PetscViewer viewer;
+  PetscInt    tabs;
+};
+typedef struct _p_PetscViewerASCIIMonitor* PetscViewerASCIIMonitor;
+
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorCreate(MPI_Comm,const char *,PetscInt,PetscViewerASCIIMonitor*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorDestroy(PetscViewerASCIIMonitor);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMonitor,const char[],...);
+
 /*
    Operations explicit to a particular class of viewers
 */

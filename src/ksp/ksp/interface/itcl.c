@@ -202,13 +202,12 @@ $                    natural - see KSPSetNormType()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 {
-  PetscErrorCode ierr;
-  PetscInt       indx;
-  char           type[256], monfilename[PETSC_MAX_PATH_LEN];
-  const char     *stype[] = {"none","preconditioned","unpreconditioned","natural"};
-  PetscViewer    monviewer;
-  PetscTruth     flg,flag;
-  PetscInt       i;
+  PetscErrorCode          ierr;
+  PetscInt                indx;
+  char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
+  PetscViewerASCIIMonitor monviewer;
+  PetscTruth              flg,flag;
+  PetscInt                i;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -240,7 +239,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",stype,4,"preconditioned",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,4,"preconditioned",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
       case 0:
@@ -304,8 +303,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(ksp->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
       Plots the vector solution 
@@ -319,8 +318,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor_true_residual","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(ksp->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
       Prints extreme eigenvalue estimates at each iteration
@@ -328,16 +327,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsString("-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIOpen(ksp->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
       Prints preconditioned residual norm with fewer digits
     */
     ierr = PetscOptionsString("-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(ksp->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
       Graphically plots preconditioned residual norm
