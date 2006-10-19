@@ -249,7 +249,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
     ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESMonitorSetRatio","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
-      ierr = SNESMonitorSetRatio(snes,monviewer);CHKERRQ(ierr);
+      ierr = SNESMonitorSetRatio(snes,monviewer->viewer);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-snes_monitor_short","Monitor norm of function (fewer digits)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
