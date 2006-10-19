@@ -496,6 +496,17 @@ runex10_mumps_cholesky_2:
 	   else echo "Possible problem with ex10_mumps_cholesky_2, diffs above"; fi; \
 	   ${RM} -f ex10_mumps_cholesky_2.tmp
 
+#test pc_type redundant
+NSUBCOMM = 8 7 6 5 4 3 2 1
+runex10_mumps_redundant:
+	-@touch ex10_mumps_redundant.tmp
+	-@for nsubcomm in ${NSUBCOMM}; do \
+	${MPIRUN} -np 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -nsubcomm $$nsubcomm -mat_type aijmumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
+	done;
+	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_mumps_redundant.tmp) then true; \
+	   else echo "Possible problem with ex10_mumps_redundant, diffs above"; fi; \
+	${RM} -f ex10_mumps_redundant.tmp; 
+
 runex11:
 	-@${MPIRUN} -np 1 ./ex11 -n 6 -norandom -pc_type none -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex11_1.tmp 2>&1; \
 	   if (${DIFF} output/ex11_1.out ex11_1.tmp) then true; \
@@ -665,6 +676,6 @@ TESTEXAMPLES_SPAI	       = ex10.PETSc runex10_14 ex10.rm
 TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_18 ex10.rm
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_cholesky_1 \
-                                 runex10_mumps_cholesky_2 ex10.rm
+                                 runex10_mumps_cholesky_2 runex10_mumps_redundant ex10.rm 
 
 include ${PETSC_DIR}/bmake/common/test
