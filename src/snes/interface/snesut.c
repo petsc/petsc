@@ -234,16 +234,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCI
   PetscReal               *history;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    ierr = PetscViewerASCIIMonitorCreate(snes->comm, "stdout", 0, &ctx->viewer);CHKERRQ(ierr);
-  } else {
-    ctx->viewer = viewer;
-  }
   ierr = PetscNew(SNESMonitorRatioContext,&ctx);
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!history) {
     ierr = PetscMalloc(100*sizeof(PetscReal),&ctx->history);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
+  }
+  if (!viewer) {
+    ierr = PetscViewerASCIIMonitorCreate(snes->comm, "stdout", 0, &ctx->viewer);CHKERRQ(ierr);
+  } else {
+    ctx->viewer = viewer;
   }
   ierr = SNESMonitorSet(snes,SNESMonitorRatio,ctx,SNESMonitorRatioDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
