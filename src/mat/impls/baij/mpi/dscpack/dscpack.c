@@ -431,8 +431,10 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
     ierr = PetscFree(my_a_nonz);CHKERRQ(ierr);
   }  
   
-  F_diag = ((Mat_MPIBAIJ *)(*F)->data)->A;
-  F_diag->assembled = PETSC_TRUE;
+  if (size > 1) {
+    F_diag = ((Mat_MPIBAIJ *)(*F)->data)->A;
+    F_diag->assembled = PETSC_TRUE;
+  }
   (*F)->assembled   = PETSC_TRUE; 
   lu->flg           = SAME_NONZERO_PATTERN;
 
@@ -461,7 +463,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     
   lu = (Mat_DSC*)B->spptr;
-  B->bs = bs;
+  B->rmap.bs = bs;
 
   B->ops->choleskyfactornumeric  = MatCholeskyFactorNumeric_DSCPACK;
   B->ops->solve                  = MatSolve_DSCPACK;
@@ -562,7 +564,7 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
 {
   Mat_DSC *lu=(Mat_DSC*)A->spptr;  
   PetscErrorCode ierr;
-  char    *s=0;
+  const char    *s=0;
   
   PetscFunctionBegin;   
   ierr = PetscViewerASCIIPrintf(viewer,"DSCPACK run parameters:\n");CHKERRQ(ierr);
@@ -590,6 +592,8 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
     s = "LLT";
   } else if ( lu->factor_type == DSC_LDLT){
     s = "LDLT";
+  } else if (lu->factor_type == 0) {
+    s = "None";
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Unknown factor type");
   }
@@ -601,6 +605,8 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
     s = "BLAS2";
   } else if ( lu->LBLASLevel == DSC_LBLAS3){
     s = "BLAS3";
+  } else if (lu->LBLASLevel == 0) {
+    s = "None";
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Unknown local phase BLAS level");
   }
@@ -610,12 +616,18 @@ PetscErrorCode MatFactorInfo_DSCPACK(Mat A,PetscViewer viewer)
     s = "BLAS1";
   } else if ( lu->DBLASLevel == DSC_DBLAS2){
     s = "BLAS2";
+  } else if (lu->DBLASLevel == 0) {
+    s = "None";
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Unknown distributed phase BLAS level");
   }
   ierr = PetscViewerASCIIPrintf(viewer,"  distributed phase BLAS level: %s \n",s);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN PetscErrorCode MatView_SeqBAIJ(Mat,PetscViewer);
+EXTERN PetscErrorCode MatView_MPIBAIJ(Mat,PetscViewer);
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MatView_DSCPACK"
@@ -627,17 +639,17 @@ PetscErrorCode MatView_DSCPACK(Mat A,PetscViewer viewer) {
   Mat_DSC           *lu=(Mat_DSC*)A->spptr;
 
   PetscFunctionBegin;
+  /* Cannot view factored matrix */
+  if (A->factor) {
+    PetscFunctionReturn(0);
+  }
   /* This convertion ugliness is because MatView for BAIJ types calls MatConvert to AIJ */ 
   size = lu->size;
   if (size==1) {
-    ierr = MatConvert(A,MATSEQBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatView_SeqBAIJ(A,viewer);CHKERRQ(ierr);
   } else {
-    ierr = MatConvert(A,MATMPIBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
+    ierr = MatView_MPIBAIJ(A,viewer);CHKERRQ(ierr);
   }    
-
-  ierr = MatView(A,viewer);CHKERRQ(ierr);
-
-  ierr = MatConvert(A,MATDSCPACK,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
@@ -701,7 +713,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_BAIJ_DSCPACK(Mat A,const MatType ty
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatDestroy                 = A->ops->destroy;
   lu->CleanUpDSCPACK             = PETSC_FALSE;
-  lu->bs                         = A->bs;
+  lu->bs                         = A->rmap.bs;
+  lu->factor_type                = 0;
+  lu->LBLASLevel                 = 0;
+  lu->DBLASLevel                 = 0;
 
   B->spptr                       = (void*)lu;
   B->ops->duplicate              = MatDuplicate_DSCPACK;
