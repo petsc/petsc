@@ -150,8 +150,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,Pet
 }
 
 typedef struct {
-  PetscViewer viewer;
-  PetscReal   *history;
+  PetscViewerASCIIMonitor viewer;
+  PetscReal              *history;
 } SNESMonitorRatioContext;
 
 #undef __FUNCT__  
@@ -184,10 +184,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES snes,PetscInt its,Petsc
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
   if (!its || !history || its > len) {
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,fgnorm,ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,fgnorm,ratio);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -204,7 +204,7 @@ PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->history);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(ctx->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorDestroy(ctx->viewer);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -227,7 +227,7 @@ PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCIIMonitor viewer)
 {
   PetscErrorCode          ierr;
   SNESMonitorRatioContext *ctx;
@@ -235,16 +235,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewer vie
 
   PetscFunctionBegin;
   if (!viewer) {
-    viewer = PETSC_VIEWER_STDOUT_(snes->comm);
-    ierr   = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
-  } 
+    ierr = PetscViewerASCIIMonitorCreate(snes->comm, "stdout", 0, &ctx->viewer);CHKERRQ(ierr);
+  } else {
+    ctx->viewer = viewer;
+  }
   ierr = PetscNew(SNESMonitorRatioContext,&ctx);
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   if (!history) {
     ierr = PetscMalloc(100*sizeof(PetscReal),&ctx->history);CHKERRQ(ierr);
     ierr = SNESSetConvergenceHistory(snes,ctx->history,0,100,PETSC_TRUE);CHKERRQ(ierr);
   }
-  ctx->viewer = viewer;
   ierr = SNESMonitorSet(snes,SNESMonitorRatio,ctx,SNESMonitorRatioDestroy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

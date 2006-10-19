@@ -439,7 +439,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscErrorCode ierr;
   PetscInt       mstart,mend,mlocal,m;
   PetscMPIInt    size;
-  IS             isl;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm;
