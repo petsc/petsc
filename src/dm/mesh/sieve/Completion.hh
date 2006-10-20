@@ -438,7 +438,7 @@ namespace ALE {
       // Creates a DiscreteTopology with the overlap information
       static Obj<topology_type> createSendTopology(const Obj<send_overlap_type>& sendOverlap) {
         const Obj<send_overlap_type::traits::baseSequence> ranks = sendOverlap->base();
-        Obj<topology_type> topology = new topology_type(sendOverlap->comm(), sendOverlap->debug);
+        Obj<topology_type> topology = new topology_type(sendOverlap->comm(), sendOverlap->debug());
 
         for(send_overlap_type::traits::baseSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
           Obj<dsieve_type> sendSieve = new dsieve_type(sendOverlap->cone(*r_iter));
@@ -546,19 +546,14 @@ namespace ALE {
       };
       template<typename Partitioner>
       static void scatterTopology(const Obj<mesh_topology_type>& topology, const int dim, const Obj<mesh_topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
-        typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, value_type> send_section_type;
-        typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, value_type> recv_section_type;
         typedef typename Partitioner::part_type part_type;
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
         Obj<send_sizer_type>   sendSizer     = new send_sizer_type(topology->comm(), topology->debug());
         Obj<recv_sizer_type>   recvSizer     = new recv_sizer_type(topology->comm(), sendSizer->getTag(), topology->debug());
-        Obj<send_section_type> sendSection   = new send_section_type(topology->comm(), topology->debug());
-        Obj<recv_section_type> recvSection   = new recv_section_type(topology->comm(), sendSection->getTag(), topology->debug());
         Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, topology->debug());
-        int numElements = topology->heightStratum(0, 0)->size();
-        int rank        = topology->commRank();
-        int debug       = topology->debug();
+        int rank  = topology->commRank();
+        int debug = topology->debug();
 
         // 1) Form partition point overlap a priori
         if (rank == 0) {
@@ -575,11 +570,25 @@ namespace ALE {
           recvOverlap->view("Receive overlap for partition");
         }
         // 2) Partition the mesh
+        int        numCells = topology->heightStratum(0, 0)->size();
         part_type *assignment;
 
         assignment = Partitioner::partitionSieve(topology, dim);
-        // 3) Create local sieve
-        for(int e = 0; e < numElements; e++) {
+        // 3) Scatter the sieve
+        scatterSieve<part_type>(sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, assignment);
+        topologyNew->stratify();
+        // 4) Cleanup
+        delete [] assignment;
+      };
+      template<typename PartitionType>
+      static void scatterSieve(const Obj<sieve_type>& sieve, const int dim, const Obj<sieve_type>& sieveNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const int numCells, const PartitionType assignment[]) {
+        typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, value_type> send_section_type;
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, value_type> recv_section_type;
+        int rank  = sieve->commRank();
+        int debug = sieve->debug();
+
+        // Create local sieve
+        for(int e = 0; e < numCells; e++) {
           if (assignment[e] == rank) {
             const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(e);
 
@@ -589,15 +598,17 @@ namespace ALE {
           }
         }
         sieveNew->stratify();
-        // 2) Complete sizer section
-        typedef typename ALE::New::PartitionSizeSection<topology_type, part_type> partition_size_section;
-        typedef typename ALE::New::PartitionSection<topology_type, part_type>     partition_section;
+        // Complete sizer section
+        typedef typename ALE::New::PartitionSizeSection<topology_type, PartitionType> partition_size_section;
+        typedef typename ALE::New::PartitionSection<topology_type, PartitionType>     partition_section;
         Obj<topology_type>          secTopology          = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
-        Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numElements, assignment);
-        Obj<partition_section>      partitionSection     = new partition_section(secTopology, numElements, assignment);
+        Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numCells, assignment);
+        Obj<partition_section>      partitionSection     = new partition_section(secTopology, numCells, assignment);
+        Obj<send_section_type>      sendSection          = new send_section_type(sieve->comm(), sieve->debug());
+        Obj<recv_section_type>      recvSection          = new recv_section_type(sieve->comm(), sendSection->getTag(), sieve->debug());
 
         ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, partitionSizeSection, partitionSection, sendSection, recvSection);
-        // 3) Unpack the section into the overlap
+        // Unpack the section into the overlap
         sendOverlap->clear();
         recvOverlap->clear();
         if (rank == 0) {
@@ -636,13 +647,13 @@ namespace ALE {
           sendOverlap->view(std::cout, "Send overlap for points");
           recvOverlap->view(std::cout, "Receive overlap for points");
         }
-        // 4) Receive the point section
+        // Receive the point section
         secTopology = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
         Obj<cone_size_section> coneSizeSection = new cone_size_section(secTopology, sieve);
         Obj<cone_section>      coneSection     = new cone_section(secTopology, sieve);
 
         ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
-        // 5) Unpack the section into the sieve
+        // Unpack the section into the sieve
         const topology_type::sheaf_type& patches = recvSection->getTopology()->getPatches();
 
         for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
@@ -660,7 +671,6 @@ namespace ALE {
           }
         }
         sieveNew->stratify();
-        topologyNew->stratify();
       };
     };
 

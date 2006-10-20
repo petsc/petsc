@@ -231,6 +231,7 @@ PetscErrorCode MatDestroy_DAAD(Mat A)
   ierr = VecDestroy(a->localu);CHKERRQ(ierr);
   if (a->diagonal) {ierr = VecDestroy(a->diagonal);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSNESMFSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetDA_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetSNES_C","",PETSC_NULL);CHKERRQ(ierr);

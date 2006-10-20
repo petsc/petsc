@@ -113,7 +113,7 @@ namespace ALE {
             }
           }
         }
-        if (sendOverlap->debug) {
+        if (sendOverlap->debug()) {
           sendOverlap->view(std::cout, "Cone send overlap");
           recvOverlap->view(std::cout, "Cone receive overlap");
         }

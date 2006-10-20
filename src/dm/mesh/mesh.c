@@ -1,6 +1,7 @@
  
 #include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
 #include <Distribution.hh>
+#include <Generator.hh>
 #include "src/dm/mesh/meshvtk.h"
 #include "src/dm/mesh/meshpcice.h"
 #include "src/dm/mesh/meshpylith.h"
@@ -1285,6 +1286,39 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, Mesh *parallelMesh)
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
   ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(oldMesh);
   ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRefine"
+/*@C
+  MeshRefine - Refines the mesh.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The original Mesh object
+. refinementLimit - The maximum size of any cell
+- interpolate - Flag to create intermediate mesh elements
+
+  Output Parameter:
+. refinedMesh - The refined Mesh object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpolate, Mesh *refinedMesh)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
+  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

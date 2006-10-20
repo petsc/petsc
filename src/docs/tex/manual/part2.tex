@@ -6172,9 +6172,9 @@ blocks can be controlled via the options \trl{-sub_ksp_type} and \trl{
 \subsection{Keeping Track of Options}
 
 One useful means of keeping track of user-specified runtime options is
-use of \trl{-optionstable}, which prints to \trl{stdout} during \trl{
+use of \trl{-options_table}, which prints to \trl{stdout} during \trl{
 PetscFinalize()} a table of all runtime options that the user has
-specified.  \findex{-optionstable} A related option is \trl{-options_left},
+specified.  \findex{-options_table} A related option is \trl{-options_left},
 \findex{-options_left} which prints the options table and indicates
 any options that have {\em not} been requested upon a call to \trl{
 PetscFinalize()}.  This feature is useful to check whether an option
