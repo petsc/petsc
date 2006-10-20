@@ -125,6 +125,7 @@ PetscErrorCode MatDestroy_MPIMAIJ(Mat A)
     ierr = VecDestroy(b->w);CHKERRQ(ierr);
   }
   ierr = PetscFree(b);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
