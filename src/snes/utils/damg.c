@@ -410,6 +410,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
       ierr = PetscTypeCompare((PetscObject)dmmg[i]->B,MATMFFD,&ismffd);CHKERRQ(ierr);
       if (isshell || ismf || ismffd) {
         PC  lpc;
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
         ierr = KSPGetPC(lksp,&lpc);CHKERRQ(ierr);
         ierr = PCSetType(lpc,PCNONE);CHKERRQ(ierr);
       }

@@ -52,7 +52,7 @@ typedef struct {
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSPseudoComputeTimeStep(TS ts,PetscReal *dt)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -208,10 +208,10 @@ static PetscErrorCode TSDestroy_Pseudo(TS ts)
 #define __FUNCT__ "TSPseudoFunction"
 PetscErrorCode TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
-  TS     ts = (TS) ctx;
-  PetscScalar mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  TS             ts = (TS) ctx;
+  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
   PetscErrorCode ierr;
-  PetscInt i,n;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
   /* apply user provided function */
@@ -227,7 +227,6 @@ PetscErrorCode TSPseudoFunction(SNES snes,Vec x,Vec y,void *ctx)
   ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&unp1);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&Funp1);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -257,7 +256,7 @@ PetscErrorCode TSPseudoJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
 #define __FUNCT__ "TSSetUp_Pseudo"
 static PetscErrorCode TSSetUp_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -274,11 +273,18 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
 #define __FUNCT__ "TSPseudoMonitorDefault"
 PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  PetscErrorCode ierr;
+  TS_Pseudo               *pseudo = (TS_Pseudo*)ts->data;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor)ctx;
 
   PetscFunctionBegin;
-  ierr = (*PetscHelpPrintf)(ts->comm,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
+  if (!ctx) {
+    ierr = PetscViewerASCIIMonitorCreate(ts->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
+  if (!ctx) {
+    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -286,16 +292,17 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 #define __FUNCT__ "TSSetFromOptions_Pseudo"
 static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  PetscErrorCode ierr;
-  PetscTruth flg;
+  TS_Pseudo               *pseudo = (TS_Pseudo*)ts->data;
+  PetscErrorCode          ierr;
+  PetscTruth              flg;
+  PetscViewerASCIIMonitor viewer;
 
   PetscFunctionBegin;
-
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(ts->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -303,7 +310,6 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
     }
     ierr = PetscOptionsReal("-ts_pseudo_increment","Ratio to increase dt","TSPseudoSetTimeStepIncrement",pseudo->dt_increment,&pseudo->dt_increment,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -545,7 +551,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "TSCreate_Pseudo"
 PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
 {
-  TS_Pseudo  *pseudo;
+  TS_Pseudo      *pseudo;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -615,8 +621,8 @@ EXTERN_C_END
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSPseudoDefaultTimeStep(TS ts,PetscReal* newdt,void* dtctx)
 {
-  TS_Pseudo *pseudo = (TS_Pseudo*)ts->data;
-  PetscReal inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
+  TS_Pseudo      *pseudo = (TS_Pseudo*)ts->data;
+  PetscReal      inc = pseudo->dt_increment,fnorm_previous = pseudo->fnorm_previous;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

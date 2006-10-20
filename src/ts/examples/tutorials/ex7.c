@@ -77,7 +77,7 @@ int main(int argc,char **argv)
 
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DAGetColoring(da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
-  ierr = DAGetMatrix(da,MATMPIAIJ,&J);CHKERRQ(ierr);
+  ierr = DAGetMatrix(da,MATAIJ,&J);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
   ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
   ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,da);CHKERRQ(ierr);

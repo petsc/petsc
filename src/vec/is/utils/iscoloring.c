@@ -3,6 +3,8 @@
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
+const char *ISColoringTypes[] = {"local","ghosted","ISColoringType","IS_COLORING_",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringDestroy"
 /*@

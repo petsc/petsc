@@ -73,11 +73,11 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
 {
-  PetscReal      dt;
-  PetscTruth     opt,flg;
-  PetscErrorCode ierr;
-  PetscViewer    monviewer;
-  char           monfilename[PETSC_MAX_PATH_LEN];
+  PetscReal               dt;
+  PetscTruth              opt,flg;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor monviewer;
+  char                    monfilename[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
@@ -95,8 +95,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     /* Monitor options */
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIOpen(ts->comm,monfilename,&monviewer);CHKERRQ(ierr);
-      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(ts->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",&opt);CHKERRQ(ierr);
     if (opt) {
@@ -1349,12 +1349,17 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorCancel(TS ts)
 @*/
 PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer)ctx;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor)ctx;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ts->comm);
-  ierr = PetscViewerASCIIPrintf(viewer,"timestep %D dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
+  if (!ctx) {
+    ierr = PetscViewerASCIIMonitorCreate(ts->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"timestep %D dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
+  if (!ctx) {
+    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1771,10 +1776,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) {
-    MPI_Comm comm;
-    ierr   = PetscObjectGetComm((PetscObject)ts,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
+  if (!dummy) {
+    viewer = PETSC_VIEWER_DRAW_(ts->comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

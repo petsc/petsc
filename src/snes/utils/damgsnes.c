@@ -566,17 +566,16 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
-  PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels,period = 1,isctype=0;
-  PetscTruth     snesmonitor,mffdoperator,mffd,fdjacobian;
+  PetscErrorCode          ierr;
+  PetscInt                i,nlevels = dmmg[0]->nlevels,period = 1,isctype=0;
+  PetscTruth              snesmonitor,mffdoperator,mffd,fdjacobian;
 #if defined(PETSC_HAVE_ADIC)
-  PetscTruth     mfadoperator,mfad,adjacobian;
+  PetscTruth              mfadoperator,mfad,adjacobian;
 #endif
-  PetscViewer    ascii;
-  MPI_Comm       comm;
-  PetscMPIInt    size;
-  const char     *isctypes[] = {"IS_COLORING_LOCAL","IS_COLORING_GHOSTED"};
-  ISColoringType ctype;
+  PetscViewerASCIIMonitor ascii;
+  MPI_Comm                comm;
+  PetscMPIInt             size;
+  ISColoringType          ctype;
 
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
@@ -607,7 +606,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     } else {
       isctype = 1; 
     }
-    ierr = PetscOptionsEList("-dmmg_iscoloring_type","Type of ISColoring","None",isctypes,2,isctypes[isctype],&isctype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-dmmg_iscoloring_type","Type of ISColoring","None",ISColoringTypes,2,ISColoringTypes[isctype],&isctype,PETSC_NULL);CHKERRQ(ierr);
         
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -617,9 +616,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = SNESGetKSP(dmmg[i]->snes,&dmmg[i]->ksp);CHKERRQ(ierr);
     if (snesmonitor) {
       ierr = PetscObjectGetComm((PetscObject)dmmg[i]->snes,&comm);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIOpen(comm,"stdout",&ascii);CHKERRQ(ierr);
-      ierr = PetscViewerASCIISetTab(ascii,nlevels-i);CHKERRQ(ierr);
-      ierr = SNESMonitorSet(dmmg[i]->snes,SNESMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerDestroy);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",nlevels-i,&ascii);CHKERRQ(ierr);
+      ierr = SNESMonitorSet(dmmg[i]->snes,SNESMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
     if (mffdoperator) {

@@ -140,18 +140,23 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSolutionUpdate(SNES snes,PetscInt 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm);
-  ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+  if (!dummy) {
+    ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+  }
+  ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+  if (!dummy) {
+    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 typedef struct {
-  PetscViewer viewer;
-  PetscReal   *history;
+  PetscViewerASCIIMonitor viewer;
+  PetscReal               *history;
 } SNESMonitorRatioContext;
 
 #undef __FUNCT__  
@@ -184,10 +189,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorRatio(SNES snes,PetscInt its,Petsc
   PetscFunctionBegin;
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,&len);CHKERRQ(ierr);
   if (!its || !history || its > len) {
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
     PetscReal ratio = fgnorm/history[its-1];
-    ierr = PetscViewerASCIIPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,fgnorm,ratio);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(ctx->viewer,"%3D SNES Function norm %14.12e %G \n",its,fgnorm,ratio);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -204,7 +209,7 @@ PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 
   PetscFunctionBegin;
   ierr = PetscFree(ctx->history);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(ctx->viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIMonitorDestroy(ctx->viewer);CHKERRQ(ierr);
   ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -227,7 +232,7 @@ PetscErrorCode SNESMonitorRatioDestroy(void *ct)
 
 .seealso: SNESMonitorSet(), SNESMonitorSolution(), SNESMonitorDefault()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewer viewer)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCIIMonitor viewer)
 {
   PetscErrorCode          ierr;
   SNESMonitorRatioContext *ctx;
@@ -235,7 +240,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewer vie
 
   PetscFunctionBegin;
   if (!viewer) {
-    viewer = PETSC_VIEWER_STDOUT_(snes->comm);
+    ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
     ierr   = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   } 
   ierr = PetscNew(SNESMonitorRatioContext,&ctx);
@@ -261,17 +266,22 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewer vie
 */
 PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES snes,PetscInt its,PetscReal fgnorm,void *dummy)
 {
-  PetscErrorCode ierr;
-  PetscViewer    viewer = (PetscViewer) dummy;
+  PetscErrorCode          ierr;
+  PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm);
+  if (!dummy) {
+    ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+  }
   if (fgnorm > 1.e-9) {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %G \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %G \n",its,fgnorm);CHKERRQ(ierr);
   } else if (fgnorm > 1.e-11){
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %5.3e \n",its,fgnorm);CHKERRQ(ierr);
   } else {
-    ierr = PetscViewerASCIIPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm < 1.e-11\n",its);CHKERRQ(ierr);
+  }
+  if (!dummy) {
+    ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

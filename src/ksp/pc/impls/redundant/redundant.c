@@ -93,7 +93,6 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
 
   PetscFunctionBegin;
   if (reuse == MAT_REUSE_MATRIX) {
-    PetscTruth flag;
     ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
     if (M != N || M != mat->rmap.N) {
       SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. wrong global size");
@@ -339,15 +338,14 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscErrorCode ierr;
   PetscInt       mstart,mend,mlocal,m;
   PetscMPIInt    size;
-  IS             isl;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm;
   Vec            vec;
 
-  PetscInt    mlocal_sub;
-  PetscMPIInt subsize,subrank;
-  PetscInt    rstart_sub,rend_sub,mloc_sub;
+  PetscInt       mlocal_sub;
+  PetscMPIInt    subsize,subrank;
+  PetscInt       rstart_sub,rend_sub,mloc_sub;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc->pmat,&comm);CHKERRQ(ierr);
