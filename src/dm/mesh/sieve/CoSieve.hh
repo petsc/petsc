@@ -76,7 +76,7 @@ namespace ALE {
       typedef std::vector<typename sieve_type::point_type> PointArray;
     public:
       static void buildHexFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
-        int debug = sieve->debug;
+        int debug = sieve->debug();
 
         if (debug > 1) {std::cout << "  Building hex faces for boundary of " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;}
         if (dim > 3) {
@@ -140,7 +140,7 @@ namespace ALE {
         }
       };
       static void buildFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
-        int debug = sieve->debug;
+        int debug = sieve->debug();
 
         if (debug > 1) {
           if (cell >= 0) {
@@ -203,7 +203,7 @@ namespace ALE {
       //   (0, numCells) ... (0, numVertices): vertices
       // The other cells are numbered as they are requested
       static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1) {
-        int debug = sieve->debug;
+        int debug = sieve->debug();
 
         ALE_LOG_EVENT_BEGIN;
         if (sieve->commRank() != 0) {

@@ -380,6 +380,10 @@ int main(int argc, char *argv[])
     ierr = DistributeMesh(mesh, &options);CHKERRQ(ierr);
     ierr = OutputVTK(mesh, &options);CHKERRQ(ierr);
     ierr = OutputMesh(mesh, &options);CHKERRQ(ierr);
+    if (options.doPartition) {
+      ierr = SectionIntDestroy(options.partition);CHKERRQ(ierr);
+    }
+    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
     MPI_Abort(comm, 1);

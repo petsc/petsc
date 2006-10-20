@@ -1219,7 +1219,7 @@ namespace ALE {
     void Sieve<Point_,Marker_,Color_>::view(const char* label = NULL, MPI_Comm comm = MPI_COMM_NULL) {
         ostringstream txt;
 
-        if (this->debug) {
+        if (this->debug()) {
           std::cout << "viewing a Sieve, comm = " << this->comm() << ", commRank = " << this->commRank() << std::endl;
         }
         if(label != NULL) {
@@ -1492,7 +1492,7 @@ namespace ALE {
         //c_iter.setDegree(this->support(*c_iter)->size());
         this->_cap.adjustDegree(*c_iter, this->support(*c_iter)->size());
       }
-      if (this->debug || show) {
+      if (this->debug() || show) {
 //         const typename ::boost::multi_index::index<StratumSet,point>::type& points = ::boost::multi_index::get<point>(this->strata);
 //         for(typename ::boost::multi_index::index<StratumSet,point>::type::iterator i = points.begin(); i != points.end(); i++) {
 //           std::cout << *i << std::endl;
