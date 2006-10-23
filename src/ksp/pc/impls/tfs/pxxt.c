@@ -28,6 +28,7 @@ PetscErrorCode MatDestroy_MPIAIJ_XXT(Mat A)
   ierr = XXT_free(xxt->xxt);CHKERRQ(ierr); 
   ierr = PetscFree(xxt);CHKERRQ(ierr);
   ierr = MatDestroy_MPIAIJ(A);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1129,6 +1129,7 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
     ierr     = PetscFree(oldanext);CHKERRQ(ierr);
   }
   ierr = PetscFree(mpack);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -645,6 +645,7 @@ PetscErrorCode MatDestroy_ML(Mat A)
   ierr = VecDestroy(shell->y);CHKERRQ(ierr);
   ierr = PetscFree(shell);CHKERRQ(ierr); 
   ierr = MatDestroy_Shell(A);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

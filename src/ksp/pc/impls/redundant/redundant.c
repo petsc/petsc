@@ -444,9 +444,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   MPI_Comm       comm;
   Vec            vec;
 
-  PetscInt    mlocal_sub;
-  PetscMPIInt subsize,subrank;
-  PetscInt    rstart_sub,rend_sub,mloc_sub;
+  PetscInt       mlocal_sub;
+  PetscMPIInt    subsize,subrank;
+  PetscInt       rstart_sub,rend_sub,mloc_sub;
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)pc->pmat,&comm);CHKERRQ(ierr);
