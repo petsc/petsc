@@ -5,12 +5,8 @@
 #include <Mesh.hh>
 #endif
 
-#ifndef  included_ALE_CoSieve_hh
-#include <CoSieve.hh>
-#endif
-
-#ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#ifndef  included_ALE_Partitioner_hh
+#include <Partitioner.hh>
 #endif
 
 extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
@@ -71,6 +67,7 @@ namespace ALE {
     class Distribution {
     public:
       typedef Topology_                                                       topology_type;
+      typedef typename topology_type::sieve_type                              sieve_type;
       typedef ALE::New::Completion<Topology_, Mesh::sieve_type::point_type>   sieveCompletion;
       typedef ALE::New::Completion<Topology_, Mesh::real_section_type::value_type> sectionCompletion;
       typedef typename sectionCompletion::send_overlap_type                   send_overlap_type;
@@ -242,16 +239,115 @@ namespace ALE {
       template<typename SendSection, typename RecvSection>
       static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<topology_type>& topology, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
         if (sendOverlap->commSize() == 1) return;
-        typedef typename ALE::New::Completion<typename Mesh::topology_type, typename Mesh::point_type> completion_type;
+        typedef typename ALE::New::Completion<topology_type, typename topology_type::point_type> completion_type;
 
         // Distribute cones
         const typename topology_type::patch_type               patch           = 0;
-        const Obj<completion_type::topology_type>              secTopology     = completion_type::createSendTopology(sendOverlap);
+        const Obj<typename completion_type::topology_type>     secTopology     = completion_type::createSendTopology(sendOverlap);
         const Obj<typename completion_type::cone_size_section> coneSizeSection = new typename completion_type::cone_size_section(secTopology, topology->getPatch(patch));
         const Obj<typename completion_type::cone_section>      coneSection     = new typename completion_type::cone_section(secTopology, topology->getPatch(patch));
         sectionCompletion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
         // Update cones
         updateSieve(recvSection, topology);
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "scatterTopology"
+      // Partition a topology on process 0 and scatter to all processes
+      static void scatterTopology(const Obj<topology_type>& topology, const int dim, const Obj<topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const std::string& partitioner) {
+        if (partitioner == "chaco") {
+#ifdef PETSC_HAVE_CHACO
+          scatterTopology<ALE::New::Chaco::Partitioner<topology_type> >(topology, dim, topologyNew, sendOverlap, recvOverlap);
+#else
+          throw ALE::Exception("Chaco is not installed. Reconfigure with the flag --download-chaco");
+#endif
+        } else if (partitioner == "parmetis") {
+#ifdef PETSC_HAVE_PARMETIS
+          scatterTopology<ALE::New::ParMetis::Partitioner<topology_type> >(topology, dim, topologyNew, sendOverlap, recvOverlap);
+#else
+          throw ALE::Exception("ParMetis is not installed. Reconfigure with the flag --download-parmetis");
+#endif
+        } else {
+          throw ALE::Exception("Unknown partitioner");
+        }
+      };
+      template<typename Partitioner>
+      static void scatterTopology(const Obj<topology_type>& topology, const int dim, const Obj<topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+        typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, int> send_sizer_type;
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int> recv_sizer_type;
+        typedef typename ALE::New::ConstantSection<topology_type, int>                  constant_sizer;
+        typedef typename Partitioner::part_type part_type;
+        const Obj<sieve_type>& sieve         = topology->getPatch(0);
+        const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
+        Obj<send_sizer_type>   sendSizer     = new send_sizer_type(topology->comm(), topology->debug());
+        Obj<recv_sizer_type>   recvSizer     = new recv_sizer_type(topology->comm(), sendSizer->getTag(), topology->debug());
+        Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, topology->debug());
+        int rank  = topology->commRank();
+        int debug = topology->debug();
+
+        // 1) Form partition point overlap a priori
+        if (rank == 0) {
+          for(int p = 1; p < sieve->commSize(); p++) {
+            // The arrow is from local partition point p to remote partition point p on rank p
+            sendOverlap->addCone(p, p, p);
+          }
+        } else {
+          // The arrow is from remote partition point rank on rank 0 to local partition point rank
+          recvOverlap->addCone(0, rank, rank);
+        }
+        if (debug) {
+          sendOverlap->view("Send overlap for partition");
+          recvOverlap->view("Receive overlap for partition");
+        }
+        // 2) Partition the mesh
+        int        numCells = topology->heightStratum(0, 0)->size();
+        part_type *assignment;
+
+        assignment = Partitioner::partitionSieve(topology, dim);
+        // 3) Scatter the sieve
+        sieveCompletion::scatterSieve(topology, sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, assignment);
+        topologyNew->stratify();
+        // 4) Cleanup
+        delete [] assignment;
+      };
+      static void unifyTopology(const Obj<topology_type>& topology, const int dim, const Obj<topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+        typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, int> send_sizer_type;
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int> recv_sizer_type;
+        typedef typename ALE::New::ConstantSection<topology_type, int>                  constant_sizer;
+        typedef int part_type;
+        const Obj<sieve_type>& sieve         = topology->getPatch(0);
+        const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);
+        Obj<send_sizer_type>   sendSizer     = new send_sizer_type(topology->comm(), topology->debug());
+        Obj<recv_sizer_type>   recvSizer     = new recv_sizer_type(topology->comm(), sendSizer->getTag(), topology->debug());
+        Obj<constant_sizer>    constantSizer = new constant_sizer(MPI_COMM_SELF, 1, topology->debug());
+        int rank  = topology->commRank();
+        int debug = topology->debug();
+
+        // 1) Form partition point overlap a priori
+        if (rank == 0) {
+          for(int p = 1; p < sieve->commSize(); p++) {
+            // The arrow is from remote partition point 0 on rank p to local partition point 0
+            recvOverlap->addCone(p, 0, 0);
+          }
+        } else {
+          // The arrow is from local partition point 0 to remote partition point 0 on rank 0
+          sendOverlap->addCone(0, 0, 0);
+        }
+        if (debug) {
+          sendOverlap->view("Send overlap for partition");
+          recvOverlap->view("Receive overlap for partition");
+        }
+        // 2) Partition the mesh
+        int        numCells = topology->heightStratum(0, 0)->size();
+        part_type *assignment = new part_type[numCells];
+
+        for(int c = 0; c < numCells; ++c) {
+          assignment[c] = 0;
+        }
+        // 3) Scatter the sieve
+        sieveCompletion::scatterSieve(topology, sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, assignment);
+        topologyNew->stratify();
+        // 4) Cleanup
+        delete [] assignment;
       };
       #undef __FUNCT__
       #define __FUNCT__ "distributeMesh"
@@ -276,33 +372,27 @@ namespace ALE {
         // Distribute cones
         Obj<send_overlap_type> sendOverlap = new send_overlap_type(serialTopology->comm(), serialTopology->debug());
         Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(serialTopology->comm(), serialTopology->debug());
-        sieveCompletion::scatterTopology(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
+        scatterTopology(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         createConeOverlap(sendOverlap, recvOverlap, serialMesh, parallelMesh);
         parallelTopology->setDistSendOverlap(sendOverlap);
         parallelTopology->setDistRecvOverlap(recvOverlap);
-#if 0
+
         // Distribute labels
-        typedef OverlapValues<send_overlap_type, typename sieveCompletion::topology_type, typename Mesh::point_type> send_section_type;
-        typedef OverlapValues<recv_overlap_type, typename sieveCompletion::topology_type, typename Mesh::point_type> recv_section_type;
-        const Obj<send_section_type>         sendSection = new send_section_type(serialMesh->comm(), serialMesh->debug());
-        const Obj<recv_section_type>         recvSection = new recv_section_type(serialMesh->comm(), sendSection->getTag(), serialMesh->debug());
-        const typename topology_type::labels_type& labels = serialMesh->getLabels();
+        const typename topology_type::labels_type& labels = serialTopology->getLabels();
 
-        for(typename topology_type::labels_type::iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-          for(typename topology_type::label_type::iterator pl_iter = l_iter->second.begin(); pl_iter != l_iter->second.end(); ++pl_iter) {
-            if (parallelTopology->hasLabel(pl_iter->first, l_iter->first)) continue;
-            const typename topology_type::patch_label_type&      serialLabel   = pl_iter->second;
+        for(typename topology_type::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+          for(typename topology_type::label_type::const_iterator pl_iter = l_iter->second.begin(); pl_iter != l_iter->second.end(); ++pl_iter) {
+            if (parallelTopology->hasLabel(l_iter->first, pl_iter->first)) continue;
+            const Obj<typename topology_type::patch_label_type>& serialLabel   = pl_iter->second;
             const Obj<typename topology_type::patch_label_type>& parallelLabel = parallelTopology->createLabel(pl_iter->first, l_iter->first);
-            // Make the label overlap, here we just cheat and use the vertex overlap
 
-            updateSifterLocal(serialLabel, parallelLabel);
-            sieveCompletion::completeSifter(parallelMesh->getVertexSendOverlap(), parallelMesh->getVertexRecvOverlap(), sizer, filler, sendSection, recvSection);
-            updateSifterRemote(parallelMesh->getVertexRecvOverlap(), recvSection, parallelLabel);
+            sieveCompletion::scatterCones(serialLabel, parallelLabel, sendOverlap, recvOverlap);
           }
         }
-#endif
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+
         // Distribute sections
         Obj<std::set<std::string> > sections = serialMesh->getRealSections();
 
@@ -346,11 +436,11 @@ namespace ALE {
         updateSectionLocal(serialSection, parallelSection);
         sieveCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
         updateSectionRemote(recvOverlap, recvSection, parallelSection);
+        // This is necessary since we create types (like PartitionSection) on a subset of processors
+        PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelSection->debug()) {
           parallelSection->view("Parallel Section");
         }
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
-        PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         return parallelSection;
       };
       #undef __FUNCT__
@@ -393,6 +483,59 @@ namespace ALE {
             }
           }
         }
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "unifyMesh"
+      static Obj<Mesh> unifyMesh(const Obj<Mesh>& parallelMesh) {
+        Obj<Mesh> serialMesh = new Mesh(parallelMesh->comm(), parallelMesh->getDimension(), parallelMesh->debug());
+        const Obj<Mesh::topology_type>& parallelTopology = parallelMesh->getTopology();
+        const Obj<Mesh::topology_type>& serialTopology   = new Mesh::topology_type(parallelMesh->comm(), parallelMesh->debug());
+        const Obj<Mesh::sieve_type>&    sieve            = new Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
+        const int                       dim              = parallelMesh->getDimension();
+        PetscErrorCode                  ierr;
+
+        if (!parallelMesh->getDistributed()) return parallelMesh;
+        ALE_LOG_EVENT_BEGIN;
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+        serialTopology->setPatch(0, sieve);
+        serialMesh->setTopology(serialTopology);
+        if (parallelMesh->debug()) {
+          parallelMesh->view("Parallel topology");
+        }
+
+        // Unify cones
+        Obj<send_overlap_type> sendOverlap = new send_overlap_type(serialTopology->comm(), serialTopology->debug());
+        Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(serialTopology->comm(), serialTopology->debug());
+        unifyTopology(parallelTopology, dim, serialTopology, sendOverlap, recvOverlap);
+        // This is necessary since we create types (like PartitionSection) on a subset of processors
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+        createConeOverlap(sendOverlap, recvOverlap, parallelMesh, serialMesh);
+        serialTopology->setDistSendOverlap(sendOverlap);
+        serialTopology->setDistRecvOverlap(recvOverlap);
+
+        // Unify labels
+        const typename topology_type::labels_type& labels = parallelTopology->getLabels();
+
+        for(typename topology_type::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+          for(typename topology_type::label_type::const_iterator pl_iter = l_iter->second.begin(); pl_iter != l_iter->second.end(); ++pl_iter) {
+            if (serialTopology->hasLabel(l_iter->first, pl_iter->first)) continue;
+            const Obj<typename topology_type::patch_label_type>& parallelLabel = pl_iter->second;
+            const Obj<typename topology_type::patch_label_type>& serialLabel   = serialTopology->createLabel(pl_iter->first, l_iter->first);
+
+            sieveCompletion::scatterCones(parallelLabel, serialLabel, sendOverlap, recvOverlap);
+          }
+        }
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+
+        // Unify coordinates
+        serialMesh->setRealSection("coordinates", distributeSection(parallelMesh->getRealSection("coordinates"), serialTopology, sendOverlap, recvOverlap));
+
+        // This is necessary since we create types (like PartitionSection) on a subset of processors
+        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
+        if (serialMesh->debug()) {serialMesh->view("Serial Mesh");}
+        serialMesh->setDistributed(false);
+        ALE_LOG_EVENT_END;
+        return serialMesh;
       };
     };
   }

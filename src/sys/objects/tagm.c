@@ -191,6 +191,41 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommSynchronizeTags(MPI_Comm comm)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscCommCheckTags" 
+PetscErrorCode PETSC_DLLEXPORT PetscCommCheckTags(MPI_Comm comm)
+{
+  PetscMPIInt   *tagvalp = 0, tag;
+  PetscTruth     flg;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MPI_Attr_get(comm, Petsc_Tag_keyval, (void **) &tagvalp, (PetscMPIInt *) &flg);CHKERRQ(ierr);
+  if (!flg) {
+    MPI_Comm innerComm;
+    void    *ptr;
+
+    /* check if this communicator has a PETSc communicator imbedded in it */
+    ierr = MPI_Attr_get(comm, Petsc_InnerComm_keyval, &ptr, (PetscMPIInt*) &flg);CHKERRQ(ierr);
+    if (!flg) {
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
+    } else {
+      /* We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers */
+      ierr = PetscMemcpy(&innerComm, &ptr, sizeof(MPI_Comm));CHKERRQ(ierr);
+      ierr = MPI_Attr_get(innerComm, Petsc_Tag_keyval, (void **) &tagvalp, (PetscMPIInt *) &flg);CHKERRQ(ierr);
+      if (!flg) {
+        SETERRQ(PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tagvalp attribute set");
+      }
+    }
+  }
+  tag = tagvalp[0];
+  ierr = MPI_Bcast(&tag, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
+  if (tagvalp[0] != tag) {
+    SETERRQ2(PETSC_ERR_LIB, "Invalid tag %d should be %d", tagvalp[0], tag);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscCommDuplicate" 
 /*@C
   PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc 

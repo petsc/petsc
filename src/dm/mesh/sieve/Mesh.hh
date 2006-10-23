@@ -1,8 +1,8 @@
 #ifndef included_ALE_Mesh_hh
 #define included_ALE_Mesh_hh
 
-#ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#ifndef  included_ALE_Numbering_hh
+#include <Numbering.hh>
 #endif
 
 namespace ALE {
