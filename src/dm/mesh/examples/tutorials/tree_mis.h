@@ -7,6 +7,8 @@
 \*-----------------------------------------------*/
 
 #include <list>
+#include <CoSieve.hh>
+#include <Completion.hh>
 #include <Distribution.hh>
 //#include "petscmesh.h"
 //#include "petscviewer.h"
@@ -20,6 +22,10 @@
 
 namespace ALE {
   namespace Coarsener {
+    typedef ALE::Mesh::topology_type topology_type;
+    typedef ALE::Mesh::topology_type::point_type point_type;
+    typedef ALE::Mesh::topology_type::patch_type patch_type;
+    typedef ALE::Mesh::real_section_type real_section_type;
     struct mis_node {
       bool isLeaf;
       mis_node * parent;
@@ -27,24 +33,24 @@ namespace ALE {
       double maxSpacing;  //we can only refine until the radius of the max spacing ball is hit.
       std::list<mis_node *> subspaces;
       int depth;
-      std::list<ALE::Mesh::point_type> childPoints;
+      std::list<point_type> childPoints;
       //std::list<ALE::Mesh::point_type> childBoundPoints;
-      std::list<ALE::Mesh::point_type> childColPoints;
+      std::list<point_type> childColPoints;
     };
     bool isOverlap(mis_node *, mis_node *, int); //calculates if there is an intersection or overlap of these two domains
-    extern PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, ALE::Mesh::section_type::patch_type);
-    void randPush(std::list<ALE::Mesh::point_type> *, ALE::Mesh::point_type); //breaks up patterns in the mesh that cause oddness
+    extern PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, patch_type);
+    void randPush(std::list<point_type> *, point_type); //breaks up patterns in the mesh that cause oddness
 
-    PetscErrorCode tree_mis (Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_type::patch_type patch, ALE::Mesh::section_type::patch_type boundPatch, bool includePrevious, double beta) {
+    PetscErrorCode tree_mis (Obj<ALE::Mesh>& mesh, int dim, patch_type patch, patch_type boundPatch, bool includePrevious, double beta) {
       //build the quadtree
       PetscFunctionBegin;
       srand((unsigned int)time(0));
-      ALE::Mesh::section_type::patch_type rPatch = 0; //the patch on which everything is stored.. we restrict to this patch
-      Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-      const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(rPatch, 0);
-      Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
-      Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");
-      const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->getLabel(rPatch, "boundary");
+      patch_type rPatch = 0; //the patch on which everything is stored.. we restrict to this patch
+      Obj<topology_type> topology = mesh->getTopology();
+      const Obj<topology_type::label_sequence>& vertices = topology->depthStratum(rPatch, 0);
+      Obj<real_section_type> coords = mesh->getRealSection("coordinates");
+      Obj<real_section_type> spacing = mesh->getRealSection("spacing");
+      const Obj<topology_type::patch_label_type>& boundary = topology->getLabel(rPatch, "boundary");
       ostringstream txt;
 	  //build the root node;
       mis_node * tmpPoint = new mis_node;
@@ -55,8 +61,8 @@ namespace ALE {
       for (int i = 0; i < 2*dim; i++) {
 	bound_init[i] = false;
       }
-      ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
-      ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
+      topology_type::label_sequence::iterator v_iter = vertices->begin();
+      topology_type::label_sequence::iterator v_iter_end = vertices->end();
       while (v_iter != v_iter_end) {
 	double cur_space = *spacing->restrict(rPatch, *v_iter);
 	const double * cur_coords = coords->restrict(rPatch, *v_iter); //I swear a lot when I code
@@ -137,8 +143,8 @@ namespace ALE {
 	      }
 	    }
 	  }
-	  std::list<ALE::Mesh::point_type>::iterator p_iter = tmpPoint->childPoints.begin();
-	  std::list<ALE::Mesh::point_type>::iterator p_iter_end = tmpPoint->childPoints.end();
+	  std::list<point_type>::iterator p_iter = tmpPoint->childPoints.begin();
+	  std::list<point_type>::iterator p_iter_end = tmpPoint->childPoints.end();
 	  while (p_iter != p_iter_end) {
 	    double ch_space = *spacing->restrict(rPatch, *p_iter);
 	    const double * cur_coords = coords->restrict(rPatch, *p_iter);
@@ -177,7 +183,7 @@ namespace ALE {
 	} //ending leaf else
       } //ending while for building queue.
 
-      std::list<ALE::Mesh::point_type> globalNodes; //the list of global nodes that have been accepted.
+      std::list<point_type> globalNodes; //the list of global nodes that have been accepted.
 
 	//now, we must traverse the tree and determine what, if any conflicts exist in a greedy way.  First traverse all the way to the roots.
       std::list<mis_node *>::iterator leaf_iter = leaf_list.begin();
@@ -207,9 +213,9 @@ namespace ALE {
 	//PetscPrintf(mesh->comm(), "Region has %d adjacent sections; comparing\n", comparisons.size());
 	    //now loop over the adjacent areas we found to determine the MIS within *leaf_iter with respect to its neighbors.
 	    //begin by looping over the vertices in the leaf.
-	std::list<ALE::Mesh::point_type>::iterator l_points_iter = cur_leaf->childPoints.begin();
+	std::list<point_type>::iterator l_points_iter = cur_leaf->childPoints.begin();
         //std::list<ALE::Mesh::point_type>::iterator l_points_intermed = cur_leaf->childBoundPoints.end();
-	std::list<ALE::Mesh::point_type>::iterator l_points_iter_end = cur_leaf->childPoints.end();
+	std::list<point_type>::iterator l_points_iter_end = cur_leaf->childPoints.end();
 	while (l_points_iter != l_points_iter_end) {
 	  bool l_is_ok = true;
 	  double l_coords[dim];
@@ -217,8 +223,8 @@ namespace ALE {
 	  double l_space = *spacing->restrict(rPatch, *l_points_iter);
 
 		//internal consistency check; keeps us from having to go outside if we don't have to.
-	  std::list<ALE::Mesh::point_type>::iterator int_iter = cur_leaf->childColPoints.begin();
-	  std::list<ALE::Mesh::point_type>::iterator int_iter_end = cur_leaf->childColPoints.end();
+	  std::list<point_type>::iterator int_iter = cur_leaf->childColPoints.begin();
+	  std::list<point_type>::iterator int_iter_end = cur_leaf->childColPoints.end();
 	  while (int_iter != int_iter_end && l_is_ok) {
 	    double i_coords[dim];
 	    double dist = 0;
@@ -236,8 +242,8 @@ namespace ALE {
 	  std::list<mis_node *>::iterator comp_iter_end = comparisons.end();
 	  while (comp_iter != comp_iter_end && l_is_ok) {
 	    mis_node * cur_comp = *comp_iter;
-	    std::list<ALE::Mesh::point_type>::iterator adj_iter = cur_comp->childColPoints.begin();
-	    std::list<ALE::Mesh::point_type>::iterator adj_iter_end = cur_comp->childColPoints.end();
+	    std::list<point_type>::iterator adj_iter = cur_comp->childColPoints.begin();
+	    std::list<point_type>::iterator adj_iter_end = cur_comp->childColPoints.end();
 	    while (adj_iter != adj_iter_end && l_is_ok) {
 	      double a_coords[dim];
 	      double dist = 0;
@@ -260,8 +266,8 @@ namespace ALE {
 	} //end while over points
 
 	    //we can now dump the accepted list of points from the current leaf into the global list
-	std::list<ALE::Mesh::point_type>::iterator accept_iter = cur_leaf->childColPoints.begin();
-	std::list<ALE::Mesh::point_type>::iterator accept_iter_end = cur_leaf->childColPoints.end();
+	std::list<point_type>::iterator accept_iter = cur_leaf->childColPoints.begin();
+	std::list<point_type>::iterator accept_iter_end = cur_leaf->childColPoints.end();
 	while (accept_iter != accept_iter_end) {
 	  globalNodes.push_front(*accept_iter);
 	  accept_iter++;
@@ -296,7 +302,7 @@ namespace ALE {
       input->pointlist = new double[dim*input->numberofpoints];
 
   //copy the points over
-      std::list<ALE::Mesh::point_type>::iterator c_iter = globalNodes.begin(), c_iter_end = globalNodes.end();
+      std::list<point_type>::iterator c_iter = globalNodes.begin(), c_iter_end = globalNodes.end();
 
       int index = 0;
       while (c_iter != c_iter_end) {
@@ -320,9 +326,9 @@ namespace ALE {
 	c_iter++;
 	index++;
       }
-      const Obj<ALE::Mesh::topology_type::label_sequence>& boundEdges = topology->heightStratum(boundPatch, 0);
-      ALE::Mesh::topology_type::label_sequence::iterator be_iter = boundEdges->begin();
-      ALE::Mesh::topology_type::label_sequence::iterator be_iter_end = boundEdges->end();
+      const Obj<topology_type::label_sequence>& boundEdges = topology->heightStratum(boundPatch, 0);
+      topology_type::label_sequence::iterator be_iter = boundEdges->begin();
+      topology_type::label_sequence::iterator be_iter_end = boundEdges->end();
 //set up the boundary segments
       
       input->numberofsegments = boundEdges->size();
