@@ -161,6 +161,7 @@ PetscErrorCode CreateSquareBoundary(const ALE::Obj<ALE::Mesh>& mesh)
   ALE::Mesh::point_type vertices[9];
   const Obj<ALE::Mesh::sieve_type>    sieve    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   const Obj<ALE::Mesh::topology_type> topology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug());
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (mesh->commRank() == 0) {
@@ -194,9 +195,9 @@ PetscErrorCode CreateSquareBoundary(const ALE::Obj<ALE::Mesh>& mesh)
   mesh->setTopology(topology);
   ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), dim+1, coords);
   /* Create boundary conditions */
-  if (mesh->commRank() == 0) {
-    const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+  const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
 
+  if (mesh->commRank() == 0) {
     for(int v = 12; v < 20; v++) {
       topology->setValue(markers, v, 1);
     }
@@ -377,9 +378,9 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
   } else {
     m = new ALE::Mesh(comm, options->dim-1, options->debug);
     if (options->dim == 2) {
-      ierr = CreateSquareBoundary(m);
+      ierr = CreateSquareBoundary(m);CHKERRQ(ierr);
     } else if (options->dim == 3) {
-      ierr = CreateCubeBoundary(m);
+      ierr = CreateCubeBoundary(m);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", options->dim);
     }
