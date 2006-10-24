@@ -2658,7 +2658,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
           MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
 
