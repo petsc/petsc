@@ -118,7 +118,7 @@ class Configure(config.package.Package):
       if foundBlas and foundLapack:
         self.framework.logPrint('Found cblaslapack (underscore) name mangling')
         self.f2c = 1
-        self.f2pkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
+        self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -464,7 +464,7 @@ class Configure(config.package.Package):
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
-    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not f2cpkg:
+    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not self.f2cpkg:
       raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble/int')
     return
 
