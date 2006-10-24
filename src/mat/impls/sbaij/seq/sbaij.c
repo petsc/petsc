@@ -114,6 +114,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
   ierr = PetscFree(a->inew);CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
+  ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatStoreValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatRetrieveValues_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatSeqSBAIJSetColumnIndices_C","",PETSC_NULL);CHKERRQ(ierr);

@@ -423,6 +423,8 @@ PetscErrorCode MatDestroy_MPIBDiag(Mat mat)
   if (mbd->lvec) {ierr = VecDestroy(mbd->lvec);CHKERRQ(ierr);}
   if (mbd->Mvctx) {ierr = VecScatterDestroy(mbd->Mvctx);CHKERRQ(ierr);}
   ierr = PetscFree(mbd);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatGetDiagonalBlock_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)mat,"MatMPIBDiagSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);

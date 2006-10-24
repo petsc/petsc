@@ -1033,6 +1033,8 @@ PetscErrorCode MatDestroy_SeqDense(Mat mat)
   ierr = PetscFree(l->pivots);CHKERRQ(ierr);
   if (!l->user_alloc) {ierr = PetscFree(l->v);CHKERRQ(ierr);}
   ierr = PetscFree(l);CHKERRQ(ierr);
+
+  ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatSeqDenseSetPreallocation_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMult_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)mat,"MatMatMultSymbolic_seqaij_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);
