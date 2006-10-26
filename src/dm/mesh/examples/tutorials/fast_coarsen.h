@@ -3,6 +3,38 @@
 \*=====================================*/
 
 namespace ALE { namespace Coarsener {
+
+  struct coarsen_Stats {
+
+    bool computeStats; //tell if to compute stats
+    bool displayStats; //tell to display stats
+
+    int nMeshes; //the number of meshes
+    double beta; //the coarsening value
+    int * nNodes; //the number of nodes
+    int * nFaces; //the number of faces
+    double * compPpoint; //average number of comparisons per point.
+    int * regions; //the number of comparison regions
+    double * adjPregion; //the average number of adjacent regions per region.
+    double * minAngle; //the minimum angle in each level
+    double * maxAngle; //the maximum angle in each level
+    
+    int edgeSegments; //
+    int edgePoints;
+  } coarsen_stats;
+
+  void coarsen_CollectStats(bool stats, bool display) {
+    coarsen_stats.computeStats = stats;
+    coarsen_stats.displayStats = display;
+  }
+
+  void DisplayStats() {
+      printf("Data for: %d levels at %f coarsening factor\n", coarsen_stats.nMeshes, coarsen_stats.beta);
+      printf("|Level          |Nodes          |Faces          |Regions        |Point Comp     |Reg Comp       |Max Ang. (rad) |Min Ang. (rad) |\n");
+    for (int i = 0; i <= coarsen_stats.nMeshes; i++) {
+      printf("| %13d | %13d | %13d | %13d | %13f | %13f | %13f | %13f |\n", i, coarsen_stats.nNodes[i], coarsen_stats.nFaces[i], coarsen_stats.regions[i], coarsen_stats.compPpoint[i], coarsen_stats.adjPregion[i], coarsen_stats.maxAngle[i], coarsen_stats.minAngle[i]);
+    }
+  }
   /*struct mis_node {
     bool isLeaf;
     mis_node * parent
@@ -14,17 +46,48 @@ namespace ALE { namespace Coarsener {
     //std::list<ALE::Mesh::point_type> childBoundPoints;
     std::list<ALE::Mesh::point_type> childColPoints;
 };*/
+  bool IsPointInElement (Obj<ALE::Mesh>, int, ALE::Mesh::real_section_type::patch_type, ALE::Mesh::point_type, ALE::Mesh::point_type);
+  double * ComputeAngles(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type);
   bool isOverlap(mis_node *, mis_node *, int);
   PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41) {
+    coarsen_CollectStats(1, 1);
     PetscFunctionBegin;
+    if (coarsen_stats.computeStats) {
+      coarsen_stats.nMeshes = nMeshes;
+      coarsen_stats.beta = beta;
+      coarsen_stats.nNodes = new int[nMeshes + 1];
+      coarsen_stats.nFaces = new int[nMeshes + 1];
+      coarsen_stats.compPpoint = new double[nMeshes + 1];
+      coarsen_stats.regions = new int[nMeshes + 1];
+      coarsen_stats.adjPregion = new double[nMeshes + 1];
+      coarsen_stats.minAngle = new double[nMeshes + 1];
+      coarsen_stats.maxAngle = new double[nMeshes + 1];
+      
+    }
     //create the initial overhead comparison level.
     	  //build the root node;
-    ALE::Mesh::section_type::patch_type rPatch = 0; //the patch on which everything is stored.. we restrict to this patch
-    ALE::Mesh::section_type::patch_type boundPatch = nMeshes + 1; //the patch on which everything is stored.. we restrict to this patch
+    ALE::Mesh::real_section_type::patch_type rPatch = 0; //the patch on which everything is stored.. we restrict to this patch
+    ALE::Mesh::real_section_type::patch_type boundPatch = nMeshes + 1; //the patch on which everything is stored.. we restrict to this patch
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(rPatch, 0);
-    Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
-    Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");
+
+    if (coarsen_stats.computeStats) {
+      coarsen_stats.nNodes[0] = vertices->size();
+      const Obj<ALE::Mesh::topology_type::label_sequence>& botFaces = topology->heightStratum(rPatch, 0);
+      coarsen_stats.nFaces[0] = botFaces->size();
+      double * tmpDat = ComputeAngles(mesh, 2, 0);
+      coarsen_stats.minAngle[0] = tmpDat[0];
+      coarsen_stats.maxAngle[0] = tmpDat[1];
+      coarsen_stats.compPpoint[0] = 0;
+      coarsen_stats.adjPregion[0] = 0.0;
+      coarsen_stats.regions[0] = 0;
+    }
+
+    Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
+    Obj<ALE::Mesh::real_section_type> spacing = mesh->getRealSection("spacing");
+    //Obj<ALE::Mesh::int_section_type> nearest = mesh->getIntSection("nearest");
+    //nearest->setFiberDimensionByDepth(rPatch, 0, 1);
+    //nearest->allocate();
     const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->getLabel(rPatch, "boundary");
     std::list<ALE::Mesh::point_type> globalNodes; //the list of global nodes that have been accepted.
     mis_node * tmpPoint = new mis_node;
@@ -88,10 +151,11 @@ namespace ALE { namespace Coarsener {
 	  for (int i = 0; i < dim; i++) {
 	    if((tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]) < 2*pBeta*tmpPoint->maxSpacing) { 
 	      canRefine = false;
-	     // PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]),2*pBeta*tmpPoint->maxSpacing);
+	      //PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]),2*pBeta*tmpPoint->maxSpacing);
 	    }
 	  }
-	  if (tmpPoint->childPoints.size() + tmpPoint->childColPoints.size() < 20) canRefine = false;  //the threshhold at which we do not care to not do the greedy thing as comparison is cheap enough
+	  if (tmpPoint->childColPoints.size() <= 1) canRefine = false;  //allows us to compute NEAREST POINT at each stage, as SOME adjacent thing will have a point. 
+          if (tmpPoint->childColPoints.size() + tmpPoint->childPoints.size() < 20) canRefine = false;
 	  if (canRefine) {
 	  //PetscPrintf(mesh->comm(), "-- refining an area containing %d nodes..\n", tmpPoint->childPoints.size() + tmpPoint->childColPoints.size());
 	    tmpPoint->isLeaf = false;
@@ -161,9 +225,13 @@ namespace ALE { namespace Coarsener {
       } //ending refinement while.
       //MIS picking phase
       PetscPrintf(mesh->comm(), "%d Refinement Regions created for this level.\n", leaf_list.size());
+      if(coarsen_stats.computeStats) coarsen_stats.regions[curLevel] = leaf_list.size();
       std::list<mis_node *>::iterator leaf_iter = leaf_list.begin();
       std::list<mis_node *>::iterator leaf_iter_end = leaf_list.end();
       //PetscPrintf(mesh->comm(), "- created %d comparison spaces\n", leaf_list.size());
+      int regions_adjacent = 0; //the total number of comparisons between regions done.
+      int point_comparisons = 0; //the total number of point-to-point comparisons performed.
+      int visited_nodes = 0; //the total number of nodes considered.
       while (leaf_iter != leaf_iter_end) {
 	    //we must now traverse the tree in such a way as to determine what collides with this leaf and what to do about it.
 	std::list<mis_node *> comparisons; //dump the spaces that will be directly compared to cur_point in here.
@@ -185,6 +253,7 @@ namespace ALE { namespace Coarsener {
 	    }
 	  } //end what to do for non-leafs
 	} //end traversal of tree to determine adjacent sections
+        regions_adjacent += comparisons.size();
 	//PetscPrintf(mesh->comm(), "Region has %d adjacent sections; comparing\n", comparisons.size());
 	    //now loop over the adjacent areas we found to determine the MIS within *leaf_iter with respect to its neighbors.
 	    //begin by looping over the vertices in the leaf.
@@ -192,6 +261,10 @@ namespace ALE { namespace Coarsener {
         //std::list<ALE::Mesh::point_type>::iterator l_points_intermed = cur_leaf->childBoundPoints.end();
 	std::list<ALE::Mesh::point_type>::iterator l_points_iter_end = cur_leaf->childPoints.end();
 	while (l_points_iter != l_points_iter_end) {
+          visited_nodes++;
+          double nearPointDist = 100; //keep track of the minimum space between this point and a point in the next level up.
+          int whyset = 0; //DEBUG for the process.
+          ALE::Mesh::point_type nearPoint = -1;
 	  bool l_is_ok = true;
 	  double l_coords[dim];
 	  PetscMemcpy(l_coords, coords->restrict(rPatch, *l_points_iter), dim*sizeof(double));
@@ -205,11 +278,19 @@ namespace ALE { namespace Coarsener {
 	    double dist = 0;
 	    PetscMemcpy(i_coords, coords->restrict(rPatch, *int_iter), dim*sizeof(double));
 	    double i_space = *spacing->restrict(rPatch, *int_iter);
+	    point_comparisons++;
 	    for (int d = 0; d < dim; d++) {
 	      dist += (i_coords[d] - l_coords[d])*(i_coords[d] - l_coords[d]);
 	    }
+            /*if (curLevel != nMeshes && topology->getPatch(curLevel+1)->capContains(*int_iter)) {
+              if(nearPoint == -1 || dist < nearPointDist) {
+                whyset = 0;
+                nearPoint = *int_iter;
+                nearPointDist = dist;
+              }
+            }*/
 	    double mdist = i_space + l_space;
-	    if (dist < pBeta*pBeta*mdist*mdist/4) l_is_ok = false;
+	    if (dist < pBeta*pBeta*mdist*mdist/4 && curLevel != 0) l_is_ok = false;
 	    int_iter++;
 	  }
 		//now we must iterate over the adjacent spaces as determined before.
@@ -224,25 +305,97 @@ namespace ALE { namespace Coarsener {
 	      double dist = 0;
 	      PetscMemcpy(a_coords, coords->restrict(rPatch, *adj_iter), dim*sizeof(double));
 	      double a_space = *spacing->restrict(rPatch, *adj_iter);
+              point_comparisons++;
 	      for (int d = 0; d < dim; d++) {
 		dist += (a_coords[d] - l_coords[d])*(a_coords[d] - l_coords[d]);
 	      }
 	      double mdist = l_space + a_space;
-	      if (dist < pBeta*pBeta*mdist*mdist/4) l_is_ok = false;
+              /*if (curLevel != nMeshes && topology->getPatch(curLevel+1)->capContains(*adj_iter)) {
+                if(nearPoint == -1 || dist < nearPointDist) {
+                  whyset = 1;
+                  nearPoint = *adj_iter;
+                  nearPointDist = dist;
+                }
+              }*/
+	      if (dist < pBeta*pBeta*mdist*mdist/4 && curLevel != 0) l_is_ok = false;
 	      adj_iter++;
 	    }
 	    comp_iter++;
 	  }
 	  if (l_is_ok) {  //this point has run the gambit... cool.
-	    cur_leaf->childColPoints.push_front(*l_points_iter);
-	    globalNodes.push_front(*l_points_iter); //so we only need to run this once and can keep a tally! (node nested enforced by default)
+	    if(curLevel != 0) {
+              cur_leaf->childColPoints.push_front(*l_points_iter);
+	       globalNodes.push_front(*l_points_iter); //so we only need to run this once and can keep a tally! (node nested enforced by default)
+            };
+            /*ALE::Mesh::point_type contTri = -1;
+            if (curLevel != nMeshes) {  //compute the triangle in the next level containing this point.
+              Obj<ALE::Mesh::sieve_type::supportSet> pointStar = topology->getPatch(curLevel + 1)->star(nearPoint);
+              Obj<ALE::Mesh::sieve_type::coneSet> setCone = topology->getPatch(curLevel + 1)->closure(pointStar);
+              Obj<ALE::Mesh::sieve_type::supportSet> setStar = topology->getPatch(curLevel+1)->star(setCone);
+              ALE::Mesh::sieve_type::supportSet::iterator ps_iter = setStar->begin();
+              ALE::Mesh::sieve_type::supportSet::iterator ps_iter_end = setStar->end();
+              while (ps_iter != ps_iter_end && contTri == -1) {
+                if (topology->getPatch(curLevel+1)->height(*ps_iter) == 0) { //pull out the triangles
+                  if (IsPointInElement(mesh, dim, curLevel + 1, *ps_iter, *l_points_iter)) {
+                    contTri = *ps_iter;
+                  }
+                }
+                ps_iter++;
+              }
+              if(contTri == -1) {
+                const double * badNear = coords->restrict(0, nearPoint);
+               //printf("ERROR: Couldn't find triangle for point %d: (%f, %f) - nearest is %d: (%f, %f) set for %d\n", *l_points_iter, l_coords[0], l_coords[1], nearPoint, badNear[0], badNear[1], whyset);
+               //brute force find the actual nearest.
+                const Obj<ALE::Mesh::topology_type::label_sequence>& why_verts = topology->depthStratum(curLevel+1, 0);
+                ALE::Mesh::point_type newone = nearPoint;
+                double newdist = nearPointDist;
+                ALE::Mesh::topology_type::label_sequence::iterator why_iter = why_verts->begin();
+                ALE::Mesh::topology_type::label_sequence::iterator why_iter_end = why_verts->end();
+                while (why_iter != why_iter_end) {
+                  badNear = coords->restrict(rPatch, *why_iter);
+                  double dist = 0;
+                  for (int d = 0; d < dim; d++) {
+		    dist += (badNear[d] - l_coords[d])*(badNear[d] - l_coords[d]);
+	          }
+                  if (dist < newdist) {
+                    newone = *why_iter;
+                    newdist = dist;
+                  }
+                  why_iter++;
+                }
+                if (newone != nearPoint) {
+                //printf("FOUND: %d is actually the nearest by %f\n", newone, sqrt(newdist) - sqrt(nearPointDist));
+                pointStar = topology->getPatch(curLevel + 1)->star(newone);
+                setCone = topology->getPatch(curLevel+1)->closure(pointStar);
+                setStar = topology->getPatch(curLevel+1)->star(setCone);
+                ps_iter = setStar->begin();
+                ps_iter_end = setStar->end();
+
+                while (ps_iter != ps_iter_end && contTri == -1) {
+                  if (topology->getPatch(curLevel+1)->height(*ps_iter) == 0) { //pull out the triangles
+                    if (IsPointInElement(mesh, dim, curLevel + 1, *ps_iter, *l_points_iter)) {
+                      contTri = *ps_iter;
+                    }
+                  }
+                  ps_iter++;
+                }
+                //if (contTri == -1) {
+                  //printf("still broken\n");
+                //} else printf("fixed\n");
+                } 
+              }
+            }*/
+            //nearest->update(rPatch, *l_points_iter, &contTri);
+	    l_points_iter = cur_leaf->childPoints.erase(l_points_iter);
+	  } else {
+	    l_points_iter++;
 	  }
-	  l_points_iter++;
 	} //end while over points
 	comparisons.clear(); //we need to remake this list the next time around.
 	leaf_iter++;
       } //end while over leaf spaces; after this point we have a complete MIS in globalNodes
       //Mesh building phase
+      //if (curLevel != 0) {
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
   
@@ -339,9 +492,10 @@ namespace ALE { namespace Coarsener {
       output->edgemarkerlist = NULL;
       output->normlist = NULL;
 
-      string triangleOptions = "-zpeQ"; //(z)ero indexing, output (e)dges, Quiet
+      string triangleOptions = "-zpDQ"; //(z)ero indexing, output (e)dges, Quiet, Delaunay
       triangulate((char *)triangleOptions.c_str(), input, output, NULL);
       TriangleToMesh(mesh, output, curLevel);
+      //printf("computing the angles\n");
       delete input->pointlist;
       delete output->pointlist;
       delete output->trianglelist;
@@ -349,7 +503,21 @@ namespace ALE { namespace Coarsener {
       delete input;
       delete output;
       leaf_list.clear();
+      //}
+      if (coarsen_stats.computeStats) {
+        coarsen_stats.nNodes[curLevel] = output->numberofpoints;
+        coarsen_stats.nFaces[curLevel] = output->numberoftriangles;
+        
+
+        coarsen_stats.adjPregion[curLevel] = ((float)regions_adjacent)/coarsen_stats.regions[curLevel];
+        coarsen_stats.compPpoint[curLevel] = ((float)point_comparisons)/visited_nodes;
+        
+        double * tmp_stats = ComputeAngles(mesh, dim, curLevel);
+        coarsen_stats.minAngle[curLevel] = tmp_stats[0];
+        coarsen_stats.maxAngle[curLevel] = tmp_stats[1];
+      }
     }  //end of for over the number of coarsening levels.
+    if (coarsen_stats.displayStats)DisplayStats();
     PetscFunctionReturn(0);
   }  //end of CreateCoarsenedHierarchy
   
@@ -362,4 +530,96 @@ namespace ALE { namespace Coarsener {
     if (sharedDim == dim) {return true;
     } else return false;
 }*/
+  bool IsPointInElement (Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::real_section_type::patch_type cPatch, ALE::Mesh::point_type triangle, ALE::Mesh::point_type node) {
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
+    Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
+    double v_coords[dim];
+    PetscMemcpy(v_coords, coords->restrict(0, node), dim * sizeof(double));
+    double p_coords[dim*(dim+1)]; //stores the points of the triangle
+    //initial step: get the area of the triangle/tet using the parallelogram rule
+    Obj<ALE::Mesh::sieve_type::coneSet> closure = topology->getPatch(cPatch)->closure(triangle);
+    //if (closure->size() < 6) printf("ERROR! ERROR!\n");
+    ALE::Mesh::sieve_type::coneSet::iterator c_iter = closure->begin();
+    ALE::Mesh::sieve_type::coneSet::iterator c_iter_end = closure->end();
+    int index = 0;
+        //printf("%d: (%f, %f)\n", node, v_coords[0], v_coords[1]);
+    while (c_iter != c_iter_end) {
+      if (topology->getPatch(cPatch)->depth(*c_iter) == 0) {
+        const double * tmpCoord = coords->restrict(0, *c_iter);
+        for (int i = 0; i < dim; i++) {
+          p_coords[index*dim + i] = tmpCoord[i];
+        }
+        //printf("%d: (%f, %f)\n", *c_iter, p_coords[index*dim], p_coords[index*dim + 1]);
+        index++;
+      }
+      c_iter++;
+    }
+    //printf("found %d points on this triangle, the last being (%f, %f)\n", index, p_coords[4], p_coords[5]);
+    double area = 0; //compute the area of the triangle/volume of the tet
+    //if (dim == 2) {
+      area = fabs((p_coords[2] - p_coords[0])*(p_coords[5] - p_coords[1]) - (p_coords[4] - p_coords[0])*(p_coords[3] - p_coords[1]));
+    //}
+    //compute the area of the various subvolumes induced by the point.
+    double t_area = 0;
+    if (dim == 2) for (int i = 1; i <= dim; i++) { //loop choosing the first point.
+      for (int j = 0; j < i; j++) {  //loop choosing the second point.
+        t_area += fabs((p_coords[dim*i] - v_coords[0])*(p_coords[dim*j+1] - v_coords[1]) - (p_coords[dim*i+1] - v_coords[1])*(p_coords[dim*j] - v_coords[0]));
+      }
+    }
+    //printf("Comparing triangle area %f with %f\n", area, t_area);
+    if (t_area - area  > 0.0001*area) return false;
+    return true;
+  }
+  double * ComputeAngles(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type patch) {
+    //return the minimum and maximum angles for the given patch.
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
+    Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
+    const Obj<ALE::Mesh::topology_type::label_sequence>& faces = topology->heightStratum(patch, dim - 2); //lets us do 3D
+    ALE::Mesh::topology_type::label_sequence::iterator f_iter = faces->begin();
+    ALE::Mesh::topology_type::label_sequence::iterator f_iter_end = faces->end();
+    //printf("Faces: %d\n", faces->size());
+    double * angle = new(double[2]);
+     angle[0] = 6.28;
+     angle[1] = 0.0;
+    while (f_iter != f_iter_end) {
+      //printf("Computing the angles for face %d\n", *f_iter);
+      Obj<ALE::Mesh::sieve_type::coneSet> points = topology->getPatch(patch)->closure(*f_iter);
+      ALE::Mesh::sieve_type::coneSet::iterator p_iter = points->begin();
+      ALE::Mesh::sieve_type::coneSet::iterator p_iter_end = points->end();
+      double point_coords[dim*3];
+      int index = 0;
+      while (p_iter != p_iter_end) {
+        const double * tmpCoords;
+        if(topology->getPatch(patch)->depth(*p_iter) == 0) {
+          tmpCoords = coords->restrict(0, *p_iter);
+          for (int i = 0; i < dim; i++) {
+            point_coords[i + index*dim] = tmpCoords[i];
+          }
+          index++;
+        }
+        p_iter++;
+      }
+      //if (index != 3) printf("oops.");
+      //got the points, now check the angles;
+      double veca, vecb;
+      for (int i = 0; i < 3; i++) {
+        double norma = 0;
+        double normb = 0;
+        double dot = 0;
+        for (int j = 0; j < dim; j++) {
+          veca = (point_coords[((i+1)%3)*dim + j] - point_coords[i*dim + j]);
+          vecb = (point_coords[((i+2)%3)*dim + j] - point_coords[i*dim + j]);
+          norma += veca*veca;
+          normb += vecb*vecb;
+          dot += veca*vecb;
+        }
+        double tmpAngle = acos(dot/(sqrt(norma*normb)));
+        if (tmpAngle > angle[1]) angle[1] = tmpAngle;
+        if (tmpAngle < angle[0]) angle[0] = tmpAngle;
+        //printf("%f\n", tmpAngle);
+      }
+      f_iter++;
+    }
+    return angle;
+  }
 } }

@@ -2472,7 +2472,7 @@ EXTERN_C_END
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatCreateMPIAIJ(), MPIAIJ,
-          MatCreateSeqAIJWithArrays()
+          MatCreateSeqAIJWithArrays(), MatCreateMPIAIJWithSplitArrays()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR(Mat B,const PetscInt i[],const PetscInt j[], const PetscScalar v[])
 {
@@ -2643,21 +2643,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,
 
    Output Parameter:
 .   mat - the matrix
+
    Level: intermediate
 
    Notes:
        The i, j, and a arrays ARE copied by this routine into the internal format used by PETSc;
      thus you CANNOT change the matrix entries by changing the values of a[] after you have 
-     called this routine.
+     called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
 
        The i and j indices are 0 based
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
 .seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
-          MPIAIJ, MatCreateMPIAIJ()
+          MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithSplitArrays()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,const PetscInt i[],const PetscInt j[],const PetscScalar a[],Mat *mat)
 {
   PetscErrorCode ierr;
 
@@ -4118,6 +4119,85 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
 }
 EXTERN_C_END
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCreateMPIAIJWithSplitArrays"
+/*@C
+     MatCreateMPIAIJWithSplitArrays - creates a MPI AIJ matrix using arrays that contain the "diagonal"
+         and "off-diagonal" part of the matrix in CSR format.
+
+   Collective on MPI_Comm
+
+   Input Parameters:
++  comm - MPI communicator
+.  m - number of local rows (Cannot be PETSC_DECIDE)
+.  n - This value should be the same as the local size used in creating the 
+       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       calculated if N is given) For square matrices n is almost always m.
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
+.  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+.   i - row indices for "diagonal" portion of matrix
+.   j - column indices
+.   a - matrix values
+.   oi - row indices for "off-diagonal" portion of matrix
+.   oj - column indices
+-   oa - matrix values
+
+   Output Parameter:
+.   mat - the matrix
+
+   Level: advanced
+
+   Notes:
+       The i, j, and a arrays ARE NOT copied by this routine into the internal format used by PETSc.
+
+       The i and j indices are 0 based
+ 
+       See MatCreateMPIAIJ() for the definition of "diagonal" and "off-diagonal" portion of the matrix
+
+
+.keywords: matrix, aij, compressed row, sparse, parallel
+
+.seealso: MatCreate(), MatCreateSeqAIJ(), MatSetValues(), MatMPIAIJSetPreallocation(), MatMPIAIJSetPreallocationCSR(),
+          MPIAIJ, MatCreateMPIAIJ(), MatCreateMPIAIJWithArrays()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,PetscInt i[],PetscInt j[],PetscScalar a[],
+								PetscInt oi[], PetscInt oj[],PetscScalar oa[],Mat *mat)
+{
+  PetscErrorCode ierr;
+  Mat_MPIAIJ     *maij;
+
+ PetscFunctionBegin;
+  if (m < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"local number of rows (m) cannot be PETSC_DECIDE, or negative");
+  if (i[0]) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"i (row indices) must start with 0");
+  }
+  if (oi[0]) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"oi (row indices) must start with 0");
+  }
+  ierr = MatCreate(comm,mat);CHKERRQ(ierr);
+  ierr = MatSetSizes(*mat,m,n,M,N);CHKERRQ(ierr);
+  ierr = MatSetType(*mat,MATMPIAIJ);CHKERRQ(ierr);
+  maij = (Mat_MPIAIJ*) (*mat)->data;
+  maij->donotstash     = PETSC_TRUE;
+  (*mat)->preallocated = PETSC_TRUE;
+
+  (*mat)->rmap.bs = (*mat)->cmap.bs = 1;
+  ierr = PetscMapInitialize((*mat)->comm,&(*mat)->rmap);CHKERRQ(ierr);
+  ierr = PetscMapInitialize((*mat)->comm,&(*mat)->cmap);CHKERRQ(ierr);
+
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,i,j,a,&maij->A);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,(*mat)->cmap.N,oi,oj,oa,&maij->B);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(maij->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(maij->A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(maij->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(maij->B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*
     Special version for direct calls from Fortran 
 */
@@ -4255,3 +4335,4 @@ void PETSC_STDCALL matsetvaluesmpiaij_(Mat *mmat,PetscInt *mm,const PetscInt im[
   PetscFunctionReturnVoid();
 }
 EXTERN_C_END
+

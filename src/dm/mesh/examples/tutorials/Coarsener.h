@@ -19,8 +19,8 @@ namespace Coarsener {
   PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>&, int);  //identify the boundary faces/edges/nodes.
   PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh>&, int);  //same 'ol, same 'ol.  (puts a nearest neighbor value on each vertex) (edges?)
   PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>&, int, int, float); //returns the meshes!
-  PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, ALE::Mesh::section_type::patch_type);
-  PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>&, int,  ALE::Mesh::section_type::patch_type, bool, float);
+  PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, ALE::Mesh::real_section_type::patch_type);
+  PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>&, int,  ALE::Mesh::real_section_type::patch_type, bool, float);
   int BoundaryNodeDimension_2D(Obj<ALE::Mesh>&, ALE::Mesh::point_type);
   int BoundaryNodeDimension_3D(Obj<ALE::Mesh>&, ALE::Mesh::point_type);
   
@@ -29,18 +29,18 @@ namespace Coarsener {
   
   PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh> & mesh, int dim) {
     Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-    ALE::Mesh::section_type::patch_type patch = 0;
+    ALE::Mesh::real_section_type::patch_type patch = 0;
     const Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
   
     PetscFunctionBegin;
   
     //initialize the spacing function section
   
-    Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");
+    Obj<ALE::Mesh::real_section_type> spacing = mesh->getRealSection("spacing");
     spacing->setFiberDimensionByDepth(patch, 0, 1);
     spacing->allocate();
     
-    Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
+    Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
     
     ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin();
     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = vertices->end();
@@ -86,7 +86,7 @@ namespace Coarsener {
 
 PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
 {
-  ALE::Mesh::section_type::patch_type patch = 0;
+  ALE::Mesh::real_section_type::patch_type patch = 0;
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->createLabel(patch, "boundary");
 
@@ -110,7 +110,7 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
     while (e_iter != e_iter_end) {
       //topology->setValue(boundary, *e_iter, 0);
       //find out if the edge is not supported on both sides, if so, this is a boundary node
-      if (mesh->debug) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
+      if (mesh->debug()) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
       if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
         //topology->setValue(boundary, *e_iter, 1);
         ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
@@ -122,7 +122,7 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
           } 
           if (topology->getValue(boundary, *p_iter) == 0) {
 	    topology->setValue(boundary, *p_iter, BoundaryNodeDimension_2D(mesh, *p_iter));
-	    if (mesh->debug) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
+	    if (mesh->debug()) {printf("set boundary dimension for %d as %d\n", *p_iter, topology->getValue(boundary, *p_iter));}
 	  }
           //boundVerts++;
           p_iter++;
@@ -148,7 +148,7 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
     printf("Creating coarsening level: %d with beta = %f\n", curLevel, crsBeta);
     //LevelCoarsen(mesh, dim, curLevel, !isTopLevel, crsBeta);
     tree_mis(mesh, dim, curLevel, nMeshes+1, !isTopLevel, crsBeta);
-    if (mesh->debug) {
+    if (mesh->debug()) {
       ostringstream txt;
       txt << "Sieve for coarsening level " << curLevel;
       mesh->getTopology()->getPatch(curLevel)->view(txt.str().c_str());
@@ -158,19 +158,19 @@ PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>& mesh, int dim, int nMesh
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_type::patch_type newPatch, bool includePrevious, float beta) {
+PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_section_type::patch_type newPatch, bool includePrevious, float beta) {
   PetscFunctionBegin;
-  ALE::Mesh::section_type::patch_type originalPatch = 0;
+  ALE::Mesh::real_section_type::patch_type originalPatch = 0;
   std::list<ALE::Mesh::point_type> incPoints;
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
   double v_coord[dim], c_coord[dim];
-  Obj<ALE::Mesh::section_type> coords  = mesh->getSection("coordinates");
-  Obj<ALE::Mesh::section_type> spacing = mesh->getSection("spacing");
+  Obj<ALE::Mesh::real_section_type> coords  = mesh->getRealSection("coordinates");
+  Obj<ALE::Mesh::real_section_type> spacing = mesh->getRealSection("spacing");
 
   //const Obj<ALE::Mesh::topology_type::patch_label_type>& boundary = topology->getLabel(originalPatch, "boundary");
   if(includePrevious) {
 
-    ALE::Mesh::section_type::patch_type coarserPatch = newPatch+1;
+    ALE::Mesh::real_section_type::patch_type coarserPatch = newPatch+1;
     const Obj<ALE::Mesh::topology_type::label_sequence>& previousVertices = topology->depthStratum(coarserPatch, 0);
 
     //Add the vertices from the next coarser patch to the list of included vertices.
@@ -187,7 +187,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_ty
     ALE::Mesh::topology_type::label_sequence::iterator v_iter     = essVertices->begin();
     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = essVertices->end();
     while (v_iter != v_iter_end) {
-      if (mesh->debug) {std::cout << "--> added " << *v_iter << std::endl;}
+      if (mesh->debug()) {std::cout << "--> added " << *v_iter << std::endl;}
       incPoints.push_front(*v_iter);
       v_iter++;
     }
@@ -305,9 +305,9 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::section_ty
 
 int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex) {
 
-  ALE::Mesh::section_type::patch_type patch = 0; 
+  ALE::Mesh::real_section_type::patch_type patch = 0; 
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-  Obj<ALE::Mesh::section_type> coords = mesh->getSection("coordinates");
+  Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
   const double *vCoords = coords->restrict(patch, vertex);
   double v_x = vCoords[0], v_y = vCoords[1];
   bool foundNeighbor = false;
@@ -334,7 +334,7 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
 	    double n_x = nCoords[0], n_y = nCoords[1];
 	    double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
 	    if (parArea > .0000001) isEssential = 2;
-	   if(mesh->debug) printf("Parallelogram area: %f\n", parArea);
+	   if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
 	  }
 	}
 	n_iter++;
@@ -360,7 +360,7 @@ bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::po
   return false; // stub
 }
 
-PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::section_type::patch_type patch) {
+PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::real_section_type::patch_type patch) {
   PetscFunctionBegin;
   // We store the global vertex numbers as markers to preserve them in the coarse mesh
   //   Here we convert from the new Triangle numbering to the original fine mesh numbering (same sieve points we started from)
