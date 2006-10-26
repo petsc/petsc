@@ -161,7 +161,6 @@ PetscErrorCode CreateSquareBoundary(const ALE::Obj<ALE::Mesh>& mesh)
   ALE::Mesh::point_type vertices[9];
   const Obj<ALE::Mesh::sieve_type>    sieve    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
   const Obj<ALE::Mesh::topology_type> topology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug());
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (mesh->commRank() == 0) {

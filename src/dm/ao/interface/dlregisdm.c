@@ -137,7 +137,9 @@ EXTERN_C_BEGIN
 .seealso: PetscInitialize()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage() {
+#ifdef PETSC_HAVE_SIEVE
   PetscErrorCode ierr;
+#endif
 
   PetscFunctionBegin;
 #ifdef PETSC_HAVE_SIEVE
