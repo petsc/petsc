@@ -28,7 +28,7 @@ namespace ALE { namespace Coarsener {
     coarsen_stats.displayStats = display;
   }
 
-  void DisplayStats() {
+  void coarsen_DisplayStats() {
       printf("Data for: %d levels at %f coarsening factor\n", coarsen_stats.nMeshes, coarsen_stats.beta);
       printf("|Level          |Nodes          |Faces          |Regions        |Point Comp     |Reg Comp       |Max Ang. (rad) |Min Ang. (rad) |\n");
     for (int i = 0; i <= coarsen_stats.nMeshes; i++) {
@@ -44,11 +44,12 @@ namespace ALE { namespace Coarsener {
     int depth;
     std::list<ALE::Mesh::point_type> childPoints;
     //std::list<ALE::Mesh::point_type> childBoundPoints;
-    std::list<ALE::Mesh::point_type> childColPoints;
+    std::list<ALE::Mesh::point_type> childColPoits;
 };*/
   bool IsPointInElement (Obj<ALE::Mesh>, int, ALE::Mesh::real_section_type::patch_type, ALE::Mesh::point_type, ALE::Mesh::point_type);
   double * ComputeAngles(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type);
-  bool isOverlap(mis_node *, mis_node *, int);
+  bool isOverlap(mis_node *, mis_node *, int, double);
+  bool CompatibleWithEdge(Obj<ALE::Mesh>, int, ALE::Mesh::patch_type, ALE::Mesh::point_type, ALE::Mesh::point_type, double);
   PetscErrorCode CreateCoarsenedHierarchyNew (Obj<ALE::Mesh>& mesh, int dim, int nMeshes, double beta = 1.41) {
     coarsen_CollectStats(1, 1);
     PetscFunctionBegin;
@@ -154,8 +155,8 @@ namespace ALE { namespace Coarsener {
 	      //PetscPrintf(mesh->comm(), "-- cannot refine: %f < %f\n", (tmpPoint->boundaries[2*i+1] - tmpPoint->boundaries[2*i]),2*pBeta*tmpPoint->maxSpacing);
 	    }
 	  }
-	  if (tmpPoint->childColPoints.size() <= 1) canRefine = false;  //allows us to compute NEAREST POINT at each stage, as SOME adjacent thing will have a point. 
-          if (tmpPoint->childColPoints.size() + tmpPoint->childPoints.size() < 20) canRefine = false;
+	  if (tmpPoint->childColPoints.size() <= 4) canRefine = false;  //allows us to compute NEAREST POINT at each stage, as SOME adjacent thing will have a point. 
+          //if (tmpPoint->childColPoints.size() + tmpPoint->childPoints.size() < 8) canRefine = false;
 	  if (canRefine) {
 	  //PetscPrintf(mesh->comm(), "-- refining an area containing %d nodes..\n", tmpPoint->childPoints.size() + tmpPoint->childColPoints.size());
 	    tmpPoint->isLeaf = false;
@@ -242,13 +243,13 @@ namespace ALE { namespace Coarsener {
 	while(!mis_travQueue.empty()) {
 	  mis_node * trav_node = *mis_travQueue.begin();
 	  mis_travQueue.pop_front();
-	  if (trav_node->isLeaf && (trav_node != *leaf_iter)) { //add this leaf to the comparison list.
-	    comparisons.push_front(trav_node);
+	  if (trav_node->isLeaf && trav_node != cur_leaf) { //add this leaf to the comparison list.
+              comparisons.push_front(trav_node);
 	  } else { //for non-leafs we compare the children using the same heuristic, namely if there could be any possible collision between the two.
 	    std::list<mis_node *>::iterator child_iter = trav_node->subspaces.begin();
 	    std::list<mis_node *>::iterator child_iter_end = trav_node->subspaces.end();
 	    while(child_iter != child_iter_end) {
-	      if(isOverlap(*child_iter, *leaf_iter, dim))mis_travQueue.push_front(*child_iter);
+	      if(isOverlap(*child_iter, *leaf_iter, dim, pBeta)) mis_travQueue.push_front(*child_iter);
 	      child_iter++;
 	    }
 	  } //end what to do for non-leafs
@@ -262,14 +263,24 @@ namespace ALE { namespace Coarsener {
 	std::list<ALE::Mesh::point_type>::iterator l_points_iter_end = cur_leaf->childPoints.end();
 	while (l_points_iter != l_points_iter_end) {
           visited_nodes++;
-          double nearPointDist = 100; //keep track of the minimum space between this point and a point in the next level up.
-          int whyset = 0; //DEBUG for the process.
+          //double nearPointDist = 100; //keep track of the minimum space between this point and a point in the next level up.
+          //int whyset = 0; //DEBUG for the process.
           ALE::Mesh::point_type nearPoint = -1;
 	  bool l_is_ok = true;
 	  double l_coords[dim];
 	  PetscMemcpy(l_coords, coords->restrict(rPatch, *l_points_iter), dim*sizeof(double));
 	  double l_space = *spacing->restrict(rPatch, *l_points_iter);
-
+          //first, check it against all the coarsest boundary segments to protect them from ARBITRARILY PI-LIKE ANGLES!
+          if (topology->getValue(boundary, *l_points_iter) == 0) {
+            const Obj<ALE::Mesh::topology_type::label_sequence>& boundEdges = topology->heightStratum(boundPatch, 0);
+            ALE::Mesh::topology_type::label_sequence::iterator be_iter = boundEdges->begin();
+            ALE::Mesh::topology_type::label_sequence::iterator be_iter_end = boundEdges->end();
+            while (be_iter != be_iter_end && l_is_ok) {
+              if (!CompatibleWithEdge(mesh, dim, boundPatch, *be_iter, *l_points_iter, pBeta*l_space)) l_is_ok = false;
+              be_iter++;
+            }
+          }
+          
 		//internal consistency check; keeps us from having to go outside if we don't have to.
 	  std::list<ALE::Mesh::point_type>::iterator int_iter = cur_leaf->childColPoints.begin();
 	  std::list<ALE::Mesh::point_type>::iterator int_iter_end = cur_leaf->childColPoints.end();
@@ -282,15 +293,8 @@ namespace ALE { namespace Coarsener {
 	    for (int d = 0; d < dim; d++) {
 	      dist += (i_coords[d] - l_coords[d])*(i_coords[d] - l_coords[d]);
 	    }
-            /*if (curLevel != nMeshes && topology->getPatch(curLevel+1)->capContains(*int_iter)) {
-              if(nearPoint == -1 || dist < nearPointDist) {
-                whyset = 0;
-                nearPoint = *int_iter;
-                nearPointDist = dist;
-              }
-            }*/
 	    double mdist = i_space + l_space;
-	    if (dist < pBeta*pBeta*mdist*mdist/4 && curLevel != 0) l_is_ok = false;
+	    if (dist < pBeta*pBeta*mdist*mdist/4) l_is_ok = false;
 	    int_iter++;
 	  }
 		//now we must iterate over the adjacent spaces as determined before.
@@ -317,7 +321,7 @@ namespace ALE { namespace Coarsener {
                   nearPointDist = dist;
                 }
               }*/
-	      if (dist < pBeta*pBeta*mdist*mdist/4 && curLevel != 0) l_is_ok = false;
+	      if (dist < pBeta*pBeta*mdist*mdist/4) l_is_ok = false;
 	      adj_iter++;
 	    }
 	    comp_iter++;
@@ -517,7 +521,7 @@ namespace ALE { namespace Coarsener {
         coarsen_stats.maxAngle[curLevel] = tmp_stats[1];
       }
     }  //end of for over the number of coarsening levels.
-    if (coarsen_stats.displayStats)DisplayStats();
+    if (coarsen_stats.displayStats)coarsen_DisplayStats();
     PetscFunctionReturn(0);
   }  //end of CreateCoarsenedHierarchy
   
@@ -568,6 +572,43 @@ namespace ALE { namespace Coarsener {
     }
     //printf("Comparing triangle area %f with %f\n", area, t_area);
     if (t_area - area  > 0.0001*area) return false;
+    return true;
+  }
+  bool CompatibleWithEdge(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type ePatch, ALE::Mesh::point_type edge, ALE::Mesh::point_type point, double region) {
+    //If the point is within the region-sized area around the edge, then return false.
+    Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
+    Obj<ALE::Mesh::real_section_type> coords = mesh->getRealSection("coordinates");
+    double e_coords[2*dim];
+    double p_coords[dim];
+    Obj<ALE::Mesh::sieve_type::coneSequence> endpoints = topology->getPatch(ePatch)->cone(edge);
+    ALE::Mesh::sieve_type::coneSequence::iterator end_iter = endpoints->begin();
+    ALE::Mesh::sieve_type::coneSequence::iterator end_iter_end = endpoints->end();
+    int index = 0;
+    while (end_iter != end_iter_end) {
+      const double * tmpCoord = coords->restrict(0, *end_iter);
+      PetscMemcpy(e_coords + dim*index*sizeof(double), tmpCoord, dim*sizeof(double));
+      end_iter++;
+      index++;
+    }
+    const double * tmpCoord = coords->restrict(0, point);
+    PetscMemcpy(p_coords, tmpCoord, dim*sizeof(double));
+    //we have the coordinates.  Now we must project the point on to the line and see if a) the projection is in the segment, and b) the residual is of greater magnitude than "region"
+    double res_len = 0;
+    double e_dot_e = 0;
+    double p_dot_e = 0;
+    for (int i = 0; i < dim; i++) { //put the first edge endpoint at (0, 0);
+      p_coords[i] = p_coords[i] - e_coords[i];
+      e_coords[dim + i] = e_coords[dim + i] - e_coords[i];
+      e_dot_e += e_coords[dim + i] * e_coords[dim + i];
+      p_dot_e += e_coords[dim + i] * p_coords[i];
+    }
+    double r = p_dot_e/e_dot_e;
+    if (r > 1 || r < 0) return true; //it's outside of our juristiction.
+    for (int i = 0; i < dim; i++) {
+      double trm = p_coords[i] - r*e_coords[dim + i];
+      res_len += trm*trm;
+    }
+    if (res_len < region*region) return false; //it's in the region surrounding the edge.
     return true;
   }
   double * ComputeAngles(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type patch) {

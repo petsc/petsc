@@ -37,7 +37,7 @@ namespace ALE {
       //std::list<ALE::Mesh::point_type> childBoundPoints;
       std::list<point_type> childColPoints;
     };
-    bool isOverlap(mis_node *, mis_node *, int); //calculates if there is an intersection or overlap of these two domains
+    bool isOverlap(mis_node *, mis_node *, int, double); //calculates if there is an intersection or overlap of these two domains
     extern PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, patch_type);
     void randPush(std::list<point_type> *, point_type); //breaks up patterns in the mesh that cause oddness
 
@@ -205,7 +205,7 @@ namespace ALE {
 	    std::list<mis_node *>::iterator child_iter = trav_node->subspaces.begin();
 	    std::list<mis_node *>::iterator child_iter_end = trav_node->subspaces.end();
 	    while(child_iter != child_iter_end) {
-	      if(isOverlap(*child_iter, *leaf_iter, dim))mis_travQueue.push_front(*child_iter);
+	      if(isOverlap(*child_iter, *leaf_iter, dim, beta))mis_travQueue.push_front(*child_iter);
 	      child_iter++;
 	    }
 	  } //end what to do for non-leafs
@@ -401,10 +401,10 @@ namespace ALE {
       PetscFunctionReturn(0);
     }  //ending tree_mis
 
-    bool isOverlap(mis_node * a, mis_node * b, int dim) { //see if any two balls in the two sections could overlap at all.
+    bool isOverlap(mis_node * a, mis_node * b, int dim, double factor) { //see if any two balls in the two sections could overlap at all.
       int sharedDim = 0;
       for (int i = 0; i < dim; i++) {
-	if((a->boundaries[2*i] - a->maxSpacing <= b->boundaries[2*i+1] + b->maxSpacing) && (b->boundaries[2*i] - b->maxSpacing <= a->boundaries[2*i+1] + a->maxSpacing)) sharedDim++;
+	if((a->boundaries[2*i] - a->maxSpacing*factor <= b->boundaries[2*i+1] + b->maxSpacing*factor) && (b->boundaries[2*i] - b->maxSpacing*factor <= a->boundaries[2*i+1] + a->maxSpacing*factor)) sharedDim++;
       }
       if (sharedDim == dim) {return true;
       } else return false;
