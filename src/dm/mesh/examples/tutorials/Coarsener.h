@@ -333,7 +333,8 @@ int BoundaryNodeDimension_2D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
 	    const double *nCoords = coords->restrict(patch, *n_iter);
 	    double n_x = nCoords[0], n_y = nCoords[1];
 	    double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
-	    if (parArea > .0000001) isEssential = 2;
+            double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
+	    if (parArea > .00001*len) isEssential = 2;
 	   if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
 	  }
 	}
