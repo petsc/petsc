@@ -226,7 +226,7 @@ namespace ALE {
             val.prefix = localSize;
             val.index  = atlas->restrict(patch, *l_iter)[0].prefix;
           }
-          localSize += val.index;
+          localSize += std::max(0, val.index);
           order->updatePoint(patch, *l_iter, &val);
         }
         order->setLocalSize(localSize);

@@ -448,7 +448,11 @@ static PetscErrorCode BuildFgmresSoln(PetscScalar* nrs,Vec vguess,Vec vdest,KSP 
 
   /* solve the upper triangular system - RS is the right side and HH is 
      the upper triangular matrix  - put soln in nrs */
-  nrs[it] = *RS(it) / *HH(it,it);
+  if (*HH(it,it) != 0.0) {
+    nrs[it] = *RS(it) / *HH(it,it);
+  } else {
+    nrs[it] = 0.0;
+  }
   for (ii=1; ii<=it; ii++) {
     k   = it - ii;
     tt  = *RS(k);
