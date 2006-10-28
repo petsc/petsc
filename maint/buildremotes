@@ -1,0 +1,45 @@
+#! /usr/bin/env tcsh
+# 
+# Builds bmake/remote-$arch/petscrules and petscconf for all the 
+# systems listed in maint/confignightly
+#
+set day=`date | cut -f1 -d" "`
+#
+# on cygwin - tcsh gives funky paths - so reset it to normal bash one so 'chkpetsc_dir' doesn't complain
+set nPETSC_DIR=`pwd | sed s~/cygdrive/h~~`
+if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
+  set maintdir=`dirname $0`
+  set nPETSC_DIR=`dirname $maintdir`
+  if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petsc.h )) then
+    if (${?PETSC_DIR}) then 
+      set nPETSC_DIR=${PETSC_DIR}
+      if ( ! -f ${nPETSC_DIR}/include/petsc.h ) then
+        echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+        exit
+      endif
+    else
+      echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+      exit
+    endif
+  endif
+endif
+
+foreach i (${nPETSC_DIR}/maint/confignightly/*)
+  source $i
+  echo Making configure files for $CONF
+
+  if ! -d ${nPETSC_DIR}/bmake/remote-${CONF} then
+    mkdir ${nPETSC_DIR}/bmake/remote-${CONF}
+  endif
+
+  echo "remote: remote_sshrsync" >! ${nPETSC_DIR}/bmake/remote-${CONF}/petscrules
+
+  echo "WORKMACHINE   ="${MACH} >! ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+  echo 'WORKSPACE     =/sandbox/workspace-${USER}' >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+  echo "WORKPETSCDIR  ="${LOC} >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+  echo "WORKPETSCARCH ="${CONF} >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+
+  echo "RSYNC =rsync -R" >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+  echo "SSH =ssh" >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+  echo 'MPIRUN =${PETSC_DIR}/bin/mpirun.sshrsync' >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+end

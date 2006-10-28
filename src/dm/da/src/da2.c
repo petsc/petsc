@@ -330,7 +330,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
     /* try for squarish distribution */
-    /* This should use MPI_Dims_create instead */
     m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
     if (!m) m = 1;
     while (m > 0) {
@@ -344,12 +343,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);
   if (N < n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in y direction is too fine! %D %D",N,n);
-
-  /*
-     We should create an MPI Cartesian topology here, with reorder
-     set to true.  That would create a NEW communicator that we would
-     need to use for operations on this distributed array 
-  */
 
   /* 
      Determine locally owned region 
