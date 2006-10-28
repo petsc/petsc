@@ -91,7 +91,7 @@ libfast:  ${SOURCEC} ${SOURCEF}
 	fi
 
 # Removes garbage files
-clean: remoteclean
+clean: 
 	@-${RM} *.o *.lo *~ ex[0-9] ex[0-9][0-9] ex[0-9]f ex[0-9][0-9]f \
 	       ${CLEANFILES} ${TESTS} ex[0-9]f90 ex[0-9][0-9]f90 ex[0-9]c ex[0-9][0-9]c ex[0-9]d ex5d \
 	       PI* *.ln l.outa* mputil.mp_* core core.* *.tmp *.map gmon.out \
@@ -411,6 +411,12 @@ getmpirun:
           echo "--------------Error detected during compile or link!-----------------------";\
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz;
+
+#--------------------------------------------------------------------------------------
+remote_sshrsync:
+	-@${RSYNC} makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${WORKMACHINE}:${WORKSPACE}
+	-@${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
+	@IGNORE_THIS_ERROR
 
 #---------------------------------------------------------------------------------------
 

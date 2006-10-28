@@ -5,14 +5,14 @@ CFLAGS          =
 FFLAGS          =
 SOURCEC         = ex1.c
 SOURCEF         =
-SOURCEH         = hi/hi
+SOURCEH         = 
 OBJSC           = ex1.o
 OBJSF           =
 EXECUTABLE      = ex1
 INPUTDATAFILES  =   
 OUTPUTDATAFILES = 
 
-DIRS     = noise
+DIRS     = 
 LOCDIR   = src/contrib/remote
 
 include ${PETSC_DIR}/bmake/common/base

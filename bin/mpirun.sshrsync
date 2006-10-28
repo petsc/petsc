@@ -17,7 +17,7 @@ if [ ${inputdatafiles}DUMMY != DUMMY ]; then
   $rsync $inputdatafiles $workmachine:$workspace
 fi
 
-$ssh $workmachine "cd $workspace ; setenv PETSC_DIR $workpetscdir ; setenv PETSC_ARCH $workpetscarch; petscmpirun $progname"
+$ssh $workmachine "cd $workspace ; setenv PETSC_DIR $workpetscdir ; setenv PETSC_ARCH $workpetscarch; ${workpetscdir}/bin/petscmpirun $progname"
 
 if [ ${outputdatafiles}DUMMY != DUMMY ]; then
   for i in $outputdatafiles; do
