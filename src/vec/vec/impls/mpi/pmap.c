@@ -26,7 +26,7 @@
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(),
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/

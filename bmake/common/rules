@@ -254,6 +254,9 @@ getmpirun:
 	python $< $*.h
 
 .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PETSC_DIR}/bin/portabilitycheck.py $< ${SOURCEH};\
+        fi
 	-@mypwd=`pwd`; newpwd=`echo $${mypwd} | sed "s+/examples/tutorials+DUMMY+g"`;\
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
@@ -272,7 +275,7 @@ getmpirun:
 	   egrep "Process adiC" $< > /dev/null ; \
               if [ "$$?" = 0 ]; then \
                 if [ ! -f $<.tmp1 ]; then \
-                  c=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
+                  c=`grep "Process adiC" $< | Sed -e "s?[ ]*Process adiC(\([0-9]*\)): [a-zA-Z0-9 ]*?\1?g"`;\
                   r=`grep "Process adiC" $< | sed -e "s?[ ]*Process adiC([0-9]*): \([a-zA-Z0-9 ]*\)?\1?g"`;\
                   echo Running adiC on function $${r};\
                   ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
@@ -327,6 +330,9 @@ getmpirun:
         else \
 	  echo ${PETSC_COMPILE_SINGLE} $<; \
 	  ${PETSC_COMPILE_SINGLE} $<; \
+        fi
+	@if [ "${PETSCPORTABLE}" != "" ]; then \
+          ${PETSC_DIR}/bin/portabilitycheck.py $*.o ; \
         fi
 
 .c.a .cpp.a .cc.a .C.a: 
@@ -415,6 +421,7 @@ getmpirun:
 #--------------------------------------------------------------------------------------
 remote_sshrsync:
 	-@${RSYNC} makefile ${SOURCEC} ${SOURCEF} ${SOURCEH} ${WORKMACHINE}:${WORKSPACE}
+	-@echo ${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
 	-@${SSH} ${WORKMACHINE} "cd ${WORKSPACE}; setenv PETSC_DIR ${WORKPETSCDIR} ; setenv PETSC_ARCH ${WORKPETSCARCH}; make ${EXECUTABLE}"
 	@IGNORE_THIS_ERROR
 
