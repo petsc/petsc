@@ -84,6 +84,7 @@ PetscErrorCode SectionView_Sieve_Ascii(const Obj<Section>& s, const char name[],
     }
     ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
   } else {
+    s->view(name);
   }
   PetscFunctionReturn(0);
 }
@@ -204,6 +205,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
 
   t->setAtlas(s->getAtlas());
   t->allocateStorage();
+  t->copyBC(s);
   ierr = SectionRealCreate(s->comm(), newSection);CHKERRQ(ierr);
   ierr = SectionRealSetSection(*newSection, t);CHKERRQ(ierr);
   PetscFunctionReturn(0);

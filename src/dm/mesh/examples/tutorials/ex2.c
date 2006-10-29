@@ -124,16 +124,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 /*
   Simple square boundary:
 
-  6--14-5--13-4
-  |     |     |
-  15   19    12
-  |     |     |
-  7--20-8--18-3
-  |     |     |
-  16   17    11
-  |     |     |
-  0--9--1--10-2
-
  18--5-17--4--16
   |     |     |
   6    10     3
@@ -375,10 +365,14 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
       }
     }
   } else {
-    m = new ALE::Mesh(comm, options->dim-1, options->debug);
     if (options->dim == 2) {
-      ierr = CreateSquareBoundary(m);CHKERRQ(ierr);
+      double lower[2] = {0.0, 0.0};
+      double upper[2] = {2.0, 2.0};
+      int    edges[2] = {2, 2};
+
+      m = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
     } else if (options->dim == 3) {
+      m = new ALE::Mesh(comm, options->dim-1, options->debug);
       ierr = CreateCubeBoundary(m);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Cannot construct a boundary of dimension %d", options->dim);
@@ -395,19 +389,18 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(Mesh meshBoundary, Mesh *mesh, Options *options)
 {
-  Obj<ALE::Mesh> mB;
+  MPI_Comm       comm;
   Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ALE::LogStage stage = ALE::LogStageRegister("MeshGeneration");
   ALE::LogStagePush(stage);
-  ierr = MeshGetMesh(meshBoundary, mB);CHKERRQ(ierr);
-  ierr = PetscPrintf(mB->comm(), "Generating mesh\n");CHKERRQ(ierr);
-  ierr = MeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
-  m    = ALE::Generator::generateMesh(mB, options->interpolate);
-  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) meshBoundary, &comm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Generating mesh\n");CHKERRQ(ierr);
+  ierr = MeshGenerate(meshBoundary, options->interpolate, mesh);CHKERRQ(ierr);
   ALE::LogStagePop(stage);
+  ierr = MeshGetMesh(*mesh, m);CHKERRQ(ierr);
   const Obj<ALE::Mesh::topology_type>& topology = m->getTopology();
   ierr = PetscPrintf(m->comm(), "  Made %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
   ierr = PetscPrintf(m->comm(), "  Made %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);

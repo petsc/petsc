@@ -306,7 +306,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& a
   //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);
 
-  ierr = preallocateOperator(m.ptr(), atlas, order, *J);CHKERRQ(ierr);
+  ierr = preallocateOperator(m->getTopology(), atlas, order, *J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
 
@@ -873,7 +873,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::real_section_type
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (section->debug()) {printf("[%d]mat for element %d\n", section->commRank(), e);}
   for(ALE::Mesh::real_section_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    numIndices += i_iter->prefix;
+    numIndices += std::max(0, i_iter->prefix);
     if (section->debug()) {
       printf("[%d]mat interval (%d, %d)\n", section->commRank(), i_iter->prefix, i_iter->index);
     }
@@ -960,12 +960,12 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperator"
 template<typename Atlas>
-PetscErrorCode preallocateOperator(ALE::Mesh *mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh::topology_type>& topology, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
-  const ALE::Obj<ALE::Mesh::sieve_type>     adjGraph    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
-  const ALE::Obj<ALE::Mesh::topology_type>  adjTopology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug());
+  typedef ALE::New::NumberingFactory<ALE::Mesh::topology_type> NumberingFactory;
+  const ALE::Obj<ALE::Mesh::sieve_type>     adjGraph    = new ALE::Mesh::sieve_type(topology->comm(), topology->debug());
+  const ALE::Obj<ALE::Mesh::topology_type>  adjTopology = new ALE::Mesh::topology_type(topology->comm(), topology->debug());
   const ALE::Mesh::real_section_type::patch_type patch  = 0;
-  const ALE::Obj<ALE::Mesh::topology_type>& topology    = mesh->getTopology();
   const ALE::Obj<ALE::Mesh::sieve_type>&    sieve       = topology->getPatch(patch);
   PetscInt       numLocalRows, firstRow;
   PetscInt      *dnz, *onz;
@@ -974,7 +974,7 @@ PetscErrorCode preallocateOperator(ALE::Mesh *mesh, const ALE::Obj<Atlas>& atlas
   PetscFunctionBegin;
   adjTopology->setPatch(patch, adjGraph);
   numLocalRows = globalOrder->getLocalSize();
-  firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
+  firstRow     = globalOrder->getGlobalOffsets()[topology->commRank()];
   ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
   /* Create local adjacency graph */
   /*   In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
@@ -989,15 +989,15 @@ PetscErrorCode preallocateOperator(ALE::Mesh *mesh, const ALE::Obj<Atlas>& atlas
   topology->constructOverlap(patch);
   const Obj<ALE::Mesh::send_overlap_type>& vertexSendOverlap = topology->getSendOverlap();
   const Obj<ALE::Mesh::recv_overlap_type>& vertexRecvOverlap = topology->getRecvOverlap();
-  const Obj<ALE::Mesh::send_overlap_type>  nbrSendOverlap    = new ALE::Mesh::send_overlap_type(mesh->comm(), mesh->debug());
-  const Obj<ALE::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALE::Mesh::recv_overlap_type(mesh->comm(), mesh->debug());
-  const Obj<ALE::Mesh::send_section_type>  sendSection       = new ALE::Mesh::send_section_type(mesh->comm(), mesh->debug());
-  const Obj<ALE::Mesh::recv_section_type>  recvSection       = new ALE::Mesh::recv_section_type(mesh->comm(), sendSection->getTag(), mesh->debug());
+  const Obj<ALE::Mesh::send_overlap_type>  nbrSendOverlap    = new ALE::Mesh::send_overlap_type(topology->comm(), topology->debug());
+  const Obj<ALE::Mesh::recv_overlap_type>  nbrRecvOverlap    = new ALE::Mesh::recv_overlap_type(topology->comm(), topology->debug());
+  const Obj<ALE::Mesh::send_section_type>  sendSection       = new ALE::Mesh::send_section_type(topology->comm(), topology->debug());
+  const Obj<ALE::Mesh::recv_section_type>  recvSection       = new ALE::Mesh::recv_section_type(topology->comm(), sendSection->getTag(), topology->debug());
 
   ALE::New::Distribution<ALE::Mesh::topology_type>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjTopology, sendSection, recvSection);
   /* Distribute indices for new points */
   ALE::New::Distribution<ALE::Mesh::topology_type>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
-  mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, patch, true);
+  NumberingFactory::singleton(topology->debug())->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, patch, true);
   /* Read out adjacency graph */
   const ALE::Obj<ALE::Mesh::sieve_type> graph = adjTopology->getPatch(patch);
 
@@ -1016,17 +1016,19 @@ PetscErrorCode preallocateOperator(ALE::Mesh *mesh, const ALE::Obj<Atlas>& atlas
         const ALE::Mesh::real_section_type::atlas_type::point_type& neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(patch, neighbor)[0];
         const int&                               cSize    = cIdx.index;
-        
-        if (globalOrder->isLocal(neighbor)) {
-          for(int r = 0; r < rSize; ++r) {dnz[row - firstRow + r] += cSize;}
-        } else {
-          for(int r = 0; r < rSize; ++r) {onz[row - firstRow + r] += cSize;}
+
+        if (cSize > 0) {
+          if (globalOrder->isLocal(neighbor)) {
+            for(int r = 0; r < rSize; ++r) {dnz[row - firstRow + r] += cSize;}
+          } else {
+            for(int r = 0; r < rSize; ++r) {onz[row - firstRow + r] += cSize;}
+          }
         }
       }
     }
   }
-  if (mesh->debug()) {
-    int rank = mesh->commRank();
+  if (topology->debug()) {
+    int rank = topology->commRank();
     for(int r = 0; r < numLocalRows; r++) {
       std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
     }
@@ -1040,9 +1042,9 @@ PetscErrorCode preallocateOperator(ALE::Mesh *mesh, const ALE::Obj<Atlas>& atlas
 
 #undef __FUNCT__
 #define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(ALE::Mesh *mesh, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Mesh::topology_type>& topology, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
-  return preallocateOperator(mesh, atlas, globalOrder, A);
+  return preallocateOperator(topology, atlas, globalOrder, A);
 }
 
 /******************************** C Wrappers **********************************/
@@ -1290,6 +1292,38 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, Mesh *parallelMesh)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshGenerate"
+/*@C
+  MeshGenerate - Generates a mesh.
+
+  Not Collective
+
+  Input Parameters:
++ boundary - The Mesh boundary object
+- interpolate - Flag to create intermediate mesh elements
+
+  Output Parameter:
+. mesh - The Mesh object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate(), MeshRefine()
+@*/
+PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
+{
+  ALE::Obj<ALE::Mesh> mB;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(boundary, mB);CHKERRQ(ierr);
+  ierr = MeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
+  ALE::Obj<ALE::Mesh> m = ALE::Generator::generateMesh(mB, interpolate);
+  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshRefine"
 /*@C
   MeshRefine - Refines the mesh.
@@ -1307,7 +1341,7 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, Mesh *parallelMesh)
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+.seealso: MeshCreate(), MeshGenerate()
 @*/
 PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpolate, Mesh *refinedMesh)
 {

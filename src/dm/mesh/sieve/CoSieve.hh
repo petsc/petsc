@@ -1264,7 +1264,16 @@ namespace ALE {
         int size = 0;
 
         for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-          size += this->getFiberDimension(patch, *p_iter);
+          size += std::max(0, this->getFiberDimension(patch, *p_iter));
+        }
+        return size;
+      };
+      int sizeWithBC(const patch_type& patch) {
+        const typename atlas_type::chart_type& points = this->_atlas->getPatch(patch);
+        int size = 0;
+
+        for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+          size += std::abs(this->getFiberDimension(patch, *p_iter));
         }
         return size;
       };
@@ -1276,7 +1285,20 @@ namespace ALE {
 
         for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
           if (points.count(*c_iter)) {
-            size += this->getFiberDimension(patch, *c_iter);
+            size += std::max(0, this->getFiberDimension(patch, *c_iter));
+          }
+        }
+        return size;
+      };
+      int sizeWithBC(const patch_type& patch, const point_type& p) {
+        const typename atlas_type::chart_type&  points  = this->_atlas->getPatch(patch);
+        const Obj<typename sieve_type::coneSet> closure = this->getTopology()->getPatch(patch)->closure(p);
+        typename sieve_type::coneSet::iterator  end     = closure->end();
+        int size = 0;
+
+        for(typename sieve_type::coneSet::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
+          if (points.count(*c_iter)) {
+            size += std::abs(this->getFiberDimension(patch, *c_iter));
           }
         }
         return size;
@@ -1286,7 +1308,7 @@ namespace ALE {
         int size = 0;
 
         for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-          size += this->getFiberDimension(atlas, patch, *p_iter);
+          size += std::max(0, this->getFiberDimension(atlas, patch, *p_iter));
         }
         return size;
       };
@@ -1362,7 +1384,7 @@ namespace ALE {
         return this->_indexArray;
       };
     public: // Allocation
-      void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset) {
+      void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset, int& bcOffset) {
         const Obj<typename sieve_type::coneSequence>& cone = sieve->cone(point);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
         index_type                                    idx  = atlas->restrictPoint(patch, point)[0];
@@ -1372,25 +1394,39 @@ namespace ALE {
         if (atlas->getPatch(patch).count(point) == 0) {
           idx = defaultIdx;
         }
-        if (idx.index < 0) {
+        if (idx.index == -1) {
           for(typename sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
             if (this->_debug > 1) {std::cout << "    Recursing to " << *c_iter << std::endl;}
-            this->orderPoint(atlas, sieve, patch, *c_iter, offset);
+            this->orderPoint(atlas, sieve, patch, *c_iter, offset, bcOffset);
           }
           if (dim > 0) {
             if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
             idx.index = offset;
             atlas->updatePoint(patch, point, &idx);
             offset += dim;
+          } else if (dim < 0) {
+            idx.index = bcOffset;
+            atlas->updatePoint(patch, point, &idx);
+            bcOffset += dim;
           }
         }
       }
-      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset) {
+      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset, int& bcOffset) {
         const typename atlas_type::chart_type& chart = atlas->getPatch(patch);
 
         for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
           if (this->_debug > 1) {std::cout << "Ordering closure of point " << *p_iter << std::endl;}
-          this->orderPoint(atlas, this->getTopology()->getPatch(patch), patch, *p_iter, offset);
+          this->orderPoint(atlas, this->getTopology()->getPatch(patch), patch, *p_iter, offset, bcOffset);
+        }
+        for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+          index_type idx = atlas->restrictPoint(patch, *p_iter)[0];
+          const int& dim = idx.prefix;
+
+          if (dim < 0) {
+            if (this->_debug > 1) {std::cout << "Correcting boundary offset of point " << *p_iter << std::endl;}
+            idx.index = offset - (idx.index+2);
+            atlas->updatePoint(patch, *p_iter, &idx);
+          }
         }
       };
       void orderPatches(const Obj<atlas_type>& atlas) {
@@ -1398,10 +1434,10 @@ namespace ALE {
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           if (this->_debug > 1) {std::cout << "Ordering patch " << p_iter->first << std::endl;}
-          int offset = 0;
+          int offset = 0, bcOffset = -2;
 
           if (!atlas->hasPatch(p_iter->first)) continue;
-          this->orderPatch(atlas, p_iter->first, offset);
+          this->orderPatch(atlas, p_iter->first, offset, bcOffset);
         }
       };
       void orderPatches() {
@@ -1412,8 +1448,8 @@ namespace ALE {
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           if (!this->_atlas->hasPatch(p_iter->first)) continue;
-          this->_arrays[p_iter->first] = new value_type[this->size(p_iter->first)];
-          PetscMemzero(this->_arrays[p_iter->first], this->size(p_iter->first) * sizeof(value_type));
+          this->_arrays[p_iter->first] = new value_type[this->sizeWithBC(p_iter->first)];
+          PetscMemzero(this->_arrays[p_iter->first], this->sizeWithBC(p_iter->first) * sizeof(value_type));
         }
       };
       void allocate() {
@@ -1497,7 +1533,7 @@ namespace ALE {
       const value_type *restrict(const patch_type& patch, const point_type& p) {
         this->checkPatch(patch);
         const value_type *a      = this->_arrays[patch];
-        const int         size   = this->size(patch, p);
+        const int         size   = this->sizeWithBC(patch, p);
         value_type       *values = this->getRawArray(size);
         int               j      = -1;
 
@@ -1507,7 +1543,7 @@ namespace ALE {
           //   indices in _atlas->restrict()
           const index_type& pInd = this->_atlas->restrictPoint(patch, p)[0];
 
-          for(int i = pInd.index; i < pInd.prefix + pInd.index; ++i) {
+          for(int i = pInd.index; i < std::abs(pInd.prefix) + pInd.index; ++i) {
             values[++j] = a[i];
           }
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
@@ -1516,7 +1552,7 @@ namespace ALE {
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
             const index_type& ind    = this->_atlas->restrictPoint(patch, *p_iter)[0];
             const int&        start  = ind.index;
-            const int&        length = ind.prefix;
+            const int&        length = std::abs(ind.prefix);
 
             for(int i = start; i < start + length; ++i) {
               values[++j] = a[i];
@@ -1527,7 +1563,7 @@ namespace ALE {
 
           for(typename IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
             const int& start  = i_iter->index;
-            const int& length = i_iter->prefix;
+            const int& length = std::abs(i_iter->prefix);
 
             for(int i = start; i < start + length; ++i) {
               values[++j] = a[i];
@@ -1669,6 +1705,45 @@ namespace ALE {
           }
         }
       };
+      void updateBC(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->checkPatch(patch);
+        value_type *a = this->_arrays[patch];
+        int         j = -1;
+
+        if (this->getTopology()->height(patch) < 2) {
+          // Avoids the copy of both
+          //   points  in topology->closure()
+          //   indices in _atlas->restrict()
+          const index_type& pInd = this->_atlas->restrictPoint(patch, p)[0];
+
+          for(int i = pInd.index; i < std::abs(pInd.prefix) + pInd.index; ++i) {
+            a[i] = v[++j];
+          }
+          const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
+          typename sieve_type::coneSequence::iterator   end  = cone->end();
+
+          for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+            const index_type& ind    = this->_atlas->restrictPoint(patch, *p_iter)[0];
+            const int&        start  = ind.index;
+            const int&        length = std::abs(ind.prefix);
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] = v[++j];
+            }
+          }
+        } else {
+          const Obj<IndexArray>& ind = this->getIndices(patch, p);
+
+          for(typename IndexArray::iterator i_iter = ind->begin(); i_iter != ind->end(); ++i_iter) {
+            const int& start  = i_iter->index;
+            const int& length = std::abs(i_iter->prefix);
+
+            for(int i = start; i < start + length; ++i) {
+              a[i] = v[++j];
+            }
+          }
+        }
+      };
       // Return only the values associated to this point, not its closure
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
         this->checkPatch(patch);
@@ -1692,6 +1767,31 @@ namespace ALE {
 
         for(int i = 0; i < idx.prefix; ++i) {
           a[i] += v[i];
+        }
+      };
+      void updatePointBC(const patch_type& patch, const point_type& p, const value_type v[]) {
+        this->checkPatch(patch);
+        const index_type& idx = this->_atlas->restrictPoint(patch, p)[0];
+        value_type       *a   = &(this->_arrays[patch][idx.index]);
+
+        for(int i = 0; i < std::abs(idx.prefix); ++i) {
+          a[i] = v[i];
+        }
+      };
+    public: // BC
+      void copyBC(const Obj<Section>& section) {
+        const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
+
+        for(typename topology_type::sheaf_type::const_iterator patch_iter = patches.begin(); patch_iter != patches.end(); ++patch_iter) {
+          const typename atlas_type::chart_type& chart = this->_atlas->getPatch(patch_iter->first);
+
+          for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+            const index_type& idx = this->_atlas->restrictPoint(patch_iter->first, *p_iter)[0];
+
+            if (idx.prefix < 0) {
+              this->updatePointBC(patch_iter->first, *p_iter, section->restrictPoint(patch_iter->first, *p_iter));
+            }
+          }
         }
       };
     public:
@@ -1727,7 +1827,7 @@ namespace ALE {
 
             if (idx.prefix != 0) {
               txt << "[" << this->commRank() << "]:   " << point << " dim " << idx.prefix << " offset " << idx.index << "  ";
-              for(int i = 0; i < idx.prefix; i++) {
+              for(int i = 0; i < std::abs(idx.prefix); i++) {
                 txt << " " << array[idx.index+i];
               }
               txt << std::endl;
