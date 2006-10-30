@@ -230,7 +230,7 @@ namespace ALE {
       splitField->allocate();
       for(std::map<pair_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         const pair_section_type::point_type& e = e_iter->first;
-        int                                   k = 0;
+        int                                  k = 0;
 
         for(std::set<int>::const_iterator i_iter = e_iter->second.begin(); i_iter != e_iter->second.end(); ++i_iter, ++k) {
           const int& i = *i_iter;

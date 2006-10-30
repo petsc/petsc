@@ -1249,9 +1249,12 @@ namespace ALE {
         }
       };
       void addFiberDimension(const patch_type& patch, const point_type& p, int dim) {
-        const index_type values(dim, -1);
-        this->_atlas->updatePatch(patch, p);
-        this->_atlas->updateAddPoint(patch, p, &values);
+        if (this->_atlas->hasPatch(patch) && this->_atlas->hasPoint(patch, p)) {
+          const index_type values(dim, 0);
+          this->_atlas->updateAddPoint(patch, p, &values);
+        } else {
+          this->setFiberDimension(patch, p, dim);
+        }
       };
       void setFiberDimensionByDepth(const patch_type& patch, int depth, int dim) {
         this->setFiberDimension(patch, this->getTopology()->getLabelStratum(patch, "depth", depth), dim);
@@ -1405,6 +1408,7 @@ namespace ALE {
             atlas->updatePoint(patch, point, &idx);
             offset += dim;
           } else if (dim < 0) {
+            if (this->_debug > 1) {std::cout << "  Ordering boundary point " << point << " at " << bcOffset << std::endl;}
             idx.index = bcOffset;
             atlas->updatePoint(patch, point, &idx);
             bcOffset += dim;
