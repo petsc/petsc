@@ -8,12 +8,12 @@
 
 #define kspdefaultconverged_       KSPDEFAULTCONVERGED
 #define kspskipconverged_          KSPSKIPCONVERGED
-#define kspgmresmonitorkrylov_     KSPGMRESKMONITORKRYLOV
+#define kspgmresmonitorkrylov_     KSPGMRESMONITORKRYLOV
 #define kspmonitordefault_         KSPMONITORDEFAULT
 #define kspmonitortrueresidualnorm_    KSPMONITORTRUERESIDUALNORM
 #define kspmonitorsolution_        KSPMONITORSOLUTION
-#define kspmonitorlg_              KSPLGMONITORLG
-#define kspmonitorlgtrueresidualnorm_  KSPLGTRUEMONITORLGTRUERESIDUALNORM
+#define kspmonitorlg_              KSPMONITORLG
+#define kspmonitorlgtrueresidualnorm_  KSPMONITORLGTRUERESIDUALNORM
 #define kspmonitorsingularvalue_   KSPMONITORSINGULARVALUE
 #define kspfgmresmodifypcksp_      KSPFGMRESMODIFYPCKSP
 #define kspfgmresmodifypcnochange_ KSPFGMRESMODIFYPCNOCHANGE

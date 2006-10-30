@@ -18,7 +18,7 @@ typedef struct {
 PetscErrorCode MatDestroy_Composite(Mat mat)
 {
   PetscErrorCode   ierr;
-  Mat_Composite    *shell = (Mat_Composite*)mat->data;;
+  Mat_Composite    *shell = (Mat_Composite*)mat->data;
   Mat_CompositeLink next = shell->head;
 
   PetscFunctionBegin;
