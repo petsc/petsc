@@ -100,8 +100,8 @@ PetscErrorCode PetscOptionsHelpFindList(const char prefix[],const char title[],c
 {
   PetscErrorCode ierr;
   PetscTruth     flg1,flg2,flg3;
-  PetscFunctionBegin;
   OptionsHelp help = PetscOptionsObject.help;
+  PetscFunctionBegin;
   while (help) {
     ierr = PetscStrcmp(help->prefix,prefix,&flg1);CHKERRQ(ierr);
     ierr = PetscStrcmp(help->title,title,&flg2);CHKERRQ(ierr);
