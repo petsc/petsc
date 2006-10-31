@@ -749,8 +749,7 @@ M*/
    Not Collective
 
    Input Parameters:
-+  nrows - the number of rows indicated
-.  rows - the indices of the rows 
++  row - the row
 .  ncols - the number of columns in the matrix
 -  cols - the columns indicated
 
@@ -774,7 +773,7 @@ M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
   for (__i=0; __i<nc; __i++) {\
-    if (cols[__i] < __start || cols[__i] >= __end) onz[row - __rstart]++; \
+    if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
   }\
   dnz[row - __rstart] = nc - onz[row - __rstart];\
 }

@@ -81,6 +81,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
   p->ops->createglobalvector = VecPackCreateGlobalVector;
   p->ops->refine             = VecPackRefine;
   p->ops->getinterpolation   = VecPackGetInterpolation;
+  p->ops->getmatrix          = VecPackGetMatrix;
   *packer = p;
   PetscFunctionReturn(0);
 }
@@ -1214,6 +1215,86 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetMatrix" 
+/*@C
+    VecPackGetMatrix - Creates a matrix with the correct parallel layout and nonzero structure required for 
+      computing the Jacobian on a function defined using the stencils set in the DA's and coupling in the array variables
 
+    Collective on DA
+
+    Input Parameter:
++   da - the distributed array
+-   mtype - Supported types are MATSEQAIJ, MATMPIAIJ
+
+    Output Parameters:
+.   J  - matrix with the correct nonzero structure
+        (obviously without the correct Jacobian values)
+
+    Level: advanced
+
+    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+       do not need to do it yourself. 
+
+
+.seealso DAGetMatrix(), VecPackCreate()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,Mat *J)
+{
+  PetscErrorCode     ierr;
+  struct VecPackLink *next = packer->next;
+  Vec                gvec;
+  PetscInt           m,*dnz,*onz,i,j,mA;
+  Mat                Atmp;
+  PetscMPIInt        rank;
+
+  PetscFunctionBegin;
+  /* use global vector to determine layout needed for matrix */
+  ierr = VecPackCreateGlobalVector(packer,&gvec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gvec,&m);CHKERRQ(ierr);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
+  ierr = MatCreate(packer->comm,J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
+
+  ierr = MatPreallocateInitialize(packer->comm,m,m,dnz,onz);CHKERRQ(ierr);
+  /* loop over packed objects, handling one at at time */
+  while (next) {
+    if (next->type == VECPACK_ARRAY) {
+      for (j=0; j<next->n; j++) {
+	if (rank) {
+          for (i=0; i<m; i++) {
+            ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
+          }
+	} else {
+          for (i=next->n; i<m; i++) {
+            ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
+          }
+	}
+      }
+    } else if (next->type == VECPACK_DA) {
+      PetscInt       nc,rstart;
+      const PetscInt *cols;
+
+      ierr = DAGetMatrix(next->da,mtype,&Atmp);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+      for (i=0; i<mA; i++) {
+        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatPreallocateSet(packer->rstart+next->rstart+i,nc,cols,dnz,onz);CHKERRQ(ierr);
+      }
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 

@@ -433,6 +433,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreateGlobalVector(VecPack,Vec*)
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetGlobalIndices(VecPack,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRefine(VecPack,MPI_Comm,VecPack*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetMatrix(VecPack,MatType,Mat*);
 
 /*S
      Slice - Abstract PETSc object that manages distributed field data for a simple unstructured matrix

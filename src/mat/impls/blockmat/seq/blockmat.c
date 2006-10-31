@@ -290,12 +290,7 @@ PetscErrorCode MatSetValues_BlockMat(Mat A,PetscInt m,const PetscInt im[],PetscI
       a->nz++;
       noinsert1:;
       if (!*(ap+i)) {
-        if (A->symmetric && brow == bcol) {
-          /* don't use SBAIJ since want to reorder in sparse factorization */
-          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr); 
-        } else {
-          ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr);
-        }
+        ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,bs,bs,0,0,ap+i);CHKERRQ(ierr); 
       }
       ierr = MatSetValues(ap[i],1,&ridx,1,&cidx,&value,is);CHKERRQ(ierr);
       low = i;
@@ -430,7 +425,7 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
 #define __FUNCT__ "MatView_BlockMat"
 PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
 {
-  Mat_SeqAIJ        *a = (Mat_SeqAIJ*)A->data;
+  Mat_BlockMat      *a = (Mat_BlockMat*)A->data;
   PetscErrorCode    ierr;
   const char        *name;
   PetscViewerFormat format;
@@ -440,6 +435,9 @@ PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
   ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
   if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
     ierr = PetscViewerASCIIPrintf(viewer,"Nonzero block matrices = %D \n",a->nz);CHKERRQ(ierr);
+    if (A->symmetric) {
+      ierr = PetscViewerASCIIPrintf(viewer,"Upper triangular part of matrix stored\n");CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -758,6 +756,7 @@ PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt)
   if (opt == MAT_SYMMETRIC) {
     A->ops->relax = MatRelax_BlockMat_Symmetric;
     A->ops->mult  = MatMult_BlockMat_Symmetric;
+    A->symmetric  = PETSC_TRUE;
   } else {
     PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);
   }

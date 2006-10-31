@@ -4485,7 +4485,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
 
    Concepts: matrices^row ownership
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
+\PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
 {
   PetscErrorCode ierr;
 
