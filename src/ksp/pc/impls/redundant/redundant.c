@@ -768,13 +768,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   PetscErrorCode ierr;
   PC_Redundant   *red;
   const char     *prefix;
-
   PetscInt       nsubcomm,np_subcomm,nleftover,i,j,color;
-  PetscMPIInt    rank,size,subrank,*subsize;
-  MPI_Comm       subcomm;
-  PetscMPIInt    duprank;
-  PetscMPIInt    rank_dup,size_dup;
-  MPI_Comm       dupcomm;
+  PetscMPIInt    rank,size,subrank,*subsize,duprank;
+  MPI_Comm       subcomm=0,dupcomm=0;
 
   PetscFunctionBegin;
   ierr = PetscNew(PC_Redundant,&red);CHKERRQ(ierr);
@@ -786,6 +782,30 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   nsubcomm = size;
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nsubcomm",&nsubcomm,PETSC_NULL);CHKERRQ(ierr);
   if (nsubcomm > size) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %D cannot be larger than MPI_Comm_size %D",nsubcomm,size);
+
+  /*--------------------------------------------------------------------------------------------------
+    To avoid data scattering from subcomm back to original comm, we create subcomm by iteratively taking a
+    processe into a subcomm. 
+    An example: size=4, nsubcomm=3
+     pc->comm:
+      rank:     [0]  [1]  [2]  [3]
+      color:     0    1    2    0
+
+     subcomm:
+      subrank:  [0]  [0]  [0]  [1]    
+
+     dupcomm:
+      duprank:  [0]  [2]  [3]  [1]
+
+     Here, subcomm[color = 0] has subsize=2, owns process [0] and [3]
+           subcomm[color = 1] has subsize=1, owns process [1]
+           subcomm[color = 2] has subsize=1, owns process [2]
+          dupcomm has same number of processes as pc->comm, and its duprank maps
+          processes in subcomm contiguously into a 1d array:
+            duprank: [0] [1]      [2]         [3]
+            rank:    [0] [3]      [1]         [2]
+                    subcomm[0] subcomm[1]  subcomm[2]
+   ----------------------------------------------------------------------------------------*/
 
   /* get size of each subcommunicators */
   ierr = PetscMalloc((1+nsubcomm)*sizeof(PetscMPIInt),&subsize);CHKERRQ(ierr);
@@ -813,20 +833,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
     }
     duprank += subsize[i]; j++;
   }
-  /*
-  ierr = PetscSynchronizedPrintf(pc->comm, "[%d] color %d, subrank %d, duprank %d\n",rank,color,subrank,duprank);
-  ierr = PetscSynchronizedFlush(pc->comm);CHKERRQ(ierr);
-  */
  
+  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
   ierr = MPI_Comm_split(pc->comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(dupcomm,&rank_dup);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(dupcomm,&size_dup);CHKERRQ(ierr);
-  /*
-  ierr = PetscSynchronizedPrintf(pc->comm, "[%d] duprank %d\n",rank,duprank);
-  ierr = PetscSynchronizedFlush(pc->comm);CHKERRQ(ierr);
-  */
   red->dupcomm = dupcomm;
   ierr = PetscFree(subsize);CHKERRQ(ierr);
+  /* if (rank == 0) printf("[%d] subrank %d, duprank: %d\n",rank,subrank,duprank); */
 
   /* create the sequential PC that each processor has copy of */
   ierr = PCCreate(subcomm,&red->pc);CHKERRQ(ierr);
