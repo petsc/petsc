@@ -455,6 +455,9 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
   for(int i = 0; i < interval.prefix; i++) {
     indices[(*indx)++] = interval.index + i;
   }
+  for(int i = 0; i < -interval.prefix; i++) {
+    indices[(*indx)++] = -1;
+  }
 }
 
 #undef __FUNCT__
@@ -873,7 +876,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::real_section_type
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (section->debug()) {printf("[%d]mat for element %d\n", section->commRank(), e);}
   for(ALE::Mesh::real_section_type::IndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    numIndices += std::max(0, i_iter->prefix);
+    numIndices += std::abs(i_iter->prefix);
     if (section->debug()) {
       printf("[%d]mat interval (%d, %d)\n", section->commRank(), i_iter->prefix, i_iter->index);
     }

@@ -84,6 +84,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealDistribute(SectionReal, Mesh,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal, PetscInt, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal, PetscInt, const PetscScalar []);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal, PetscInt, const PetscScalar []);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealZero(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealComplete(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetLocalVector(SectionReal, Vec*);
 

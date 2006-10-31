@@ -1517,7 +1517,12 @@ namespace ALE {
         this->_atlas    = this->_atlasNew;
         this->_atlasNew = NULL;
       };
-    public: // Restriction
+    public: // Restriction and Update
+      // Zero entries
+      void zero(const patch_type& patch) {
+        this->checkPatch(patch);
+        memset(this->_arrays[patch], 0, this->size(patch)* sizeof(value_type));
+      };
       // Return a pointer to the entire contiguous storage array
       const value_type *restrict(const patch_type& patch) {
         this->checkPatch(patch);
@@ -1599,6 +1604,7 @@ namespace ALE {
           for(int i = pInd.index; i < pInd.prefix + pInd.index; ++i) {
             a[i] = v[++j];
           }
+          j += std::max(0, -pInd.prefix);
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
 
@@ -1610,6 +1616,7 @@ namespace ALE {
             for(int i = start; i < start + length; ++i) {
               a[i] = v[++j];
             }
+            j += std::max(0, -length);
           }
         } else {
           const Obj<IndexArray>& ind = this->getIndices(patch, p);
@@ -1621,6 +1628,7 @@ namespace ALE {
             for(int i = start; i < start + length; ++i) {
               a[i] = v[++j];
             }
+            j += std::max(0, -length);
           }
         }
       };
@@ -1639,6 +1647,7 @@ namespace ALE {
           for(int i = pInd.index; i < pInd.prefix + pInd.index; ++i) {
             a[i] += v[++j];
           }
+          j += std::max(0, -pInd.prefix);
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
 
@@ -1650,6 +1659,7 @@ namespace ALE {
             for(int i = start; i < start + length; ++i) {
               a[i] += v[++j];
             }
+            j += std::max(0, -length);
           }
         } else {
           const Obj<IndexArray>& ind = this->getIndices(patch, p);
@@ -1661,6 +1671,7 @@ namespace ALE {
             for(int i = start; i < start + length; ++i) {
               a[i] += v[++j];
             }
+            j += std::max(0, -length);
           }
         }
       };
