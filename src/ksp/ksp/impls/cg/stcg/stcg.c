@@ -36,47 +36,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp,PetscReal radius)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetQuadratic"
-/*@
-    KSPSTCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
-
-       q(s) = g^T * s + 0.5 * s^T * H * s
-
-    which satisfies the trust region constraint
-
-       || s ||_M <= radius,
-
-    where
-
-     radius is the trust region radius,
-     g is the gradient vector, and
-     H is the Hessian matrix,
-     M is the positive definite preconditioner matrix.
-
-    Collective on KSP
-
-    Input Parameter:
-.   ksp - the iterative context
-
-    Output Parameter:
-.   quadratic - the quadratic function evaluated at the new iterate
-
-    Level: advanced
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic(KSP ksp,PetscReal *quadratic)
-{
-  PetscErrorCode ierr,(*f)(KSP,PetscReal*);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetQuadratic_C", (void (**)(void))&f); CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,quadratic); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
 /*
   KSPSolve_STCG - Use preconditioned conjugate gradient to compute
@@ -112,13 +71,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   Vec            r, z, p, w, d;
   PC             pc;
   KSP_STCG        *cg;
-  PetscReal      zero = 0.0, pfive = 0.5, negone = -1.0;
+  PetscReal      zero = 0.0, negone = -1.0;
   PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal      alpha, beta, kappa, rz, rzm1;
   PetscReal      radius;
   PetscInt       i, maxit;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar    crz, ckappa, cquadratic;
+  PetscScalar    crz, ckappa;
 #endif
   PetscTruth     diagonalscale;
 
@@ -163,6 +122,24 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 #else
   ierr = VecDot(r, z, &rz);CHKERRQ(ierr);                /* rz = r^T z   */
 #endif
+
+  if (rz <= zero) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+
+    /* Return gradient step */
+    ierr = VecCopy(r, z); CHKERRQ(ierr);                   /* No precond   */
+    ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = -z       */
+    ierr = VecScale(p, negone); CHKERRQ(ierr);
+#if defined(PETSC_USE_COMPLEX)
+    ierr = VecDot(r, z, &crz);CHKERRQ(ierr); rz = PetscRealPart(crz);
+#else
+    ierr = VecDot(r, z, &rz);CHKERRQ(ierr);                /* rz = r^T z   */
+#endif
+
+    alpha = sqrt(rz*radius) / rz;
+    ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);            /* d = d + alpha p */    PetscFunctionReturn(0);
+  }
 
   dMp    = 0;
   norm_p = rz;
@@ -223,6 +200,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 #else
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);
 #endif
+
+    if (rz <= zero) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+      break;
+    }
+
     beta = rz / rzm1;
 
     VecAXPBY(p, negone, beta, z);                    /* p = beta p - z */
@@ -233,15 +217,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-
-  /* Compute Q(x) */
-  ierr = MatMult(Qmat, d, p); CHKERRQ(ierr);
-  ierr = VecAXPBY(p, negone, pfive, ksp->vec_rhs); CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(d, p, &cquadratic);CHKERRQ(ierr); cg->quadratic = PetscRealPart(cquadratic);
-#else
-  ierr = VecDot(d, p, &(cg->quadratic)); CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -295,19 +270,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius_STCG(KSP ksp,PetscReal radius
 }
 EXTERN_C_END
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetQuadratic_STCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic_STCG(KSP ksp,PetscReal *quadratic)
-{
-  KSP_STCG *cgP = (KSP_STCG *)ksp->data;
-
-  PetscFunctionBegin;
-  *quadratic = cgP->quadratic;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_STCG"
 PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
@@ -353,7 +315,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
   ierr = PetscNew(KSP_STCG, &cg); CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp, sizeof(KSP_STCG)); CHKERRQ(ierr);
   cg->radius                     = PETSC_MAX;
-  cg->quadratic                  = 0;
   ksp->data                      = (void *)cg;
   ksp->pc_side                   = PC_LEFT;
 
@@ -368,9 +329,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetQuadratic_C",
-                                    "KSPSTCGGetQuadratic_STCG",
-                                     KSPSTCGGetQuadratic_STCG); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C",
                                     "KSPSTCGSetRadius_STCG",
                                      KSPSTCGSetRadius_STCG); CHKERRQ(ierr);
