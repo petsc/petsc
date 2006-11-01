@@ -311,6 +311,37 @@ namespace ALE {
         this->getPairSection(*name)->view(*name);
       }
     };
+    template<typename value_type>
+    static std::string printMatrix(const std::string& name, const int rows, const int cols, const value_type matrix[], const int rank = -1)
+    {
+      ostringstream output;
+      ostringstream rankStr;
+
+      if (rank >= 0) {
+        rankStr << "[" << rank << "]";
+      }
+      output << rankStr.str() << name << " = " << std::endl;
+      for(int r = 0; r < rows; r++) {
+        if (r == 0) {
+          output << rankStr.str() << " /";
+        } else if (r == rows-1) {
+          output << rankStr.str() << " \\";
+        } else {
+          output << rankStr.str() << " |";
+        }
+        for(int c = 0; c < cols; c++) {
+          output << " " << matrix[r*cols+c];
+        }
+        if (r == 0) {
+          output << " \\" << std::endl;
+        } else if (r == rows-1) {
+          output << " /" << std::endl;
+        } else {
+          output << " |" << std::endl;
+        }
+      }
+      return output.str();
+    };
   };
 
   class MeshBuilder {
