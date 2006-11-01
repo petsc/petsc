@@ -463,11 +463,16 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
 
   ierr = MPI_Comm_dup(A->comm,&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  /* Default num of process columns and rows */
+  lu->npcol = (PetscMPIInt)(0.5 + sqrt((PetscReal)size)); 
+  if (!lu->npcol) lu->npcol = 1;
+  while (lu->npcol > 0) {
+    lu->nprow = (PetscMPIInt)(size/lu->npcol);  
+    if (size == lu->nprow * lu->npcol) break;
+    lu->npcol --;
+  }    
   
   ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
-    lu->npcol = (PetscMPIInt)(sqrt((PetscReal)size)); /* Default num of process columns */
-    if (!lu->npcol) lu->npcol = 1;
-    lu->nprow = (PetscMPIInt)(size/lu->npcol);        /* Default num of process rows */
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
     if (size != lu->nprow * lu->npcol) 
@@ -583,6 +588,7 @@ PetscErrorCode MatFactorInfo_SuperLU_DIST(Mat A,PetscViewer viewer)
 
   options = lu->options;
   ierr = PetscViewerASCIIPrintf(viewer,"SuperLU_DIST run parameters:\n");CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPrintf(viewer,"  Process grid nprow %D x npcol %D \n",lu->nprow,lu->npcol);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Equilibrate matrix %s \n",PetscTruths[options.Equil != NO]);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Matrix input mode %d \n",lu->MatInputMode);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer,"  Replace tiny pivots %s \n",PetscTruths[options.ReplaceTinyPivot != NO]);CHKERRQ(ierr);
