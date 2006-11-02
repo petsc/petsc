@@ -200,9 +200,9 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
      ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
+     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);      /*  beta <- r'*z       */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
@@ -216,9 +216,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      KSPMonitor(ksp,i+1,dp);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
-     if (ksp->normtype != KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z <- Br  */
-     }
      i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {
