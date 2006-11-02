@@ -114,7 +114,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* Check that preconditioner is positive definite */
   ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
   if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
-    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ksp->reason = KSP_DIVERGED_NAN;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
     /* In this case, the preconditioner produced not a number or an         */
@@ -180,7 +180,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
 
   if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
-    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ksp->reason = KSP_DIVERGED_NAN;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", kappa); CHKERRQ(ierr);
 
     /* In this case, the matrix produced not a number or an infinite value. */
