@@ -82,6 +82,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
   p->ops->refine             = VecPackRefine;
   p->ops->getinterpolation   = VecPackGetInterpolation;
   p->ops->getmatrix          = VecPackGetMatrix;
+  p->ops->getcoloring        = VecPackGetColoring;
   *packer = p;
   PetscFunctionReturn(0);
 }
@@ -1248,6 +1249,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
   PetscInt           m,*dnz,*onz,i,j,mA;
   Mat                Atmp;
   PetscMPIInt        rank;
+  PetscScalar        zero = 0.0;
 
   PetscFunctionBegin;
   /* use global vector to determine layout needed for matrix */
@@ -1265,14 +1267,13 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
   while (next) {
     if (next->type == VECPACK_ARRAY) {
       for (j=0; j<next->n; j++) {
-	if (rank) {
+	if (!rank) {  /* zero the entire row */
           for (i=0; i<m; i++) {
             ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
           }
-	} else {
-          for (i=next->n; i<m; i++) {
-            ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
-          }
+        }
+        for (i=0; i<m; i++) { /* zero the entire column */
+	  ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
 	}
       }
     } else if (next->type == VECPACK_DA) {
@@ -1294,7 +1295,88 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+
+  next = packer->next;
+  while (next) {
+    if (next->type == VECPACK_ARRAY) {
+      for (j=0; j<next->n; j++) {
+	if (!rank) {
+          for (i=0; i<m; i++) {
+            ierr = MatSetValues(*J,1,&j,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
+        for (i=0; i<m; i++) {
+          ierr = MatSetValues(*J,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
+	}
+      }
+    } else if (next->type == VECPACK_DA) {
+      PetscInt          nc,rstart,row;
+      const PetscInt    *cols;
+      const PetscScalar *values;
+
+      ierr = DAGetMatrix(next->da,mtype,&Atmp);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+      for (i=0; i<mA; i++) {
+        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,&values);CHKERRQ(ierr);
+        row  = packer->rstart+next->rstart+i;
+        ierr = MatSetValues(*J,1,&row,nc,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+      }
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetColoring" 
+/*@
+    VecPackGetColoring - Gets the coloring required for computing the Jacobian via
+    finite differences on a function defined using a VecPack "grid"
+
+    Collective on DA
+
+    Input Parameter:
++   vecpack - the VecPack object
+-   ctype - IS_COLORING_LOCAL or IS_COLORING_GHOSTED
+
+    Output Parameters:
+.   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
+
+    Level: advanced
+
+    Notes: This currentlu uses one color per column so is very slow.
+
+    Notes: These compute the graph coloring of the graph of A^{T}A. The coloring used 
+   for efficient (parallel or thread based) triangular solves etc is NOT yet 
+   available. 
+
+
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring, DAGetColoring()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetColoring(VecPack vecpack,ISColoringType ctype,ISColoring *coloring)
+{
+  PetscErrorCode  ierr;
+  PetscInt        n,i;
+  ISColoringValue *colors;
+
+  PetscFunctionBegin;
+  if (ctype == IS_COLORING_GHOSTED) {
+    SETERRQ(PETSC_ERR_SUP,"Lazy Barry");
+  } else if (ctype == IS_COLORING_LOCAL) {
+    n = vecpack->n;
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
+
+  ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
+  for (i=0; i<n; i++) {
+    colors[i] = (ISColoringValue)i;
+  }
+  ierr = ISColoringCreate(vecpack->comm,n,n,colors,coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 

@@ -436,7 +436,7 @@ PetscErrorCode MatView_BlockMat(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_FACTOR_INFO || format == PETSC_VIEWER_ASCII_INFO) {
     ierr = PetscViewerASCIIPrintf(viewer,"Nonzero block matrices = %D \n",a->nz);CHKERRQ(ierr);
     if (A->symmetric) {
-      ierr = PetscViewerASCIIPrintf(viewer,"Upper triangular part of matrix stored\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"Only upper triangular part of symmetric matrix is stored\n");CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -756,7 +756,6 @@ PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt)
   if (opt == MAT_SYMMETRIC) {
     A->ops->relax = MatRelax_BlockMat_Symmetric;
     A->ops->mult  = MatMult_BlockMat_Symmetric;
-    A->symmetric  = PETSC_TRUE;
   } else {
     PetscInfo1(A,"Unused matrix option %s\n",MatOptions[opt]);
   }
