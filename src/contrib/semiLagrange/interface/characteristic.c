@@ -388,11 +388,11 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       Qi.x = Qi.i - velocityValues[0]*dt/2.0;
       Qi.y = Qi.j - velocityValues[1]*dt/2.0;
 
-      /* Check for Periodic boundaries and move all periodic points back onto the domain */
-      ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
-
       /* Determine whether the position at t - dt/2 is local */
       Qi.proc = DAGetNeighborRelative(da, Qi.x, Qi.y); 
+
+      /* Check for Periodic boundaries and move all periodic points back onto the domain */
+      ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
       if (Qi.proc && verbose) {
         printf("[%d]Remote point (%d) at n+1/2 to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, c->queueSize+1, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
@@ -475,11 +475,11 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     Qi.x = Qi.i - Qi.x*dt;
     Qi.y = Qi.j - Qi.y*dt;
 
-    /* Check for Periodic boundaries and move all periodic points back onto the domain */
-    ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
-    
     /* Determine whether the position at t-dt is local */
     Qi.proc = DAGetNeighborRelative(da, Qi.x, Qi.y);
+
+    /* Check for Periodic boundaries and move all periodic points back onto the domain */
+    ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
     if (Qi.proc && verbose) {
       printf("[%d]Remote point (%d) at n to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, n, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);

@@ -538,6 +538,32 @@ PetscErrorCode SectionRealGetLocalVector(SectionReal section, Vec *lv)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealZero"
+/*@C
+  SectionRealZero - Zero out the entries
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode SectionRealZero(SectionReal section)
+{
+  const ALE::Mesh::real_section_type::patch_type patch = 0;
+  Obj<ALE::Mesh::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  s->zero(patch);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetVertexSectionReal"
 /*@C
   MeshGetVertexSectionReal - Create a Section over the vertices with the specified fiber dimension

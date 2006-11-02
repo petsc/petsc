@@ -234,6 +234,8 @@ M*/
 #define CHKERRABORT(comm,n)    if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");MPI_Abort(comm,n);}
 #define CHKERRCONTINUE(n)      if (n) {PetscError(__LINE__,__FUNCT__,__FILE__,__SDIR__,n,0," ");}
 
+#define CHKFPQ(f) if (f != f) {SETERRQ(PETSC_ERR_FP, "Invalid value: NaN");}
+
 /*MC
    CHKMEMQ - Checks the memory for corruption, calls error handler if any is detected
 

@@ -6,7 +6,6 @@
 #define __STCG
 
 typedef struct {
-  PetscReal quadratic;
   PetscReal radius;
 } KSP_STCG;
 

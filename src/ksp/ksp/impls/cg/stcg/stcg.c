@@ -36,47 +36,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp,PetscReal radius)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetQuadratic"
-/*@
-    KSPSTCGGetQuadratic - Gets the value of the quadratic function, evaluated at the new iterate:
-
-       q(s) = g^T * s + 0.5 * s^T * H * s
-
-    which satisfies the trust region constraint
-
-       || s ||_M <= radius,
-
-    where
-
-     radius is the trust region radius,
-     g is the gradient vector, and
-     H is the Hessian matrix,
-     M is the positive definite preconditioner matrix.
-
-    Collective on KSP
-
-    Input Parameter:
-.   ksp - the iterative context
-
-    Output Parameter:
-.   quadratic - the quadratic function evaluated at the new iterate
-
-    Level: advanced
-@*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic(KSP ksp,PetscReal *quadratic)
-{
-  PetscErrorCode ierr,(*f)(KSP,PetscReal*);
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
-  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetQuadratic_C", (void (**)(void))&f); CHKERRQ(ierr);
-  if (f) {
-    ierr = (*f)(ksp,quadratic); CHKERRQ(ierr);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
 /*
   KSPSolve_STCG - Use preconditioned conjugate gradient to compute
@@ -109,22 +68,21 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   PetscErrorCode ierr;
   MatStructure   pflag;
   Mat            Qmat, Mmat;
-  Vec            r, z, p, w, d;
+  Vec            r, z, p, d;
   PC             pc;
   KSP_STCG        *cg;
-  PetscReal      zero = 0.0, pfive = 0.5, negone = -1.0;
   PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal      alpha, beta, kappa, rz, rzm1;
   PetscReal      radius;
   PetscInt       i, maxit;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar    crz, ckappa, cquadratic;
+  PetscScalar    crz, ckappa;
 #endif
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
-  ierr    = PCDiagonalScale(ksp->pc,&diagonalscale); CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  ierr = PCDiagonalScale(ksp->pc, &diagonalscale); CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ksp->type_name);
 
   cg       = (KSP_STCG *)ksp->data;
   radius   = cg->radius;
@@ -132,66 +90,88 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   r        = ksp->work[0];
   z        = ksp->work[1];
   p        = ksp->work[2];
-  w        = ksp->work[3];
   d        = ksp->vec_sol;
   pc       = ksp->pc;
 
+#if !defined(PETSC_USE_COMPLEX)
+#define VecXDot(x,y,a) VecDot(x,y,a)
+#else
+#define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
+#endif
+
   ksp->its = 0;
-  if (radius <= zero) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Input error: radius <= 0");
+  if (radius <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Input error: radius <= 0");
 
   /* Initialize variables */
   ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag); CHKERRQ(ierr);
 
-  ierr = VecSet(d, zero); CHKERRQ(ierr);                 /* d = 0        */
+  ierr = VecSet(d, 0.0); CHKERRQ(ierr);                  /* d = 0        */
   ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);        /* r = rhs      */
-  ierr = VecScale(r, negone); CHKERRQ(ierr);             /* r = grad     */
-  ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |r| */
+  ierr = PCApply(pc, r, z); CHKERRQ(ierr);               /* z = M_{-1} r */
 
+  /* Check that preconditioner is positive definite */
+  ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);              /* rz = r^T z   */
+  if (rz <= 0.0) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+
+    /* Return gradient step */
+    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);            /* rz = r^T r   */
+
+    alpha = sqrt(rz*radius) / rz;
+    ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);         /* d = d - alpha r */
+    PetscFunctionReturn(0);
+  }
+
+  /* Calculate the residual */
+  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+    ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |z| */
+  }
+  else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |r| */
+  }
+  else if (ksp->normtype == KSP_NATURAL_NORM) {
+    norm_r = sqrt(rz);
+  }
+  else {
+    norm_r = 0;
+  }
+
+  /* Log the residual */
   KSPLogResidualHistory(ksp, norm_r);
   KSPMonitor(ksp, 0, norm_r);
   ksp->rnorm = norm_r;
 
+  /* Test for convergence */
   ierr = (*ksp->converged)(ksp, 0, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
   /* Compute the initial vectors */
-  ierr = PCApply(pc, r, z); CHKERRQ(ierr);               /* z = M_{-1} r */
-  ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = -z       */
-  ierr = VecScale(p, negone); CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(r, z, &crz);CHKERRQ(ierr); rz = PetscRealPart(crz);
-#else
-  ierr = VecDot(r, z, &rz);CHKERRQ(ierr);                /* rz = r^T z   */
-#endif
+  ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = z       */
 
   dMp    = 0;
   norm_p = rz;
   norm_d = 0;
 
   /* Begin iterating */
-  for (i=0; i<=maxit; i++) {
-    ksp->its++;
+  for (i = 0; i <= maxit; i++) {
+    ++ksp->its;
 
-    ierr = MatMult(Qmat, p, w); CHKERRQ(ierr);            /* w = Q * p   */
-#if defined(PETSC_USE_COMPLEX)
-    ierr = VecDot(p, w, &ckappa);CHKERRQ(ierr); kappa = PetscRealPart(ckappa);
-#else
-    ierr = VecDot(p, w, &kappa); CHKERRQ(ierr);           /* kappa = p^T w */
-#endif
+    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
+    ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
 
-    if (kappa <= zero) {
-      /* Direction of negative curvature, calculate intersection and sol */
-
+    /* Deal with directions of negative curvature */
+    if (kappa <= 0.0) {
       alpha = (sqrt(dMp*dMp+norm_p*(radius-norm_d))-dMp)/norm_p;
       ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
 
-      ksp->reason  = KSP_CONVERGED_STCG_NEG_CURVE;  /* negative curvature */
+      ksp->reason  = KSP_CONVERGED_STCG_NEG_CURVE;
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: radius=%g\n", cg->radius); CHKERRQ(ierr);
       break;
     }
-
     alpha = rz / kappa;
 
+    /* Deal with directions intersecting trust region */
     norm_dp1 = norm_d + 2.0*alpha*dMp + alpha*alpha*norm_p;
     if (norm_dp1 >= radius) {
       alpha = (sqrt(dMp*dMp+norm_p*(radius-norm_d))-dMp)/norm_p;
@@ -202,30 +182,50 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       break;
     }
 
+    /* Update direction and residual */
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);         /* d = d + alpha p */
-    ierr = VecAXPY(r, alpha, w);                        /* r = r + alpha w */
+    ierr = VecAXPY(r, -alpha, z);                       /* r = r - alpha z */
 
-    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
-    ksp->rnorm = norm_r;
+    ierr = PCApply(pc, r, z); CHKERRQ(ierr);
+
+    /* Check that preconditioner is positive definite */
+    rzm1 = rz;
+    ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);              /* rz = r^T z   */
+    if (rz <= 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+      break;
+    }
+
+    /* Calculate the residual */
+    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |z| */
+    }
+    else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |r| */
+    }
+    else if (ksp->normtype == KSP_NATURAL_NORM) {
+      norm_r = sqrt(rz);
+    }
+    else {
+      norm_r = 0;
+    }
+
+    /* Log the residual */
     KSPLogResidualHistory(ksp, norm_r);
-    KSPMonitor(ksp, i+1, norm_r);
+    KSPMonitor(ksp, 0, norm_r);
+    ksp->rnorm = norm_r;
+  
+    /* Test for convergence */
     ierr = (*ksp->converged)(ksp, i+1, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
     if (ksp->reason) {                 /* convergence */
       ierr = PetscInfo2(ksp,"KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n",norm_r,cg->radius); CHKERRQ(ierr);
       break;
     }
 
-    ierr = PCApply(pc, r, z); CHKERRQ(ierr);
-
-    rzm1 = rz;
-#if defined(PETSC_USE_COMPLEX)
-    ierr = VecDot(r, z, &crz);CHKERRQ(ierr); rz = PetscRealPart(crz);
-#else
-    ierr = VecDot(r, z, &rz); CHKERRQ(ierr);
-#endif
     beta = rz / rzm1;
 
-    VecAXPBY(p, negone, beta, z);                    /* p = beta p - z */
+    VecAYPX(p, beta, z);                    /* p = beta p - z */
     dMp = beta*dMp + alpha*norm_p;
     norm_p = rz + beta*beta*norm_p;
     norm_d = norm_dp1;
@@ -233,15 +233,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
-
-  /* Compute Q(x) */
-  ierr = MatMult(Qmat, d, p); CHKERRQ(ierr);
-  ierr = VecAXPBY(p, negone, pfive, ksp->vec_rhs); CHKERRQ(ierr);
-#if defined(PETSC_USE_COMPLEX)
-  ierr = VecDot(d, p, &cquadratic);CHKERRQ(ierr); cg->quadratic = PetscRealPart(cquadratic);
-#else
-  ierr = VecDot(d, p, &(cg->quadratic)); CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -263,7 +254,7 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
   }
 
   /* get work vectors needed by CG */
-  ierr = KSPDefaultGetWork(ksp, 4); CHKERRQ(ierr);
+  ierr = KSPDefaultGetWork(ksp, 3); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +262,7 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 #define __FUNCT__ "KSPDestroy_STCG"
 PetscErrorCode KSPDestroy_STCG(KSP ksp)
 {
-  KSP_STCG        *cgP = (KSP_STCG *)ksp->data;
+  KSP_STCG *cgP = (KSP_STCG *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -291,19 +282,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius_STCG(KSP ksp,PetscReal radius
 
   PetscFunctionBegin;
   cgP->radius = radius;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetQuadratic_STCG"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetQuadratic_STCG(KSP ksp,PetscReal *quadratic)
-{
-  KSP_STCG *cgP = (KSP_STCG *)ksp->data;
-
-  PetscFunctionBegin;
-  *quadratic = cgP->quadratic;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -353,7 +331,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
   ierr = PetscNew(KSP_STCG, &cg); CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp, sizeof(KSP_STCG)); CHKERRQ(ierr);
   cg->radius                     = PETSC_MAX;
-  cg->quadratic                  = 0;
   ksp->data                      = (void *)cg;
   ksp->pc_side                   = PC_LEFT;
 
@@ -368,9 +345,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetQuadratic_C",
-                                    "KSPSTCGGetQuadratic_STCG",
-                                     KSPSTCGGetQuadratic_STCG); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C",
                                     "KSPSTCGSetRadius_STCG",
                                      KSPSTCGSetRadius_STCG); CHKERRQ(ierr);

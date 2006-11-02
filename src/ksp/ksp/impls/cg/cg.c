@@ -138,17 +138,17 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
   ksp->its = 0;
   if (!ksp->guess_zero) {
-    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);             /*   r <- b - Ax       */
+    ierr = KSP_MatMult(ksp,Amat,X,R);CHKERRQ(ierr);            /*     r <- b - Ax     */
     ierr = VecAYPX(R,-1.0,B);CHKERRQ(ierr);
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);                         /*     r <- b (x is 0) */
   }
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
-  ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
+  ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);        /*  beta <- z'*r       */
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-    ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- z'*z = e'*A'*B'*B*A'*e'   */
+    ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- z'*z = e'*A'*B'*B*A'*e'     */
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- r'*r = e'*A'*A*e         */
+    ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- r'*r = e'*A'*A*e            */
   } else if (ksp->normtype == KSP_NATURAL_NORM) {
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
@@ -162,7 +162,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   i = 0;
   do {
      ksp->its = i+1;
-     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);     /*     beta <- r'z     */
      if (beta == 0.0) {
        ksp->reason = KSP_CONVERGED_ATOL;
        ierr = PetscInfo(ksp,"converged due to beta = 0\n");CHKERRQ(ierr);
@@ -180,16 +179,16 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      } else {
        b = beta/betaold;
        if (eigs) {
-	 if (ksp->max_it != stored_max_it) {
-	   SETERRQ(PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
-	 }
-	 e[i] = sqrt(PetscAbsScalar(b))/a;  
+         if (ksp->max_it != stored_max_it) {
+           SETERRQ(PETSC_ERR_SUP,"Can not change maxit AND calculate eigenvalues");
+         }
+         e[i] = sqrt(PetscAbsScalar(b))/a;  
        }
        ierr = VecAYPX(P,b,Z);CHKERRQ(ierr);    /*     p <- z + b* p   */
      }
      betaold = beta;
-     ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);      /*     z <- Kp         */
-     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);      /*     dpi <- z'p      */
+     ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
+     ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);CHKFPQ(dpi);      /*     dpi <- z'p      */
      if (PetscAbsScalar(dpi) <= 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
        ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
@@ -201,8 +200,9 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
      ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
+     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
+     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);      /*  beta <- r'*z       */
      if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);        /*     z <- Br         */
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
@@ -216,9 +216,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      KSPMonitor(ksp,i+1,dp);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
-     if (ksp->normtype != KSP_PRECONDITIONED_NORM) {
-       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z <- Br  */
-     }
      i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {
