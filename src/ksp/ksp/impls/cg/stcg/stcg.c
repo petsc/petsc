@@ -73,7 +73,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   KSP_STCG        *cg;
   PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal      alpha, beta, kappa, rz, rzm1;
-  PetscReal      radius;
+  PetscReal      r2;
   PetscInt       i, maxit;
 #if defined(PETSC_USE_COMPLEX)
   PetscScalar    crz, ckappa;
@@ -85,7 +85,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   if (diagonalscale) SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ksp->type_name);
 
   cg       = (KSP_STCG *)ksp->data;
-  radius   = cg->radius;
+  r2       = cg->radius * cg->radius;
   maxit    = ksp->max_it;
   r        = ksp->work[0];
   z        = ksp->work[1];
@@ -100,44 +100,52 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 #endif
 
   ksp->its = 0;
-  if (radius <= 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Input error: radius <= 0");
+  if (cg->radius <= 0.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius <= 0");
+  }
 
   /* Initialize variables */
   ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag); CHKERRQ(ierr);
 
-  ierr = VecSet(d, 0.0); CHKERRQ(ierr);                  /* d = 0        */
-  ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);        /* r = rhs      */
-  ierr = PCApply(pc, r, z); CHKERRQ(ierr);               /* z = M_{-1} r */
+  ierr = VecSet(d, 0.0); CHKERRQ(ierr);			/* d = 0        */
+  ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
+  ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);		/* z = M_{-1} r */
 
   /* Check that preconditioner is positive definite */
-  ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);              /* rz = r^T z   */
+  ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
   if (rz <= 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-    /* Return gradient step */
-    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);            /* rz = r^T r   */
+    /* In this case, the preconditioner is indefinite, so we cannot measure */
+    /* the direction in the preconditioned norm.  Therefore, we must use    */
+    /* an unpreconditioned calculation.  The direction in this case is	    */
+    /* uses the right hand side, which should be the negative gradient      */
+    /* intersected with the trust region.                                   */
 
-    alpha = sqrt(rz*radius) / rz;
-    ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);         /* d = d - alpha r */
+    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
+
+    alpha = sqrt(r2 / rz);
+    ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);		/* d = d + alpha r */
     PetscFunctionReturn(0);
   }
 
-  /* Calculate the residual */
+  /* As far as we know, the preconditioner is positive definite.  Compute   */
+  /* the appropriate residual depending on what the user has set.           */
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-    ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |z| */
+    ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |z| */
   }
   else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |r| */
+    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |r| */
   }
   else if (ksp->normtype == KSP_NATURAL_NORM) {
-    norm_r = sqrt(rz);
+    norm_r = sqrt(rz);					/* norm_r = |r|_B */
   }
   else {
     norm_r = 0;
   }
 
-  /* Log the residual */
+  /* Log the residual and call any registered moitor routines */
   KSPLogResidualHistory(ksp, norm_r);
   KSPMonitor(ksp, 0, norm_r);
   ksp->rnorm = norm_r;
@@ -146,10 +154,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   ierr = (*ksp->converged)(ksp, 0, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
   if (ksp->reason) PetscFunctionReturn(0);
 
-  /* Compute the initial vectors */
+  /* Compute the initial vectors and variables for trust-region computations */
   ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = z       */
-
-  dMp    = 0;
+  dMp = 0;
   norm_p = rz;
   norm_d = 0;
 
@@ -160,58 +167,69 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
     ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
 
-    /* Deal with directions of negative curvature */
     if (kappa <= 0.0) {
-      alpha = (sqrt(dMp*dMp+norm_p*(radius-norm_d))-dMp)/norm_p;
-      ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
+      ksp->reason = KSP_CONVERGED_STCG_NEG_CURVE;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
 
-      ksp->reason  = KSP_CONVERGED_STCG_NEG_CURVE;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: radius=%g\n", cg->radius); CHKERRQ(ierr);
+      /* In this case, the matrix is indefinite and we have encountered     */
+      /* a direction of negative curvature.  Follow the direction to the    */
+      /* boundary of the trust region.                                      */
+
+      alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+      ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
       break;
     }
     alpha = rz / kappa;
 
-    /* Deal with directions intersecting trust region */
     norm_dp1 = norm_d + 2.0*alpha*dMp + alpha*alpha*norm_p;
-    if (norm_dp1 >= radius) {
-      alpha = (sqrt(dMp*dMp+norm_p*(radius-norm_d))-dMp)/norm_p;
-      ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
+    if (norm_dp1 >= r2) {
+      ksp->reason = KSP_CONVERGED_STCG_CONSTRAINED;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", cg->radius); CHKERRQ(ierr);
 
-      ksp->reason  = KSP_CONVERGED_STCG_CONSTRAINED;     /* step */
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n",cg->radius); CHKERRQ(ierr);
+      /* In this case, the matrix is  positive definite as far as we know.  */
+      /* However, the direction does beyond the trust region.  Follow the   */
+      /* direction to the boundary of the trust region.                     */
+
+      alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+      ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
       break;
     }
 
     /* Update direction and residual */
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);         /* d = d + alpha p */
     ierr = VecAXPY(r, -alpha, z);                       /* r = r - alpha z */
-
     ierr = PCApply(pc, r, z); CHKERRQ(ierr);
 
     /* Check that preconditioner is positive definite */
     rzm1 = rz;
-    ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);              /* rz = r^T z   */
+    ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
     if (rz <= 0.0) {
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+
+      /* In this case, the preconditioner is indefinite.  We could follow   */
+      /* the direction to the boundary of the trust region, but it seems    */
+      /* best to stop at the current point.                                 */
       break;
     }
 
-    /* Calculate the residual */
+    /* As far as we know, the matrix and preconditioner are positive        */
+    /* definite.  Compute the appropriate residual depending on what the    */
+    /* user has set.                                                        */
     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
-      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |z| */
+      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |z| */
     }
     else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
-      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);     /* norm_r = |r| */
+      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |r| */
     }
     else if (ksp->normtype == KSP_NATURAL_NORM) {
-      norm_r = sqrt(rz);
+      norm_r = sqrt(rz);				/* norm_r = |r|_B */
     }
     else {
       norm_r = 0;
     }
 
-    /* Log the residual */
+    /* Log the residual and call any registered moitor routines */
     KSPLogResidualHistory(ksp, norm_r);
     KSPMonitor(ksp, 0, norm_r);
     ksp->rnorm = norm_r;
@@ -223,10 +241,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       break;
     }
 
+    /* Update p and the norms */
     beta = rz / rzm1;
 
-    VecAYPX(p, beta, z);                    /* p = beta p - z */
-    dMp = beta*dMp + alpha*norm_p;
+    VecAYPX(p, beta, z);                    /* p = z + beta p */
+    dMp = beta*(dMp + alpha*norm_p);
     norm_p = rz + beta*beta*norm_p;
     norm_d = norm_dp1;
   }
