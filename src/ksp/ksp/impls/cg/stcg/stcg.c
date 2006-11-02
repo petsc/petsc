@@ -113,6 +113,21 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   /* Check that preconditioner is positive definite */
   ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
+  if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+
+    /* In this case, the preconditioner produced not a number or an         */
+    /* infinite value.  We just take the gradient step.                     */
+    /* Only needs to be checked once.                                       */
+
+    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
+
+    alpha = sqrt(r2 / rz);
+    ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);		/* d = d + alpha r */
+    PetscFunctionReturn(0);
+  }
+
   if (rz <= 0.0) {
     ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
@@ -160,12 +175,27 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   norm_p = rz;
   norm_d = 0;
 
+  /* Compute the direction */
+  ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
+  ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
+
+  if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", kappa); CHKERRQ(ierr);
+
+    /* In this case, the matrix produced not a number or an infinite value. */
+    /* We just take the gradient step.  Only needs to be checked once.      */
+
+    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);           /* rz = r^T r   */
+
+    alpha = sqrt(r2 / rz);
+    ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);         /* d = d + alpha r */
+    PetscFunctionReturn(0);
+  }
+
   /* Begin iterating */
   for (i = 0; i <= maxit; i++) {
     ++ksp->its;
-
-    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
-    ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
 
     if (kappa <= 0.0) {
       ksp->reason = KSP_CONVERGED_STCG_NEG_CURVE;
@@ -248,7 +278,12 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     dMp = beta*(dMp + alpha*norm_p);
     norm_p = rz + beta*beta*norm_p;
     norm_d = norm_dp1;
+
+    /* Compute new direction */
+    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
+    ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
   }
+
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
   }

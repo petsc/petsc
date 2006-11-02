@@ -189,7 +189,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
      ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);CHKFPQ(dpi);      /*     dpi <- z'p      */
-     if (dpi <= 0.0) {
+     if (fabs(dpi) <= 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
        ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
        break;
