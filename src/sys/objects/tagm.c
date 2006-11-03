@@ -159,6 +159,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCommSynchronizeTags" 
+/*@
+    PetscCommSynchronizeTags - It is possible for the private PETSc tags to get out of
+    synch between processes. This function rectifies this disparity.
+
+    Collective on comm
+
+    Input Parameter:
+.   comm - the PETSc communicator
+
+    Level: developer
+
+    Concepts: tag^getting
+    Concepts: message tag^getting
+    Concepts: MPI message tag^getting
+
+.seealso: PetscObjectCheckTags()
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscCommSynchronizeTags(MPI_Comm comm)
 {
   PetscMPIInt   *tagvalp = 0, tag;
@@ -192,6 +209,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommSynchronizeTags(MPI_Comm comm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCommCheckTags" 
+/*@
+    PetscCommCheckTags - It is possible for the private PETSc tags to get out of
+    synch between processes. This function returns an error if the tags are invalid.
+
+    Collective on comm
+
+    Input Parameter:
+.   comm - the PETSc communicator
+
+    Level: developer
+
+    Concepts: tag^getting
+    Concepts: message tag^getting
+    Concepts: MPI message tag^getting
+
+.seealso: PetscObjectSynchronizeTags()
+@*/
 PetscErrorCode PETSC_DLLEXPORT PetscCommCheckTags(MPI_Comm comm)
 {
   PetscMPIInt   *tagvalp = 0, tag;
