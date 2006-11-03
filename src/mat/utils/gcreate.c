@@ -248,16 +248,16 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   void           *spptr;
 
   PetscFunctionBegin;
-  /* free all the interior data structures from mat */
-  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-
   /* save the parts of A we need */
   Abops = A->bops;
   Aops  = A->ops;
   refct = A->refct;
-  mtype = A->type_name;
-  mname = A->name;
+  mtype = A->type_name; A->type_name = 0;
+  mname = A->name; A->name = 0;
   spptr = A->spptr;
+
+  /* free all the interior data structures from mat */
+  ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
 
   ierr = PetscFree(C->spptr);CHKERRQ(ierr);
 

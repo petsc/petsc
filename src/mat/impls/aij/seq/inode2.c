@@ -72,21 +72,24 @@ PetscErrorCode MatCreate_Inode(Mat B)
 {
   Mat_SeqAIJ     *b=(Mat_SeqAIJ*)B->data;
   PetscErrorCode ierr;
+  PetscTruth no_inode,no_unroll;
 
   PetscFunctionBegin;
-  b->inode.use         = PETSC_TRUE;
+  no_inode             = PETSC_FALSE;
+  no_unroll            = PETSC_FALSE;
   b->inode.node_count  = 0;
   b->inode.size        = 0;
   b->inode.limit       = 5;
   b->inode.max_limit   = 5;
 
   ierr = PetscOptionsBegin(B->comm,B->prefix,"Options for SEQAIJ matrix","Mat");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,b->inode.use,&b->inode.use,PETSC_NULL);CHKERRQ(ierr);
-    if (!b->inode.use) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
-    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,b->inode.use,&b->inode.use,PETSC_NULL);CHKERRQ(ierr);
-    if (!b->inode.use) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for inodes (slower)",PETSC_NULL,no_unroll,&no_unroll,PETSC_NULL);CHKERRQ(ierr);
+    if (no_unroll) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_unroll\n");CHKERRQ(ierr);}
+    ierr = PetscOptionsTruth("-mat_no_inode","Do not optimize for inodes (slower)",PETSC_NULL,no_inode,&no_inode,PETSC_NULL);CHKERRQ(ierr);
+    if (no_inode) {ierr = PetscInfo(B,"Not using Inode routines due to -mat_no_inode\n");CHKERRQ(ierr);}
     ierr = PetscOptionsInt("-mat_inode_limit","Do not use inodes larger then this value",PETSC_NULL,b->inode.limit,&b->inode.limit,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  b->inode.use = !(no_unroll || no_inode);
   if (b->inode.limit > b->inode.max_limit) b->inode.limit = b->inode.max_limit;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatInodeAdjustForInodes_C",

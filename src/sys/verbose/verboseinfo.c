@@ -199,7 +199,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
 
   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &urank);CHKERRQ(ierr);
   va_start(Argp, message);
-  sprintf(string, "[%d] %s", urank,func); 
+  sprintf(string, "[%d] %s(): ", urank,func); 
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
