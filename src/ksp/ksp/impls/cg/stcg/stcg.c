@@ -66,19 +66,19 @@ $  other KSP converged/diverged reasons
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
   PetscErrorCode ierr;
-  MatStructure   pflag;
-  Mat            Qmat, Mmat;
-  Vec            r, z, p, d;
-  PC             pc;
-  KSP_STCG        *cg;
-  PetscReal      norm_r, norm_d, norm_dp1, norm_p, dMp;
-  PetscReal      alpha, beta, kappa, rz, rzm1;
-  PetscReal      r2;
-  PetscInt       i, maxit;
+  MatStructure  pflag;
+  Mat Qmat, Mmat;
+  Vec r, z, p, d;
+  PC  pc;
+  KSP_STCG *cg;
+  PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
+  PetscReal alpha, beta, kappa, rz, rzm1;
+  PetscReal r2;
+  PetscInt  i, maxit;
 #if defined(PETSC_USE_COMPLEX)
-  PetscScalar    crz, ckappa;
+  PetscScalar crz, ckappa;
 #endif
-  PetscTruth     diagonalscale;
+  PetscTruth diagonalscale;
 
   PetscFunctionBegin;
   ierr = PCDiagonalScale(ksp->pc, &diagonalscale); CHKERRQ(ierr);
@@ -167,10 +167,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   /* Test for convergence */
   ierr = (*ksp->converged)(ksp, 0, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
-  if (ksp->reason) PetscFunctionReturn(0);
+  if (ksp->reason) {
+    PetscFunctionReturn(0);
+  }
 
   /* Compute the initial vectors and variables for trust-region computations */
   ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = z       */
+
   dMp = 0;
   norm_p = rz;
   norm_d = 0;
@@ -228,7 +231,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* Update direction and residual */
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);         /* d = d + alpha p */
     ierr = VecAXPY(r, -alpha, z);                       /* r = r - alpha z */
-    ierr = PCApply(pc, r, z); CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
 
     /* Check that preconditioner is positive definite */
     rzm1 = rz;
@@ -370,7 +373,6 @@ PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
    Level: developer
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSTCGSetRadius()
-           KSPSTCGGetQuadratic()
 M*/
 
 EXTERN_C_BEGIN
