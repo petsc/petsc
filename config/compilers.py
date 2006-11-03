@@ -32,7 +32,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,dec,cray_x1,hpux,lahey'))
+    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,alpha,cray_x1,hpux,lahey'))
     return
 
   def getDispatchNames(self):
@@ -870,6 +870,7 @@ class Configure(config.base.Configure):
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if not self.fortranIsF90:
+      self.logPrint('Not a Fortran90 compiler - hence skipping f90-interface test')
       return
     f90Guess = self.getFortran90SourceGuesses()
     if 'with-f90-interface' in self.framework.argDB:
