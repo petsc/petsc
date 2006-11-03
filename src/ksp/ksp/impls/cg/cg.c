@@ -145,6 +145,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   }
   ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);        /*  beta <- z'*r       */
+
   if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
     ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- z'*z = e'*A'*B'*B*A'*e'     */
   } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
@@ -189,7 +190,8 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      betaold = beta;
      ierr = KSP_MatMult(ksp,Amat,P,Z);CHKERRQ(ierr);          /*     z <- Kp         */
      ierr = VecXDot(P,Z,&dpi);CHKERRQ(ierr);CHKFPQ(dpi);      /*     dpi <- z'p      */
-     if (PetscAbsScalar(dpi) <= 0.0) {
+
+     if (dpi <= 0.0) {
        ksp->reason = KSP_DIVERGED_INDEFINITE_MAT;
        ierr = PetscInfo(ksp,"diverging due to indefinite or negative definite matrix\n");CHKERRQ(ierr);
        break;
