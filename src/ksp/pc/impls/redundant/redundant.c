@@ -516,7 +516,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrices */
       if (red->pmats) {
-        //ierr = MatDestroyMatrices(1,&red->pmats);CHKERRQ(ierr);
         ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
       }
     } else if (pc->setupcalled == 1) {
