@@ -35,6 +35,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp,PetscReal radius)
   PetscFunctionReturn(0);
 }
 
+#define EPSILON 1e-3
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
 /*
@@ -219,9 +221,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* Check for loss of orthogonality */
     ierr = VecXDot(r, d, &rdm1); CHKERRQ(ierr);		/* r_k^T d_{k-1} */
     ierr = VecXDot(r, p, &rpm1); CHKERRQ(ierr);		/* r_k^T p_{k-1} */
-    if (fabs(rdm1) > 1e-5 || fabs(rpm1) > 1e-5) {
+    if (fabs(rdm1) > EPSILON || fabs(rpm1) > EPSILON) {
       ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr = PetscInfo2(ksp, "KSPSolve_STCG: breakdown: rdm1=%g rpm1=%g\n", rdm1, rpm1); CHKERRQ(ierr);
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: orthogonal breakdown: rdm1=%g rpm1=%g\n", rdm1, rpm1); CHKERRQ(ierr);
 
       if (0 == i) {
         /* In this case, we have lost orthogonality in the directions.      */
@@ -235,18 +237,48 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
         alpha = sqrt(r2 / rz);
         ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
       }
-      else {
-        /* Otherwise accept the current step */
+      break;
+    }
+
+    /* Check that the preconditioner is positive definite */
+    rzm1 = rz;
+    ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
+    if (rz <= 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+
+      /* In this case, the preconditioner is indefinite.  We could follow   */
+      /* the direction to the boundary of the trust region, but it seems    */
+      /* best to stop at the current point.                                 */
+      if (0 == i) {
+        ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
+        ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+
+        alpha = sqrt(r2 / rz);
+        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
       }
       break;
     }
 
-#if 0
-    ierr = VecXDot(z, d, &rdm1); CHKERRQ(ierr);		/* z_k^T d_{k-1} */
-    ierr = VecXDot(z, p, &rpm1); CHKERRQ(ierr);		/* z_k^T p_{k-1} */
-#endif
+    if (rz > rzm1 + EPSILON) {
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: residual breakdown: rz=%g rzm1=%g\n", rz, rzm1); CHKERRQ(ierr);
 
-    /* Update the direction */
+      if (0 == i) {
+        /* In this case, the residual increases when it should be           */
+        /* decreasing.  We stop in this case and return the current         */
+        /* direction.  Since we have not updated the direction yet,         */
+        /* we need to take a gradient step.                                 */
+
+        ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
+        ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+
+        alpha = sqrt(r2 / rz);
+        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
+      }
+      break;
+    }
+
+    /* Now we can update the direction */
     norm_dp1 = norm_d + 2.0*alpha*dMp + alpha*alpha*norm_p;
     if (norm_dp1 >= r2) {
       ksp->reason = KSP_CONVERGED_STCG_CONSTRAINED;
@@ -261,19 +293,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       break;
     }
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);         /* d = d + alpha p */
-
-    /* Check that preconditioner is positive definite */
-    rzm1 = rz;
-    ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
-    if (rz <= 0.0) {
-      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
-
-      /* In this case, the preconditioner is indefinite.  We could follow   */
-      /* the direction to the boundary of the trust region, but it seems    */
-      /* best to stop at the current point.                                 */
-      break;
-    }
 
     /* As far as we know, the matrix and preconditioner are positive        */
     /* definite.  Compute the appropriate residual depending on what the    */
