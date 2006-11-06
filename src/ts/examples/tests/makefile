@@ -100,7 +100,7 @@ runex1_beuler_3:
            else echo "Possible problem with ex1_beuler_3, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_4:
-	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -nonlinear_no_jacobian -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type beuler -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
            if (${DIFF} output/ex1_beuler_nonlinear_no_jacobian.out ex1_beuler.tmp) then true; \
            else echo "Possible problem with ex1_4, diffs above"; fi; \
            ${RM} -f ex1_beuler.tmp; 
