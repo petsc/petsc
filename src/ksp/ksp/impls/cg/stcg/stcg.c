@@ -73,11 +73,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   KSP_STCG *cg;
   PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal alpha, beta, kappa, rz, rzm1;
+  PetscReal rdm1, rpm1;
   PetscReal r2;
   PetscInt  i, maxit;
-#if defined(PETSC_USE_COMPLEX)
-  PetscScalar crz, ckappa;
-#endif
   PetscTruth diagonalscale;
 
   PetscFunctionBegin;
@@ -174,13 +172,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* Compute the initial vectors and variables for trust-region computations */
   ierr = VecCopy(z, p); CHKERRQ(ierr);                   /* p = z       */
 
-  dMp = 0;
+  dMp = 0.0;
   norm_p = rz;
-  norm_d = 0;
+  norm_d = 0.0;
 
   /* Compute the direction */
-  ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
-  ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
+  ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
+  ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T z */
 
   if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
     ksp->reason = KSP_DIVERGED_NAN;
@@ -214,6 +212,41 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
     alpha = rz / kappa;
 
+    /* Update residual */
+    ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha z */
+    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
+
+    /* Check for loss of orthogonality */
+    ierr = VecXDot(r, d, &rdm1); CHKERRQ(ierr);		/* r_k^T d_{k-1} */
+    ierr = VecXDot(r, p, &rpm1); CHKERRQ(ierr);		/* r_k^T p_{k-1} */
+    if (fabs(rdm1) > 1e-5 || fabs(rpm1) > 1e-5) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: breakdown: rdm1=%g rpm1=%g\n", rdm1, rpm1); CHKERRQ(ierr);
+
+      if (0 == i) {
+        /* In this case, we have lost orthogonality in the directions.      */
+        /* We stop in this case and return the current direction.  Since    */
+	/* we have not updated the direction yet, we need to take a         */
+        /* gradient step.                                                   */
+
+        ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
+        ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+
+        alpha = sqrt(r2 / rz);
+        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
+      }
+      else {
+        /* Otherwise accept the current step */
+      }
+      break;
+    }
+
+#if 0
+    ierr = VecXDot(z, d, &rdm1); CHKERRQ(ierr);		/* z_k^T d_{k-1} */
+    ierr = VecXDot(z, p, &rpm1); CHKERRQ(ierr);		/* z_k^T p_{k-1} */
+#endif
+
+    /* Update the direction */
     norm_dp1 = norm_d + 2.0*alpha*dMp + alpha*alpha*norm_p;
     if (norm_dp1 >= r2) {
       ksp->reason = KSP_CONVERGED_STCG_CONSTRAINED;
@@ -227,11 +260,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
       break;
     }
-
-    /* Update direction and residual */
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);         /* d = d + alpha p */
-    ierr = VecAXPY(r, -alpha, z);                       /* r = r - alpha z */
-    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
 
     /* Check that preconditioner is positive definite */
     rzm1 = rz;
@@ -278,13 +307,14 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     beta = rz / rzm1;
 
     VecAYPX(p, beta, z);                    /* p = z + beta p */
+
     dMp = beta*(dMp + alpha*norm_p);
     norm_p = rz + beta*beta*norm_p;
     norm_d = norm_dp1;
 
     /* Compute new direction */
-    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);   /* z = Q * p   */
-    ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);          /* kappa = p^T z */
+    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
+    ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T z */
   }
 
   if (!ksp->reason) {
