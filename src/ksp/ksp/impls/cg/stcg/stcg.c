@@ -96,7 +96,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 #if !defined(PETSC_USE_COMPLEX)
 #define VecXDot(x,y,a) VecDot(x,y,a)
 #else
-#define VecXDot(x,y,a) (((cg->type) == (KSP_CG_HERMITIAN)) ? VecDot(x,y,a) : VecTDot(x,y,a))
+#define VecXDot(x,y,a) VecDot(x,y,a)
 #endif
 
   ksp->its = 0;
@@ -261,6 +261,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
 
     if (rz > rzm1 + EPSILON) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
       ierr = PetscInfo2(ksp, "KSPSolve_STCG: residual breakdown: rz=%g rzm1=%g\n", rz, rzm1); CHKERRQ(ierr);
 
       if (0 == i) {
