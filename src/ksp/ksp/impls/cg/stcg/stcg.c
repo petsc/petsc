@@ -35,8 +35,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp,PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#define EPSILON 1e-3
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
 /*
@@ -75,7 +73,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   KSP_STCG *cg;
   PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal alpha, beta, kappa, rz, rzm1;
+#if 0
   PetscReal rdm1, rpm1;
+#endif
   PetscReal r2;
   PetscInt  i, maxit;
   PetscTruth diagonalscale;
@@ -94,9 +94,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   pc       = ksp->pc;
 
 #if !defined(PETSC_USE_COMPLEX)
-#define VecXDot(x,y,a) VecDot(x,y,a)
+#define VecXDot(x,y,a) ierr = VecDot(x,y,a); CHKERRQ(ierr);
 #else
-#define VecXDot(x,y,a) VecDot(x,y,a)
+#define VecXDot(x,y,a) { PetscScalar a_complex; ierr = VecDot(x,y,&a_complex); CHKERRQ(ierr); (*a) = PetscRealPart(a_complex); }
 #endif
 
   ksp->its = 0;
@@ -112,7 +112,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);		/* z = M_{-1} r */
 
   /* Check that preconditioner is positive definite */
-  ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
+  VecXDot(r, z, &rz); 					/* rz = r^T z   */
   if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
     ksp->reason = KSP_DIVERGED_NAN;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
@@ -121,7 +121,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* infinite value.  We just take the gradient step.                     */
     /* Only needs to be checked once.                                       */
 
-    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
+    VecXDot(r, r, &rz);					/* rz = r^T r   */
 
     alpha = sqrt(r2 / rz);
     ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);		/* d = d + alpha r */
@@ -138,7 +138,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* uses the right hand side, which should be the negative gradient      */
     /* intersected with the trust region.                                   */
 
-    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
+    VecXDot(r, r, &rz);					/* rz = r^T r   */
 
     alpha = sqrt(r2 / rz);
     ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);		/* d = d + alpha r */
@@ -180,7 +180,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   /* Compute the direction */
   ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
-  ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T z */
+  VecXDot(p, z, &kappa);				/* kappa = p^T z */
 
   if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
     ksp->reason = KSP_DIVERGED_NAN;
@@ -188,8 +188,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     /* In this case, the matrix produced not a number or an infinite value. */
     /* We just take the gradient step.  Only needs to be checked once.      */
-
-    ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);           /* rz = r^T r   */
+    VecXDot(r, r, &rz); 				/* rz = r^T r   */
 
     alpha = sqrt(r2 / rz);
     ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);         /* d = d + alpha r */
@@ -200,6 +199,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   for (i = 0; i <= maxit; i++) {
     ++ksp->its;
 
+    /* Check for negative curvature */
     if (kappa <= 0.0) {
       ksp->reason = KSP_CONVERGED_STCG_NEG_CURVE;
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
@@ -207,79 +207,17 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       /* In this case, the matrix is indefinite and we have encountered     */
       /* a direction of negative curvature.  Follow the direction to the    */
       /* boundary of the trust region.                                      */
-
       alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
       ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
       break;
     }
     alpha = rz / kappa;
 
-    /* Update residual */
-    ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha z */
-    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
+    /* Now we can update the direction and residual.  This is perhaps not   */
+    /* the best order to perform the breakdown checks, but the optimization */
+    /* codes need a direction and this is the best we can do.               */
 
-    /* Check for loss of orthogonality */
-    ierr = VecXDot(r, d, &rdm1); CHKERRQ(ierr);		/* r_k^T d_{k-1} */
-    ierr = VecXDot(r, p, &rpm1); CHKERRQ(ierr);		/* r_k^T p_{k-1} */
-    if (fabs(rdm1) > EPSILON || fabs(rpm1) > EPSILON) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr = PetscInfo2(ksp, "KSPSolve_STCG: orthogonal breakdown: rdm1=%g rpm1=%g\n", rdm1, rpm1); CHKERRQ(ierr);
-
-      if (0 == i) {
-        /* In this case, we have lost orthogonality in the directions.      */
-        /* We stop in this case and return the current direction.  Since    */
-	/* we have not updated the direction yet, we need to take a         */
-        /* gradient step.                                                   */
-
-        ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
-        ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
-
-        alpha = sqrt(r2 / rz);
-        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-      }
-      break;
-    }
-
-    /* Check that the preconditioner is positive definite */
-    rzm1 = rz;
-    ierr = VecXDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
-    if (rz <= 0.0) {
-      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
-
-      /* In this case, the preconditioner is indefinite.  We could follow   */
-      /* the direction to the boundary of the trust region, but it seems    */
-      /* best to stop at the current point.                                 */
-      if (0 == i) {
-        ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
-        ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
-
-        alpha = sqrt(r2 / rz);
-        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-      }
-      break;
-    }
-
-    if (rz > rzm1 + EPSILON) {
-      ksp->reason = KSP_DIVERGED_BREAKDOWN;
-      ierr = PetscInfo2(ksp, "KSPSolve_STCG: residual breakdown: rz=%g rzm1=%g\n", rz, rzm1); CHKERRQ(ierr);
-
-      if (0 == i) {
-        /* In this case, the residual increases when it should be           */
-        /* decreasing.  We stop in this case and return the current         */
-        /* direction.  Since we have not updated the direction yet,         */
-        /* we need to take a gradient step.                                 */
-
-        ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
-        ierr = VecXDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
-
-        alpha = sqrt(r2 / rz);
-        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-      }
-      break;
-    }
-
-    /* Now we can update the direction */
+    /* First test if the new direction intersects the trust region. */
     norm_dp1 = norm_d + 2.0*alpha*dMp + alpha*alpha*norm_p;
     if (norm_dp1 >= r2) {
       ksp->reason = KSP_CONVERGED_STCG_CONSTRAINED;
@@ -293,7 +231,73 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);        /* d = d + alpha p */
       break;
     }
+
+    /* Update the residual */
+    ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha z */
+#if 0
+    VecXDot(r, d, &rdm1);				/* r_k^T d_{k-1} */
+    VecXDot(r, p, &rpm1);				/* r_k^T p_{k-1} */
+    printf("iter: %d %5.4e %5.4e\n", i, rdm1, rpm1);
+#endif
+
+    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
+
+#if 0
+    /* Next check for loss of orthogonality (preconditioned space)        */
+    /* These conditions come from the discussion in the trust-region book */
+    VecXDot(r, d, &rdm1);				/* r_k^T d_{k-1} */
+    VecXDot(r, p, &rpm1);				/* r_k^T p_{k-1} */
+    if (fabs(rdm1) > 0.01 || fabs(rpm1) > 0.01) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: orthogonal breakdown: rdm1=%g rpm1=%g\n", rdm1, rpm1); CHKERRQ(ierr);
+      printf("breakdown: %d (%5.4e %5.4e)\n", i, rdm1, rpm1);
+
+      /* Orthogonality breaks down, but take the step before stopping      */
+      ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);	/* d = d + alpha p */
+      break;
+    }
+
+    /* Next check for loss of orthogonality (unpreconditioned space) */
+    VecXDot(z, d, &rdm1);				/* z_k^T d_{k-1} */
+    VecXDot(z, p, &rpm1);				/* z_k^T p_{k-1} */
+    if (fabs(rdm1) > 0.01 || fabs(rpm1) > 0.01) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: orthogonal breakdown: rdm1=%g rpm1=%g\n", rdm1, rpm1); CHKERRQ(ierr);
+
+      /* Orthogonality breaks down, but take the step before stopping      */
+      ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);	/* d = d + alpha p */
+      break;
+    }
+#endif
+
+    /* Update the direction */
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);         /* d = d + alpha p */
+
+    /* Check that the preconditioner is positive definite */
+    rzm1 = rz;
+    VecXDot(r, z, &rz);					/* rz = r^T z   */
+    if (rz <= 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+
+      /* In this case, the preconditioner is indefinite.  We could follow   */
+      /* the direction to the boundary of the trust region, but it seems    */
+      /* best to stop at the current point.                                 */
+      break;
+    }
+    beta = rz / rzm1;
+
+#if 0
+    /* Finally check if the natural residual increases */
+    if (beta > 1.01) {
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: residual breakdown: rz=%g rzm1=%g\n", rz, rzm1); CHKERRQ(ierr);
+
+      /* In this case, the norm of the natural residual increased.  We      */
+      /* we stop at the current point.                                      */
+      break;
+    }
+#endif
 
     /* As far as we know, the matrix and preconditioner are positive        */
     /* definite.  Compute the appropriate residual depending on what the    */
@@ -324,8 +328,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
 
     /* Update p and the norms */
-    beta = rz / rzm1;
-
     VecAYPX(p, beta, z);                    /* p = z + beta p */
 
     dMp = beta*(dMp + alpha*norm_p);
@@ -334,7 +336,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     /* Compute new direction */
     ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
-    ierr = VecXDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T z */
+    VecXDot(p, z, &kappa);				/* kappa = p^T z */
   }
 
   if (!ksp->reason) {
