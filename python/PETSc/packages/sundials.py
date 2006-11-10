@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
     self.includes  = ['sundials/sundials_nvector.h'] 
     self.liblist   = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
     self.license   = 'http://www.llnl.gov/CASC/sundials/download/download.html'
+    self.needsMath = 1
     return
 
   def setupDependencies(self, framework):
