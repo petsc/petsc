@@ -774,8 +774,8 @@ M*/
 { PetscInt __i; \
   for (__i=0; __i<nc; __i++) {\
     if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
+    else dnz[row - __rstart]++;\
   }\
-  dnz[row - __rstart] = nc - onz[row - __rstart];\
 }
 
 /*MC

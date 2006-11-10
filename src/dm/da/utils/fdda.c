@@ -1002,7 +1002,7 @@ PetscErrorCode DAGetMatrix1d_MPIAIJ(DA da,Mat J)
   ierr = DAGetGhostCorners(da,&gxs,0,0,&gnx,0,0);CHKERRQ(ierr);
 
   ierr = MatSeqAIJSetPreallocation(J,col*nc,0);CHKERRQ(ierr);  
-  ierr = MatMPIAIJSetPreallocation(J,col*nc,0,0,0);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(J,col*nc,0,col*nc,0);CHKERRQ(ierr);
   ierr = MatSetBlockSize(J,nc);CHKERRQ(ierr);
   ierr = PetscMalloc2(nc,PetscInt,&rows,col*nc*nc,PetscInt,&cols);CHKERRQ(ierr);
   

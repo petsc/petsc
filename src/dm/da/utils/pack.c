@@ -12,6 +12,7 @@ typedef enum {VECPACK_ARRAY, VECPACK_DA, VECPACK_VECSCATTER} VecPackLinkType;
 
 struct VecPackLink {
   DA                 da;
+  PetscMPIInt        rank;          /* process where array unknowns live */
   PetscInt           n,rstart;      /* rstart is relative to this processor */
   VecPackLinkType    type;
   struct VecPackLink *next;
@@ -30,9 +31,10 @@ struct _VecPackOps {
 struct _p_VecPack {
   PETSCHEADER(struct _VecPackOps);
   PetscMPIInt        rank;
-  PetscInt           n,N,rstart;   /* rstart is relative to all processors */
+  PetscInt           n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
+  PetscInt           nghost;         /* number of all local entries include DA ghost points and any shared redundant arrays */
   Vec                globalvector;
-  PetscInt           nDA,nredundant;
+  PetscInt           nDA,nredundant; /* how many DA's and seperate redundant arrays used to build VecPack */
   struct VecPackLink *next;
 };
 
@@ -500,6 +502,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscInt n)
   /* create new link */
   ierr                = PetscNew(struct VecPackLink,&mine);CHKERRQ(ierr);
   mine->n             = n;
+  mine->rank          = 0;
   mine->da            = PETSC_NULL;
   mine->type          = VECPACK_ARRAY;
   mine->next          = PETSC_NULL;
@@ -1266,26 +1269,37 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
   /* loop over packed objects, handling one at at time */
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      for (j=0; j<next->n; j++) {
-	if (!rank) {  /* zero the entire row */
-          for (i=0; i<m; i++) {
+      if (rank == next->rank) {  /* zero the entire row */
+        for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
+          for (i=0; i<packer->N; i++) {
             ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
           }
         }
-        for (i=0; i<m; i++) { /* zero the entire column */
-	  ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
+      }
+      for (j=0; j<next->n; j++) {
+        for (i=packer->rstart; i<packer->rstart+m; i++) { /* zero the entire local column */
+          if (j != i) { /* don't count diagonal twice */
+	    ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
+          }
 	}
       }
     } else if (next->type == VECPACK_DA) {
-      PetscInt       nc,rstart;
-      const PetscInt *cols;
+      PetscInt nc,rstart;
+      PetscInt *cols;
 
       ierr = DAGetMatrix(next->da,mtype,&Atmp);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
       for (i=0; i<mA; i++) {
-        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+        ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,PETSC_NULL);CHKERRQ(ierr);
+        for (j=0; j<nc; j++) {
+          cols[j] += packer->rstart+next->rstart-rstart;
+        } 
         ierr = MatPreallocateSet(packer->rstart+next->rstart+i,nc,cols,dnz,onz);CHKERRQ(ierr);
+        for (j=0; j<nc; j++) {
+          cols[j] -= packer->rstart+next->rstart-rstart;
+        } 
+        ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,PETSC_NULL);CHKERRQ(ierr);
       }
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
@@ -1299,28 +1313,37 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
   next = packer->next;
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      for (j=0; j<next->n; j++) {
-	if (!rank) {
-          for (i=0; i<m; i++) {
+      if (rank == next->rank) {
+        for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
+          for (i=0; i<packer->N; i++) {
             ierr = MatSetValues(*J,1,&j,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
           }
         }
-        for (i=0; i<m; i++) {
+      }
+      for (j=0; j<next->n; j++) {
+        for (i=packer->rstart; i<packer->rstart+m; i++) {
           ierr = MatSetValues(*J,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
     } else if (next->type == VECPACK_DA) {
       PetscInt          nc,rstart,row;
-      const PetscInt    *cols;
+      PetscInt          *cols;
       const PetscScalar *values;
 
       ierr = DAGetMatrix(next->da,mtype,&Atmp);CHKERRQ(ierr);
       ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
       ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
       for (i=0; i<mA; i++) {
-        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,&values);CHKERRQ(ierr);
+        ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+        for (j=0; j<nc; j++) {
+          cols[j] += packer->rstart+next->rstart-rstart;
+        } 
         row  = packer->rstart+next->rstart+i;
         ierr = MatSetValues(*J,1,&row,nc,cols,values,INSERT_VALUES);CHKERRQ(ierr);
+        for (j=0; j<nc; j++) {
+          cols[j] -= packer->rstart+next->rstart-rstart;
+        } 
+        ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
       }
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
@@ -1374,9 +1397,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetColoring(VecPack vecpack,ISColoringTy
 
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
   for (i=0; i<n; i++) {
-    colors[i] = (ISColoringValue)i;
+    colors[i] = (ISColoringValue)(vecpack->rstart + i);
   }
-  ierr = ISColoringCreate(vecpack->comm,n,n,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(vecpack->comm,vecpack->N,n,colors,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
