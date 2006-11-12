@@ -4462,6 +4462,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOwnershipRange"
 /*@
@@ -4484,6 +4485,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
    Level: beginner
 
    Concepts: matrices^row ownership
+
+.seealso:   MatGetOwnershipRanges()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
 {
@@ -4497,6 +4501,38 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (m) *m = mat->rmap.rstart;
   if (n) *n = mat->rmap.rend;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRanges"
+/*@
+   MatGetOwnershipRange - Returns the range of matrix rows owned by
+   each process
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  ranges - start of each processors portion plus one more then the total length at the end
+
+   Level: beginner
+
+   Concepts: matrices^row ownership
+
+.seealso:   MatGetOwnershipRange()
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  ierr = PetscMapGetGlobalRange(&mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

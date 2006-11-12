@@ -155,7 +155,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 
     Input Parameter:
 +   dm - the DM object
--   ctype - IS_COLORING_GHOSTED or IS_COLORING_LOCAL
+-   ctype - IS_COLORING_GHOSTED or IS_COLORING_GLOBAL
 
     Output Parameter:
 .   coloring - the coloring

@@ -68,7 +68,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       c->columns[i]  = 0;
     }
 
-    if (ctype == IS_COLORING_LOCAL){
+    if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
       ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
       ierr = PetscMalloc(2*size*sizeof(PetscInt*),&ncolsonproc);CHKERRQ(ierr);
@@ -229,7 +229,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   /*
        vscale will contain the "diagonal" on processor scalings followed by the off processor
   */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     ierr = VecCreateGhost(mat->comm,aij->A->rmap.n,PETSC_DETERMINE,aij->B->cmap.n,aij->garray,&c->vscale);CHKERRQ(ierr);
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
     for (k=0; k<c->ncolors; k++) { 

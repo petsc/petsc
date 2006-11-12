@@ -519,6 +519,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSize(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat,PetscInt*,PetscInt*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat,const PetscInt**);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS[],const IS[],MatReuse,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);
@@ -772,6 +773,8 @@ M*/
 M*/
 #define MatPreallocateSet(row,nc,cols,dnz,onz) 0;\
 { PetscInt __i; \
+  if (row < __rstart) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D less than first local row %D",row,__rstart);\
+  if (row >= __rstart+__tmp) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Trying to set preallocation for row %D greater than last local row %D",row,__rstart+__tmp-1);\
   for (__i=0; __i<nc; __i++) {\
     if ((cols)[__i] < __start || (cols)[__i] >= __end) onz[row - __rstart]++; \
     else dnz[row - __rstart]++;\

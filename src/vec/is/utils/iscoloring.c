@@ -3,7 +3,7 @@
 #include "petscsys.h"   /*I "petscsys.h" I*/
 #include "petscis.h"    /*I "petscis.h"  I*/
 
-const char *ISColoringTypes[] = {"local","ghosted","ISColoringType","IS_COLORING_",0};
+const char *ISColoringTypes[] = {"global","ghosted","ISColoringType","IS_COLORING_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISColoringDestroy"
@@ -141,7 +141,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringGetIS(ISColoring iscoloring,PetscInt
       }
       ierr = PetscMemzero(mcolors,nc*sizeof(PetscInt));CHKERRQ(ierr);
 
-      if (iscoloring->ctype == IS_COLORING_LOCAL){
+      if (iscoloring->ctype == IS_COLORING_GLOBAL){
         ierr = MPI_Scan(&iscoloring->N,&base,1,MPIU_INT,MPI_SUM,iscoloring->comm);CHKERRQ(ierr);
         base -= iscoloring->N;
         for (i=0; i<n; i++) {
@@ -220,7 +220,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringRestoreIS(ISColoring iscoloring,IS *
 
    Level: advanced
    
-    Notes: By default sets coloring type to  IS_COLORING_LOCAL
+    Notes: By default sets coloring type to  IS_COLORING_GLOBAL
 
 .seealso: MatColoringCreate(), ISColoringView(), ISColoringDestroy(), ISColoringSetType()
 
@@ -275,7 +275,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
   (*iscoloring)->colors = (ISColoringValue *)colors;
   (*iscoloring)->N      = n;
   (*iscoloring)->refct  = 1;
-  (*iscoloring)->ctype  = IS_COLORING_LOCAL;
+  (*iscoloring)->ctype  = IS_COLORING_GLOBAL;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {

@@ -136,12 +136,17 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGl
 
     Level: beginner
 
-$   IS_COLORING_LOCAL - does not include the colors for ghost points
-$   IS_COLORING_GHOSTED - includes colors for ghost points
+$   IS_COLORING_GLOBAL - does not include the colors for ghost points, this is used when the function 
+$                        is called synchronously in parallel. This requires generating a "parallel coloring".
+$   IS_COLORING_GHOSTED - includes colors for ghost points, this is used when the function can be called
+$                         seperately on individual processes with the ghost points already filled in. Does not
+$                         require a "parallel coloring", rather each process colors its local + ghost part.
+$                         Using this can result in much less parallel communication. In the paradigm of 
+$                         DAGetLocalVector() and DAGetGlobalVector() this could be called IS_COLORING_LOCAL
 
 .seealso: DAGetColoring()
 E*/
-typedef enum {IS_COLORING_LOCAL,IS_COLORING_GHOSTED} ISColoringType;
+typedef enum {IS_COLORING_GLOBAL,IS_COLORING_GHOSTED} ISColoringType;
 extern const char *ISColoringTypes[];
 typedef unsigned PETSC_IS_COLOR_VALUE_TYPE ISColoringValue;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISAllGatherColors(MPI_Comm,PetscInt,ISColoringValue*,PetscInt*,ISColoringValue*[]);

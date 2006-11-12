@@ -419,7 +419,7 @@ typedef struct _p_VecPack* VecPack;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreate(MPI_Comm,VecPack*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackDestroy(VecPack);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddArray(VecPack,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddArray(VecPack,PetscMPIInt,PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddDA(VecPack,DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddVecScatter(VecPack,VecScatter);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackScatter(VecPack,Vec,...);

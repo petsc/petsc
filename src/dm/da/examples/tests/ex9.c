@@ -58,7 +58,7 @@ int main(int argc,char **argv)
     ierr = PetscFree(lz);CHKERRQ(ierr);
   }
 
-  ierr = DAGetColoring(da,IS_COLORING_LOCAL,&coloring);CHKERRQ(ierr);
+  ierr = DAGetColoring(da,IS_COLORING_GLOBAL,&coloring);CHKERRQ(ierr);
   ierr = DAGetMatrix(da,MATMPIAIJ,&mat);CHKERRQ(ierr);
   ierr = MatFDColoringCreate(mat,coloring,&fdcoloring);CHKERRQ(ierr); 
 

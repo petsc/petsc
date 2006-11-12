@@ -2873,7 +2873,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;  
 
   PetscFunctionBegin;
-  if (coloring->ctype == IS_COLORING_LOCAL) {
+  if (coloring->ctype == IS_COLORING_GLOBAL) {
     ISColoringValue *allcolors,*colors;
     ISColoring      ocoloring;
 

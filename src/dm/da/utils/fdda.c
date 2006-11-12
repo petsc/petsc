@@ -132,7 +132,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 
     Input Parameter:
 +   da - the distributed array
--   ctype - IS_COLORING_LOCAL or IS_COLORING_GHOSTED
+-   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
 
     Output Parameters:
 .   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
@@ -140,7 +140,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
     Level: advanced
 
     Notes: These compute the graph coloring of the graph of A^{T}A. The coloring used 
-   for efficient (parallel or thread based) triangular solves etc is NOT yet 
+   for efficient (parallel or thread based) triangular solves etc is NOT
    available. 
 
 
@@ -233,7 +233,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
       SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
                  by 2*stencil_width + 1\n");
     }
-    if (ctype == IS_COLORING_LOCAL) {
+    if (ctype == IS_COLORING_GLOBAL) {
       if (!da->localcoloring) {
 	ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
 	ii = 0;
@@ -311,7 +311,7 @@ PetscErrorCode DAGetColoring3d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* create the coloring */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     if (!da->localcoloring) {
       ierr = PetscMalloc(nc*nx*ny*nz*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;
@@ -384,7 +384,7 @@ PetscErrorCode DAGetColoring1d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
 
   /* create the coloring */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     if (!da->localcoloring) {
       ierr = PetscMalloc(nc*nx*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       i1 = 0;
@@ -449,7 +449,7 @@ PetscErrorCode DAGetColoring2d_5pt_MPIAIJ(DA da,ISColoringType ctype,ISColoring 
   }
 
   /* create the coloring */
-  if (ctype == IS_COLORING_LOCAL) {
+  if (ctype == IS_COLORING_GLOBAL) {
     if (!da->localcoloring) {
       ierr = PetscMalloc(nc*nx*ny*sizeof(ISColoringValue),&colors);CHKERRQ(ierr);
       ii = 0;

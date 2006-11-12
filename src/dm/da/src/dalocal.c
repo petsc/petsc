@@ -94,7 +94,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateLocalVector(DA da,Vec* g)
 #define __FUNCT__ "DAGetLocalVector"
 /*@
    DAGetLocalVector - Gets a Seq PETSc vector that
-   may be used with the DAXXX routines.
+   may be used with the DAXXX routines. This vector has spaces for the ghost values.
 
    Not Collective
 

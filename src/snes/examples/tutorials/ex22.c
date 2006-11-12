@@ -12,11 +12,11 @@ static char help[] = "Solves PDE optimization problem.\n\n";
        u - state variables (i.e. the PDE solution)
        lambda - the Lagrange multipliers
 
-            U = (w u lambda)
+            U = (w [u_0 lambda_0 u_1 lambda_1 .....])
 
        fu, fw, flambda contain the gradient of L(w,u,lambda)
 
-            FU = (fw fu flambda)
+            FU = (fw [fu_0 flambda_0 .....])
 
        In this example the PDE is 
                              Uxx = 2, 
@@ -75,7 +75,7 @@ int main(int argc,char **argv)
 
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,0,1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
 

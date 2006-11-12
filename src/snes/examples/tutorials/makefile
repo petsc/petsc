@@ -350,7 +350,7 @@ runex19:
 	   else echo "Possible problem with ex19, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp
 runex19_1:
-	-@${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_jacobian_fd -dmmg_iscoloring_type IS_COLORING_LOCAL > ex19_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex19 -dmmg_nlevels 4 -snes_monitor_short -dmmg_jacobian_fd -dmmg_iscoloring_type global > ex19_1.tmp 2>&1; \
 	   if (${DIFF} output/ex19_1.out ex19_1.tmp) then true; \
 	   else echo "Possible problem with ex19_2, diffs above"; fi; \
 	   ${RM} -f ex19_1.tmp

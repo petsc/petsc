@@ -3183,7 +3183,7 @@ PetscErrorCode MatSetColoring_SeqAIJ(Mat A,ISColoring coloring)
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;  
 
   PetscFunctionBegin;
-  if (coloring->ctype == IS_COLORING_LOCAL) {
+  if (coloring->ctype == IS_COLORING_GLOBAL) {
     ierr        = ISColoringReference(coloring);CHKERRQ(ierr);
     a->coloring = coloring;
   } else if (coloring->ctype == IS_COLORING_GHOSTED) {

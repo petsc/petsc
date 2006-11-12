@@ -127,7 +127,7 @@ int main(int argc,char **argv)
 
   /* create VecPack object to manage composite vector */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  ierr = VecPackAddArray(packer,1);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,0,1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
