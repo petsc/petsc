@@ -55,14 +55,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatlabEngineGet_Matlab(PetscObject obj,void
   mxArray        *mmat; 
 
   PetscFunctionBegin;
-  ierr = MatSeqXAIJFreeAIJ(aij->singlemalloc,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
+  ierr = MatSeqXAIJFreeAIJ(mat,&aij->a,&aij->j,&aij->i);CHKERRQ(ierr);
 
   mmat = engGetVariable((Engine *)mengine,obj->name);
 
   aij->nz           = (mxGetJc(mmat))[mat->rmap.n];
   ierr  = PetscMalloc3(aij->nz,PetscScalar,&aij->a,aij->nz,PetscInt,&aij->j,mat->rmap.n+1,PetscInt,&aij->i);CHKERRQ(ierr);
   aij->singlemalloc = PETSC_TRUE;
-  aij->freedata     = PETSC_TRUE;
 
   ierr = PetscMemcpy(aij->a,mxGetPr(mmat),aij->nz*sizeof(PetscScalar));CHKERRQ(ierr);
   /* Matlab stores by column, not row so we pass in the transpose of the matrix */

@@ -41,13 +41,13 @@ sread:
 	-@${MV} sread.mex* ${PETSC_DIR}/bin/matlab
 
 sopen:  
-	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' sopen.c -lc
+	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${PCC_FLAGS}' sopen.c -lc
 	-@${RM} -f sopen.o
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f sopen.mexsg64 sopen.mexsg ; fi 
 	-@${MV} sopen.mex* ${PETSC_DIR}/bin/matlab
 
 sclose:  
-	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' sclose.c -lc
+	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} ${PCC_FLAGS}' sclose.c -lc
 	-@${RM} -f sclose.o
 	-@if [ ${PETSC_ARCH} = IRIX64 ] ; then mv -f sclose.mexsg64 sclose.mexsg ; fi 
 	-@${MV} sclose.mex* ${PETSC_DIR}/bin/matlab
