@@ -4506,8 +4506,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOwnershipRanges"
-/*@
-   MatGetOwnershipRange - Returns the range of matrix rows owned by
+/*@C
+   MatGetOwnershipRanges - Returns the range of matrix rows owned by
    each process
 
    Not Collective
