@@ -169,25 +169,28 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  /* Check that the preconditioner is positive semidefinite */
-  if (rz < 0.0) {
-    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+  /* Check that the preconditioner is positive definite */
+  if (rz <= 0.0) {
+    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
+    if (rz < 0.0 || norm_r > 0.0) {
+      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-    /* In this case, the preconditioner is indefinite, so we cannot measure */
-    /* the direction in the preconditioned norm.  Therefore, we must use    */
-    /* an unpreconditioned calculation.  The direction in this case is	    */
-    /* uses the right hand side, which should be the negative gradient      */
-    /* intersected with the trust region.                                   */
+      /* In this case, the preconditioner is indefinite, so we cannot measure */
+      /* the direction in the preconditioned norm.  Therefore, we must use    */
+      /* an unpreconditioned calculation.  The direction in this case is      */
+      /* uses the right hand side, which should be the negative gradient      */
+      /* intersected with the trust region.                                   */
 
-    if (cg->radius) {
-      ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
-
-      alpha = sqrt(r2 / rz);
-      ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-      cg->norm_d = cg->radius;
+      if (cg->radius) {
+        ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+  
+        alpha = sqrt(r2 / rz);
+        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
+        cg->norm_d = cg->radius;
+      }
+      PetscFunctionReturn(0);
     }
-    PetscFunctionReturn(0);
   }
 
   /* As far as we know, the preconditioner is positive definite.  Compute   */
@@ -213,27 +216,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* Test for convergence */
   ierr = (*ksp->converged)(ksp, 0, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
   if (ksp->reason) {
-    PetscFunctionReturn(0);
-  }
-
-  /* Check that the preconditioner is positive definite */
-  if (0.0 == rz) {
-    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-    ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
-
-    /* In this case, the preconditioner is indefinite, so we cannot measure */
-    /* the direction in the preconditioned norm.  Therefore, we must use    */
-    /* an unpreconditioned calculation.  The direction in this case is	    */
-    /* uses the right hand side, which should be the negative gradient      */
-    /* intersected with the trust region.                                   */
-
-    if (cg->radius) {
-      ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
-
-      alpha = sqrt(r2 / rz);
-      ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-      cg->norm_d = cg->radius;
-    }
     PetscFunctionReturn(0);
   }
 
@@ -328,14 +310,17 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* Check that the preconditioner is positive semidefinite */
     rzm1 = rz;
     ierr = STCG_VecDot(r, z, &rz); CHKERRQ(ierr);	/* rz = r^T z   */
-    if (rz < 0.0) {
-      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+    if (rz <= 0.0) {
+      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
+      if (rz < 0.0 || norm_r > 0.0) {
+        ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+        ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-      /* In this case, the preconditioner is indefinite.  We could follow   */
-      /* the direction to the boundary of the trust region, but it seems    */
-      /* best to stop at the current point.                                 */
-      break;
+        /* In this case, the preconditioner is indefinite.  We could follow   */
+        /* the direction to the boundary of the trust region, but it seems    */
+        /* best to stop at the current point.                                 */
+        break;
+      }
     }
 
     /* As far as we know, the matrix and preconditioner are positive        */
@@ -363,17 +348,6 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = (*ksp->converged)(ksp, i+1, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
     if (ksp->reason) {                 /* convergence */
       ierr = PetscInfo2(ksp,"KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n",norm_r,cg->radius); CHKERRQ(ierr);
-      break;
-    }
-
-    /* Check that the preconditioner is positive definite */
-    if (0.0 == rz) {
-      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
-
-      /* In this case, the preconditioner is indefinite.  We could follow   */
-      /* the direction to the boundary of the trust region, but it seems    */
-      /* best to stop at the current point.                                 */
       break;
     }
 
