@@ -648,7 +648,6 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
       } else {
         ierr = PetscMalloc(size*sizeof(PetscInt),&next->grstarts);CHKERRQ(ierr);
         ierr = MPI_Allgather(&next->grstart,1,MPIU_INT,next->grstarts,1,MPIU_INT,packer->comm);CHKERRQ(ierr);
-	printf("grstarts %d %d\n",next->grstarts[0],next->grstarts[1]);
       }
       next = next->next;
     }
@@ -1355,11 +1354,6 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
     }
     next = next->next;
   }
-  CHKMEMQ;
-      if (PetscGlobalRank) {
-	PetscIntView(5,dnz,0);
-	PetscIntView(5,onz,0);
-      }
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);

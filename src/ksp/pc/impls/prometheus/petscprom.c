@@ -66,7 +66,7 @@
 */
 
 /*MC
-     PCPrometheus - Prometheus (i.e. diagonal scaling preconditioning)
+     PCPROMETHEUS - Prometheus (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
 .    -pc_prometheus_rowmax - use the maximum absolute value in each row as the scaling factor,
