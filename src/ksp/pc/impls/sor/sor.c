@@ -10,7 +10,7 @@ typedef struct {
   PetscInt    lits;       /* local inner iterations, number of sweeps applied by the local matrix mat->A */
   MatSORType  sym;        /* forward, reverse, symmetric etc. */
   PetscReal   omega;
-  PetscScalar fshift;
+  PetscReal   fshift;
 } PC_SOR;
 
 #undef __FUNCT__  

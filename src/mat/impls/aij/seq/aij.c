@@ -1097,7 +1097,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     if (omega == 1.0 && !fshift) {
       for (i=0; i<m; i++) {
         mdiag[i]    = v[diag[i]];
-        if (!mdiag[i]) SETERRQ1(PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+        if (!PetscAbsScalar(mdiag[i])) SETERRQ1(PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
         a->idiag[i] = 1.0/v[diag[i]];
       }
       ierr = PetscLogFlops(m);CHKERRQ(ierr);
