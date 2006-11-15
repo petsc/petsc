@@ -1,4 +1,4 @@
-static char help[] = "Test FFTW interface \n\n";
+static char help[] = "Test sequential FFTW interface \n\n";
 
 /*
   Compiling the code:
@@ -15,7 +15,7 @@ PetscInt main(PetscInt argc,char **args)
   Mat            A;    
   PetscErrorCode ierr;
   PetscMPIInt    size;
-  PetscInt       n = 10,dim[1];
+  PetscInt       n = 10,N,ndim=4,dim[4],DIM,i;
   Vec            x,y,z;
   PetscScalar    *x_array,*y_array,*z_array,s;  
   PetscRandom    rdm;
@@ -28,48 +28,44 @@ PetscInt main(PetscInt argc,char **args)
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(1,"This is a uniprocessor example only!");
 
-  dim[0] = n;
-  ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,1,dim,&A);CHKERRQ(ierr);
-
-  /* create vectors */
-  ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
-  ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
+  for (DIM=0; DIM<ndim; DIM++){
+    dim[DIM] = n;  /* size of transformation in DIM-dimension */
+  }
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
-  /*
-  printf("input vector x:\n");
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  */
 
-  /* apply FFTW_FORWARD */
-  ierr = MatMult(A,x,y);CHKERRQ(ierr);
-  /*
-  printf("output vector y:\n");
-  ierr = VecView(y,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  */
+  for (DIM=1; DIM<5; DIM++){
+    /* create vectors of length N=n^DIM */
+    N = 1; for (i=0; i<DIM; i++) N *= dim[i];   
+    PetscPrintf(PETSC_COMM_SELF, "\n %d-D: FFTW on vector of size %d \n",DIM,N);
+    ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+    ierr = VecDuplicate(x,&z);CHKERRQ(ierr);
+    ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
-  /* apply FFTW_BACKWARD */
-  ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
-  /*
-  printf("output vector z:\n");
-  ierr = VecView(z,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  */
+    /* create FFTW object */
+    ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
+
+    /* apply FFTW_FORWARD */
+    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+
+    /* apply FFTW_BACKWARD */
+    ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
  
-  /* compare x and z. FFTW computes an unnormalized DFT, thus z = n*x */
-  s = 1.0/(PetscReal)n;
-  ierr = VecScale(z,s);CHKERRQ(ierr);
-  ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
-  ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| = %g\n",enorm);CHKERRQ(ierr);
+    /* compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
+    s = 1.0/(PetscReal)N;
+    ierr = VecScale(z,s);CHKERRQ(ierr);
+    ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
+    ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| = %g\n",enorm);CHKERRQ(ierr);
   
-  /* free spaces */
+    /* free spaces */
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+    ierr = VecDestroy(y);CHKERRQ(ierr);
+    ierr = VecDestroy(z);CHKERRQ(ierr);
+    ierr = MatDestroy(A);CHKERRQ(ierr);
+  }
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = VecDestroy(y);CHKERRQ(ierr);
-  ierr = VecDestroy(z);CHKERRQ(ierr);
-  ierr = MatDestroy(A);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -50,7 +50,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__"MatMultTranspose_SeqFFTW"
+#undef __FUNCT__
 #define __FUNCT__ "MatMultTranspose_SeqFFTW"
 PetscErrorCode MatMultTranspose_SeqFFTW(Mat A,Vec x,Vec y)
 {
@@ -97,7 +97,6 @@ PetscErrorCode MatDestroy_SeqFFTW(Mat A)
   PetscFunctionReturn(0);
 }
 
-
 /*MC
   MATFFTW - MATFFTW = "fftw" - A matrix type providing sequential FFT
   via the external package FFTW.
@@ -113,7 +112,6 @@ PetscErrorCode MatDestroy_SeqFFTW(Mat A)
 - -mat_fftw_:
 
    Level: beginner
-
 M*/
 
 EXTERN_C_BEGIN
@@ -128,8 +126,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqFFTW(Mat A)
 }
 EXTERN_C_END
 
-
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqFFTW"
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,const PetscInt dim[],Mat* A)
@@ -141,17 +137,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,c
   PetscFunctionBegin;
   ierr = MatCreate(comm,A);CHKERRQ(ierr);
   m = dim[0];
-  for (i=1; i<ndim; i++){
-    m *= dim[i];
-  }
-  printf(" MatCreateSeqFFTW, m %d\n",m);
+  for (i=1; i<ndim; i++) m *= dim[i];
   ierr = MatSetSizes(*A,m,m,m,m);CHKERRQ(ierr);  
   ierr = PetscObjectChangeTypeName((PetscObject)*A,MATSEQFFTW);CHKERRQ(ierr);
 
   ierr = PetscNew(Mat_FFTW,&fftw);CHKERRQ(ierr);
   (*A)->data = (void*)fftw;
-
-  ierr = PetscNew((ndim+1)*sizeof(PetscInt),&fftw->dim);CHKERRQ(ierr);
+  ierr = PetscMalloc((ndim+1)*sizeof(PetscInt),&fftw->dim);CHKERRQ(ierr);
   ierr = PetscMemcpy(fftw->dim,dim,ndim*sizeof(PetscInt));CHKERRQ(ierr);
   fftw->ndim       = ndim;
   fftw->p_forward  = 0;
