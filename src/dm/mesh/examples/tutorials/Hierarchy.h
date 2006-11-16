@@ -48,10 +48,13 @@ namespace Hierarchy {
       PetscErrorCode BuildTopLevel(); //does a dumbest-approach build on the top level.
       PetscErrorCode PointListToMesh(std::list<point_type> *, patch_type);
       
+      //monotony relief
+      void ElementCorners(double *, patch_type, point_type);
+
       //geometric member functions
       bool TrianglesOverlap(patch_type patchA, point_type TriA, patch_type patchB, point_type TriB);  //sees if the two triangles overlap.
       bool EdgesIntersect(double *, double *);  //sees if the two 2D edges overlap (meaningless in 3D, but still should work.)
-      
+      bool HierarchyBuilder::PointMidpointCollide(double *, double *, double);
       bool PointsCollide(double *, double *, double, double); //passing stuff in in these as doubles lets us limit the number of costly restricts we do.
       bool PointInEdgeRegion(double *, double *, double);  //sees if the point is in the box around the edge of half-width region.
       bool PointInEdgeRegionSub(double *, double *, double); //ditto, only the region is edgelength - dif
@@ -311,7 +314,7 @@ namespace Hierarchy {
 	      double n_x = nCoords[0], n_y = nCoords[1];
 	      double parArea = fabs((f_n_x - v_x) * (n_y - v_y) - (f_n_y - v_y) * (n_x - v_x));
 	      double len = (f_n_x-n_x)*(f_n_x-n_x) + (f_n_y-n_y)*(f_n_y-n_y);
-	      if (parArea > .00001*len) isEssential = 2;
+	      if (parArea > .001*len) isEssential = 2;
 	      if(mesh->debug()) printf("Parallelogram area: %f\n", parArea);
 	    }
 	  }
@@ -597,7 +600,7 @@ namespace Hierarchy {
                   if(topology->getPatch(curLevel+1)->support(*parts_iter)->size() == 1) {
                     if (PointInEdgeRegion(part_coords, p_coords, factor*p_space) && topology->getValue(boundary, *p_iter) == 0) p_is_ok = false;
                   }
-                  else if(topology->getValue(traversal, *parts_iter) != 1 && PointInEdgeRegionSub(part_coords, p_coords, factor*(part_space + p_space))) {
+                  else if(topology->getValue(traversal, *parts_iter) != 1 && PointMidpointCollide(part_coords, p_coords, factor*p_space)) {
                      compare_list.push_back(*parts_iter);
                      topology->setValue(traversal, *parts_iter, 1);
                   }
@@ -685,11 +688,13 @@ namespace Hierarchy {
       t_iter = triangles->begin();
       t_iter_end = triangles->end();
       while (t_iter != t_iter_end) {
-        int ncollide = 0;
-        //get the endpoint coordinates of the triangle
-        //find the triangles that collide, mark on the traversal label
-        std::list<point_type> tqueue;
-        tqueue.clear();
+      printf("Redistributing %d", *t_iter);
+      int ntricomps = 0;
+      //NEW STRATEGY: go through the points in this triangle doing the DUMBEST THING (tm) at each stage, aka growing the set of included triangles through repeated cone(support()) as I'm
+      //obviously too retarded to write a good triangle collision routine.
+        //Initialize the traversal list to contain the star of the endpoints of t_iter;
+        std::list<point_type> trav_list;
+        trav_list.clear();
         Obj<coneSet> tips = topology->getPatch(curLevel+1)->closure(*t_iter);
         coneSet::iterator tips_iter = tips->begin();
         coneSet::iterator tips_iter_end = tips->end();
@@ -700,80 +705,102 @@ namespace Hierarchy {
             supportSet::iterator it_iter = init_tris->begin();
             supportSet::iterator it_iter_end = init_tris->end();
             while (it_iter != it_iter_end) {
-              if (topology->height(curLevel, *it_iter) == 0) {
-                topology->setValue(traversal, *it_iter, 1);
-                tqueue.push_front(*it_iter);
+              if (topology->height(curLevel, *it_iter) == 0 && topology->getValue(traversal, *it_iter) != 1) {
+                  topology->setValue(traversal, *it_iter, 1);
+                  trav_list.push_back(*it_iter);
               } 
               it_iter++;
             }
           }
           tips_iter++;
         }
-        printf("Initialized the traversal for %d: ", *t_iter);
-        ncollide += tqueue.size();
-        while (!tqueue.empty()) {
-          point_type curPoint = *tqueue.begin();
-          tqueue.pop_front();
-          Obj<supportSet> neighbors = topology->getPatch(curLevel)->support(topology->getPatch(curLevel)->cone(curPoint));
+        //grab the points in this triangle
+        printf(" - %d forced comparisons.", trav_list.size());
+        Obj<label_sequence> intPoints = topology->getLabelStratum(patch, "location", *t_iter);
+        label_sequence::iterator ip_iter = intPoints->begin();
+        label_sequence::iterator ip_iter_end = intPoints->end();
+        std::list<point_type> pointList;
+        while (ip_iter != ip_iter_end) {
+          pointList.push_front(*ip_iter);
+          ip_iter++;
+        }
+        //TRAVERSE:  AT THIS POINT EVERY THING THAT HAS A VALID LOCATION SHOULD HAVE BEEN LOCATED AT A HIGHER LEVEL!!!
+        double t_coords[dim*(dim+1)];
+        while ((!trav_list.empty()) && (!pointList.empty())) {
+          ntricomps++;
+          point_type curTri = *trav_list.begin();
+          trav_list.pop_front();
+          bool containsPoint = false;
+          ElementCorners(t_coords, curLevel, curTri); 
+          //CHECK EVERY POINT AGAINST THIS TRIANGLE; THE POINTS SHOULD DIE OFF FAST
+          std::list<point_type>::iterator ipl_iter = pointList.begin();
+          std::list<point_type>::iterator ipl_iter_end = pointList.end();
+          while (ipl_iter != ipl_iter_end) {
+            if(PointIsInTriangle(t_coords, (double *)coordinates->restrict(patch, *ipl_iter))) {
+              containsPoint = true;
+              topology->setValue(included_location, *ipl_iter, curTri);
+              ipl_iter = pointList.erase(ipl_iter);
+            } else ipl_iter++;
+          }
+          Obj<supportSet> neighbors = topology->getPatch(curLevel)->support(topology->getPatch(curLevel)->cone(curTri));
           supportSet::iterator n_iter = neighbors->begin();
           supportSet::iterator n_iter_end = neighbors->end();
           while (n_iter != n_iter_end) {
-            if (topology->getValue(traversal, *n_iter) != 1 && TrianglesOverlap(curLevel+1, *t_iter, curLevel, *n_iter)) {
-              tqueue.push_front(*n_iter);
+            if(topology->getValue(traversal, *n_iter) != 1) {
               topology->setValue(traversal, *n_iter, 1);
-              ncollide++;
+              trav_list.push_back(*n_iter);
             }
             n_iter++;
           }
         }
-        printf("%d colliding triangles found\n", ncollide);
-        //clean up the traversal space and redistribute points
-        Obj<label_sequence> pqueue_trav = topology->getLabelStratum(patch, "location", *t_iter);
-        label_sequence::iterator pq_iter = pqueue_trav->begin();
-        label_sequence::iterator pq_iter_end = pqueue_trav->end();
-        std::list<point_type> pqueue;
-        while (pq_iter != pq_iter_end) {
-          pqueue.push_front(*pq_iter);
-          pq_iter++;
-        }
-        Obj<label_sequence> tqueue_trav = topology->getLabelStratum(curLevel, "traversal", 1);
-        label_sequence::iterator tt_iter = tqueue_trav->begin();
-        label_sequence::iterator tt_iter_end = tqueue_trav->end();
-        while (tt_iter != tt_iter_end) {
-          //grab the points on the corners of the triangle.
-          double tt_coords[dim*(dim+1)];
-          Obj<coneSet> tt_support = topology->getPatch(curLevel)->closure(*tt_iter);
-          coneSet::iterator tts_iter = tt_support->begin();
-          coneSet::iterator tts_iter_end = tt_support->end();
-          int index = 0;
-          while (tts_iter != tts_iter_end) {
-            if (topology->depth(curLevel, *tts_iter) == 0) {
-              tmpCoords = coordinates->restrict(patch, *tts_iter);
-              for (int i = 0; i < dim; i++) {
-                tt_coords[index*dim + i] = tmpCoords[i];
-              }
-              index++;
-            }
-            tts_iter++;
+        if (pointList.size() > 0) {
+          printf(" - ERROR - %d Points unaccounted for.", pointList.size());
+          //GO THROUGH THE LIST AND -1 OUT THAT! (There will be no prolongation operator for this one :( In fact, this shouldn't happen at all once I take out the boundaries)
+          std::list<point_type>::iterator bp_iter = pointList.begin();
+          std::list<point_type>::iterator bp_iter_end = pointList.end();
+          while (bp_iter != bp_iter_end) {
+            topology->setValue(included_location, *bp_iter, -1);
+            topology->setValue(location, *bp_iter, -1);
+            bp_iter++;
           }
-          //go through the points and see if any of them are in this triangle.
-          std::list<point_type>::iterator pt_iter = pqueue.begin();
-          std::list<point_type>::iterator pt_iter_end = pqueue.end();
-          while (pt_iter != pt_iter_end) {
-            if (PointIsInTriangle(tt_coords, (double *)coordinates->restrict(patch, *pt_iter))) {
-              topology->setValue(location, *pt_iter, *tt_iter);
-              pt_iter = pqueue.erase(pt_iter);
-            } else pt_iter++;
-          }
-          tqueue.push_front(*tt_iter);
-          tt_iter++;
         }
-        while (!tqueue.empty()) {
-         point_type tq_point = *tqueue.begin();
-         tqueue.pop_front();
-         topology->setValue(traversal,  tq_point, -1);
+        printf(" - %d triangles spanned\n", ntricomps);
+        std::list<point_type> incpoints;
+        incpoints.clear();
+        Obj<label_sequence> incpoints_label = topology->getLabelStratum(curLevel, "traversal", 1);
+        label_sequence::iterator il_iter = incpoints_label->begin();
+        label_sequence::iterator il_iter_end = incpoints_label->end();
+        while (il_iter != il_iter_end) {
+          incpoints.push_front(*il_iter);
+          il_iter++;
+        }
+        while (!incpoints.empty()) {
+          point_type curInc = *incpoints.begin();
+          incpoints.pop_front();
+          topology->setValue(traversal, curInc, -1);
         }
         t_iter++;
+      }
+      //ONE MORE TRAVERSAL: THE NEW TRIANGLES.  GET ALL THINGS INCLUDED IN EACH ONE AS DENOTED BY INCLUDEDLOCATION, -1 OUT INCLUDEDLOCATION, AND MOVE IT TO LOCATION
+      Obj<label_sequence> nTris = topology->heightStratum(curLevel, 0);
+      label_sequence::iterator nT_iter = nTris->begin();
+      label_sequence::iterator nT_iter_end = nTris->end();
+      while (nT_iter != nT_iter_end) {
+        std::list<point_type> ntpoints;
+        Obj<label_sequence> ntpoints_label = topology->getLabelStratum(patch, "includedlocation", *nT_iter);
+        label_sequence::iterator ntp_iter = ntpoints_label->begin();
+        label_sequence::iterator ntp_iter_end = ntpoints_label->end();
+        while (ntp_iter != ntp_iter_end) {
+          ntpoints.push_front(*ntp_iter);
+          ntp_iter++;
+        }
+        while (!ntpoints.empty()) {
+          point_type curP = *ntpoints.begin();
+          ntpoints.pop_front();
+          topology->setValue(location, curP, *nT_iter);
+          topology->setValue(included_location, curP, -1);
+        }
+        nT_iter++;
       }
     }  //end for over levels
   }
@@ -819,7 +846,7 @@ namespace Hierarchy {
         coneSequence::iterator ep_iter_end =edgeEndPoints->end();
         double e_coords[2*dim];
         int index = 0;
-        int bound = 0;
+        //int bound = 0;
         while (ep_iter != ep_iter_end) {
           if (topology->getValue(boundary, *ep_iter) != 0);
           const double * tmpCoords = coordinates->restrict(patch, *ep_iter);
@@ -920,6 +947,19 @@ namespace Hierarchy {
     if (res_len < region*region) return true; //it's in the region surrounding the edge.
     return false;
   }
+  bool HierarchyBuilder::PointMidpointCollide(double * e_coords, double * p_coords, double p_space) {
+    double midpoint[dim];
+    double edgelensq = 0;
+    double disttomid = 0;
+    for (int i = 0; i < dim; i++) {
+      midpoint[i] = (e_coords[i] + e_coords[dim+i])/2;
+      edgelensq += (e_coords[i] + e_coords[dim+i])*(e_coords[i] + e_coords[dim+i]);
+      disttomid += (midpoint[i] - p_coords[i])*(midpoint[i] - p_coords[i]);
+    }
+    double edgerad = sqrt(edgelensq)/2;
+    if (disttomid < (p_space/2 + edgerad)*(p_space/2 + edgerad)) return true;
+    return false;
+  }
   bool HierarchyBuilder::PointInEdgeRegionSub(double * e_coords, double * p_coords, double dif) { //version for triangle crossover calculation, diff being the added spacing functions of the endpoints
     double res_len = 0;
     double edg_len = 0;
@@ -933,7 +973,7 @@ namespace Hierarchy {
     if (r > 1 || r < 0) return false; //it's outside of our juristiction.
     for (int i = 0; i < dim; i++) {
       double trm = (p_coords[i] - e_coords[i]) - r*(e_coords[dim + i] - e_coords[i]);
-      double lentrm = (1 - (dif/e_dot_e))*(e_coords[dim +i] - e_coords[i]);
+      double lentrm = (1 - (dif*dif/e_dot_e))*(e_coords[dim +i] - e_coords[i]);
       res_len += trm*trm;
       edg_len += lentrm*lentrm;
     }
@@ -1028,6 +1068,23 @@ namespace Hierarchy {
     return false;
   }
 
+  void HierarchyBuilder::ElementCorners(double * buffer, patch_type aPatch, point_type aTriangle) {
+    Obj<coneSet> tt_support = topology->getPatch(aPatch)->closure(aTriangle);
+    coneSet::iterator tts_iter = tt_support->begin();
+    coneSet::iterator tts_iter_end = tt_support->end();
+    int index = 0;
+    while (tts_iter != tts_iter_end) {
+      if (topology->depth(aPatch, *tts_iter) == 0) {
+        const double * tmpCoords = coordinates->restrict(patch, *tts_iter);
+        for (int i = 0; i < dim; i++) {
+          buffer[index*dim + i] = tmpCoords[i];
+        }
+      index++;
+      }
+     tts_iter++;
+     }
+    return;
+  }
 
   bool HierarchyBuilder::PointIsInTriangle(double * p_coords, double * v_coords) {
     double area = 0; //compute the area of the triangle/volume of the tet
