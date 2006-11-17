@@ -35,7 +35,7 @@ PetscErrorCode Kernel_A_gets_inverse_A_4(MatScalar *a)
         k4  = k3 + k;
 /*        find l = pivot index */
 
-        i__2 = 4 - k;
+        i__2 = 5 - k;
         aa = &a[k4];
         max = PetscAbsScalar(aa[0]);
         l = 1;
