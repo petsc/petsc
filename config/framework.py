@@ -206,7 +206,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
     help.addArgument('Framework', '-search-dirs',         nargs.Arg(None, searchdirs, 'A list of directories used to search for executables'))
     help.addArgument('Framework', '-package-dirs',        nargs.Arg(None, packagedirs, 'A list of directories used to search for packages'))
     help.addArgument('Framework', '-with-external-packages-dir=<dir>', nargs.Arg(None, None, 'Location to install downloaded packages'))
-    help.addArgument('Framework', '-with-batch',          nargs.ArgBool(None, 0, 'Machine uses a batch system to submit jobs'))
+    help.addArgument('Framework', '-with-batch',          nargs.ArgBool(None, 0, 'Machine using cross-compilers or a batch system to submit jobs'))
     help.addArgument('Framework', '-with-host-cpu',       nargs.Arg(None, host_cpu,    'Machine CPU'))
     help.addArgument('Framework', '-with-host-vendor',    nargs.Arg(None, host_vendor, 'Machine vendor'))
     help.addArgument('Framework', '-with-host-os',        nargs.Arg(None, host_os,     'Machine OS'))
@@ -849,12 +849,13 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.compilers.CPPFLAGS += ' '.join(self.batchIncludeDirs)
       self.batchIncludes.insert(0, '#include <stdio.h>')
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0):
-        sys.exit('Unable to generate test file for batch system\n')
+        sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
       self.compilers.CPPFLAGS = oldFlags
       self.logClear()
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
-      print ' 1) Submit ./conftest to 1 processor of your batch system; this will generate the file reconfigure\r'
+      print ' 1) Submit ./conftest to 1 processor of your batch system or system you are      \r'
+      print '    cross-compiling for; this will generate the file reconfigure                 \r'
       print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
       print '=================================================================================\r'
       sys.exit(0)
