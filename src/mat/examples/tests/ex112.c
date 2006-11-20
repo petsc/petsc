@@ -46,19 +46,22 @@ PetscInt main(PetscInt argc,char **args)
     /* create FFTW object */
     ierr = MatCreateSeqFFTW(PETSC_COMM_SELF,DIM,dim,&A);CHKERRQ(ierr);
 
-    /* apply FFTW_FORWARD */
-    ierr = MatMult(A,x,y);CHKERRQ(ierr);
+    /* apply FFTW_FORWARD several times, so the fftw_plan can be reused on different vectors */
+    ierr = MatMult(A,x,z);CHKERRQ(ierr);
+    for (i=0; i<3; i++){
+      ierr = MatMult(A,x,y);CHKERRQ(ierr); 
 
-    /* apply FFTW_BACKWARD */
-    ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+      /* apply FFTW_BACKWARD several times */  
+      ierr = MatMultTranspose(A,y,z);CHKERRQ(ierr);
+    }
  
     /* compare x and z. FFTW computes an unnormalized DFT, thus z = N*x */
     s = 1.0/(PetscReal)N;
     ierr = VecScale(z,s);CHKERRQ(ierr);
     ierr = VecAXPY(z,-1.0,x);CHKERRQ(ierr);
     ierr = VecNorm(z,NORM_1,&enorm);CHKERRQ(ierr);
-    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| = %g\n",enorm);CHKERRQ(ierr);
-  
+    ierr = PetscPrintf(PETSC_COMM_SELF,"  Error norm of |x - z| = %A\n",enorm);CHKERRQ(ierr);
+
     /* free spaces */
     ierr = VecDestroy(x);CHKERRQ(ierr);
     ierr = VecDestroy(y);CHKERRQ(ierr);

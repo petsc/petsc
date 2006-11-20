@@ -78,9 +78,6 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Matlab(Mat);
 #if defined(PETSC_HAVE_PLAPACK)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Plapack(Mat);
 #endif
-#if defined(PETSC_HAVE_FFTW)
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqFFTW(Mat);
-#endif
 EXTERN_C_END
   
 /*
@@ -187,9 +184,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 #endif
 #if defined(PETSC_HAVE_PLAPACK)
   ierr = MatRegisterDynamic(MATPLAPACK,        path,"MatCreate_Plapack",MatCreate_Plapack);CHKERRQ(ierr);
-#endif
-#if defined(PETSC_HAVE_FFTW)
-  ierr = MatRegisterDynamic(MATSEQFFTW,        path,"MatCreate_SeqFFTW",MatCreate_SeqFFTW);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);
 }
