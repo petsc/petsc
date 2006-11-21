@@ -1268,6 +1268,66 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatForwardSolve_SeqSBAIJ_1_NaturalOrdering"
+PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
+  PetscErrorCode ierr;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
+  MatScalar      *aa=a->a,*v;
+  PetscScalar    *x,*b,xk;
+  PetscInt       nz,*vj,k;
+
+  PetscFunctionBegin;
+  /* solve U^T*D*x = b by forward substitution */
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr);
+  for (k=0; k<mbs; k++){
+    v  = aa + ai[k] + 1; 
+    vj = aj + ai[k] + 1;    
+    xk = x[k];
+    nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
+    while (nz--) x[*vj++] += (*v++) * xk;
+    x[k] = xk*aa[ai[k]];  /* note: aa[diag[k]] = 1/D(k) */
+  }
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2*a->nz + A->rmap.N);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering"
+PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
+{
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
+  PetscErrorCode ierr;
+  PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
+  MatScalar      *aa=a->a,*v;
+  PetscScalar    *x,*b,xk;
+  PetscInt       nz,*vj,k;
+
+  PetscFunctionBegin;
+  /* solve U*x = b by back substitution */
+  ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr); 
+  for (k=mbs-2; k>=0; k--){ 
+    v  = aa + ai[k] + 1; 
+    vj = aj + ai[k] + 1; 
+    xk = x[k];   
+    nz = ai[k+1] - ai[k] - 1;    
+    while (nz--) xk += (*v++) * x[*vj++];    
+    x[k] = xk;      
+  }
+  ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2*a->nz + A->rmap.N);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
 /* Use Modified Sparse Row storage for u and ju, see Saad pp.85 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatICCFactorSymbolic_SeqSBAIJ_MSR"
