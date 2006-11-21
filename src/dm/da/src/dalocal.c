@@ -18,11 +18,11 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCDM_DLLEXPORT VecMatlabEnginePut_DA2d(PetscObject obj,void *mengine)
 {
   PetscErrorCode ierr;
-  PetscInt n,m;
-  Vec          vec = (Vec)obj;
-  PetscScalar  *array;
-  mxArray      *mat;
-  DA           da;
+  PetscInt       n,m;
+  Vec            vec = (Vec)obj;
+  PetscScalar    *array;
+  mxArray        *mat;
+  DA             da;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)vec,"DA",(PetscObject*)&da);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalVector(DA da,Vec* g)
 PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  PetscInt i,j;
+  PetscInt       i,j;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -229,7 +229,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreLocalVector(DA da,Vec* g)
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -277,7 +277,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetGlobalVector(DA da,Vec* g)
 PetscErrorCode PETSCDM_DLLEXPORT DARestoreGlobalVector(DA da,Vec* g)
 {
   PetscErrorCode ierr;
-  PetscInt i,j;
+  PetscInt       i,j;
 
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -334,8 +334,8 @@ EXTERN_C_END
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
-  char *iarray_start;
+  PetscInt       j,i,deriv_type_size,xs,ys,xm,ym,zs,zm,itdof;
+  char           *iarray_start;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -473,7 +473,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicArray(DA da,PetscTruth ghosted,void **
 PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscInt  i;
-  void *iarray_start = 0;
+  void      *iarray_start = 0;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -560,8 +560,8 @@ PetscErrorCode PETSCDM_DLLEXPORT ad_DARestoreArray(DA da,PetscTruth ghosted,void
 PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,xs,ys,xm,ym,zs,zm;
-  char *iarray_start;
+  PetscInt       j,i,xs,ys,xm,ym,zs,zm;
+  char           *iarray_start;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -683,7 +683,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetArray(DA da,PetscTruth ghosted,void **iptr
 PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **iptr)
 {
   PetscInt  i;
-  void *iarray_start = 0;
+  void      *iarray_start = 0;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -752,8 +752,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreArray(DA da,PetscTruth ghosted,void **
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
-  char *iarray_start;
+  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  char           *iarray_start;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -872,8 +872,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray(DA da,PetscTruth ghosted,void 
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
-  char *iarray_start;
+  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  char           *iarray_start;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -964,8 +964,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray4(DA da,PetscTruth ghosted,void
 PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArray9(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscErrorCode ierr;
-  PetscInt j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
-  char *iarray_start;
+  PetscInt       j,i,xs,ys,xm,ym,zs,zm,itdof = 0;
+  char           *iarray_start;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
@@ -1218,7 +1218,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAdicMFArrayb(DA da,PetscTruth ghosted,void
 PetscErrorCode PETSCDM_DLLEXPORT DARestoreAdicMFArray(DA da,PetscTruth ghosted,void **iptr,void **array_start,PetscInt *tdof)
 {
   PetscInt  i;
-  void *iarray_start = 0;
+  void      *iarray_start = 0;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);

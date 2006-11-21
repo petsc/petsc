@@ -1,36 +1,28 @@
 
-static char help[] = "\n\n";
+static char help[] = "Model multi-physics solver\n\n";
 
-/*T
-   Concepts: SNES^solving a system of nonlinear equations (parallel multicomponent example);
-   Concepts: DA^using distributed arrays;
-   Concepts: multicomponent
-   Processors: n
-T*/
+/*
+     A model "multi-physics" solver based on the Vincent Mousseau's reactor core pilot code.
 
-/* 
-   Include "petscda.h" so that we can use distributed arrays (DAs).
-   Include "petscsnes.h" so that we can use SNES solvers.  Note that this
-   file automatically includes:
-     petsc.h       - base PETSc routines   petscvec.h - vectors
-     petscsys.h    - system routines       petscmat.h - matrices
-     petscis.h     - index sets            petscksp.h - Krylov subspace methods
-     petscviewer.h - viewers               petscpc.h  - preconditioners
-     petscksp.h   - linear solvers 
+     There a three grids:
+
+            ----------------------     ---------------
+       |   |                     /    /              /
+       |   |                     /    /              /
+       |   |                     /    /              /
+       |   |                     /    /              /
+       |   |                     /    /              /
+            ----------------------     ---------------
+
+   A 1d grid along the left edge, a 2d grid in the middle and another 2d grid on the right.
+
 */
-#include "petscsnes.h"
-#include "petscda.h"
+
 #include "petscdmmg.h"
 
-/* 
-   User-defined routines and data structures
-*/
-typedef struct {
-  PetscScalar h,uh;
-} Field;
 
-extern PetscErrorCode FormInitialGuessLocal(DALocalInfo*,Field[]);
-extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field*,Field*,void*);
+extern PetscErrorCode FormInitialGuessLocal(DALocalInfo*,PetscScalar*,DALocalInfo*,PetscScalar**,DALocalInfo*,PetscScalar**);
+extern PetscErrorCode FormFunctionLocal(DALocalInfo*,PetscScalar*,DALocalInfo*,PetscScalar**,DALocalInfo*,PetscScalar**);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -40,51 +32,50 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   DA             da;
+  VecPack        pack;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
 
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
-    ierr = DMMGCreate(comm,2,0,&dmmg);CHKERRQ(ierr);
 
     /*
-      Create distributed array multigrid object (DMMG) to manage parallel grid and vectors
-      for principal unknowns (x) and governing residuals (f)
+       Create the VecPack object to manage the three grids/physics. 
+       We only support a 1d decomposition along the y direction (since one of the grids is 1d).
 
-      The problem is actually not periodic; but we declare it as periodic so that we have
-      two ghost points at each end where we can put "ghost" boundary conditions.
     */
-    ierr = DACreate1d(comm,DA_XPERIODIC,-6,2,2,0,&da);CHKERRQ(ierr);
-    ierr = DMMGSetDM(dmmg,(DM)da);CHKERRQ(ierr);
+    ierr = VecPackCreate(comm,&pack);CHKERRQ(ierr);
+    ierr = DACreate1d(comm,DA_NONPERIODIC,-6,1,1,0,&da);CHKERRQ(ierr);
+    ierr = VecPackAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
-
-    /* 
-     Problem parameters 
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-6,-6,1,PETSC_DETERMINE,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = VecPackAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DADestroy(da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-6,-6,1,PETSC_DETERMINE,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = VecPackAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DADestroy(da);CHKERRQ(ierr);
+   
+    /*
+       Create the solver object and attach the grid/physics info 
     */
-    ierr = DASetFieldName(DMMGGetDA(dmmg),0,"h");CHKERRQ(ierr);
-    ierr = DASetFieldName(DMMGGetDA(dmmg),1,"uh");CHKERRQ(ierr);
+    ierr = DMMGCreate(comm,2,0,&dmmg);CHKERRQ(ierr);
+    ierr = DMMGSetDM(dmmg,(DM)pack);CHKERRQ(ierr);
+    ierr = VecPackDestroy(pack);CHKERRQ(ierr);
+    CHKMEMQ;
 
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       Create user context, set problem data, create vector data structures.
-       Also, compute the initial guess.
-       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-       Create nonlinear solver context
-
-       Process adiC(36): FormFunctionLocal 
-       - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
+    ierr = DMMGSetInitialGuessLocal(dmmg,(PetscErrorCode (*)(void)) FormInitialGuessLocal);CHKERRQ(ierr);
+    CHKMEMQ;
+    ierr = DMMGSetSNESLocal(dmmg,(PetscErrorCode (*)(void))0,0,0,0);CHKERRQ(ierr);
+    CHKMEMQ;
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Solve the nonlinear system
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-    ierr = DMMGSetInitialGuessLocal(dmmg,(PetscErrorCode (*)(DMMG,void*)) FormInitialGuessLocal);CHKERRQ(ierr);
 
   PreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
-    ierr = DMMGSetInitialGuess(dmmg,PETSC_NULL);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
@@ -113,58 +104,19 @@ int main(int argc,char **argv)
    Output Parameter:
    X - vector
  */
-PetscErrorCode FormInitialGuessLocal(DALocalInfo* info,Field x[])
+PetscErrorCode FormInitialGuessLocal(DALocalInfo *info1,PetscScalar *x1,DALocalInfo *info2,PetscScalar **x2,DALocalInfo *info3,PetscScalar **x3)
 {
-  PetscInt       i;
-  PetscErrorCode ierr;
-  PetscReal      dhx,hx;
-
-  PetscFunctionBegin;
-  dhx = (PetscReal)(info->mx-1);
-  hx = 1.0/dhx;                 
-
-  for (i=info->xs; i<info->xs+info->xm; i++) {
-    x[i].h   = 22.3;
-    x[i].uh  = 0.0;
-  }
-  PetscFunctionReturn(0);
-}
- 
-PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field *x,Field *f,void *ptr)
- {
-  PetscErrorCode ierr;
   PetscInt       i;
   PetscReal      hx,dhx;
 
   PetscFunctionBegin;
-  /* 
-     Define mesh intervals ratios for uniform grid.
-     [Note: FD formulae below are normalized by multiplying through by
-     local volume element to obtain coefficients O(1) in two dimensions.]
-  */
-  dhx = (PetscReal)(info->mx-1);
+  dhx = (PetscReal)(info1->mx-1);
   hx = 1.0/dhx;                 
 
-  /* 
-     Put the ghost boundary conditions at the left and right end; we have the available space because
-     we declared the problem with periodic boundary conditions and two sets of ghost points.
-
-     This is actually a staggered grid with the h's living on cell vertices and uh on cell centers,
-     the "extra" x[mx-1].uh is set to zero.
-       
-  */
-  if (info->xs = 0) {
-    x[-2].uh  = x[-1].uh = 0.0;
-    x[-2].h   = x[-1].h  = x[0].h;  
-  } else if (info->xs+>info->xm == mx) {
-    x[mx+1].uh = x[mx].uh = x[mx-1].uh  = 0.0;
-    x[mx+1].h = x[mx].h  = x[mx-1].h;  
-  }
-
-  for (i=info->xs; i<info->xs+info->xm; i++) {
-    f[i].h   = x[i].h;
-    f[i].uh  = x[i].uh;
+  for (i=info1->xs; i<info1->xs+info1->xm; i++) {
+    x1[i]   = 22.3;
   }
   PetscFunctionReturn(0);
-} 
+}
+ 
 

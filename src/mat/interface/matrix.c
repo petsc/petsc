@@ -3117,10 +3117,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,mat->rmap.n,mat->cmap.n,mat->rmap.N,mat->cmap.N);CHKERRQ(ierr);
     ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    for (i=0; i<3; i++) {
+      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+      if (conv) {
+        ierr = MatDestroy(B);CHKERRQ(ierr);      
+        goto foundconv;
+      }
+    }
 
     /* 3) See if a good general converter is registered for the desired class */
-    if (!conv) conv = B->ops->convert;
+    conv = B->ops->convertfrom;
     ierr = MatDestroy(B);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
