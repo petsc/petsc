@@ -613,7 +613,6 @@ namespace ALE {
         sequence_type  *_sequence;
         // Underlying iterator & segment boundary
         itor_type       _itor;
-        itor_type       _segBndry;
         //
         // Value extractor
         outer_key_extractor_type _okex;
@@ -621,9 +620,9 @@ namespace ALE {
         value_extractor_type     _ex;
       public:
         iterator() : _sequence(NULL) {};
-        iterator(sequence_type *sequence, const itor_type& itor, const itor_type& segBndry) : 
-          _sequence(sequence), _itor(itor), _segBndry(segBndry) {};
-        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor),_segBndry(iter._segBndry){};
+        iterator(sequence_type *sequence, const itor_type& itor) : 
+          _sequence(sequence), _itor(itor) {};
+        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor) {};
         virtual ~iterator() {};
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
@@ -694,114 +693,20 @@ namespace ALE {
         if(ALE::XSifterDef::debug) {
           std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
-          //
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
         }
         static itor_type itor;
-//         // Determine the lower outer limit iterator
-//         if(this->outerFilter().haveLow()) {
-//           // ASSUMPTION: index ordering operator can compare against outer_key singleton
-//           itor = this->_index->lower_bound(ALE::singleton<outer_key_type>(this->outerFilter().low()));
-//         }
-//         else {
-//           itor = this->_index->begin();
-//         }
-//         // Now determine the inner lower limit and set the iterator to that limit within the first segment
-//         if(this->innerFilter().haveLow()) {
-//           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-//           itor = this->_index->lower_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->innerFilter().low()));
-//         }
-//         else {
-//           // the itor is already in the right place: nothing to do
-//         }  
         static itor_type segBndry;
         // Segment boundary set to just above the current (outer_key, inner_key) pair.
         // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
         itor = this->innerFilter().begin(this->outerFilter().begin(), this->outerFilter());
-        segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ikex(*itor)));
-        //        segBndry = this->innerFilter().end(itor,this->outerFilter());
         if(ALE::XSifterDef::debug){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
           std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*segBndry " << *segBndry;
-          std::cout << ", (okey, ikey): (" << this->_okex(*segBndry) << ", " << this->_ikex(*segBndry) << ") " << std::endl;
         }
-        return iterator(this, itor, segBndry);
+        return iterator(this, itor);
       }; // begin()
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "next"
-      void next(itor_type& itor, itor_type& segBndry) {
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "outer filter: " << this->outerFilter() << ", ";
-          //
-          std::cout << "inner filter: " << this->innerFilter() << std::endl;
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *itor " << *itor; 
-          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *segBndry " << *segBndry;
-          std::cout << ", (okey, ikey): (" << this->_okex(*segBndry) << ", " << this->_ikex(*segBndry) << ") " << std::endl;
-        }
-        outer_key_type olow;
-        inner_key_type ilow;
-        // If iteration is to be strided to skip RemainderKeys, we advance directly to the next subsegment.
-        // Effectively, we iterate over segments.
-        if(Strided) {
-          if(ALE::XSifterDef::debug) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
-          }
-          // Advance itor to the segment boundary
-          itor = segBndry;
-          // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-          olow = this->_okex(*itor);
-          ilow = this->_ikex(*itor);
-          // Compute the new segment's boundary
-          segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
-        }// Strided
-        // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
-        else {
-          if(ALE::XSifterDef::debug) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "inner key not strided " << std::endl;
-          }
-          // See if our advance would lead to breaching the segment boundary:
-          itor_type tmp_itor = ++(itor);
-          if(tmp_itor != segBndry) { 
-            // if not breached the segment boundary, simply use the advanced iterator
-            itor = tmp_itor;
-          }
-          else {
-            // Obtain the current outer key from itor:
-            olow = this->_okex(*itor);
-            // Compute the lower boundary of the new segment
-            // ASSUMPTION: index ordering operator can compare against outer_keys
-            itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(olow));
-            // Extract the new outer key
-            olow = this->_okex(*itor);
-            // Now determine the inner lower limit and set the iterator to that limit within the new segment
-            if(this->innerFilter().haveLow()) {
-              ilow = this->innerFilter().low();
-              // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-              itor = this->_index->lower_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
-            }
-            else {
-              // the itor is already in the right place; need to extract the ilow key
-              ilow = this->_ikex(*itor);
-            }
-            // Finally, compute the new segment's boundary
-            // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-            segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
-          }
-        }// not Strided
-        if(ALE::XSifterDef::debug) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
-          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *segBndry " << *segBndry;
-          std::cout << ", (okey, ikey): (" << this->_okex(*segBndry) << ", " << this->_ikex(*segBndry) << ") " << std::endl;
-        }
-      };// next()
       //
       #undef  __FUNCT__
       #define __FUNCT__ "next"
@@ -809,7 +714,6 @@ namespace ALE {
         if(ALE::XSifterDef::debug) {
           std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
-          //
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *itor " << *itor; 
@@ -850,7 +754,6 @@ namespace ALE {
         if(ALE::XSifterDef::debug) {
           std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
-          //
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
         }
         static itor_type itor;
@@ -875,14 +778,12 @@ namespace ALE {
           // ASSUMPTION: index ordering operator can compare against outer_key singletons.
           itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(ohigh));
         }
-        // use segBndry == itor
         if(ALE::XSifterDef::debug){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
           std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*segBndry == *itor";
         }
-        return iterator(this, itor, itor); 
+        return iterator(this, itor); 
       };// end()
       //
       virtual bool contains(const outer_key_type& ok, const inner_key_type& ik) {
