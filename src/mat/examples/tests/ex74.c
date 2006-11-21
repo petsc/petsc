@@ -299,9 +299,23 @@ int main(int argc,char **args)
     */
 
     ierr = MatMult(sB,x,b);CHKERRQ(ierr);
+
+
+    /* test MatForwardSolve() and MatBackwardSolve() */
+    if (lf == -1 && bs == 1){
+      ierr = MatForwardSolve(sC,b,s1);CHKERRQ(ierr);
+      ierr = MatBackwardSolve(sC,s1,s2);CHKERRQ(ierr);      
+      /* Check the error */
+      ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
+      if (10*norm1 < norm2){
+        ierr = PetscPrintf(PETSC_COMM_SELF,"Norm of error=%G\n",norm2);CHKERRQ(ierr); 
+      }
+    } 
+
+    /* test MatSolve() */
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
     ierr = MatDestroy(sC);CHKERRQ(ierr);
-      
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
