@@ -571,7 +571,7 @@ namespace ALE { namespace Coarsener {
       }
     }
     //printf("Comparing triangle area %f with %f\n", area, t_area);
-    if (t_area - area  > 0.0001*area) return false;
+    if (t_area - area  > 0.00001*area) return false;
     return true;
   }
   bool CompatibleWithEdge(Obj<ALE::Mesh> mesh, int dim, ALE::Mesh::patch_type ePatch, ALE::Mesh::point_type edge, ALE::Mesh::point_type point, double region) {

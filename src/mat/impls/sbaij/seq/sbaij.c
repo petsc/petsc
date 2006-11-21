@@ -969,48 +969,64 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
     inA->ops->solve            = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solvetranspose   = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     inA->ops->solves           = MatSolves_SeqSBAIJ_1;
+    inA->ops->forwardsolve     = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
+    inA->ops->backwardsolve    = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering solvetrans BS=1\n");CHKERRQ(ierr);
     break;           
   case 2:
     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_2_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_2_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_2_NaturalOrdering;
+    inA->ops->forwardsolve     = MatForwardSolve_SeqSBAIJ_2_NaturalOrdering;
+    inA->ops->backwardsolve    = MatBackwardSolve_SeqSBAIJ_2_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=2\n");CHKERRQ(ierr);
     break; 
   case 3:
      inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_3_NaturalOrdering;
      inA->ops->solve           = MatSolve_SeqSBAIJ_3_NaturalOrdering;
      inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_3_NaturalOrdering;
+     inA->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_3_NaturalOrdering;
+     inA->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_3_NaturalOrdering;
      ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=3\n");CHKERRQ(ierr);
      break; 
   case 4:
     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_4_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_4_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_4_NaturalOrdering;
+    inA->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_4_NaturalOrdering;
+    inA->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_4_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=4\n");CHKERRQ(ierr);
     break;
   case 5:
     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_5_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_5_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_5_NaturalOrdering;
+    inA->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_5_NaturalOrdering;
+    inA->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_5_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=5\n");CHKERRQ(ierr);
     break;
   case 6: 
     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_6_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_6_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_6_NaturalOrdering;
+    inA->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_6_NaturalOrdering;
+    inA->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_6_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=6\n");CHKERRQ(ierr);
     break;  
   case 7:
     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_7_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_7_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_7_NaturalOrdering;
+    inA->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_7_NaturalOrdering;
+    inA->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_7_NaturalOrdering;
     ierr = PetscInfo(inA,"Using special in-place natural ordering factor and solve BS=7\n");CHKERRQ(ierr);
     break; 
   default:
     inA->ops->choleskyfactornumeric = MatCholeskyFactorNumeric_SeqSBAIJ_N_NaturalOrdering;
     inA->ops->solvetranspose  = MatSolve_SeqSBAIJ_N_NaturalOrdering;
     inA->ops->solve           = MatSolve_SeqSBAIJ_N_NaturalOrdering;
+    inA->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_N_NaturalOrdering;
+    inA->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering;
     break;
   } 
            
@@ -1277,8 +1293,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatGetArray_SeqSBAIJ,
        MatRestoreArray_SeqSBAIJ,
 /*35*/ MatDuplicate_SeqSBAIJ,
-       0,
-       0,
+       MatForwardSolve_SeqSBAIJ_N_NaturalOrdering,
+       MatBackwardSolve_SeqSBAIJ_N_NaturalOrdering,
        0,
        MatICCFactor_SeqSBAIJ,
 /*40*/ MatAXPY_SeqSBAIJ,

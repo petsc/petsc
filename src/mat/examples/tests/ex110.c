@@ -30,7 +30,7 @@ int main(int argc,char **argv) {
   for (i=5*rank; i<5*rank+5; i++) {
     for (j=0; j<5*size; j++){
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
-      column = (PetscInt) (5*size*value);
+      column = (PetscInt) (5*size*PetscRealPart(value));
       ierr   = PetscRandomGetValue(rctx,&value);CHKERRQ(ierr);
       ierr   = MatSetValues(A,1,&i,1,&column,&value,INSERT_VALUES);CHKERRQ(ierr);
     }

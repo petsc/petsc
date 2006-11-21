@@ -288,8 +288,8 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscMPIInt    rank,size; 
   MPI_Comm       comm=mat->comm;
   PetscErrorCode ierr;
-  PetscInt       nsends,nrecvs,i,prid=100,rownz_max;
-  PetscMPIInt    *send_rank,*recv_rank;
+  PetscInt       nsends=0,nrecvs=0,i,rownz_max;
+  PetscMPIInt    *send_rank=PETSC_NULL,*recv_rank=PETSC_NULL;
   PetscInt       *rowrange=mat->rmap.range;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat            A=aij->A,B=aij->B,C=*matredundant;
@@ -301,16 +301,16 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscInt       *cols,ctmp,lwrite,*rptr,l,*sbuf_j;
   PetscScalar    *vals,*aworkA,*aworkB;
   PetscMPIInt    tag1,tag2,tag3,imdex;
-  MPI_Request    *s_waits1,*s_waits2,*s_waits3,*r_waits1,*r_waits2,*r_waits3;
+  MPI_Request    *s_waits1=PETSC_NULL,*s_waits2=PETSC_NULL,*s_waits3=PETSC_NULL,
+                 *r_waits1=PETSC_NULL,*r_waits2=PETSC_NULL,*r_waits3=PETSC_NULL;
   MPI_Status     recv_status,*send_status; 
-  PetscInt       *sbuf_nz,*rbuf_nz,count;
-  PetscInt       **rbuf_j;
-  PetscScalar    **rbuf_a;
+  PetscInt       *sbuf_nz=PETSC_NULL,*rbuf_nz=PETSC_NULL,count;
+  PetscInt       **rbuf_j=PETSC_NULL;
+  PetscScalar    **rbuf_a=PETSC_NULL;
   Mat_Redundant  *redund=PETSC_NULL;
   PetscObjectContainer container;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -1007,7 +1007,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   ierr = MPI_Comm_split(pc->comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   red->dupcomm = dupcomm;
   ierr = PetscFree(subsize);CHKERRQ(ierr);
-  /* if (rank == 0) printf("[%d] subrank %d, duprank: %d\n",rank,subrank,duprank); */
 
   /* create the sequential PC that each processor has copy of */
   ierr = PCCreate(subcomm,&red->pc);CHKERRQ(ierr);
