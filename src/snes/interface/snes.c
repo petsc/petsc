@@ -1842,7 +1842,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
   if (PetscExceptionValue(ierr)) {
     /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
     PetscErrorCode pierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(pierr);
-  } else if (PetscException,Caught(ierr,PETSC_ERR_ARG_DOMAIN)) {
+  } else if (PetscExceptionCaught(ierr,PETSC_ERR_ARG_DOMAIN)) {
     /* translate exception into SNES not converged reason */
     snes->reason = SNES_DIVERGED_FUNCTION_DOMAIN;
     ierr = 0;
