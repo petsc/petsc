@@ -1,7 +1,7 @@
 
 #if !defined(__SBAIJ_H)
 #define __SBAIJ_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "src/mat/impls/baij/seq/baij.h"
 
 /*  

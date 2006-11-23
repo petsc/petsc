@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/snesimpl.h"
+#include "include/private/snesimpl.h"
 
 typedef struct {
   PetscTruth complete_print;

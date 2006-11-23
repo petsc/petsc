@@ -6,7 +6,7 @@
   much of anything.
 */
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h"  
 
 typedef struct {

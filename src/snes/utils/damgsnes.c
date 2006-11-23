@@ -366,7 +366,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAFormFunction(SNES snes,Vec X,Vec F,void
 } 
 
 /* ------------------------------------------------------------------------------*/
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 #undef __FUNCT__
 #define __FUNCT__ "DMMGComputeJacobianWithFD"
 PetscErrorCode DMMGComputeJacobianWithFD(SNES snes,Vec x1,Mat *J,Mat *B,MatStructure *flag,void *ctx)

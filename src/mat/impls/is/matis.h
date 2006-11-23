@@ -2,7 +2,7 @@
 #if !defined(__is_h)
 #define __is_h
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 typedef struct {
   Mat                    A;             /* the local Neumann matrix */

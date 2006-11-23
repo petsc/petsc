@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE = 0;

@@ -5,7 +5,7 @@
 */
 #include "private/pcimpl.h"                 /*I "petscpc.h"  I*/
 #include "src/ksp/pc/impls/factor/ilu/ilu.h"
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 /* ------------------------------------------------------------------------------------------*/
 EXTERN_C_BEGIN

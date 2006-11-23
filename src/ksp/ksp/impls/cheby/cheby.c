@@ -4,7 +4,7 @@
     This is a first attempt at a Chebychev routine, it is not 
     necessarily well optimized.
 */
-#include "src/ksp/ksp/kspimpl.h"                    /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"                    /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/cheby/chebctx.h"
 
 #undef __FUNCT__  

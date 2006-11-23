@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"     /*I  "petscts.h"  I*/
+#include "include/private/tsimpl.h"     /*I  "petscts.h"  I*/
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Euler(TS);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS);

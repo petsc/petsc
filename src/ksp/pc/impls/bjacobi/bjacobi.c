@@ -3,7 +3,7 @@
 /*
    Defines a block Jacobi preconditioner.
 */
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "private/pcimpl.h"              /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/bjacobi/bjacobi.h"
 

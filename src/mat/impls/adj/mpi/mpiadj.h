@@ -1,7 +1,7 @@
 
 #if !defined(__ADJ_H)
 #define __ADJ_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 
 /*  

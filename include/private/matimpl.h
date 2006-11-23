@@ -1,6 +1,6 @@
 
-#if !defined(__MATIMPL)
-#define __MATIMPL
+#ifndef __MATIMPL_H
+#define __MATIMPL_H
 
 #include "petscmat.h"
 
@@ -173,7 +173,22 @@ EXTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
   belong to another processor. During the assembly phase the stashed 
   values are moved to the correct processor and 
 */
-#include "src/mat/utils/matstashspace.h"
+
+typedef struct _MatStashSpace *PetscMatStashSpace;
+
+struct _MatStashSpace {
+  PetscMatStashSpace next;
+  MatScalar          *space_head,*val;
+  PetscInt           *idx,*idy;
+  PetscInt           total_space_size;
+  PetscInt           local_used;
+  PetscInt           local_remaining;
+};
+
+EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
+EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace);
+
 typedef struct {
   PetscInt      nmax;                   /* maximum stash size */
   PetscInt      umax;                   /* user specified max-size */
@@ -963,10 +978,3 @@ extern PetscEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 extern PetscEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
 
 #endif
-
-
-
-
-
-
-

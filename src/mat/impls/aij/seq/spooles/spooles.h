@@ -1,7 +1,7 @@
 
 #if !defined(__SPOOLES_H)
 #define __SPOOLES_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 
 EXTERN_C_BEGIN

@@ -226,7 +226,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h" 
 #include "src/mat/impls/aij/mpi/mpiaij.h"   /*I "petscmat.h" I*/
 #include "src/mat/impls/aij/seq/aij.h"      /*I "petscmat.h" I*/

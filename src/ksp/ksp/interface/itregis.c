@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"  /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"  /*I "petscksp.h" I*/
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP);

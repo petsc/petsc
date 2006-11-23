@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 const char *MatOptions[] = {"ROW_ORIENTED","COLUMN_ORIENTED","ROWS_SORTED",
               "COLUMNS_SORTED","NO_NEW_NONZERO_LOCATIONS",
