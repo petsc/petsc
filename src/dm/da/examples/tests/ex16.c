@@ -24,14 +24,14 @@ int main(int argc,char **argv)
   ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nredundant1*sizeof(PetscScalar),&redundant1);CHKERRQ(ierr);
-  ierr = VecPackAddArray(packer,nredundant1);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,0,nredundant1);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,8,1,1,PETSC_NULL,&da1);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da1,&local1);CHKERRQ(ierr);
   ierr = VecPackAddDA(packer,da1);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nredundant2*sizeof(PetscScalar),&redundant2);CHKERRQ(ierr);
-  ierr = VecPackAddArray(packer,nredundant2);CHKERRQ(ierr);
+  ierr = VecPackAddArray(packer,0,nredundant2);CHKERRQ(ierr);
 
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,6,1,1,PETSC_NULL,&da2);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da2,&local2);CHKERRQ(ierr);

@@ -507,8 +507,8 @@ to Installation Instructions</a>&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
       <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
-on machine requiring job scheduler:</font></a></h3>
-      <p>If one has to go through the job scheduler to use MPI on a
+on machine requiring cross compiler or a job scheduler:</font></a></h3>
+      <p>If one has to use a cross compiler - or go through the job scheduler to use MPI on a
 given machine - use the configure option <span
  style="font-weight: bold;">'--with-batch=1'</span> as follows:<br>
       </p>
@@ -589,32 +589,6 @@ Check config/asterix-tops.py for an example.<br>
         <li>To test&nbsp; do: 'cd src/tops; make examples'<br>
         </li>
       </ul>
-      <h3><a name="PythonBindings"><font color="#551a8b">Installing the
-Python Bindings:</font></a></h3>
-      <p>Currently, the automatic Python installtion works only
-for the
-developer release. The first step to installing the Python bindings is
-to add the following 3 options to your configuration:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">./config/configure
---with-shared --with-dynamic --with-python</span><br>
-which will download the source for the bindings into <span
- style="font-weight: bold;"><span style="color: rgb(85, 26, 139);">src/python</span>
-      </span>and
-make sure that
-PETSc can build dynamic libraries for the Python modules. If you have
-the relase version, this download can be done manually using:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">mkdir
-src/python</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">cd
-src/python</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">wget
-ftp://ftp.mcs.anl.gov/pub/petsc/PETScPython.tar.gz .</span><br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">tar xvzf
-PETScPython.tar.gz</span><br>
-After building PETSc, we can build the bindings using:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: rgb(255, 0, 0);">make python</span><br>
-which will create python modules stored in <span
- style="font-weight: bold;"><span style="color: rgb(85, 26, 139);">lib/PETSC_ARCH/PETSc</span>.</span>
       </p>
       <p><font color="#551a8b"><b><a
  href="installation.html#Docs:%20%20Installation">Return

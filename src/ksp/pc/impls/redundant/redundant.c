@@ -20,6 +20,173 @@ typedef struct {
   PetscInt   color;                /* color of processors in a subcommunicator */
 } PC_Redundant;
 
+#include "src/sys/viewer/impls/ascii/asciiimpl.h"  /*I     "petsc.h"   I*/
+#include "petscfix.h"
+#include <stdarg.h>
+
+PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSubcomm(PetscViewer viewer,PetscViewer *outviewer)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+
+  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {
+    ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
+    if (outviewer) *outviewer = 0;
+  } else if (viewer->ops->restoresingleton) {
+    ierr = (*viewer->ops->restoresingleton)(viewer,outviewer);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_ASCIIh" 
+PetscErrorCode PetscViewerDestroy_ASCIIh(PetscViewer viewer)
+{
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+  PetscViewerLink   *vlink;
+  PetscTruth        flg;
+
+  PetscFunctionBegin;
+  if (vascii->sviewer) {
+    SETERRQ(PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
+  }
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
+    if (vascii->fd) fclose(vascii->fd);
+    if (vascii->storecompressed) {
+      char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
+      FILE *fp;
+      ierr = PetscStrcpy(par,"gzip ");CHKERRQ(ierr);
+      ierr = PetscStrcat(par,vascii->filename);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_POPEN)
+      ierr = PetscPOpen(PETSC_COMM_SELF,PETSC_NULL,par,"r",&fp);CHKERRQ(ierr);
+      if (fgets(buf,1024,fp)) {
+        SETERRQ2(PETSC_ERR_LIB,"Error from compression command %s\n%s",par,buf);
+      }
+      ierr = PetscPClose(PETSC_COMM_SELF,fp);CHKERRQ(ierr);
+#else
+      SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
+#endif
+    }
+  }
+  ierr = PetscStrfree(vascii->filename);CHKERRQ(ierr);
+  ierr = PetscFree(vascii);CHKERRQ(ierr);
+
+  /* remove the viewer from the list in the MPI Communicator */
+  if (Petsc_Viewer_keyval == MPI_KEYVAL_INVALID) {
+    ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelViewer,&Petsc_Viewer_keyval,(void*)0);CHKERRQ(ierr);
+  }
+
+  ierr = MPI_Attr_get(viewer->comm,Petsc_Viewer_keyval,(void**)&vlink,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (vlink && vlink->viewer == viewer) {
+      ierr = MPI_Attr_put(viewer->comm,Petsc_Viewer_keyval,vlink->next);CHKERRQ(ierr);
+      ierr = PetscFree(vlink);CHKERRQ(ierr);
+    } else {
+      while (vlink && vlink->next) {
+        if (vlink->next->viewer == viewer) {
+          PetscViewerLink *nv = vlink->next;
+          vlink->next = vlink->next->next;
+          ierr = PetscFree(nv);CHKERRQ(ierr);
+        }
+        vlink = vlink->next;
+      }
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDestroy_ASCII_Subcomm" 
+PetscErrorCode PetscViewerDestroy_ASCII_Subcomm(PetscViewer viewer)
+{
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+  PetscErrorCode    ierr;
+  PetscFunctionBegin;
+  ierr = PetscViewerRestoreSubcomm(vascii->bviewer,&viewer);CHKERRQ(ierr); 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerFlush_ASCII_Subcomm_0" 
+PetscErrorCode PetscViewerFlush_ASCII_Subcomm_0(PetscViewer viewer)
+{
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+
+  PetscFunctionBegin;
+  fflush(vascii->fd);
+  PetscFunctionReturn(0);  
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerGetSubcomm_ASCII" 
+PetscErrorCode PetscViewerGetSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
+{
+  PetscMPIInt       rank;
+  PetscErrorCode    ierr;
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data,*ovascii;
+  const char        *name;
+
+  PetscFunctionBegin;
+  if (vascii->sviewer) {
+    SETERRQ(PETSC_ERR_ORDER,"Subcomm already obtained from PetscViewer and not restored");
+  }
+  /* ierr         = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr); */
+  ierr         = PetscViewerCreate(subcomm,outviewer);CHKERRQ(ierr);
+  ierr         = PetscViewerSetType(*outviewer,PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ovascii      = (PetscViewer_ASCII*)(*outviewer)->data;
+  ovascii->fd  = vascii->fd;
+  ovascii->tab = vascii->tab;
+
+  vascii->sviewer = *outviewer;
+
+  (*outviewer)->format     = viewer->format;
+  (*outviewer)->iformat    = viewer->iformat;
+
+  ierr = PetscObjectGetName((PetscObject)viewer,&name);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject)(*outviewer),name);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  ((PetscViewer_ASCII*)((*outviewer)->data))->bviewer = viewer;
+  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII_Subcomm;
+  if (rank) {
+    (*outviewer)->ops->flush = 0;
+  } else {
+    (*outviewer)->ops->flush = PetscViewerFlush_ASCII_Subcomm_0;
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerRestoreSubcomm_ASCII" 
+PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subcomm,PetscViewer *outviewer)
+{
+  PetscErrorCode    ierr;
+  PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)(*outviewer)->data;
+  PetscViewer_ASCII *ascii  = (PetscViewer_ASCII *)viewer->data;
+
+  PetscFunctionBegin;
+  if (!ascii->sviewer) {
+    SETERRQ(PETSC_ERR_ORDER,"Subcomm never obtained from PetscViewer");
+  }
+  if (ascii->sviewer != *outviewer) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"This PetscViewer did not generate singleton");
+  }
+
+  ascii->sviewer             = 0;
+  vascii->fd                 = stdout;
+  (*outviewer)->ops->destroy = PetscViewerDestroy_ASCIIh;
+  ierr                       = PetscViewerDestroy(*outviewer);CHKERRQ(ierr);
+  ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCView_Redundant"
 static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
@@ -28,7 +195,8 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   PetscTruth     iascii,isstring;
-  PetscViewer    sviewer;
+  PetscViewer    sviewer,subviewer;
+  PetscInt       color = red->color;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
@@ -36,13 +204,15 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: Actual PC follows\n");CHKERRQ(ierr);
-    ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
-    if (!rank) {
+    ierr = PetscViewerGetSubcomm_ASCII(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
+    /* ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr); */
+    if (!color) {
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
+      ierr = PCView(red->pc,subviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
+    /* ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr); */
+    ierr = PetscViewerRestoreSubcomm_ASCII(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
   } else if (isstring) {
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -118,8 +288,8 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscMPIInt    rank,size; 
   MPI_Comm       comm=mat->comm;
   PetscErrorCode ierr;
-  PetscInt       nsends,nrecvs,i,prid=100,rownz_max;
-  PetscMPIInt    *send_rank,*recv_rank;
+  PetscInt       nsends=0,nrecvs=0,i,rownz_max;
+  PetscMPIInt    *send_rank=PETSC_NULL,*recv_rank=PETSC_NULL;
   PetscInt       *rowrange=mat->rmap.range;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
   Mat            A=aij->A,B=aij->B,C=*matredundant;
@@ -131,16 +301,16 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscInt       *cols,ctmp,lwrite,*rptr,l,*sbuf_j;
   PetscScalar    *vals,*aworkA,*aworkB;
   PetscMPIInt    tag1,tag2,tag3,imdex;
-  MPI_Request    *s_waits1,*s_waits2,*s_waits3,*r_waits1,*r_waits2,*r_waits3;
+  MPI_Request    *s_waits1=PETSC_NULL,*s_waits2=PETSC_NULL,*s_waits3=PETSC_NULL,
+                 *r_waits1=PETSC_NULL,*r_waits2=PETSC_NULL,*r_waits3=PETSC_NULL;
   MPI_Status     recv_status,*send_status; 
-  PetscInt       *sbuf_nz,*rbuf_nz,count;
-  PetscInt       **rbuf_j;
-  PetscScalar    **rbuf_a;
+  PetscInt       *sbuf_nz=PETSC_NULL,*rbuf_nz=PETSC_NULL,count;
+  PetscInt       **rbuf_j=PETSC_NULL;
+  PetscScalar    **rbuf_a=PETSC_NULL;
   Mat_Redundant  *redund=PETSC_NULL;
   PetscObjectContainer container;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-prid",&prid,PETSC_NULL);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -516,7 +686,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (pc->setupcalled == 1 && pc->flag == DIFFERENT_NONZERO_PATTERN) {
       /* destroy old matrices */
       if (red->pmats) {
-        //ierr = MatDestroyMatrices(1,&red->pmats);CHKERRQ(ierr);
         ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
       }
     } else if (pc->setupcalled == 1) {
@@ -838,7 +1007,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   ierr = MPI_Comm_split(pc->comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   red->dupcomm = dupcomm;
   ierr = PetscFree(subsize);CHKERRQ(ierr);
-  /* if (rank == 0) printf("[%d] subrank %d, duprank: %d\n",rank,subrank,duprank); */
 
   /* create the sequential PC that each processor has copy of */
   ierr = PCCreate(subcomm,&red->pc);CHKERRQ(ierr);

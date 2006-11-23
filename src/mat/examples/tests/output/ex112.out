@@ -1,0 +1,12 @@
+
+ 1-D: FFTW on vector of size 10 
+  Error norm of |x - z| = < 1.e-12
+
+ 2-D: FFTW on vector of size 100 
+  Error norm of |x - z| = < 1.e-12
+
+ 3-D: FFTW on vector of size 1000 
+  Error norm of |x - z| = < 1.e-12
+
+ 4-D: FFTW on vector of size 10000 
+  Error norm of |x - z| = 2.09298e-12

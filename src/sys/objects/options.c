@@ -176,6 +176,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOptionsValidKey"
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsValidKey(const char in_str[],PetscTruth *key)
+{
+  PetscFunctionBegin;
+  *key = PETSC_FALSE;
+  if (!in_str) PetscFunctionReturn(0);
+  if (in_str[0] != '-') PetscFunctionReturn(0);
+  if ((in_str[1] < 'A') || (in_str[1] > 'z')) PetscFunctionReturn(0);
+  *key = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsInsertString"
 /*@C
      PetscOptionsInsertString - Inserts options into the database from a string
@@ -201,38 +214,31 @@ PetscErrorCode PETSC_DLLEXPORT PetscSetProgramName(const char name[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertString(const char in_str[])
 {
-  char           *str,*first,*second,*third,*final;
-  size_t         len;
+  char           *first,*second;
   PetscErrorCode ierr;
   PetscToken     *token;
+  PetscTruth     key;
 
   PetscFunctionBegin;
-  ierr = PetscStrallocpy(in_str, &str);CHKERRQ(ierr);
-  ierr = PetscTokenCreate(str,' ',&token);CHKERRQ(ierr);
+  ierr = PetscTokenCreate(in_str,' ',&token);CHKERRQ(ierr);
   ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-  ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-  if (first && first[0] == '-') {
-    if (second) {final = second;} else {final = first;}
-    ierr = PetscStrlen(final,&len);CHKERRQ(ierr);
-    while (len > 0 && (final[len-1] == ' ' || final[len-1] == 'n')) {
-      len--; final[len] = 0;
-    }
-    ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-  } else if (first) {
-    PetscTruth match;
-    
-    ierr = PetscStrcasecmp(first,"alias",&match);CHKERRQ(ierr);
-    if (match) {
-      ierr = PetscTokenFind(token,&third);CHKERRQ(ierr);
-      if (!third) SETERRQ1(PETSC_ERR_ARG_WRONG,"Error in options string:alias missing (%s)",second);
-      ierr = PetscStrlen(third,&len);CHKERRQ(ierr);
-      if (third[len-1] == 'n') third[len-1] = 0;
-      ierr = PetscOptionsSetAlias(second,third);CHKERRQ(ierr);
+  while (first) {
+    ierr = PetscOptionsValidKey(first,&key);CHKERRQ(ierr);
+    if (key) {
+      ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
+      ierr = PetscOptionsValidKey(second,&key);CHKERRQ(ierr);
+      if (!key) {
+        ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
+        ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);        
+      } else {
+        ierr  = PetscOptionsSetValue(first,PETSC_NULL);CHKERRQ(ierr);
+        first = second;
+      }
+    } else {
+      ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);        
     }
   }
   ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
-  ierr = PetscFree(str);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -341,14 +347,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
 
    Concepts: options database^adding
 
-.seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint()
+.seealso: PetscOptionsDestroy_Private(), PetscOptionsPrint(), PetscOptionsInsertString(), PetscOptionsInsertFile(),
+          PetscInitialize()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const char file[])
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
-  PetscToken     *token;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -375,7 +381,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
 
   /* insert environmental options */
   {
-    char   *eoptions = 0,*second,*first;
+    char   *eoptions = 0;
     size_t len = 0;
     if (!rank) {
       eoptions = (char*)getenv("PETSC_OPTIONS");
@@ -389,21 +395,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
     }
     if (len) {
       ierr          = MPI_Bcast(eoptions,len,MPI_CHAR,0,PETSC_COMM_WORLD);CHKERRQ(ierr);
-      eoptions[len] = 0;
-      ierr          =  PetscTokenCreate(eoptions,' ',&token);CHKERRQ(ierr);
-      ierr          =  PetscTokenFind(token,&first);CHKERRQ(ierr);
-      while (first) {
-        if (first[0] != '-') {ierr = PetscTokenFind(token,&first);CHKERRQ(ierr); continue;}
-        ierr = PetscTokenFind(token,&second);CHKERRQ(ierr);
-        if ((!second) || ((second[0] == '-') && (second[1] > '9'))) {
-          ierr = PetscOptionsSetValue(first,(char *)0);CHKERRQ(ierr);
-          first = second;
-        } else {
-          ierr = PetscOptionsSetValue(first,second);CHKERRQ(ierr);
-          ierr = PetscTokenFind(token,&first);CHKERRQ(ierr);
-        }
-      }
-      ierr =  PetscTokenDestroy(token);CHKERRQ(ierr);
+      if (rank) eoptions[len] = 0;
+      ierr = PetscOptionsInsertString(eoptions);CHKERRQ(ierr);
       if (rank) {ierr = PetscFree(eoptions);CHKERRQ(ierr);}
     }
   }
@@ -451,7 +444,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
       }
     }
   }
-  
   PetscFunctionReturn(0);
 }
 
@@ -639,6 +631,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetValue(const char iname[],const cha
         options->values[i] = (char*)malloc((len+1)*sizeof(char));
         ierr = PetscStrcpy(options->values[i],value);CHKERRQ(ierr);
       } else { options->values[i] = 0;}
+      PetscOptionsMonitor(name,value);
       PetscFunctionReturn(0);
     } else if (gt) {
       n = i;

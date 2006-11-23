@@ -11,6 +11,7 @@ OBJSF           =
 EXECUTABLE      = ex1
 INPUTDATAFILES  =   
 OUTPUTDATAFILES = 
+PETSCPORTABLE   = true
 
 DIRS     = 
 LOCDIR   = src/contrib/remote

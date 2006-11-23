@@ -26,7 +26,7 @@
     Fortran Notes: 
       Not available from Fortran
 
-.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(),
+.seealso: PetscMapSetLocalSize(), PetscMapSetSize(), PetscMapGetSize(), PetscMapGetLocalSize(), PetscMap,
           PetscMapGetLocalRange(), PetscMapGetGlobalRange(), PetscMapSetBlockSize(), PetscMapGetBlockSize()
 
 @*/
@@ -353,7 +353,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap *map,PetscInt *
 @*/
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMapGetGlobalRange"
-PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap *map,PetscInt *range[])
+PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap *map,const PetscInt *range[])
 {
   PetscFunctionBegin;
   *range = map->range;

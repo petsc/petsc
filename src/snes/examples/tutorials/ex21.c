@@ -61,7 +61,7 @@ int main(int argc,char **argv)
   /* Create a global vector that includes a single redundant array and two da arrays */
   ierr = VecPackCreate(PETSC_COMM_WORLD,&user.packer);CHKERRQ(ierr);
   user.nredundant = 1;
-  ierr = VecPackAddArray(user.packer,user.nredundant);CHKERRQ(ierr);
+  ierr = VecPackAddArray(user.packer,0,user.nredundant);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da1);CHKERRQ(ierr);
   ierr = VecPackAddDA(user.packer,user.da1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,1,1,PETSC_NULL,&user.da2);CHKERRQ(ierr);

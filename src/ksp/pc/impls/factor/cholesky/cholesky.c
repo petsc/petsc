@@ -438,7 +438,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscTruth flag)
 }
 
 /*MC
-   PCCholesky - Uses a direct solver, based on Cholesky factorization, as a preconditioner
+   PCCHOLESKY - Uses a direct solver, based on Cholesky factorization, as a preconditioner
 
    Options Database Keys:
 +  -pc_factor_reuse_ordering - Activate PCFactorSetReuseOrdering()

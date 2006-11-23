@@ -3117,10 +3117,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,mat->rmap.n,mat->cmap.n,mat->rmap.N,mat->cmap.N);CHKERRQ(ierr);
     ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    for (i=0; i<3; i++) {
+      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+      if (conv) {
+        ierr = MatDestroy(B);CHKERRQ(ierr);      
+        goto foundconv;
+      }
+    }
 
     /* 3) See if a good general converter is registered for the desired class */
-    if (!conv) conv = B->ops->convert;
+    conv = B->ops->convertfrom;
     ierr = MatDestroy(B);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
@@ -4462,6 +4474,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOwnershipRange"
 /*@
@@ -4484,6 +4497,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
    Level: beginner
 
    Concepts: matrices^row ownership
+
+.seealso:   MatGetOwnershipRanges()
+
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,PetscInt* n)
 {
@@ -4497,6 +4513,38 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRange(Mat mat,PetscInt *m,Petsc
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   if (m) *m = mat->rmap.rstart;
   if (n) *n = mat->rmap.rend;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRanges"
+/*@C
+   MatGetOwnershipRanges - Returns the range of matrix rows owned by
+   each process
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
+.  ranges - start of each processors portion plus one more then the total length at the end
+
+   Level: beginner
+
+   Concepts: matrices^row ownership
+
+.seealso:   MatGetOwnershipRange()
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRanges(Mat mat,const PetscInt **ranges)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  ierr = PetscMapGetGlobalRange(&mat->rmap,ranges);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

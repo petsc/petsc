@@ -103,6 +103,7 @@ giop(int *vals, int *work, int n, int *oprs)
   int type, dest;
   vfp fp;
   MPI_Status  status;
+  int ierr;
 
 
 #ifdef SAFE
@@ -144,10 +145,10 @@ giop(int *vals, int *work, int n, int *oprs)
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG0+my_id,MPI_COMM_WORLD);}
       else 
 	{
-	  MPI_Recv(work,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
+	  ierr = MPI_Recv(work,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
 		   MPI_COMM_WORLD,&status);
 	  (*fp)(vals,work,n,oprs);
 	}
@@ -160,10 +161,10 @@ giop(int *vals, int *work, int n, int *oprs)
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {MPI_Send(vals,n,MPI_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPI_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(work,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG2+dest,
+	      ierr = MPI_Recv(work,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG2+dest,
 		       MPI_COMM_WORLD, &status);
 	      (*fp)(vals, work, n, oprs);
 	    }
@@ -177,10 +178,10 @@ giop(int *vals, int *work, int n, int *oprs)
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {MPI_Send(vals,n,MPI_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPI_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(vals,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG4+dest,
+	      ierr = MPI_Recv(vals,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG4+dest,
 		       MPI_COMM_WORLD, &status);
 	    }
 	}
@@ -191,11 +192,11 @@ giop(int *vals, int *work, int n, int *oprs)
     {
       if (my_id >= floor_num_nodes)
 	{
-	  MPI_Recv(vals,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2,
+	  ierr = MPI_Recv(vals,n,MPI_INT,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2,
 		   MPI_COMM_WORLD,&status);
 	}
       else
-	{MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPI_INT,edge_not_pow_2,MSGTAG5+my_id,MPI_COMM_WORLD);}
     }
 }  
 
@@ -214,6 +215,7 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
   int type, dest;
   vfp fp;
   MPI_Status  status;
+  int ierr;
 
 
 #ifdef SAFE
@@ -252,11 +254,11 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+my_id,
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG0+my_id,
 		  MPI_COMM_WORLD);}
       else 
 	{
-	  MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
+	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
 		   MPI_COMM_WORLD,&status);
 	  (*fp)(vals,work,n,oprs);
 	}
@@ -269,10 +271,10 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
+	      ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
 		       MPI_COMM_WORLD, &status);
 	      (*fp)(vals, work, n, oprs);
 	    }
@@ -286,10 +288,10 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,
+	      ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,
 		       MPI_COMM_WORLD, &status);
 	    }
 	}
@@ -300,11 +302,11 @@ grop(PetscScalar *vals, PetscScalar *work, int n, int *oprs)
     {
       if (my_id >= floor_num_nodes)
 	{
-	  MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
+	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
 		   MPI_COMM_WORLD,&status);
 	}
       else
-	{MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+my_id,
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,edge_not_pow_2,MSGTAG5+my_id,
 		  MPI_COMM_WORLD);}
     }
 }  
@@ -328,6 +330,7 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
   int type, dest;
   vfp fp;
   MPI_Status  status;
+  int ierr;
 
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
@@ -371,10 +374,10 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
     {
       dest = my_id^mask;
       if (my_id > dest)
-	{MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
+	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
 		   &status);
 	  (*fp)(vals, work, n, oprs);
 	}
@@ -392,10 +395,10 @@ grop_hc(PetscScalar *vals, PetscScalar *work, int n, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_SCALAR,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
+	  ierr = MPI_Recv(vals,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
 		   &status);
 	}
     }
@@ -416,6 +419,7 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
   int dest;
   MPI_Status  status;
   MPI_Op op;
+  int ierr;
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -437,9 +441,9 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
 
   if (comm_type==MPI)
     {
-      MPI_Op_create(fp,TRUE,&op);
-      MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);
-      MPI_Op_free(&op);
+      ierr = MPI_Op_create(fp,TRUE,&op);
+      ierr = MPI_Allreduce (vals, work, n, dt, op, MPI_COMM_WORLD);
+      ierr = MPI_Op_free(&op);
       return;
     }
 
@@ -447,11 +451,11 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
   if (edge_not_pow_2)
     {
       if (my_id >= floor_num_nodes)
-	{MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG0+my_id,
+	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG0+my_id,
 		  MPI_COMM_WORLD);}
       else 
 	{
-	  MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
+	  ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG0+edge_not_pow_2,
 		   MPI_COMM_WORLD,&status);
 	  (*fp)(vals,work,&n,&dt);
 	}
@@ -464,10 +468,10 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
 	{
 	  dest = my_id^mask;
 	  if (my_id > dest)
-	    {MPI_Send(vals,n,dt,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG2+dest,
+	      ierr = MPI_Recv(work,n,dt,MPI_ANY_SOURCE,MSGTAG2+dest,
 		       MPI_COMM_WORLD, &status);
 	      (*fp)(vals, work, &n, &dt);
 	    }
@@ -481,10 +485,10 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
       
 	  dest = my_id^mask;
 	  if (my_id < dest)
-	    {MPI_Send(vals,n,dt,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	    {ierr = MPI_Send(vals,n,dt,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
 	  else
 	    {
-	      MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG4+dest,
+	      ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG4+dest,
 		       MPI_COMM_WORLD, &status);
 	    }
 	}
@@ -495,11 +499,11 @@ void gfop(void *vals, void *work, int n, vbfp fp, MPI_Datatype dt, int comm_type
     {
       if (my_id >= floor_num_nodes)
 	{
-	  MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
+	  ierr = MPI_Recv(vals,n,dt,MPI_ANY_SOURCE,MSGTAG5+edge_not_pow_2, 
 		   MPI_COMM_WORLD,&status);
 	}
       else
-	{MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG5+my_id,
+	{ierr = MPI_Send(vals,n,dt,edge_not_pow_2,MSGTAG5+my_id,
 		  MPI_COMM_WORLD);}
     }
 }  
@@ -527,6 +531,7 @@ ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
    int edge, type, dest, mask;
    int stage_n;
   MPI_Status  status;
+  int ierr;
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -545,12 +550,12 @@ ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
 	  dest = edge_node[edge];
 	  type = MSGTAG3 + my_id + (num_nodes*edge);
 	  if (my_id>dest)
-          {MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
+          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
+              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
                        MPI_COMM_WORLD,&status);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 	    }
@@ -566,12 +571,12 @@ ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level,
 	  dest = edge_node[level-edge-1];
 	  type = MSGTAG6 + my_id + (num_nodes*edge);
 	  if (my_id<dest)
-            {MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
+            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
+              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
                        MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
 	    }
 	}
@@ -599,6 +604,7 @@ grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
   int type, dest;
   vfp fp;
   MPI_Status  status;
+  int ierr;
 
   error_msg_fatal("grop_hc_vvl() :: is not working!\n");
 
@@ -639,10 +645,10 @@ grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
       n = segs[dim]-segs[edge];
       dest = my_id^mask;
       if (my_id > dest)
-	{MPI_Send(vals+segs[edge],n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals+segs[edge],n,MPIU_SCALAR,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
+	  ierr = MPI_Recv(work,n,MPIU_SCALAR,MPI_ANY_SOURCE,MSGTAG2+dest,
 		   MPI_COMM_WORLD, &status);
 	  (*fp)(vals+segs[edge], work, n, oprs);
 	}
@@ -662,11 +668,11 @@ grop_hc_vvl(PetscScalar *vals, PetscScalar *work, int *segs, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{MPI_Send(vals+segs[dim-1-edge],n,MPIU_SCALAR,dest,MSGTAG4+my_id,
+	{ierr = MPI_Send(vals+segs[dim-1-edge],n,MPIU_SCALAR,dest,MSGTAG4+my_id,
 		  MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(vals+segs[dim-1-edge],n,MPIU_SCALAR,MPI_ANY_SOURCE,
+	  ierr = MPI_Recv(vals+segs[dim-1-edge],n,MPIU_SCALAR,MPI_ANY_SOURCE,
 		   MSGTAG4+dest,MPI_COMM_WORLD, &status);
 	}
     }
@@ -688,6 +694,7 @@ void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs
    int edge, type, dest, mask;
    int stage_n;
   MPI_Status  status;
+  int ierr;
 
 #ifdef SAFE
   /* check to make sure comm package has been initialized */
@@ -705,12 +712,12 @@ void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs
 	  dest = edge_node[edge];
 	  type = MSGTAG3 + my_id + (num_nodes*edge);
 	  if (my_id>dest)
-          {MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
+          {ierr = MPI_Send(vals+segs[edge],stage_n,MPIU_SCALAR,dest,type, 
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
+              ierr = MPI_Recv(work,stage_n,MPIU_SCALAR,MPI_ANY_SOURCE,type,
                        MPI_COMM_WORLD,&status);              
 	      rvec_add(vals+segs[edge], work, stage_n); 
 	    }
@@ -726,12 +733,12 @@ void new_ssgl_radd( PetscScalar *vals,  PetscScalar *work,  int level, int *segs
 	  dest = edge_node[level-edge-1];
 	  type = MSGTAG6 + my_id + (num_nodes*edge);
 	  if (my_id<dest)
-            {MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
+            {ierr = MPI_Send(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,dest,type,
                       MPI_COMM_WORLD);}
 	  else
 	    {
 	      type =  type - my_id + dest;
-              MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
+              ierr = MPI_Recv(vals+segs[level-1-edge],stage_n,MPIU_SCALAR,
                        MPI_ANY_SOURCE,type,MPI_COMM_WORLD,&status);              
 	    }
 	}
@@ -758,6 +765,7 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
   int type, dest;
   vfp fp;
   MPI_Status  status;
+  int ierr;
 
 #ifdef SAFE
   /* ok ... should have some data, work, and operator(s) */
@@ -801,10 +809,10 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
     {
       dest = my_id^mask;
       if (my_id > dest)
-	{MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG2+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
+	  ierr = MPI_Recv(work,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG2+dest,MPI_COMM_WORLD,
 		   &status);
 	  (*fp)(vals, work, n, oprs);
 	}
@@ -822,10 +830,10 @@ void giop_hc(int *vals, int *work, int n, int *oprs, int dim)
       
       dest = my_id^mask;
       if (my_id < dest)
-	{MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
+	{ierr = MPI_Send(vals,n,MPIU_INT,dest,MSGTAG4+my_id,MPI_COMM_WORLD);}
       else
 	{
-	  MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
+	  ierr = MPI_Recv(vals,n,MPIU_INT,MPI_ANY_SOURCE,MSGTAG4+dest,MPI_COMM_WORLD,
 		   &status);
 	}
     }

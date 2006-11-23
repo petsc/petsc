@@ -1,7 +1,22 @@
 #define PETSCDM_DLL
  
-#include "petscda.h"     /*I      "petscda.h"     I*/
-#include "petscmat.h"    /*I      "petscmat.h"    I*/
+#include "petscda.h"             /*I      "petscda.h"     I*/
+#include "src/dm/da/daimpl.h"    
+#include "petscmat.h"    
+
+typedef struct _VecPackOps *VecPackOps;
+struct _VecPackOps {
+  PetscErrorCode (*view)(VecPack,PetscViewer);
+  PetscErrorCode (*createglobalvector)(VecPack,Vec*);
+  PetscErrorCode (*getcoloring)(VecPack,ISColoringType,ISColoring*);
+  PetscErrorCode (*getmatrix)(VecPack, MatType,Mat*);
+  PetscErrorCode (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
+  PetscErrorCode (*refine)(VecPack,MPI_Comm,VecPack*);
+  PetscErrorCode (*getinjection)(VecPack,VecPack,VecScatter*);
+
+  PetscErrorCode (*forminitialguess)(VecPack,PetscErrorCode (*)(void),Vec,void*);
+  PetscErrorCode (*formfunction)(VecPack,PetscErrorCode (*)(void),Vec,void*);
+};
 
 /*
    rstart is where an array/subvector starts in the global parallel vector, so arrays
@@ -11,30 +26,75 @@
 typedef enum {VECPACK_ARRAY, VECPACK_DA, VECPACK_VECSCATTER} VecPackLinkType;
 
 struct VecPackLink {
-  DA                 da;
-  PetscInt           n,rstart;      /* rstart is relative to this processor */
   VecPackLinkType    type;
   struct VecPackLink *next;
-};
+  PetscInt           n,rstart;      /* rstart is relative to this processor */
 
-typedef struct _VecPackOps *VecPackOps;
-struct _VecPackOps {
-  PetscErrorCode (*view)(VecPack,PetscViewer);
-  PetscErrorCode (*createglobalvector)(VecPack,Vec*);
-  PetscErrorCode (*getcoloring)(VecPack,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(VecPack,MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
-  PetscErrorCode (*refine)(VecPack,MPI_Comm,VecPack*);
+  /* only used for VECPACK_DA */
+  PetscInt           *grstarts;     /* global row for first unknown of this DA on each process */
+  DA                 da;
+
+  /* only used for VECPACK_ARRAY */
+  PetscInt           grstart;        /* global row for first array unknown */
+  PetscMPIInt        rank;          /* process where array unknowns live */
 };
 
 struct _p_VecPack {
   PETSCHEADER(struct _VecPackOps);
-  PetscMPIInt        rank;
-  PetscInt           n,N,rstart;   /* rstart is relative to all processors */
+  PetscInt           n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
+  PetscInt           nghost;         /* number of all local entries include DA ghost points and any shared redundant arrays */
   Vec                globalvector;
-  PetscInt           nDA,nredundant;
+  PetscInt           nDA,nredundant; /* how many DA's and seperate redundant arrays used to build VecPack */
   struct VecPackLink *next;
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackFormInitialGuess_DADADA"
+/*
+    Maps from 
+*/
+PetscErrorCode PETSCDM_DLLEXPORT VecPackFormInitialGuess_DADADA(VecPack pack,PetscErrorCode (*fun)(void),Vec X,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*f)(DALocalInfo*,void*,DALocalInfo*,void*,DALocalInfo*,void*) = 
+                           (PetscErrorCode (*)(DALocalInfo*,void*,DALocalInfo*,void*,DALocalInfo*,void*)) fun;
+  DALocalInfo da1,da2,da3;
+  DA          DA1,DA2,DA3;
+  void        *x1,*x2,*x3;
+  Vec         X1,X2,X3;
+
+  PetscFunctionBegin;
+  ierr = VecPackGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(DA1,&da1);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(DA2,&da2);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(DA3,&da3);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DA1,X1,&x1);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DA2,X2,&x2);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DA3,X3,&x3);CHKERRQ(ierr);
+
+
+  ierr = (*f)(&da1,x1,&da2,x2,&da3,x3);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecView_DADADA"
+PetscErrorCode VecView_DADADA(VecPack pack,Vec X,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  DA             DA1,DA2,DA3;
+  Vec            X1,X2,X3;
+
+  PetscFunctionBegin;
+  ierr = VecPackGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = VecView(X1,viewer);CHKERRQ(ierr);
+  ierr = VecView(X2,viewer);CHKERRQ(ierr);
+  ierr = VecView(X3,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackCreate"
@@ -76,11 +136,14 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
   p->globalvector = PETSC_NULL;
   p->nredundant   = 0;
   p->nDA          = 0;
-  ierr            = MPI_Comm_rank(comm,&p->rank);CHKERRQ(ierr);
 
   p->ops->createglobalvector = VecPackCreateGlobalVector;
   p->ops->refine             = VecPackRefine;
   p->ops->getinterpolation   = VecPackGetInterpolation;
+  p->ops->getmatrix          = VecPackGetMatrix;
+  p->ops->getcoloring        = VecPackGetColoring;
+
+  p->ops->forminitialguess   = VecPackFormInitialGuess_DADADA;
   *packer = p;
   PetscFunctionReturn(0);
 }
@@ -114,6 +177,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackDestroy(VecPack packer)
     if (prev->type == VECPACK_DA) {
       ierr = DADestroy(prev->da);CHKERRQ(ierr);
     }
+    if (prev->grstarts) {
+      ierr = PetscFree(prev->grstarts);CHKERRQ(ierr);
+    }
     ierr = PetscFree(prev);CHKERRQ(ierr);
   }
   if (packer->globalvector) {
@@ -131,10 +197,12 @@ PetscErrorCode VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Ve
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
   if (array) {
-    if (!packer->rank) {
+    if (rank == mine->rank) {
       ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
       *array  = varray + mine->rstart;
       ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
@@ -190,15 +258,16 @@ PetscErrorCode VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec 
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-
-  if (!packer->rank) {
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
+  if (rank == mine->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     ierr    = PetscMemcpy(array,varray+mine->rstart,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
-  ierr    = MPI_Bcast(array,mine->n,MPIU_SCALAR,0,packer->comm);CHKERRQ(ierr);
+  ierr    = MPI_Bcast(array,mine->n,MPIU_SCALAR,mine->rank,packer->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -228,9 +297,11 @@ PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec v
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
-  if (!packer->rank) {
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
+  if (rank == mine->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
     if (varray+mine->rstart == array) SETERRQ(PETSC_ERR_ARG_WRONG,"You need not VecPackGather() into objects obtained via VecPackGetAccess()");
     ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -470,12 +541,14 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGather(VecPack packer,Vec gvec,...)
 #define __FUNCT__ "VecPackAddArray"
 /*@C
     VecPackAddArray - adds an "redundant" array to a VecPack. The array values will 
-       be stored in part of the array on processor 0.
+       be stored in part of the array on process orank.
 
     Collective on VecPack
 
     Input Parameter:
 +    packer - the packer object
+.    orank - the process on which the array entries officially live, this number must be
+             the same on all processes.
 -    n - the length of the array
  
     Level: advanced
@@ -485,23 +558,30 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGather(VecPack packer,Vec gvec,...)
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscInt n)
+PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt orank,PetscInt n)
 {
   struct VecPackLink *mine,*next = packer->next;
   PetscErrorCode     ierr;
+  PetscMPIInt        rank,orankmax;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have called VecPackCreateGlobalVector()");
   }
+#if defined(PETSC_USE_DEBUG)
+  ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,packer->comm);CHKERRQ(ierr);
+  if (orank != orankmax) SETERRQ2(PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
+#endif
 
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
   /* create new link */
   ierr                = PetscNew(struct VecPackLink,&mine);CHKERRQ(ierr);
   mine->n             = n;
+  mine->rank          = orank;
   mine->da            = PETSC_NULL;
   mine->type          = VECPACK_ARRAY;
   mine->next          = PETSC_NULL;
-  if (!packer->rank) packer->n += n;
+  if (rank == mine->rank) packer->n += n;
 
   /* add to end of list */
   if (!next) {
@@ -585,6 +665,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddDA(VecPack packer,DA da)
 
     Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
 
+           This also serves as a VecPackFinalize(), perhaps that should be made a seperate 
+           function?
+
 .seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
          VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
          VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
@@ -594,7 +677,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
 {
   PetscErrorCode     ierr;
   PetscInt           nprev = 0;
-  PetscMPIInt        rank;
+  PetscMPIInt        rank,size;
   struct VecPackLink *next = packer->next;
 
   PetscFunctionBegin;
@@ -610,11 +693,20 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
     
     /* now set the rstart for each linked array/vector */
     ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(packer->comm,&size);CHKERRQ(ierr);
     while (next) {
       next->rstart = nprev; 
-      if (!rank || next->type != VECPACK_ARRAY) nprev += next->n;
+      if ((rank == next->rank) || next->type != VECPACK_ARRAY) nprev += next->n;
+      next->grstart = packer->rstart + next->rstart;
+      if (next->type == VECPACK_ARRAY) {
+        ierr = MPI_Bcast(&next->grstart,1,MPIU_INT,next->rank,packer->comm);CHKERRQ(ierr);
+      } else {
+        ierr = PetscMalloc(size*sizeof(PetscInt),&next->grstarts);CHKERRQ(ierr);
+        ierr = MPI_Allgather(&next->grstart,1,MPIU_INT,next->grstarts,1,MPIU_INT,packer->comm);CHKERRQ(ierr);
+      }
       next = next->next;
     }
+    ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DADADA);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -653,9 +745,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
   Vec                global,dglobal;
   PF                 pf;
   PetscScalar        *array;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
   ierr = VecPackCreateGlobalVector(packer,&global);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
 
   /* put 0 to N-1 into the global vector */
   ierr = PFCreate(PETSC_COMM_WORLD,1,1,&pf);CHKERRQ(ierr);
@@ -671,14 +765,14 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
     if (next->type == VECPACK_ARRAY) {
       
       ierr = PetscMalloc(next->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
-      if (!packer->rank) {
+      if (rank == next->rank) {
         ierr   = VecGetArray(global,&array);CHKERRQ(ierr);
         array += next->rstart;
         for (i=0; i<next->n; i++) (*idx)[i] = (PetscInt)PetscRealPart(array[i]);
         array -= next->rstart;
         ierr   = VecRestoreArray(global,&array);CHKERRQ(ierr);
       }
-      ierr = MPI_Bcast(*idx,next->n,MPIU_INT,0,packer->comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(*idx,next->n,MPIU_INT,next->rank,packer->comm);CHKERRQ(ierr);
 
     } else if (next->type == VECPACK_DA) {
       Vec local;
@@ -953,7 +1047,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackRefine(VecPack packer,MPI_Comm comm,VecP
   /* loop over packed objects, handling one at at time */
   while (next) {
     if (next->type == VECPACK_ARRAY) {
-      ierr = VecPackAddArray(*fine,next->n);CHKERRQ(ierr);
+      ierr = VecPackAddArray(*fine,next->rank,next->n);CHKERRQ(ierr);
     } else if (next->type == VECPACK_DA) {
       ierr = DARefine(next->da,comm,&da);CHKERRQ(ierr);
       ierr = VecPackAddDA(*fine,da);CHKERRQ(ierr);
@@ -989,16 +1083,18 @@ PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
   PetscErrorCode     ierr;
   PetscInt           i;
   Vec                xglobal,yglobal;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void**)&mpack);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(mpack->right->comm,&rank);CHKERRQ(ierr);
   xnext = mpack->right->next;
   ynext = mpack->left->next;
   anext = mpack->next;
 
   while (xnext) {
     if (xnext->type == VECPACK_ARRAY) {
-      if (!mpack->right->rank) {
+      if (rank == xnext->rank) {
         ierr    = VecGetArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecGetArray(y,&yarray);CHKERRQ(ierr);
         if (add) {
@@ -1070,16 +1166,18 @@ PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
   PetscScalar        *xarray,*yarray;
   PetscErrorCode     ierr;
   Vec                xglobal,yglobal;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
   ierr  = MatShellGetContext(A,(void**)&mpack);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(mpack->right->comm,&rank);CHKERRQ(ierr);
   xnext = mpack->left->next;
   ynext = mpack->right->next;
   anext = mpack->next;
 
   while (xnext) {
     if (xnext->type == VECPACK_ARRAY) {
-      if (!mpack->right->rank) {
+      if (rank == ynext->rank) {
         ierr    = VecGetArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecGetArray(y,&yarray);CHKERRQ(ierr);
         ierr    = PetscMemcpy(yarray+ynext->rstart,xarray+xnext->rstart,xnext->n*sizeof(PetscScalar));CHKERRQ(ierr);
@@ -1214,6 +1312,207 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetMatrix" 
+/*@C
+    VecPackGetMatrix - Creates a matrix with the correct parallel layout and nonzero structure required for 
+      computing the Jacobian on a function defined using the stencils set in the DA's and coupling in the array variables
+
+    Collective on DA
+
+    Input Parameter:
++   da - the distributed array
+-   mtype - Supported types are MATSEQAIJ, MATMPIAIJ
+
+    Output Parameters:
+.   J  - matrix with the correct nonzero structure
+        (obviously without the correct Jacobian values)
+
+    Level: advanced
+
+    Notes: This properly preallocates the number of nonzeros in the sparse matrix so you 
+       do not need to do it yourself. 
 
 
+.seealso DAGetMatrix(), VecPackCreate()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,Mat *J)
+{
+  PetscErrorCode     ierr;
+  struct VecPackLink *next = packer->next;
+  Vec                gvec;
+  PetscInt           m,*dnz,*onz,i,j,mA;
+  Mat                Atmp;
+  PetscMPIInt        rank;
+  PetscScalar        zero = 0.0;
+
+  PetscFunctionBegin;
+  /* use global vector to determine layout needed for matrix */
+  ierr = VecPackCreateGlobalVector(packer,&gvec);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(gvec,&m);CHKERRQ(ierr);
+  ierr = VecDestroy(gvec);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
+  ierr = MatCreate(packer->comm,J);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
+
+  ierr = MatPreallocateInitialize(packer->comm,m,m,dnz,onz);CHKERRQ(ierr);
+  /* loop over packed objects, handling one at at time */
+  while (next) {
+    if (next->type == VECPACK_ARRAY) {
+      if (rank == next->rank) {  /* zero the entire row */
+        for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
+          for (i=0; i<packer->N; i++) {
+            ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
+          }
+        }
+      }
+      for (j=next->grstart; j<next->grstart+next->n; j++) {
+        for (i=packer->rstart; i<packer->rstart+m; i++) { /* zero the entire local column */
+          if (j != i) { /* don't count diagonal twice */
+	    ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
+          }
+	}
+      }
+    } else if (next->type == VECPACK_DA) {
+      PetscInt       nc,rstart,*ccols,maxnc;
+      const PetscInt *cols,*rstarts;
+      PetscMPIInt    proc;
+
+      ierr = DAGetMatrix(next->da,mtype,&Atmp);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+
+      maxnc = 0;
+      for (i=0; i<mA; i++) {
+        ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        maxnc = PetscMax(nc,maxnc);
+      }
+      ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
+      for (i=0; i<mA; i++) {
+        ierr = MatGetRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+        /* remap the columns taking into how much they are shifted on each process */
+        for (j=0; j<nc; j++) {
+          proc = 0;
+          while (cols[j] >= rstarts[proc+1]) proc++;
+          ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
+        } 
+        ierr = MatPreallocateSet(packer->rstart+next->rstart+i,nc,ccols,dnz,onz);CHKERRQ(ierr);
+        ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(ccols);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
+  ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
+
+  next = packer->next;
+  while (next) {
+    if (next->type == VECPACK_ARRAY) {
+      if (rank == next->rank) {
+        for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
+          for (i=0; i<packer->N; i++) {
+            ierr = MatSetValues(*J,1,&j,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
+          }
+        }
+      }
+      for (j=next->grstart; j<next->grstart+next->n; j++) {
+        for (i=packer->rstart; i<packer->rstart+m; i++) {
+          ierr = MatSetValues(*J,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
+	}
+      }
+    } else if (next->type == VECPACK_DA) {
+      PetscInt          nc,rstart,row,maxnc,*ccols;
+      const PetscInt    *cols,*rstarts;
+      const PetscScalar *values;
+      PetscMPIInt       proc;
+
+      ierr = DAGetMatrix(next->da,mtype,&Atmp);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRange(Atmp,&rstart,PETSC_NULL);CHKERRQ(ierr);
+      ierr = MatGetOwnershipRanges(Atmp,&rstarts);CHKERRQ(ierr);
+      ierr = MatGetLocalSize(Atmp,&mA,PETSC_NULL);CHKERRQ(ierr);
+      maxnc = 0;
+      for (i=0; i<mA; i++) {
+        ierr  = MatGetRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        ierr  = MatRestoreRow(Atmp,rstart+i,&nc,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        maxnc = PetscMax(nc,maxnc);
+      }
+      ierr = PetscMalloc(maxnc*sizeof(PetscInt),&ccols);CHKERRQ(ierr);
+      for (i=0; i<mA; i++) {
+        ierr = MatGetRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+        for (j=0; j<nc; j++) {
+          proc = 0;
+          while (cols[j] >= rstarts[proc+1]) proc++;
+          ccols[j] = cols[j] + next->grstarts[proc] - rstarts[proc];
+        } 
+        row  = packer->rstart+next->rstart+i;
+        ierr = MatSetValues(*J,1,&row,nc,ccols,values,INSERT_VALUES);CHKERRQ(ierr);
+        ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
+      }
+      ierr = PetscFree(ccols);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+    }
+    next = next->next;
+  }
+  ierr = MatAssemblyBegin(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  ierr = MatAssemblyEnd(*J,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackGetColoring" 
+/*@
+    VecPackGetColoring - Gets the coloring required for computing the Jacobian via
+    finite differences on a function defined using a VecPack "grid"
+
+    Collective on DA
+
+    Input Parameter:
++   vecpack - the VecPack object
+-   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
+
+    Output Parameters:
+.   coloring - matrix coloring for use in computing Jacobians (or PETSC_NULL if not needed)
+
+    Level: advanced
+
+    Notes: This currentlu uses one color per column so is very slow.
+
+    Notes: These compute the graph coloring of the graph of A^{T}A. The coloring used 
+   for efficient (parallel or thread based) triangular solves etc is NOT yet 
+   available. 
+
+
+.seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring, DAGetColoring()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT VecPackGetColoring(VecPack vecpack,ISColoringType ctype,ISColoring *coloring)
+{
+  PetscErrorCode  ierr;
+  PetscInt        n,i;
+  ISColoringValue *colors;
+
+  PetscFunctionBegin;
+  if (ctype == IS_COLORING_GHOSTED) {
+    SETERRQ(PETSC_ERR_SUP,"Lazy Barry");
+  } else if (ctype == IS_COLORING_GLOBAL) {
+    n = vecpack->n;
+  } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
+
+  ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
+  for (i=0; i<n; i++) {
+    colors[i] = (ISColoringValue)(vecpack->rstart + i);
+  }
+  ierr = ISColoringCreate(vecpack->comm,vecpack->N,n,colors,coloring);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 

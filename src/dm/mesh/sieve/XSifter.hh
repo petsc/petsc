@@ -49,6 +49,7 @@ namespace ALE {
   };// class XParallelObject
   
   namespace XSifterDef {
+    static int debug = 0;
     // 
     // Arrow definition
     // 
@@ -326,63 +327,14 @@ namespace ALE {
     };
     
     //
-    // Filter classes
-    //
+    // RangeFilter is a managed filter that defines a subset of index_type index based on 
+    // the high and low value of key_type key.  
+    // The types of the index and the key on which filtering is done are defined by the FilterManager.
+    // 
+    #undef  __CLASS__
+    #define __CLASS__ "RangeFilter"
     template <typename FilterManager_>
-    class Filter {
-    public:
-      typedef FilterManager_                                         index_filter_manager_type;
-      typedef typename index_filter_manager_type::index_type         index_type;
-      typedef typename index_filter_manager_type::key_extractor_type key_extractor_type;
-      typedef typename key_extractor_type::result_type               key_type;
-      typedef PredicateTraits<key_type>                              key_traits;
-    protected:
-      index_filter_manager_type *_filter_manager;
-      bool                       _have_low, _have_high;
-      key_type                   _low, _high;
-    public:
-      Filter(index_filter_manager_type* filter_manager) : 
-        _filter_manager(filter_manager), _have_low(false), _have_high(false) {};
-      Filter(index_filter_manager_type* filter_manager, const key_type& low, const key_type& high) : 
-        _filter_manager(filter_manager), _have_low(true), _have_high(true), _low(low), _high(high)  {};
-      Filter(const Filter& f) : 
-        _filter_manager(f._filter_manager), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
-      ~Filter(){};
-      //
-      void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
-      void setHigh(const key_type& high) {this->_high = high; this->_have_high = true;};
-      //
-      key_type         low()       const {return this->_low;};
-      key_type         high()      const {return this->_high;};
-      bool             haveLow()   const {return this->_have_low;};
-      bool             haveHigh()  const {return this->_have_high;};
-      //
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const Filter& f) {
-        os << "[";
-        if(f.haveLow()){
-          os << ((typename key_traits::printable_type)(f.low())) << ",";
-        }
-        else {
-          os << "none, ";
-        }
-        if(f.haveHigh()) {
-          os << ((typename key_traits::printable_type)(f.high())); 
-        }
-        else {
-          os << "none";
-        }
-        os << "]";
-        return os;
-      };
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const Obj<Filter>& f) {
-        return (os << f.object());
-      };
-    };// Filter
-    //
-    template <typename FilterManager_>
-    class RangeFilter {
+    class RangeFilter : XObject {
     public:
       typedef FilterManager_                                   filter_manager_type;
       typedef typename filter_manager_type::index_type         index_type;
@@ -394,13 +346,14 @@ namespace ALE {
       filter_manager_type *_manager;
       bool                _have_low, _have_high;
       key_type            _low, _high;
+      key_extractor_type  _kex;
     public:
       RangeFilter(filter_manager_type* manager) : 
-        _manager(manager), _have_low(false), _have_high(false) {};
+        XObject(), _manager(manager), _have_low(false), _have_high(false) {};
       RangeFilter(filter_manager_type* manager, const key_type& low, const key_type& high) : 
-        _manager(manager), _have_low(true), _have_high(true), _low(low), _high(high)  {};
+        XObject(), _manager(manager), _have_low(true), _have_high(true), _low(low), _high(high)  {};
       RangeFilter(const RangeFilter& f) : 
-        _manager(f._manager), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
+        XObject(f), _manager(f._manager), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
       ~RangeFilter(){};
       //
       void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
@@ -411,30 +364,182 @@ namespace ALE {
       bool             haveLow()   const {return this->_have_low;};
       bool             haveHigh()  const {return this->_have_high;};
       //
-      iterator begin() {
+      key_type         key(const iterator& iter)  const { return this->_kex(*iter);};
+      //
+      // Returns the start of the allowed segment within the index.
+      iterator begin() {         
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << std::endl;
+        }
+        iterator iter;
         if(this->_have_low) {
           // ASSUMPTION: index ordering operator can compare against key_type singleton
-          return this->_index->lower_bound(ALE::singleton<key_type>(this->_low));
+          iter = this->_manager->index().lower_bound(ALE::singleton<key_type>(this->_low));
         }
         else {
-          return this->_index->begin();
+          iter = this->_manager->index().begin();
         }
-      };
-      // CONTINUE: this needs to be fixed to handle an itor and an outer_key_extractor (better yet, another RangeFilter)
-      template<typename OuterKey_>
-      iterator begin(const OuterKey_& outer_key) {
-        if(this->_have_low) {
-          // ASSUMPTION: index ordering operator can compare against (OuterKey_,key_type) pairs
-          return this->_index->lower_bound(ALE::pair<OuterKey_,key_type>(this->_low));
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
         }
-        else {
-          return this->_index->begin();
-        }
+        return iter;
       };
       //
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const RangeFilter& f) {
-        os << "[";
+      // Returns the start of the allowed subsegment within a segment defined by fixing the outer key as in the current iterator,
+      // while the filtering is done on the inner key.  The outer key is extracted using a OuterFilter, although only the
+      // key extraction capabilities of OuterFilter are used.
+      template<typename OuterFilter_>
+      iterator begin(const iterator& outer_iter, const OuterFilter_& outer_filter) { 
+        typedef typename OuterFilter_::key_type outer_key_type;
+        iterator iter = outer_iter;
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter  << ", *outer_iter: " << *outer_iter << std::endl;
+        }
+        if(this->_have_low) {
+          // Find the lowest iterator in the range of the filter with the same outer_key
+          // ASSUMPTION: index ordering operator can compare against (outer_key_type,key_type) pairs
+          iter = this->_manager->index().lower_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(iter),this->_low));
+        }
+        else {
+          // If the range is open from below (!have_low), we leave the iter alone
+        }
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+        }
+        return iter;
+      };
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "end"
+      // Returns the end of the allowed segment within the index.
+      iterator end() {
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << std::endl;
+        }
+        static iterator iter;
+        // Determine the upper limit
+        if(this->_have_high()) {
+          // ASSUMPTION: index ordering operator can compare against (key_type) singletons
+          iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->high()));
+        }
+        else {
+          iter = this->_manager->index().end();
+        }
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+        }
+        return iter;
+      };//end()
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "rbegin"
+      // Returns the beginning of the reversed allowed segment within the index.
+      iterator rbegin() {
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << std::endl;
+        }
+        static iterator iter;
+        // Determine the last element in the range
+        if(this->_have_high()) {
+          // ASSUMPTION: index ordering operator can compare against (key_type) singletons
+          iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->high()));
+          if(iter != this->_manager->index().begin()) --iter;
+        }
+        else {
+          iter = this->_manager->index().rbegin();
+        }
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+        }
+        return iter;
+      };//rbegin()
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "end"
+      // Returns the end of the allowed subsegment within a segment defined by fixing the outer key as in the current iterator,
+      // while the filtering is done on the inner key.  The outer key is extracted using a OuterFilter, although only the
+      // key extraction capabilities of OuterFilter are used.
+      template <typename OuterFilter_>
+      iterator end(const iterator& outer_iter, const OuterFilter_& outer_filter) {
+        typedef typename OuterFilter_::key_type outer_key_type;
+        iterator iter = outer_iter;
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *outer_iter: " << *outer_iter << std::endl;
+        }
+        if(this->_have_high) {
+          // Find the highest iterator in the range of the filter with the same outer_key
+          // ASSUMPTION: index ordering operator can compare against (outer_key_type,key_type) pairs
+          iter = this->_manager->index().upper_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(iter),this->_low));
+        }
+        else {
+          // If the range is open from above (!have_high), we leave the iter alone
+        }
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+        }
+        return iter;
+      };//end()
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "rbegin"
+      // Returns the last element of the allowed subsegment within a segment defined by fixing the outer key as in the current iterator,
+      // while the filtering is done on the inner key.  The outer key is extracted using a OuterFilter, although only the
+      // key extraction capabilities of OuterFilter are used.
+      template <typename OuterFilter_>
+      iterator rbegin(const iterator& outer_iter, const OuterFilter_& outer_filter) {
+        return --(this->end(outer_iter, outer_filter));
+      };//rbegin()
+      //
+      // Returns the element of the allowed segment following iter. 
+      // The assumption is that iter is within the segment.
+      iterator next(const iterator& base_iter) {         
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << std::endl;
+        }
+        iterator iter = base_iter;
+        // ASSUMPTION: index ordering operator can compare against key_type singleton
+        iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->key(iter)));
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+        }
+        return iter;
+      };// next()
+      //
+      // Returns the element of the allowed subsegment following iter with the same outer key. 
+      // The assumption is that iter is within the segment.  If the rbegin of the subsegment has been reached,
+      // return base_iter unchanged.
+      template<typename OuterFilter_>
+      iterator next(const iterator& base_iter, const OuterFilter_& outer_filter) {         
+        typedef typename OuterFilter_::key_type outer_key_type;
+        iterator iter = base_iter;
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << std::endl;
+        }
+        if(iter != this->rbegin(base_iter, outer_filter)) {
+          iter = this->_manager->index().upper_bound(ALE::pair<key_type, outer_key_type>(outer_filter.key(iter),this->key(iter)));
+        }
+        if(ALE::XSifterDef::debug){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+        }
+        return iter;
+      };// next()
+      //
+      friend std::ostream& operator<<(std::ostream& os, const RangeFilter& f) {
+        os << "[low, high] = [";
         if(f.haveLow()){
           os << ((typename key_traits::printable_type)(f.low())) << ",";
         }
@@ -450,27 +555,33 @@ namespace ALE {
         os << "]";
         return os;
       };
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const Obj<RangeFilter>& f) {
+      friend std::ostream& operator<<(std::ostream& os, const Obj<RangeFilter>& f) {
         return (os << f.object());
       };
     };// RangeFilter
 
     //
-    // StridedIndexSequence definition
+    // FilteredIndexSequence definition
     // 
-    // Defines a sequence representing a subset of a multi_index container defined by its Index_ which is ordered lexicographically 
-    // starting with an OuterKey_ (obtained from an OuterKeyExtractor_) and then by an InnerKey_ (obtained from an InnerKeyExtractor_).
-    // A sequence defines output iterators (input iterators in std terminology) for traversing an Index_ object.
-    // This particular sequence traverses all OuterKey_ segements within a given OuterFilter, and within each segment traverses the segment
-    // of InnerKeys defined by an InnerFilter. In other words, the sequence iterates over the (OuterKey_, InnerKey_) value pairs with 
-    // each of the keys lying within its own filter.
+    //   Defines a sequence representing a subset of a multi_index container defined by its Index_ which is ordered lexicographically.
+    // The ordering is controlled by a pair of filters (OuterFilter_ and InnerFilter_ types).
+    // The elements of the sequence are a subset of an Index_ ordered lexicographically by (OuterKey_,InnerKey_) pairs and such that 
+    // each key lies in the range of OuterFilter_/InnerFilter_ respectively.  
+    // A sequence defines output iterators (input iterators in std terminology) for traversing a subset of an Index_ object.
     // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
+    //   More precisely, the index can be viewed as oredered by (OuterKey_,InnerKey_,RemainderKey_) triples, where the RemainderKey_
+    // type is not explicitly known to FilteredIndexSequence.  The Filters only restrict the allowable values of the first two keys, 
+    // while all RemainderKey_ values are allowed. By default a FilteredIndexSequence will traverse ALL entries with a given leading 
+    // (OuterKey_,InnerKey_) pair.  However, setting the template parameter 'Strided = true' will cause only the first elements of 
+    // each segment with the same (OuterKey_,InnerKey_) pair to be traversed.  In other words, each (OuterKey_,InnerKey_) pair will 
+    // be seen once only.  
+    //   Ideally, 'Strided' should parameterize different implementations, but right now there is an 'if' test. An opporunity for improvement.
+    // 
     #undef  __CLASS__
-    #define __CLASS__ "StridedIndexSequence"
+    #define __CLASS__ "FilteredIndexSequence"
     template <typename Index_, typename OuterFilter_, typename InnerFilter_, 
-              typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type>, bool inner_strided_flag = false >
-    struct StridedIndexSequence : XObject {
+              typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type>, bool Strided = false >
+    struct FilteredIndexSequence : XObject {
       typedef Index_                                           index_type;
       typedef InnerFilter_                                     inner_filter_type;
       typedef OuterFilter_                                     outer_filter_type;
@@ -490,13 +601,13 @@ namespace ALE {
       class iterator {
       public:
         // Parent sequence type
-        typedef StridedIndexSequence                   sequence_type;
+        typedef FilteredIndexSequence                   sequence_type;
         // Standard iterator typedefs
         typedef std::input_iterator_tag                iterator_category;
         typedef int                                    difference_type;
         typedef value_type*                            pointer;
         typedef value_type&                            reference;
-        /* value_type defined in the containing StridedIndexSequence */
+        /* value_type defined in the containing FilteredIndexSequence */
       protected:
         // Parent sequence
         sequence_type  *_sequence;
@@ -519,7 +630,7 @@ namespace ALE {
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
         virtual const value_type  operator*() const {return _ex(*(this->_itor));};
         virtual iterator   operator++() {
-          this->_sequence->next(this->_itor, this->_segBndry, inner_strided_flag);
+          this->_sequence->next(this->_itor);
           return *this;
         };
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
@@ -537,19 +648,19 @@ namespace ALE {
       //
       // Basic interface
       //
-      StridedIndexSequence() : XObject(), _index(NULL), _outer_filter(NULL), _inner_filter(NULL) {};
-      StridedIndexSequence(index_type *index, const outer_filter_type& outer_filter, const inner_filter_type& inner_filter) : 
+      FilteredIndexSequence() : XObject(), _index(NULL), _outer_filter(NULL), _inner_filter(NULL) {};
+      FilteredIndexSequence(index_type *index, const outer_filter_type& outer_filter, const inner_filter_type& inner_filter) : 
         XObject(), _index(index), _outer_filter(outer_filter), _inner_filter(inner_filter){};
-      StridedIndexSequence(const StridedIndexSequence& seq) : 
+      FilteredIndexSequence(const FilteredIndexSequence& seq) : 
         XObject(seq), _index(seq._index), _outer_filter(seq._outer_filter), _inner_filter(seq._inner_filter) {};
-      virtual ~StridedIndexSequence() {};
+      virtual ~FilteredIndexSequence() {};
       // 
-      void copy(const StridedIndexSequence& seq, StridedIndexSequence cseq) {
+      void copy(const FilteredIndexSequence& seq, FilteredIndexSequence cseq) {
         cseq._index = seq._index; 
         cseq._inner_filter = seq._inner_filter;
         cseq._outer_filter = seq._outer_filter;
       };
-      StridedIndexSequence& operator=(const StridedIndexSequence& seq) {
+      FilteredIndexSequence& operator=(const FilteredIndexSequence& seq) {
         copy(seq,*this); return *this;
       };
       void reset(index_type *index, const inner_filter_type& inner_filter, const outer_filter_type& outer_filter) {
@@ -580,34 +691,36 @@ namespace ALE {
       #undef  __FUNCT__
       #define __FUNCT__ "begin"
       iterator begin() {
-        if(this->debug()) {
+        if(ALE::XSifterDef::debug) {
           std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           //
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
         }
         static itor_type itor;
-        // Determine the lower outer limit iterator
-        if(this->outerFilter().haveLow()) {
-          // ASSUMPTION: index ordering operator can compare against outer_key singleton
-          itor = this->_index->lower_bound(ALE::singleton<outer_key_type>(this->outerFilter().low()));
-        }
-        else {
-          itor = this->_index->begin();
-        }
-        // Now determine the inner lower limit and set the iterator to that limit within the first segment
-        if(this->innerFilter().haveLow()) {
-          // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-          itor = this->_index->lower_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->innerFilter().low()));
-        }
-        else {
-          // the itor is already in the right place: nothing to do
-        }  
-        // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+//         // Determine the lower outer limit iterator
+//         if(this->outerFilter().haveLow()) {
+//           // ASSUMPTION: index ordering operator can compare against outer_key singleton
+//           itor = this->_index->lower_bound(ALE::singleton<outer_key_type>(this->outerFilter().low()));
+//         }
+//         else {
+//           itor = this->_index->begin();
+//         }
+//         // Now determine the inner lower limit and set the iterator to that limit within the first segment
+//         if(this->innerFilter().haveLow()) {
+//           // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+//           itor = this->_index->lower_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->innerFilter().low()));
+//         }
+//         else {
+//           // the itor is already in the right place: nothing to do
+//         }  
         static itor_type segBndry;
         // Segment boundary set to just above the current (outer_key, inner_key) pair.
+        // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+        itor = this->innerFilter().begin(this->outerFilter().begin(), this->outerFilter());
         segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(this->_okex(*itor),this->_ikex(*itor)));
-        if(this->debug()){
+        //        segBndry = this->innerFilter().end(itor,this->outerFilter());
+        if(ALE::XSifterDef::debug){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
           std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
@@ -619,8 +732,8 @@ namespace ALE {
       //
       #undef  __FUNCT__
       #define __FUNCT__ "next"
-      void next(itor_type& itor, itor_type& segBndry, bool inner_strided = false) {
-        if(this->debug()) {
+      void next(itor_type& itor, itor_type& segBndry) {
+        if(ALE::XSifterDef::debug) {
           std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           //
@@ -633,11 +746,11 @@ namespace ALE {
         }
         outer_key_type olow;
         inner_key_type ilow;
-        // If iteration over inner keys is to be strided as well, we advance directly to the segment boundary.
+        // If iteration is to be strided to skip RemainderKeys, we advance directly to the next subsegment.
         // Effectively, we iterate over segments.
-        if(inner_strided) {
-          if(this->debug()) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "inner key strided " << std::endl;
+        if(Strided) {
+          if(ALE::XSifterDef::debug) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
           }
           // Advance itor to the segment boundary
           itor = segBndry;
@@ -646,10 +759,10 @@ namespace ALE {
           ilow = this->_ikex(*itor);
           // Compute the new segment's boundary
           segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
-        }// inner strided
+        }// Strided
         // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
         else {
-          if(this->debug()) {
+          if(ALE::XSifterDef::debug) {
             std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "inner key not strided " << std::endl;
           }
           // See if our advance would lead to breaching the segment boundary:
@@ -680,8 +793,8 @@ namespace ALE {
             // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
             segBndry = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(olow,ilow));
           }
-        }// inner not strided
-        if(this->debug()) {
+        }// not Strided
+        if(ALE::XSifterDef::debug) {
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
           std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
@@ -691,9 +804,50 @@ namespace ALE {
       };// next()
       //
       #undef  __FUNCT__
+      #define __FUNCT__ "next"
+      void next(itor_type& itor) {
+        if(ALE::XSifterDef::debug) {
+          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "outer filter: " << this->outerFilter() << ", ";
+          //
+          std::cout << "inner filter: " << this->innerFilter() << std::endl;
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *itor " << *itor; 
+          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+        }
+        // Check to see if we have reached the subsegment boundary
+        if(itor == this->innerFilter().rbegin(itor, this->outerFilter())) { // at subsegment end
+          // Advance to the next element in the outer segment
+          itor = this->outerFilter().next(itor);
+          // Select the first inner element -- beginning of the subsegment
+          itor = this->innerFilter().begin(itor, this->outerFilter());
+        }
+        else { // not at subsegment end
+          // If iteration is to be strided we skip the RemainderKeys. Effectively, we iterate over subsegments.
+          if(Strided) {
+            if(ALE::XSifterDef::debug) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
+            }
+            itor = this->innerFilter().next(itor, this->outerFilter());
+          }// Strided
+          // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
+          else {
+            if(ALE::XSifterDef::debug) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided sequence" << std::endl;
+            }
+            ++itor; 
+          }// not Strided
+        }// not at subsegment end
+        if(ALE::XSifterDef::debug) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
+          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+        }
+      };// next()
+      //
+      #undef  __FUNCT__
       #define __FUNCT__ "end"
       iterator end() {
-        if(this->debug()) {
+        if(ALE::XSifterDef::debug) {
           std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           //
@@ -722,7 +876,7 @@ namespace ALE {
           itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(ohigh));
         }
         // use segBndry == itor
-        if(this->debug()){
+        if(ALE::XSifterDef::debug){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
           std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
@@ -748,7 +902,7 @@ namespace ALE {
         }
         os << " ]" << std::endl;
       };
-    };// class StridedIndexSequence    
+    };// class FilteredIndexSequence    
   }; // namespace XSifterDef
   
   //
@@ -857,12 +1011,12 @@ namespace ALE {
     //
     // Sequence types
     template <typename Index_, 
-              typename OuterFilter_, typename InnerFilter_, typename ValueExtractor_, bool inner_strided_flag = false>
+              typename OuterFilter_, typename InnerFilter_, typename ValueExtractor_, bool Strided = false>
     class ArrowSequence : 
-      public XSifterDef::StridedIndexSequence<Index_, OuterFilter_, InnerFilter_, ValueExtractor_, inner_strided_flag> {
-      // ArrowSequence extends StridedIndexSequence with extra iterator methods.
+      public XSifterDef::FilteredIndexSequence<Index_, OuterFilter_, InnerFilter_, ValueExtractor_, Strided> {
+      // ArrowSequence extends FilteredIndexSequence with extra iterator methods.
     public:
-      typedef XSifterDef::StridedIndexSequence<Index_, OuterFilter_, InnerFilter_, ValueExtractor_, inner_strided_flag> super;
+      typedef XSifterDef::FilteredIndexSequence<Index_, OuterFilter_, InnerFilter_, ValueExtractor_, Strided> super;
       typedef XSifter                                                                                                               container_type;
       typedef typename super::index_type                                                                                            index_type;
       typedef typename super::outer_filter_type                                                                                     outer_filter_type;
@@ -946,15 +1100,15 @@ namespace ALE {
     // Specialized sequence types
     //
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ALE::XSifterDef::Filter<UpwardPredicateFilterManager>, 
-                          ALE::XSifterDef::Filter<UpwardTargetFilterManager>,
+                          ALE::XSifterDef::RangeFilter<UpwardPredicateFilterManager>, 
+                          ALE::XSifterDef::RangeFilter<UpwardTargetFilterManager>,
                           ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>, 
                           true>                                                       
     BaseSequence;
 
     typedef ArrowSequence<typename ::boost::multi_index::index<rec_set_type, UpwardTag>::type,
-                          ALE::XSifterDef::Filter<UpwardPredicateFilterManager >,
-                          ALE::XSifterDef::Filter<UpwardTargetFilterManager>,
+                          ALE::XSifterDef::RangeFilter<UpwardPredicateFilterManager >,
+                          ALE::XSifterDef::RangeFilter<UpwardTargetFilterManager>,
                           ::boost::multi_index::const_mem_fun<rec_type, source_type, &rec_type::source> >     
     ConeSequence;
     //
@@ -963,7 +1117,9 @@ namespace ALE {
     XSifter(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
       XObject(debug), _rec_set(), 
       _upward_predicate_filter_manager(::boost::multi_index::get<UpwardTag>(_rec_set)),
-      _upward_target_filter_manager(::boost::multi_index::get<UpwardTag>(_rec_set)){};
+      _upward_target_filter_manager(::boost::multi_index::get<UpwardTag>(_rec_set))
+    {
+    };
     //
     // Extended interface
     //
@@ -977,29 +1133,29 @@ namespace ALE {
     };
     void cone(const target_type& t, ConeSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
-                XSifterDef::Filter<UpwardPredicateFilterManager>(), XSifterDef::Filter<UpwardTargetFilterManager>(t,t));
+                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(), XSifterDef::RangeFilter<UpwardTargetFilterManager>(t,t));
     };
 //     ConeSequence& cone(const target_type& t) {
 //       static ConeSequence cseq;
 // #ifdef ALE_USE_DEBUGGING
-//       cseq.debug(this->debug());
+//       cseq.debug(ALE::XSifterDef::debug);
 // #endif
 //       this->cone(t,cseq);
 //       return cseq;
 //     };
   ConeSequence cone(const target_type& t) {
       return ConeSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
-                XSifterDef::Filter<UpwardPredicateFilterManager>(), XSifterDef::Filter<UpwardTargetFilterManager>(t,t));
+                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(), XSifterDef::RangeFilter<UpwardTargetFilterManager>(t,t));
   };
     void base(BaseSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 
-                XSifterDef::Filter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
-                XSifterDef::Filter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager));
+                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
+                XSifterDef::RangeFilter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager));
     };
 //     BaseSequence& base() {
 //       static BaseSequence bseq;
 // #ifdef ALE_USE_DEBUGGING
-//       bseq.debug(this->debug());
+//       bseq.debug(ALE::XSifterDef::debug);
 // #endif
 //       this->base(bseq);
 //       return bseq;
@@ -1007,8 +1163,8 @@ namespace ALE {
     //
     BaseSequence base() {
       return BaseSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 
-                XSifterDef::Filter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
-                XSifterDef::Filter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager));
+                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
+                XSifterDef::RangeFilter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager));
     };
     //
     template<typename ostream_type>

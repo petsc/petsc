@@ -194,7 +194,6 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatGetBlockSize()\n");CHKERRQ(ierr);
   }
 
-  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,n,&x);CHKERRQ(ierr);     
@@ -204,27 +203,19 @@ int main(int argc,char **args)
   ierr = VecDuplicate(x,&b);CHKERRQ(ierr);
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
+  /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
   if (!equal) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Error in MatDiagonalScale");
 
   ierr = MatGetDiagonal(A,s1);CHKERRQ(ierr);  
-  ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);
-  
+  ierr = MatGetDiagonal(sB,s2);CHKERRQ(ierr);  
   ierr = VecAXPY(s2,neg_one,s1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm1);CHKERRQ(ierr);
   if ( norm1>tol) { 
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%G\n",norm1);CHKERRQ(ierr);
   }
-  /*
-  ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
-  ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
-  norm1 -= norm2;
-  if (norm1<-tol || norm1>tol) { 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal() \n");CHKERRQ(ierr);
-  } 
-  */
 
   ierr = MatScale(A,alpha);CHKERRQ(ierr);
   ierr = MatScale(sB,alpha);CHKERRQ(ierr);
@@ -299,9 +290,21 @@ int main(int argc,char **args)
     */
 
     ierr = MatMult(sB,x,b);CHKERRQ(ierr);
+
+    /* test MatForwardSolve() and MatBackwardSolve() */
+    if (lf == -1){
+      ierr = MatForwardSolve(sC,b,s1);CHKERRQ(ierr);
+      ierr = MatBackwardSolve(sC,s1,s2);CHKERRQ(ierr);      
+      ierr = VecAXPY(s2,neg_one,x);CHKERRQ(ierr);
+      ierr = VecNorm(s2,NORM_2,&norm2);CHKERRQ(ierr);
+      if (10*norm1 < norm2){
+        ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G, bs=%d\n",norm2,bs);CHKERRQ(ierr); 
+      }
+    } 
+
+    /* test MatSolve() */
     ierr = MatSolve(sC,b,y);CHKERRQ(ierr);
     ierr = MatDestroy(sC);CHKERRQ(ierr);
-      
     /* Check the error */
     ierr = VecAXPY(y,neg_one,x);CHKERRQ(ierr);
     ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);

@@ -21,6 +21,9 @@ struct _DMOps {
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
+
+  PetscErrorCode (*forminitialguess)(DM,PetscErrorCode (*)(void),Vec,void*);
+  PetscErrorCode (*formfunction)(DM,Vec*);
 };
 
 struct _p_DM {

@@ -6,10 +6,11 @@
 #include "private/pcimpl.h"               /*I "petscpc.h" I*/
 
 typedef struct {
-  PetscInt   its;        /* inner iterations, number of sweeps */
-  PetscInt   lits;       /* local inner iterations, number of sweeps applied by the local matrix mat->A */
-  MatSORType sym;        /* forward, reverse, symmetric etc. */
-  PetscReal  omega;
+  PetscInt    its;        /* inner iterations, number of sweeps */
+  PetscInt    lits;       /* local inner iterations, number of sweeps applied by the local matrix mat->A */
+  MatSORType  sym;        /* forward, reverse, symmetric etc. */
+  PetscReal   omega;
+  PetscReal   fshift;
 } PC_SOR;
 
 #undef __FUNCT__  
@@ -33,7 +34,7 @@ static PetscErrorCode PCApply_SOR(PC pc,Vec x,Vec y)
   PetscInt       flag = jac->sym | SOR_ZERO_INITIAL_GUESS;
 
   PetscFunctionBegin;
-  ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,0.0,jac->its,jac->lits,y);CHKERRQ(ierr);
+  ierr = MatRelax(pc->pmat,x,jac->omega,(MatSORType)flag,jac->fshift,jac->its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -47,7 +48,7 @@ static PetscErrorCode PCApplyRichardson_SOR(PC pc,Vec b,Vec y,Vec w,PetscReal rt
   PetscFunctionBegin;
   ierr = PetscInfo1(pc,"Warning, convergence critera ignored, using %D iterations\n",its);CHKERRQ(ierr);
   its  = its*jac->its;
-  ierr = MatRelax(pc->pmat,b,jac->omega,(MatSORType)jac->sym,0.0,its,jac->lits,y);CHKERRQ(ierr);
+  ierr = MatRelax(pc->pmat,b,jac->omega,(MatSORType)jac->sym,jac->fshift,its,jac->lits,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -62,6 +63,7 @@ PetscErrorCode PCSetFromOptions_SOR(PC pc)
   PetscFunctionBegin;
   ierr = PetscOptionsHead("(S)SOR options");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_sor_omega","relaxation factor (0 < omega < 2)","PCSORSetOmega",jac->omega,&jac->omega,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_sor_diagonal_shift","Add to the diagonal entries","",jac->fshift,&jac->fshift,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_sor_its","number of inner SOR iterations","PCSORSetIterations",jac->its,&jac->its,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-pc_sor_lits","number of local inner SOR iterations","PCSORSetIterations",jac->lits,&jac->lits,0);CHKERRQ(ierr);
     ierr = PetscOptionsTruthGroupBegin("-pc_sor_symmetric","SSOR, not SOR","PCSORSetSymmetric",&flg);CHKERRQ(ierr);
@@ -332,6 +334,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC pc)
   pc->data                 = (void*)jac;
   jac->sym                 = SOR_LOCAL_SYMMETRIC_SWEEP;
   jac->omega               = 1.0;
+  jac->fshift              = 0.0;
   jac->its                 = 1;
   jac->lits                = 1;
 

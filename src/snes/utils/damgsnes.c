@@ -1,6 +1,7 @@
 #define PETSCSNES_DLL
  
 #include "petscda.h"      /*I      "petscda.h"    I*/
+#include "src/dm/da/daimpl.h" 
 /* It appears that preprocessor directives are not respected by bfort */
 #ifdef PETSC_HAVE_SIEVE
 #include "petscmesh.h"
@@ -874,7 +875,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 #if defined(PETSC_HAVE_ADIC)
   else if (ad_function) computejacobian = DMMGComputeJacobianWithAdic;
 #endif
-
+  CHKMEMQ;
   ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm,&cookie);CHKERRQ(ierr);
   if (cookie == DA_COOKIE) {
     PetscTruth flag;
@@ -891,6 +892,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
       ierr = DASetLocalAdicFunction((DA)dmmg[i]->dm,ad_function);CHKERRQ(ierr);
       ierr = DASetLocalAdicMFFunction((DA)dmmg[i]->dm,admf_function);CHKERRQ(ierr);
     }
+  CHKMEMQ;
   } else {
 #ifdef PETSC_HAVE_SIEVE
     ierr = DMMGSetSNES(dmmg, DMMGFormFunctionMesh, DMMGComputeJacobianMesh);CHKERRQ(ierr);
@@ -899,8 +901,10 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
       dmmg[i]->lfj = (PetscErrorCode (*)(void)) function; 
       ierr = MeshSetLocalJacobian((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
     }
+  CHKMEMQ;
 #endif
   }
+  CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
@@ -994,25 +998,20 @@ PetscErrorCode DMMGSetSNESLocalib_Private(DMMG *dmmg,PetscErrorCode (*functioni)
   PetscFunctionReturn(0);
 }
 
-static PetscErrorCode (*localfunc)(DALocalInfo*,void*) = 0;
+static PetscErrorCode (*localfunc)(void) = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGInitialGuess_Local"
+/*
+    Uses the DM object to call the user provided function with the correct calling
+  sequence.
+*/
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuess_Local(DMMG dmmg,Vec x)
 {
   PetscErrorCode ierr;
-  DALocalInfo    info;
-  void           *f;
-  DA             da = (DA)dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalInfo(da,&info);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,x,&f);CHKERRQ(ierr);
-
-  CHKMEMQ;
-  ierr = (*localfunc)(&info,f);CHKERRQ(ierr);
-  CHKMEMQ;
-
+  ierr = (*dmmg->dm->ops->forminitialguess)(dmmg->dm,localfunc,x,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1032,10 +1031,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGInitialGuess_Local(DMMG dmmg,Vec x)
 .seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(), DMMGSetSNESLocal()
 
 @*/
-PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(DALocalInfo*,void*))
+PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(void))
 {
   PetscErrorCode ierr;
-
 
   PetscFunctionBegin;
   localfunc = localguess;  /* stash into ugly static for now */

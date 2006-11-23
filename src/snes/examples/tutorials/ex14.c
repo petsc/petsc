@@ -133,7 +133,7 @@ int main(int argc,char **argv)
     if (coloring) {
       ISColoring    iscoloring;
 
-      ierr = DAGetColoring(user.da,IS_COLORING_LOCAL,&iscoloring);CHKERRQ(ierr);
+      ierr = DAGetColoring(user.da,IS_COLORING_GLOBAL,&iscoloring);CHKERRQ(ierr);
       ierr = DAGetMatrix(user.da,MATAIJ,&J);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(J,iscoloring,&matfdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);

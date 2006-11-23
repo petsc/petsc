@@ -3,10 +3,8 @@ set -x
 
 # basic gcc tests
 ./config/asterix.py
-make PETSC_ARCH=asterix all alltests
-make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_X11 
+make PETSC_ARCH=asterix all alltests DATAFILESPATH=/home/balay/datafiles 
 make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_NoComplex
-make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_Fortran_NoComplex
 
 ./config/asterix.py --with-clanguage=cxx -PETSC_ARCH=asterix-cxx-opt --with-debugging=0
 make PETSC_ARCH=asterix-cxx-opt all test
@@ -47,13 +45,13 @@ make PETSC_ARCH=asterix-intel-cxx-prometheus all test
 #make PETSC_ARCH=asterix-tops all test
 
 ./config/asterix-c89.py
-make PETSC_ARCH=asterix-c89 all test alltests
+make PETSC_ARCH=asterix-c89 all test alltests DATAFILESPATH=/home/balay/datafiles
 
 # basic sun tests
 ./config/asterix-sun.py
 make PETSC_ARCH=asterix-sun all test
 ./config/asterix-sun.py --with-shared=1 --with-dynamic=1 -PETSC_ARCH=asterix-sun-dynamic
-make PETSC_ARCH=asterix-sun-dynamic all alltests
+make PETSC_ARCH=asterix-sun-dynamic all alltests DATAFILESPATH=/home/balay/datafiles
 ./config/asterix-sun.py --with-clanguage=cxx -PETSC_ARCH=asterix-sun-cxx  --with-debugging=0 --with-pic=0 \
 --download-f-blaslapack=1 --download-spooles=1 --download-superlu=1 \
 --download-superlu_dist=1 --download-hypre=1 --download-spai=1 --download-blacs=1 --download-scalapack=1 \

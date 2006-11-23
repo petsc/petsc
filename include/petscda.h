@@ -419,7 +419,7 @@ typedef struct _p_VecPack* VecPack;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreate(MPI_Comm,VecPack*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackDestroy(VecPack);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddArray(VecPack,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddArray(VecPack,PetscMPIInt,PetscInt);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddDA(VecPack,DA);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddVecScatter(VecPack,VecScatter);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackScatter(VecPack,Vec,...);
@@ -433,6 +433,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreateGlobalVector(VecPack,Vec*)
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetGlobalIndices(VecPack,...);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRefine(VecPack,MPI_Comm,VecPack*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetMatrix(VecPack,MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetColoring(VecPack,ISColoringType,ISColoring*);
 
 /*S
      Slice - Abstract PETSc object that manages distributed field data for a simple unstructured matrix

@@ -1257,6 +1257,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
+  int ierr;
 
 
   /* strip and load s */
@@ -1276,7 +1277,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -1295,7 +1296,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -1308,7 +1309,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {(*fct)((dptr1 + *iptr),in2,1); iptr++; in2++;}
       /* {*(dptr1 + *iptr) = (*fct)(*(dptr1 + *iptr),*in2); iptr++; in2++;} */
@@ -1323,7 +1324,7 @@ gs_gop_pairwise_binary( gs_id *gs,  PetscScalar *in_vals,
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -1544,6 +1545,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
+  int ierr;
 
 
   /* strip and load s */
@@ -1563,7 +1565,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -1582,7 +1584,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -1595,7 +1597,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = EXISTS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -1609,7 +1611,7 @@ gs_gop_pairwise_exists( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -1787,7 +1789,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -1806,7 +1808,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -1825,7 +1827,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -1838,7 +1840,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = MAX_FABS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -1852,7 +1854,7 @@ gs_gop_pairwise_max_abs( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -2031,7 +2033,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -2050,7 +2052,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -2069,7 +2071,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -2082,7 +2084,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = PetscMax(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -2096,7 +2098,7 @@ gs_gop_pairwise_max( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -2116,6 +2118,7 @@ gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
+  int ierr;
   
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
@@ -2130,7 +2133,7 @@ gs_gop_tree_max(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MAX,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MAX,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
 
@@ -2264,7 +2267,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -2283,7 +2286,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -2302,7 +2305,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -2315,7 +2318,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = MIN_FABS(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -2329,7 +2332,7 @@ gs_gop_pairwise_min_abs( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -2498,7 +2501,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -2517,7 +2520,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -2536,7 +2539,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -2549,7 +2552,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr) = PetscMin(*(dptr1 + *iptr),*in2); iptr++; in2++;}
     }
@@ -2563,7 +2566,7 @@ gs_gop_pairwise_min( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -2583,6 +2586,7 @@ gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
+  int ierr;
   
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
@@ -2597,7 +2601,7 @@ gs_gop_tree_min(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MIN,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_MIN,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
 }
@@ -2774,7 +2778,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -2793,7 +2797,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -2812,7 +2816,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -2825,7 +2829,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr++) *= *in2++;}
     }
@@ -2839,7 +2843,7 @@ gs_gop_pairwise_times( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 }
 
 
@@ -2859,6 +2863,7 @@ gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
+  int ierr;
   
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
@@ -2873,7 +2878,7 @@ gs_gop_tree_times(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_PROD,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_PROD,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
 
@@ -3055,7 +3060,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
    int *pw, *list, *size, **nodes;
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -3074,7 +3079,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++;
     }
@@ -3093,7 +3098,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
         {*dptr2++ = *(dptr1 + *iptr++);}
       /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
       /* is msg_ids_out++ correct? */
-      MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -3107,7 +3112,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
     {
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0)
         {*(dptr1 + *iptr++) += *in2++;}
     }
@@ -3121,7 +3126,7 @@ gs_gop_pairwise_plus( gs_id *gs,  PetscScalar *in_vals)
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 
 }
 
@@ -3142,6 +3147,7 @@ gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
   int size;
   int *in, *out;  
   PetscScalar *buf, *work;
+  int ierr;
   
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
@@ -3156,7 +3162,7 @@ gs_gop_tree_plus(gs_id *gs, PetscScalar *vals)
 
   in   = gs->tree_map_in;
   out  = gs->tree_map_out;
-  MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_SUM,gs->gs_comm);
+  ierr = MPI_Allreduce(buf,work,size,MPIU_SCALAR,MPI_SUM,gs->gs_comm);
   while (*in >= 0)
     {*(vals + *in++) = *(work + *out++);}
 
@@ -3515,7 +3521,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   PetscBLASInt i1;
-
+  int ierr;
 
   /* strip and load s */
   msg_list =list         = gs->pair_list;
@@ -3534,7 +3540,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
     {
       /* Should MPI_ANY_SOURCE be replaced by *list ? In that case do the
          second one *list and do list++ afterwards */
-      MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+      ierr = MPI_Irecv(in1, *size *step, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                 gs->gs_comm, msg_ids_in++); 
       in1 += *size++ *step;
     }
@@ -3559,7 +3565,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
           dptr2+=step;
           iptr++;
         }
-      MPI_Isend(dptr3, *msg_size++ *step, MPIU_SCALAR, *msg_list++,
+      ierr = MPI_Isend(dptr3, *msg_size++ *step, MPIU_SCALAR, *msg_list++,
                 MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
     }
 
@@ -3573,7 +3579,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
     PetscScalar d1 = 1.0;
       /* Should I check the return value of MPI_Wait() or status? */
       /* Can this loop be replaced by a call to MPI_Waitall()? */
-      MPI_Wait(ids_in++, &status);
+      ierr = MPI_Wait(ids_in++, &status);
       while (*iptr >= 0) {
           BLASaxpy_(&step,&d1,in2,&i1,dptr1 + *iptr*step,&i1);
           in2+=step;
@@ -3594,7 +3600,7 @@ gs_gop_vec_pairwise_plus( gs_id *gs,  PetscScalar *in_vals,
   while (*msg_nodes++)
     /* Should I check the return value of MPI_Wait() or status? */
     /* Can this loop be replaced by a call to MPI_Waitall()? */
-    {MPI_Wait(ids_out++, &status);}
+    {ierr = MPI_Wait(ids_out++, &status);}
 
 
 }
@@ -3750,6 +3756,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
   MPI_Request *msg_ids_in, *msg_ids_out, *ids_in, *ids_out;
   MPI_Status status;
   int i, mask=1;
+  int ierr;
 
   for (i=1; i<dim; i++)
     {mask<<=1; mask++;}
@@ -3774,7 +3781,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
          second one *list and do list++ afterwards */
       if ((my_id|mask)==(*list|mask))
         {
-          MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
+          ierr = MPI_Irecv(in1, *size, MPIU_SCALAR, MPI_ANY_SOURCE, MSGTAG1 + *list++, 
                     gs->gs_comm, msg_ids_in++); 
           in1 += *size++;
         }
@@ -3799,7 +3806,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
             {*dptr2++ = *(dptr1 + *iptr++);}
           /* CHECK PERSISTENT COMMS MODE FOR ALL THIS STUFF */
           /* is msg_ids_out++ correct? */
-          MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *list++,
+          ierr = MPI_Isend(dptr3, *msg_size++, MPIU_SCALAR, *list++,
                     MSGTAG1+my_id, gs->gs_comm, msg_ids_out++);
         }
       else
@@ -3819,7 +3826,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
-          MPI_Wait(ids_in++, &status);
+          ierr = MPI_Wait(ids_in++, &status);
           while (*iptr >= 0)
             {*(dptr1 + *iptr++) += *in2++;}
         }
@@ -3838,7 +3845,7 @@ gs_gop_pairwise_plus_hc( gs_id *gs,  PetscScalar *in_vals, int dim)
         {
           /* Should I check the return value of MPI_Wait() or status? */
           /* Can this loop be replaced by a call to MPI_Waitall()? */
-          MPI_Wait(ids_out++, &status);
+          ierr = MPI_Wait(ids_out++, &status);
         }
       msg_list++;
     }

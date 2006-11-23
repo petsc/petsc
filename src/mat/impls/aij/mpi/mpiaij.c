@@ -2873,7 +2873,7 @@ PetscErrorCode MatSetColoring_MPIAIJ(Mat A,ISColoring coloring)
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;  
 
   PetscFunctionBegin;
-  if (coloring->ctype == IS_COLORING_LOCAL) {
+  if (coloring->ctype == IS_COLORING_GLOBAL) {
     ISColoringValue *allcolors,*colors;
     ISColoring      ocoloring;
 
@@ -3808,13 +3808,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   PetscMPIInt            *rprocs,*sprocs,tag=ctx->tag,rank; 
   PetscInt               *rowlen,*bufj,*bufJ,ncols,aBn=a->B->cmap.n,row,*b_othi,*b_othj;
   PetscScalar            *rvalues,*svalues,*b_otha,*bufa,*bufA;
-  PetscInt               i,k,l,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
+  PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = PETSC_NULL,*swaits = PETSC_NULL;
   MPI_Status             *sstatus,rstatus;
-  PetscInt               *cols;
+  PetscInt               *cols,sbs,rbs;
   PetscScalar            *vals;
-  PetscMPIInt            j;
- 
+
   PetscFunctionBegin;
   if (A->cmap.rstart != B->rmap.rstart || A->cmap.rend != B->rmap.rend){
     SETERRQ4(PETSC_ERR_ARG_SIZ,"Matrix local dimensions are incompatible, (%d, %d) != (%d,%d)",A->cmap.rstart,A->cmap.rend,B->rmap.rstart,B->rmap.rend);
@@ -3827,18 +3826,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
 
   gen_to   = (VecScatter_MPI_General*)ctx->todata;
   gen_from = (VecScatter_MPI_General*)ctx->fromdata;
-  rvalues  = gen_from->values; /* holds the length of sending row */
-  svalues  = gen_to->values;   /* holds the length of receiving row */
+  rvalues  = gen_from->values; /* holds the length of receiving row */
+  svalues  = gen_to->values;   /* holds the length of sending row */
   nrecvs   = gen_from->n;
   nsends   = gen_to->n;
 
   ierr = PetscMalloc2(nrecvs,MPI_Request,&rwaits,nsends,MPI_Request,&swaits);CHKERRQ(ierr);
-  srow     = gen_to->indices;   /* local row index to be sent */
-  rstarts  = gen_from->starts;
-  sstarts  = gen_to->starts; 
-  rprocs   = gen_from->procs;
+  srow     = gen_to->indices;   /* local row index to be sent */  
+  sstarts  = gen_to->starts;   
   sprocs   = gen_to->procs;
   sstatus  = gen_to->sstatus;
+  sbs      = gen_to->bs;  
+  rstarts  = gen_from->starts;
+  rprocs   = gen_from->procs;
+  rbs      = gen_from->bs;
 
   if (!startsj || !bufa_ptr) scall = MAT_INITIAL_MATRIX;
   if (scall == MAT_INITIAL_MATRIX){
@@ -3846,8 +3847,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     /*---------*/
     /*  post receives */
     for (i=0; i<nrecvs; i++){
-      rowlen = (PetscInt*)rvalues + rstarts[i];
-      nrows = rstarts[i+1]-rstarts[i];
+      rowlen = (PetscInt*)rvalues + rstarts[i]*rbs;
+      nrows = (rstarts[i+1]-rstarts[i])*rbs; /* num of indices to be received */
       ierr = MPI_Irecv(rowlen,nrows,MPIU_INT,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
     }
 
@@ -3858,17 +3859,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     len = 0; /* total length of j or a array to be sent */
     k = 0; 
     for (i=0; i<nsends; i++){
-      rowlen = (PetscInt*)svalues + sstarts[i];
-      nrows = sstarts[i+1]-sstarts[i]; /* num of rows */
+      rowlen = (PetscInt*)svalues + sstarts[i]*sbs;
+      nrows = sstarts[i+1]-sstarts[i]; /* num of block rows */
       for (j=0; j<nrows; j++) {
         row = srow[k] + B->rmap.range[rank]; /* global row idx */
-        ierr = MatGetRow_MPIAIJ(B,row,&rowlen[j],PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); /* rowlength */
-        len += rowlen[j];  
-        ierr = MatRestoreRow_MPIAIJ(B,row,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        for (l=0; l<sbs; l++){
+          ierr = MatGetRow_MPIAIJ(B,row+l,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); /* rowlength */         
+          rowlen[j*sbs+l] = ncols;
+          len += ncols;   
+          ierr = MatRestoreRow_MPIAIJ(B,row+l,&ncols,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+        }
         k++;
       } 
-      ierr = MPI_Isend(rowlen,nrows,MPIU_INT,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
-       sstartsj[i+1] = len;  /* starting point of (i+1)-th outgoing msg in bufj and bufa */
+      ierr = MPI_Isend(rowlen,nrows*sbs,MPIU_INT,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+      sstartsj[i+1] = len;  /* starting point of (i+1)-th outgoing msg in bufj and bufa */
     }
     /* recvs and sends of i-array are completed */
     i = nrecvs;
@@ -3876,6 +3880,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
       ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
     }
     if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
+
     /* allocate buffers for sending j and a arrays */
     ierr = PetscMalloc((len+1)*sizeof(PetscInt),&bufj);CHKERRQ(ierr);
     ierr = PetscMalloc((len+1)*sizeof(PetscScalar),&bufa);CHKERRQ(ierr);
@@ -3887,7 +3892,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     k = 0;
     for (i=0; i<nrecvs; i++){
       rowlen = (PetscInt*)rvalues + rstarts[i];
-      nrows = rstarts[i+1]-rstarts[i];
+      nrows = rbs*(rstarts[i+1]-rstarts[i]); /* num of rows to be recieved */
       for (j=0; j<nrows; j++) {
         b_othi[k+1] = b_othi[k] + rowlen[j]; 
         len += rowlen[j]; k++;
@@ -3906,17 +3911,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
       nrows = rstartsj[i+1]-rstartsj[i]; /* length of the msg received */
       ierr = MPI_Irecv(b_othj+rstartsj[i],nrows,MPIU_INT,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
     }
+
+    /* pack the outgoing message j-array */
     k = 0; 
     for (i=0; i<nsends; i++){
-      nrows = sstarts[i+1]-sstarts[i]; /* num of rows */
+      nrows = sstarts[i+1]-sstarts[i]; /* num of block rows */
       bufJ = bufj+sstartsj[i];
       for (j=0; j<nrows; j++) {
         row  = srow[k++] + B->rmap.range[rank]; /* global row idx */
-        ierr = MatGetRow_MPIAIJ(B,row,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
-        for (l=0; l<ncols; l++){
-          *bufJ++ = cols[l];
-        }
-        ierr = MatRestoreRow_MPIAIJ(B,row,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);  
+        for (ll=0; ll<sbs; ll++){
+          ierr = MatGetRow_MPIAIJ(B,row+ll,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);   
+          for (l=0; l<ncols; l++){
+            *bufJ++ = cols[l];
+          }
+          ierr = MatRestoreRow_MPIAIJ(B,row+ll,&ncols,&cols,PETSC_NULL);CHKERRQ(ierr);
+        }  
       }
       ierr = MPI_Isend(bufj+sstartsj[i],sstartsj[i+1]-sstartsj[i],MPIU_INT,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr); 
     }
@@ -3944,18 +3953,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     nrows = rstartsj[i+1]-rstartsj[i]; /* length of the msg received */
     ierr = MPI_Irecv(b_otha+rstartsj[i],nrows,MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
   }
+
+  /* pack the outgoing message a-array */
   k = 0; 
   for (i=0; i<nsends; i++){
-    nrows = sstarts[i+1]-sstarts[i];
+    nrows = sstarts[i+1]-sstarts[i]; /* num of block rows */
     bufA = bufa+sstartsj[i];
     for (j=0; j<nrows; j++) {
       row  = srow[k++] + B->rmap.range[rank]; /* global row idx */
-      ierr = MatGetRow_MPIAIJ(B,row,&ncols,PETSC_NULL,&vals);CHKERRQ(ierr);
-      for (l=0; l<ncols; l++){
-        *bufA++ = vals[l]; 
+      for (ll=0; ll<sbs; ll++){
+        ierr = MatGetRow_MPIAIJ(B,row+ll,&ncols,PETSC_NULL,&vals);CHKERRQ(ierr);
+        for (l=0; l<ncols; l++){
+          *bufA++ = vals[l]; 
+        }
+        ierr = MatRestoreRow_MPIAIJ(B,row+ll,&ncols,PETSC_NULL,&vals);CHKERRQ(ierr);  
       }
-      ierr = MatRestoreRow_MPIAIJ(B,row,&ncols,PETSC_NULL,&vals);CHKERRQ(ierr);  
-
     }
     ierr = MPI_Isend(bufa+sstartsj[i],sstartsj[i+1]-sstartsj[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr); 
   }

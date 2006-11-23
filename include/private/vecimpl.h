@@ -27,8 +27,9 @@ PetscPolymorphicFunction(PetscMapGetLocalSize,(PetscMap *m),(m,&s),PetscInt,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap*,PetscInt *);
 PetscPolymorphicFunction(PetscMapGetSize,(PetscMap *m),(m,&s),PetscInt,s)
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetBlockSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalRange(PetscMap*,PetscInt *,PetscInt *);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap*,PetscInt *[]);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetGlobalRange(PetscMap*,const PetscInt *[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSizeBlockSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSizeBlockSize(PetscMap*,PetscInt *);
 

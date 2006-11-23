@@ -656,7 +656,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
   ierr = VecGetArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   if (ctype == IS_COLORING_GHOSTED){
     col_start = 0; col_end = N;
-  } else if (ctype == IS_COLORING_LOCAL){
+  } else if (ctype == IS_COLORING_GLOBAL){
     xx = xx - start;
     vscale_array = vscale_array - start;
     col_start = start; col_end = N + start;
@@ -679,9 +679,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     dx               *= epsilon;
     vscale_array[col] = 1.0/dx;
   } 
-  if (ctype == IS_COLORING_LOCAL)  vscale_array = vscale_array + start;      
+  if (ctype == IS_COLORING_GLOBAL)  vscale_array = vscale_array + start;      
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
-  if (ctype == IS_COLORING_LOCAL){
+  if (ctype == IS_COLORING_GLOBAL){
     ierr = VecGhostUpdateBegin(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecGhostUpdateEnd(coloring->vscale,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   }
@@ -700,7 +700,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     coloring->currentcolor = k;
     ierr = VecCopy(x1_tmp,w3);CHKERRQ(ierr);
     ierr = VecGetArray(w3,&w3_array);CHKERRQ(ierr);
-    if (ctype == IS_COLORING_LOCAL) w3_array = w3_array - start;
+    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array - start;
     /*
       Loop over each column associated with color 
       adding the perturbation to the vector w3.
@@ -724,7 +724,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
       if (!PetscAbsScalar(dx)) SETERRQ(PETSC_ERR_PLIB,"Computed 0 differencing parameter");
       w3_array[col] += dx;
     } 
-    if (ctype == IS_COLORING_LOCAL) w3_array = w3_array + start;
+    if (ctype == IS_COLORING_GLOBAL) w3_array = w3_array + start;
     ierr = VecRestoreArray(w3,&w3_array);CHKERRQ(ierr);
 
     /*
@@ -749,7 +749,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringApply(Mat J,MatFDColoring colorin
     }
     ierr = VecRestoreArray(w2,&y);CHKERRQ(ierr);
   } /* endof for each color */
-  if (ctype == IS_COLORING_LOCAL) xx = xx + start; 
+  if (ctype == IS_COLORING_GLOBAL) xx = xx + start; 
   ierr = VecRestoreArray(coloring->vscale,&vscale_array);CHKERRQ(ierr);
   ierr = VecRestoreArray(x1_tmp,&xx);CHKERRQ(ierr);
    

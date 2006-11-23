@@ -204,9 +204,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApplyVec(PF pf,Vec x,Vec y)
 
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(y,&p);CHKERRQ(ierr);
-  if (pf->dimin*(n/pf->dimin) != n) SETERRQ2(PETSC_ERR_ARG_IDN,"Local input vector length %D not divisible by dimin %D of function",n,pf->dimin);
-  if (pf->dimout*(p/pf->dimout) != p) SETERRQ2(PETSC_ERR_ARG_IDN,"Local output vector length %D not divisible by dimout %D of function",p,pf->dimout);
-  if (n/pf->dimin != p/pf->dimout) SETERRQ4(PETSC_ERR_ARG_IDN,"Local vector lengths %D %D are wrong for dimin and dimout %D %D of function",n,p,pf->dimin,pf->dimout);
+  if ((pf->dimin*(n/pf->dimin)) != n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local input vector length %D not divisible by dimin %D of function",n,pf->dimin);
+  if ((pf->dimout*(p/pf->dimout)) != p) SETERRQ2(PETSC_ERR_ARG_SIZ,"Local output vector length %D not divisible by dimout %D of function",p,pf->dimout);
+  if ((n/pf->dimin) != (p/pf->dimout)) SETERRQ4(PETSC_ERR_ARG_SIZ,"Local vector lengths %D %D are wrong for dimin and dimout %D %D of function",n,p,pf->dimin,pf->dimout);
 
   if (pf->ops->applyvec) {
     ierr = (*pf->ops->applyvec)(pf->data,x,y);CHKERRQ(ierr);
