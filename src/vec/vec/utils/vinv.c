@@ -34,15 +34,14 @@ extern MPI_Op VecMin_Local_Op;
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs;
-  PetscScalar    *x,xscale = *scale;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
-  PetscValidScalarPointer(scale,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
@@ -54,7 +53,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScala
   x += start;
 
   for (i=0; i<n; i+=bs) {
-    x[i] *= xscale;
+    x[i] *= scale;
   }
   x -= start;
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
