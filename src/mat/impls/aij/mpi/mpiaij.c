@@ -1685,31 +1685,14 @@ PetscErrorCode MatImaginaryPart_MPIAIJ(Mat A)
 }
 
 #ifdef PETSC_HAVE_PBGL
-#include <boost/parallel/mpi/bsp_process_group.hpp>
-typedef boost::parallel::mpi::bsp_process_group            process_group_type;
 
-#include <boost/graph/distributed/adjacency_list.hpp>
 #include <boost/parallel/mpi/bsp_process_group.hpp>
-
+#include <boost/graph/distributed/ilu_default_graph.hpp>
+#include <boost/graph/distributed/ilu_0_block.hpp>
+#include <boost/graph/distributed/ilu_preconditioner.hpp>
 #include <boost/graph/distributed/petsc/interface.hpp>
-#include <boost/graph/distributed/ilu_0.hpp>
-
-namespace petsc = boost::distributed::petsc;
-using namespace std;
-typedef double                                             value_type;
-typedef boost::graph::distributed::ilu_elimination_state   elimination_state;
-typedef boost::adjacency_list<boost::listS,
-                       boost::distributedS<process_group_type, boost::vecS>,
-                       boost::bidirectionalS,
-                       // Vertex properties
-                       boost::no_property,
-                       // Edge properties
-                       boost::property<boost::edge_weight_t, value_type,
-                         boost::property<boost::edge_finished_t, elimination_state> > > graph_type;
-
-typedef boost::graph_traits<graph_type>::vertex_descriptor        vertex_type;
-typedef boost::graph_traits<graph_type>::edge_descriptor          edge_type;
-typedef boost::property_map<graph_type, boost::edge_weight_t>::type      weight_map_type;
+#include <boost/multi_array.hpp>
+#include <boost/parallel/distributed_property_map.hpp>
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_MPIAIJ"
@@ -1718,6 +1701,12 @@ typedef boost::property_map<graph_type, boost::edge_weight_t>::type      weight_
 */
 PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorInfo *info, Mat *fact)
 {
+  namespace petsc = boost::distributed::petsc;
+  
+  namespace graph_dist = boost::graph::distributed;
+  using boost::graph::distributed::ilu_default::process_group_type;
+  using boost::graph::ilu_permuted;
+
   PetscTruth           row_identity, col_identity;
   PetscObjectContainer c;
   PetscInt             m, n, M, N;
@@ -1732,16 +1721,13 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   }
 
   process_group_type pg;
-  graph_type*        graph_p = new graph_type(petsc::num_global_vertices(A), pg, petsc::matrix_distribution(A, pg));
-  graph_type&        graph   = *graph_p;
+  typedef graph_dist::ilu_default::ilu_level_graph_type  lgraph_type;
+  lgraph_type*   lgraph_p = new lgraph_type(petsc::num_global_vertices(A), pg, petsc::matrix_distribution(A, pg));
+  lgraph_type&   level_graph = *lgraph_p;
+  graph_dist::ilu_default::graph_type&            graph(level_graph.graph); 
+
   petsc::read_matrix(A, graph, get(boost::edge_weight, graph));
-
-  //write_graphviz("petsc_matrix_as_graph.dot", graph, default_writer(), matrix_graph_writer<graph_type>(graph));
-  boost::property_map<graph_type, boost::edge_finished_t>::type finished = get(boost::edge_finished, graph);
-  BGL_FORALL_EDGES(e, graph, graph_type)
-    put(finished, e, boost::graph::distributed::unseen);
-
-  ilu_0(graph, get(boost::edge_weight, graph), get(boost::edge_finished, graph));
+  ilu_permuted(level_graph);		    
 
   /* put together the new matrix */
   ierr = MatCreate(A->comm, fact);CHKERRQ(ierr);
@@ -1754,7 +1740,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   (*fact)->factor = FACTOR_LU;
 
   ierr = PetscObjectContainerCreate(A->comm, &c);
-  ierr = PetscObjectContainerSetPointer(c, graph_p);
+  ierr = PetscObjectContainerSetPointer(c, lgraph_p);
   ierr = PetscObjectCompose((PetscObject) (*fact), "graph", (PetscObject) c);
   PetscFunctionReturn(0);
 }
@@ -1774,14 +1760,42 @@ PetscErrorCode MatLUFactorNumeric_MPIAIJ(Mat A, MatFactorInfo *info, Mat *B)
 */
 PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
 {
-  graph_type*          graph_p;
+  namespace graph_dist = boost::graph::distributed;
+
+  typedef graph_dist::ilu_default::ilu_level_graph_type  lgraph_type;
+  lgraph_type*   lgraph_p;
   PetscObjectContainer c;
   PetscErrorCode       ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "graph", (PetscObject *) &c);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(c, (void **) &graph_p);CHKERRQ(ierr);
+  ierr = PetscObjectContainerGetPointer(c, (void **) &lgraph_p);CHKERRQ(ierr);
   ierr = VecCopy(b, x); CHKERRQ(ierr);
+
+  PetscScalar* array_x;
+  ierr = VecGetArray(x, &array_x);CHKERRQ(ierr);
+  PetscInt sx;
+  ierr = VecGetSize(x, &sx);CHKERRQ(ierr);
+     
+  PetscScalar* array_b;
+  ierr = VecGetArray(b, &array_b);CHKERRQ(ierr);
+  PetscInt sb;
+  ierr = VecGetSize(b, &sb);CHKERRQ(ierr);
+
+  lgraph_type&   level_graph = *lgraph_p;
+  graph_dist::ilu_default::graph_type&            graph(level_graph.graph); 
+
+  typedef boost::multi_array_ref<PetscScalar, 1> array_ref_type;
+  array_ref_type                                 ref_b(array_b, boost::extents[num_vertices(graph)]),
+                                                 ref_x(array_x, boost::extents[num_vertices(graph)]);
+
+  typedef boost::iterator_property_map<array_ref_type::iterator, 
+                                boost::property_map<graph_dist::ilu_default::graph_type, boost::vertex_index_t>::type>  gvector_type;
+  gvector_type                                   vector_b(ref_b.begin(), get(boost::vertex_index, graph)), 
+                                                 vector_x(ref_x.begin(), get(boost::vertex_index, graph));
+  
+  ilu_set_solve(*lgraph_p, vector_b, vector_x);
+
   PetscFunctionReturn(0);
 }
 #endif
