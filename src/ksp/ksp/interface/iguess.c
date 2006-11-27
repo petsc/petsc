@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"  /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"  /*I "petscksp.h" I*/
 /* 
   This code inplements Paul Fischer's initial guess code for situations where
   a linear system is solved repeatedly 

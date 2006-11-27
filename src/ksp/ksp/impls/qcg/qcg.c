@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"             /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/qcg/qcg.h"
 
 static PetscErrorCode QuadraticRoots_Private(Vec,Vec,PetscReal*,PetscReal*,PetscReal*);

@@ -6,7 +6,7 @@
     within the code MUST remain in the order given for correct computation
     of inner products.
 */
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_CGS"

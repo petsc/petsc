@@ -7,7 +7,7 @@
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "src/ksp/ksp/kspimpl.h"   /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultFreeWork"

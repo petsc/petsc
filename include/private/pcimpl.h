@@ -1,6 +1,6 @@
 
-#ifndef _PCIMPL
-#define _PCIMPL
+#ifndef _PCIMPL_H
+#define _PCIMPL_H
 
 #include "petscksp.h"
 #include "petscpc.h"

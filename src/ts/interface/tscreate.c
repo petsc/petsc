@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
+#include "include/private/tsimpl.h"      /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"

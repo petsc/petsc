@@ -1,7 +1,7 @@
 #define PETSCTS_DLL
 
-#include "src/mat/matimpl.h"      /*I  "petscmat.h"  I*/
-#include "src/ts/tsimpl.h"        /*I  "petscts.h"  I*/
+#include "include/private/matimpl.h"      /*I  "petscmat.h"  I*/
+#include "include/private/tsimpl.h"        /*I  "petscts.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSDefaultComputeJacobianColor"

@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetUp_BCGS"

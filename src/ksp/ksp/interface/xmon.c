@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"              /*I  "petscksp.h"   I*/
+#include "include/private/kspimpl.h"              /*I  "petscksp.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPMonitorLGCreate"

@@ -3,7 +3,7 @@
 /*
        Code for Timestepping with implicit Crank-Nicholson method.
 */
-#include "src/ts/tsimpl.h"                /*I   "petscts.h"   I*/
+#include "include/private/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
   Vec  update;      /* work vector where new solution is formed */

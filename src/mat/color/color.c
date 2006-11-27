@@ -4,7 +4,7 @@
      Routines that call the kernel minpack coloring subroutines
 */
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "src/mat/color/color.h"
 
 /*

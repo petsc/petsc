@@ -1,6 +1,6 @@
 #define PETSCKSP_DLL
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 
 typedef struct {
   PetscReal haptol;

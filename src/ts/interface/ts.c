@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"        /*I "petscts.h"  I*/
+#include "include/private/tsimpl.h"        /*I "petscts.h"  I*/
 
 /* Logging support */
 PetscCookie PETSCTS_DLLEXPORT TS_COOKIE = 0;

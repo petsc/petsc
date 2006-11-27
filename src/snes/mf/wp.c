@@ -38,7 +38,7 @@ M*/
 
    See snesmfjdef.c for  a full set of comments on the routines below.
 */
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 typedef struct {

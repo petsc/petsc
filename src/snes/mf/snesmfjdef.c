@@ -32,7 +32,7 @@
    includes information about the computation of h. It is shared by 
    all implementations that people provide
 */
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 /*

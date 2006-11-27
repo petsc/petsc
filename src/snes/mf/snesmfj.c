@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 PetscFList MatSNESMPetscFList         = 0;

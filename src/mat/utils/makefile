@@ -7,7 +7,7 @@ SOURCEC  = convert.c matstash.c axpy.c zerodiag.c matio.c \
            getcolv.c gcreate.c freespace.c compressedrow.c multequal.c \
            ptap.c matstashspace.c
 SOURCEF  =
-SOURCEH  = freespace.h matstashspace.h
+SOURCEH  = freespace.h
 OBJSC    = convert.o matstash.o axpy.o zerodiag.o matio.o \
            getcolv.o gcreate.o freespace.o compressedrow.o multequal.o \
            ptap.o matstashspace.o

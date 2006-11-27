@@ -4,7 +4,7 @@
     ADIC matrix-free matrix implementation
 */
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 #include "petscda.h"          /*I   "petscda.h"    I*/
 #include "petscsnes.h"        /*I   "petscsnes.h"  I*/
 #include "petscsys.h"
