@@ -241,7 +241,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCI
   PetscFunctionBegin;
   if (!viewer) {
     ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
-    ierr   = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   } 
   ierr = PetscNew(SNESMonitorRatioContext,&ctx);
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
