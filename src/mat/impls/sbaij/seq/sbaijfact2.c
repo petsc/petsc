@@ -115,10 +115,9 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_N_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_N_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_N_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscInt bs,PetscScalar *x)
 {
-  PetscErrorCode ierr;
   PetscInt       nz,*vj,k;
   PetscInt       bs2 = bs*bs;
-  MatScalar      *v,*diag;
+  MatScalar      *v; 
   PetscScalar    *xk,*xj;
 
   PetscFunctionBegin;
@@ -359,7 +358,7 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_7_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_7_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_7_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v,*d;
+  MatScalar      *v; 
   PetscScalar    *xp,x0,x1,x2,x3,x4,x5,x6;
   PetscInt       nz,*vj,k;
 
@@ -599,7 +598,7 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_6_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_6_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_6_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v,*d;
+  MatScalar      *v;
   PetscScalar    *xp,x0,x1,x2,x3,x4,x5;
   PetscInt       nz,*vj,k;
 
@@ -834,7 +833,7 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_5_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_5_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_5_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v,*diag;
+  MatScalar      *v; 
   PetscScalar    *xp,x0,x1,x2,x3,x4;
   PetscInt       nz,*vj,k;
 
@@ -1025,7 +1024,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_4(Mat A,Vec bb,Vec xx)
 PetscErrorCode ForwardSolve_SeqSBAIJ_4_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
   MatScalar      *v,*diag;
-  PetscScalar    *xp,*b,x0,x1,x2,x3;
+  PetscScalar    *xp,x0,x1,x2,x3;
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
@@ -1060,8 +1059,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_4_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_4_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_4_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v,*diag;
-  PetscScalar    *xp,*b,x0,x1,x2,x3;
+  MatScalar      *v; 
+  PetscScalar    *xp,x0,x1,x2,x3;
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
@@ -1244,7 +1243,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_3(Mat A,Vec bb,Vec xx)
 PetscErrorCode ForwardSolve_SeqSBAIJ_3_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
   MatScalar      *v,*diag;
-  PetscScalar    *xp,*b,x0,x1,x2;
+  PetscScalar    *xp,x0,x1,x2;
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
@@ -1277,8 +1276,8 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_3_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_3_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_3_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v,*diag;
-  PetscScalar    *xp,*b,x0,x1,x2;
+  MatScalar      *v; 
+  PetscScalar    *xp,x0,x1,x2;
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
@@ -1472,7 +1471,7 @@ PetscErrorCode ForwardSolve_SeqSBAIJ_2_NaturalOrdering_private(PetscInt *ai,Pets
 #define __FUNCT__ "BackwardSolve_SeqSBAIJ_2_NaturalOrdering_private"
 PetscErrorCode BackwardSolve_SeqSBAIJ_2_NaturalOrdering_private(PetscInt *ai,PetscInt *aj,MatScalar *aa,PetscInt mbs,PetscScalar *x)
 {
-  MatScalar      *v,*diag;
+  MatScalar      *v; 
   PetscScalar    x0,x1;
   PetscInt       nz,*vj,k,k2;
 
