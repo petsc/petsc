@@ -562,15 +562,18 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt oran
 {
   struct VecPackLink *mine,*next = packer->next;
   PetscErrorCode     ierr;
-  PetscMPIInt        rank,orankmax;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have called VecPackCreateGlobalVector()");
   }
 #if defined(PETSC_USE_DEBUG)
-  ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,packer->comm);CHKERRQ(ierr);
-  if (orank != orankmax) SETERRQ2(PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
+  {
+    PetscMPIInt        orankmax;
+    ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,packer->comm);CHKERRQ(ierr);
+    if (orank != orankmax) SETERRQ2(PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
+  }
 #endif
 
   ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
