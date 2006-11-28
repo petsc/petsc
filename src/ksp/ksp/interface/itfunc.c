@@ -1112,9 +1112,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetPC(KSP ksp,PC pc)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(pc,PC_COOKIE,2);
   PetscCheckSameComm(ksp,1,pc,2);
+  ierr = PetscObjectReference((PetscObject)pc);CHKERRQ(ierr);
   if (ksp->pc) {ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);}
   ksp->pc = pc;
-  ierr = PetscObjectReference((PetscObject)ksp->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

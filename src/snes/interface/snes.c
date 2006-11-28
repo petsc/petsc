@@ -682,7 +682,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetKSP(SNES snes,KSP ksp)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,2);
   PetscCheckSameComm(snes,1,ksp,2);
-  if (ksp)       {ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);}
+  ierr = PetscObjectReference((PetscObject)ksp);CHKERRQ(ierr);
   if (snes->ksp) {ierr = PetscObjectDereference((PetscObject)snes->ksp);CHKERRQ(ierr);}
   snes->ksp = ksp;
   PetscFunctionReturn(0);
@@ -1074,14 +1074,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscEr
    if (func) snes->ops->computejacobian = func;
    if (ctx)  snes->jacP                 = ctx;
   if (A) {
+    ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}
-     snes->jacobian = A;
-    ierr           = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+    snes->jacobian = A;
   }
   if (B) {
-     if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
-     snes->jacobian_pre = B;
-    ierr               = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)B);CHKERRQ(ierr);
+    if (snes->jacobian_pre) {ierr = MatDestroy(snes->jacobian_pre);CHKERRQ(ierr);}
+    snes->jacobian_pre = B;
   }
   PetscFunctionReturn(0);
 }
