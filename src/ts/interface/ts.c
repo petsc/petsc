@@ -1406,6 +1406,39 @@ PetscErrorCode PETSCTS_DLLEXPORT TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSSolve"
+/*@
+   TSSolve - Steps the requested number of timesteps.
+
+   Collective on TS
+
+   Input Parameter:
++  ts - the TS context obtained from TSCreate()
+-  x - the solution vector, or PETSC_NULL if it was set with TSSetSolution()
+
+   Level: beginner
+
+.keywords: TS, timestep, solve
+
+.seealso: TSCreate(), TSSetSolution(), TSStep()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSolve(TS ts, Vec x)
+{
+  PetscInt       steps;
+  PetscReal      ptime;
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  /* set solution vector if provided */
+  if (x) { ierr = TSSetSolution(ts, x); CHKERRQ(ierr); }
+  /* reset time step and iteration counters */
+  ts->steps = 0; ts->linear_its = 0; ts->nonlinear_its = 0;
+  /* steps the requested number of timesteps. */
+  ierr = TSStep(ts, &steps, &ptime);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSMonitor"
 /*
      Runs the user provided monitor routines, if they exists.
@@ -1552,6 +1585,31 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetTime(TS ts,PetscReal* t)
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   PetscValidDoublePointer(t,2);
   *t = ts->ptime;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetTime"
+/*@
+   TSSetTime - Allows one to reset the time.
+
+   Collective on TS
+
+   Input Parameters:
++  ts - the TS context obtained from TSCreate()
+-  time - the time
+
+   Level: intermediate
+
+.seealso: TSGetTime(), TSSetDuration()
+
+.keywords: TS, set, time
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetTime(TS ts, PetscReal t) 
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  ts->ptime = t;
   PetscFunctionReturn(0);
 }
 
