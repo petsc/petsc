@@ -53,7 +53,7 @@ PetscErrorCode SectionView_Sieve_Ascii(const Obj<Section>& s, const char name[],
       }
       const typename Section::patch_type         patch     = topology->getPatches().begin()->first;
       const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, 0);
-      PetscInt fiberDim = s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin());
+      PetscInt fiberDim = std::abs(s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin()));
 
       if (doOutput) {
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
