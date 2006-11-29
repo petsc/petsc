@@ -1814,6 +1814,13 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJ(Mat A,IS perm,MatFactorInfo *inf
   if (perm_identity){
     (*fact)->ops->solve           = MatSolve_SeqSBAIJ_1_NaturalOrdering;
     (*fact)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1_NaturalOrdering;
-  } 
+    (*fact)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1_NaturalOrdering;
+    (*fact)->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering;
+  } else {
+    (*fact)->ops->solve           = MatSolve_SeqSBAIJ_1;
+    (*fact)->ops->solvetranspose  = MatSolve_SeqSBAIJ_1;
+    (*fact)->ops->forwardsolve    = MatForwardSolve_SeqSBAIJ_1;
+    (*fact)->ops->backwardsolve   = MatBackwardSolve_SeqSBAIJ_1;
+  }
   PetscFunctionReturn(0); 
 }
