@@ -24,17 +24,15 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt,cons
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
-extern PetscCookie PETSC_DLLEXPORT PETSC_RANDOM_COOKIE;
-
 #define PETSCRAND               "petscrand"
 #define PETSCRAND48             "petscrand48"
 #define SPRNG                   "sprng"          
 #define PetscRandomType const char*
 
 /* Logging support */
-extern PETSCVEC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
+extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscRandomInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(char *);
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers

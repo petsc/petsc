@@ -1408,6 +1408,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopUpSelect(MPI_Comm,char*,char*,int
 
 .seealso:  PetscObject, PetscObjectContainerCreate()
 S*/
+extern PetscCookie PETSC_DLLEXPORT PETSC_OBJECT_CONTAINER_COOKIE;
 typedef struct _p_PetscObjectContainer*  PetscObjectContainer;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerGetPointer(PetscObjectContainer,void **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetPointer(PetscObjectContainer,void *);

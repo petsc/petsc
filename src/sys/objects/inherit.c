@@ -458,7 +458,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetUserDestroy(PetscObjectCon
   PetscFunctionReturn(0);
 }
 
-PetscCookie PETSC_DLLEXPORT CONTAINER_COOKIE = 0;
+PetscCookie PETSC_DLLEXPORT PETSC_OBJECT_CONTAINER_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectContainerCreate"
@@ -486,10 +486,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObj
   PetscObjectContainer contain;
 
   PetscFunctionBegin;
-  if (!CONTAINER_COOKIE) {
-    ierr = PetscLogClassRegister(&CONTAINER_COOKIE,          "Container");CHKERRQ(ierr);
+  if (!PETSC_OBJECT_CONTAINER_COOKIE) {
+    ierr = PetscLogClassRegister(&PETSC_OBJECT_CONTAINER_COOKIE, "Container");CHKERRQ(ierr);
   }
-  ierr = PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,CONTAINER_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(contain,_p_PetscObjectContainer,PetscInt,PETSC_OBJECT_CONTAINER_COOKIE,0,"container",comm,PetscObjectContainerDestroy,0);CHKERRQ(ierr);
   *container = contain;
   PetscFunctionReturn(0);
 }
