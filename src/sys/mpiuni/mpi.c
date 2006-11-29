@@ -120,15 +120,28 @@ int Petsc_MPI_Comm_free(MPI_Comm *comm)
   return MPI_SUCCESS;
 }
 
-/* --------------------------------------------------------------------------*/
-
 int Petsc_MPI_Abort(MPI_Comm comm,int errorcode) 
 {
   abort();
   return MPI_SUCCESS;
 }
 
+/* --------------------------------------------------------------------------*/
+  
 static int MPI_was_initialized = 0;
+static int MPI_was_finalized   = 0;
+
+int Petsc_MPI_Init(int *argc, char ***argv)
+{
+  MPI_was_initialized = 1;
+  return 0;
+}
+
+int Petsc_MPI_Finalize(void)
+{
+  MPI_was_finalized = 1;
+  return 0;
+}
 
 int Petsc_MPI_Initialized(int *flag)
 {
@@ -136,9 +149,9 @@ int Petsc_MPI_Initialized(int *flag)
   return 0;
 }
 
-int Petsc_MPI_Finalize(void)
+int Petsc_MPI_Finalized(int *flag)
 {
-  MPI_was_initialized = 0;
+  *flag = MPI_was_finalized;
   return 0;
 }
 
@@ -192,6 +205,7 @@ void PETSC_STDCALL  mpi_init_(int *ierr)
 
 void PETSC_STDCALL  mpi_finalize_(int *ierr)
 {
+  MPI_was_finalized = 1;
   *ierr = MPI_SUCCESS;
 }
 
