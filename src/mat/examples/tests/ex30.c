@@ -22,7 +22,7 @@ int main(int argc,char **args)
   IS             row,col;
   PetscViewer    viewer1,viewer2;
   MatFactorInfo  info;
-  Vec            x,y,b;
+  Vec            x,y,b,ytmp;
   PetscReal      norm2,norm2_inplace;
   PetscRandom    rdm;
 
@@ -40,7 +40,7 @@ int main(int argc,char **args)
   ierr = MatSeqBDiagSetPreallocation(C,0,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(C,5,PETSC_NULL);CHKERRQ(ierr);
 
-  /* Create the matrix. (This is five-point stencil with some extra elements) */
+  /* Create matrix C in seqaij format and sC in seqsbaij. (This is five-point stencil with some extra elements) */
   for (i=0; i<m; i++) {
     for (j=0; j<n; j++) {
       v = -1.0;  Ii = j + n*i;
@@ -54,12 +54,15 @@ int main(int argc,char **args)
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
+  ierr = MatConvert(C,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
+
   ierr = MatIsSymmetric(C,0.0,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"C is non-symmetric");
 
   /* Create vectors for error checking */
   ierr = MatGetVecs(C,&x,&b);CHKERRQ(ierr);
   ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&ytmp);CHKERRQ(ierr);
   ierr = PetscRandomCreate(PETSC_COMM_SELF,&rdm);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rdm);CHKERRQ(ierr);
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
@@ -97,7 +100,7 @@ int main(int argc,char **args)
   ierr = MatView(C,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   ierr = MatView(C,viewer1);CHKERRQ(ierr);
 
-  /* Compute factorization */
+  /* Compute LU or ILU factor A */
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   info.fill          = 1.0;
   info.diagonal_fill = 0;
@@ -140,6 +143,39 @@ int main(int argc,char **args)
     ierr = MatDestroy(A);CHKERRQ(ierr);
   }
 
+  /* Test Cholesky and ICC on seqaij matrix with matrix reordering */
+  if (LU){ 
+    lf = -1;
+    ierr = MatCholeskyFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
+  } else {
+    info.levels        = lf;
+    info.fill          = 1.0;
+    info.diagonal_fill = 0;
+    info.shiftnz       = 0;
+    info.zeropivot     = 0.0;
+    ierr = MatICCFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
+  }
+  ierr = MatCholeskyFactorNumeric(C,&info,&A);CHKERRQ(ierr);  
+
+  /* test MatForwardSolve() and MatBackwardSolve() with matrix reordering */
+  if (lf == -1){
+    ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
+    ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);      
+    ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+    ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
+    if (norm2 > 1.e-15){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr); 
+    }
+  } 
+
+  ierr = MatSolve(A,b,y);CHKERRQ(ierr);
+  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
+  if (lf == -1 && norm2 > 1.e-15){
+    PetscPrintf(PETSC_COMM_SELF, " reordered SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
+  }
+  
   /* Test Cholesky and ICC on seqaij matrix without matrix reordering */
   ierr = ISDestroy(row);CHKERRQ(ierr);
   ierr = ISDestroy(col);CHKERRQ(ierr);
@@ -156,27 +192,33 @@ int main(int argc,char **args)
     ierr = MatICCFactorSymbolic(C,row,&info,&A);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(C,&info,&A);CHKERRQ(ierr);
-  /*
+
+  /* test MatForwardSolve() and MatBackwardSolve() */
+  if (lf == -1){
+    ierr = MatForwardSolve(A,b,ytmp);CHKERRQ(ierr);
+    ierr = MatBackwardSolve(A,ytmp,y);CHKERRQ(ierr);      
+    ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
+    ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
+    if (norm2 > 1.e-15){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"MatForwardSolve and BackwardSolve: Norm of error=%G\n",norm2);CHKERRQ(ierr); 
+    }
+  } 
+
+  /* Test MatSolve() */
   ierr = MatSolve(A,b,y);CHKERRQ(ierr);
   ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
   ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  printf(" SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
-  */
+  if (lf == -1 && norm2 > 1.e-15){
+    printf(" SEQAIJ:   Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
+  }
 
   /* Test Cholesky and ICC on seqsbaij matrix without matrix reordering */
-  ierr = MatConvert(C,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
   if (LU){ 
     ierr = MatCholeskyFactorSymbolic(sC,row,&info,&sA);CHKERRQ(ierr);
   } else {
     ierr = MatICCFactorSymbolic(sC,row,&info,&sA);CHKERRQ(ierr);
   }
   ierr = MatCholeskyFactorNumeric(sC,&info,&sA);CHKERRQ(ierr);
-  /*
-  ierr = MatSolve(sA,b,y);CHKERRQ(ierr);
-  ierr = VecAXPY(y,-1.0,x);CHKERRQ(ierr);
-  ierr = VecNorm(y,NORM_2,&norm2);CHKERRQ(ierr);
-  printf(" SEQSBAIJ: Cholesky/ICC levels %d, residual %g\n",lf,norm2);CHKERRQ(ierr);
-  */
   ierr = MatEqual(A,sA,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"CholeskyFactors for aij and sbaij matrices are different");
   ierr = MatDestroy(sC);CHKERRQ(ierr);
@@ -192,6 +234,7 @@ int main(int argc,char **args)
   ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(ytmp);CHKERRQ(ierr);
   ierr = VecDestroy(b);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;

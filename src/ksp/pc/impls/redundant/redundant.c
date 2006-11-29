@@ -288,7 +288,7 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscMPIInt    rank,size; 
   MPI_Comm       comm=mat->comm;
   PetscErrorCode ierr;
-  PetscInt       nsends=0,nrecvs=0,i,rownz_max;
+  PetscInt       nsends=0,nrecvs=0,i,rownz_max=0;
   PetscMPIInt    *send_rank=PETSC_NULL,*recv_rank=PETSC_NULL;
   PetscInt       *rowrange=mat->rmap.range;
   Mat_MPIAIJ     *aij = (Mat_MPIAIJ*)mat->data;
