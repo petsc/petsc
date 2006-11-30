@@ -80,22 +80,22 @@ extern PetscErrorCode PCSetFromOptions_MG(PC);
 #define __FUNCT__ "PCSetUp_ML"
 PetscErrorCode PCSetUp_ML(PC pc)
 {
-  PetscErrorCode       ierr;
-  PetscMPIInt          size;
-  FineGridCtx          *PetscMLdata;
-  ML                   *ml_object;
-  ML_Aggregate         *agg_object;
-  ML_Operator          *mlmat;
-  PetscInt             nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level;
-  Mat                  A,Aloc; 
-  GridCtx              *gridctx; 
-  PC_ML                *pc_ml=PETSC_NULL;
-  PetscObjectContainer container;
+  PetscErrorCode  ierr;
+  PetscMPIInt     size;
+  FineGridCtx     *PetscMLdata;
+  ML              *ml_object;
+  ML_Aggregate    *agg_object;
+  ML_Operator     *mlmat;
+  PetscInt        nlocal_allcols,Nlevels,mllevel,level,level1,m,fine_level;
+  Mat             A,Aloc; 
+  GridCtx         *gridctx; 
+  PC_ML           *pc_ml=PETSC_NULL;
+  PetscContainer  container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr); 
+    ierr = PetscContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr); 
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
@@ -234,8 +234,8 @@ PetscErrorCode PCSetUp_ML(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerDestroy_PC_ML"
-PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
+#define __FUNCT__ "PetscContainerDestroy_PC_ML"
+PetscErrorCode PetscContainerDestroy_PC_ML(void *ptr)
 {
   PetscErrorCode       ierr;
   PC_ML                *pc_ml = (PC_ML*)ptr;
@@ -277,14 +277,14 @@ PetscErrorCode PetscObjectContainerDestroy_PC_ML(void *ptr)
 #define __FUNCT__ "PCDestroy_ML"
 PetscErrorCode PCDestroy_ML(PC pc)
 {
-  PetscErrorCode       ierr;
-  PC_ML                *pc_ml=PETSC_NULL;
-  PetscObjectContainer container;
+  PetscErrorCode  ierr;
+  PC_ML           *pc_ml=PETSC_NULL;
+  PetscContainer  container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr);
+    ierr = PetscContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr);
     pc->ops->destroy = pc_ml->PCDestroy;
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
@@ -293,7 +293,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
   ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",0);CHKERRQ(ierr); 
   ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
 
-  ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -301,19 +301,19 @@ PetscErrorCode PCDestroy_ML(PC pc)
 #define __FUNCT__ "PCSetFromOptions_ML"
 PetscErrorCode PCSetFromOptions_ML(PC pc)
 {
-  PetscErrorCode       ierr;
-  PetscInt             indx,m,PrintLevel,MaxNlevels,MaxCoarseSize; 
-  PetscReal            Threshold,DampingFactor; 
-  PetscTruth           flg;
-  const char           *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
-  PC_ML                *pc_ml=PETSC_NULL;
-  PetscObjectContainer container;
-  PCMGType             mgtype;
+  PetscErrorCode  ierr;
+  PetscInt        indx,m,PrintLevel,MaxNlevels,MaxCoarseSize; 
+  PetscReal       Threshold,DampingFactor; 
+  PetscTruth      flg;
+  const char      *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
+  PC_ML           *pc_ml=PETSC_NULL;
+  PetscContainer  container;
+  PCMGType        mgtype;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)pc,"PC_ML",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr);
+    ierr = PetscContainerGetPointer(container,(void **)&pc_ml);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
@@ -410,9 +410,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_ML"
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 {
-  PetscErrorCode       ierr;
-  PC_ML                *pc_ml;
-  PetscObjectContainer container;
+  PetscErrorCode  ierr;
+  PC_ML           *pc_ml;
+  PetscContainer  container;
 
   PetscFunctionBegin;
   /* initialize pc as PCMG */
@@ -420,9 +420,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
 
   /* create a supporting struct and attach it to pc */
   ierr = PetscNew(PC_ML,&pc_ml);CHKERRQ(ierr);
-  ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetPointer(container,pc_ml);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_PC_ML);CHKERRQ(ierr); 
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,pc_ml);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_PC_ML);CHKERRQ(ierr); 
   ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",(PetscObject)container);CHKERRQ(ierr);
   
   pc_ml->PCSetUp   = pc->ops->setup;

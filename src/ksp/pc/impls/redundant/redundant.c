@@ -239,8 +239,8 @@ typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
 } Mat_Redundant;
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerDestroy_MatRedundant"
-PetscErrorCode PetscObjectContainerDestroy_MatRedundant(void *ptr)
+#define __FUNCT__ "PetscContainerDestroy_MatRedundant"
+PetscErrorCode PetscContainerDestroy_MatRedundant(void *ptr)
 {
   PetscErrorCode       ierr;
   Mat_Redundant        *redund=(Mat_Redundant*)ptr;
@@ -264,20 +264,20 @@ PetscErrorCode PetscObjectContainerDestroy_MatRedundant(void *ptr)
 PetscErrorCode MatDestroy_MatRedundant(Mat A)
 {
   PetscErrorCode       ierr;
-  PetscObjectContainer container;
+  PetscContainer container;
   Mat_Redundant        *redund=PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Mat_Redundant",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
+    ierr = PetscContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
   }
   A->ops->destroy = redund->MatDestroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_Redundant",0);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -308,7 +308,7 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   PetscInt       **rbuf_j=PETSC_NULL;
   PetscScalar    **rbuf_a=PETSC_NULL;
   Mat_Redundant  *redund=PETSC_NULL;
-  PetscObjectContainer container;
+  PetscContainer container;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -321,7 +321,7 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
     if (M != N || M != mlocal_sub) SETERRQ(PETSC_ERR_ARG_SIZ,"Cannot reuse matrix. Wrong local size");
     ierr = PetscObjectQuery((PetscObject)C,"Mat_Redundant",(PetscObject *)&container);CHKERRQ(ierr);
     if (container) {
-      ierr = PetscObjectContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
+      ierr = PetscContainerGetPointer(container,(void **)&redund);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
     }
@@ -576,14 +576,14 @@ PetscErrorCode MatGetRedundantMatrix_AIJ(Mat mat,PetscInt nsubcomm,MPI_Comm subc
   ierr = MatGetSize(C,&M,&N);CHKERRQ(ierr);
   if (M != mat->rmap.N || N != mat->cmap.N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"redundant mat size %d != input mat size %d",M,mat->rmap.N);
   if (reuse == MAT_INITIAL_MATRIX){
-    PetscObjectContainer container;
+    PetscContainer container;
     *matredundant = C;
     /* create a supporting struct and attach it to C for reuse */
     ierr = PetscNew(Mat_Redundant,&redund);CHKERRQ(ierr);
-    ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-    ierr = PetscObjectContainerSetPointer(container,redund);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(container,redund);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)C,"Mat_Redundant",(PetscObject)container);CHKERRQ(ierr);
-    ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_MatRedundant);CHKERRQ(ierr);
+    ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_MatRedundant);CHKERRQ(ierr);
     
     redund->nzlocal = nzlocal;
     redund->nsends  = nsends;

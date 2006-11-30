@@ -1402,19 +1402,19 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscGetPetscDir(const char*[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPopUpSelect(MPI_Comm,char*,char*,int,char**,int*);
 
 /*S
-     PetscObjectContainer - Simple PETSc object that contains a pointer to any required data
+     PetscContainer - Simple PETSc object that contains a pointer to any required data
 
    Level: advanced
 
-.seealso:  PetscObject, PetscObjectContainerCreate()
+.seealso:  PetscObject, PetscContainerCreate()
 S*/
-extern PetscCookie PETSC_DLLEXPORT PETSC_OBJECT_CONTAINER_COOKIE;
-typedef struct _p_PetscObjectContainer*  PetscObjectContainer;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerGetPointer(PetscObjectContainer,void **);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetPointer(PetscObjectContainer,void *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerDestroy(PetscObjectContainer);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerCreate(MPI_Comm comm,PetscObjectContainer *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectContainerSetUserDestroy(PetscObjectContainer, PetscErrorCode (*)(void*));
+extern PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE;
+typedef struct _p_PetscContainer*  PetscContainer;
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer,void **);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer,void *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer, PetscErrorCode (*)(void*));
 
 /*
    For use in debuggers 
