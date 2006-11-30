@@ -133,12 +133,16 @@ static int MPI_was_finalized   = 0;
 
 int Petsc_MPI_Init(int *argc, char ***argv)
 {
+  if (MPI_was_initialized) return 1;
+  if (MPI_was_finalized) return 1;
   MPI_was_initialized = 1;
   return 0;
 }
 
 int Petsc_MPI_Finalize(void)
 {
+  if (MPI_was_finalized) return 1;
+  if (!MPI_was_initialized) return 1;
   MPI_was_finalized = 1;
   return 0;
 }
@@ -199,14 +203,12 @@ int Petsc_MPI_Finalized(int *flag)
 
 void PETSC_STDCALL  mpi_init_(int *ierr)
 {
-  MPI_was_initialized = 1;
-  *ierr = MPI_SUCCESS;
+  *ierr = Petsc_MPI_Init((int*)0, (char***)0);
 }
 
 void PETSC_STDCALL  mpi_finalize_(int *ierr)
 {
-  MPI_was_finalized = 1;
-  *ierr = MPI_SUCCESS;
+  *ierr = Petsc_MPI_Finalize();
 }
 
 void PETSC_STDCALL mpi_comm_size_(MPI_Comm *comm,int *size,int *ierr) 
