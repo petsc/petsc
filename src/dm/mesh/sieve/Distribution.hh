@@ -387,7 +387,16 @@ namespace ALE {
             if (parallelTopology->hasLabel(l_iter->first, pl_iter->first)) continue;
             const Obj<typename topology_type::patch_label_type>& serialLabel   = pl_iter->second;
             const Obj<typename topology_type::patch_label_type>& parallelLabel = parallelTopology->createLabel(pl_iter->first, l_iter->first);
+            // Create local label
+            const Obj<typename topology_type::patch_label_type::traits::baseSequence>& base = serialLabel->base();
+            const Obj<typename topology_type::sieve_type>& parallelSieve = parallelTopology->getPatch(pl_iter->first);
 
+            for(typename topology_type::patch_label_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+              if (parallelSieve->capContains(*b_iter) || parallelSieve->baseContains(*b_iter)) {
+                parallelLabel->addArrow(*serialLabel->cone(*b_iter)->begin(), *b_iter);
+              }
+            }
+            // Get remote labels
             sieveCompletion::scatterCones(serialLabel, parallelLabel, sendOverlap, recvOverlap);
           }
         }
