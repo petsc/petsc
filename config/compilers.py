@@ -876,8 +876,8 @@ class Configure(config.base.Configure):
     if not f90Guess :
       return
 
-    headerPath = os.path.abspath(os.path.join('src', 'sys','f90', 'f90_'+f90Guess+'.h'))
-    sourcePath = os.path.abspath(os.path.join('src', 'sys','f90','f90_'+f90Guess+'.c'))
+    headerPath = os.path.join('src', 'sys','f90', 'f90_'+f90Guess+'.h')
+    sourcePath = os.path.join('src', 'sys','f90','f90_'+f90Guess+'.c')
 
     if os.path.isfile(headerPath):
       self.f90HeaderPath = headerPath
