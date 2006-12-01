@@ -69,10 +69,10 @@ allinone.h: modorder
 %.f90.h : %.use %.inc
 	echo "$*" >>modorder        
 	# create source
-	echo "module $*" >$*.f90.h
+	echo "      module $*" >$*.f90.h
 	cat $*.use >>$*.f90.h
 	cat $*.inc >>$*.f90.h
-	echo "end module $*" >>$*.f90.h
+	echo "      end module $*" >>$*.f90.h
 	${CPP} ${PETSC_FCPPFLAGS} $*.f90.h |grep -v "^ *#" >$*.f90
 	${FC} -c ${FOPTFLAGS} ${FFLAGS} $*.f90
 	# leave just preprocessor's directives in *.xinc
@@ -81,9 +81,7 @@ allinone.h: modorder
 %.use : moddeps
 	echo "USE: $*"
 	cat moddeps|grep "^ *$*[ :]"|sed 's/^[^:]*: *//'|sed 's/  */\n/g'|\
-	grep -v '^ *$$'|sed 's/^/use /' >$*.use 
-	#cat moddeps|grep "^ *$*"|sed 's/^[^:]*: *//'|sed 's/  */\n/g'|\
-	grep -v '^ *$$'|sed 's/^/use /' 
+	grep -v '^ *$$'|sed 's/^/      use /' >$*.use 
 
 # find header file and all what it includes, merge it together, prepend by
 # previous *.xinc
@@ -114,7 +112,5 @@ allinone.h: modorder
 
 
 ipath:
-	echo "-I/usr/include ${PETSC_DIR}/bmake/${PETSC_ARCH} ${PETSC_DIR}/include/finclude ${PACKAGES_INCLUDES} ${PETSC_DIR}/include "|sed 's/-I//g' > ipath
-
-
+	echo "-I/usr/include ${PETSC_DIR}/bmake/${PETSC_ARCH} ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include ${PETSC_DIR} ${PACKAGES_INCLUDES}  "|sed 's/-I//g' > ipath
 
