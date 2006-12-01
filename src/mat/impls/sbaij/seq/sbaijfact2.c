@@ -1636,7 +1636,8 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   IS             isrow=a->row;
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
-  MatScalar      *aa=a->a,*v,diagk;
+  MatScalar      *aa=a->a,*v;
+  PetscReal      diagk;
   PetscScalar    *x,*b,xk;
   PetscInt       nz,*vj,k;
 
@@ -1673,7 +1674,8 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   IS             isrow=a->row;
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
-  MatScalar      *aa=a->a,*v,diagk;
+  MatScalar      *aa=a->a,*v;
+  PetscReal      diagk;
   PetscScalar    *x,*b,xk,*t;
   PetscInt       nz,*vj,k;
 
