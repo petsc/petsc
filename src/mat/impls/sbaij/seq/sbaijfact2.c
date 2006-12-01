@@ -1613,18 +1613,16 @@ PetscErrorCode MatSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   /* solve U*perm(x) = y by back substitution */   
   for (k=mbs-1; k>=0; k--){ 
     v  = aa + ai[k] + 1; 
-    vj = aj + ai[k] + 1; 
-    xk = t[k];   
+    vj = aj + ai[k] + 1;  
     nz = ai[k+1] - ai[k] - 1;    
-    while (nz--) xk += (*v++) * t[*vj++]; 
-    t[k]      = xk;
-    x[rp[k]] = xk; 
+    while (nz--) t[k] += (*v++) * t[*vj++]; 
+    x[rp[k]] = t[k]; 
   }
 
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(4*a->nz + 3*A->rmap.N);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1642,15 +1640,15 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
-  /* solve U^T*D^(1/2)*y = perm(b) by forward substitution */
+  /* solve U^T*D^(1/2)*x = perm(b) by forward substitution */
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr); 
   
-  for (k=0; k<mbs; k++) x[k] = b[rp[k]];   
+  for (k=0; k<mbs; k++) x[k] = b[rp[k]]; 
   for (k=0; k<mbs; k++){
     v  = aa + ai[k] + 1; 
-    vj = aj + ai[k] + 1;    
+    vj = aj + ai[k] + 1;   
     xk = x[k];
     nz = ai[k+1] - ai[k] - 1; 
     while (nz--) x[*vj++] += (*v++) * xk;
@@ -1662,7 +1660,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*a->nz + 2*A->rmap.N);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1676,35 +1674,30 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1(Mat A,Vec bb,Vec xx)
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j,*rp;
   MatScalar      *aa=a->a,*v;
   PetscReal      diagk;
-  PetscScalar    *x,*b,xk,*t;
+  PetscScalar    *x,*b,*t;
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
-  /* solve D^(1/2)*U*perm(x) = y by back substitution */  
+  /* solve D^(1/2)*U*perm(x) = b by back substitution */  
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
   t    = a->solve_work;
   ierr = ISGetIndices(isrow,&rp);CHKERRQ(ierr);
 
-  for (k=0; k<mbs; k++){
-    diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */ 
-    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real and nonnegative");
-    t[k] = b[k] * sqrt(diagk);
-  }
-
   for (k=mbs-1; k>=0; k--){ 
     v  = aa + ai[k] + 1; 
-    vj = aj + ai[k] + 1; 
-    xk = t[k];    
+    vj = aj + ai[k] + 1;  
+    diagk = PetscRealPart(aa[ai[k]]);
+    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real and nonnegative");
+    t[k] = b[k] * sqrt(diagk);
     nz = ai[k+1] - ai[k] - 1;    
-    while (nz--) xk += (*v++) * t[*vj++]; 
-    t[k] = xk;
+    while (nz--) t[k] += (*v++) * t[*vj++]; 
+    x[rp[k]] = t[k];
   }
-  for (k=0; k<mbs; k++) x[rp[k]] = t[k];
   ierr = ISRestoreIndices(isrow,&rp);CHKERRQ(ierr);
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*a->nz + 2*A->rmap.N);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }    
 
@@ -1811,7 +1804,7 @@ PetscErrorCode MatSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
 
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(4*a->nz + A->rmap.N);CHKERRQ(ierr);
+  ierr = PetscLogFlops(4*a->nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1822,8 +1815,9 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
-  MatScalar      *aa=a->a,*v,diagk;
-  PetscScalar    *x,*b,xk;
+  MatScalar      *aa=a->a,*v;
+  PetscReal      diagk;
+  PetscScalar    *x,*b; 
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
@@ -1834,16 +1828,15 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   for (k=0; k<mbs; k++){
     v  = aa + ai[k] + 1; 
     vj = aj + ai[k] + 1;    
-    xk = x[k];
     nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
-    while (nz--) x[*vj++] += (*v++) * xk;
-    if (PetscImaginaryPart(aa[ai[k]])) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real");
-    diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */    
-    x[k] = xk*sqrt(diagk); 
+    while (nz--) x[*vj++] += (*v++) * x[k];
+    diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */   
+    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real and nonnegative");    
+    x[k] *= sqrt(diagk); 
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*a->nz + A->rmap.N);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -1854,33 +1847,28 @@ PetscErrorCode MatBackwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ *)A->data;
   PetscErrorCode ierr;
   PetscInt       mbs=a->mbs,*ai=a->i,*aj=a->j;
-  MatScalar      *aa=a->a,*v,diagk;
-  PetscScalar    *x,*b,xk;
+  MatScalar      *aa=a->a,*v;
+  PetscReal      diagk;
+  PetscScalar    *x,*b;
   PetscInt       nz,*vj,k;
 
   PetscFunctionBegin;
   /* solve D^(1/2)*U*x = b by back substitution */
   ierr = VecGetArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscMemcpy(x,b,mbs*sizeof(PetscScalar));CHKERRQ(ierr); 
 
-  for (k=0; k<mbs; k++){
-    if (PetscImaginaryPart(aa[ai[k]])) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real");
-    diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */  
-    x[k] *= sqrt(diagk);
-  }
-
-  for (k=mbs-2; k>=0; k--){ 
+  for (k=mbs-1; k>=0; k--){ 
     v  = aa + ai[k] + 1; 
     vj = aj + ai[k] + 1; 
-    xk = x[k];  
+    diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */ 
+    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real and nonnegative");
+    x[k] = sqrt(diagk)*b[k]; 
     nz = ai[k+1] - ai[k] - 1;    
-    while (nz--) xk += (*v++) * x[*vj++]; 
-    x[k] = xk;      
+    while (nz--) x[k] += (*v++) * x[*vj++]; 
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  ierr = PetscLogFlops(2*a->nz + A->rmap.N);CHKERRQ(ierr); 
+  ierr = PetscLogFlops(2*a->nz);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
