@@ -837,7 +837,9 @@ class Configure(config.base.Configure):
 
   def getFortran90SourceGuesses(self):
     f90Guess = None
-    if self.setCompilers.vendor:
+    if config.setCompilers.Configure.isG95(self.setCompilers.FC):
+      f90Guess = 'g95'
+    elif self.setCompilers.vendor:
       if self.setCompilers.FC.startswith('win32fe'):
         f90Guess = 'win32'
       elif self.setCompilers.vendor == 'absoft':
