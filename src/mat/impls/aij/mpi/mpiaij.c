@@ -3904,11 +3904,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     b_othi[0] = 0;
     len = 0; /* total length of j or a array to be received */
     k = 0;
-    for (i=0; i<nrecvs; i++){
-      rowlen = (PetscInt*)rvalues + rstarts[i];
+    for (i=0; i<nrecvs; i++){  
+      rowlen = (PetscInt*)rvalues + rstarts[i]*rbs; 
       nrows = rbs*(rstarts[i+1]-rstarts[i]); /* num of rows to be recieved */
       for (j=0; j<nrows; j++) {
-        b_othi[k+1] = b_othi[k] + rowlen[j]; 
+        b_othi[k+1] = b_othi[k] + rowlen[j];
         len += rowlen[j]; k++;
       }
       rstartsj[i+1] = len; /* starting point of (i+1)-th incoming msg in bufj and bufa */
@@ -4013,8 +4013,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
       *bufa_ptr = bufa;
     }
   }
-  ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);
-  
+  ierr = PetscLogEventEnd(logkey_GetBrowsOfAocols,A,B,0,0);CHKERRQ(ierr);  
   PetscFunctionReturn(0);
 }
 
