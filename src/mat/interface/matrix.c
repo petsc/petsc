@@ -2495,7 +2495,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
 #undef __FUNCT__  
 #define __FUNCT__ "MatForwardSolve"
 /* @
-   MatForwardSolve - Solves L x = b, given a factored matrix, A = LU.
+   MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
+                            U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
 
    Collective on Mat and Vec
 
@@ -2510,8 +2511,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
    MatSolve() should be used for most applications, as it performs
    a forward solve followed by a backward solve.
 
-   The vectors b and x cannot be the same.  I.e., one cannot
+   The vectors b and x cannot be the same,  i.e., one cannot
    call MatForwardSolve(A,x,x).
+
+   For matrix in seqsbaij format with block size larger than 1,
+   the diagonal blocks are not implemented as D = D^(1/2) * D^(1/2) yet.
+   MatForwardSolve() solves U^T*D y = b, and
+   MatBackwardSolve() solves U x = y.
+   Thus they do not provide a symmetric preconditioner.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -2552,6 +2559,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 #define __FUNCT__ "MatBackwardSolve"
 /* @
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
+                             D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
 
    Collective on Mat and Vec
 
@@ -2568,6 +2576,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatBackwardSolve(A,x,x).
+
+   For matrix in seqsbaij format with block size larger than 1,
+   the diagonal blocks are not implemented as D = D^(1/2) * D^(1/2) yet.
+   MatForwardSolve() solves U^T*D y = b, and
+   MatBackwardSolve() solves U x = y.
+   Thus they do not provide a symmetric preconditioner.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
