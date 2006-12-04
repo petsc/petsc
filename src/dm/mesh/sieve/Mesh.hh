@@ -116,6 +116,39 @@ namespace ALE {
     };
   };
 
+  class Discretization : public ALE::ParallelObject {
+  protected:
+    std::map<int,int> _dim2dof;
+    std::map<int,int> _dim2class;
+  public:
+    Discretization(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
+    ~Discretization() {};
+  public:
+    const double *getQuadraturePoints() {return NULL;};
+    const double *getQuadratureWeights() {return NULL;};
+    const double *getBasis() {return NULL;};
+    const double *getBasisDerivatives() {return NULL;};
+    int  getNumDof(const int dim) {return this->_dim2dof[dim];};
+    void setNumDof(const int dim, const int numDof) {this->_dim2dof[dim] = numDof;};
+    int  getDofClass(const int dim) {return this->_dim2class[dim];};
+    void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
+  };
+
+  class BoundaryCondition : public ALE::ParallelObject {
+  protected:
+    std::string _labelName;
+    double    (*_func)(const double []);
+  public:
+    BoundaryCondition(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
+    ~BoundaryCondition() {};
+  public:
+    const std::string& getLabelName() {return this->_labelName;};
+    void setLabelName(const std::string& name) {this->_labelName = name;};
+    void setFunction(double (*func)(const double [])) {this->_func = func;};
+  public:
+    double evaluate(const double coords[]) {return this->_func(coords);};
+  };
+
   class Mesh : public Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > > {
   public:
     typedef int                                       point_type;
@@ -143,10 +176,15 @@ namespace ALE {
     bc_values_type        _bcValues;
     // PyLith BC
     Obj<foliated_section_type> _boundaries;
+    // Discretization
+    Obj<Discretization>    _discretization;
+    Obj<BoundaryCondition> _boundaryCondition;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > >(comm, debug), _dim(dim) {
       this->_factory = NumberingFactory::singleton(debug);
       this->_boundaries = NULL;
+      this->_discretization = new Discretization(comm, debug);
+      this->_boundaryCondition = new BoundaryCondition(comm, debug);
     };
     Mesh(const Obj<topology_type>& topology, int dim) : Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > >(topology), _dim(dim) {
       this->_factory = NumberingFactory::singleton(topology->debug());
@@ -156,6 +194,10 @@ namespace ALE {
     int getDimension() const {return this->_dim;};
     void setDimension(const int dim) {this->_dim = dim;};
     const Obj<NumberingFactory>& getFactory() {return this->_factory;};
+    const Obj<Discretization>&    getDiscretization() {return this->_discretization;};
+    void setDiscretization(const Obj<Discretization>& discretization) {this->_discretization = discretization;};
+    const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
+    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
   public: // Mesh geometry
     static void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const patch_type patch  = 0;
@@ -227,6 +269,21 @@ namespace ALE {
         throw ALE::Exception("Unsupport dimension for element geometry computation");
       }
     };
+    double getMaxVolume() {
+      const topology_type::sheaf_type& patches = this->getTopology()->getPatches();
+      double v0[3], J[9], invJ[9], detJ, maxVolume = 0.0;
+
+      for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+        const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
+        const Obj<topology_type::label_sequence>& cells       = this->getTopology()->heightStratum(p_iter->first, 0);
+
+        for(topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+          maxVolume = std::max(maxVolume, detJ);
+        }
+      }
+      return maxVolume;
+    };
     // Find the cell in which this point lies (stupid algorithm)
     //   Assume a simplex and 3D
     point_type locatePoint(const patch_type& patch, const real_section_type::value_type point[]) {
@@ -285,6 +342,34 @@ namespace ALE {
         this->_boundaries = new foliated_section_type(this->getTopology());
       }
       return this->_boundaries;
+    };
+  public: // Discretization
+    void setupField(const Obj<real_section_type>& s) {
+      const std::string& name  = this->_boundaryCondition->getLabelName();
+      const patch_type   patch = 0;
+
+      for(int d = 0; d < this->_dim; ++d) {
+        s->setFiberDimensionByDepth(patch, d, this->_discretization->getNumDof(d));
+      }
+      if (!name.empty()) {
+        const Obj<topology_type::label_sequence>& boundary = this->_topology->getLabelStratum(patch, name, 1);
+
+        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          s->setFiberDimension(patch, *e_iter, -this->_discretization->getNumDof(this->_topology->depth(patch, *e_iter)));
+        }
+      }
+      s->allocate();
+      if (!name.empty()) {
+        const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
+        const Obj<topology_type::label_sequence>& boundary    = this->_topology->getLabelStratum(patch, name, 1);
+
+        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *e_iter);
+          const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
+
+          s->updateBC(patch, *e_iter, &value);
+        }
+      }
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {

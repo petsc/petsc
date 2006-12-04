@@ -11,6 +11,8 @@ PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
 PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
             Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
+EXTERN PetscErrorCode MeshRefine_DM(Mesh, MPI_Comm, Mesh *);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshFinalize"
 PetscErrorCode MeshFinalize()
@@ -399,7 +401,10 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
   p->ops->view               = MeshView_Sieve;
   p->ops->createglobalvector = MeshCreateGlobalVector;
+  p->ops->getcoloring        = PETSC_NULL;
   p->ops->getmatrix          = MeshGetMatrix;
+  p->ops->getinterpolation   = PETSC_NULL;
+  p->ops->refine             = MeshRefine_DM;
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
@@ -1356,6 +1361,28 @@ PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpol
   ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
   ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRefine_DM"
+PetscErrorCode MeshRefine_DM(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  double              refinementLimit;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
+  refinementLimit = oldMesh->getMaxVolume()/2.0;
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, false);
+  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+
+  newMesh->setDiscretization(oldMesh->getDiscretization());
+  newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
+  newMesh->setupField(s);
   PetscFunctionReturn(0);
 }
 
