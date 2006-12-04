@@ -49,69 +49,15 @@ namespace ALE {
   };// class XParallelObject
   
   namespace XSifterDef {
-    static int debug = 0;
-    // 
-    // Arrow definition
-    // 
-    template<typename Source_, typename Target_, typename Color_>
-    struct  Arrow { 
-      typedef Arrow   arrow_type;
-      typedef Source_ source_type;
-      typedef Target_ target_type;
-      typedef Color_  color_type;
-      source_type _source;
-      target_type _target;
-      color_type  _color;
-      //
-      source_type source() const {return this->_source;};
-      target_type target() const {return this->_target;};
-      color_type  color()  const {return this->_color;};
-      // Basic
-      Arrow(const source_type& s, const target_type& t, const color_type& c) : _source(s), _target(t), _color(c) {};
-      // Rebinding
-      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_>
-      struct rebind {
-        typedef Arrow<OtherSource_, OtherTarget_, OtherColor_> type;
-      };
-      // Flipping
-      struct flip {
-        typedef Arrow<target_type, source_type, color_type> type;
-        type arrow(const arrow_type& a) { return type(a.target, a.source, a.color);};
-      };
-      // Printing
-      friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
-        os << a._source << " --(" << a._color << ")--> " << a._target;
-        return os;
-      }
-      // Modifying
-      struct sourceChanger {
-        sourceChanger(const source_type& newSource) : _newSource(newSource) {};
-        void operator()(arrow_type& a) {a._source = this->_newSource;}
-      private:
-        source_type _newSource;
-      };
-      //
-      struct targetChanger {
-        targetChanger(const target_type& newTarget) : _newTarget(newTarget) {};
-        void operator()(arrow_type& a) { a._target = this->_newTarget;}
-      private:
-        const target_type _newTarget;
-      };
-      //
-      struct colorChanger {
-        colorChanger(const color_type& newColor) : _newColor(newColor) {};
-        void operator()(arrow_type& a) { a._color = this->_newColor;}
-      private:
-        const color_type _newColor;
-      };
-    };// struct Arrow
-    
-
+    static int debug   = 0;
+    static int codebug = 0;
+#define ALE_XSIFTER_DEBUG_DEPTH 4
+#define ALE_XSIFTER_DEBUG(n) ((ALE_XSIFTER_DEBUG_DEPTH - ALE::XSifterDef::debug < n) || (ALE::XSifterDef::codebug >= n))
     //
     // Rec orders
     //
     // RecKeyOrder compares records by comparing keys of type Key_ extracted from arrows using a KeyExtractor_.
-    // In addition, a recordcan be compared to a single Key_ or another CompatibleKey_.
+    // In addition, a record can be compared to a single Key_ or another CompatibleKey_.
     template<typename Rec_, typename KeyExtractor_, typename KeyOrder_ = std::less<typename KeyExtractor_::result_type> >
     struct RecKeyOrder {
       typedef Rec_                                     rec_type;
@@ -128,7 +74,7 @@ namespace ALE {
       template <typename CompatibleKey_>
       bool operator()(const rec_type& rec, const ALE::singleton<CompatibleKey_> keySingleton) const {
         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
-        // and must be unwrapped before the ordering operator is applied
+        // and must be unwrapped before the ordering operator is applied.
         return this->_key_order(this->_kex(rec), keySingleton.first);
       };
       template <typename CompatibleKey_>
@@ -161,137 +107,77 @@ namespace ALE {
     public:
       bool operator()(const rec_type& rec1, const rec_type& rec2) const { 
         //
-        return this->_compare_keys(_kex(rec1),_kex(rec2)) ||
-          (!this->_compare_keys(_kex(rec2),_kex(rec1)) && this->_compare_xxx(rec1,rec2));
+        //        return this->_compare_keys(this->_kex(rec1),this->_kex(rec2)) ||
+        //  (!this->_compare_keys(this->_kex(rec2),this->_kex(rec1)) && this->_compare_xxx(rec1,rec2));
+        if(this->_compare_keys(this->_kex(rec1), this->_kex(rec2))) 
+          return true;
+        if(this->_compare_keys(this->_kex(rec2), this->_kex(rec1))) 
+          return false;
+        if(this->_compare_xxx(rec1,rec2))
+          return true;
+        return false;
+           
       };
       template <typename CompatibleKey_>
       bool operator()(const ALE::singleton<CompatibleKey_>& keySingleton, const rec_type& rec1) const {
         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
         // and must be unwrapped before the ordering operator is applied
-        //
-        // We want key to be less than any (key, ...)
         return this->_compare_keys(keySingleton.first, this->_kex(rec1));
       };
       template <typename CompatibleKey_>
       bool operator()(const rec_type& rec1, const ALE::singleton<CompatibleKey_>& keySingleton) const {
         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
         // and must be unwrapped before the ordering operator is applied
-        //
-        // We want key to be less than any (key, ...)
-        return !this->_compare_keys(keySingleton.first, this->_kex(rec1));
+        return this->_compare_keys(this->_kex(rec1), keySingleton.first);
       };
       template <typename CompatibleKey_, typename CompatibleXXXKey_>
       bool operator()(const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair, const rec_type& rec) const {
         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
         // and must be unwrapped before the ordering operator is applied
         //
-        // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
+        // We want (key,xxxkey) to be no greater than any (key, xxxkey, ...)
         return this->_compare_keys(keyPair.first, _kex(rec)) ||
-          (!this->_compare_keys(_kex(rec), keyPair.first) && this->_compare_xxx(ALE::singleton<CompatibleXXXKey_>(keyPair.second),rec));
+          (!this->_compare_keys(_kex(rec), keyPair.first) && this->_compare_xxx(ALE::singleton<CompatibleXXXKey_>(keyPair.second), rec));
         // Note that CompatibleXXXKey_ -- the second key in the pair -- must be wrapped up as a singleton before being passed for comparison against rec
         // to compare_xxx.  This is necessary for compare_xxx to disamiguate comparison of recs to elements of differents types.  In particular, 
         // this is necessary if compare_xxx is of the RecKeyXXXOrder type. Specialization doesn't work, or I don't know how to make it work in this context.
       };
       template <typename CompatibleKey_, typename CompatibleXXXKey_>
       bool operator()(const rec_type& rec, const ALE::pair<CompatibleKey_, CompatibleXXXKey_>& keyPair) const {
-        // We want (key,xxxkey) to be less than any (key, xxxkey, ...)
+        // We want (key,xxxkey) to be no greater than any (key, xxxkey, ...)
         return _compare_keys(_kex(rec), keyPair.first) ||
-          (!this->_compare_keys(keyPair.first, _kex(rec)) && this->_compare_xxx(rec, ALE::singleton<CompatibleXXXKey_>(keyPair.second)));
+          (!this->_compare_keys(keyPair.first, _kex(rec)) && this->_compare_xxx(rec,ALE::singleton<CompatibleXXXKey_>(keyPair.second)));
         // Note that CompatibleXXXKey_ -- the second key in the pair -- must be wrapped up as a singleton before being passed for comparison against rec
         // to compare_xxx.  This is necessary for compare_xxx to disamiguate comparison of recs to elements of differents types.  In particular, 
         // this is necessary if compare_xxx is of the RecKeyXXXOrder type. Specialization doesn't work, or I don't know how to make it work in this context.
       };
     };// class RecKeyXXXOrder
 
-    //
-    // Default orders.
-    //
-    template<typename Arrow_, 
-             typename SourceOrder_ = std::less<typename Arrow_::source_type>,
-             typename ColorOrder_  = std::less<typename Arrow_::color_type> >
-    struct SourceColorOrder : 
-      public RecKeyXXXOrder<Arrow_, 
-                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::source_type, &Arrow_::source>, 
-                            SourceOrder_, 
-                            RecKeyOrder<Arrow_, 
-                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::color_type, &Arrow_::color>, 
-                                        ColorOrder_>
-      >
-    {};
-    
-    //
-    template<typename Arrow_,
-             typename ColorOrder_  = std::less<typename Arrow_::color_type>,
-             typename SourceOrder_ = std::less<typename Arrow_::source_type>
-    >
-    struct ColorSourceOrder : 
-      public RecKeyXXXOrder<Arrow_, 
-                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::color_type, &Arrow_::source>, 
-                            ColorOrder_,
-                            RecKeyOrder<Arrow_, 
-                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
-                                        SourceOrder_>
-      >
-    {};
-    //
-    template<typename Arrow_, 
-             typename TargetOrder_ = std::less<typename Arrow_::source_type>,
-             typename ColorOrder_  = std::less<typename Arrow_::color_type> >
-    struct TargetColorOrder : 
-      public RecKeyXXXOrder<Arrow_, 
-                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::source_type, &Arrow_::source>, 
-                            TargetOrder_,
-                            RecKeyOrder<Arrow_, 
-                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::color_type, &Arrow_::color>, 
-                                        ColorOrder_>
-      >
-    {};
-    //
-    template<typename Arrow_, 
-             typename ColorOrder_  = std::less<typename Arrow_::color_type>,
-             typename TargetOrder_ = std::less<typename Arrow_::source_type> >
-    struct ColorTargetOrder : 
-      public RecKeyXXXOrder<Arrow_, 
-                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::color_type, &Arrow_::source>, 
-                            ColorOrder_,
-                            RecKeyOrder<Arrow_, 
-                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
-                                        TargetOrder_>
-      >
-    {};
-  
-    
+
     //
     // PredicateTraits encapsulates Predicate types encoding object subsets with a given Predicate value or within a value range.
     template<typename Predicate_> 
     struct PredicateTraits {};
     // Traits of different predicate types are defined via specialization of PredicateTraits.
-    // We require that the predicate type act like a signed int.
+    // We require that the predicate type act like an int (signed or unsigned).
+    //
     template<>
     struct PredicateTraits<int> {
       typedef      int  predicate_type;
       typedef      int  printable_type;
-      //
-      static const predicate_type third;
-      static const predicate_type max;
-      static const predicate_type min;
     };
-    const PredicateTraits<int>::predicate_type PredicateTraits<int>::max   = INT_MAX;
-    const PredicateTraits<int>::predicate_type PredicateTraits<int>::min   = INT_MIN;
-    const PredicateTraits<int>::predicate_type PredicateTraits<int>::third = (abs(INT_MIN)<abs(INT_MAX))?abs(INT_MIN)/3:abs(INT_MAX)/3;
+    //
+    template<>
+    struct PredicateTraits<unsigned int> {
+      typedef      unsigned int  predicate_type;
+      typedef      unsigned int  printable_type;
+    };
     //
     template<>
     struct PredicateTraits<short> {
       typedef      short  predicate_type;
       typedef      short  printable_type;
-      //
-      static const predicate_type third;
-      static const predicate_type max;
-      static const predicate_type min;
     };
-    const PredicateTraits<short>::predicate_type PredicateTraits<short>::max   = SHRT_MAX;
-    const PredicateTraits<short>::predicate_type PredicateTraits<short>::min   = SHRT_MIN;
-    const PredicateTraits<short>::predicate_type PredicateTraits<short>::third = (abs(SHRT_MIN)<abs(SHRT_MAX))?abs(SHRT_MIN)/3:abs(SHRT_MAX)/3;;
     //
     template<>
     struct PredicateTraits<char> {
@@ -310,12 +196,13 @@ namespace ALE {
     //
     // FilterManagers
     //
-    template <typename Index_, typename FilterKeyExtractor_>
+    template <typename Index_, typename FilterKeyExtractor_, typename FilterKeyCompare_>
     class DummyFilterManager {
     public:
       typedef Index_                                   index_type;
       typedef FilterKeyExtractor_                      key_extractor_type;
       typedef typename key_extractor_type::result_type key_type;
+      typedef FilterKeyCompare_                        key_compare_type;
     protected:
       index_type& _index;
     public:
@@ -343,11 +230,13 @@ namespace ALE {
       typedef PredicateTraits<key_type>                        key_traits;
       typedef typename index_type::iterator                    iterator;
     protected:
-      filter_manager_type *_manager;
-      bool                _have_low, _have_high;
-      key_type            _low, _high;
-      key_extractor_type  _kex;
+      filter_manager_type*                           _manager;
+      bool                                           _have_low, _have_high;
+      key_type                                       _low, _high;
+      key_extractor_type                             _kex; // IMPROVE: this could be static
+      typename filter_manager_type::key_compare_type _kcompare; // IMPROVE: this could be static
     public:
+      // Basic interface
       RangeFilter(filter_manager_type* manager) : 
         XObject(), _manager(manager), _have_low(false), _have_high(false) {};
       RangeFilter(filter_manager_type* manager, const key_type& low, const key_type& high) : 
@@ -366,10 +255,13 @@ namespace ALE {
       //
       key_type         key(const iterator& iter)  const { return this->_kex(*iter);};
       //
-      // Returns the start of the allowed segment within the index.
-      iterator begin() {         
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+      #undef  __FUNCT__
+      #define __FUNCT__ "begin"
+      // Returns the start of the first allowed segment within the index.
+      iterator begin() const {         
+        if(ALE_XSIFTER_DEBUG(1)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
         }
         iterator iter;
@@ -380,163 +272,258 @@ namespace ALE {
         else {
           iter = this->_manager->index().begin();
         }
-        if(ALE::XSifterDef::debug){
+        if(ALE_XSIFTER_DEBUG(1)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
-      };
+      };//begin()
       //
-      // Returns the start of the allowed subsegment within a segment defined by fixing the outer key as in the current iterator,
-      // while the filtering is done on the inner key.  The outer key is extracted using a OuterFilter, although only the
-      // key extraction capabilities of OuterFilter are used.
+      #undef  __FUNCT__
+      #define __FUNCT__ "begin<OuterFilter_>"
+      // Returns the start of the first allowed subsegment within a segment defined by the outer key as in the current iterator.
+      // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
       template<typename OuterFilter_>
-      iterator begin(const iterator& outer_iter, const OuterFilter_& outer_filter) { 
+      iterator begin(const iterator& current_iter, const OuterFilter_& outer_filter) const { 
         typedef typename OuterFilter_::key_type outer_key_type;
-        iterator iter = outer_iter;
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << ", outer filter: " << outer_filter  << ", *outer_iter: " << *outer_iter << std::endl;
+        iterator iter;
+        if(ALE_XSIFTER_DEBUG(2)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter  << ", *current_iter: " << *current_iter << std::endl;
         }
         if(this->_have_low) {
           // Find the lowest iterator in the range of the filter with the same outer_key
           // ASSUMPTION: index ordering operator can compare against (outer_key_type,key_type) pairs
-          iter = this->_manager->index().lower_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(iter),this->_low));
+          if(ALE_XSIFTER_DEBUG(2)) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+            std::cout << "looking for lower bound of pair (okey,ikey): (" << outer_filter.key(current_iter) << ", " << this->_low << ")" << std::endl;
+          }
+          iter = this->_manager->index().lower_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(current_iter),this->_low));
         }
         else {
-          // If the range is open from below (!have_low), we leave the iter alone
+          // If the range is open from below (!have_low), use current_iter
+          iter = current_iter;
         }
-        if(ALE::XSifterDef::debug){
+        if(ALE_XSIFTER_DEBUG(2)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
-      };
+      };//begin<OuterFilter_>()
       //
       #undef  __FUNCT__
       #define __FUNCT__ "end"
-      // Returns the end of the allowed segment within the index.
-      iterator end() {
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+      // Returns the end of the last allowed segment within the index.
+      iterator end() const {
+        if(ALE_XSIFTER_DEBUG(1)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
         }
-        static iterator iter;
+        iterator iter;
         // Determine the upper limit
-        if(this->_have_high()) {
+        if(this->_have_high) {
           // ASSUMPTION: index ordering operator can compare against (key_type) singletons
           iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->high()));
         }
         else {
           iter = this->_manager->index().end();
         }
-        if(ALE::XSifterDef::debug){
+        if(ALE_XSIFTER_DEBUG(1)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
       };//end()
       //
       #undef  __FUNCT__
-      #define __FUNCT__ "rbegin"
-      // Returns the beginning of the reversed allowed segment within the index.
-      iterator rbegin() {
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+      #define __FUNCT__ "last"
+      // Returns the last element of the last allowed segment within the index.
+      iterator last() const {
+        if(ALE_XSIFTER_DEBUG(4)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
         }
-        static iterator iter;
+        iterator iter;
         // Determine the last element in the range
-        if(this->_have_high()) {
+        if(this->_have_high) {
           // ASSUMPTION: index ordering operator can compare against (key_type) singletons
           iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->high()));
-          if(iter != this->_manager->index().begin()) --iter;
         }
         else {
-          iter = this->_manager->index().rbegin();
-        }
-        if(ALE::XSifterDef::debug){
+          iter = this->_manager->index().end();
+        }        
+        if(iter != this->_manager->index().begin()) --iter;
+        if(ALE_XSIFTER_DEBUG(4)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
-      };//rbegin()
+      };//last()
       //
       #undef  __FUNCT__
-      #define __FUNCT__ "end"
-      // Returns the end of the allowed subsegment within a segment defined by fixing the outer key as in the current iterator,
-      // while the filtering is done on the inner key.  The outer key is extracted using a OuterFilter, although only the
-      // key extraction capabilities of OuterFilter are used.
+      #define __FUNCT__ "end(iterator)"
+      // Returns the end of the last allowed subsegment within an allowable segment defined by the outer key as in the current iterator.
+      // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
+      iterator end(const iterator& current_iter) const {
+        iterator iter;
+        if(ALE_XSIFTER_DEBUG(4)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", *current_iter: " << *current_iter << std::endl;
+        }
+        if(this->_have_high) {
+          // ASSUMPTION: index ordering operator can compare against key_type singletons
+          iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->_high));
+        }
+        else {
+          // If the subsegment is open from above (!have_high), we have to move to the end of the outer segment
+          // In the case of RangeFilter, it is the end of the only segment and, since there is no high bound, the end of the index.
+          iter = this->_manager->index().end();
+        }
+        if(ALE_XSIFTER_DEBUG(4)){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
+        }
+        return iter;
+      };//end(iterator)
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "last(iterator)"
+      // Returns the last element of the last allowed subsegment within a segment defined by the outer key as in the current iterator.
+      // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
+      iterator last(const iterator& current_iter) const {
+        if(ALE_XSIFTER_DEBUG(2)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", *current_iter: " << *current_iter << std::endl;
+        }
+        iterator iter = this->end(current_iter);
+        if(iter != this->_manager->index().begin()) {
+          --iter;
+        }
+        if(ALE_XSIFTER_DEBUG(2)){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
+        }
+        return iter;
+      };//last(iterator)
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "end<OuterFilter_>"
+      // Returns the end of the last allowed subsegment within an allowable segment defined by the outer key as in the current iterator.
+      // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
       template <typename OuterFilter_>
-      iterator end(const iterator& outer_iter, const OuterFilter_& outer_filter) {
+      iterator end(const iterator& current_iter, const OuterFilter_& outer_filter) const {
         typedef typename OuterFilter_::key_type outer_key_type;
-        iterator iter = outer_iter;
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *outer_iter: " << *outer_iter << std::endl;
+        iterator iter;
+        if(ALE_XSIFTER_DEBUG(4)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *current_iter: " << *current_iter << std::endl;
         }
         if(this->_have_high) {
           // Find the highest iterator in the range of the filter with the same outer_key
           // ASSUMPTION: index ordering operator can compare against (outer_key_type,key_type) pairs
-          iter = this->_manager->index().upper_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(iter),this->_low));
+          iter = this->_manager->index().upper_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(current_iter),this->_high));
         }
         else {
-          // If the range is open from above (!have_high), we leave the iter alone
+          // If the subsegment is open from above (!have_high), we have to move to the end of the outer segment
+          iter = outer_filter.end(current_iter);
         }
-        if(ALE::XSifterDef::debug){
+        if(ALE_XSIFTER_DEBUG(4)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
-      };//end()
+      };//end<OuterFilter_>()
       //
       #undef  __FUNCT__
-      #define __FUNCT__ "rbegin"
-      // Returns the last element of the allowed subsegment within a segment defined by fixing the outer key as in the current iterator,
-      // while the filtering is done on the inner key.  The outer key is extracted using a OuterFilter, although only the
-      // key extraction capabilities of OuterFilter are used.
+      #define __FUNCT__ "last<OuterFilter_>"
+      // Returns the last element of the last allowed subsegment within a segment defined by the outer key as in the current iterator.
+      // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
       template <typename OuterFilter_>
-      iterator rbegin(const iterator& outer_iter, const OuterFilter_& outer_filter) {
-        return --(this->end(outer_iter, outer_filter));
-      };//rbegin()
-      //
-      // Returns the element of the allowed segment following iter. 
-      // The assumption is that iter is within the segment.
-      iterator next(const iterator& base_iter) {         
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
+      iterator last(const iterator& current_iter, const OuterFilter_& outer_filter) const {
+        if(ALE_XSIFTER_DEBUG(2)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *current_iter: " << *current_iter << std::endl;
         }
-        iterator iter = base_iter;
-        // ASSUMPTION: index ordering operator can compare against key_type singleton
-        iter = this->_manager->index().upper_bound(ALE::singleton<key_type>(this->key(iter)));
-        if(ALE::XSifterDef::debug){
+        iterator iter = this->end(current_iter, outer_filter);
+        if(iter != this->_manager->index().begin()) {
+          --iter;
+        }
+        if(ALE_XSIFTER_DEBUG(2)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
-      };// next()
+      };//last<OuterFilter_>()
       //
-      // Returns the element of the allowed subsegment following iter with the same outer key. 
-      // The assumption is that iter is within the segment.  If the rbegin of the subsegment has been reached,
-      // return base_iter unchanged.
+      #undef  __FUNCT__
+      #define __FUNCT__ "next(iterator)"
+      // Returns the beginning of the allowed subsegment following the one current_iter belongs to, assuming current_iter is in such a segment. 
+      // If no further segment exists, return the end of the last segment.
+      iterator next(const iterator& current_iter) const {         
+        iterator iter;
+        if(ALE_XSIFTER_DEBUG(3)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", *current_iter: " << *current_iter << std::endl;
+        }
+        // if current_iter precedes the allowable segment, return the beginning of the segment
+        if(this->_have_low && this->_kcompare(this->key(current_iter), this->_low)) {
+          iter = this->_manager->index().lower_bound(ALE::singleton<key_type>(this->_low));
+        }
+        else {
+          iter = this->end();
+        }
+        if(ALE_XSIFTER_DEBUG(3)){
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
+        }
+        return iter;
+      };// next(iterator)
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "next<OuterFilter_>"
+      // Returns the beginning of the allowed subsegment following the one current_iter belongs to but within the same allowable segment current_iter is in
+      // (assuming current_iter is in such a segment/subsegment). 
+      // If the last iter of the subsegment has been reached, return current_iter unchanged.
       template<typename OuterFilter_>
-      iterator next(const iterator& base_iter, const OuterFilter_& outer_filter) {         
+      iterator next(const iterator& current_iter, const OuterFilter_& outer_filter) const {         
         typedef typename OuterFilter_::key_type outer_key_type;
-        iterator iter = base_iter;
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
+        iterator iter;
+        if(ALE_XSIFTER_DEBUG(3)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *current_iter: " << *current_iter << std::endl;
         }
-        if(iter != this->rbegin(base_iter, outer_filter)) {
-          iter = this->_manager->index().upper_bound(ALE::pair<key_type, outer_key_type>(outer_filter.key(iter),this->key(iter)));
+        // if current_iter is less than low, then go to low
+        if(this->_have_low && this->_kcompare(this->key(current_iter),this->_low)) {
+          iter = this->_manager->index().lower_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter),this->_low));
         }
-        if(ALE::XSifterDef::debug){
+        else {
+          iter = this->_manager->index().upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter),this->key(current_iter)));
+        }
+        if(ALE_XSIFTER_DEBUG(3)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iter;
-      };// next()
+      };// next<OuterFilter_>()
       //
       friend std::ostream& operator<<(std::ostream& os, const RangeFilter& f) {
         os << "[low, high] = [";
@@ -614,7 +601,7 @@ namespace ALE {
         // Underlying iterator & segment boundary
         itor_type       _itor;
         //
-        // Value extractor
+        // Key and Value extractors
         outer_key_extractor_type _okex;
         inner_key_extractor_type _ikex;
         value_extractor_type     _ex;
@@ -690,20 +677,19 @@ namespace ALE {
       #undef  __FUNCT__
       #define __FUNCT__ "begin"
       iterator begin() {
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+        if(ALE_XSIFTER_DEBUG(1)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
         }
-        static itor_type itor;
-        static itor_type segBndry;
-        // Segment boundary set to just above the current (outer_key, inner_key) pair.
-        // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
+        itor_type itor;
         itor = this->innerFilter().begin(this->outerFilter().begin(), this->outerFilter());
-        if(ALE::XSifterDef::debug){
+        if(ALE_XSIFTER_DEBUG(1)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
-          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << ", (okey, ikey): (" << this->outerFilter().key(itor) << ", " << this->innerFilter().key(itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
         return iterator(this, itor);
       }; // begin()
@@ -711,77 +697,85 @@ namespace ALE {
       #undef  __FUNCT__
       #define __FUNCT__ "next"
       void next(itor_type& itor) {
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+        if(ALE_XSIFTER_DEBUG(4)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
+          if(Strided) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
+          }
+          else {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided sequence" << std::endl;
+          }
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *itor " << *itor; 
-          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << ", (okey, ikey): (" << this->outerFilter().key(itor) << ", " << this->innerFilter().key(itor) << ") " << std::endl;
         }
         // Check to see if we have reached the subsegment boundary
-        if(itor == this->innerFilter().rbegin(itor, this->outerFilter())) { // at subsegment end
-          // Advance to the next element in the outer segment
-          itor = this->outerFilter().next(itor);
-          // Select the first inner element -- beginning of the subsegment
-          itor = this->innerFilter().begin(itor, this->outerFilter());
+        // IMPROVE: store this->innerFilter().end(itor, this->outerFilter()) as innerSegmentEnd
+        if(itor == this->innerFilter().end(itor, this->outerFilter())) { // at subsegment end
+          if(ALE_XSIFTER_DEBUG(4)) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": at subsegment end" << std::endl;
+          }
+          // Check whether the end of the outer segment has been reached
+          // IMPROVE: store this->outerFilter().end() as outerSegmentEnd
+          if(itor != this->outerFilter().end()) {
+            // Select the first inner element -- beginning of the subsegment
+            itor = this->innerFilter().begin(itor, this->outerFilter());
+            // IMPROVE: update innerSegmentLast, outerSegmentEnd
+          }
         }
         else { // not at subsegment end
+          if(ALE_XSIFTER_DEBUG(4)) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": not at subsegment end" << std::endl;
+          }
           // If iteration is to be strided we skip the RemainderKeys. Effectively, we iterate over subsegments.
           if(Strided) {
-            if(ALE::XSifterDef::debug) {
+            if(ALE_XSIFTER_DEBUG(4)) {
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
             }
+            // IMPROVE: use innerSegmentLast as an optional hint to innerFilter().next(...); 
             itor = this->innerFilter().next(itor, this->outerFilter());
+            // IMPROVE: update innerSegmentLast or the hinted version of innerFilter().next should update innerSegmentLast
           }// Strided
           // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
           else {
-            if(ALE::XSifterDef::debug) {
+            if(ALE_XSIFTER_DEBUG(4)) {
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided sequence" << std::endl;
             }
             ++itor; 
           }// not Strided
         }// not at subsegment end
-        if(ALE::XSifterDef::debug) {
+        if(ALE_XSIFTER_DEBUG(4)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
-          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << ", (okey, ikey): (" << this->outerFilter().key(itor) << ", " << this->innerFilter().key(itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
       };// next()
       //
       #undef  __FUNCT__
       #define __FUNCT__ "end"
       iterator end() {
-        if(ALE::XSifterDef::debug) {
-          std::cout << std::endl << __CLASS__ << "::" << __FUNCT__ << ": ";
+        if(ALE_XSIFTER_DEBUG(4)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
+          if(Strided) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
+          }
+          else {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided sequence" << std::endl;
+          }
         }
-        static itor_type itor;
-        static ritor_type ritor;
-        // Determine the upper outer limit
-        static outer_key_type ohigh;
-        if(this->outerFilter().haveHigh()) {
-          ohigh = this->outerFilter().high();
-        }
-        else {
-          ritor = this->_index->rbegin();
-          ohigh = this->_okex(*ritor);
-        }
-        // Determine the inner outer limit
-        static inner_key_type ihigh;
-        if(this->innerFilter().haveHigh()) {
-          ihigh = this->innerFilter().high();
-          // ASSUMPTION: index ordering operator can compare against (outer_key, inner_key) pairs
-          itor = this->_index->upper_bound(ALE::pair<outer_key_type, inner_key_type>(ohigh,ihigh));
-        }
-        else {
-          // ASSUMPTION: index ordering operator can compare against outer_key singletons.
-          itor = this->_index->upper_bound(ALE::singleton<outer_key_type>(ohigh));
-        }
-        if(ALE::XSifterDef::debug){
+        itor_type itor;
+        itor = this->innerFilter().end(this->outerFilter().last(),this->outerFilter());
+        if(ALE_XSIFTER_DEBUG(4)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor " << *itor; 
-          std::cout << ", (okey, ikey): (" << this->_okex(*itor) << ", " << this->_ikex(*itor) << ") " << std::endl;
+          std::cout << ", (okey, ikey): (" << this->outerFilter().key(itor) << ", " << this->innerFilter().key(itor) << ") " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << std::endl;
         }
         return iterator(this, itor); 
       };// end()
@@ -804,14 +798,132 @@ namespace ALE {
         os << " ]" << std::endl;
       };
     };// class FilteredIndexSequence    
+    
+
+    // Definitions of typical XSifter usage of records, orderings, etc.
+
+    //
+    // Default orders.
+    //
+    template<typename Arrow_, 
+             typename SourceOrder_ = std::less<typename Arrow_::source_type>,
+             typename ColorOrder_  = std::less<typename Arrow_::color_type> >
+    struct SourceColorOrder : 
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::source_type, &Arrow_::source>, 
+                            SourceOrder_, 
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::color_type, &Arrow_::color>, 
+                                        ColorOrder_>
+      >
+    {};
+    
+    //
+    template<typename Arrow_,
+             typename ColorOrder_  = std::less<typename Arrow_::color_type>,
+             typename SourceOrder_ = std::less<typename Arrow_::source_type>
+    >
+    struct ColorSourceOrder : 
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::color_type, &Arrow_::source>, 
+                            ColorOrder_,
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
+                                        SourceOrder_>
+      >
+    {};
+    //
+    template<typename Arrow_, 
+             typename TargetOrder_ = std::less<typename Arrow_::source_type>,
+             typename ColorOrder_  = std::less<typename Arrow_::color_type> >
+    struct TargetColorOrder : 
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::source_type, &Arrow_::source>, 
+                            TargetOrder_,
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::color_type, &Arrow_::color>, 
+                                        ColorOrder_>
+      >
+    {};
+    //
+    template<typename Arrow_, 
+             typename ColorOrder_  = std::less<typename Arrow_::color_type>,
+             typename TargetOrder_ = std::less<typename Arrow_::source_type> >
+    struct ColorTargetOrder : 
+      public RecKeyXXXOrder<Arrow_, 
+                            ::boost::multi_index::const_mem_fun<Arrow_,typename Arrow_::color_type, &Arrow_::source>, 
+                            ColorOrder_,
+                            RecKeyOrder<Arrow_, 
+                                        ::boost::multi_index::const_mem_fun<Arrow_, typename Arrow_::source_type, &Arrow_::source>, 
+                                        TargetOrder_>
+      >
+    {};
+  
+    // 
+    // Arrow definition: a concrete arrow; other Arrow definitions are possible, since orders above are templated on it; must have expected const_mem_funs
+    // 
+    template<typename Source_, typename Target_, typename Color_>
+    struct  Arrow { 
+      typedef Arrow   arrow_type;
+      typedef Source_ source_type;
+      typedef Target_ target_type;
+      typedef Color_  color_type;
+      source_type _source;
+      target_type _target;
+      color_type  _color;
+      //
+      source_type source() const {return this->_source;};
+      target_type target() const {return this->_target;};
+      color_type  color()  const {return this->_color;};
+      // Basic
+      Arrow(const source_type& s, const target_type& t, const color_type& c) : _source(s), _target(t), _color(c) {};
+      // Rebinding
+      template <typename OtherSource_, typename OtherTarget_, typename OtherColor_>
+      struct rebind {
+        typedef Arrow<OtherSource_, OtherTarget_, OtherColor_> type;
+      };
+      // Flipping
+      struct flip {
+        typedef Arrow<target_type, source_type, color_type> type;
+        type arrow(const arrow_type& a) { return type(a.target, a.source, a.color);};
+      };
+      // Printing
+      friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
+        os << a._source << " --(" << a._color << ")--> " << a._target;
+        return os;
+      }
+      // Modifying
+      struct sourceChanger {
+        sourceChanger(const source_type& newSource) : _newSource(newSource) {};
+        void operator()(arrow_type& a) {a._source = this->_newSource;}
+      private:
+        source_type _newSource;
+      };
+      //
+      struct targetChanger {
+        targetChanger(const target_type& newTarget) : _newTarget(newTarget) {};
+        void operator()(arrow_type& a) { a._target = this->_newTarget;}
+      private:
+        const target_type _newTarget;
+      };
+      //
+      struct colorChanger {
+        colorChanger(const color_type& newColor) : _newColor(newColor) {};
+        void operator()(arrow_type& a) { a._color = this->_newColor;}
+      private:
+        const color_type _newColor;
+      };
+    };// struct Arrow
+
   }; // namespace XSifterDef
   
+
   //
   // XSifter definition
   template<typename Arrow_, 
            typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
            typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
-           typename Predicate_ = int, typename PredicateOrder_ = std::less<Predicate_> >
+           typename Predicate_ = unsigned int, typename PredicateOrder_ = std::less<Predicate_> >
   struct XSifter : XObject { // struct XSifter
     //
     // Encapsulated types
@@ -846,7 +958,7 @@ namespace ALE {
       target_type    target() const {return this->arrow_type::target();};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Rec& r) {
-        os << "[" << (arrow_type)r << "]<" << r._predicate << ">";
+        os << "<" << r._predicate << ">" << "[" << (arrow_type)r << "]";
         return os;
       }
 
@@ -873,7 +985,8 @@ namespace ALE {
                               predicate_order_type, 
                               XSifterDef::RecKeyXXXOrder<rec_type,
                                                         ::boost::multi_index::const_mem_fun<rec_type, typename rec_type::source_type, &rec_type::source>,
-                                                         source_order_type, ArrowSupportOrder_> > {};
+                                                         source_order_type, 
+                                                         ArrowSupportOrder_> > {};
     
     //
     // Rec 'upward' order type: first order by predicate, then target, then source, etc (Cone order)
@@ -883,7 +996,8 @@ namespace ALE {
                               predicate_order_type,
                               XSifterDef::RecKeyXXXOrder<rec_type,
                                                         ::boost::multi_index::const_mem_fun<rec_type, typename rec_type::target_type, &rec_type::target>,
-                                                         target_order_type, ArrowConeOrder_> >
+                                                         target_order_type, 
+                                                         ArrowConeOrder_> >
     {};
     
     //
@@ -992,10 +1106,16 @@ namespace ALE {
     //
     // FilterManager types
     //
-    typedef XSifterDef::DummyFilterManager<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate> >
+    typedef XSifterDef::DummyFilterManager<upward_index_type, 
+                                           ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate>,
+                                           predicate_order_type
+                                           >
     UpwardPredicateFilterManager;
     //
-    typedef XSifterDef::DummyFilterManager<upward_index_type, ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target> >
+    typedef XSifterDef::DummyFilterManager<upward_index_type, 
+                                           ::boost::multi_index::const_mem_fun<rec_type, target_type, &rec_type::target>,
+                                           target_order_type
+                                           >
     UpwardTargetFilterManager;
     //
     // Specialized sequence types
@@ -1034,7 +1154,8 @@ namespace ALE {
     };
     void cone(const target_type& t, ConeSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
-                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(), XSifterDef::RangeFilter<UpwardTargetFilterManager>(t,t));
+                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
+                XSifterDef::RangeFilter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager, t,t));
     };
 //     ConeSequence& cone(const target_type& t) {
 //       static ConeSequence cseq;
@@ -1046,7 +1167,8 @@ namespace ALE {
 //     };
   ConeSequence cone(const target_type& t) {
       return ConeSequence(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set),
-                XSifterDef::RangeFilter<UpwardPredicateFilterManager>(), XSifterDef::RangeFilter<UpwardTargetFilterManager>(t,t));
+                          XSifterDef::RangeFilter<UpwardPredicateFilterManager>(&this->_upward_predicate_filter_manager), 
+                          XSifterDef::RangeFilter<UpwardTargetFilterManager>(&this->_upward_target_filter_manager,t,t));
   };
     void base(BaseSequence& seq) {
       seq.reset(this, &::boost::multi_index::get<UpwardTag>(this->_rec_set), 

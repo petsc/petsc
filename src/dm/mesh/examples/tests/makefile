@@ -108,6 +108,8 @@ runxsifter2:
 	-@${MPIRUN} -np ${NP} ./xsifter2 ${EXTRA_ARGS}
 debugxsifter2:
 	-@${MPIRUN} -np ${NP} ./xsifter2 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+valgrindxsifter2:
+	-@${MPIRUN} -np ${NP} valgrind ./xsifter2 -on_error_attach_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 
 #-----------------------------------------------------------------
