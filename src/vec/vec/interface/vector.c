@@ -37,12 +37,12 @@ EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 .seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
   
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *brealloc)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecStashGetInfo_Private(&vec->stash,nstash,reallocs);CHKERRQ(ierr);
-  ierr = VecStashGetInfo_Private(&vec->bstash,nstash,reallocs);CHKERRQ(ierr);
+  ierr = VecStashGetInfo_Private(&vec->bstash,bnstash,breallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -466,15 +466,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec x,Vec *newv) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv) 
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidPointer(newv,2);
-  PetscValidType(x,1);
-  ierr = (*x->ops->duplicate)(x,newv);CHKERRQ(ierr);
+  PetscValidType(v,1);
+  ierr = (*v->ops->duplicate)(v,newv);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)*newv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -662,7 +662,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
    Collective on Vec
 
    Input Parameters:
-+  v - the vector
++  vec - the vector
 -  viewer - an optional visualization context
 
    Notes:
@@ -1004,10 +1004,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
    Collective on Vec
 
    Input Parameter:
-.  v - the vector 
+.  vec - the vector 
 
    Output Parameter:
-.  v - the vector reciprocal
+.  vec - the vector reciprocal
 
    Level: intermediate
 
@@ -1451,7 +1451,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
 .  v - the object to check
 
    Output Parameter:
-   flg - flag indicating vector status, either
+.  flg - flag indicating vector status, either
    PETSC_TRUE if vector is valid, or PETSC_FALSE otherwise.
 
    Level: developer
@@ -1540,7 +1540,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec v,const char prefix
    Not Collective
 
    Input Parameter:
-.  A - the Vec context
+.  v - the Vec context
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
@@ -1722,7 +1722,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
    Collective on Vec
 
    Input Parameters:
-+  vec   - the vector
++  v - the vector
 -  viewer - the viewer
 
    Level: advanced

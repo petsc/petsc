@@ -55,7 +55,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMaxPointwiseDivide(Vec x,Vec y,PetscReal *m
 .  x, y - the vectors
 
    Output Parameter:
-.  alpha - the dot product
+.  val - the dot product
 
    Performance Issues:
 +    per-processor memory bandwidth
