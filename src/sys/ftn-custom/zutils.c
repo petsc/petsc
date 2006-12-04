@@ -118,7 +118,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     */
     PetscErrorCode       ierr;
     PetscScalar          *work;
-    PetscObjectContainer container;
+    PetscContainer container;
 
     ierr = PetscMalloc((N+align)*sizeof(PetscScalar),&work);CHKERRQ(ierr); 
 
@@ -137,8 +137,8 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
     /* store in the first location in addr how much you shift it */
     ((PetscInt*)addr)[0] = shift;
  
-    ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-    ierr = PetscObjectContainerSetPointer(container,addr);CHKERRQ(ierr);
+    ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+    ierr = PetscContainerSetPointer(container,addr);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",(PetscObject)container);CHKERRQ(ierr);
 
     tmp3 = (size_t) work;
@@ -178,19 +178,19 @@ PetscErrorCode PetscScalarAddressFromFortran(PetscObject obj,PetscScalar *base,s
 {
   PetscErrorCode       ierr;
   PetscInt             shift;
-  PetscObjectContainer container;
+  PetscContainer container;
   PetscScalar          *tlx;
 
   ierr = PetscObjectQuery(obj,"GetArrayPtr",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
+    ierr  = PetscContainerGetPointer(container,(void**)lx);CHKERRQ(ierr);
     tlx   = base + addr;
 
     shift = *(PetscInt*)*lx;
     ierr  = PetscMemcpy(*lx,tlx,N*sizeof(PetscScalar));CHKERRQ(ierr);
     tlx   = (PetscScalar*)(((char *)tlx) - shift);
     ierr = PetscFree(tlx);CHKERRQ(ierr);
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose(obj,"GetArrayPtr",0);CHKERRQ(ierr);
   } else {
     *lx = base + addr;

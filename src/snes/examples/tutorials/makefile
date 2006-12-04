@@ -53,8 +53,8 @@ ex5s: chkopts
 	@if [ "${PETSC_ARCH}" != "IRIX64" ]; then echo "Only for PETSC_ARCH of IRIX64"; false ; fi
 	-${CC} -pca keep  -WK,-lo=l ${FCONF} ${CFLAGS} -c ex5s.c
 	sed "s/, sqrt/ /g"   ex5s.M | sed "s/, exp/ /g"  > ex5s_tmp.c
-	-${CC} -mp ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -c ex5s_tmp.c
-	-${FC} -pfa keep -mp -64 ${FOPTFLAGS} ${FFLAGS} ${FCPPFLAGS} -c ex5fs.F
+	-${CC} -mp ${PCC_FLAGS} ${CFLAGS} ${CCPPFLAGS} -c ex5s_tmp.c
+	-${FC} -pfa keep -mp -64 ${FC_FLAGS} ${FFLAGS} ${FCPPFLAGS} -c ex5fs.F
 	-${CLINKER} -mp -o ex5s ex5s_tmp.o ex5fs.o ${PETSC_SNES_LIB}
 	${RM} ex5s.o
 ex5f90: ex5f90.o  chkopts

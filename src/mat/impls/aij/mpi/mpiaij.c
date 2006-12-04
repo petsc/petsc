@@ -1707,10 +1707,10 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   using boost::graph::distributed::ilu_default::process_group_type;
   using boost::graph::ilu_permuted;
 
-  PetscTruth           row_identity, col_identity;
-  PetscObjectContainer c;
-  PetscInt             m, n, M, N;
-  PetscErrorCode       ierr;
+  PetscTruth      row_identity, col_identity;
+  PetscContainer  c;
+  PetscInt        m, n, M, N;
+  PetscErrorCode  ierr;
 
   PetscFunctionBegin;
   if (info->levels != 0) SETERRQ(PETSC_ERR_SUP,"Only levels = 0 supported for parallel ilu");
@@ -1739,8 +1739,8 @@ PetscErrorCode MatILUFactorSymbolic_MPIAIJ(Mat A, IS isrow, IS iscol, MatFactorI
   ierr = MatAssemblyEnd(*fact, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   (*fact)->factor = FACTOR_LU;
 
-  ierr = PetscObjectContainerCreate(A->comm, &c);
-  ierr = PetscObjectContainerSetPointer(c, lgraph_p);
+  ierr = PetscContainerCreate(A->comm, &c);
+  ierr = PetscContainerSetPointer(c, lgraph_p);
   ierr = PetscObjectCompose((PetscObject) (*fact), "graph", (PetscObject) c);
   PetscFunctionReturn(0);
 }
@@ -1764,12 +1764,12 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
 
   typedef graph_dist::ilu_default::ilu_level_graph_type  lgraph_type;
   lgraph_type*   lgraph_p;
-  PetscObjectContainer c;
-  PetscErrorCode       ierr;
+  PetscContainer c;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject) A, "graph", (PetscObject *) &c);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(c, (void **) &lgraph_p);CHKERRQ(ierr);
+  ierr = PetscContainerGetPointer(c, (void **) &lgraph_p);CHKERRQ(ierr);
   ierr = VecCopy(b, x); CHKERRQ(ierr);
 
   PetscScalar* array_x;
@@ -3091,12 +3091,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
 {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
-  PetscObjectContainer container;
+  PetscContainer       container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+    ierr = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
     ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
@@ -3109,7 +3109,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_SeqsToMPI(Mat A)
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
     ierr = PetscFree(merge->rowmap.range);CHKERRQ(ierr);
     
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
   }
   ierr = PetscFree(merge);CHKERRQ(ierr);
@@ -3161,7 +3161,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
   MPI_Status           *status;
   MatScalar            *aa=a->a,**abuf_r,*ba_i;
   Mat_Merge_SeqsToMPI  *merge;
-  PetscObjectContainer container;
+  PetscContainer       container;
   
   PetscFunctionBegin;
   if (!logkey_seqstompinum) {
@@ -3174,7 +3174,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPINumeric(Mat seqmat,Mat mpima
 
   ierr = PetscObjectQuery((PetscObject)mpimat,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+    ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
   }
   bi     = merge->bi;
   bj     = merge->bj;
@@ -3285,7 +3285,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   PetscFreeSpaceList   free_space=PETSC_NULL,current_space=PETSC_NULL;
   PetscBT              lnkbt;
   Mat_Merge_SeqsToMPI  *merge;
-  PetscObjectContainer container;
+  PetscContainer       container;
 
   PetscFunctionBegin;
   if (!logkey_seqstompisym) {
@@ -3510,8 +3510,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   merge->owners_co     = PETSC_NULL;
 
   /* attach the supporting struct to B_mpi for reuse */
-  ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetPointer(container,merge);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,merge);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
   *mpimat = B_mpi;
 
