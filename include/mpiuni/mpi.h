@@ -133,6 +133,8 @@ extern int MPIUNI_Memcpy(void*,const void*,int);
 typedef int MPI_Op;
 
 #define MPI_SUM           0
+#define MPI_MAX           0
+#define MPI_MIN           0
 #define MPI_ANY_TAG     (-1)
 #define MPI_DATATYPE_NULL 0
 
