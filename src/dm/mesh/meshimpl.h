@@ -12,7 +12,7 @@ struct _MeshOps {
   PetscErrorCode (*createglobalvector)(Mesh,Vec*);
   PetscErrorCode (*getcoloring)(Mesh,ISColoringType,ISColoring*);
   PetscErrorCode (*getmatrix)(Mesh,MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(Mesh,Mesh,Mat*,Vec*);
+  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
   PetscErrorCode (*refine)(Mesh,MPI_Comm,Mesh*);
 };
 
