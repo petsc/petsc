@@ -931,7 +931,7 @@ PetscErrorCode SectionIntDistribute(SectionInt serialSection, Mesh parallelMesh,
 
   Level: advanced
 
-.seealso SectionUpdate(), SectionCreate(), SectionView()
+.seealso SectionIntUpdate(), SectionIntCreate(), SectionIntView()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt point, PetscInt *values[])
 {
