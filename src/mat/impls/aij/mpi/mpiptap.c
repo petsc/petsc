@@ -154,8 +154,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   pi_loc = p_loc->i; pj_loc = p_loc->j; 
   pi_oth = p_oth->i; pj_oth = p_oth->j;
 
-  /* first, compute symbolic AP = A_loc*P */
-  /*--------------------------------------*/
+  /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
+  /*-------------------------------------------------------------------*/
   ierr  = PetscMalloc((am+2)*sizeof(PetscInt),&api);CHKERRQ(ierr);
   ap->abi = api;
   api[0] = 0;
@@ -662,6 +662,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     flops += 2*cnz;
   } 
   ierr = MatSetOption(C,MAT_COLUMNS_SORTED);CHKERRQ(ierr); /* -cause delay? */
+  ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
 
