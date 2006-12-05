@@ -312,7 +312,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
     }
   }
 
-  ierr = VecView(dmmg[nlevels-1]->x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);
+  /*ierr = VecView(dmmg[nlevels-1]->x,PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);*/
 
   ierr = (*DMMGGetFine(dmmg)->solve)(dmmg,nlevels-1);CHKERRQ(ierr);
   if (vecmonitor) {
