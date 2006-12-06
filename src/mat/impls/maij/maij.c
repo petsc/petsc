@@ -2165,6 +2165,7 @@ PetscErrorCode MatMultTransposeAdd_MPIMAIJ_dof(Mat A,Vec xx,Vec yy,Vec zz)
   PetscFunctionReturn(0);
 }
 
+/* ----------------------------------------------------------------*/
 #undef __FUNCT__
 #define __FUNCT__ "MatPtAPSymbolic_SeqAIJ_SeqMAIJ"
 PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C) 
@@ -2394,7 +2395,28 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ_SeqMAIJ(Mat A,Mat PP,Mat C)
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = PetscFree(apa);CHKERRQ(ierr);
   ierr = PetscLogFlops(flops);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPSymbolic_MPIAIJ_MPIMAIJ"
+PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIMAIJ(Mat A,Mat PP,PetscReal fill,Mat *C) 
+{
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  /* MatPtAPSymbolic_MPIAIJ_MPIMAIJ() is not implemented yet. Convert PP to mpiaij format */
+  ierr = MatConvert(PP,MATMPIAIJ,MAT_REUSE_MATRIX,&PP);CHKERRQ(ierr);
+  ierr =(*PP->ops->ptapsymbolic)(A,PP,fill,C);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatPtAPNumeric_MPIAIJ_MPIMAIJ"
+PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIMAIJ(Mat A,Mat PP,Mat C) 
+{
+  PetscFunctionBegin;
+  SETERRQ(PETSC_ERR_SUP,"MatPtAPNumeric is not implemented for MPIMAIJ matrix yet");
   PetscFunctionReturn(0);
 }
 
@@ -2511,7 +2533,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newty
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   if (reuse == MAT_REUSE_MATRIX) {
+    PetscInt refct = A->refct; /* save A->refct */
+    A->refct = 1;
     ierr = MatHeaderReplace(A,B);CHKERRQ(ierr);
+    A->refct = refct; /* restore A->refct */
   } else {
     *newmat = B;
   }
@@ -2662,6 +2687,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMAIJ(Mat A,PetscInt dof,Mat *maij)
       B->ops->multtranspose    = MatMultTranspose_MPIMAIJ_dof;
       B->ops->multadd          = MatMultAdd_MPIMAIJ_dof;
       B->ops->multtransposeadd = MatMultTransposeAdd_MPIMAIJ_dof;
+      B->ops->ptapsymbolic_mpiaij = MatPtAPSymbolic_MPIAIJ_MPIMAIJ;
+      B->ops->ptapnumeric_mpiaij  = MatPtAPNumeric_MPIAIJ_MPIMAIJ;
       ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_mpimaij_mpiaij_C","MatConvert_MPIMAIJ_MPIAIJ",MatConvert_MPIMAIJ_MPIAIJ);CHKERRQ(ierr);
     }
     *maij = B;
