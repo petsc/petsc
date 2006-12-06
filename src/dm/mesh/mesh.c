@@ -1493,9 +1493,6 @@ PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolatio
   PetscFunctionBegin;
   ierr = MeshGetMesh(fineMesh,   fine);CHKERRQ(ierr);
   ierr = MeshGetMesh(coarseMesh, coarse);CHKERRQ(ierr);
-  ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
-  ierr = MatSetSizes(P, fine->getTopology()->depthStratum(patch, 0)->size(), coarse->getTopology()->depthStratum(patch, 0)->size(),
-                     PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type>&             coarseCoordinates = coarse->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::real_section_type>&             fineCoordinates   = fine->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& vertices          = fine->getTopology()->depthStratum(patch, 0);
@@ -1508,10 +1505,14 @@ PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolatio
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
-  ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&J,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
+  ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
+  ierr = MatSetSizes(P, sFine->size(patch), sCoarse->size(patch), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(P);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
   for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrict(patch, *v_iter);
     const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(patch, coords);
+    std::cout << "Found fine " << *v_iter << " in coarse " << coarseCell << std::endl;
 
     coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
     for(int d = 0; d < dim; ++d) {
@@ -1521,12 +1522,19 @@ PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolatio
       }
       refCoords[d] -= 1.0;
     }
-    values[0] = 1 - refCoords[0] - refCoords[1];
-    values[1] = refCoords[0];
-    values[2] = refCoords[1];
+    values[0] = 1.0/3.0 - (refCoords[0] + refCoords[1])/3.0;
+    values[1] = 0.5*(refCoords[0] + 1.0);
+    values[2] = 0.5*(refCoords[1] + 1.0);
+    std::cout << "  phi_0 " << values[0] << " phi_1 " << values[1] << " phi_2 " << values[2] << std::endl;
+    sCoarse->setDebug(1);
+    sFine->setDebug(1);
     ierr = updateOperatorGeneral(P, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
+    sCoarse->setDebug(0);
+    sFine->setDebug(0);
   }
   ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *interpolation = P;
   PetscFunctionReturn(0);
 }
