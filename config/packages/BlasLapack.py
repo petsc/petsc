@@ -118,7 +118,7 @@ class Configure(config.package.Package):
       if foundBlas and foundLapack:
         self.framework.logPrint('Found cblaslapack (underscore) name mangling')
         self.f2c = 1
-        self.f2pkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
+        self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -187,13 +187,17 @@ class Configure(config.package.Package):
       yield ('User specified MKL Linux-ia64 installation root', None, [os.path.join(dir,'lib','64','libmkl_lapack.a'),'libmkl_ipf.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Linux-em64t installation root', None, [os.path.join(dir,'lib','em64t','libmkl_lapack.a'),'libmkl_em64t.a', 'guide', 'pthread'], 1)
       yield ('User specified MKL Max-x86 installation root', None, [os.path.join(dir,'Libraries','32','libmkl_lapack.a'),'libmkl_ia32.a', 'guide'], 1)
-      if self.setCompilers.use64BitPointers:
-        mkldir = os.path.join(dir, 'ia64', 'lib')
-      else:
-        mkldir = os.path.join(dir, 'ia32', 'lib')
-      yield ('User specified MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_c_dll.lib')], 1)
+      # Check MKL on windows
       yield ('User specified MKL Windows lib dir', None, [os.path.join(dir, 'mkl_c_dll.lib')], 1)
+      yield ('User specified stdcall MKL Windows lib dir', None, [os.path.join(dir, 'mkl_s_dll.lib')], 1)
+      yield ('User specified ia64/em64t MKL Windows lib dir', None, [os.path.join(dir, 'mkl_dll.lib')], 1)
+      mkldir = os.path.join(dir, 'ia32', 'lib')
+      yield ('User specified MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_c_dll.lib')], 1)
       yield ('User specified stdcall MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_s_dll.lib')], 1)
+      mkldir = os.path.join(dir, 'em64t', 'lib')
+      yield ('User specified em64t MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')], 1)
+      mkldir = os.path.join(dir, 'ia64', 'lib')
+      yield ('User specified ia64 MKL Windows installation root', None, [os.path.join(mkldir, 'mkl_dll.lib')], 1)
       # Search for liblapack.a and libblas.a after the implementations with more specific name to avoid
       # finding these in /usr/lib despite using -L<blas-lapack-dir> while attempting to get a different library.
       yield ('User specified installation root', os.path.join(dir, 'libblas.a'),    os.path.join(dir, 'liblapack.a'), 1)
@@ -230,14 +234,18 @@ class Configure(config.package.Package):
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libF77.a','libM77.a','libsunmath.a','libm.a'], 1)
     yield ('Sun sunperf BLAS/LAPACK library', None, ['libsunperf.a','libfui.a','libfsu.a','libsunmath.a','libm.a'], 1)
     # Try Microsoft Windows location
-    for MKL_Version in [os.path.join('MKL','8.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
-      MKL_Dir = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
-      if self.setCompilers.use64BitPointers:
-        MKL_Dir = os.path.join(MKL_Dir, 'ia64', 'lib')
+    for MKL_Version in [os.path.join('MKL','8.1.1'),os.path.join('MKL','8.1'),os.path.join('MKL','8.0.1'),os.path.join('MKL','8.0'),'MKL72','MKL70','MKL61','MKL']:
+      mklpath = os.path.join('/cygdrive', 'c', 'Program Files', 'Intel', MKL_Version)
+      if not os.path.exists(mklpath):
+        self.framework.logPrint('MLK Path not found.. skipping: '+mklpath)
       else:
-        MKL_Dir = os.path.join(MKL_Dir, 'ia32', 'lib')
-      yield ('Microsoft Windows, Intel MKL library', None, os.path.join(MKL_Dir,'mkl_c_dll.lib'), 1)
-      yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(MKL_Dir,'mkl_s_dll.lib'), 1)
+        mkldir = os.path.join(mklpath, 'ia32', 'lib')
+        yield ('Microsoft Windows, Intel MKL library', None, os.path.join(mkldir,'mkl_c_dll.lib'), 1)
+        yield ('Microsoft Windows, Intel MKL stdcall library', None, os.path.join(mkldir,'mkl_s_dll.lib'), 1)
+        mkldir = os.path.join(mklpath, 'em64t', 'lib')
+        yield ('Microsoft Windows, em64t Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)      
+        mkldir = os.path.join(mklpath, 'ia64', 'lib')
+        yield ('Microsoft Windows, ia64 Intel MKL library', None, os.path.join(mkldir,'mkl_dll.lib'), 1)
     if self.framework.argDB['download-c-blas-lapack'] == 2:
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
@@ -464,7 +472,7 @@ class Configure(config.package.Package):
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
-    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not f2cpkg:
+    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not self.f2cpkg:
       raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble/int')
     return
 

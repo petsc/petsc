@@ -125,8 +125,9 @@ class Script(logging.Logger):
     input.close()
     outputClosed = 0
     errorClosed  = 0
+    lst = [output, error]
     while 1:
-      ready = select.select([output, error], [], [])
+      ready = select.select(lst, [], [])
       if len(ready[0]):
         if error in ready[0]:
           msg = error.readline()
@@ -134,12 +135,14 @@ class Script(logging.Logger):
             err += msg
           else:
             errorClosed = 1
+            lst.remove(error)
         if output in ready[0]:
           msg = output.readline()
           if msg:
             out += msg
           else:
             outputClosed = 1
+            lst.remove(output)
         if out.find('password:') >= 0 or err.find('password:') >= 0:
           loginError = 1
           break

@@ -118,6 +118,34 @@ class Configure(config.base.Configure):
     return 0
   isGNU = staticmethod(isGNU)
 
+  def isG95(compiler):
+    '''Returns true if the compiler is g95'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      output = output + error
+      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+        return 0
+      if output.find('http://www.g95.org') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isG95 = staticmethod(isG95)
+
+  def isCompaqF90(compiler):
+    '''Returns true if the compiler is Compaq f90'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' --help')
+      output = output + error
+      if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
+        return 0
+      if output.find('Compaq Visual Fortran') >= 0 or output.find('Digital Visual Fortran') >=0 :
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isCompaqF90 = staticmethod(isCompaqF90)
+
   def isSUN(compiler):
     '''Returns true if the compiler is a SUN compiler'''
     try:

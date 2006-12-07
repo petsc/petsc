@@ -24,15 +24,19 @@ class Configure(config.base.Configure):
     self.cxxlibs = []
     self.cRestrict = ' '
     self.cxxRestrict = ' '
+    self.f90Guess = None
     return
 
   def __str__(self):
-    return ''
+    if self.f90Guess:
+      return 'F90 Interface: ' + self.f90Guess+'\n'
+    else:
+      return ''
 
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,dec,cray_x1,hpux,lahey'))
+    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,alpha,cray_x1,hpux,lahey'))
     return
 
   def getDispatchNames(self):
@@ -837,10 +841,20 @@ class Configure(config.base.Configure):
 
   def getFortran90SourceGuesses(self):
     f90Guess = None
-    if self.setCompilers.vendor:
-      if self.setCompilers.FC.startswith('win32fe'):
-        f90Guess = 'win32'
-      elif self.setCompilers.vendor == 'absoft':
+    if config.setCompilers.Configure.isG95(self.setCompilers.FC):
+      f90Guess = 'g95'
+    elif config.setCompilers.Configure.isIntel(self.setCompilers.FC):
+      f90Guess = 'intel8'
+    elif config.setCompilers.Configure.isCompaqF90(self.setCompilers.FC):
+      f90Guess = 'win32'
+    elif config.setCompilers.Configure.isNAG(self.setCompilers.FC):
+      f90Guess = 'nag'
+    elif config.setCompilers.Configure.isNAG(self.setCompilers.FC):
+      f90Guess = 'cray_x1'
+    elif config.setCompilers.Configure.isSUN(self.setCompilers.FC):
+      f90Guess = 'solaris'
+    elif self.setCompilers.vendor:
+      if self.setCompilers.vendor == 'absoft':
         f90Guess = 'absoft'
       elif self.setCompilers.vendor == 'cray':
         f90Guess = 't3e'
@@ -870,16 +884,17 @@ class Configure(config.base.Configure):
   def checkFortran90Interface(self):
     '''Check for custom F90 interfaces, such as that provided by PETSc'''
     if not self.fortranIsF90:
+      self.logPrint('Not a Fortran90 compiler - hence skipping f90-interface test')
       return
-    f90Guess = self.getFortran90SourceGuesses()
+    self.f90Guess = self.getFortran90SourceGuesses()
     if 'with-f90-interface' in self.framework.argDB:
-      f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])
+      self.f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])
 
-    if not f90Guess :
+    if not self.f90Guess :
       return
 
-    headerPath = os.path.abspath(os.path.join('src', 'sys','f90', 'f90_'+f90Guess+'.h'))
-    sourcePath = os.path.abspath(os.path.join('src', 'sys','f90','f90_'+f90Guess+'.c'))
+    headerPath = os.path.join('src', 'sys','f90', 'f90_'+self.f90Guess+'.h')
+    sourcePath = os.path.join('src', 'sys','f90','f90_'+self.f90Guess+'.c')
 
     if os.path.isfile(headerPath):
       self.f90HeaderPath = headerPath
@@ -895,7 +910,7 @@ class Configure(config.base.Configure):
       self.addDefine('HAVE_F90_H', '"'+self.f90HeaderPath+'"')
       self.addDefine('HAVE_F90_C', '"'+self.f90SourcePath+'"')
     else:
-      raise RuntimeError('Perhaps incorrect with-f90-interface specified. Could not confiure f90 interface for : '+f90Guess)      
+      raise RuntimeError('Perhaps incorrect with-f90-interface specified. Could not confiure f90 interface for : '+self.f90Guess)      
     return
 
   def configure(self):
