@@ -63,6 +63,12 @@ import nargs
 import cPickle
 import os
 
+useThreads = nargs.Arg.findArgument('useThreads', sys.argv[1:])
+if useThreads is None:
+  useThreads = 1
+else:
+  useThreads = int(useThreads)
+
 class RDict(dict):
   '''An RDict is a typed dictionary, which may be hierarchically composed. All elements derive from the
 Arg class, which wraps the usual value.'''
@@ -92,7 +98,7 @@ Arg class, which wraps the usual value.'''
     self.writeLogLine('Greetings')
     self.connectParent(self.parentAddr, self.parentDirectory)
     if load: self.load()
-    if autoShutdown:
+    if autoShutdown and useThreads:
       atexit.register(self.shutdown)
     self.writeLogLine('SERVER: Last access '+str(self.lastAccess))
     return
@@ -521,6 +527,9 @@ Arg class, which wraps the usual value.'''
     import socket
     import SocketServer
 
+    if not useThreads:
+      raise RuntimeError('Cannot run a server if threads are disabled')
+
     class ProcessHandler(SocketServer.StreamRequestHandler):
       def handle(self):
         import time
@@ -624,7 +633,7 @@ Arg class, which wraps the usual value.'''
   def save(self, force = 0):
     '''Save the dictionary after 5 seconds, ignoring all subsequent calls until the save
        - Giving force = True will cause an immediate save'''
-    if force:
+    if force or not useThreads:
       self.saveTimer = None
       # This should be a critical section
       dbFile = file(self.saveFilename, 'w')
