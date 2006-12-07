@@ -24,6 +24,7 @@ class Configure(config.base.Configure):
     self.cxxlibs = []
     self.cRestrict = ' '
     self.cxxRestrict = ' '
+    self.f90Guess = None
     return
 
   def __str__(self):
