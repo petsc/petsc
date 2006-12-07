@@ -958,13 +958,6 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh::real_secti
     for(int i = 0; i < numRowIndices; i++) {
       printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
     }
-    for(int i = 0; i < numRowIndices; i++) {
-      printf("[%d]", rowSection->commRank());
-      for(int j = 0; j < numRowIndices; j++) {
-        printf(" %g", array[i*numRowIndices+j]);
-      }
-      printf("\n");
-    }
   }
   for(ALE::Mesh::real_section_type::IndexArray::iterator i_iter = colIntervals->begin(); i_iter != colIntervals->end(); ++i_iter) {
     numColIndices += std::abs(i_iter->prefix);
@@ -985,8 +978,8 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh::real_secti
     for(int i = 0; i < numColIndices; i++) {
       printf("[%d]mat col indices[%d] = %d\n", colSection->commRank(), i, colIndices[i]);
     }
-    for(int i = 0; i < numColIndices; i++) {
-      printf("[%d]", colSection->commRank());
+    for(int i = 0; i < numRowIndices; i++) {
+      printf("[%d]", rowSection->commRank());
       for(int j = 0; j < numColIndices; j++) {
         printf(" %g", array[i*numColIndices+j]);
       }
@@ -1512,7 +1505,6 @@ PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolatio
   for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrict(patch, *v_iter);
     const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(patch, coords);
-    std::cout << "Found fine " << *v_iter << " in coarse " << coarseCell << std::endl;
 
     coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
     for(int d = 0; d < dim; ++d) {
@@ -1525,12 +1517,7 @@ PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolatio
     values[0] = 1.0/3.0 - (refCoords[0] + refCoords[1])/3.0;
     values[1] = 0.5*(refCoords[0] + 1.0);
     values[2] = 0.5*(refCoords[1] + 1.0);
-    std::cout << "  phi_0 " << values[0] << " phi_1 " << values[1] << " phi_2 " << values[2] << std::endl;
-    sCoarse->setDebug(1);
-    sFine->setDebug(1);
     ierr = updateOperatorGeneral(P, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
-    sCoarse->setDebug(0);
-    sFine->setDebug(0);
   }
   ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
