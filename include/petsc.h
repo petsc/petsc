@@ -1111,6 +1111,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int*,char ***);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *); 
 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(int,int*,char***,const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void);
+
+
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
    function pointers. Since the regular C++ code expects its function pointers to be 

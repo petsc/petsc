@@ -22,7 +22,7 @@ class Configure(config.base.Configure):
     help.addArgument('PETSc', '-with-ctable=<bool>',           nargs.ArgBool(None, 1, 'Activate CTABLE hashing for certain search functions - to conserve memory'))
     help.addArgument('PETSc', '-with-fortran-kernels=<none,generic,bgl>',  nargs.ArgString(None, None, 'Use Fortran for linear algebra kernels'))
     help.addArgument('PETSc', '-with-64-bit-indices=<bool>',   nargs.ArgBool(None, 0, 'Use 64 bit integers (long long) for indexing in vectors and matrices'))
-    help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'char', 'char, short can store 256, 65536 colors'))
+    help.addArgument('PETSc', '-with-is-color-value-type=<char,short>',nargs.ArgString(None, 'short', 'char, short can store 256, 65536 colors'))
     return
 
   def setupDependencies(self, framework):
