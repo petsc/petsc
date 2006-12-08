@@ -9,6 +9,8 @@ typedef struct {
   Vec  update;      /* work vector where new solution is formed */
   Vec  func;        /* work vector where F(t[i],u[i]) is stored */
   Vec  rhs;         /* work vector for RHS; vec_sol/dt */
+  TS   ts;          /* used by ShellMult_private() */
+  PetscScalar mdt;  /* 1/dt, used by ShellMult_private() */
 } TS_CN;
 
 /*------------------------------------------------------------------------------*/
@@ -17,8 +19,8 @@ typedef struct {
    Set   ts->A    = Alhs - Arhs, used in KSPSolve()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "TSSetKSPOperators_CN"
-PetscErrorCode TSSetKSPOperators_CN(TS ts)
+#define __FUNCT__ "TSSetKSPOperators_CN_Matrix"
+PetscErrorCode TSSetKSPOperators_CN_Matrix(TS ts)
 {
   PetscErrorCode ierr;
   PetscScalar    mdt = 1.0/ts->time_step;
@@ -29,11 +31,11 @@ PetscErrorCode TSSetKSPOperators_CN(TS ts)
   if (ts->Alhs){
     ierr = MatScale(ts->Alhs,mdt);CHKERRQ(ierr);
   }
-  if (!ts->A){
-    ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&ts->A);CHKERRQ(ierr);
-  } else {
-    ierr = MatCopy(ts->Arhs,ts->A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  if (ts->A){
+    ierr = MatDestroy(ts->A);CHKERRQ(ierr);
   }
+  ierr = MatDuplicate(ts->Arhs,MAT_COPY_VALUES,&ts->A);CHKERRQ(ierr);
+ 
   if (ts->Alhs){
     /* ts->A = - Arhs + Alhs */
     ierr = MatAYPX(ts->A,-1.0,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
@@ -42,6 +44,61 @@ PetscErrorCode TSSetKSPOperators_CN(TS ts)
     ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);
     ierr = MatShift(ts->A,mdt);CHKERRQ(ierr);
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ShellMult_private"
+PetscErrorCode ShellMult_private(Mat mat,Vec x,Vec y)
+{
+  PetscErrorCode  ierr;
+  void            *ctx;
+  TS_CN           *cn;
+
+  PetscFunctionBegin;
+  ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
+  cn   = (TS_CN*)ctx;
+  ierr = MatMult(cn->ts->Arhs,x,y);CHKERRQ(ierr); /* y = 0.5*Arhs*x */
+  ierr = VecScale(y,-1.0);CHKERRQ(ierr);          /* y = -0.5*Arhs*x */
+  if (cn->ts->Alhs){
+    ierr = MatMultAdd(cn->ts->Alhs,x,y);CHKERRQ(ierr); /* y = 1/dt*Alhs*x + y */
+  } else {
+    ierr = VecAXPY(y,cn->mdt,x);CHKERRQ(ierr); /* y = 1/dt*x + y */
+  }
+  PetscFunctionReturn(0);
+}
+/* 
+   Scale ts->Alhs = 1/dt*Alhs, ts->Arhs = 0.5*Arhs
+   Set   ts->A    = Alhs - Arhs, used in KSPSolve()
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetKSPOperators_CN_No_Matrix"
+PetscErrorCode TSSetKSPOperators_CN_No_Matrix(TS ts)
+{
+  PetscErrorCode ierr;
+  PetscScalar    mdt = 1.0/ts->time_step;
+  Mat            Arhs = ts->Arhs;
+  MPI_Comm       comm;
+  PetscInt       m,n,M,N;
+  TS_CN          *cn = (TS_CN*)ts->data;
+
+  PetscFunctionBegin;
+  /* scale Arhs = 0.5*Arhs, Alhs = 1/dt*Alhs - assume dt is constant! */
+  ierr = MatScale(ts->Arhs,0.5);CHKERRQ(ierr);
+  if (ts->Alhs){
+    ierr = MatScale(ts->Alhs,mdt);CHKERRQ(ierr);
+  }
+ 
+  cn->ts  = ts;
+  cn->mdt = mdt;
+  if (ts->A) {
+    ierr = MatDestroy(ts->A);CHKERRQ(ierr);
+  }
+  ierr = MatGetSize(Arhs,&M,&N);CHKERRQ(ierr);
+  ierr = MatGetLocalSize(Arhs,&m,&n);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)Arhs,&comm);CHKERRQ(ierr);
+  ierr = MatCreateShell(comm,m,n,M,N,cn,&ts->A);CHKERRQ(ierr);
+  ierr = MatShellSetOperation(ts->A,MATOP_MULT,(void(*)(void))ShellMult_private);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -135,7 +192,7 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 
     /* evaluate Arhs at current ptime t_{n+1} */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->Arhs,PETSC_NULL,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = TSSetKSPOperators_CN(ts);CHKERRQ(ierr);
+    ierr = TSSetKSPOperators_CN_Matrix(ts);CHKERRQ(ierr); //???
 
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
@@ -268,7 +325,7 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     
   /* build linear system to be solved */
   /* scale ts->Alhs = 1/dt*Alhs, ts->Arhs = 0.5*Arhs; set ts->A = Alhs - Arhs */
-  ierr = TSSetKSPOperators_CN(ts);CHKERRQ(ierr);
+  ierr = TSSetKSPOperators_CN_Matrix(ts);CHKERRQ(ierr);  
   ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -283,6 +340,25 @@ static PetscErrorCode TSSetUp_CN_Linear_Variable_Matrix(TS ts)
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "TSSetUp_CN_Linear_No_Matrix"
+static PetscErrorCode TSSetUp_CN_Linear_No_Matrix(TS ts)
+{
+  TS_CN          *cn = (TS_CN*)ts->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
+  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
+   
+  /* build linear system to be solved */
+  /* scale ts->Alhs = 1/dt*Alhs, ts->Arhs = 0.5*Arhs; set ts->A = Alhs - Arhs */
+  ierr = TSSetKSPOperators_CN_No_Matrix(ts);CHKERRQ(ierr); 
+  ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -354,8 +430,15 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
     if (!ts->Arhs) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
     }
+      
     if (!ts->ops->rhsmatrix) {
-      ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
+      PetscTruth shelltype;
+      ierr = PetscTypeCompare((PetscObject)ts->Arhs,MATSHELL,&shelltype);CHKERRQ(ierr);
+      if (shelltype){
+        ts->ops->setup = TSSetUp_CN_Linear_No_Matrix;
+      } else {
+        ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
+      }
       ts->ops->step  = TSStep_CN_Linear_Constant_Matrix;
     } else {
       ts->ops->setup = TSSetUp_CN_Linear_Variable_Matrix;  
