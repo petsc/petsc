@@ -29,7 +29,7 @@ int main(int argc,char **argv)
   PetscTruth     flg;
   PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
-  ierr = PetscOpenMPInitialize(2,&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
   /* 
@@ -176,7 +176,7 @@ int main(int argc,char **argv)
   ierr = VecDestroy(y);CHKERRQ(ierr);
   ierr = VecDestroy(w);CHKERRQ(ierr);
   ierr = VecDestroyVecs(z,3);CHKERRQ(ierr);
-  ierr = PetscOpenMPFinalize();CHKERRQ(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
  

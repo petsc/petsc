@@ -397,7 +397,7 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt    flag, size;
+  PetscMPIInt    flag, size,nodesize;
   PetscTruth     flg;
   char           hostname[256];
 
@@ -504,9 +504,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   */
   ierr = PetscInitialize_DynamicLibraries();CHKERRQ(ierr);
 
-  /*
-     Initialize all the default viewers
-  */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
@@ -516,6 +513,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_node_size",&nodesize,&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = PetscOpenMPInitialize(nodesize);CHKERRQ(ierr); 
+  }
 
   PetscFunctionReturn(ierr);
 }
@@ -574,6 +575,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+
+  ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg2);CHKERRQ(ierr);

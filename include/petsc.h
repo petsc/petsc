@@ -1111,7 +1111,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int*,char ***);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *); 
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(int,int*,char***,const char[],const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void);
 
 
