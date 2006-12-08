@@ -1,3 +1,6 @@
+#ifndef included_ALE_Mesh_PyLith_hh
+#define included_ALE_Mesh_PyLith_hh
+
 #include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
 
 #include <CoSieve.hh>
@@ -45,3 +48,4 @@ namespace ALE {
   };
 };
 
+#endif

@@ -197,24 +197,60 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 +   dmmg - the context
 -   dm - the DA or VecPack object
 
+    Options Database Keys:
++   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.
+-   -dmmg_hierarchy: Construct all grids at once
+
     Level: advanced
 
 .seealso DMMGCreate(), DMMGDestroy(), DMMGSetUseGalerkin(), DMMGSetMatType()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg,DM dm)
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 {
+  PetscInt       nlevels     = dmmg[0]->nlevels;
+  PetscTruth     doRefine    = PETSC_TRUE;
+  PetscTruth     doHierarchy = PETSC_FALSE;
+  PetscInt       i;
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels;
 
   PetscFunctionBegin;
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
-  /* Create DA data structure for all the levels */
-  dmmg[0]->dm = dm;
-  ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
-  for (i=1; i<nlevels; i++) {
-    ierr = DMRefine(dmmg[i-1]->dm,dmmg[i]->comm,&dmmg[i]->dm);CHKERRQ(ierr);
+  /* Create DM data structure for all the levels */
+  ierr = PetscOptionsGetTruth(PETSC_NULL, "-dmmg_refine", &doRefine, PETSC_IGNORE);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_hierarchy", &doHierarchy);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject) dm);CHKERRQ(ierr);
+  if (doRefine) {
+    dmmg[0]->dm = dm;
+    if (doHierarchy) {
+/*       DM *hierarchy; */
+
+/*       ierr = DMRefineHierarchy(dm, nlevels-1, &hierarchy);CHKERRQ(ierr); */
+/*       for(i = 1; i < nlevels; ++i) { */
+/*         dmmg[i]->dm = hierarchy[i-1]; */
+/*       } */
+      SETERRQ(PETSC_ERR_SUP, "Refinement hierarchy not yet implemented");
+    } else {
+      for(i = 1; i < nlevels; ++i) {
+        ierr = DMRefine(dmmg[i-1]->dm, dmmg[i]->comm, &dmmg[i]->dm);CHKERRQ(ierr);
+      }
+    }
+  } else {
+    dmmg[nlevels-1]->dm = dm;
+    if (doHierarchy) {
+      DM *hierarchy;
+
+      ierr = DMCoarsenHierarchy(dm, nlevels-1, &hierarchy);CHKERRQ(ierr);
+      for(i = 0; i < nlevels-1; ++i) {
+        dmmg[nlevels-2-i]->dm = hierarchy[i];
+      }
+    } else {
+/*       for(i = nlevels-2; i >= 0; --i) { */
+/*         ierr = DMCoarsen(dmmg[i+1]->dm, dmmg[i]->comm, &dmmg[i]->dm);CHKERRQ(ierr); */
+/*       } */
+      SETERRQ(PETSC_ERR_SUP, "Sequential coarsening not yet implemented");
+    }
   }
   ierr = DMMGSetUp(dmmg);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
