@@ -265,7 +265,7 @@ namespace ALE { namespace Coarsener {
           visited_nodes++;
           //double nearPointDist = 100; //keep track of the minimum space between this point and a point in the next level up.
           //int whyset = 0; //DEBUG for the process.
-          ALE::Mesh::point_type nearPoint = -1;
+          //ALE::Mesh::point_type nearPoint = -1;
 	  bool l_is_ok = true;
 	  double l_coords[dim];
 	  PetscMemcpy(l_coords, coords->restrict(rPatch, *l_points_iter), dim*sizeof(double));

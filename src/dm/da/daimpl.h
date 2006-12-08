@@ -19,9 +19,11 @@ struct _DMOps {
   PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
   PetscErrorCode (*getmatrix)(DM, MatType,Mat*);
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
-  PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
   PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
-
+  PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
+  PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
+  PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM**);
+  PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM**);
   PetscErrorCode (*forminitialguess)(DM,PetscErrorCode (*)(void),Vec,void*);
   PetscErrorCode (*formfunction)(DM,Vec*);
 };
@@ -37,8 +39,8 @@ struct _DAOps {
   PetscErrorCode (*getcoloring)(DA,ISColoringType,ISColoring*);
   PetscErrorCode (*getmatrix)(DA, MatType,Mat*);
   PetscErrorCode (*getinterpolation)(DA,DA,Mat*,Vec*);
-  PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
   PetscErrorCode (*getinjection)(DA,DA,VecScatter*);
+  PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
   PetscErrorCode (*getelements)(DA,PetscInt*,const PetscInt*[]);
   PetscErrorCode (*restoreelements)(DA,PetscInt*,const PetscInt*[]);
 };

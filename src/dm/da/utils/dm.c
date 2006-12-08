@@ -207,7 +207,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, MatType mtype,Mat *mat)
 #undef __FUNCT__  
 #define __FUNCT__ "DMRefine"
 /*@C
-    DMRefine - Refines a DA or VecPack object
+    DMRefine - Refines a DM object
 
     Collective on DM
 
@@ -220,7 +220,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetMatrix(DM dm, MatType mtype,Mat *mat)
 
     Level: developer
 
-.seealso DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
@@ -232,3 +232,86 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DMCoarsen"
+/*@C
+    DMCoarsen - Coarsens a DM object
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object
+-   comm - the communicator to contain the new DM object (or PETSC_NULL)
+
+    Output Parameter:
+.   dmc - the coarsened DM
+
+    Level: developer
+
+.seealso DMRefine(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->coarsen)(dm, comm, dmc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMRefineHierarchy"
+/*@C
+    DMRefineHierarchy - Refines a DM object, all levels at once
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object
+-   nlevels - the number of levels of refinement
+
+    Output Parameter:
+.   dmf - the refined DM hierarchy
+
+    Level: developer
+
+.seealso DMCoarsenHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,int nlevels,DM **dmf)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->refinehierarchy)(dm,nlevels,dmf);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMCoarsenHierarchy"
+/*@C
+    DMCoarsenHierarchy - Coarsens a DM object, all levels at once
+
+    Collective on DM
+
+    Input Parameter:
++   dm - the DM object
+-   nlevels - the number of levels of coarsening
+
+    Output Parameter:
+.   dmc - the coarsened DM hierarchy
+
+    Level: developer
+
+.seealso DMRefineHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, int nlevels, DM **dmc)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->coarsenhierarchy)(dm, nlevels, dmc);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -9,9 +9,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-//#include <triangle.h>
-#include <tetgen.h>
-  
   
 namespace ALE {
 namespace Coarsener {
@@ -352,7 +349,7 @@ int BoundaryNodeDimension_3D(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type vertex)
 //if there are two crease support elements, it is a rank 2, if there are more it's 3, if there are 0 (there cannot be 1) it is rank 1
 //here we must make sure that it is a boundary node as well.
   Obj<ALE::Mesh::topology_type> topology = mesh->getTopology();
-  
+  return 1; // stub
 }
 
 bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::point_type tri2) {

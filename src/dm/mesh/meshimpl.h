@@ -8,12 +8,16 @@
 
 typedef struct _MeshOps *MeshOps;
 struct _MeshOps {
-  PetscErrorCode (*view)(const ALE::Obj<ALE::Mesh>&,PetscViewer);
+  PetscErrorCode (*view)(Mesh,PetscViewer);
   PetscErrorCode (*createglobalvector)(Mesh,Vec*);
   PetscErrorCode (*getcoloring)(Mesh,ISColoringType,ISColoring*);
   PetscErrorCode (*getmatrix)(Mesh,MatType,Mat*);
   PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
+  PetscErrorCode (*getinjection)(Mesh,Mesh,VecScatter*);
   PetscErrorCode (*refine)(Mesh,MPI_Comm,Mesh*);
+  PetscErrorCode (*coarsen)(Mesh,MPI_Comm,Mesh*);
+  PetscErrorCode (*refinehierarchy)(Mesh,PetscInt,Mesh**);
+  PetscErrorCode (*coarsenhierarchy)(Mesh,PetscInt,Mesh**);
 };
 
 struct _p_Mesh {

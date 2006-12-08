@@ -11,7 +11,9 @@ PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
 PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
             Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
+EXTERN PetscErrorCode MeshView_DM(Mesh, PetscViewer);
 EXTERN PetscErrorCode MeshRefine_DM(Mesh, MPI_Comm, Mesh *);
+EXTERN PetscErrorCode MeshCoarsenHierarchy_DM(Mesh, int, Mesh **);
 EXTERN PetscErrorCode MeshGetInterpolation_DM(DM, DM, Mat *, Vec *);
 
 #undef __FUNCT__  
@@ -157,6 +159,15 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PETSCDM_DLLEXPORT MeshView_DM(Mesh mesh, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView"
 /*@C
@@ -211,7 +222,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscCheckSameComm(mesh, 1, viewer, 2);
 
   ierr = PetscLogEventBegin(Mesh_View,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*mesh->ops->view)(mesh->m, viewer);CHKERRQ(ierr);
+  ierr = (*mesh->ops->view)(mesh, viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mesh_View,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -400,12 +411,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 #endif
 
   ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
-  p->ops->view               = MeshView_Sieve;
+  p->ops->view               = MeshView_DM;
   p->ops->createglobalvector = MeshCreateGlobalVector;
   p->ops->getcoloring        = PETSC_NULL;
   p->ops->getmatrix          = MeshGetMatrix;
   p->ops->getinterpolation   = MeshGetInterpolation_DM;
+  p->ops->getinjection       = PETSC_NULL;
   p->ops->refine             = MeshRefine_DM;
+  p->ops->coarsen            = PETSC_NULL;
+  p->ops->refinehierarchy    = PETSC_NULL;
+  p->ops->coarsenhierarchy   = MeshCoarsenHierarchy_DM;
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
@@ -1465,6 +1480,66 @@ PetscErrorCode MeshRefine_DM(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   newMesh->setDiscretization(oldMesh->getDiscretization());
   newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
   newMesh->setupField(s);
+  PetscFunctionReturn(0);
+}
+
+#include "src/dm/mesh/examples/tutorials/Coarsener.h"
+#include "src/dm/mesh/examples/tutorials/fast_coarsen.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCoarsenHierarchy"
+/*@C
+  MeshCoarsenHierarchy - Coarsens the mesh into a hierarchy.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The original Mesh object
+. numLevels - The number of 
+. coarseningFactor - The expansion factor for coarse meshes
+- interpolate - Flag to create intermediate mesh elements
+
+  Output Parameter:
+. coarseHierarchy - The coarse Mesh objects
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate(), MeshGenerate()
+@*/
+PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh **coarseHierarchy)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  if (numLevels < 1) {
+    *coarseHierarchy = PETSC_NULL;
+    PetscFunctionReturn(0);
+  }
+  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  if (oldMesh->getDimension() != 2) SETERRQ(PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
+  ierr = ALE::Coarsener::IdentifyBoundary(oldMesh, 2);CHKERRQ(ierr);
+  ierr = ALE::Coarsener::make_coarsest_boundary(oldMesh, 2, numLevels+1);CHKERRQ(ierr);
+  ierr = ALE::Coarsener::CreateSpacingFunction(oldMesh, 2);CHKERRQ(ierr);
+  ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(oldMesh, 2, numLevels, coarseningFactor);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLevels * sizeof(Mesh),coarseHierarchy);CHKERRQ(ierr);
+  for(int l = 0; l < numLevels; l++) {
+    ALE::Obj<ALE::Mesh> newMesh = new ALE::Mesh(oldMesh->comm(), oldMesh->debug());
+
+    ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[l]);CHKERRQ(ierr);
+    newMesh->getTopology()->setPatch(0, oldMesh->getTopology()->getPatch(l+1));
+    ierr = MeshSetMesh((*coarseHierarchy)[l], newMesh);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MeshCoarsenHierarchy_DM(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCoarsenHierarchy(mesh, numLevels, 1.41, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
