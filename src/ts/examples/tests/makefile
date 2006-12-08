@@ -121,6 +121,11 @@ runex1_cn_2:
            if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
            else echo "Possible problem with ex1_cn_2, diffs above"; fi; \
            ${RM} -f ex1_cn.tmp
+runex1_cn_3:
+	-@${MPIRUN} -np 1 ./ex1 -test -ts_type crank-nicholson -linear_no_matrix -monitor -nox -time 10 > ex1_cn.tmp 2>&1;   \
+           if (${DIFF} output/ex1_cn_no_matrix.out ex1_cn.tmp) then true; \
+           else echo "Possible problem with ex1_cn_3, diffs above"; fi; \
+           ${RM} -f ex1_cn.tmp
 
 runex1f:
 	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler  -linear_no_matrix
