@@ -31,7 +31,9 @@ namespace ALE {
     int_sections_type  _intSections;
     pair_sections_type _pairSections;
   public:
-    Bundle(MPI_Comm comm, int debug = 0) : ALE::ParallelObject(comm, debug), _distributed(false) {};
+    Bundle(MPI_Comm comm, int debug = 0) : ALE::ParallelObject(comm, debug), _distributed(false) {
+      this->_topology = new topology_type(comm, debug);
+    };
     Bundle(const Obj<topology_type>& topology) : ALE::ParallelObject(topology->comm(), topology->debug()), _topology(topology), _distributed(false) {};
   public: // Accessors
     bool getDistributed() const {return this->_distributed;};

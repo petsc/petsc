@@ -1526,9 +1526,13 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
   ierr = PetscMalloc(numLevels * sizeof(Mesh),coarseHierarchy);CHKERRQ(ierr);
   for(int l = 0; l < numLevels; l++) {
     ALE::Obj<ALE::Mesh> newMesh = new ALE::Mesh(oldMesh->comm(), oldMesh->debug());
+    const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
 
     ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[l]);CHKERRQ(ierr);
     newMesh->getTopology()->setPatch(0, oldMesh->getTopology()->getPatch(l+1));
+    newMesh->setDiscretization(oldMesh->getDiscretization());
+    newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
+    newMesh->setupField(s);
     ierr = MeshSetMesh((*coarseHierarchy)[l], newMesh);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
