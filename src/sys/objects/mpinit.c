@@ -7,6 +7,8 @@ static MPI_Comm saved_PETSC_COMM_WORLD = 0;
 MPI_Comm PETSC_COMM_LOCAL_WORLD        = 0;        /* comm for a single node (local set of processes) */
 static PetscTruth used_PetscOpenMP     = PETSC_FALSE;
 
+extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOpenMPInitialize"
 /*@C
@@ -65,7 +67,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt nodesize)
      All process not involved in user application code wait here
   */
   if (!PETSC_COMM_WORLD) {
-    ierr = PetscEnd();  /* cannot continue into user code */
+    ierr             = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+    used_PetscOpenMP = PETSC_FALSE; /* so that PetscOpenMPIFinalize() will not attempt a broadcast from this process */
+    ierr             = PetscEnd();  /* cannot continue into user code */
   }
   PetscFunctionReturn(0);
 }
@@ -86,11 +91,163 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt nodesize)
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
 {
   PetscErrorCode ierr = 0;
+  PetscInt       command = 4;
 
   PetscFunctionBegin;
   if (!used_PetscOpenMP) PetscFunctionReturn(0);
-
-  ierr = MPI_Barrier(saved_PETSC_COMM_WORLD);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&command,1,MPIU_INT,0,PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
   PETSC_COMM_WORLD = saved_PETSC_COMM_WORLD;
+  PetscFunctionReturn(ierr);
+}
+
+static PetscInt numberobjects = 0;
+static void     *objects[100];
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpenMPHandle"
+/*@C
+   PetscOpenMPHandle - Receives commands from the master node and processes them
+
+   Collective on MPI_Comm
+
+   Level: developer
+           
+.seealso: PetscOpenMPInitialize()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
+{
+  PetscErrorCode ierr;
+  PetscInt       command;
+  PetscTruth     exitwhileloop = PETSC_TRUE;
+
+  PetscFunctionBegin;
+  while (!exitwhileloop) {
+    ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+    switch (command) {
+    case 0: { 
+      size_t n;
+      void   *ptr;
+      ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here */
+      ierr = PetscNew(n,&ptr);CHKERRQ(ierr);
+      objects[numberobjects++] = ptr;
+      break;
+    }
+    case 1: {
+      PetscInt i;
+      ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = PetscFree(objects[i]);CHKERRQ(ierr);
+      objects[i] = 0;
+      break;
+    }
+    case 2: {
+      PetscInt       i;
+      PetscErrorCode (*f)(MPI_Comm,void*);
+      ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = (*f)(comm,objects[i]);CHKERRQ(ierr);
+      break;
+    }
+    case 3: {
+      exitwhileloop = PETSC_TRUE;
+      break;
+    }
+    default:
+      SETERRQ1(PETSC_ERR_PLIB,"Unknown OpenMP command %D",command);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpenMPNew"
+/*@C
+   PetscOpenMPNew - Creates a "c struct" on all nodes of an OpenMP communicator
+
+   Collective on MPI_Comm
+
+   Level: developer
+           
+.seealso: PetscOpenMPInitialize()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       command = 0;
+
+  PetscFunctionBegin;
+  if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+
+  ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here */
+  ierr = PetscNew(n,ptr);CHKERRQ(ierr);
+  objects[numberobjects++] = *ptr;
+  PetscFunctionReturn(ierr);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpenMPFree"
+/*@C
+   PetscOpenMPFree - Frees a "c struct" on all nodes of an OpenMP communicator
+
+   Collective on MPI_Comm
+
+   Level: developer
+           
+.seealso: PetscOpenMPInitialize(), PetscOpenMPNew()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       command = 1,i;
+
+  PetscFunctionBegin;
+  if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+
+  ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  for (i=0; i<numberobjects; i++) {
+    if (objects[i] == ptr) {
+      ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = PetscFree(ptr);CHKERRQ(ierr);
+      objects[i] = 0;
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPNew()");
+  PetscFunctionReturn(ierr);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscOpenMPRun"
+/*@C
+   PetscOpenMPRun - runs a function on all the processes of a node
+
+   Collective on MPI_Comm
+
+   Level: developer
+           
+.seealso: PetscOpenMPInitialize(), PetscOpenMPNew(), PetscOpenMPFree()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)
+{
+  PetscErrorCode ierr;
+  PetscInt       command = 2,i;
+
+  PetscFunctionBegin;
+  if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
+
+  ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+  for (i=0; i<numberobjects; i++) {
+    if (objects[i] == ptr) {
+      ierr = MPI_Bcast(&i,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = MPI_Bcast(&f,1,MPIU_INT,0,comm);CHKERRQ(ierr);
+      ierr = (*f)(comm,ptr);CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+  }
+  SETERRQ(PETSC_ERR_ARG_WRONG,"Pointer does not appear to have been created with PetscOpenMPNew()");
   PetscFunctionReturn(ierr);
 }
