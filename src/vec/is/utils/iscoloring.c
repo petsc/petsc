@@ -64,7 +64,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringView(ISColoring iscoloring,PetscView
 
   PetscFunctionBegin;
   PetscValidPointer(iscoloring,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(iscoloring->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(iscoloring->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -279,7 +281,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISColoringCreate(MPI_Comm comm,PetscInt ncolor
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
   }
   ierr = PetscInfo1(0,"Number of colors %d\n",nc);CHKERRQ(ierr);
   PetscFunctionReturn(0);

@@ -50,7 +50,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(snes->comm); 
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(snes->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(snes,1,viewer,2);
 

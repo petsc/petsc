@@ -157,7 +157,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 
   ierr = PetscOptionsHasName(vec->prefix,"-vec_view_stash",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecStashView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+    ierr = VecStashView(vec,viewer);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
@@ -187,13 +189,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
   ierr = PetscOptionsBegin(vec->comm,vec->prefix,"Vector Options","Vec");CHKERRQ(ierr);
     ierr = PetscOptionsName("-vec_view","Print vector to stdout","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+      ierr = VecView(vec,viewer);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-vec_view_matlab","Print vector to stdout in a format Matlab can read","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-      ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+      ierr = VecView(vec,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
     ierr = PetscOptionsName("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",&flg);CHKERRQ(ierr);
@@ -632,7 +638,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
-      ierr = VecView(vec, PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+      ierr = VecView(vec, viewer);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsHasName(vec->prefix, "-vec_view_draw", &opt);CHKERRQ(ierr);
@@ -709,7 +716,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
   PetscValidType(vec,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(vec->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(vec,1,viewer,2);
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");

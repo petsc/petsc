@@ -1705,7 +1705,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsMonitorDefault(const char name[], con
   PetscViewer    viewer = (PetscViewer) dummy;
 
   PetscFunctionBegin;
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&viewer);CHKERRQ(ierr);
+  }
   ierr = PetscViewerASCIIPrintf(viewer,"Setting option: %s = %s\n",name,value);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

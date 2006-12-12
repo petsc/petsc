@@ -190,7 +190,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(da->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(da->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);

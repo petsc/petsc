@@ -357,7 +357,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSolve(DMMG *dmmg)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    ierr = DMMGView(dmmg,PETSC_VIEWER_STDOUT_(dmmg[0]->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(dmmg[0]->comm,&viewer);CHKERRQ(ierr);
+    ierr = DMMGView(dmmg,viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_view_binary",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {

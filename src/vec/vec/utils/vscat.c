@@ -1368,13 +1368,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreate(Vec xin,IS ix,Vec yin,IS iy,V
   if (tiy) {ierr = ISDestroy(tiy);CHKERRQ(ierr);}
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_view_info",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = VecScatterView(ctx,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_view",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = VecScatterView(ctx,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+    ierr = VecScatterView(ctx,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1631,7 +1635,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterView(VecScatter ctx,PetscViewer view
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ctx,VEC_SCATTER_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ctx->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(ctx->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   if (!ctx->view) SETERRQ(PETSC_ERR_SUP,"Cannot view this type of scatter context yet");
 

@@ -91,7 +91,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt nodesize)
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
 {
   PetscErrorCode ierr = 0;
-  PetscInt       command = 4;
+  PetscInt       command = 3;
 
   PetscFunctionBegin;
   if (!used_PetscOpenMP) PetscFunctionReturn(0);
@@ -119,7 +119,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
 {
   PetscErrorCode ierr;
   PetscInt       command;
-  PetscTruth     exitwhileloop = PETSC_TRUE;
+  PetscTruth     exitwhileloop = PETSC_FALSE;
 
   PetscFunctionBegin;
   while (!exitwhileloop) {
@@ -129,7 +129,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
       size_t n;
       void   *ptr;
       ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here */
-      ierr = PetscNew(n,&ptr);CHKERRQ(ierr);
+      /* cannot use PetscNew() cause it requires struct argument */
+      ierr = PetscMalloc(n,&ptr);CHKERRQ(ierr);
+      ierr = PetscMemzero(ptr,n);CHKERRQ(ierr);
       objects[numberobjects++] = ptr;
       break;
     }
@@ -180,8 +182,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
   if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here */
-  ierr = PetscNew(n,ptr);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here since size_t */
+  /* cannot use PetscNew() cause it requires struct argument */
+  ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
+  ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);
   objects[numberobjects++] = *ptr;
   PetscFunctionReturn(ierr);
 }

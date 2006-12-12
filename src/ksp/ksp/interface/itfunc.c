@@ -330,7 +330,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   if (flg) {
     ierr = PetscStrcmp(view,"before",&viewed); CHKERRQ(ierr);
     if (viewed){
-      ierr = KSPView(ksp,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(ksp->comm,&viewer);CHKERRQ(ierr);
+      ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     }
   }
 
@@ -476,12 +478,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator",&flag2);CHKERRQ(ierr);
   if (flag2) {
-    Mat A,B;
+    Mat         A,B;
+    PetscViewer viewer;
+
     ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(ksp->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(ksp->comm));CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(ksp->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = MatView(B,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator_binary",&flag2);CHKERRQ(ierr);

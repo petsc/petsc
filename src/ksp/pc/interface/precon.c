@@ -1444,7 +1444,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pc->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(pc->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(pc,1,viewer,2);
 

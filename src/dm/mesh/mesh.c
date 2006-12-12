@@ -217,7 +217,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   PetscValidType(mesh, 1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mesh->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(da->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(mesh, 1, viewer, 2);
 

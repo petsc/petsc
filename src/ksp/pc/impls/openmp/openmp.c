@@ -65,11 +65,16 @@ static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecScatterBegin(red->xdummy,red->x,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->xdummy,red->x,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = VecScatterBegin(red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
 
-  ierr = VecScatterBegin(red->y,red->ydummy,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->y,red->ydummy,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = VecCopy(red->x,red->y);CHKERRQ(ierr);
+  CHKMEMQ;
+
+  ierr = VecScatterBegin(red->y,red->ydummy,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->y,red->ydummy,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -96,13 +101,13 @@ static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = VecScatterDestroy(red->scatter);CHKERRQ(ierr);
-  ierr = VecDestroy(red->x);CHKERRQ(ierr);
-  ierr = VecDestroy(red->y);CHKERRQ(ierr);
+  if (red->scatter) {ierr = VecScatterDestroy(red->scatter);CHKERRQ(ierr);}
+  if (red->x) {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
+  if (red->y) {ierr = VecDestroy(red->y);CHKERRQ(ierr);}
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) {
-    ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);
-    ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);
+    if (red->xdummy) {ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);}
+    if (red->ydummy) {ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0);
 }
@@ -155,7 +160,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
   PetscFunctionBegin;
   ierr      = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"OpenMP preconditioner only works for sequential solves");
-
   ierr      = PetscOpenMPNew(PETSC_COMM_LOCAL_WORLD,sizeof(PC_OpenMP),(void**)&red);CHKERRQ(ierr);
   red->comm = PETSC_COMM_LOCAL_WORLD;
   pc->data  = (void*) red;

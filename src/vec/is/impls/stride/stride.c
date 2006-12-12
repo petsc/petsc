@@ -345,7 +345,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(Nindex,PETSC_VIEWER_STDOUT_(Nindex->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(Nindex->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISView(Nindex,viewer);CHKERRQ(ierr);
   }
   *is = Nindex; 
   PetscFunctionReturn(0);

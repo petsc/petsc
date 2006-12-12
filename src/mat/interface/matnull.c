@@ -219,6 +219,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
   Vec            l,r;
   MPI_Comm       comm = sp->comm;
   PetscTruth     flg1,flg2;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);
@@ -234,6 +235,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
   }
   l    = sp->vec;
 
+  ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
   if (sp->has_cnst) {
     ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
@@ -244,8 +246,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
     if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}
     else {ierr = PetscPrintf(comm,"Constants are unlikely null vector ");CHKERRQ(ierr);}
     ierr = PetscPrintf(comm,"|| A * 1 || = %G\n",nrm);CHKERRQ(ierr);
-    if (nrm > 1.e-7 && flg1) {ierr = VecView(r,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-    if (nrm > 1.e-7 && flg2) {ierr = VecView(r,PETSC_VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     ierr = VecDestroy(r);CHKERRQ(ierr);
   }
 
@@ -255,8 +257,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
     if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);}
     else {ierr = PetscPrintf(comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);}
     ierr = PetscPrintf(comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
-    if (nrm > 1.e-7 && flg1) {ierr = VecView(l,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);}
-    if (nrm > 1.e-7 && flg2) {ierr = VecView(l,PETSC_VIEWER_DRAW_(comm));CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
+    if (nrm > 1.e-7 && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }
 
   if (sp->remove){

@@ -364,7 +364,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISView(IS is,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(is->comm); 
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(is->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(is,1,viewer,2);
   

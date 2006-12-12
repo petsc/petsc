@@ -405,16 +405,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec ve
     ierr = PetscOptionsHasName(PETSC_NULL,"-pc_is_check_consistency",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscScalar average;
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(pc->comm,&viewer);CHKERRQ(ierr);
+
       ierr = VecSum(vec1_N,&average);CHKERRQ(ierr);
       average = average / ((PetscReal)pcis->n);
       if (pcis->pure_neumann) {
-        ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is floating. Average = % 1.14e\n",
+
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is floating. Average = % 1.14e\n",
                                              PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerASCIISynchronizedPrintf(PETSC_VIEWER_STDOUT_(pc->comm),"Subdomain %04d is fixed.    Average = % 1.14e\n",
+        ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Subdomain %04d is fixed.    Average = % 1.14e\n",
                                              PetscGlobalRank,PetscAbsScalar(average));CHKERRQ(ierr);
       }
-      PetscViewerFlush(PETSC_VIEWER_STDOUT_(pc->comm));
+      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
     }
   }
   /* Solving the system for vec2_N */

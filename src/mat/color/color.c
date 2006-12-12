@@ -336,7 +336,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,const MatColoringType t
   ierr = PetscInfo1(mat,"Number of colors %d\n",(*iscoloring)->n);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_coloring_view",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = ISColoringView(*iscoloring,PETSC_VIEWER_STDOUT_((*iscoloring)->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout((*iscoloring)->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISColoringView(*iscoloring,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

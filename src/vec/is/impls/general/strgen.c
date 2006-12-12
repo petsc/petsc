@@ -71,7 +71,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = ISView(inis,PETSC_VIEWER_STDOUT_(inis->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(inis->comm,&viewer);CHKERRQ(ierr);
+    ierr = ISView(inis,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
