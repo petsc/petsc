@@ -502,22 +502,29 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,MatType 
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate               = B->ops->duplicate;
+    lu->MatCholeskyFactorSymbolic  = B->ops->choleskyfactorsymbolic;
+    lu->MatLUFactorSymbolic        = B->ops->lufactorsymbolic; 
+    lu->MatView                    = B->ops->view;
+    lu->MatAssemblyEnd             = B->ops->assemblyend;
+    lu->MatDestroy                 = B->ops->destroy;
+  } else {
+    lu->MatDuplicate               = A->ops->duplicate;
+    lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+    lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
+    lu->MatView                    = A->ops->view;
+    lu->MatAssemblyEnd             = A->ops->assemblyend;
+    lu->MatDestroy                 = A->ops->destroy;
   }
-  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   B->spptr = (void*)lu;
-
   lu->basetype                   = MATSEQAIJ;
   lu->useQR                      = PETSC_FALSE;
   lu->CleanUpSpooles             = PETSC_FALSE;
-  lu->MatDuplicate               = A->ops->duplicate;
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
-  lu->MatView                    = A->ops->view;
-  lu->MatAssemblyEnd             = A->ops->assemblyend;
-  lu->MatDestroy                 = A->ops->destroy;
+
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
   B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJSpooles; 

@@ -603,22 +603,27 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,MatType 
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate              = B->ops->duplicate;
+    lu->MatLUFactorSymbolic       = B->ops->lufactorsymbolic;
+    lu->MatCholeskyFactorSymbolic = B->ops->choleskyfactorsymbolic;
+    lu->MatView                   = B->ops->view;
+    lu->MatAssemblyEnd            = B->ops->assemblyend;
+    lu->MatDestroy                = B->ops->destroy;
+  } else {
+    lu->MatDuplicate              = A->ops->duplicate;
+    lu->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+    lu->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+    lu->MatView                   = A->ops->view;
+    lu->MatAssemblyEnd            = A->ops->assemblyend;
+    lu->MatDestroy                = A->ops->destroy;
   }
-
-  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
-  B->spptr = (void*)lu;
-
   lu->basetype                  = MATMPIAIJ;
   lu->CleanUpSpooles            = PETSC_FALSE;
-  lu->MatDuplicate              = A->ops->duplicate;
-  lu->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
-  lu->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
-  lu->MatView                   = A->ops->view;
-  lu->MatAssemblyEnd            = A->ops->assemblyend;
-  lu->MatDestroy                = A->ops->destroy;
 
+  B->spptr = (void*)lu;
   B->ops->duplicate             = MatDuplicate_Spooles;
   B->ops->lufactorsymbolic      = MatLUFactorSymbolic_MPIAIJSpooles;  
   B->ops->view                  = MatView_SeqAIJSpooles;
