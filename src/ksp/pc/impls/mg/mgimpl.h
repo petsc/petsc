@@ -16,10 +16,11 @@
 typedef struct
 {
   PCMGType   am;                           /* Multiplicative, additive or full */
-  int        cycles;                       /* Number cycles to run */
-  int        level;                        /* level = 0 coarsest level */
-  int        levels;                       /* number of active levels used */
-  int        maxlevels;                    /* total number of levels allocated */
+  PetscInt   cycles;                       /* Type of cycle to run: 1 V 2 W */
+  PetscInt   cyclesperpcapply;             /* Number of cycles to use in each PCApply(), multiplicative only*/
+  PetscInt   level;                        /* level = 0 coarsest level */
+  PetscInt   levels;                       /* number of active levels used */
+  PetscInt   maxlevels;                    /* total number of levels allocated */
   PetscTruth galerkin;                     /* use Galerkin process to compute coarser matrices */
   PetscTruth galerkinused;                 /* destroy the Mat created by the Galerkin process */
   Vec        b;                            /* Right hand side */ 
@@ -31,8 +32,8 @@ typedef struct
   KSP        smoothu;                      /* post smoother */
   Mat        interpolate; 
   Mat        restrct;                      /* restrict is a reserved word on the Cray!!!*/ 
-  int        default_smoothu;              /* number of smooths per level if not over-ridden */
-  int        default_smoothd;              /*  with calls to KSPSetTolerances() */
+  PetscInt   default_smoothu;              /* number of smooths per level if not over-ridden */
+  PetscInt   default_smoothd;              /*  with calls to KSPSetTolerances() */
   PetscReal  rtol,abstol,dtol,ttol;        /* tolerances for when running with PCApplyRichardson_MG */
   PetscEvent eventsetup;                   /* if logging times for each level */
   PetscEvent eventsolve;      
