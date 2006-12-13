@@ -61,7 +61,7 @@ PetscErrorCode ShellMult_private(Mat mat,Vec x,Vec y)
   ierr = MatMult(cn->ts->Arhs,x,y);CHKERRQ(ierr); /* y = 0.5*Arhs*x */
   ierr = VecScale(y,-1.0);CHKERRQ(ierr);          /* y = -0.5*Arhs*x */
   if (cn->ts->Alhs){
-    ierr = MatMultAdd(cn->ts->Alhs,x,y);CHKERRQ(ierr); /* y = 1/dt*Alhs*x + y */
+    ierr = MatMultAdd(cn->ts->Alhs,x,y,y);CHKERRQ(ierr); /* y = 1/dt*Alhs*x + y */
   } else {
     ierr = VecAXPY(y,cn->mdt,x);CHKERRQ(ierr); /* y = 1/dt*x + y */
   }
