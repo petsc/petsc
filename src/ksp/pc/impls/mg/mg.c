@@ -110,13 +110,14 @@ static PetscErrorCode PCMGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI
       ierr = KSPAppendOptionsPrefix(mg[i]->smoothd,tprefix);CHKERRQ(ierr);
     }
     ierr = PetscLogObjectParent(pc,mg[i]->smoothd);CHKERRQ(ierr);
-    mg[i]->smoothu         = mg[i]->smoothd;
-    mg[i]->rtol = 0.0;
-    mg[i]->abstol = 0.0;
-    mg[i]->dtol = 0.0;
-    mg[i]->ttol = 0.0;
-    mg[i]->eventsetup = 0;
-    mg[i]->eventsolve = 0;
+    mg[i]->smoothu           = mg[i]->smoothd;
+    mg[i]->rtol              = 0.0;
+    mg[i]->abstol            = 0.0;
+    mg[i]->dtol              = 0.0;
+    mg[i]->ttol              = 0.0;
+    mg[i]->eventsetup        = 0;
+    mg[i]->eventsolve        = 0;
+    mg[i]->cyclesperpcapply  = 1; 
   }
   *result = mg;
   PetscFunctionReturn(0);
@@ -169,7 +170,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
-  PetscInt       levels = mg[0]->levels;
+  PetscInt       levels = mg[0]->levels,i;
 
   PetscFunctionBegin;
   mg[levels-1]->b = b; 
@@ -182,7 +183,9 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   }
   if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
-    ierr = PCMGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
+    for (i=0; i<mg[0]->cyclesperpcapply; i++) {
+      ierr = PCMGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
+    }
   } 
   else if (mg[0]->am == PC_MG_ADDITIVE) {
     ierr = PCMGACycle_Private(mg);CHKERRQ(ierr);
@@ -235,7 +238,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
 PetscErrorCode PCSetFromOptions_MG(PC pc)
 {
   PetscErrorCode ierr;
-  PetscInt       m,levels = 1;
+  PetscInt       m,levels = 1,cycles;
   PetscTruth     flg;
   PC_MG          **mg = (PC_MG**)pc->data;
   PCMGType       mgtype;
@@ -248,7 +251,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
       mg = (PC_MG**)pc->data;
     }
-    mgctype = mg[0]->cyclesperpcapply;
+    mgctype = mg[0]->cycles;
     ierr = PetscOptionsEnum("-pc_mg_cycle_type","V cycle or for W-cycle","PCMGSetCycleType",PCMGCycleTypes,(PetscEnum)mgctype,(PetscEnum*)&mgctype,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGSetCycleType(pc,mgctype);CHKERRQ(ierr);
@@ -266,7 +269,15 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       ierr = PCMGSetNumberSmoothDown(pc,m);CHKERRQ(ierr);
     }
     ierr = PetscOptionsEnum("-pc_mg_type","Multigrid type","PCMGSetType",PCMGTypes,(PetscEnum)mgtype,(PetscEnum*)&mgtype,&flg);CHKERRQ(ierr);
-    if (flg) {ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);}
+    if (flg) {
+      ierr = PCMGSetType(pc,mgtype);CHKERRQ(ierr);
+    }
+    if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
+      ierr = PetscOptionsInt("-pc_mg_multiplicative_cycles","Number of cycles for each preconditioner step","PCMGSetLevels",mg[0]->cyclesperpcapply,&cycles,&flg);CHKERRQ(ierr);
+      if (flg) {
+	ierr = PCMGMultiplicativeSetCycles(pc,cycles);CHKERRQ(ierr);
+      }
+    }
     ierr = PetscOptionsName("-pc_mg_log","Log times for each multigrid level","None",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscInt i;
@@ -677,6 +688,46 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCycleType(PC pc,PCMGCycleType n)
 
   for (i=0; i<levels; i++) {  
     mg[i]->cycles  = n; 
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCMGMultiplicativeSetCycles"
+/*@
+   PCMGMultiplicativeSetCycles - Sets the number of cycles to use for each preconditioner step 
+         of multigrid when PCMGType of PC_MG_MULTIPLICATIVE is used
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the multigrid context 
+-  n - number of cycles (default is 1)
+
+   Options Database Key:
+$  -pc_mg_multiplicative_cycles n
+
+   Level: advanced
+
+   Notes: This is not associated with setting a v or w cycle, that is set with PCMGSetCycleType()
+
+.keywords: MG, set, cycles, V-cycle, W-cycle, multigrid
+
+.seealso: PCMGSetCycleTypeOnLevel(), PCMGSetCycleType()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGMultiplicativeSetCycles(PC pc,PetscInt n)
+{ 
+  PC_MG    **mg;
+  PetscInt i,levels;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  mg     = (PC_MG**)pc->data;
+  if (!mg) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set MG levels before calling");
+  levels = mg[0]->levels;
+
+  for (i=0; i<levels; i++) {  
+    mg[i]->cyclesperpcapply  = n; 
   }
   PetscFunctionReturn(0);
 }
