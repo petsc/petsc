@@ -811,19 +811,27 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,
   Mat_MUMPS      *mumps;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
-    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
-  }
-
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = PetscNew(Mat_MUMPS,&mumps);CHKERRQ(ierr);
 
-  mumps->MatDuplicate              = A->ops->duplicate;
-  mumps->MatView                   = A->ops->view;
-  mumps->MatAssemblyEnd            = A->ops->assemblyend;
-  mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
-  mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
-  mumps->MatDestroy                = A->ops->destroy;
+  if (reuse == MAT_INITIAL_MATRIX) {
+    ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    /* A may have special container that is not duplicated, 
+       e.g., A is obtainted from MatMatMult(,&A). Save B->ops instead */
+    mumps->MatDuplicate              = B->ops->duplicate;
+    mumps->MatView                   = B->ops->view;
+    mumps->MatAssemblyEnd            = B->ops->assemblyend;
+    mumps->MatLUFactorSymbolic       = B->ops->lufactorsymbolic;
+    mumps->MatCholeskyFactorSymbolic = B->ops->choleskyfactorsymbolic;
+    mumps->MatDestroy                = B->ops->destroy;
+  } else {
+    mumps->MatDuplicate              = A->ops->duplicate;
+    mumps->MatView                   = A->ops->view;
+    mumps->MatAssemblyEnd            = A->ops->assemblyend;
+    mumps->MatLUFactorSymbolic       = A->ops->lufactorsymbolic;
+    mumps->MatCholeskyFactorSymbolic = A->ops->choleskyfactorsymbolic;
+    mumps->MatDestroy                = A->ops->destroy;
+  }
   mumps->specialdestroy            = MatDestroy_AIJMUMPS;
   mumps->CleanUpMUMPS              = PETSC_FALSE;
   mumps->isAIJ                     = PETSC_TRUE;

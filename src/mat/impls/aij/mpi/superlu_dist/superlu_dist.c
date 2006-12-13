@@ -651,18 +651,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
   Mat_SuperLU_DIST *lu;
 
   PetscFunctionBegin;
+  ierr = PetscNew(Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate         = B->ops->duplicate;
+    lu->MatView              = B->ops->view;
+    lu->MatAssemblyEnd       = B->ops->assemblyend;
+    lu->MatLUFactorSymbolic  = B->ops->lufactorsymbolic;
+    lu->MatDestroy           = B->ops->destroy;
+  } else {
+    lu->MatDuplicate         = A->ops->duplicate;
+    lu->MatView              = A->ops->view;
+    lu->MatAssemblyEnd       = A->ops->assemblyend;
+    lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
+    lu->MatDestroy           = A->ops->destroy;
   }
-
-  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
-
-  lu->MatDuplicate         = A->ops->duplicate;
-  lu->MatView              = A->ops->view;
-  lu->MatAssemblyEnd       = A->ops->assemblyend;
-  lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;
-  lu->MatDestroy           = A->ops->destroy;
   lu->CleanUpSuperLU_Dist  = PETSC_FALSE;
 
   B->spptr                 = (void*)lu;
@@ -671,6 +674,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
   B->ops->assemblyend      = MatAssemblyEnd_SuperLU_DIST;
   B->ops->lufactorsymbolic = MatLUFactorSymbolic_SuperLU_DIST;
   B->ops->destroy          = MatDestroy_SuperLU_DIST;
+
+  ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqaij_superlu_dist_C",

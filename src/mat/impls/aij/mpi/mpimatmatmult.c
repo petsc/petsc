@@ -88,9 +88,13 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
   }
+  /* Note: the container is not duplicated, because it requires deep copying of
+     several large data sets (see PetscContainerDestroy_Mat_MatMatMultMPI()).
+     These data sets are only used for repeated calling of MatMatMultNumeric(). 
+     *M is unlikely being used in this way. Thus we create *M with pure mpiaij format */
   ierr = (*mult->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = mult->MatDestroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
-  (*M)->ops->duplicate = mult->MatDuplicate; /* =MatDuplicate_ MPIAIJ */
+  (*M)->ops->destroy   = mult->MatDestroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
+  (*M)->ops->duplicate = mult->MatDuplicate; /* = MatDuplicate_MPIAIJ */
   PetscFunctionReturn(0);
 }
 
