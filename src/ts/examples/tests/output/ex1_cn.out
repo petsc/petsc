@@ -9,4 +9,3 @@ timestep 7 time 0.00100046 norm of error 0.00146 0.00212
 timestep 8 time 0.00114338 norm of error 0.00159 0.00230
 timestep 9 time 0.0012863 norm of error 0.00170 0.00247
 timestep 10 time 0.00142922 norm of error 0.00179 0.00261
-Error in  crank-nClassical (unmodified) Gram-Schmidt Orthogonalization with no iterative refinement restart 30 ilu     lvls=0,or method: 2-norm 0.00115657 expecting: 0.00506174

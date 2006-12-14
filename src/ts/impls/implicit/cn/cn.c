@@ -317,6 +317,7 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
 {
   TS_CN          *cn = (TS_CN*)ts->data;
   PetscErrorCode ierr;
+  PetscTruth shelltype;
 
   PetscFunctionBegin;
   ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
@@ -325,7 +326,12 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
     
   /* build linear system to be solved */
   /* scale ts->Alhs = 1/dt*Alhs, ts->Arhs = 0.5*Arhs; set ts->A = Alhs - Arhs */
-  ierr = TSSetKSPOperators_CN_Matrix(ts);CHKERRQ(ierr);  
+  ierr = PetscTypeCompare((PetscObject)ts->Arhs,MATSHELL,&shelltype);CHKERRQ(ierr);
+  if (shelltype){
+    ierr = TSSetKSPOperators_CN_No_Matrix(ts);CHKERRQ(ierr);
+  } else {
+    ierr = TSSetKSPOperators_CN_Matrix(ts);CHKERRQ(ierr);  
+  } 
   ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -340,25 +346,6 @@ static PetscErrorCode TSSetUp_CN_Linear_Variable_Matrix(TS ts)
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "TSSetUp_CN_Linear_No_Matrix"
-static PetscErrorCode TSSetUp_CN_Linear_No_Matrix(TS ts)
-{
-  TS_CN          *cn = (TS_CN*)ts->data;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
-  ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
-  ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
-   
-  /* build linear system to be solved */
-  /* scale ts->Alhs = 1/dt*Alhs, ts->Arhs = 0.5*Arhs; set ts->A = Alhs - Arhs */
-  ierr = TSSetKSPOperators_CN_No_Matrix(ts);CHKERRQ(ierr); 
-  ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -429,16 +416,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
   if (ts->problem_type == TS_LINEAR) {
     if (!ts->Arhs) {
       SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must set rhs matrix for linear problem");
-    }
-      
-    if (!ts->ops->rhsmatrix) {
-      PetscTruth shelltype;
-      ierr = PetscTypeCompare((PetscObject)ts->Arhs,MATSHELL,&shelltype);CHKERRQ(ierr);
-      if (shelltype){
-        ts->ops->setup = TSSetUp_CN_Linear_No_Matrix;
-      } else {
-        ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
-      }
+    }    
+    if (!ts->ops->rhsmatrix) {     
+      ts->ops->setup = TSSetUp_CN_Linear_Constant_Matrix;
       ts->ops->step  = TSStep_CN_Linear_Constant_Matrix;
     } else {
       ts->ops->setup = TSSetUp_CN_Linear_Variable_Matrix;  
