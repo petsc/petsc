@@ -45,7 +45,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscFreeSpaceList free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
   PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
-  PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*ptaj;
+  PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*ptaj,nspacedouble=0;
   PetscInt           an=A->cmap.N,am=A->rmap.N,pn=P->cmap.N,pm=P->rmap.N;
   PetscInt           i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi,nlnk,*lnk;
   MatScalar          *ca;
@@ -69,9 +69,9 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   nlnk = pn+1;
   ierr = PetscLLCreate(pn,pn,nlnk,lnk,lnkbt);CHKERRQ(ierr);
 
-  /* Set initial free space to be nnz(A) scaled by aspect ratio of P. */
+  /* Set initial free space to be fill*nnz(A). */
   /* This should be reasonable if sparsity of PtAP is similar to that of A. */
-  ierr          = PetscFreeSpaceGet((ai[am]/pm)*pn,&free_space);
+  ierr          = PetscFreeSpaceGet((PetscInt)(fill*ai[am]),&free_space);
   current_space = free_space;
 
   /* Determine symbolic info for each row of C: */
@@ -90,7 +90,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
         }
       }
     }
-      /* Using symbolic info for row of PtA, determine symbolic info for row of C: */
+    /* Using symbolic info for row of PtA, determine symbolic info for row of C: */
     ptaj = ptasparserow;
     cnzi   = 0;
     for (j=0;j<ptanzi;j++) {
@@ -106,6 +106,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     /* Double the amount of total space in the list */
     if (current_space->local_remaining<cnzi) {
       ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      nspacedouble++;
     }
 
     /* Copy data into free space, and zero out denserows */
@@ -145,7 +146,16 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   /* Clean up. */
   ierr = MatRestoreSymbolicTranspose_SeqAIJ(P,&pti,&ptj);CHKERRQ(ierr);
-
+#if defined(PETSC_USE_INFO)
+  if (ci[pn] != 0) {
+    PetscReal afill = ((PetscReal)ci[pn])/ai[am];
+    if (afill < 1.0) afill = 1.0;
+    ierr = PetscInfo3((*C),"Reallocs %D; Fill ratio: given %G needed %G.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1((*C),"Use MatPtAP(A,P,MatReuse,%G,&C) for best performance.\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo((*C),"Empty matrix product\n");CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
