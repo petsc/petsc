@@ -2115,7 +2115,6 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, MatType type,Mat *newmat)
 
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
-    mmax       = PetscMax(mmax,rowners[i]);
     rowners[i] += rowners[i-1];
   }
   rstart = rowners[rank]; 

@@ -404,7 +404,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (ksp->defaultconvergedinitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  if (ksp->defaultconvergedinitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
   ksp->defaultconvergedmininitialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
