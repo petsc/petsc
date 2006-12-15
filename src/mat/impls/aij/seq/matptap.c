@@ -46,7 +46,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data,*p = (Mat_SeqAIJ*)P->data,*c;
   PetscInt           *pti,*ptj,*ptJ,*ai=a->i,*aj=a->j,*ajj,*pi=p->i,*pj=p->j,*pjj;
   PetscInt           *ci,*cj,*ptadenserow,*ptasparserow,*ptaj,nspacedouble=0;
-  PetscInt           an=A->cmap.N,am=A->rmap.N,pn=P->cmap.N,pm=P->rmap.N;
+  PetscInt           an=A->cmap.N,am=A->rmap.N,pn=P->cmap.N;
   PetscInt           i,j,k,ptnzi,arow,anzj,ptanzi,prow,pnzj,cnzi,nlnk,*lnk;
   MatScalar          *ca;
   PetscBT            lnkbt;

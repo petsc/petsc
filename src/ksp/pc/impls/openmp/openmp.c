@@ -31,7 +31,6 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
 {
   PC_OpenMP      *red = (PC_OpenMP*)ctx;
   PetscErrorCode ierr;
-  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&red->n,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -154,7 +153,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
 {
   PetscErrorCode ierr;
   PC_OpenMP      *red;
-  const char     *prefix;
   PetscMPIInt    size;
 
   PetscFunctionBegin;
