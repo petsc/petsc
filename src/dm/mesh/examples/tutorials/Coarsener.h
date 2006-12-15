@@ -16,7 +16,9 @@ namespace Coarsener {
   PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>&, int);  //identify the boundary faces/edges/nodes.
   PetscErrorCode CreateSpacingFunction(Obj<ALE::Mesh>&, int);  //same 'ol, same 'ol.  (puts a nearest neighbor value on each vertex) (edges?)
   PetscErrorCode CreateCoarsenedHierarchy(Obj<ALE::Mesh>&, int, int, float); //returns the meshes!
+#ifdef PETSC_HAVE_TRIANGLE
   PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, ALE::Mesh::real_section_type::patch_type);
+#endif
   PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>&, int,  ALE::Mesh::real_section_type::patch_type, bool, float);
   int BoundaryNodeDimension_2D(Obj<ALE::Mesh>&, ALE::Mesh::point_type);
   int BoundaryNodeDimension_3D(Obj<ALE::Mesh>&, ALE::Mesh::point_type);
@@ -220,6 +222,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   }
 
   printf("- creating input to triangle: %d points\n", incPoints.size());
+#ifdef PETSC_HAVE_TRIANGLE
   //At this point we will set up the triangle(tetgen) calls (with preservation of vertex order.  This is why I do not use the functions build in).
   triangulateio * input = new triangulateio;
   triangulateio * output = new triangulateio;
@@ -297,6 +300,9 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   delete output->edgelist;
   delete input;
   delete output;
+#else
+  SETERRQ(PETSC_ERR_SUP, "No mesh generator available!");
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -358,6 +364,7 @@ bool areCoPlanar(Obj<ALE::Mesh>& mesh, ALE::Mesh::point_type tri1, ALE::Mesh::po
   return false; // stub
 }
 
+#ifdef PETSC_HAVE_TRIANGLE
 PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mesh::real_section_type::patch_type patch) {
   PetscFunctionBegin;
   // We store the global vertex numbers as markers to preserve them in the coarse mesh
@@ -380,6 +387,6 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   topology->stratify();
   PetscFunctionReturn(0);
 }
-
+#endif
 }  //end Coarsener
 }  //end ALE

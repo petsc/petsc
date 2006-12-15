@@ -400,6 +400,7 @@ namespace ALE { namespace Coarsener {
       } //end while over leaf spaces; after this point we have a complete MIS in globalNodes
       //Mesh building phase
       //if (curLevel != 0) {
+#ifdef PETSC_HAVE_TRIANGLE
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
   
@@ -506,6 +507,9 @@ namespace ALE { namespace Coarsener {
       delete output->edgelist;
       delete input;
       delete output;
+#else
+      SETERRQ(PETSC_ERR_SUP, "No mesh generator available.");
+#endif
       leaf_list.clear();
       //}
       if (coarsen_stats.computeStats) {
