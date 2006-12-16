@@ -242,7 +242,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   PetscTruth     flg;
   PC_MG          **mg = (PC_MG**)pc->data;
   PCMGType       mgtype;
-  PCMGCycpe  mgctype;
+  PCMGCycleType  mgctype;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Multigrid options");CHKERRQ(ierr);
