@@ -1,555 +1,248 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-
-
-  
-  
   <meta http-equiv="Content-Type" content="text/html">
-
-
-  
-  
-  <title>PETSc: The Portable, Extensible Toolkit for Scientific Computation</title>
+  <title>PETSc: The Portable, Extensible Toolkit for Scientific
+Computation</title>
 </head>
-
-
 <body bgcolor="#d5eaff">
-
-
 <table width="775">
-
-
   <tbody>
-
-
     <tr>
-
-
       <td style="width: 261px;" valign="top">
-      
-      
       <h1><font color="#ff0000" size="7">PETSc</font></h1>
-
-
-      
-      
       <ul>
-
-
         <li><a href="../index.html"><strong>Home</strong></a></li>
-
-
-      
-      
       </ul>
-
-
 &nbsp;</td>
-
-
       <td style="width: 498px;">
-      
-      
       <h1>Developers Site</h1>
-
-
       </td>
-
-
     </tr>
-
-
     <tr>
-
-
       <td style="width: 498px;" colspan="2">
-      
-      
       <hr color="#ff5b5b" size="4"> </td>
-
-
     </tr>
-
-
     <tr>
-
-
       <td style="width: 261px;" valign="top">
-      
-      
       <ul>
-
-
         <li><a href="../download/index.html"><strong>Download</strong></a></li>
-
-
         <li><a href="../features/index.html"><strong>Features</strong></a></li>
-
-
         <li><a href="../documentation/index.html"><strong>Documentation</strong></a></li>
-
-
         <li><strong><a href="../publications/index.html">Applications/Publications</a></strong></li>
-
-
         <li><a href="../miscellaneous/index.html"><strong>Miscellaneous</strong></a></li>
-
-
         <li><a href="../miscellaneous/external.html"><strong>External
 Software</strong></a></li>
-
-
         <li><strong><font color="#ff0000">Developers Site</font></strong>
-          
-          
           <ul>
-
-
             <li><strong><font color="#ff0000">&nbsp;Getting started</font></strong></li>
-
-            <li><strong><font color="#ff0000"><a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
+            <li><strong><font color="#ff0000"><a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/index.html">Development
 copy of documentation</a></font></strong></li>
-
-
-            <li><strong></strong><strong><font color="#ff0000"><a href="developers.pdf">Developers Instructions<br>
-
-
+            <li><strong></strong><strong><font color="#ff0000"><a
+ href="developers.pdf">Developers Instructions<br>
               </a></font></strong></li>
-
-
             <li><strong><font color="#ff0000"><a href="projects.html">Proposed
 projects</a></font></strong></li>
-
-
-          
-          
           </ul>
-
-
         </li>
-
-
-      
-      
       </ul>
-
-
-      
-      
       <p>&nbsp;</p>
-
-
       </td>
-
-
       <td style="width: 498px;" valign="top">
-      
-      
       <p align="left">&nbsp;These pages are for people interested in
 using the development
-copy of PETSc (called petsc-dev) or contributing to the PETSc libraries. It is intended
+copy of PETSc (called petsc-dev) or contributing to the PETSc
+libraries. It is intended
 only
 for people who are experienced with building, using and debugging
 PETSc. If you cannot use makefiles, a debugger and EMACS etags then
 please don't access these pages.<br>
-
-
       </p>
-
-
-      
-      
-      <p align="left">Consider joining petsc-dev <a href="../miscellaneous/mailing-lists.html">mailing-list.</a></p>
-
-      
+      <p align="left">Consider joining petsc-dev <a
+ href="../miscellaneous/mailing-lists.html">mailing-list.</a></p>
       <p align="left">How to:</p>
-
-      
       <ul>
-
-        <li><a href="#Obtaining">obtain petsc-dev (the development version)</a></li>
-
-        <li><a href="#Compiling_and_using_the_development_copy">compile petsc-dev</a></li>
-
-        <li><a href="#Building_documentation:">build documentation for petsc-dev</a></li>
-
-        <li><a href="#Sending_patches_to_update_the_">add code/patches to the master copy of petsc-dev</a></li>
-
-      
+        <li><a href="#Browsing">browse sources in the repository</a><br>
+        </li>
+        <li><a href="#Obtaining">obtain petsc-dev (the development
+version)</a></li>
+        <li><a href="#Compiling_and_using_the_development_copy">compile
+petsc-dev</a></li>
+        <li><a href="#Building_documentation:">build documentation for
+petsc-dev</a></li>
+        <li><a href="#Sending_patches_to_update_the_">add code/patches
+to the master copy of petsc-dev</a></li>
       </ul>
-
-      
       <ul>
-
-        <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html">add a new PC type</a></li>
-
-        <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/impls/cg/cg.c.html">add a new KSP type</a></li>
-
-        <li><a href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html">add a new subclass of a matrix type (implementation inheritence)</a></li>
-
-      
+        <li><a
+ href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/pc/impls/jacobi/jacobi.c.html">add
+a new PC type</a></li>
+        <li><a
+ href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/ksp/ksp/impls/cg/cg.c.html">add
+a new KSP type</a></li>
+        <li><a
+ href="http://www-unix.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/mat/impls/aij/seq/superlu/superlu.c.html">add
+a new subclass of a matrix type (implementation inheritence)</a></li>
       </ul>
-
-
-      <big><span style="font-weight: bold;"><a name="Obtaining"></a>Obtaining the development version of PETSc:</span></big><br>
-
-
       <br>
-
-
+      <big><span style="font-weight: bold;"><a name="Browsing"></a>Browsing
+Source:</span></big><br>
+      <br>
+One can browse the development repositories at the following location<br>
+      <ul>
+        <li><a href="http://petsc.cs.iit.edu/petsc/petsc-dev">http://petsc.cs.iit.edu/petsc/petsc-dev</a></li>
+        <li><a href="http://petsc.cs.iit.edu/petsc/BuildSystem">http://petsc.cs.iit.edu/petsc/BuildSystem</a></li>
+      </ul>
+      <br>
+      <big><span style="font-weight: bold;"><a name="Obtaining"></a>Obtaining
+the development version of PETSc:</span></big><br>
+      <br>
 You have two options<br>
-
-
-      
-      
       <ol>
-
-
-        <li>&nbsp;download and install <span style="font-weight: bold;"></span><a href="http://www.selenic.com/mercurial"><b>mercurial</b></a></li>
-
-
+        <li>&nbsp;download and install <span style="font-weight: bold;"></span><a
+ href="http://www.selenic.com/mercurial"><b>mercurial</b></a><b><br>
+          </b></li>
         <li>&nbsp;access the nightly <span style="font-weight: bold;">tarball</span>
 snapshot at <a href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
           <br>
-
-
         </li>
-
-
-      
-      
       </ol>
-
-
 &nbsp; Both methods above create a local directory with the name
-petsc-dev.
+petsc-dev. <br>
       <br>
-
-      <br>
-
       <strong></strong>1) To use<strong> mercurial</strong> - install
-the software from <a href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">http://www.selenic.com/mercurial/wiki/index.cgi/Download</a>
+the software from <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/Download">http://www.selenic.com/mercurial/wiki/index.cgi/Download</a>
 [follow instructions provided].
-We require mercurial-0.9 version or newer.&nbsp; Obtain petsc-dev with the
+We recommend using&nbsp; mercurial-0.9.3 version or newer [avoid
+versions older than 0.9.0].&nbsp; Obtain petsc-dev with the
 following:
-      
-      
       <ul style="color: rgb(128, 0, 0);">
-
-
-        <li>hg clone http://mercurial.mcs.anl.gov/petsc/petsc-dev</li>
-
-
+        <li>hg clone http://petsc.cs.iit.edu/petsc/petsc-dev</li>
         <li> cd petsc-dev/python</li>
-
-
-        <li>hg clone http://mercurial.mcs.anl.gov/petsc/BuildSystem
+        <li>hg clone http://petsc.cs.iit.edu/petsc/BuildSystem
 BuildSystem</li>
-
-
-      
-      
       </ul>
-
-
 To update your copy of petsc-dev
-      
-      
       <ul style="color: rgb(128, 0, 0);">
-
-
         <li>make PETSC_ARCH=docsonly pull</li>
-
-
-      
-      
       </ul>
-
-
 &nbsp;or<br>
-
-
-      
-      
       <ul style="color: rgb(128, 0, 0);">
-
-
         <li>cd petsc-dev<br>
-
-
         </li>
-
-
         <li>hg pull</li>
-
-
         <li>hg update</li>
-
-
         <li>cd python/BuildSystem</li>
-
-
         <li>hg pull</li>
-
-
         <li>hg update <br>
-
-
         </li>
-
-
-      
-      
       </ul>
-
-
 The Mercurial download always has the latest version of petsc-dev.<br>
-
       <br>
-
 For additional help use<br>
-
-
-      
-      
       <ul style="color: rgb(128, 0, 0);">
-
-
         <li>hg help&nbsp; [or]</li>
-
-
         <li>man hg<br>
-
-
         </li>
-
-
-      
-      
       </ul>
-
-
-      
-      <strong></strong>2) To use the <strong>tarball </strong>snapshot,
-simply download <a href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
+      <strong></strong>2) The nightly tarball will be equivalent to the
+release tarball - with all the doumentation built. To use the <strong>tarball
+      </strong>snapshot,
+simply download <a
+ href="ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz">ftp://info.mcs.anl.gov/pub/petsc/petsc-dev.tar.gz</a>
 and extract it.
-      
-      
       <ul style="color: rgb(128, 0, 0);">
-
-
         <li>gunzip -c petsc-dev.tar.gz | tar xf&nbsp; -</li>
-
-
-      
-      
       </ul>
-
-
 To update your copy of petsc-dev simply
-get a new copy of the tar file. The tar file at the ftp site is updated once each night with the latest changes to petsc-dev
-      
-      <strong></strong>
-      
-      <p style="font-weight: bold;" align="left"><span style="font-weight: normal;"></span><big><a name="Compiling_and_using_the_development_copy"></a>Compiling and using the development copy (petsc-dev):</big><br>
-
-
+get a new copy of the tar file. The tar file at the ftp site is updated
+once each night with the latest changes to petsc-dev <strong></strong>
+      <p style="font-weight: bold;" align="left"><span
+ style="font-weight: normal;"></span><big><a
+ name="Compiling_and_using_the_development_copy"></a>Compiling and
+using the development copy (petsc-dev):</big><br>
       </p>
-
-
-Use config/configure.py <a href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
+Use config/configure.py <a
+ href="http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-dev/docs/installation.html">to
 install PETSc</a>, (trouble, please contact us
-petsc-maint@mcs.anl.gov). And subscribe to <a href="../miscellaneous/mailing-lists.html">petsc mailing lists</a>.
-      
-      
-      
-      
+petsc-maint@mcs.anl.gov). And subscribe to <a
+ href="../miscellaneous/mailing-lists.html">petsc mailing lists</a>.
       <p style="font-weight: bold;" align="left"><br>
-
       <big><a name="Building_documentation:"></a>Building documentation:</big></p>
-
-
-      
-      
-      <p align="left">The documentation tools (except for pdflatex) are automatically
+      <p align="left">The documentation tools (except for pdflatex) are
+automatically
 downloaded and installed by config/configure.py. However, as a
 failsafe, we
 provide them here as well.</p>
-
-
-      
-      
       <p align="left">The following additional tools are required to
 build the PETSc documentation:</p>
-
-
-      
-      
       <ul>
-
-
         <li>
-          
-          
-          <p align="left"><font size="4"><a href="ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
+          <p align="left"><font size="4"><a
+ href="ftp://ftp.mcs.anl.gov/pub/sowing/sowing.tar.gz">Sowing</a>:</font>&nbsp;
 A text processing tools developed by Bill Gropp</p>
-
-
         </li>
-
-
         <li>
-          
-          
-          <p align="left"><font size="4"><a href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
+          <p align="left"><font size="4"><a
+ href="ftp://ftp.mcs.anl.gov/pub/petsc/c2html.tar.gz">C2html</a></font>:
 A text processing package required to generate the PETSc documentation.</p>
-
-
         </li>
-
-
         <li>
-          
-          
-          <p align="left">A version of pdflatex <a href="http://www.tug.org/teTeX/"></a><font size="4"><a href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
+          <p align="left">A version of pdflatex <a
+ href="http://www.tug.org/teTeX/"></a><font size="4"><a
+ href="http://www.tug.org/teTeX/">(for example in teTeX)</a>:</font>This
 package might already be installed on most systems. It is required to
 generate the users manual (part of the PETSc documentation)</p>
-
-
         </li>
-
-
-      
-      
       </ul>
-
-
-      
-      
       <p align="left">&nbsp;&nbsp; Once pdflatex (from teTeX) is in
 your PATH you can build the documentation with:<br>
-
-
       </p>
-
-
-      
-      
       <ul>
-
-
         <li><font color="#800000">make alldoc LOC=${PETSC_DIR}</font></li>
-
-
-      
-      
       </ul>
-
-
-      
-      
-      <p style="font-weight: bold;" align="left"><big><a name="Sending_patches_to_update_the_"></a>Sending patches to update the master copy of petsc-dev:</big></p>
-
-
-      
-      
+      <p style="font-weight: bold;" align="left"><big><a
+ name="Sending_patches_to_update_the_"></a>Sending patches to update
+the master copy of petsc-dev:</big></p>
       <p align="left"><span style="font-weight: bold;"></span>One can
 send us changes to PETSc [perhaps bug fixes or new feature additions]
 via e-mail. One easy way to do this [if no new files get created] is:<br>
-
-
       </p>
-
-
-      
-      
       <ul style="color: rgb(128, 0, 0);">
-
-
         <li>[get the latest version of petsc-dev using mercurial as
 descrbed above]<br>
-
-
         </li>
-
-
         <li>[make edits]</li>
-
-
         <li>hg diff &gt; patchfile</li>
-
-
         <li>[email patchfile to petsc-maint@mcs.anl.gov]</li>
-
-
-      
-      
       </ul>
-
-
 To undo the changes, one can do 'hg revert' so that subsequent 'hg
 pull' or 'make pull' will continue to work.<br>
-
-
       <br>
-
-
-Alternatively - one can send us patches using 'hg export' or 'hg
-bundle' as described at <a href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges">http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges</a>
+Alternatively - one can send us patches using 'hg
+bundle' as described at <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges">http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges</a>
       <br>
-
-
       <br>
-
-
-      <a href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges"><span style="font-weight: bold;"> </span></a> </td>
-
-
+      <a
+ href="http://www.selenic.com/mercurial/wiki/index.cgi/CommunicatingChanges"><span
+ style="font-weight: bold;"> </span></a> </td>
     </tr>
-
-
     <tr>
-
-
       <td style="width: 498px;" colspan="2"> <br>
-
-
       </td>
-
-
     </tr>
-
-
     <tr>
-
-
       <td style="width: 498px;" colspan="2"><br>
-
-
       </td>
-
-
     </tr>
-
-
     <tr>
-
-
       <td style="width: 498px;" colspan="2"><br>
-
-
       </td>
-
-
     </tr>
-
-
-  
-  
   </tbody>
 </table>
-
-
 </body>
 </html>
