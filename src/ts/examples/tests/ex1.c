@@ -172,7 +172,7 @@ int main(int argc,char **argv)
          The user provides the RHS and a Shell Jacobian
     */
     ierr = TSSetRHSFunction(ts,RHSFunctionHeat,&appctx);CHKERRQ(ierr);
-    ierr = MatCreateShell(PETSC_COMM_WORLD,m,appctx.M,appctx.M,appctx.M,&appctx,&A);CHKERRQ(ierr);
+    ierr = MatCreateShell(PETSC_COMM_WORLD,m,m,PETSC_DECIDE,PETSC_DECIDE,&appctx,&A);CHKERRQ(ierr);
     ierr = MatShellSetOperation(A,MATOP_MULT,(void(*)(void))RHSMatrixFree);CHKERRQ(ierr);
     ierr = TSSetRHSJacobian(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);  
   } else if (problem == nonlinear) {
@@ -214,7 +214,9 @@ int main(int argc,char **argv)
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,tsinfo,120,&viewer);CHKERRQ(ierr);
-  ierr = TSView(ts,viewer);CHKERRQ(ierr);
+  if (size == 1){ /* TSView() crashes for non euler methods with np>1 ? */
+    ierr = TSView(ts,viewer);CHKERRQ(ierr);
+  }
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-testinfo",&flg);CHKERRQ(ierr);
   if (flg) {

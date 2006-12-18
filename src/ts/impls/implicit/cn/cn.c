@@ -192,7 +192,7 @@ static PetscErrorCode TSStep_CN_Linear_Variable_Matrix(TS ts,PetscInt *steps,Pet
 
     /* evaluate Arhs at current ptime t_{n+1} */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->Arhs,PETSC_NULL,&str,ts->jacP);CHKERRQ(ierr);
-    ierr = TSSetKSPOperators_CN_Matrix(ts);CHKERRQ(ierr); //???
+    ierr = TSSetKSPOperators_CN_Matrix(ts);CHKERRQ(ierr); 
 
     ierr = KSPSetOperators(ts->ksp,ts->A,ts->A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
@@ -259,40 +259,76 @@ static PetscErrorCode TSDestroy_CN(TS ts)
 
 /* 
     This defines the nonlinear equation that is to be solved with SNES
-
-              U^{n+1} - dt*F(U^{n+1}) - U^{n}
+       1/dt*Alhs*(U^{n+1} - U^{n}) - 0.5*(F(U^{n+1}) + F(U^{n}))
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSCnFunction"
 PetscErrorCode TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS             ts = (TS) ctx;
-  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1;
+  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1,*Funp;
   PetscErrorCode ierr;
   PetscInt       i,n;
+  Vec            y0;
 
   PetscFunctionBegin;
   /* apply user provided function */
-  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr);
-  /* (u^{n+1} - U^{n})/dt - F(u^{n+1}) */
-  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr);
-  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
-  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr); /* y = F(U^{n+1}) */
+  ierr = VecDuplicate(y,&y0);CHKERRQ(ierr);
+  ierr = TSComputeRHSFunction(ts,ts->ptime-ts->time_step,ts->vec_sol,y0);CHKERRQ(ierr); /* y = F(U^{n}) */
+  
+  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr); /* U^{n} */
+  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);         /* U^{n+1} */
+  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);       
+  ierr = VecGetArray(y0,&Funp);CHKERRQ(ierr);  
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
 
   for (i=0; i<n; i++) {
-    Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
+    Funp1[i] = mdt*(unp1[i] - un[i]) - 0.5*(Funp1[i] + Funp[i]);
   }
   ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&unp1);CHKERRQ(ierr);
   ierr = VecRestoreArray(y,&Funp1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y0,&Funp);CHKERRQ(ierr);
+  ierr = VecDestroy(y0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+/* Set A = 1/dt*Alhs - 0.5*A, B = 1/dt*Blhs - 0.5*B */
+#undef __FUNCT__  
+#define __FUNCT__ "TSScaleShiftMatrices_CN"
+PetscErrorCode TSScaleShiftMatrices_CN(TS ts,Mat A,Mat B,MatStructure str)
+{
+  PetscTruth     flg;
+  PetscErrorCode ierr;
+  PetscScalar    mdt = 1.0/ts->time_step;
+
+  PetscFunctionBegin;
+  /* this function requires additional work! */
+  ierr = PetscTypeCompare((PetscObject)A,MATMFFD,&flg);CHKERRQ(ierr);
+  if (!flg) {
+    ierr = MatScale(A,-0.5);CHKERRQ(ierr);
+    if (ts->Alhs){
+      ierr = MatAXPY(A,mdt,ts->Alhs,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+    } else {
+      ierr = MatShift(A,mdt);CHKERRQ(ierr);
+    }
+  } else {
+    SETERRQ(PETSC_ERR_SUP,"Matrix type MATMFFD is not supported yet"); /* ref TSScaleShiftMatrices() */
+  }
+  if (B != A && str != SAME_PRECONDITIONER) {
+    ierr = MatScale(B,-0.5);CHKERRQ(ierr);
+    ierr = MatShift(B,mdt);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
 /*
    This constructs the Jacobian needed for SNES 
-
-             J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
+     J = I/dt - 0.5*J_{F}   where J_{F} is the given Jacobian of F.
+     x  - input vector
+     AA - Jacobian matrix 
+     BB - preconditioner matrix, usually the same as AA
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSCnJacobian"
@@ -303,10 +339,10 @@ PetscErrorCode TSCnJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *str,vo
 
   PetscFunctionBegin;
   /* construct user's Jacobian */
-  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr);
+  ierr = TSComputeRHSJacobian(ts,ts->ptime,x,AA,BB,str);CHKERRQ(ierr); /* AA = J_{F} */
 
   /* shift and scale Jacobian */
-  ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr);
+  ierr = TSScaleShiftMatrices_CN(ts,*AA,*BB,*str);CHKERRQ(ierr); /* Set AA = 1/dt*Alhs - AA, BB = 1/dt*Blhs - BB */
   PetscFunctionReturn(0);
 }
 
@@ -380,7 +416,6 @@ static PetscErrorCode TSSetFromOptions_CN_Nonlinear(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
