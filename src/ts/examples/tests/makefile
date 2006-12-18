@@ -63,6 +63,7 @@ ex12: ex12.o  chkopts
 	-${FLINKER} -o ex12 ex12.o ${PETSC_TS_LIB}
 	${RM} ex12.o
 #----------------------------------------------------------------------------------
+NPROCS    = 1  3
 runex1_euler:
 	-@${MPIRUN} -np 1 ./ex1 -ts_type euler -linear_constant_matrix -monitor -nox -time 10 > ex1_euler.tmp 2>&1;   \
            if (${DIFF} output/ex1_euler.out ex1_euler.tmp) then true; \
@@ -94,47 +95,87 @@ runex1_euler_5:
            ${RM} -f ex1_euler.tmp
 
 runex1_beuler:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-           else echo "Possible problem with ex1_beuler, diffs above"; fi; \
-           ${RM} -f ex1_beuler.tmp; 
+	-@touch ex1_beuler.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+        else echo "Possible problem with ex1_beuler, diffs above"; fi; \
+        ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_2:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type beuler -linear_variable_matrix -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-           else echo "Possible problem with ex1_beuler_2, diffs above"; fi; \
-           ${RM} -f ex1_beuler.tmp; 
+	-@touch ex1_beuler.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type beuler -linear_variable_matrix -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+        else echo "Possible problem with ex1_beuler_2, diffs above"; fi; \
+        ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_3:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type beuler -nonlinear_jacobian -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-           else echo "Possible problem with ex1_beuler_3, diffs above"; fi; \
-           ${RM} -f ex1_beuler.tmp; 
+	-@touch ex1_beuler.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type beuler -nonlinear_jacobian -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+        else echo "Possible problem with ex1_beuler_3, diffs above"; fi; \
+        ${RM} -f ex1_beuler.tmp; 
 runex1_beuler_4:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type beuler -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-           else echo "Possible problem with ex1_4, diffs above"; fi; \
-           ${RM} -f ex1_beuler.tmp; 
+	-@touch ex1_beuler.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type beuler -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+        else echo "Possible problem with ex1_4, diffs above"; fi; \
+        ${RM} -f ex1_beuler.tmp; 
 
 runex1_beuler_5:
-	 -@${MPIRUN} -np 1 ./ex1 -ts_type beuler -linear_no_matrix -monitor -nox -time 10 > ex1_beuler.tmp 2>&1;   \
-           if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
-           else echo "Possible problem with ex1_beuler_5, diffs above"; fi; \
-           ${RM} -f ex1_beuler.tmp 
+	-@touch ex1_beuler.tmp;\
+	for np in ${NPROCS}; do \
+	   ${MPIRUN} -np $$np ./ex1 -ts_type beuler -linear_no_matrix -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
+        else echo "Possible problem with ex1_beuler_5, diffs above"; fi; \
+        ${RM} -f ex1_beuler.tmp 
 
 runex1_cn:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type crank-nicholson -linear_constant_matrix -monitor -nox -time 10 > ex1_cn.tmp 2>&1;   \
-           if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-           else echo "Possible problem with ex1_cn, diffs above"; fi; \
-           ${RM} -f ex1_cn.tmp
+	-@touch ex1_cn.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -linear_constant_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+        done; \
+        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
+        else echo "Possible problem with ex1_cn, diffs above"; fi; \
+        ${RM} -f ex1_cn.tmp 
 runex1_cn_2:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type crank-nicholson -linear_variable_matrix -monitor -nox -time 10 > ex1_cn.tmp 2>&1;   \
-           if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-           else echo "Possible problem with ex1_cn_2, diffs above"; fi; \
-           ${RM} -f ex1_cn.tmp
+	-@touch ex1_cn.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -linear_variable_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
+        else echo "Possible problem with ex1_cn_2, diffs above"; fi; \
+        ${RM} -f ex1_cn.tmp
 runex1_cn_3:
-	-@${MPIRUN} -np 1 ./ex1 -ts_type crank-nicholson -linear_no_matrix -monitor -nox -time 10 > ex1_cn.tmp 2>&1;   \
-           if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
-           else echo "Possible problem with ex1_cn_3, diffs above"; fi; \
-           ${RM} -f ex1_cn.tmp
+	-@touch ex1_cn.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -linear_no_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
+        else echo "Possible problem with ex1_cn_3, diffs above"; fi; \
+        ${RM} -f ex1_cn.tmp
+runex1_cn_4:
+	-@touch ex1_cn.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -nonlinear_jacobian -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
+        else echo "Possible problem with ex1_cn_4, diffs above"; fi; \
+        ${RM} -f ex1_cn.tmp
+runex1_cn_5:
+	-@touch ex1_cn.tmp;\
+	for np in ${NPROCS}; do \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -nonlinear_no_jacobian -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	done; \
+        if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
+        else echo "Possible problem with ex1_cn_5, diffs above"; fi; \
+        ${RM} -f ex1_cn.tmp; 
 
 runex1f:
 	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type euler  -linear_no_matrix

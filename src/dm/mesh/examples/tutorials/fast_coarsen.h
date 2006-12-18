@@ -507,9 +507,6 @@ namespace ALE { namespace Coarsener {
       delete output->edgelist;
       delete input;
       delete output;
-#else
-      SETERRQ(PETSC_ERR_SUP, "No mesh generator available.");
-#endif
       leaf_list.clear();
       //}
       if (coarsen_stats.computeStats) {
@@ -524,6 +521,9 @@ namespace ALE { namespace Coarsener {
         coarsen_stats.minAngle[curLevel] = tmp_stats[0];
         coarsen_stats.maxAngle[curLevel] = tmp_stats[1];
       }
+#else
+      SETERRQ(PETSC_ERR_SUP, "No mesh generator available.");
+#endif
     }  //end of for over the number of coarsening levels.
     if (coarsen_stats.displayStats)coarsen_DisplayStats();
     PetscFunctionReturn(0);
