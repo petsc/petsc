@@ -79,7 +79,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
 {
   PC_OpenMP      *red = (PC_OpenMP*)ctx;
   PetscErrorCode ierr;
-  PetscInt       m,*rowners; /* local size of vectors and matrices */
+  PetscInt       m; /* local size of vectors and matrices */
 
   PetscFunctionBegin;
   /* setup vector communication */

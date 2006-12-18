@@ -251,7 +251,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       ierr = PCMGSetLevels(pc,levels,PETSC_NULL);CHKERRQ(ierr);
       mg = (PC_MG**)pc->data;
     }
-    mgctype = mg[0]->cycles;
+    mgctype = (PCMGCycleType) mg[0]->cycles;
     ierr = PetscOptionsEnum("-pc_mg_cycle_type","V cycle or for W-cycle","PCMGSetCycleType",PCMGCycleTypes,(PetscEnum)mgctype,(PetscEnum*)&mgctype,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCMGSetCycleType(pc,mgctype);CHKERRQ(ierr);
