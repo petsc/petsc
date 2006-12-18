@@ -241,7 +241,7 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
   PetscInt       m,levels = 1,cycles;
   PetscTruth     flg;
   PC_MG          **mg = (PC_MG**)pc->data;
-  PCMGType       mgtype;
+  PCMGType       mgtype = PC_MG_ADDITIVE;
   PCMGCycleType  mgctype;
 
   PetscFunctionBegin;
