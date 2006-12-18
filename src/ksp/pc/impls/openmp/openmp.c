@@ -48,9 +48,12 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat *inmat)
 {
   PetscMPIInt    rank,size;
-  PetscInt       *rowners;
+  PetscInt       *rowners,*dlens,*olens,i,rstart,rend;
   PetscErrorCode ierr;
   Mat            mat;
+  Mat_SeqAIJ     *gmata = (Mat_SeqAIJ*) gmat->data;
+  PetscMPIInt    tag;
+  MPI_Status     status;
 
   PetscFunctionBegin;
   CHKMEMQ;
@@ -60,12 +63,26 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,PETSC_INT,&dlens,m,PETSC_INT,&olens);CHKERRQ(ierr);
   ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
+  rowners[0] = 0;
+  for (i=2; i<=size; i++) {
+    rowners[i] += rowners[i-1];
+  }
+  rstart = rowners[rank]; 
+  rend   = rowners[rank+1]; 
+  ierr   = PetscObjectGetNewTag((PetscObject)mat,&tag);CHKERRQ(ierr);
   if (!rank) {
+    for (i=0; i<m; i++) dlens[i] = gmata->ilen[i];
+    for (i=1; i<size; i++) {
+      ierr = MPI_Send(gmata->ilen + rowners[i+1],rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+    }
   } else {
+    ierr = MPI_Recv(dlens,m,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
   }
   ierr = MatSeqAIJSetPreallocation(mat,0,0);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   CHKMEMQ;
@@ -79,7 +96,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
 {
   PC_OpenMP      *red = (PC_OpenMP*)ctx;
   PetscErrorCode ierr;
-  PetscInt       m,*rowners; /* local size of vectors and matrices */
+  PetscInt       m;
 
   PetscFunctionBegin;
   /* setup vector communication */
