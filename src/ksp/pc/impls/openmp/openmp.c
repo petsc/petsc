@@ -15,6 +15,29 @@ typedef struct {
 
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCView_OpenMP_OpenMP"
+/*
+    Would like to have this simply call PCView() on the inner PC. The problem is
+  that the outter comm does not live on the inside so cannot do this. Instead 
+  handle the special case when the viewer is stdout, construct a new one just
+  for this call.
+*/
+
+static PetscErrorCode PCView_OpenMP_MP(MPI_Comm comm,void *ctx)
+{
+  PC_OpenMP      *red = (PC_OpenMP*)ctx;
+  PetscErrorCode ierr;
+  PetscViewer    viewer;
+
+  PetscFunctionBegin;
+  ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);         /* this is bogus in general */
+  ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCView_OpenMP"
 static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 {
@@ -30,6 +53,9 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Size of solver nodes %d\n",size);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Parallel sub-solver given next\n",size);CHKERRQ(ierr);
+    /* should only make the next call if the viewer is associated with stdout */
+    ierr = PetscOpenMPRun(red->comm,PCView_OpenMP_MP,red);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -43,27 +69,35 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 #define __FUNCT__ "MatDistribute_MPIAIJ"
 /*
     Distributes a SeqAIJ matrix across a set of processes. Code stolen from
-    MatLoad_MPIAIJ(). Horrible lack of reuse.
+    MatLoad_MPIAIJ(). Horrible lack of reuse. Should be a routine for each matrix type.
+
+    Only for square matrices
 */
 static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat *inmat)
 {
   PetscMPIInt    rank,size;
-  PetscInt       *rowners,*dlens,*olens,i,rstart,rend;
+  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row;
   PetscErrorCode ierr;
   Mat            mat;
-  Mat_SeqAIJ     *gmata = (Mat_SeqAIJ*) gmat->data;
+  Mat_SeqAIJ     *gmata;
   PetscMPIInt    tag;
   MPI_Status     status;
+  PetscTruth     aij;
+  PetscScalar    *gmataa;
 
   PetscFunctionBegin;
   CHKMEMQ;
+  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (!rank) {
+    ierr = PetscTypeCompare((PetscObject)gmat,MATSEQAIJ,&aij);CHKERRQ(ierr);
+    if (!aij) SETERRQ1(PETSC_ERR_SUP,"Currently no support for input matrix of type %s\n",gmat->type_name);
+  }
   ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr = PetscMalloc((size+1)*sizeof(PetscInt),&rowners);CHKERRQ(ierr);
-  ierr = PetscMalloc2(m,PETSC_INT,&dlens,m,PETSC_INT,&olens);CHKERRQ(ierr);
+  ierr = PetscMalloc2(m,PetscInt,&dlens,m,PetscInt,&olens);CHKERRQ(ierr);
   ierr = MPI_Allgather(&m,1,MPIU_INT,rowners+1,1,MPIU_INT,comm);CHKERRQ(ierr);
   rowners[0] = 0;
   for (i=2; i<=size; i++) {
@@ -73,16 +107,76 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
   rend   = rowners[rank+1]; 
   ierr   = PetscObjectGetNewTag((PetscObject)mat,&tag);CHKERRQ(ierr);
   if (!rank) {
+    gmata = (Mat_SeqAIJ*) gmat->data;
+    /* send row lengths to all processors */
     for (i=0; i<m; i++) dlens[i] = gmata->ilen[i];
     for (i=1; i<size; i++) {
-      ierr = MPI_Send(gmata->ilen + rowners[i+1],rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(gmata->ilen + rowners[i],rowners[i+1]-rowners[i],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
     }
+    /* determine number diagonal and off-diagonal counts */
+    ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+    jj = 0;
+    for (i=0; i<m; i++) {
+      for (j=0; j<dlens[i]; j++) {
+        if (gmata->j[jj] < rstart || gmata->j[jj] >= rend) olens[i]++;
+        jj++;
+      }
+    }
+    /* send column indices to other processes */
+    for (i=1; i<size; i++) {
+      nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+      ierr = MPI_Send(&nz,1,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+      ierr = MPI_Send(gmata->j + gmata->i[rowners[i]],gmata->i[rowners[i+1]]-gmata->i[rowners[i]],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+    }
+    /* send numerical values to other processes */
+    for (i=1; i<size; i++) {
+      nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+      ierr = MPI_Send(gmata->a + gmata->i[rowners[i]],gmata->i[rowners[i+1]]-gmata->i[rowners[i]],MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+    }
+    gmataa = gmata->a;
+    gmataj = gmata->j;
+
   } else {
+    /* receive row lengths */
     ierr = MPI_Recv(dlens,m,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    /* receive column indices */
+    ierr = MPI_Recv(&nz,1,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    ierr = PetscMalloc2(nz,PetscScalar,&gmataa,nz,PetscInt,&gmataj);CHKERRQ(ierr);
+    ierr = MPI_Recv(gmataj,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
+    /* determine number diagonal and off-diagonal counts */
+    ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+    jj = 0;
+    for (i=0; i<m; i++) {
+      for (j=0; j<dlens[i]; j++) {
+        if (gmataj[jj] < rstart || gmataj[jj] >= rend) olens[i]++;
+        jj++;
+      }
+    }
+    /* receive numerical values */
+  PetscMemzero(gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
   }
-  ierr = MatSeqAIJSetPreallocation(mat,0,0);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(mat,0,0,0,0);CHKERRQ(ierr);
+  /* set preallocation */
+  for (i=0; i<m; i++) {
+    dlens[i] -= olens[i];
+  }
+  ierr = MatSeqAIJSetPreallocation(mat,0,dlens);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(mat,0,dlens,0,olens);CHKERRQ(ierr);
+
+  for (i=0; i<m; i++) {
+    dlens[i] += olens[i];
+  }
+  cnt  = 0;
+  for (i=0; i<m; i++) {
+    row  = rstart + i;
+    ierr = MatSetValues(mat,1,&row,dlens[i],gmataj+cnt,gmataa+cnt,INSERT_VALUES);CHKERRQ(ierr);
+    cnt += dlens[i];
+  }
+  if (rank) {
+    ierr = PetscFree2(gmataa,gmataj);CHKERRQ(ierr);
+  }
   ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
+  ierr = PetscFree(rowners);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   CHKMEMQ;
