@@ -1223,8 +1223,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,snes);CHKERRQ(ierr);
   }
-
-  if (snes->ops->setup) {ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);}
+  
+  if (!snes->type_name) {
+    ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
+  }
+  if (snes->ops->setup) {
+    ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
+  }
   snes->setupcalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
