@@ -22,6 +22,7 @@ class Configure(config.package.Package):
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
                              ['libmpich.a','libnsl.a','libsocket.a','librt.a','libnsl.a','libsocket.a'],
+                             ['fmpich2.lib','mpich2.lib'],
                              ['mpich2.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
                              ['mpich.lib']]
