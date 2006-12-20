@@ -6,11 +6,13 @@
 #include "include/private/tsimpl.h"                /*I   "petscts.h"   I*/
 
 typedef struct {
-  Vec  update;      /* work vector where new solution is formed */
-  Vec  func;        /* work vector where F(t[i],u[i]) is stored */
-  Vec  rhs;         /* work vector for RHS; vec_sol/dt */
-  TS   ts;          /* used by ShellMult_private() */
-  PetscScalar mdt;  /* 1/dt, used by ShellMult_private() */
+  Vec  update;         /* work vector where new solution is formed */
+  Vec  func;           /* work vector where F(t[i],u[i]) is stored */
+  Vec  rhsfunc, rhsfunc_old; /* work vectors to hold rhs function provided by user */
+  Vec  rhs;            /* work vector for RHS; vec_sol/dt */
+  TS   ts;             /* used by ShellMult_private() */
+  PetscScalar mdt;     /* 1/dt, used by ShellMult_private() */
+  PetscReal rhsfunc_time,rhsfunc_old_time; /* time at which rhsfunc holds the value */
 } TS_CN;
 
 /*------------------------------------------------------------------------------*/
@@ -252,6 +254,8 @@ static PetscErrorCode TSDestroy_CN(TS ts)
   PetscFunctionBegin;
   if (cn->update) {ierr = VecDestroy(cn->update);CHKERRQ(ierr);}
   if (cn->func) {ierr = VecDestroy(cn->func);CHKERRQ(ierr);}
+  if (cn->rhsfunc) {ierr = VecDestroy(cn->rhsfunc);CHKERRQ(ierr);}
+  if (cn->rhsfunc_old) {ierr = VecDestroy(cn->rhsfunc_old);CHKERRQ(ierr);}
   if (cn->rhs) {ierr = VecDestroy(cn->rhs);CHKERRQ(ierr);}
   ierr = PetscFree(cn);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -266,31 +270,45 @@ static PetscErrorCode TSDestroy_CN(TS ts)
 PetscErrorCode TSCnFunction(SNES snes,Vec x,Vec y,void *ctx)
 {
   TS             ts = (TS) ctx;
-  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1,*Funp;
+  PetscScalar    mdt = 1.0/ts->time_step,*unp1,*un,*Funp1,*Funp,*yarray;
   PetscErrorCode ierr;
   PetscInt       i,n;
-  Vec            y0;
+  TS_CN          *cn = (TS_CN*)ts->data;
 
   PetscFunctionBegin;
   /* apply user provided function */
-  ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr); /* y = F(U^{n+1}) */
-  ierr = VecDuplicate(y,&y0);CHKERRQ(ierr);
-  ierr = TSComputeRHSFunction(ts,ts->ptime-ts->time_step,ts->vec_sol,y0);CHKERRQ(ierr); /* y = F(U^{n}) */
-  
-  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr); /* U^{n} */
-  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);         /* U^{n+1} */
-  ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);       
-  ierr = VecGetArray(y0,&Funp);CHKERRQ(ierr);  
-  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
+  if (cn->rhsfunc_time == (ts->ptime - ts->time_step)){
+    /* printf("   copy rhsfunc to rhsfunc_old, then eval rhsfunc\n"); */
+    ierr = VecCopy(cn->rhsfunc,cn->rhsfunc_old);CHKERRQ(ierr);
+    cn->rhsfunc_old_time = cn->rhsfunc_time;
+    ierr = TSComputeRHSFunction(ts,ts->ptime,x,cn->rhsfunc);CHKERRQ(ierr); 
+    cn->rhsfunc_time = ts->ptime;
+  } else if (cn->rhsfunc_time != ts->ptime && cn->rhsfunc_old_time != ts->ptime-ts->time_step){
+    /* printf("   eval both rhsfunc_old and rhsfunc\n"); */
+    ierr = TSComputeRHSFunction(ts,ts->ptime-ts->time_step,ts->vec_sol,cn->rhsfunc_old);CHKERRQ(ierr); /* rhsfunc_old=F(U^{n}) */
+    cn->rhsfunc_old_time = ts->ptime - ts->time_step;
+    ierr = TSComputeRHSFunction(ts,ts->ptime,x,cn->rhsfunc);CHKERRQ(ierr); /* rhsfunc = F(U^{n+1}) */
+    cn->rhsfunc_time = ts->ptime;
+  } else if (cn->rhsfunc_old_time == ts->ptime-ts->time_step){ 
+    /* printf("   eval rhsfun at %g\n",ts->ptime); */
+    ierr = TSComputeRHSFunction(ts,ts->ptime,x,cn->rhsfunc);CHKERRQ(ierr);
+    cn->rhsfunc_time = ts->ptime;
+  } 
 
+  ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr); /* U^{n} */
+  ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);         /* U^{n+1} */  
+  ierr = VecGetArray(cn->rhsfunc,&Funp1);CHKERRQ(ierr);
+  ierr = VecGetArray(cn->rhsfunc_old,&Funp);CHKERRQ(ierr);  
+  ierr = VecGetArray(y,&yarray);CHKERRQ(ierr);  
+  ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    Funp1[i] = mdt*(unp1[i] - un[i]) - 0.5*(Funp1[i] + Funp[i]);
+    yarray[i] = mdt*(unp1[i] - un[i]) - 0.5*(Funp1[i] + Funp[i]);
   }
   ierr = VecRestoreArray(ts->vec_sol,&un);CHKERRQ(ierr);
   ierr = VecRestoreArray(x,&unp1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y,&Funp1);CHKERRQ(ierr);
-  ierr = VecRestoreArray(y0,&Funp);CHKERRQ(ierr);
-  ierr = VecDestroy(y0);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cn->rhsfunc,&Funp1);CHKERRQ(ierr);
+  ierr = VecRestoreArray(cn->rhsfunc_old,&Funp);CHKERRQ(ierr);
+  ierr = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -395,8 +413,12 @@ static PetscErrorCode TSSetUp_CN_Nonlinear(TS ts)
   PetscFunctionBegin;
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->func);CHKERRQ(ierr);  
+  ierr = VecDuplicate(ts->vec_sol,&cn->rhsfunc);CHKERRQ(ierr); 
+  ierr = VecDuplicate(ts->vec_sol,&cn->rhsfunc_old);CHKERRQ(ierr); 
   ierr = SNESSetFunction(ts->snes,cn->func,TSCnFunction,ts);CHKERRQ(ierr);
   ierr = SNESSetJacobian(ts->snes,ts->A,ts->B,TSCnJacobian,ts);CHKERRQ(ierr);
+  cn->rhsfunc_time     = -100.0; /* cn->rhsfunc is not evaluated yet */
+  cn->rhsfunc_old_time = -100.0;
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/

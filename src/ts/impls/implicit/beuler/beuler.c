@@ -198,7 +198,7 @@ static PetscErrorCode TSDestroy_BEuler(TS ts)
 
 /* 
     This defines the nonlinear equation that is to be solved with SNES
-              U^{n+1} - dt*F(U^{n+1}) - U^{n}
+      1/dt* (U^{n+1} - U^{n}) - F(U^{n+1}) 
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSBEulerFunction"
@@ -212,12 +212,10 @@ PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
   PetscFunctionBegin;
   /* apply user-provided function */
   ierr = TSComputeRHSFunction(ts,ts->ptime,x,y);CHKERRQ(ierr);
-  /* (u^{n+1} - U^{n})/dt - F(u^{n+1}) */
   ierr = VecGetArray(ts->vec_sol,&un);CHKERRQ(ierr);
   ierr = VecGetArray(x,&unp1);CHKERRQ(ierr);
   ierr = VecGetArray(y,&Funp1);CHKERRQ(ierr);
   ierr = VecGetLocalSize(x,&n);CHKERRQ(ierr);
-
   for (i=0; i<n; i++) {
     Funp1[i] = mdt*(unp1[i] - un[i]) - Funp1[i];
   }
