@@ -227,10 +227,10 @@ PetscErrorCode TSBEulerFunction(SNES snes,Vec x,Vec y,void *ctx)
 
 /*
    This constructs the Jacobian needed for SNES 
-     J = I/dt - J_{F}   where J_{F} is the given Jacobian of F.
-   x  - input vector
-   AA - Jacobian matrix 
-   BB - preconditioner matrix, usually the same as AA
+     J = I/dt - J_{F}   where J_{F} is the given Jacobian of F at t_{n+1}.
+     x  - input vector
+     AA - Jacobian matrix 
+     BB - preconditioner matrix, usually the same as AA
 */
 #undef __FUNCT__  
 #define __FUNCT__ "TSBEulerJacobian"
@@ -248,7 +248,6 @@ PetscErrorCode TSBEulerJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *st
      obtained from -snes_mf_operator and there is computed directly from the 
      FormFunction() SNES is given and therefor does not need to be shifted/scaled
      BUT maybe it could be MATMFFD and does require shift in some other case??? */
-  /* ierr = TSScaleShiftMatrices(ts,*AA,*BB,*str);CHKERRQ(ierr); need further check! */
   ierr = TSSetKSPOperators_BEuler(ts);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
