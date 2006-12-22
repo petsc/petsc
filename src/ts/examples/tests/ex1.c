@@ -62,8 +62,6 @@ int main(int argc,char **argv)
   PetscDraw      draw;
   PetscViewer    viewer;
   char           tsinfo[120];
-  TSType         type;
-  PetscTruth     isBEULER;
  
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);

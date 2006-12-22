@@ -441,8 +441,6 @@ static PetscErrorCode TSSetFromOptions_CN_Linear(TS ts)
 #define __FUNCT__ "TSSetFromOptions_CN_Nonlinear"
 static PetscErrorCode TSSetFromOptions_CN_Nonlinear(TS ts)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
