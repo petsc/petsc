@@ -287,7 +287,7 @@ external packages]<br>
       </p>
       <ul>
         <li>Specify compilers using the options <span
- style="color: rgb(255, 102, 102);">--with-cc --with-fc --with-cxx</span>
+ style="color: rgb(255, 0, 0);">--with-cc --with-fc --with-cxx</span>
 for c, c++, fortran compilers</li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">--with-cc=gcc
@@ -313,10 +313,11 @@ automatically look for available MPI or regular compilers in users PATH</li>
         <li>Its best to use <a href="MPICompilers">MPI compilers</a>
 as this will avoid the situation where MPI is compiled with one set of
 compilers [like gcc/g77] and user specified incompatible
-compilers&nbsp; to PETSc [like icc/ifort]</li>
+compilers&nbsp; to PETSc [perhaps icc/ifort]</li>
         <li>Configure defaults to building PETSc in debug mode. One can
-switch to using optimzed mode with the option --with-debugging
-[toggle]. Additionally one can specify more suitable optimization flags
+switch to using optimzed mode with the toggle option --with-debugging
+[defaults to debug enabled]. Additionally one can specify more suitable
+optimization flags
 with the options COPTFLAGS, FOPTFLAGS, CXXOPTFLAGS.</li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);">./config/configure.py
@@ -435,7 +436,7 @@ mixing g77 and ifort compiled code].<br>
             </span></span></li>
         </ul>
         <li><span style="color: rgb(255, 0, 0);"><span
- style="color: rgb(51, 0, 51);">If one had to download a comatible
+ style="color: rgb(51, 0, 51);">If one had to download a compatible
 external package manually, then the URL for this package is listed in
 configure source for this package. For example, check <span
  style="color: rgb(153, 51, 153);">python/PETSc/packages/SuperLU.py</span>
