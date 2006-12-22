@@ -299,7 +299,7 @@ static char **PetscGlobalArgs = 0;
 
    Concepts: command line arguments
    
-.seealso: PetscFinalize(), PetscInitializeFortran()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
@@ -310,6 +310,75 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
   }
   *argc = PetscGlobalArgc;
   *args = PetscGlobalArgs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetArguments"
+/*@C
+   PetscGetArguments - Allows you to access the  command line arguments anywhere
+     after PetscInitialize() is called but before PetscFinalize().
+
+   Not Collective
+
+   Output Parameters:
+.  args - the command line arguments
+
+   Level: intermediate
+
+   Notes:
+      This does NOT start with the program name and IS null terminated (final arg is void)
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
+{
+  PetscInt       i,argc = PetscGlobalArgc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!PetscGlobalArgs) {
+    SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
+  }
+  ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
+  for (i=0; i<argc-1; i++) {
+    ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
+  }
+  (*args)[argc-1] = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFreeArguments"
+/*@C
+   PetscFreeArguments - Frees the memory obtained with PetscGetArguments()
+
+   Not Collective
+
+   Output Parameters:
+.  args - the command line arguments 
+
+   Level: intermediate
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
+{
+  PetscInt       i = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (args[i]) {
+    ierr = PetscFree(args[i]);CHKERRQ(ierr);
+    i++;
+  }
+  ierr = PetscFree(args);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -513,9 +582,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_node_size",&nodesize,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscOpenMPInitialize(nodesize);CHKERRQ(ierr); 
+    ierr = PetscOpenMPSpawn(nodesize);CHKERRQ(ierr); 
+  } else {
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_node_size",&nodesize,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscOpenMPInitialize(nodesize);CHKERRQ(ierr); 
+    }
   }
 
   PetscFunctionReturn(ierr);

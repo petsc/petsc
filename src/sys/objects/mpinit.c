@@ -10,6 +10,58 @@ static PetscTruth used_PetscOpenMP     = PETSC_FALSE;
 extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscOpenMPSpawn"
+/*@C
+   PetscOpenMPSpawn - Initialize additional processes to be used as "worker" processes.
+
+   Not Collective (could make collective on MPI_COMM_WORLD, generate one huge comm and then split it up)
+
+   Input Parameter:
+.  nodesize - size of each compute node that will share processors
+
+   Level: developer
+
+   Concepts: OpenMP
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPInitialize()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
+{
+  PetscErrorCode ierr;
+  PetscMPIInt    size;
+  MPI_Comm       parent,children;
+							   
+  PetscFunctionBegin;
+  ierr = MPI_Comm_get_parent(&parent);CHKERRQ(ierr);
+  if (parent == MPI_COMM_NULL) {
+    char programname[PETSC_MAX_PATH_LEN];
+    char **argv;
+
+    ierr = PetscGetProgramName(programname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
+    ierr = PetscGetArguments(&argv);CHKERRQ(ierr);
+    ierr = MPI_Comm_spawn(programname,argv,nodesize-1,MPI_INFO_NULL,0,PETSC_COMM_SELF,&children,MPI_ERRCODES_IGNORE);CHKERRQ(ierr);
+    ierr = PetscFreeArguments(argv);CHKERRQ(ierr);
+    ierr = MPI_Intercomm_merge(children,0,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
+
+    ierr = PetscFree(argv[1]);CHKERRQ(ierr);
+    ierr = PetscFree(argv[0]);CHKERRQ(ierr);
+    ierr = PetscFree(argv);CHKERRQ(ierr);
+
+    ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
+    ierr = PetscInfo2(0,"PETSc OpenMP successfully spawned: number of nodes = %d node size = %d\n",size,nodesize);CHKERRQ(ierr);
+    saved_PETSC_COMM_WORLD = PETSC_COMM_WORLD;
+    used_PetscOpenMP       = PETSC_TRUE;
+  } else { /* worker nodes that get spawned */
+    ierr             = MPI_Intercomm_merge(parent,1,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
+    ierr             = PetscOpenMPHandle(PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr);
+    used_PetscOpenMP = PETSC_FALSE; /* so that PetscOpenMPFinalize() will not attempt a broadcast from this process */
+    ierr             = PetscEnd();  /* cannot continue into user code */
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscOpenMPInitialize"
 /*@C
    PetscOpenMPInitialize - Initializes the PETSc and MPI to work with OpenMP 
@@ -187,7 +239,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
   ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
   ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);
   objects[numberobjects++] = *ptr;
-  PetscFunctionReturn(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

@@ -153,7 +153,7 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       }
     }
     /* receive numerical values */
-  PetscMemzero(gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
   }
   /* set preallocation */

@@ -473,7 +473,7 @@ runex10_21: #test icc with shift
 	   else echo "Possible problem with ex10_21shiftpd on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
 runex10_22:
-	-@${MPIRUN} -np 2 ./ex10 -options_left no -openmp_node_size 2 -pc_type openmp   -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
+	-@${MPIRUN} -np 2 ./ex10 -options_left no -openmp_node_size 2 -pc_type openmp  -ksp_type preonly -openmp_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
 	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
 	   else echo "Possible problem with ex10_22, diffs above"; fi; \
 	   ${RM} -f ex10_22.tmp
