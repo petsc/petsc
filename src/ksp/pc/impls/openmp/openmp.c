@@ -207,6 +207,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   /* create the solver */
   ierr = PCCreate(comm,&red->pc);CHKERRQ(ierr);
   ierr = PCSetOptionsPrefix(red->pc,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
+  ierr = PCSetType(red->pc,PCKSP);CHKERRQ(ierr);
   ierr = PCSetOperators(red->pc,red->mat,red->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -306,9 +307,15 @@ static PetscErrorCode PCSetFromOptions_OpenMP(PC pc)
 /*MC
      PCOPENMP - Runs a preconditioner for a single process matrix across several MPI processes
 
-     Options for the openmp preconditioners can be set with -openmp_pc_xxx
+$     This will usually be run with -pc_type openmp -ksp_type gmres -openmp_pc_type ksp then
+$     solver options are set with -openmp_ksp_ksp_... and -openmp_ksp_pc_... for example
+$     -openmp_ksp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_ksp_monitor
+
+       Always run with -ksp_view (or -snes_view) to see what solver is actually being used.
 
    Level: intermediate
+
+   See PetscOpenMPMerge() and PetscOpenMPSpawn() for two ways to start up MPI for use with this preconditioner
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types)
 

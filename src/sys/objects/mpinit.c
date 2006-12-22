@@ -9,21 +9,51 @@ static PetscTruth used_PetscOpenMP     = PETSC_FALSE;
 
 extern PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm);
 
+#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOpenMPSpawn"
 /*@C
-   PetscOpenMPSpawn - Initialize additional processes to be used as "worker" processes.
+   PetscOpenMPSpawn - Initialize additional processes to be used as "worker" processes. This is not generally 
+     called by users. One should use -openmp_spawn_size <n> to indicate that you wish to have n-1 new MPI 
+     processes spawned for each current process.
 
    Not Collective (could make collective on MPI_COMM_WORLD, generate one huge comm and then split it up)
 
    Input Parameter:
 .  nodesize - size of each compute node that will share processors
 
+   Options Database:
+.   -openmp_spawn_size nodesize
+
+   Notes: This is only supported on systems with an MPI 2 implementation that includes the MPI_Comm_Spawn() routine.
+
+$    Comparison of two approaches for OpenMP usage (MPI started with N processes)
+$
+$    -openmp_spawn_size <n> requires MPI 2, results in n*N total processes with N directly used by application code
+$                                           and n-1 worker processes (used by PETSc) for each application node.
+$                           You MUST launch MPI so that only ONE MPI process is created for each hardware node.
+$
+$    -openmp_merge_size <n> results in N total processes, N/n used by the application code and the rest worker processes
+$                            (used by PETSc)
+$                           You MUST launch MPI so that n MPI processes are created for each hardware node.
+$
+$    petscmpirun -np 2 ./ex1 -openmp_spawn_size 3 gives 2 application nodes (and 4 PETSc worker nodes)
+$    petscmpirun -np 6 ./ex1 -openmp_merge_size 3 gives the SAME 2 application nodes and 4 PETSc worker nodes
+$       This is what would use if each of the computers hardware nodes had 3 CPUs.
+$
+$      These are intended to be used in conjunction with USER OpenMP code. The user will have 1 process per
+$   computer (hardware) node (where the computer node has p cpus), the user's code will use threads to fully
+$   utilize all the CPUs on the node. The PETSc code will have p processes to fully use the compute node for 
+$   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs 
+$   are always working on p task, never more than p.
+$
+$    See PCOPENMP for a PETSc preconditioner that can use this functionality
+$
    Level: developer
 
    Concepts: OpenMP
    
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPInitialize()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize(), PetscOpenMPMerge()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
@@ -44,10 +74,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
     ierr = PetscFreeArguments(argv);CHKERRQ(ierr);
     ierr = MPI_Intercomm_merge(children,0,&PETSC_COMM_LOCAL_WORLD);CHKERRQ(ierr); 
 
-    ierr = PetscFree(argv[1]);CHKERRQ(ierr);
-    ierr = PetscFree(argv[0]);CHKERRQ(ierr);
-    ierr = PetscFree(argv);CHKERRQ(ierr);
-
     ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
     ierr = PetscInfo2(0,"PETSc OpenMP successfully spawned: number of nodes = %d node size = %d\n",size,nodesize);CHKERRQ(ierr);
     saved_PETSC_COMM_WORLD = PETSC_COMM_WORLD;
@@ -60,28 +86,54 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
   }
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscOpenMPInitialize"
+#define __FUNCT__ "PetscOpenMPMerge"
 /*@C
-   PetscOpenMPInitialize - Initializes the PETSc and MPI to work with OpenMP 
-      PetscMPInitialize() calls MPI_Init() if that has yet to be called,
-      so this routine should always be called near the beginning of 
-      your program -- usually the very first line! 
+   PetscOpenMPMerge - Initializes the PETSc and MPI to work with OpenMP. This is not usually called
+      by the user. One should use -openmp_merge_size <n> to indicate the node size of merged communicator
+      to be.
 
    Collective on MPI_COMM_WORLD or PETSC_COMM_WORLD if it has been set
 
    Input Parameter:
 .  nodesize - size of each compute node that will share processors
 
+   Options Database:
+.   -openmp_merge_size
+
    Level: developer
+
+$    Comparison of two approaches for OpenMP usage (MPI started with N processes)
+$
+$    -openmp_spawn_size <n> requires MPI 2, results in n*N total processes with N directly used by application code
+$                                           and n-1 worker processes (used by PETSc) for each application node.
+$                           You MUST launch MPI so that only ONE MPI process is created for each hardware node.
+$
+$    -openmp_merge_size <n> results in N total processes, N/n used by the application code and the rest worker processes
+$                            (used by PETSc)
+$                           You MUST launch MPI so that n MPI processes are created for each hardware node.
+$
+$    petscmpirun -np 2 ./ex1 -openmp_spawn_size 3 gives 2 application nodes (and 4 PETSc worker nodes)
+$    petscmpirun -np 6 ./ex1 -openmp_merge_size 3 gives the SAME 2 application nodes and 4 PETSc worker nodes
+$       This is what would use if each of the computers hardware nodes had 3 CPUs.
+$
+$      These are intended to be used in conjunction with USER OpenMP code. The user will have 1 process per
+$   computer (hardware) node (where the computer node has p cpus), the user's code will use threads to fully
+$   utilize all the CPUs on the node. The PETSc code will have p processes to fully use the compute node for 
+$   PETSc calculations. The user THREADS and PETSc PROCESSES will NEVER run at the same time so the p CPUs 
+$   are always working on p task, never more than p.
+$
+$    See PCOPENMP for a PETSc preconditioner that can use this functionality
+$
 
    Concepts: OpenMP
    
 .seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPFinalize(), PetscInitialize()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt nodesize)
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,*ranks,i;
@@ -137,7 +189,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt nodesize)
 
    Level: developer
            
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPInitialize()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPMerge()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
@@ -164,7 +216,7 @@ static void     *objects[100];
 
    Level: developer
            
-.seealso: PetscOpenMPInitialize()
+.seealso: PetscOpenMPMerge()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
@@ -222,7 +274,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
 
    Level: developer
            
-.seealso: PetscOpenMPInitialize()
+.seealso: PetscOpenMPMerge()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
@@ -251,7 +303,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
 
    Level: developer
            
-.seealso: PetscOpenMPInitialize(), PetscOpenMPNew()
+.seealso: PetscOpenMPMerge(), PetscOpenMPNew()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
@@ -284,7 +336,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm comm,void *ptr)
 
    Level: developer
            
-.seealso: PetscOpenMPInitialize(), PetscOpenMPNew(), PetscOpenMPFree()
+.seealso: PetscOpenMPMerge(), PetscOpenMPNew(), PetscOpenMPFree()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm comm,PetscErrorCode (*f)(MPI_Comm,void *),void *ptr)

@@ -1114,7 +1114,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEnd(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *); 
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPInitialize(PetscMPIInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);

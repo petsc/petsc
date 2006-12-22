@@ -584,11 +584,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
+#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
     ierr = PetscOpenMPSpawn(nodesize);CHKERRQ(ierr); 
+#else
+    SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_node_size instead");
+#endif
   } else {
-    ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_node_size",&nodesize,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOpenMPInitialize(nodesize);CHKERRQ(ierr); 
+      ierr = PetscOpenMPMerge(nodesize);CHKERRQ(ierr); 
     }
   }
 
