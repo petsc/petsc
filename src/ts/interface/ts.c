@@ -336,6 +336,74 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,P
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "TSSetMatrices"
+/*@C
+   TSSetMatrices - Sets the functions to compute the matrices Alhs and Arhs, 
+   where Alhs(t) U_t = Arhs(t) U.
+
+   Collective on TS
+
+   Input Parameters:
++  ts   - the TS context obtained from TSCreate()
+.  Arhs - matrix
+.  frhs - the matrix evaluation routine for Arhs; use PETSC_NULL (PETSC_NULL_FUNCTION in fortran)
+          if Arhs is not a function of t.
+.  Alhs - matrix or PETSC_NULL if Alhs is an indentity matrix.
+.  flhs - the matrix evaluation routine for Alhs; use PETSC_NULL (PETSC_NULL_FUNCTION in fortran)
+          if Alhs is not a function of t.
+.  flag - flag indicating information about the matrix structure of Arhs and Alhs. 
+          The available options are
+            SAME_NONZERO_PATTERN - Alhs has the same nonzero structure as Arhs
+            DIFFERENT_NONZERO_PATTERN - Alhs has different nonzero structure as Arhs
+-  ctx  - [optional] user-defined context for private data for the 
+          matrix evaluation routine (may be PETSC_NULL)
+
+   Calling sequence of func:
+$     func(TS ts,PetscReal t,Mat *A,Mat *B,PetscInt *flag,void *ctx);
+
++  t - current timestep
+.  A - matrix A, where U_t = A(t) U
+.  B - preconditioner matrix, usually the same as A
+.  flag - flag indicating information about the preconditioner matrix
+          structure (same as flag in KSPSetOperators())
+-  ctx - [optional] user-defined context for matrix evaluation routine
+
+   Notes:  
+   The routine func() takes Mat* as the matrix arguments rather than Mat.  
+   This allows the matrix evaluation routine to replace Arhs or Alhs with a 
+   completely new new matrix structure (not just different matrix elements)
+   when appropriate, for instance, if the nonzero structure is changing
+   throughout the global iterations.
+
+   Important: 
+   The user MUST call either this routine or TSSetRHSFunction().
+
+   Level: beginner
+
+.keywords: TS, timestep, set, matrix
+
+.seealso: TSSetRHSFunction()
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),Mat Alhs,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),MatStructure flag,void *ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  PetscValidHeaderSpecific(Arhs,MAT_COOKIE,2);
+  PetscCheckSameComm(ts,1,Arhs,2);
+  if (Alhs) PetscCheckSameComm(ts,1,Alhs,4);
+  if (ts->problem_type == TS_NONLINEAR) 
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for nonlinear problems; use TSSetRHSJacobian()");
+  
+  ts->ops->rhsmatrix = frhs;
+  ts->ops->lhsmatrix = flhs;
+  ts->jacP           = ctx;
+  ts->Arhs           = Arhs;
+  ts->Alhs           = Alhs;
+  ts->matflg         = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "TSSetRHSMatrix"
 /*@C
    TSSetRHSMatrix - Sets the function to compute the matrix A, where U_t = A(t) U.

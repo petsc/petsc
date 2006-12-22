@@ -130,7 +130,7 @@ runex1_beuler_4:
 runex1_beuler_5:
 	-@touch ex1_beuler.tmp;\
 	for np in ${NPROCS}; do \
-	   ${MPIRUN} -np $$np ./ex1 -ts_type beuler -linear_no_matrix -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
+	   ${MPIRUN} -np $$np ./ex1 -ts_type beuler -linear_no_matrix -pc_type none -monitor -nox -time 10 >> ex1_beuler.tmp 2>&1;   \
 	done; \
         if (${DIFF} output/ex1_beuler.out ex1_beuler.tmp) then true; \
         else echo "Possible problem with ex1_beuler_5, diffs above"; fi; \
@@ -155,7 +155,7 @@ runex1_cn_2:
 runex1_cn_3:
 	-@touch ex1_cn.tmp;\
 	for np in ${NPROCS}; do \
-	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -linear_no_matrix -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
+	  ${MPIRUN} -np $$np ./ex1 -ts_type crank-nicholson -linear_no_matrix -pc_type none -monitor -nox -time 10 >> ex1_cn.tmp 2>&1;   \
 	done; \
         if (${DIFF} output/ex1_cn.out ex1_cn.tmp) then true; \
         else echo "Possible problem with ex1_cn_3, diffs above"; fi; \
@@ -178,16 +178,16 @@ runex1_cn_5:
         ${RM} -f ex1_cn.tmp; 
 
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type euler  -linear_no_matrix
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type euler -nonlinear_no_jacobian 
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type euler -linear_constant_matrix  
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type euler -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type euler -nonlinear_jacobian 
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu 
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
-	-@${MPIRUN} -np 1 ./ex1f -testinfo -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler  -linear_no_matrix
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -nonlinear_no_jacobian 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -linear_constant_matrix  
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -linear_variable_matrix 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type euler -nonlinear_jacobian 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_no_matrix -pc_type none
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_no_jacobian -pc_type none
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_constant_matrix  -pc_type lu 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
+	-@${MPIRUN} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
 TESTEXAMPLES_C		  = ex1.PETSc runex1_euler runex1_euler_2 runex1_euler_3 runex1_euler_4 runex1_euler_5 \
                             runex1_beuler runex1_beuler_2 runex1_beuler_3 runex1_beuler_4 runex1_beuler_5 \
