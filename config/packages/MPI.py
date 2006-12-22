@@ -509,6 +509,8 @@ class Configure(config.package.Package):
     self.executeTest(self.FortranMPICheck)
     if self.libraries.check(self.dlib, "MPI_Alltoallw") and self.libraries.check(self.dlib, "MPI_Type_create_indexed_block"):
       self.addDefine('HAVE_MPI_ALLTOALLW',1)
+    if self.libraries.check(self.dlib, "MPI_Comm_spawn"):
+      self.addDefine('HAVE_MPI_COMM_SPAWN',1)
 
 if __name__ == '__main__':
   import config.framework
