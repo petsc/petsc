@@ -365,14 +365,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
 
   if (file) {
     ierr = PetscOptionsInsertFile(file);CHKERRQ(ierr);
-  } else {
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-skip_petscrc",&flag);CHKERRQ(ierr);
+  if (!flag) {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     if (pfile[0]) {
       ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
       ierr = PetscTestFile(pfile,'r',&flag);CHKERRQ(ierr);
       if (flag) {
 	ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
-        ierr = PetscInfo(0,"Loading ~/.petscrc\n");CHKERRQ(ierr);
+	ierr = PetscInfo(0,"Loading ~/.petscrc\n");CHKERRQ(ierr);
       }
     }
     ierr = PetscTestFile(".petscrc",'r',&flag);CHKERRQ(ierr);
@@ -380,7 +382,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
       ierr = PetscOptionsInsertFile(".petscrc");CHKERRQ(ierr);
       ierr = PetscInfo(0,"Loading local directory file .petscrc\n");CHKERRQ(ierr);
     }
-
   }
 
   /* insert environmental options */
