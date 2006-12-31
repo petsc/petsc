@@ -395,8 +395,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
    Input Parameters:
 +  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - [optional] PETSc database file, defaults to ~username/.petscrc
-          (use PETSC_NULL for default)
+.  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL to not check for
+          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 -  help - [optional] Help message to print, use PETSC_NULL for no message
 
    If you wish PETSc to run on a subcommunicator of MPI_COMM_WORLD, create that
@@ -449,8 +449,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--   file - [optional] PETSc database file name, defaults to 
-           ~username/.petscrc (use PETSC_NULL_CHARACTER for default)
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_CHARACTER_NULL to not check for
+          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
            
    Important Fortran Note:
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
