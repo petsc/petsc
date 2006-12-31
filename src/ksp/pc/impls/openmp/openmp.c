@@ -309,9 +309,13 @@ static PetscErrorCode PCSetFromOptions_OpenMP(PC pc)
 
 $     This will usually be run with -pc_type openmp -ksp_type gmres -openmp_pc_type ksp then
 $     solver options are set with -openmp_ksp_ksp_... and -openmp_ksp_pc_... for example
-$     -openmp_ksp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_ksp_monitor
+$     -openmp_ksp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_ksp_monitor or
+$     -openmp_ksp_pc_type hypre -openmp_ksp_pc_hypre_type boomeramg
 
        Always run with -ksp_view (or -snes_view) to see what solver is actually being used.
+
+       Currently the solver options INSIDE the OpenMP preconditioner can ONLY be set via the
+      options database.
 
    Level: intermediate
 

@@ -355,6 +355,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           pfile[PETSC_MAX_PATH_LEN];
+  PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -367,14 +368,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   } else {
     ierr = PetscGetHomeDirectory(pfile,PETSC_MAX_PATH_LEN-16);CHKERRQ(ierr);
     if (pfile[0]) {
-      PetscTruth flag;
       ierr = PetscStrcat(pfile,"/.petscrc");CHKERRQ(ierr);
       ierr = PetscTestFile(pfile,'r',&flag);CHKERRQ(ierr);
       if (flag) {
 	ierr = PetscOptionsInsertFile(pfile);CHKERRQ(ierr);
+        ierr = PetscInfo(0,"Loading ~/.petscrc\n");CHKERRQ(ierr);
       }
-    } else {
-      ierr = PetscInfo(0,"Unable to determine home directory; skipping loading ~/.petscrc\n");CHKERRQ(ierr);
+    }
+    ierr = PetscTestFile(".petscrc",'r',&flag);CHKERRQ(ierr);
+    if (flag) {
+      ierr = PetscOptionsInsertFile(".petscrc");CHKERRQ(ierr);
+      ierr = PetscInfo(0,"Loading local directory file .petscrc\n");CHKERRQ(ierr);
     }
 
   }
