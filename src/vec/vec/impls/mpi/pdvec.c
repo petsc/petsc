@@ -850,7 +850,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 #if defined(PETSC_USE_DEBUG)
         if (ix[i] >= xin->map.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.N);
 #endif
-        VecStashValue_Private(&xin->stash,row,y[i]);
+        ierr = VecStashValue_Private(&xin->stash,row,y[i]);CHKERRQ(ierr);
       }
     }
   } else {
@@ -862,7 +862,7 @@ PetscErrorCode VecSetValues_MPI(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
 #if defined(PETSC_USE_DEBUG)
         if (ix[i] > xin->map.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.N);
 #endif        
-        VecStashValue_Private(&xin->stash,row,y[i]);
+        ierr = VecStashValue_Private(&xin->stash,row,y[i]);CHKERRQ(ierr);
       }
     }
   }
@@ -903,7 +903,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
 #if defined(PETSC_USE_DEBUG)
         if (ix[i] >= xin->map.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map.N);
 #endif
-        VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
+        ierr = VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);CHKERRQ(ierr);
       }
       y += bs;
     }
@@ -918,7 +918,7 @@ PetscErrorCode VecSetValuesBlocked_MPI(Vec xin,PetscInt ni,const PetscInt ix[],c
 #if defined(PETSC_USE_DEBUG)
         if (ix[i] > xin->map.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D max %D",ix[i],xin->map.N);
 #endif
-        VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);
+        ierr = VecStashValuesBlocked_Private(&xin->bstash,ix[i],y);CHKERRQ(ierr);
       }
       y += bs;
     }
