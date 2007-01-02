@@ -52,6 +52,10 @@ PetscErrorCode VecSetOption_MPI(Vec v,VecOption op)
     v->stash.donotstash = PETSC_TRUE;
   } else if (op == VEC_TREAT_OFF_PROC_ENTRIES) {
     v->stash.donotstash = PETSC_FALSE;
+  } else if (op == VEC_IGNORE_NEGATIVE_INDICES) {
+    v->stash.ignorenegidx = PETSC_TRUE;
+  } else if (op == VEC_TREAT_NEGATIVE_INDICES) {
+    v->stash.ignorenegidx = PETSC_FALSE;
   }
   PetscFunctionReturn(0);
 }
@@ -633,6 +637,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
 
   /* New vector should inherit stashing property of parent */
   (*v)->stash.donotstash = win->stash.donotstash;
+  (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
   
   ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);

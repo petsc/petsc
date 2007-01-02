@@ -6,7 +6,7 @@ FPPFLAGS        =
 LOCDIR          = src/vec/vec/examples/tests/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 		  ex11.c ex12.c ex13.c ex14.c ex15.c ex16.c ex17.c ex18.c ex21.c ex22.c \
-		  ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c
+		  ex23.c ex24.c ex25.c ex28.c ex29.c ex31.c ex33.c ex34.c ex35.c ex36.c
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
@@ -159,6 +159,10 @@ ex34: ex34.o chkopts
 ex35: ex35.o chkopts
 	-${CLINKER} -o ex35 ex35.o  ${PETSC_VEC_LIB} 
 	${RM} -f ex35.o 
+
+ex36: ex36.o chkopts
+	-${CLINKER} -o ex36 ex36.o  ${PETSC_VEC_LIB} 
+	${RM} -f ex36.o 
 
 #--------------------------------------------------------------------------
 runex1:
@@ -333,10 +337,15 @@ runex34:
 	    echo "Possible problem with ex34_1:"; cat ex34_1.dif; fi; \
 	   ${RM} -f ex34_1.tmp ex34_1.dif
 runex35:
-	-@${MPIRUN} -np 1 ex35 > ex35_1.tmp 2>&1;\
+	-@${MPIRUN} -np 1 ./ex35 > ex35_1.tmp 2>&1;\
 	   if (${DIFF} output/ex35_1.out ex35_1.tmp) then true; \
 	   else echo "Possible problem with ex35_1, diffs above"; fi;\
 	   ${RM} -f ex35_1.tmp
+runex36:
+	-@${MPIRUN} -np 2 ./ex36 -set_option_negidx -set_values_negidx -get_values_negidx > ex36_1.tmp 2>&1;\
+	   if (${DIFF} output/ex36_1.out ex36_1.tmp) then true; \
+	   else echo "Possible problem with ex36_1, diffs above"; fi;\
+	   ${RM} -f ex36_1.tmp
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                               ex4.PETSc runex4 ex4.rm ex5.PETSc ex5.rm ex6.PETSc runex6 ex6.rm ex7.PETSc \
@@ -344,7 +353,7 @@ TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc 
                               ex11.rm ex12.PETSc runex12 ex12.rm ex13.PETSc runex13 ex13.rm ex14.PETSc runex14 \
                               ex14.rm ex15.PETSc runex15 ex15.rm ex16.PETSc runex16 ex16.rm ex17.PETSc runex17 \
                               ex17.rm ex21.PETSc runex21 runex21_2 ex21.rm ex25.PETSc runex25 ex25.rm ex29.PETSc \
-                              runex29 ex29.rm ex34.PETSc runex34 ex34.rm
+                              runex29 ex29.rm ex34.PETSc runex34 ex34.rm ex36 runex36 ex36.rm
 TESTEXAMPLES_C_X11	    = ex10.PETSc runex10 ex10.rm ex22.PETSc runex22 ex22.rm ex23.PETSc runex23 ex23.rm \
                               ex24.PETSc runex24 ex24.rm ex28.PETSc runex28 ex28.rm ex33.PETSc runex33 ex33.rm
 TESTEXAMPLES_FORTRAN	    = ex17f.PETSc runex17f ex17f.rm ex19f.PETSc ex19f.rm ex20f.PETSc ex20f.rm ex30f.PETSc \

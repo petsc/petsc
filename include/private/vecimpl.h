@@ -121,6 +121,7 @@ typedef struct {
   PetscInt      *nprocs;                /* tmp data used both during scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
   PetscTruth    donotstash;
+  PetscTruth    ignorenegidx;           /* ignore negative indices passed into VecSetValues/VetGetValues */
   InsertMode    insertmode;
   PetscInt      *bowners;
 } VecStash;
