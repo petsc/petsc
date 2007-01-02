@@ -855,10 +855,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
 
    Supported Options:
 +     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
-      entries destined to be stored on a separate processor. This can be used
-      to eliminate the global reduction in the VecAssemblyXXXX() if you know 
-      that you have only used VecSetValues() to set local elements
--   VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.
+          entries destined to be stored on a separate processor. This can be used
+          to eliminate the global reduction in the VecAssemblyXXXX() if you know 
+          that you have only used VecSetValues() to set local elements
+.     VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.
+.     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
+          in ix in calls to VecSetValues or VecGetValues. These rows are simply
+          ignored.
+-     VEC_TREAT_NEGATIVE_INDICES restores the treatment of negative indices in ix in
+          VecSetValues/VecGetValues.
 
    Level: intermediate
 

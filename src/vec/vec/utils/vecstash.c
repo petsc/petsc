@@ -69,6 +69,7 @@ PetscErrorCode VecStashCreate_Private(MPI_Comm comm,PetscInt bs,VecStash *stash)
   stash->nprocs      = 0;
   stash->nprocessed  = 0;
   stash->donotstash  = PETSC_FALSE;
+  stash->ignorenegidx  = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
