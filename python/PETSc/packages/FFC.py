@@ -8,7 +8,7 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.fiat = self.framework.require('PETSc.packages.FIAT', self)
+    self.fiat = self.framework.require('PETSc.packages.Fiat', self)
     self.deps = [self.fiat]
     return
 

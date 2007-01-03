@@ -14,6 +14,7 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
+    self.x11 = framework.require('PETSc.packages.X11', self)
     self.deps = []
     return
 
