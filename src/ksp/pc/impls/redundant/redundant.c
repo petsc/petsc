@@ -921,6 +921,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators(PC pc,Mat *mat,Mat *pm
 
      Options for the redundant preconditioners can be set with -redundant_pc_xxx
 
+  Options Database:
+.  -pc_redundant_number_comm - number of sub communicators to use
+
    Level: intermediate
 
 
@@ -949,7 +952,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   nsubcomm = size;
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-nsubcomm",&nsubcomm,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-pc_redundant_number_comm",&nsubcomm,PETSC_NULL);CHKERRQ(ierr);
   if (nsubcomm > size) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %D cannot be larger than MPI_Comm_size %D",nsubcomm,size);
 
   /*--------------------------------------------------------------------------------------------------
