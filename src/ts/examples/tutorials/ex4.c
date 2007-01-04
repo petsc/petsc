@@ -186,7 +186,7 @@ int main(int argc,char **argv)
        u_t = f(u,t), the user provides the discretized right-hand-side
        as a time-dependent matrix.
     */
-    ierr = TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,&appctx);CHKERRQ(ierr);
+    ierr = TSSetMatrices(ts,A,RHSMatrixHeat,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
   } else {
     /*
        For linear problems with a time-independent f(u) in the equation 
@@ -196,7 +196,7 @@ int main(int argc,char **argv)
     */
     MatStructure A_structure;
     ierr = RHSMatrixHeat(ts,0.0,&A,&A,&A_structure,&appctx);CHKERRQ(ierr);
-    ierr = TSSetRHSMatrix(ts,A,A,PETSC_NULL,&appctx);CHKERRQ(ierr);
+    ierr = TSSetMatrices(ts,A,PETSC_NULL,PETSC_NULL,PETSC_NULL,DIFFERENT_NONZERO_PATTERN,&appctx);CHKERRQ(ierr);
   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

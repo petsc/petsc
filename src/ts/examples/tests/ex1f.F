@@ -158,8 +158,9 @@
          call MatCreateShell(PETSC_COMM_WORLD,m,M,M,M,                  &
      &        PETSC_NULL_OBJECT,A,ierr)
          call MatShellSetOperation(A,MATOP_MULT,RHSMatrixFree,ierr)
-         call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
-     &        PETSC_NULL_OBJECT,ierr) 
+         call TSSetMatrices(ts,A,PETSC_NULL_FUNCTION,                    &
+     &           PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,                  &
+     &           DIFFERENT_NONZERO_PATTERN,PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. linear_no_time) then
 !    
 !         The user provides the RHS as a matrix
@@ -169,8 +170,9 @@
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
-         call TSSetRHSMatrix(ts,A,A,PETSC_NULL_FUNCTION,                &
-     &        PETSC_NULL_OBJECT,ierr) 
+         call TSSetMatrices(ts,A,PETSC_NULL_FUNCTION,                    &
+     &           PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,                  &
+     &           DIFFERENT_NONZERO_PATTERN,PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. linear) then
 !    
 !         The user provides the RHS as a time dependent matrix
@@ -180,8 +182,9 @@
          call MatSetFromOptions(A,ierr)
          call RHSMatrixHeat(ts,zero,A,A,A_structure,PETSC_NULL_OBJECT,  &
      &        ierr)  
-         call TSSetRHSMatrix(ts,A,A,RHSMatrixHeat,PETSC_NULL_OBJECT,    &
-     &        ierr) 
+         call TSSetMatrices(ts,A,RHSMatrixHeat,                          &
+     &           PETSC_NULL_OBJECT,PETSC_NULL_FUNCTION,                  &
+     &           DIFFERENT_NONZERO_PATTERN,PETSC_NULL_OBJECT,ierr) 
       else if (problem .eq. nonlinear_no_jacobian) then
 !    
 !         The user provides the RHS and a Shell Jacobian
