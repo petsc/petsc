@@ -25,6 +25,7 @@ testexamples_PARMETIS: ${TESTEXAMPLES_PARMETIS} clean
 testexamples_SPAI: ${TESTEXAMPLES_SPAI} clean
 testexamples_ADIFOR: ${TESTEXAMPLES_ADIFOR} clean
 testexamples_ADIC: ${TESTEXAMPLES_ADIC} clean
+testexamples_FFTW: ${TESTEXAMPLES_FFTW} clean
 testexamples_MATLAB: ${TESTEXAMPLES_MATLAB} clean
 testexamples_MUMPS: ${TESTEXAMPLES_MUMPS} clean
 testexamples_SUPERLU: ${TESTEXAMPLES_SUPERLU} clean
