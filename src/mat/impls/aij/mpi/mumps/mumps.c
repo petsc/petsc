@@ -547,6 +547,7 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
     }
 
     icntl=-1;
+    lu->id.ICNTL(4) = 0;  /* level of printing; overwrite mumps default ICNTL(4)=2 */
     ierr = PetscOptionsInt("-mat_mumps_icntl_4","ICNTL(4): level of printing (0 to 4)","None",lu->id.ICNTL(4),&icntl,&flg);CHKERRQ(ierr);
     if ((flg && icntl > 0) || PetscLogPrintInfo) {
       lu->id.ICNTL(4)=icntl; /* and use mumps default icntl(i), i=1,2,3 */
@@ -554,7 +555,6 @@ PetscErrorCode MatFactorNumeric_AIJMUMPS(Mat A,MatFactorInfo *info,Mat *F)
       lu->id.ICNTL(1) = 0;  /* error message, default= 6 */
       lu->id.ICNTL(2) = -1; /* output stream for diagnostic printing, statistics, and warning. default=0 */
       lu->id.ICNTL(3) = -1; /* output stream for global information, default=6 */
-      lu->id.ICNTL(4) = 0;  /* level of printing, 0,1,2,3,4, default=2 */
     }
     ierr = PetscOptionsInt("-mat_mumps_icntl_6","ICNTL(6): matrix prescaling (0 to 7)","None",lu->id.ICNTL(6),&lu->id.ICNTL(6),PETSC_NULL);CHKERRQ(ierr);
     icntl=-1;
