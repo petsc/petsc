@@ -314,13 +314,13 @@ $     func (TS ts,PetscReal t,Vec u,Vec F,void *ctx);
 -   ctx - [optional] user-defined function context 
 
     Important: 
-    The user MUST call either this routine or TSSetRHSMatrix().
+    The user MUST call either this routine or TSSetMatrices().
 
     Level: beginner
 
 .keywords: TS, timestep, set, right-hand-side, function
 
-.seealso: TSSetRHSMatrix()
+.seealso: TSSetMatrices()
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSFunction(TS ts,PetscErrorCode (*f)(TS,PetscReal,Vec,Vec,void*),void *ctx)
 {
@@ -402,7 +402,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*f
   ts->matflg         = flag;
   PetscFunctionReturn(0);
 }
-
+#ifdef MV
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetRHSMatrix"
 /*@C
@@ -467,7 +467,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode
   ts->B              = B;
   PetscFunctionReturn(0);
 }
-
+#endif
+#ifdef MV
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetLHSMatrix"
 /*@C
@@ -539,13 +540,13 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetLHSMatrix(TS ts,Mat A,Mat B,PetscErrorCode
   ts->Alhs           = A;
   PetscFunctionReturn(0);
 }
-
+#endif
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C
    TSSetRHSJacobian - Sets the function to compute the Jacobian of F,
    where U_t = F(U,t), as well as the location to store the matrix.
-   Use TSSetRHSMatrix() for linear problems.
+   Use TSSetMatrices() for linear problems.
 
    Collective on TS
 
@@ -583,7 +584,7 @@ $     func (TS ts,PetscReal t,Vec u,Mat *A,Mat *B,MatStructure *flag,void *ctx);
 .keywords: TS, timestep, set, right-hand-side, Jacobian
 
 .seealso: TSDefaultComputeJacobianColor(),
-          SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetRHSMatrix()
+          SNESDefaultComputeJacobianColor(), TSSetRHSFunction(), TSSetMatrices()
 
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCode (*f)(TS,PetscReal,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
@@ -595,7 +596,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetRHSJacobian(TS ts,Mat A,Mat B,PetscErrorCo
   PetscCheckSameComm(ts,1,A,2);
   PetscCheckSameComm(ts,1,B,3);
   if (ts->problem_type != TS_NONLINEAR) {
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetRHSMatrix()");
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for linear problems; use TSSetMatrices()");
   }
 
   ts->ops->rhsjacobian = f;

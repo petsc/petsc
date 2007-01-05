@@ -3,7 +3,7 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
-#define tssetrhsmatrix_                      TSSETRHSMATRIX
+#define tssetmatrices_                       TSSETMATRICES
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
 #define tsgetrhsjacobian_                    TSGETRHSJACOBIAN
 #define tsgetrhsmatrix_                      TSGETRHSMATRIX
@@ -15,7 +15,7 @@
 #define tsmonitordefault_                    TSMONITORDEFAULT
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tssetrhsfunction_                    tssetrhsfunction
-#define tssetrhsmatrix_                      tssetrhsmatrix
+#define tssetmatrices_                       tssetmatrices
 #define tssetrhsjacobian_                    tssetrhsjacobian
 #define tsgetrhsjacobian_                    tsgetrhsjacobian
 #define tsgetrhsmatrix_                      tsgetrhsmatrix
@@ -37,6 +37,12 @@ static PetscErrorCode ourtsmatrix(TS ts,PetscReal d,Mat* m,Mat* p,MatStructure* 
 {
   PetscErrorCode ierr = 0;
   (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[2]))(&ts,&d,m,p,type,ctx,&ierr);
+  return 0;
+}
+static PetscErrorCode ourtslhsmatrix(TS ts,PetscReal d,Mat* m,Mat* p,MatStructure* type,void*ctx)
+{
+  PetscErrorCode ierr = 0;
+  (*(void (PETSC_STDCALL *)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,void*,PetscErrorCode*))(((PetscObject)ts)->fortran_func_pointers[7]))(&ts,&d,m,p,type,ctx,&ierr);
   return 0;
 }
 static PetscErrorCode ourtsjacobian(TS ts,PetscReal d,Vec x,Mat* m,Mat* p,MatStructure* type,void*ctx)
@@ -74,7 +80,7 @@ void PETSC_STDCALL tssetrhsfunction_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS
   ((PetscObject)*ts)->fortran_func_pointers[1] = (PetscVoidFunction)f;
   *ierr = TSSetRHSFunction(*ts,ourtsfunction,fP);
 }
-
+#ifdef MV
 void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
                                                    void*,PetscInt *),void*fP,PetscErrorCode *ierr)
 {
@@ -84,6 +90,27 @@ void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,PetscErrorCode (PETSC_ST
     ((PetscObject)*ts)->fortran_func_pointers[2] = (PetscVoidFunction)f;
     *ierr = TSSetRHSMatrix(*ts,*A,*B,ourtsmatrix,fP);
   }
+}
+#endif
+void PETSC_STDCALL tssetmatrices_(TS *ts,Mat *Arhs,PetscErrorCode (PETSC_STDCALL *frhs)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
+                                                   void*,PetscInt *),
+                                         Mat *Alhs,PetscErrorCode (PETSC_STDCALL *flhs)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
+                                                   void*,PetscInt *),
+                                         MatStructure *flag,void*fP,PetscErrorCode *ierr)
+{
+  if (FORTRANNULLFUNCTION(frhs) && FORTRANNULLFUNCTION(flhs)) {
+    *ierr = TSSetMatrices(*ts,*Arhs,PETSC_NULL,*Alhs,PETSC_NULL,*flag,fP);
+  } else if (FORTRANNULLFUNCTION(flhs)){
+    ((PetscObject)*ts)->fortran_func_pointers[2] = (PetscVoidFunction)frhs;
+    *ierr = TSSetMatrices(*ts,*Arhs,ourtsmatrix,*Alhs,PETSC_NULL,*flag,fP);
+  } else if (FORTRANNULLFUNCTION(frhs)){
+    ((PetscObject)*ts)->fortran_func_pointers[7] = (PetscVoidFunction)flhs;
+    *ierr = TSSetMatrices(*ts,*Arhs,PETSC_NULL,*Alhs,ourtslhsmatrix,*flag,fP);
+  } else {
+    ((PetscObject)*ts)->fortran_func_pointers[2] = (PetscVoidFunction)frhs;
+    ((PetscObject)*ts)->fortran_func_pointers[7] = (PetscVoidFunction)flhs;
+    *ierr = TSSetMatrices(*ts,*Arhs,ourtsmatrix,*Alhs,ourtslhsmatrix,*flag,fP);
+  }          
 }
 
 /* ---------------------------------------------------------*/
