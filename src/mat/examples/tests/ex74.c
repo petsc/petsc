@@ -204,6 +204,9 @@ int main(int argc,char **args)
   ierr = VecSetRandom(x,rdm);CHKERRQ(ierr);
 
   /* Test MatDiagonalScale(), MatGetDiagonal(), MatScale() */
+#if !defined(PETSC_USE_COMPLEX)
+  /* Scaling matrix with complex numbers results non-spd matrix, 
+     causing crash of MatForwardSolve() and MatBackwardSolve() */
   ierr = MatDiagonalScale(A,x,x);CHKERRQ(ierr);
   ierr = MatDiagonalScale(sB,x,x);CHKERRQ(ierr); 
   ierr = MatMultEqual(A,sB,10,&equal);CHKERRQ(ierr);
@@ -219,6 +222,7 @@ int main(int argc,char **args)
 
   ierr = MatScale(A,alpha);CHKERRQ(ierr);
   ierr = MatScale(sB,alpha);CHKERRQ(ierr);
+#endif
 
   /* Test MatGetRowMax() */
   ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);

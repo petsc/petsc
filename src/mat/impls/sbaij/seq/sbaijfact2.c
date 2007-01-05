@@ -1831,7 +1831,7 @@ PetscErrorCode MatForwardSolve_SeqSBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
     nz = ai[k+1] - ai[k] - 1;     /* exclude diag[k] */
     while (nz--) x[*vj++] += (*v++) * x[k];
     diagk = PetscRealPart(aa[ai[k]]); /* note: aa[diag[k]] = 1/D(k) */   
-    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ(PETSC_ERR_SUP,"Diagonal must be real and nonnegative");    
+    if (PetscImaginaryPart(aa[ai[k]]) || diagk < 0) SETERRQ2(PETSC_ERR_SUP,"Diagonal (%g,%g) must be real and nonnegative",PetscRealPart(aa[ai[k]]),PetscImaginaryPart(aa[ai[k]]));    
     x[k] *= sqrt(diagk); 
   }
   ierr = VecRestoreArray(bb,&b);CHKERRQ(ierr); 
