@@ -38,7 +38,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->lufactornumeric = MatFactorNumeric_MPIAIJSpooles;
+  B->ops->lufactornumeric = MatFactorNumeric_MPISpooles;
   B->factor               = FACTOR_LU;  
 
   lu                       = (Mat_Spooles *)(B->spptr);
