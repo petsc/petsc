@@ -80,7 +80,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
-  B->ops->choleskyfactornumeric = MatFactorNumeric_MPIAIJSpooles;
+  B->ops->choleskyfactornumeric = MatFactorNumeric_MPISpooles;
   B->ops->getinertia            = MatGetInertia_MPISBAIJSpooles;
   B->factor                     = FACTOR_CHOLESKY;  
 
@@ -132,24 +132,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPISBAIJ_MPISBAIJSpooles(Mat A,MatT
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
-  B->spptr                       = (void*)lu;
-
-  lu->basetype                   = MATMPISBAIJ;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
   lu->MatView                    = A->ops->view;
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
+
+  lu->basetype                   = MATMPISBAIJ;
+  lu->CleanUpSpooles             = PETSC_FALSE;
  
+  B->spptr                       = (void*)lu;
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_MPISBAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_MPISBAIJSpooles;
   B->ops->destroy                = MatDestroy_MPISBAIJSpooles;
 

@@ -75,8 +75,8 @@ PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJSpooles"
-PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_SeqSpooles"
+PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   PetscScalar      *array;
@@ -152,8 +152,8 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatFactorNumeric_SeqAIJSpooles"
-PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatFactorNumeric_SeqSpooles"
+PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
 {  
   Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager ;
@@ -174,7 +174,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
-    (*F)->ops->solve   = MatSolve_SeqAIJSpooles;
+    (*F)->ops->solve   = MatSolve_SeqSpooles;
     (*F)->ops->destroy = MatDestroy_SeqAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE; 
     
@@ -528,7 +528,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,MatType 
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
   B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJSpooles; 
-  B->ops->view                   = MatView_SeqAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqAIJSpooles;
 
