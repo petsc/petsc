@@ -10,7 +10,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.4p1.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.5p1.tar.gz']
     self.download         = ['redefine']
     self.functions        = ['MPI_Init', 'MPI_Comm_create']
     self.includes         = ['mpi.h']
@@ -22,6 +22,7 @@ class Configure(config.package.Package):
                              ['libmpich.a', 'libpmpich.a', 'libmpich.a', 'libpmpich.a', 'libpmpich.a'],
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
                              ['libmpich.a','libnsl.a','libsocket.a','librt.a','libnsl.a','libsocket.a'],
+                             ['fmpich2.lib','mpich2.lib'],
                              ['mpich2.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
                              ['mpich.lib']]
@@ -339,6 +340,7 @@ class Configure(config.package.Package):
     # Configure and Build MPICH
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir]
+    compiler = self.framework.getCompiler()
     args.append('CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
@@ -371,7 +373,7 @@ class Configure(config.package.Package):
     if self.framework.argDB['with-shared']:
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
-      if self.compilers.isGCC:
+      if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
         if config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc-osx')
         else:        
