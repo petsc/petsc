@@ -155,7 +155,10 @@ class SourceDB (dict, logging.Logger):
   getChecksum = staticmethod(getChecksum)
 
   def getModificationTime(source):
-    return os.path.getmtime(source)
+    t = os.path.getmtime(source)
+    if isinstance(t, float):
+      t = int(t)
+    return t
   getModificationTime = staticmethod(getModificationTime)
 
   def updateSource(self, source, noChecksum = 0):
