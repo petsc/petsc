@@ -10,7 +10,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.5.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.5p1.tar.gz']
     self.download         = ['redefine']
     self.functions        = ['MPI_Init', 'MPI_Comm_create']
     self.includes         = ['mpi.h']
