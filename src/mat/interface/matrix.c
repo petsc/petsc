@@ -14,7 +14,7 @@ PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solv
 PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
 PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
 PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
+PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0, MAT_GetRedundantMatrix = 0;
 PetscEvent  MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
 PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
 PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
@@ -6799,3 +6799,57 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall
   
   PetscFunctionReturn(0);
 } 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRedundantMatrix"
+/*@C
+   MatGetRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators. 
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  nsubcomm - the number of subcommunicators (= number of redundant pareallel or sequential matrices)
+.  subcomm - MPI communicator split from the communicator where mat resides in
+.  mlocal_red - number of local rows of the redundant matrix
+-  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.  matredundant - redundant matrix
+
+   Notes:
+   MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
+   original matrix has not changed from that last call to MatGetRedundantMatrix().
+
+   This routine creates the duplicated matrices in subcommunicators; you should NOT create them before
+   calling it. 
+
+   Only MPIAIJ matrix is supported. 
+   
+   Level: advanced
+
+   Concepts: subcommunicator
+   Concepts: duplicate matrix
+
+.seealso: MatDestroy()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*matredundant,6);
+    PetscValidHeaderSpecific(*matredundant,MAT_COOKIE,6);
+  }
+  if (!mat->ops->getredundantmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,mlocal_red,reuse,matredundant);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

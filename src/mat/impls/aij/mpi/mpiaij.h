@@ -87,6 +87,7 @@ EXTERN PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat,Mat,Mat);
 EXTERN PetscErrorCode MatSetValues_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar [],InsertMode);
 EXTERN PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat);
 EXTERN PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void*);
+EXTERN PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode MatMPIAIJSetPreallocation_MPIAIJ(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[]);
