@@ -97,7 +97,7 @@ NP = 1
 runxsifter1:
 	-@${MPIRUN} -np ${NP} ./xsifter1 ${EXTRA_ARGS}
 debugxsifter1:
-	-@${MPIRUN} -np ${NP} ./xsifter1 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
@@ -107,7 +107,9 @@ NP = 1
 runxsifter2:
 	-@${MPIRUN} -np ${NP} ./xsifter2 ${EXTRA_ARGS}
 debugxsifter2:
-	-@${MPIRUN} -np ${NP} ./xsifter2 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIRUN} -np ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsifter2:
+	-@${MPIRUN} -np ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------
