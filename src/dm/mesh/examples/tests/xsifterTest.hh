@@ -49,7 +49,7 @@ namespace ALE {
         ALE::Obj<xsifter_type>   xsifter = new xsifter_type(comm, options.debug);
         for(int i = 0; i < options.capSize; i++) {
           // Add an arrow from i to i mod 3 with color 'Y'.
-          xsifter->addArrow(arrow_type((double)i,i % 3,'Y'));
+          xsifter->addArrow(arrow_type((double)i,i % 3,'Y'),(i+1)%3);
         }
         return xsifter;
       };// createForkXSifter()
@@ -57,7 +57,7 @@ namespace ALE {
         ALE::Obj<xsifter_type>   xsifter = new xsifter_type(comm, options.debug);
         for(int i = 0; i < options.capSize; i++) {
           // Add an arrow from i mod 3 to i with color 'H'.
-          xsifter->addArrow(arrow_type((double)(i % 3),i,'H'));
+          xsifter->addArrow(arrow_type((double)(i % 3),i,'H'),(i+2)%3);
         }
         return xsifter;
       };// createHatXSifter()
