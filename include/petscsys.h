@@ -271,6 +271,23 @@ M*/
 
 M*/
 
+/*S
+   PetscSubcomm - Context of MPI subcommunicators, used by PCREDUNDANT
+
+   Level: advanced
+
+   Concepts: communicator, create
+S*/
+typedef struct { 
+  MPI_Comm   parent;      /* parent communicator */
+  MPI_Comm   dupparent;   /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
+  MPI_Comm   comm;        /* this communicator */
+  PetscInt   n;           /* num of subcommunicators under the parent communicator */
+  PetscInt   color;       /* color of processors belong to this communicator */
+} PetscSubcomm;
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm,PetscInt,PetscSubcomm**);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm*);
 
 PETSC_EXTERN_CXX_END
 #endif /* __PETSCSYS_H */

@@ -56,7 +56,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
 
 .keywords: matrix, create
 
-.seealso: MatCreateSeqAIJ((), MatCreateMPIAIJ(), 
+.seealso: MatCreateSeqAIJ(), MatCreateMPIAIJ(), 
           MatCreateSeqBDiag(),MatCreateMPIBDiag(),
           MatCreateSeqDense(), MatCreateMPIDense(), 
           MatCreateMPIRowbs(), MatCreateSeqBAIJ(), MatCreateMPIBAIJ(),

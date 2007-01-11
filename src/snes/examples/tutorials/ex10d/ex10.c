@@ -369,7 +369,9 @@ int main(int argc,char **argv)
   for (i=0; i<nvertices; i++) svertices[i] = bs*vertices[i];
   ierr = ISCreateBlock(MPI_COMM_SELF,bs,nvertices,svertices,&isglobal);CHKERRQ(ierr);
   ierr = PetscFree(svertices);CHKERRQ(ierr);
-  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);
+  ierr = VecScatterCreate(x,isglobal,user.localX,islocal,&user.scatter);CHKERRQ(ierr);  
+  ierr = ISDestroy(isglobal);CHKERRQ(ierr); 
+  ierr = ISDestroy(islocal);CHKERRQ(ierr); 
 
   /* 
      Create matrix data structure; Just to keep the example simple, we have not done any 
@@ -453,7 +455,13 @@ int main(int argc,char **argv)
      Free work space.  All PETSc objects should be destroyed when they
      are no longer needed.
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-
+  ierr = PetscFree(user.gloInd);CHKERRQ(ierr);
+  ierr = PetscFree(user.locInd);CHKERRQ(ierr);
+  ierr = PetscFree(vertices);CHKERRQ(ierr);
+  ierr = PetscFree(verticesmask);CHKERRQ(ierr);
+  ierr = PetscFree(tmp);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(user.scatter);CHKERRQ(ierr);
+  ierr = ISLocalToGlobalMappingDestroy(isl2g);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);  
   ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = VecDestroy(user.localX);CHKERRQ(ierr);  

@@ -102,8 +102,14 @@ PetscErrorCode MatFactorInfo_Spooles(Mat A,PetscViewer viewer)
   int            size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  
+  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr); 
+  /* check if matrix is spooles type */
+  if (size == 1){
+    if (A->ops->solve != MatSolve_SeqSpooles) PetscFunctionReturn(0);
+  } else {
+    if (A->ops->solve != MatSolve_MPISpooles) PetscFunctionReturn(0);
+  }
+
   ierr = PetscViewerASCIIPrintf(viewer,"Spooles run parameters:\n");CHKERRQ(ierr);
   switch (lu->options.symflag) {
   case 0: 

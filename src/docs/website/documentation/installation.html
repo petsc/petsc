@@ -398,7 +398,14 @@ specify the package to configure.<br>
       </ul>
       <span style="font-weight: bold;">Notes</span>:<br>
       <ul>
-        <li>&nbsp;Generally one would use either one of the above 4
+        <li>Run <span style="color: rgb(255, 0, 0);"></span><span
+ style="color: rgb(255, 0, 0);"><span style="color: rgb(51, 0, 51);"><span
+ style="color: rgb(255, 0, 0); font-weight: bold;">config/configure.py-help</span></span></span><span
+ style="color: rgb(255, 0, 0);"></span> to get the list of external
+packages - and corresponding additional options&nbsp; [for example <span
+ style="color: rgb(255, 0, 0);">--with-mpirun</span> for mpich]<br>
+        </li>
+        <li>Generally one would use either one of the above 4
 modes for any given package - and not mix these. [i.e mixing <span
  style="color: rgb(255, 0, 0);">-with-mpi-dir <span
  style="color: rgb(51, 0, 51);">and</span> </span><span
@@ -412,14 +419,12 @@ Some architectures like Windows might have issues with these options.
 In these cases, <span style="color: rgb(255, 0, 0);">--with-PACKAGENAME-include
 --with-PACKAGENAME-lib</span> options should be prefered.</span></span></li>
         <li><span style="color: rgb(255, 0, 0);"><span
- style="color: rgb(51, 0, 51);">Some packages might have additional
-options - for example : <span style="color: rgb(255, 0, 0);">--with-mpirun</span>.
-Please check <span style="color: rgb(255, 0, 0); font-weight: bold;">--help</span>
-for complete listing of options for each package.</span></span></li>
-        <li><span style="color: rgb(255, 0, 0);"><span
  style="color: rgb(51, 0, 51);">Its best to install some external
 packages like SuperLU_DIST, MUMPS, Hypre with the option <span
- style="color: rgb(255, 0, 0);">--download-PACKAGENAME</span>. <br>
+ style="color: rgb(255, 0, 0);">--download-PACKAGENAME</span>.&nbsp;
+[the correct options for these packages are <span
+ style="color: rgb(255, 0, 0);">--download-superlu_dist=1
+--download-mumps=1 --download-hypre=1</span>]<br>
           </span></span></li>
         <ul>
           <li><span style="color: rgb(255, 0, 0);"><span

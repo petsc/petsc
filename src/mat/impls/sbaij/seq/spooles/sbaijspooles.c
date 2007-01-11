@@ -79,7 +79,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_SeqSBAIJSpooles(Mat A,IS r,MatFactorInf
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
 
-  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqAIJSpooles;
+  B->ops->choleskyfactornumeric  = MatFactorNumeric_SeqSpooles;
   B->ops->getinertia             = MatGetInertia_SeqSBAIJSpooles;
   B->factor                      = FACTOR_CHOLESKY;  
 
@@ -103,16 +103,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatT
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
-
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
-  B->spptr                       = (void*)lu;
-
-  lu->basetype                   = MATSEQSBAIJ;
-  lu->CleanUpSpooles             = PETSC_FALSE;
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
   lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
@@ -120,8 +115,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatT
   lu->MatAssemblyEnd             = A->ops->assemblyend;
   lu->MatDestroy                 = A->ops->destroy;
 
+  B->spptr                       = (void*)lu;
+  lu->basetype                   = MATSEQSBAIJ;
+  lu->CleanUpSpooles             = PETSC_FALSE;
+
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqSBAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqSBAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqSBAIJSpooles;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_seqsbaijspooles_seqsbaij_C",

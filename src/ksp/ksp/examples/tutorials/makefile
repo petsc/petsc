@@ -511,7 +511,7 @@ NSUBCOMM = 8 7 6 5 4 3 2 1
 runex10_mumps_redundant:
 	-@touch ex10_mumps_redundant.tmp
 	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIRUN} -np 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -nsubcomm $$nsubcomm -mat_type aijmumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
+	${MPIRUN} -np 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number_comm $$nsubcomm -mat_type aijmumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
 	done;
 	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_mumps_redundant.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_redundant, diffs above"; fi; \
