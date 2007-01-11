@@ -5,8 +5,8 @@
    the TS component will eventually be incorporated as part of
    the base PETSc libraries.
 */
-#include "src/ts/tsimpl.h"
-#include "src/snes/snesimpl.h"
+#include "include/private/tsimpl.h"
+#include "include/private/snesimpl.h"
 #include "zpetsc.h"
 
 PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);

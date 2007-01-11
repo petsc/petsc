@@ -17,12 +17,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
 {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
-  PetscObjectContainer container;
+  PetscContainer       container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+    ierr = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
     ierr = PetscFree(merge->id_r);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_s);CHKERRQ(ierr);
     ierr = PetscFree(merge->len_r);CHKERRQ(ierr);
@@ -35,7 +35,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
     ierr = PetscFree(merge->owners_co);CHKERRQ(ierr);
     ierr = PetscFree(merge->rowmap.range);CHKERRQ(ierr);
     
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr);
+    ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)A,"MatMergeSeqsToMPI",0);CHKERRQ(ierr);
   }
   ierr = merge->MatDestroy(A);CHKERRQ(ierr);
@@ -48,12 +48,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
 PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M) {
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
-  PetscObjectContainer container;
+  PetscContainer       container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"MatMergeSeqsToMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
+    ierr  = PetscContainerGetPointer(container,(void **)&merge);CHKERRQ(ierr); 
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
   }
@@ -98,7 +98,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscErrorCode       ierr;
   Mat                  B_mpi; 
   Mat_MatMatMultMPI    *ap;
-  PetscObjectContainer container;
+  PetscContainer       container;
   PetscFreeSpaceList   free_space=PETSC_NULL,current_space=PETSC_NULL;
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
@@ -117,7 +117,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   MPI_Request          *swaits,*rwaits; 
   MPI_Status           *sstatus,rstatus;
   Mat_Merge_SeqsToMPI  *merge;
-  PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon;
+  PetscInt             *api,*apj,*Jptr,apnz,*prmap=p->garray,pon,nspacedouble=0;
   PetscMPIInt          j;
 
   PetscFunctionBegin;
@@ -127,7 +127,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* destroy the container 'Mat_MatMatMultMPI' in case that P is attached to it */
   ierr = PetscObjectQuery((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) { 
-    ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
+    ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
     ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   }
 
@@ -136,13 +136,13 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ap->abi=PETSC_NULL; ap->abj=PETSC_NULL; 
   ap->abnz_max = 0; 
 
-  ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetPointer(container,ap);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,ap);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
   ap->MatDestroy  = P->ops->destroy;
   P->ops->destroy = MatDestroy_MPIAIJ_MatMatMult;
   ap->reuse       = MAT_INITIAL_MATRIX;
-  ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
 
   /* get P_oth by taking rows of P (= non-zero cols of local A) from other processors */
   ierr = MatGetBrowsOfAoCols(A,P,MAT_INITIAL_MATRIX,&ap->startsj,&ap->bufa,&ap->B_oth);CHKERRQ(ierr);
@@ -154,8 +154,8 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   pi_loc = p_loc->i; pj_loc = p_loc->j; 
   pi_oth = p_oth->i; pj_oth = p_oth->j;
 
-  /* first, compute symbolic AP = A_loc*P */
-  /*--------------------------------------*/
+  /* first, compute symbolic AP = A_loc*P = A_diag*P_loc + A_off*P_oth */
+  /*-------------------------------------------------------------------*/
   ierr  = PetscMalloc((am+2)*sizeof(PetscInt),&api);CHKERRQ(ierr);
   ap->abi = api;
   api[0] = 0;
@@ -196,6 +196,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
     /* if free space is not available, double the total space in the list */
     if (current_space->local_remaining<apnz) {
       ierr = PetscFreeSpaceGet(current_space->total_array_size,&current_space);CHKERRQ(ierr);
+      nspacedouble++;
     }
 
     /* Copy data into free space, then initialize lnk */
@@ -355,12 +356,12 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   }
   ierr = PetscFree(rwaits);CHKERRQ(ierr);
   if (merge->nsend) {ierr = MPI_Waitall(merge->nsend,swaits,sstatus);CHKERRQ(ierr);}
-
+  /*
   ierr = PetscInfo2(A,"nsend: %d, nrecv: %d\n",merge->nsend,merge->nrecv);CHKERRQ(ierr);
   for (i=0; i<merge->nrecv; i++){
     ierr = PetscInfo3(A,"recv len_ri=%d, len_rj=%d from [%d]\n",len_ri[i],merge->len_r[i],merge->id_r[i]);CHKERRQ(ierr);
   }
-
+  */
   ierr = PetscFree(len_si);CHKERRQ(ierr);
   ierr = PetscFree(len_ri);CHKERRQ(ierr);
   ierr = PetscFree(swaits);CHKERRQ(ierr);
@@ -459,10 +460,20 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   B_mpi->ops->duplicate = MatDuplicate_MPIAIJ_MatPtAP;
 
   /* attach the supporting struct to B_mpi for reuse */
-  ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetPointer(container,merge);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,merge);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)B_mpi,"MatMergeSeqsToMPI",(PetscObject)container);CHKERRQ(ierr);
   *C = B_mpi;
+#if defined(PETSC_USE_INFO)
+  if (bi[pn] != 0) {
+    PetscReal afill = ((PetscReal)bi[pn])/(adi[am]+aoi[am]);
+    if (afill < 1.0) afill = 1.0;
+    ierr = PetscInfo3(B_mpi,"Reallocs %D; Fill ratio: given %G needed %G when computing A*P.\n",nspacedouble,fill,afill);CHKERRQ(ierr);
+    ierr = PetscInfo1(B_mpi,"Use MatPtAP(A,P,MatReuse,%G,&C) for best performance.\n",afill);CHKERRQ(ierr);
+  } else {
+    ierr = PetscInfo(B_mpi,"Empty matrix product\n");CHKERRQ(ierr);
+  }
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -473,7 +484,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
   Mat_MatMatMultMPI    *ap;
-  PetscObjectContainer cont_merge,cont_ptap;
+  PetscContainer cont_merge,cont_ptap;
   Mat_MPIAIJ           *a=(Mat_MPIAIJ*)A->data,*p=(Mat_MPIAIJ*)P->data;
   Mat_SeqAIJ           *ad=(Mat_SeqAIJ*)(a->A)->data,*ao=(Mat_SeqAIJ*)(a->B)->data;
   Mat_SeqAIJ           *pd=(Mat_SeqAIJ*)(p->A)->data,*po=(Mat_SeqAIJ*)(p->B)->data;
@@ -500,14 +511,14 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
 
   ierr = PetscObjectQuery((PetscObject)C,"MatMergeSeqsToMPI",(PetscObject *)&cont_merge);CHKERRQ(ierr);
   if (cont_merge) { 
-    ierr  = PetscObjectContainerGetPointer(cont_merge,(void **)&merge);CHKERRQ(ierr); 
+    ierr  = PetscContainerGetPointer(cont_merge,(void **)&merge);CHKERRQ(ierr); 
   } else {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Matrix C does not posses an object container");
   } 
 
   ierr = PetscObjectQuery((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject *)&cont_ptap);CHKERRQ(ierr);
   if (cont_ptap) { 
-    ierr  = PetscObjectContainerGetPointer(cont_ptap,(void **)&ap);CHKERRQ(ierr); 
+    ierr  = PetscContainerGetPointer(cont_ptap,(void **)&ap);CHKERRQ(ierr); 
     if (ap->reuse == MAT_INITIAL_MATRIX){
       ap->reuse = MAT_REUSE_MATRIX;
     } else { /* update numerical values of P_oth and P_loc */
@@ -662,6 +673,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     flops += 2*cnz;
   } 
   ierr = MatSetOption(C,MAT_COLUMNS_SORTED);CHKERRQ(ierr); /* -cause delay? */
+  ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
 

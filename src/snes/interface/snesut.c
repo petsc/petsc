@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/snesimpl.h"       /*I   "petscsnes.h"   I*/
+#include "include/private/snesimpl.h"       /*I   "petscsnes.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESMonitorSolution"
@@ -241,7 +241,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCI
   PetscFunctionBegin;
   if (!viewer) {
     ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
-    ierr   = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
+    ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   } 
   ierr = PetscNew(SNESMonitorRatioContext,&ctx);
   ierr = SNESGetConvergenceHistory(snes,&history,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);

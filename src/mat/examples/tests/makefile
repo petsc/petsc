@@ -1062,8 +1062,7 @@ TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PET
                                  ex16.rm ex55.PETSc runex55 runex55_2 ex55.rm ex59.PETSc runex59 runex59_2 runex59_3 \
                                  ex59.rm ex60.PETSc runex60 ex60.rm ex61.PETSc runex61 runex61_2 ex61.rm ex65.PETSc \
                                  ex65.rm ex66.PETSc ex66.rm ex98.PETSc runex98 ex98.rm ex102.PETSc runex102 ex102.rm\
-                                 ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm ex110.PETSc runex110 ex110.rm\
-                                 ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm
+                                 ex52.PETSc runex52_1 runex52_2 runex52_3 runex52_4 ex52.rm ex110.PETSc runex110 ex110.rm
 TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex4.rm ex7.PETSc runex7 ex7.rm \
                                  ex12.PETSc runex12 runex12_2 runex12_3 runex12_4 ex12.rm ex13.PETSc runex13 ex13.rm \
                                  ex17.PETSc runex17 ex17.rm ex19.PETSc runex19 ex19.rm ex24.PETSc ex24.rm ex25.PETSc \
@@ -1091,5 +1090,6 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex67f.PETSc runex67f ex67f.rm ex79f.PETSc runex
 TESTEXAMPLES_F90	       = ex16f90.PETSc runex16f90 ex16f90.rm 
 TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex72.rm
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
+TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm 
 
 include ${PETSC_DIR}/bmake/common/test

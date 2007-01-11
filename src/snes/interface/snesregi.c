@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/snesimpl.h"     /*I  "petscsnes.h"  I*/
+#include "include/private/snesimpl.h"     /*I  "petscsnes.h"  I*/
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES);

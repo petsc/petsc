@@ -472,6 +472,16 @@ runex10_21: #test icc with shift
 	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftpd on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
+runex10_22:
+	-@${MPIRUN} -np 2 ./ex10 -options_left no -openmp_merge_size 2 -pc_type openmp  -ksp_type preonly -openmp_pc_type ksp -f0 ${DATAFILESPATH}/matrices/medium > ex10_22.tmp 2>&1;\
+	   if (${DIFF} output/ex10_22.out ex10_22.tmp) then true; \
+	   else echo "Possible problem with ex10_22, diffs above"; fi; \
+	   ${RM} -f ex10_22.tmp
+runex10_23:
+	-@${MPIRUN} -np 2 ./ex10 -options_left no -openmp_merge_size 2 -pc_type openmp  -ksp_type preonly -openmp_pc_type ksp -openmp_ksp_pc_type bjacobi -openmp_ksp_ksp_type gmres -f0 ${DATAFILESPATH}/matrices/medium > ex10_23.tmp 2>&1;\
+	   if (${DIFF} output/ex10_23.out ex10_23.tmp) then true; \
+	   else echo "Possible problem with ex10_23, diffs above"; fi; \
+	   ${RM} -f ex10_23.tmp
 
 #test mumps lu      
 runex10_mumps_lu_1:
@@ -501,7 +511,7 @@ NSUBCOMM = 8 7 6 5 4 3 2 1
 runex10_mumps_redundant:
 	-@touch ex10_mumps_redundant.tmp
 	-@for nsubcomm in ${NSUBCOMM}; do \
-	${MPIRUN} -np 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -nsubcomm $$nsubcomm -mat_type aijmumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
+	${MPIRUN} -np 8 ./ex10 -f0 ${DATAFILESPATH}/matrices/medium -ksp_type preonly -pc_type redundant -pc_redundant_number_comm $$nsubcomm -mat_type aijmumps -num_numfac 2 -num_rhs 2 >> ex10_mumps_redundant.tmp 2>&1; \
 	done;
 	-@if (${DIFF} output/ex10_mumps_redundant.out ex10_mumps_redundant.tmp) then true; \
 	   else echo "Possible problem with ex10_mumps_redundant, diffs above"; fi; \
@@ -661,7 +671,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_20 ex10.rm
+                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE95      = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

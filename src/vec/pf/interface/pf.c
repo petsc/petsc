@@ -72,7 +72,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 
   ierr = PetscOptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PFView(pf,PETSC_VIEWER_STDOUT_(pf->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(pf->comm,&viewer);CHKERRQ(ierr);
+    ierr = PFView(pf,viewer);CHKERRQ(ierr);
   }
 
   /* if memory was published with AMS then destroy it */
@@ -299,13 +301,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFApply(PF pf,PetscInt n,PetscScalar* x,PetscS
 PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
 {
   PFType            cstr;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
   PetscTruth        iascii;
   PetscViewerFormat format;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(pf->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(pf->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(pf,1,viewer,2);
 

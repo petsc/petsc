@@ -1,6 +1,6 @@
 
-#if !defined(__MATIMPL)
-#define __MATIMPL
+#ifndef __MATIMPL_H
+#define __MATIMPL_H
 
 #include "petscmat.h"
 
@@ -149,6 +149,7 @@ struct _MatOps {
   PetscErrorCode (*restorerowuppertriangular)(Mat);
   /*110*/
   PetscErrorCode (*matsolve)(Mat,Mat,Mat);
+  PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -173,7 +174,22 @@ EXTERN PetscErrorCode MatDiagonalSet_Default(Mat,Vec,InsertMode);
   belong to another processor. During the assembly phase the stashed 
   values are moved to the correct processor and 
 */
-#include "src/mat/utils/matstashspace.h"
+
+typedef struct _MatStashSpace *PetscMatStashSpace;
+
+struct _MatStashSpace {
+  PetscMatStashSpace next;
+  MatScalar          *space_head,*val;
+  PetscInt           *idx,*idy;
+  PetscInt           total_space_size;
+  PetscInt           local_used;
+  PetscInt           local_remaining;
+};
+
+EXTERN PetscErrorCode PetscMatStashSpaceGet(PetscInt,PetscInt,PetscMatStashSpace *);
+EXTERN PetscErrorCode PetscMatStashSpaceContiguous(PetscInt,PetscMatStashSpace *,PetscScalar *,PetscInt *,PetscInt *);
+EXTERN PetscErrorCode PetscMatStashSpaceDestroy(PetscMatStashSpace);
+
 typedef struct {
   PetscInt      nmax;                   /* maximum stash size */
   PetscInt      umax;                   /* user specified max-size */
@@ -955,7 +971,7 @@ extern PetscEvent  MAT_MultTransposeConstrained, MAT_MultTransposeAdd, MAT_Solve
 extern PetscEvent  MAT_SolveTransposeAdd, MAT_Relax, MAT_ForwardSolve, MAT_BackwardSolve, MAT_LUFactor, MAT_LUFactorSymbolic;
 extern PetscEvent  MAT_LUFactorNumeric, MAT_CholeskyFactor, MAT_CholeskyFactorSymbolic, MAT_CholeskyFactorNumeric, MAT_ILUFactor;
 extern PetscEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_Convert, MAT_Scale, MAT_AssemblyBegin;
-extern PetscEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering;
+extern PetscEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
 extern PetscEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 extern PetscEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
 extern PetscEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
@@ -963,10 +979,3 @@ extern PetscEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 extern PetscEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
 
 #endif
-
-
-
-
-
-
-

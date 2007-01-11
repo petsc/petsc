@@ -203,8 +203,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec,PetscInt,PetscInt *,Pe
 PetscPolymorphicFunction(VecStrideMax,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec,PetscInt,PetscInt *,PetscReal *);
 PetscPolymorphicFunction(VecStrideMin,(Vec x,PetscInt i),(x,i,PETSC_NULL,&r),PetscReal,r)
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec,PetscInt,PetscScalar*);
-PetscPolymorphicScalar(VecStrideScale,(Vec x,PetscInt i,PetscScalar _val),(x,i,&_Val))
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec,PetscInt,PetscScalar);
 
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec,PetscInt,Vec,InsertMode);
@@ -416,7 +415,8 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotBegin(Vec,PetscInt,const Vec[],
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecMTDotEnd(Vec,PetscInt,const Vec[],PetscScalar *);
 
 
-typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES} VecOption;
+typedef enum {VEC_IGNORE_OFF_PROC_ENTRIES,VEC_TREAT_OFF_PROC_ENTRIES, \
+              VEC_IGNORE_NEGATIVE_INDICES, VEC_TREAT_NEGATIVE_INDICES} VecOption;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec,VecOption);
 
 /*

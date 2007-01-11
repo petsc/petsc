@@ -26,7 +26,9 @@ PetscErrorCode CharacteristicView(Characteristic c, PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c, CHARACTERISTIC_COOKIE, 1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(c->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(c->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(c, 1, viewer, 2);
 

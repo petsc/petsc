@@ -162,7 +162,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectView(PetscObject obj,PetscViewer viewe
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(obj->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(obj->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   if (obj->bops->view) {

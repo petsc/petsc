@@ -1,6 +1,6 @@
 #define PETSCTS_DLL
 
-#include "src/ts/tsimpl.h"      /*I "petscts.h"  I*/
+#include "include/private/tsimpl.h"      /*I "petscts.h"  I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"
@@ -62,6 +62,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
   t->B                  = PETSC_NULL;
   t->Arhs               = PETSC_NULL;
   t->Alhs               = PETSC_NULL;
+  t->matflg             = DIFFERENT_NONZERO_PATTERN;
   t->snes               = PETSC_NULL;
   t->funP               = PETSC_NULL;
   t->jacP               = PETSC_NULL;

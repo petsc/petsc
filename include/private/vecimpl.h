@@ -121,6 +121,7 @@ typedef struct {
   PetscInt      *nprocs;                /* tmp data used both during scatterbegin and end */
   PetscInt      nprocessed;             /* number of messages already processed */
   PetscTruth    donotstash;
+  PetscTruth    ignorenegidx;           /* ignore negative indices passed into VecSetValues/VetGetValues */
   InsertMode    insertmode;
   PetscInt      *bowners;
 } VecStash;
@@ -259,15 +260,17 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
   idx    - the global of the inserted value
   values - the value inserted
 */
-#define VecStashValue_Private(stash,row,value) \
-{  \
-  /* Check and see if we have sufficient memory */ \
-  if (((stash)->n + 1) > (stash)->nmax) { \
-    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr); \
-  } \
-  (stash)->idx[(stash)->n]   = row; \
-  (stash)->array[(stash)->n] = value; \
-  (stash)->n++; \
+PETSC_STATIC_INLINE PetscErrorCode VecStashValue_Private(VecStash *stash,PetscInt row,PetscScalar value)
+{
+  PetscErrorCode ierr;
+  /* Check and see if we have sufficient memory */
+  if (((stash)->n + 1) > (stash)->nmax) {
+    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr);
+  }
+  (stash)->idx[(stash)->n]   = row;
+  (stash)->array[(stash)->n] = value;
+  (stash)->n++;
+  return 0;
 }
 
 /*
@@ -278,17 +281,19 @@ EXTERN PetscErrorCode VecStashScatterGetMesg_Private(VecStash*,PetscMPIInt*,Pets
   idx    - the global block index
   values - the values inserted
 */
-#define VecStashValuesBlocked_Private(stash,row,values) \
-{ \
-  PetscInt    jj,stash_bs=(stash)->bs; \
-  PetscScalar *array; \
-  if (((stash)->n+1) > (stash)->nmax) { \
-    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr); \
-  } \
-  array = (stash)->array + stash_bs*(stash)->n; \
-  (stash)->idx[(stash)->n]   = row; \
-  for (jj=0; jj<stash_bs; jj++) { array[jj] = values[jj];} \
-  (stash)->n++; \
+PETSC_STATIC_INLINE PetscErrorCode VecStashValuesBlocked_Private(VecStash *stash,PetscInt row,PetscScalar *values) 
+{
+  PetscInt       jj,stash_bs=(stash)->bs;
+  PetscScalar    *array;
+  PetscErrorCode ierr;
+  if (((stash)->n+1) > (stash)->nmax) {
+    ierr = VecStashExpand_Private(stash,1);CHKERRQ(ierr);
+  }
+  array = (stash)->array + stash_bs*(stash)->n;
+  (stash)->idx[(stash)->n]   = row;
+  for (jj=0; jj<stash_bs; jj++) { array[jj] = values[jj];}
+  (stash)->n++;
+  return 0;
 }
 
 EXTERN PetscErrorCode VecReciprocal_Default(Vec);

@@ -131,6 +131,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetType(PetscViewer,PetscViewer
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer,PetscViewer*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSubcomm(PetscViewer,MPI_Comm,PetscViewer*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerSetUp(PetscViewer);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerView(PetscViewer,PetscViewer);
@@ -268,7 +270,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer viewer
    to be explicitly opened
 */
 EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDOUT_(MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetStdout(MPI_Comm,PetscViewer*);
 EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_STDERR_(MPI_Comm);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIGetStderr(MPI_Comm,PetscViewer*);
 EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_DRAW_(MPI_Comm);
 EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm);
 EXTERN PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_BINARY_(MPI_Comm);

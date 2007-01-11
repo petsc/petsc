@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"               /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"               /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE = 0;
@@ -240,8 +240,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningApply(MatPartitioning matp,IS *
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_partitioning_view",&flag);CHKERRQ(ierr);
   if (flag) {
-    ierr = MatPartitioningView(matp,PETSC_VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
-    ierr = ISView(*partitioning,PETSC_VIEWER_STDOUT_(matp->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(matp->comm,&viewer);CHKERRQ(ierr);
+    ierr = MatPartitioningView(matp,viewer);CHKERRQ(ierr);
+    ierr = ISView(*partitioning,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -444,13 +446,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm comm,MatPartiti
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningView(MatPartitioning part,PetscViewer viewer)
 {
-  PetscErrorCode ierr;
+  PetscErrorCode      ierr;
   PetscTruth          iascii;
   MatPartitioningType name;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(part,MAT_PARTITIONING_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(part->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(part->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(part,1,viewer,2);
 

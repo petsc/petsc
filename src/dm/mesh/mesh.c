@@ -11,6 +11,11 @@ PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
 PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
             Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
+EXTERN PetscErrorCode MeshView_DM(Mesh, PetscViewer);
+EXTERN PetscErrorCode MeshRefine_DM(Mesh, MPI_Comm, Mesh *);
+EXTERN PetscErrorCode MeshCoarsenHierarchy_DM(Mesh, int, Mesh **);
+EXTERN PetscErrorCode MeshGetInterpolation_DM(DM, DM, Mat *, Vec *);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshFinalize"
 PetscErrorCode MeshFinalize()
@@ -154,6 +159,15 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode PETSCDM_DLLEXPORT MeshView_DM(Mesh mesh, PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshView_Sieve(mesh->m, viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView"
 /*@C
@@ -203,12 +217,14 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   PetscValidType(mesh, 1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mesh->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(mesh->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(mesh, 1, viewer, 2);
 
   ierr = PetscLogEventBegin(Mesh_View,0,0,0,0);CHKERRQ(ierr);
-  ierr = (*mesh->ops->view)(mesh->m, viewer);CHKERRQ(ierr);
+  ierr = (*mesh->ops->view)(mesh, viewer);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(Mesh_View,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -397,9 +413,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 #endif
 
   ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
-  p->ops->view               = MeshView_Sieve;
+  p->ops->view               = MeshView_DM;
   p->ops->createglobalvector = MeshCreateGlobalVector;
+  p->ops->getcoloring        = PETSC_NULL;
   p->ops->getmatrix          = MeshGetMatrix;
+  p->ops->getinterpolation   = MeshGetInterpolation_DM;
+  p->ops->getinjection       = PETSC_NULL;
+  p->ops->refine             = MeshRefine_DM;
+  p->ops->coarsen            = PETSC_NULL;
+  p->ops->refinehierarchy    = PETSC_NULL;
+  p->ops->coarsenhierarchy   = MeshCoarsenHierarchy_DM;
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
@@ -915,6 +938,87 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh::real_section_type
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "updateOperatorGeneral"
+PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
+{
+  ALE::Mesh::real_section_type::patch_type patch = 0;
+  static PetscInt  rowIndicesSize = 0;
+  static PetscInt *rowIndices = NULL;
+  PetscInt         numRowIndices = 0;
+  static PetscInt  colIndicesSize = 0;
+  static PetscInt *colIndices = NULL;
+  PetscInt         numColIndices = 0;
+  PetscErrorCode   ierr;
+
+  PetscFunctionBegin;
+  const ALE::Obj<ALE::Mesh::real_section_type::IndexArray> rowIntervals = rowSection->getIndices(patch, rowE, rowGlobalOrder);
+  const ALE::Obj<ALE::Mesh::real_section_type::IndexArray> colIntervals = colSection->getIndices(patch, colE, colGlobalOrder);
+
+  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  if (rowSection->debug()) {printf("[%d]mat for elements %d %d\n", rowSection->commRank(), rowE, colE);}
+  for(ALE::Mesh::real_section_type::IndexArray::iterator i_iter = rowIntervals->begin(); i_iter != rowIntervals->end(); ++i_iter) {
+    numRowIndices += std::abs(i_iter->prefix);
+    if (rowSection->debug()) {
+      printf("[%d]mat row interval (%d, %d)\n", rowSection->commRank(), i_iter->prefix, i_iter->index);
+    }
+  }
+  if (rowIndicesSize && (rowIndicesSize != numRowIndices)) {
+    ierr = PetscFree(rowIndices); CHKERRQ(ierr);
+    rowIndices = NULL;
+  }
+  if (!rowIndices) {
+    rowIndicesSize = numRowIndices;
+    ierr = PetscMalloc(rowIndicesSize * sizeof(PetscInt), &rowIndices); CHKERRQ(ierr);
+  }
+  ierr = ExpandIntervals(rowIntervals, rowIndices); CHKERRQ(ierr);
+  if (rowSection->debug()) {
+    for(int i = 0; i < numRowIndices; i++) {
+      printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
+    }
+  }
+  for(ALE::Mesh::real_section_type::IndexArray::iterator i_iter = colIntervals->begin(); i_iter != colIntervals->end(); ++i_iter) {
+    numColIndices += std::abs(i_iter->prefix);
+    if (colSection->debug()) {
+      printf("[%d]mat col interval (%d, %d)\n", colSection->commRank(), i_iter->prefix, i_iter->index);
+    }
+  }
+  if (colIndicesSize && (colIndicesSize != numColIndices)) {
+    ierr = PetscFree(colIndices); CHKERRQ(ierr);
+    colIndices = NULL;
+  }
+  if (!colIndices) {
+    colIndicesSize = numColIndices;
+    ierr = PetscMalloc(colIndicesSize * sizeof(PetscInt), &colIndices); CHKERRQ(ierr);
+  }
+  ierr = ExpandIntervals(colIntervals, colIndices); CHKERRQ(ierr);
+  if (colSection->debug()) {
+    for(int i = 0; i < numColIndices; i++) {
+      printf("[%d]mat col indices[%d] = %d\n", colSection->commRank(), i, colIndices[i]);
+    }
+    for(int i = 0; i < numRowIndices; i++) {
+      printf("[%d]", rowSection->commRank());
+      for(int j = 0; j < numColIndices; j++) {
+        printf(" %g", array[i*numColIndices+j]);
+      }
+      printf("\n");
+    }
+  }
+  ierr = MatSetValues(A, numRowIndices, rowIndices, numColIndices, colIndices, array, mode);
+  if (ierr) {
+    printf("[%d]ERROR in updateOperator: points %d %d\n", colSection->commRank(), rowE, colE);
+    for(int i = 0; i < numRowIndices; i++) {
+      printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
+    }
+    for(int i = 0; i < numColIndices; i++) {
+      printf("[%d]mat col indices[%d] = %d\n", colSection->commRank(), i, colIndices[i]);
+    }
+    CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "assembleMatrix"
 /*@C
   assembleMatrix - Insert values into a matrix
@@ -1356,6 +1460,150 @@ PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpol
   ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
   ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRefine_DM"
+PetscErrorCode MeshRefine_DM(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  double              refinementLimit;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
+  refinementLimit = oldMesh->getMaxVolume()/2.0;
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, false);
+  ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+
+  newMesh->setDiscretization(oldMesh->getDiscretization());
+  newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
+  newMesh->setupField(s);
+  PetscFunctionReturn(0);
+}
+
+#include "src/dm/mesh/examples/tutorials/Coarsener.h"
+#include "src/dm/mesh/examples/tutorials/fast_coarsen.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCoarsenHierarchy"
+/*@C
+  MeshCoarsenHierarchy - Coarsens the mesh into a hierarchy.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The original Mesh object
+. numLevels - The number of 
+. coarseningFactor - The expansion factor for coarse meshes
+- interpolate - Flag to create intermediate mesh elements
+
+  Output Parameter:
+. coarseHierarchy - The coarse Mesh objects
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate(), MeshGenerate()
+@*/
+PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh **coarseHierarchy)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  if (numLevels < 1) {
+    *coarseHierarchy = PETSC_NULL;
+    PetscFunctionReturn(0);
+  }
+  ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  if (oldMesh->getDimension() != 2) SETERRQ(PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
+  ierr = ALE::Coarsener::IdentifyBoundary(oldMesh, 2);CHKERRQ(ierr);
+  ierr = ALE::Coarsener::make_coarsest_boundary(oldMesh, 2, numLevels+1);CHKERRQ(ierr);
+  ierr = ALE::Coarsener::CreateSpacingFunction(oldMesh, 2);CHKERRQ(ierr);
+  ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(oldMesh, 2, numLevels, coarseningFactor);CHKERRQ(ierr);
+  ierr = PetscMalloc(numLevels * sizeof(Mesh),coarseHierarchy);CHKERRQ(ierr);
+  for(int l = 0; l < numLevels; l++) {
+    ALE::Obj<ALE::Mesh> newMesh = new ALE::Mesh(oldMesh->comm(), oldMesh->debug());
+    const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+
+    ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[l]);CHKERRQ(ierr);
+    newMesh->getTopology()->setPatch(0, oldMesh->getTopology()->getPatch(l+1));
+    newMesh->setDiscretization(oldMesh->getDiscretization());
+    newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
+    newMesh->setupField(s);
+    ierr = MeshSetMesh((*coarseHierarchy)[l], newMesh);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode MeshCoarsenHierarchy_DM(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCoarsenHierarchy(mesh, numLevels, 1.41, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetInterpolation_DM"
+/*
+  This method only handle P_1 discretizations at present.
+*/
+PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolation, Vec *scaling)
+{
+  ALE::Obj<ALE::Mesh> coarse;
+  ALE::Obj<ALE::Mesh> fine;
+  Mesh coarseMesh = (Mesh) dmCoarse;
+  Mesh fineMesh   = (Mesh) dmFine;
+  const ALE::Mesh::patch_type patch = 0;
+  Mat  P;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(fineMesh,   fine);CHKERRQ(ierr);
+  ierr = MeshGetMesh(coarseMesh, coarse);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type>&             coarseCoordinates = coarse->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>&             fineCoordinates   = fine->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& vertices          = fine->getTopology()->depthStratum(patch, 0);
+  const ALE::Obj<ALE::Mesh::real_section_type>&             sCoarse           = coarse->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type>&             sFine             = fine->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& coarseAtlas       = sCoarse->getAtlas();
+  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& fineAtlas         = sFine->getAtlas();
+  const ALE::Obj<ALE::Mesh::order_type>& coarseOrder = coarse->getFactory()->getGlobalOrder(coarse->getTopology(), patch, "default", coarseAtlas);
+  const ALE::Obj<ALE::Mesh::order_type>& fineOrder   = fine->getFactory()->getGlobalOrder(fine->getTopology(), patch, "default", fineAtlas);
+  const int dim = coarse->getDimension();
+  double *v0, *J, *invJ, detJ, *refCoords, *values;
+
+  ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
+  ierr = MatSetSizes(P, sFine->size(patch), sCoarse->size(patch), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(P);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
+  for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrict(patch, *v_iter);
+    const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(patch, coords);
+
+    coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
+    for(int d = 0; d < dim; ++d) {
+      refCoords[d] = 0.0;
+      for(int e = 0; e < dim; ++e) {
+        refCoords[d] += invJ[d*dim+e]*(coords[e] - v0[e]);
+      }
+      refCoords[d] -= 1.0;
+    }
+    values[0] = 1.0/3.0 - (refCoords[0] + refCoords[1])/3.0;
+    values[1] = 0.5*(refCoords[0] + 1.0);
+    values[2] = 0.5*(refCoords[1] + 1.0);
+    ierr = updateOperatorGeneral(P, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
+  }
+  ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
+  ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  *interpolation = P;
   PetscFunctionReturn(0);
 }
 

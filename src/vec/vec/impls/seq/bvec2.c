@@ -504,6 +504,7 @@ PetscErrorCode VecGetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],PetscSca
 
   PetscFunctionBegin;
   for (i=0; i<ni; i++) {
+    if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
     if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
     if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D to large maximum allowed %D",ix[i],xin->map.n);
@@ -524,15 +525,16 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
   PetscFunctionBegin;
   if (m == INSERT_VALUES) {
     for (i=0; i<ni; i++) {
-      if (ix[i] < 0) continue;
+      if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
+      if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
       if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.n);
 #endif
       xx[ix[i]] = y[i];
     }
   } else {
     for (i=0; i<ni; i++) {
-      if (ix[i] < 0) continue;
+      if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
       if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.n);
 #endif
@@ -641,7 +643,8 @@ static struct _VecOps DvOps = {VecDuplicate_Seq, /* 1 */
             VecRestoreArray_Seq,
             VecMax_Seq,
             VecMin_Seq,
-            VecSetRandom_Seq,0, /* 30 */
+            VecSetRandom_Seq,
+            VecSetOption_Seq, /* 30 */
             VecSetValuesBlocked_Seq,
             VecDestroy_Seq,
             VecView_Seq,
@@ -805,6 +808,21 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   (*V)->map.bs = win->map.bs;
   ierr = PetscOListDuplicate(win->olist,&(*V)->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(win->qlist,&(*V)->qlist);CHKERRQ(ierr);
+
+  (*V)->stash.ignorenegidx = win->stash.ignorenegidx;
+
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecSetOption_Seq"
+PetscErrorCode VecSetOption_Seq(Vec v,VecOption op)
+{
+  PetscFunctionBegin;
+  if (op == VEC_IGNORE_NEGATIVE_INDICES) {
+    v->stash.ignorenegidx = PETSC_TRUE;
+  } else if (op == VEC_TREAT_NEGATIVE_INDICES) {
+    v->stash.ignorenegidx = PETSC_FALSE;
+  }
+  PetscFunctionReturn(0);
+}

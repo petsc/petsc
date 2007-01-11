@@ -297,7 +297,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
   PetscValidType(rnd,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(rnd->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(rnd->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(rnd,1,viewer,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
@@ -358,7 +360,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {    
-      ierr = PetscRandomView(rnd, PETSC_VIEWER_STDOUT_(rnd->comm));CHKERRQ(ierr);
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(rnd->comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
     } 
   }
   PetscFunctionReturn(0);

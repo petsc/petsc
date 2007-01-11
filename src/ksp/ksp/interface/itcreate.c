@@ -3,7 +3,7 @@
 /*
      The basic KSP routines, Create, View etc. are here.
 */
-#include "src/ksp/ksp/kspimpl.h"      /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"      /*I "petscksp.h" I*/
 #include "petscsys.h"
 
 /* Logging support */
@@ -563,11 +563,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNullSpace(KSP ksp,MatNullSpace nullsp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ksp->nullsp) {
-    ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (ksp->nullsp) { ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr); }
   ksp->nullsp = nullsp;
-  ierr = PetscObjectReference((PetscObject)ksp->nullsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

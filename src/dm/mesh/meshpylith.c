@@ -219,8 +219,9 @@ namespace ALE {
     };
     void Builder::buildSplit(const Obj<pair_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]) {
       const pair_section_type::patch_type                     patch = 0;
-      pair_section_type::value_type                           values[3];
+      pair_section_type::value_type                          *values;
       std::map<pair_section_type::point_type, std::set<int> > elem2index;
+      int                                                     numValues = 0;
 
       splitField->setName("split");
       for(int e = 0; e < numSplit; e++) {
@@ -229,12 +230,17 @@ namespace ALE {
       }
       splitField->allocate();
       for(std::map<pair_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
+        numValues = std::max(numValues, (int) e_iter->second.size());
+      }
+      values = new pair_section_type::value_type[numValues];
+      for(std::map<pair_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         const pair_section_type::point_type& e = e_iter->first;
         int                                  k = 0;
 
         for(std::set<int>::const_iterator i_iter = e_iter->second.begin(); i_iter != e_iter->second.end(); ++i_iter, ++k) {
           const int& i = *i_iter;
 
+          if (k >= numValues) {throw ALE::Exception("Invalid split node input");}
           values[k].first    = splitInd[i*2+1] + numCells;
           values[k].second.x = splitVals[i*3+0];
           values[k].second.y = splitVals[i*3+1];
@@ -242,6 +248,7 @@ namespace ALE {
         }
         splitField->update(patch, e, values);
       }
+      delete [] values;
     };
     void Builder::readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]) {
       PetscViewer    viewer;

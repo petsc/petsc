@@ -5,7 +5,7 @@
 #define __feti_h
 
 #include <stdlib.h>
-#include "src/mat/matimpl.h"       /* includes also petscmat.h */
+#include "include/private/matimpl.h"       /* includes also petscmat.h */
 #include "petscsles.h"
 #include "src/vec/vecimpl.h"       /* otherwise complains at first use of vec->N aso. (typedef, but declaration) */ 
 #include <string.h>

@@ -54,8 +54,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
   while (nlist) {
     ierr = PetscStrcmp(name,nlist->name,&match);CHKERRQ(ierr);
     if (match) {  /* found it in the list */
-      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       ierr = PetscObjectReference(obj);CHKERRQ(ierr);
+      ierr = PetscObjectDereference(nlist->obj);CHKERRQ(ierr);
       nlist->obj = obj;
       PetscFunctionReturn(0);
     }

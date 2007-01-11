@@ -4,7 +4,7 @@
    This file contains simple binary read/write routines for matrices.
  */
 
-#include "src/mat/matimpl.h"             /*I  "petscmat.h"  I*/
+#include "include/private/matimpl.h"             /*I  "petscmat.h"  I*/
 #include "petscsys.h"
 
 #undef __FUNCT__  

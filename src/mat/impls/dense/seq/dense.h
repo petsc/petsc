@@ -1,7 +1,7 @@
 
 #if !defined(__DENSE_H)
 #define __DENSE_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 
 /*  

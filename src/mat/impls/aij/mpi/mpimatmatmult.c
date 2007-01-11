@@ -28,8 +28,8 @@ PetscErrorCode MatMatMult_MPIAIJ_MPIAIJ(Mat A,Mat B,MatReuse scall,PetscReal fil
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscObjectContainerDestroy_Mat_MatMatMultMPI"
-PetscErrorCode PetscObjectContainerDestroy_Mat_MatMatMultMPI(void *ptr)
+#define __FUNCT__ "PetscContainerDestroy_Mat_MatMatMultMPI"
+PetscErrorCode PetscContainerDestroy_Mat_MatMatMultMPI(void *ptr)
 {
   PetscErrorCode       ierr;
   Mat_MatMatMultMPI    *mult=(Mat_MatMatMultMPI*)ptr;
@@ -56,41 +56,45 @@ EXTERN PetscErrorCode MatDestroy_AIJ(Mat);
 #define __FUNCT__ "MatDestroy_MPIAIJ_MatMatMult"
 PetscErrorCode MatDestroy_MPIAIJ_MatMatMult(Mat A)
 {
-  PetscErrorCode       ierr;
-  PetscObjectContainer container;
-  Mat_MatMatMultMPI    *mult=PETSC_NULL;
+  PetscErrorCode     ierr;
+  PetscContainer     container;
+  Mat_MatMatMultMPI  *mult=PETSC_NULL;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
+    ierr = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr);
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
   }
   A->ops->destroy = mult->MatDestroy;
   ierr = PetscObjectCompose((PetscObject)A,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   ierr = (*A->ops->destroy)(A);CHKERRQ(ierr);
-  ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_MPIAIJ_MatMatMult"
 PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat *M) {
-  PetscErrorCode       ierr;
-  Mat_MatMatMultMPI    *mult; 
-  PetscObjectContainer container;
+  PetscErrorCode     ierr;
+  Mat_MatMatMultMPI  *mult; 
+  PetscContainer     container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)A,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
+    ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
   }
+  /* Note: the container is not duplicated, because it requires deep copying of
+     several large data sets (see PetscContainerDestroy_Mat_MatMatMultMPI()).
+     These data sets are only used for repeated calling of MatMatMultNumeric(). 
+     *M is unlikely being used in this way. Thus we create *M with pure mpiaij format */
   ierr = (*mult->MatDuplicate)(A,op,M);CHKERRQ(ierr);
-  (*M)->ops->destroy   = mult->MatDestroy;   /* =MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
-  (*M)->ops->duplicate = mult->MatDuplicate; /* =MatDuplicate_ MPIAIJ */
+  (*M)->ops->destroy   = mult->MatDestroy;   /* = MatDestroy_MPIAIJ, *M doesn't duplicate A's container! */
+  (*M)->ops->duplicate = mult->MatDuplicate; /* = MatDuplicate_MPIAIJ */
   PetscFunctionReturn(0);
 }
 
@@ -98,10 +102,10 @@ PetscErrorCode MatDuplicate_MPIAIJ_MatMatMult(Mat A, MatDuplicateOption op, Mat 
 #define __FUNCT__ "MatMatMultSymbolic_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *C)
 {
-  PetscErrorCode       ierr;
-  PetscInt             start,end;
-  Mat_MatMatMultMPI    *mult;
-  PetscObjectContainer container;
+  PetscErrorCode     ierr;
+  PetscInt           start,end;
+  Mat_MatMatMultMPI  *mult;
+  PetscContainer     container;
  
   PetscFunctionBegin;
   if (A->cmap.rstart != B->rmap.rstart || A->cmap.rend != B->rmap.rend){
@@ -125,10 +129,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
   ierr = MatMerge(A->comm,mult->C_seq,B->cmap.n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
-  ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetPointer(container,mult);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(container,mult);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)(*C),"Mat_MatMatMultMPI",(PetscObject)container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetUserDestroy(container,PetscObjectContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_Mat_MatMatMultMPI);CHKERRQ(ierr);
   mult->MatDestroy   = (*C)->ops->destroy;
   mult->MatDuplicate = (*C)->ops->duplicate;
 
@@ -142,15 +146,15 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 #define __FUNCT__ "MatMatMultNumeric_MPIAIJ_MPIAIJ"
 PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
 {
-  PetscErrorCode       ierr;
-  Mat                  *seq;
-  Mat_MatMatMultMPI    *mult; 
-  PetscObjectContainer container;
+  PetscErrorCode     ierr;
+  Mat                *seq;
+  Mat_MatMatMultMPI  *mult; 
+  PetscContainer     container;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)C,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) {
-    ierr  = PetscObjectContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
+    ierr  = PetscContainerGetPointer(container,(void **)&mult);CHKERRQ(ierr); 
   } else {
     SETERRQ(PETSC_ERR_PLIB,"Container does not exit");
   }
@@ -209,7 +213,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscErrorCode         ierr;
   Mat_MPIAIJ             *aij = (Mat_MPIAIJ*) A->data;
   PetscInt               nz = aij->B->cmap.n;
-  PetscObjectContainer   cont;
+  PetscContainer         cont;
   MPIAIJ_MPIDense        *contents;
   VecScatter             ctx = aij->Mvctx; 
   VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
@@ -218,10 +222,10 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionBegin; 
   ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,0.0,C);
 
-  ierr = PetscObjectContainerCreate(A->comm,&cont);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(A->comm,&cont);CHKERRQ(ierr);
   ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetPointer(cont,contents);CHKERRQ(ierr);
-  ierr = PetscObjectContainerSetUserDestroy(cont,MPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
+  ierr = PetscContainerSetPointer(cont,contents);CHKERRQ(ierr);
+  ierr = PetscContainerSetUserDestroy(cont,MPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
 
   /* Create work matrix used to store off processor rows of B needed for local product */
   ierr = MatCreateSeqDense(PETSC_COMM_SELF,nz,B->cmap.N,PETSC_NULL,&contents->workB);CHKERRQ(ierr);
@@ -233,7 +237,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
                       to->n,MPI_Request,&contents->swaits);CHKERRQ(ierr);
 
   ierr = PetscObjectCompose((PetscObject)(*C),"workB",(PetscObject)cont);CHKERRQ(ierr);
-  ierr = PetscObjectContainerDestroy(cont);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(cont);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -256,12 +260,12 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   PetscMPIInt            tag = ctx->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;
   MPI_Status             status;
   MPIAIJ_MPIDense        *contents;
-  PetscObjectContainer   cont;
+  PetscContainer         cont;
   Mat                    workB;
 
   PetscFunctionBegin;
   ierr = PetscObjectQuery((PetscObject)C,"workB",(PetscObject*)&cont);CHKERRQ(ierr);
-  ierr = PetscObjectContainerGetPointer(cont,(void**)&contents);CHKERRQ(ierr);
+  ierr = PetscContainerGetPointer(cont,(void**)&contents);CHKERRQ(ierr);
 
   workB = *outworkB = contents->workB;
   if (nrows != workB->rmap.n) SETERRQ2(PETSC_ERR_PLIB,"Number of rows of workB %D not equal to columns of aij->B %D",nrows,workB->cmap.n);

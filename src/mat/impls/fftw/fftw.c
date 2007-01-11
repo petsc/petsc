@@ -4,7 +4,7 @@
     Provides an interface to the FFTW package
 */
 
-#include "src/mat/matimpl.h"          /*I "petscvec.h" I*/
+#include "include/private/matimpl.h"          /*I "petscvec.h" I*/
 EXTERN_C_BEGIN 
 #if defined(PETSC_USE_COMPLEX)
 #include "fftw3.h"

@@ -1,7 +1,22 @@
 #define PETSCDM_DLL
  
-#include "petscda.h"     /*I      "petscda.h"     I*/
-#include "petscmat.h"    /*I      "petscmat.h"    I*/
+#include "petscda.h"             /*I      "petscda.h"     I*/
+#include "src/dm/da/daimpl.h"    
+#include "petscmat.h"    
+
+typedef struct _VecPackOps *VecPackOps;
+struct _VecPackOps {
+  PetscErrorCode (*view)(VecPack,PetscViewer);
+  PetscErrorCode (*createglobalvector)(VecPack,Vec*);
+  PetscErrorCode (*getcoloring)(VecPack,ISColoringType,ISColoring*);
+  PetscErrorCode (*getmatrix)(VecPack, MatType,Mat*);
+  PetscErrorCode (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
+  PetscErrorCode (*refine)(VecPack,MPI_Comm,VecPack*);
+  PetscErrorCode (*getinjection)(VecPack,VecPack,VecScatter*);
+
+  PetscErrorCode (*forminitialguess)(VecPack,PetscErrorCode (*)(void),Vec,void*);
+  PetscErrorCode (*formfunction)(VecPack,PetscErrorCode (*)(void),Vec,void*);
+};
 
 /*
    rstart is where an array/subvector starts in the global parallel vector, so arrays
@@ -24,16 +39,6 @@ struct VecPackLink {
   PetscMPIInt        rank;          /* process where array unknowns live */
 };
 
-typedef struct _VecPackOps *VecPackOps;
-struct _VecPackOps {
-  PetscErrorCode (*view)(VecPack,PetscViewer);
-  PetscErrorCode (*createglobalvector)(VecPack,Vec*);
-  PetscErrorCode (*getcoloring)(VecPack,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(VecPack,MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
-  PetscErrorCode (*refine)(VecPack,MPI_Comm,VecPack*);
-};
-
 struct _p_VecPack {
   PETSCHEADER(struct _VecPackOps);
   PetscInt           n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
@@ -42,6 +47,54 @@ struct _p_VecPack {
   PetscInt           nDA,nredundant; /* how many DA's and seperate redundant arrays used to build VecPack */
   struct VecPackLink *next;
 };
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecPackFormInitialGuess_DADADA"
+/*
+    Maps from 
+*/
+PetscErrorCode PETSCDM_DLLEXPORT VecPackFormInitialGuess_DADADA(VecPack pack,PetscErrorCode (*fun)(void),Vec X,void *ctx)
+{
+  PetscErrorCode ierr;
+  PetscErrorCode (*f)(DALocalInfo*,void*,DALocalInfo*,void*,DALocalInfo*,void*) = 
+                           (PetscErrorCode (*)(DALocalInfo*,void*,DALocalInfo*,void*,DALocalInfo*,void*)) fun;
+  DALocalInfo da1,da2,da3;
+  DA          DA1,DA2,DA3;
+  void        *x1,*x2,*x3;
+  Vec         X1,X2,X3;
+
+  PetscFunctionBegin;
+  ierr = VecPackGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(DA1,&da1);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(DA2,&da2);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(DA3,&da3);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DA1,X1,&x1);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DA2,X2,&x2);CHKERRQ(ierr);
+  ierr = DAVecGetArray(DA3,X3,&x3);CHKERRQ(ierr);
+
+
+  ierr = (*f)(&da1,x1,&da2,x2,&da3,x3);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecView_DADADA"
+PetscErrorCode VecView_DADADA(VecPack pack,Vec X,PetscViewer viewer)
+{
+  PetscErrorCode ierr;
+  DA             DA1,DA2,DA3;
+  Vec            X1,X2,X3;
+
+  PetscFunctionBegin;
+  ierr = VecPackGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = VecPackGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = VecView(X1,viewer);CHKERRQ(ierr);
+  ierr = VecView(X2,viewer);CHKERRQ(ierr);
+  ierr = VecView(X3,viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecPackCreate"
@@ -89,6 +142,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
   p->ops->getinterpolation   = VecPackGetInterpolation;
   p->ops->getmatrix          = VecPackGetMatrix;
   p->ops->getcoloring        = VecPackGetColoring;
+
+  p->ops->forminitialguess   = VecPackFormInitialGuess_DADADA;
   *packer = p;
   PetscFunctionReturn(0);
 }
@@ -507,15 +562,18 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt oran
 {
   struct VecPackLink *mine,*next = packer->next;
   PetscErrorCode     ierr;
-  PetscMPIInt        rank,orankmax;
+  PetscMPIInt        rank;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have called VecPackCreateGlobalVector()");
   }
 #if defined(PETSC_USE_DEBUG)
-  ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,packer->comm);CHKERRQ(ierr);
-  if (orank != orankmax) SETERRQ2(PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
+  {
+    PetscMPIInt        orankmax;
+    ierr = MPI_Allreduce(&orank,&orankmax,1,MPI_INT,MPI_MAX,packer->comm);CHKERRQ(ierr);
+    if (orank != orankmax) SETERRQ2(PETSC_ERR_ARG_INCOMP,"orank %d must be equal on all processes, another process has value %d",orank,orankmax);
+  }
 #endif
 
   ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
@@ -651,6 +709,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
       }
       next = next->next;
     }
+    ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DADADA);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

@@ -476,7 +476,9 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
 
   /*LGMRES_MOD - free aug work vectors also */
   /*this was all allocated as one "chunk" */
-  ierr = VecDestroyVecs(lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
+  if (lgmres->augwork_alloc) {
+    ierr = VecDestroyVecs(lgmres->augvecs_user_work[0],lgmres->augwork_alloc);CHKERRQ(ierr);
+  }
   ierr = PetscFree(lgmres->augvecs_user_work);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->aug_order);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->mwork_alloc);CHKERRQ(ierr);
@@ -484,6 +486,7 @@ PetscErrorCode KSPDestroy_LGMRES(KSP ksp)
   if (lgmres->sol_temp) {ierr = VecDestroy(lgmres->sol_temp);CHKERRQ(ierr);}
   ierr = PetscFree(lgmres->Rsvd);CHKERRQ(ierr);
   ierr = PetscFree(lgmres->Dsvd);CHKERRQ(ierr);
+  ierr = PetscFree(lgmres->orthogwork);CHKERRQ(ierr);
   ierr = PetscFree(lgmres);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

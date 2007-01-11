@@ -52,6 +52,7 @@ struct _p_TS {
   KSP ksp;
   Mat A,B;           /* internel matrix and preconditioner used for KSPSolve() */
   Mat Arhs,Alhs;     /* user provided right/left hand side matrix and preconditioner */
+  MatStructure matflg; /* flag indicating the matrix structure of Arhs and Alhs */
 
   /* ---------------------Nonlinear Iteration------------------------------*/
   SNES  snes;

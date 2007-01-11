@@ -103,35 +103,24 @@ PETSC_DIR `pwd`</font></li>
 (use --help for options)</li>
         <li> <font color="#ff0000">make all</font></li>
         <li><font color="#ff0000">make test</font></li>
-        <li>Encounter problems?
-          <ul>
-            <li> <strong>Read the error message from
-./config/configure.py!</strong> </li>
-            <ul>
-              <li>If you get the message 'No such file or
+      </ul>
+      <h3>Encounter problems?</h3>
+      <ul>
+        <li><strong>Read the error message from
+./config/configure.py!</strong></li>
+        <li>If you get the message 'No such file or
 directory'
 try <font color="#ff0000">python config/configure.py</font></li>
-              <li><a href="#BLAS/LAPACK"> BLAS and
-LAPACK problems</a> </li>
-              <li><a href="#MPI:"> MPI problems</a>.
-I <a href="#I%20don%27t%20want%20to%20use%20MPI:">Don't
+        <li><a href="installation.html#BLAS/LAPACK"> BLAS and
+LAPACK problems</a></li>
+        <li><a href="installation.html#MPI:"> MPI problems</a>.
+I <a href="installation.html#I%20don%27t%20want%20to%20use%20MPI:">Don't
 want MPI</a></li>
-            </ul>
-            <li> Check the <a
+        <li>Trouble using other <a href="#external">external packages</a><br>
+        </li>
+        <li> Check the <a
  href="http://www.mcs.anl.gov/petsc/petsc-as/documentation/bugreporting.html">
 bug-reporting</a> section</li>
-          </ul>
-        </li>
-        <li> <a name="external"></a><a
- href="../miscellaneous/external.html">Optional external
-packages</a>
-for PETSc to use</li>
-        <ul>
-          <li><font color="#ff0000">--download-PACKAGE</font>
-for example: <span style="color: rgb(255, 0, 0);">--download-mpich</span>
-or <span style="color: rgb(255, 0, 0);">--download-hypre</span><br>
-          </li>
-        </ul>
       </ul>
       </td>
     </tr>
@@ -141,12 +130,15 @@ or <span style="color: rgb(255, 0, 0);">--download-hypre</span><br>
   <tbody>
     <tr>
       <td valign="top" width="75%">
+      <hr>
       <h3><b>Example Usages:</b></h3>
       <ul>
         <li>Examples are at <span style="font-weight: bold;">config/*.py</span>.
 We use some of these scripts locally for testing - <span
- style="font-weight: bold;"></span>for example <span
- style="font-weight: bold;">config/linux-gnu-amd64.py</span><br>
+ style="font-weight: bold;"></span>for example one can update these
+files and run as:<span style="font-weight: bold;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
+ style="color: rgb(255, 0, 0);">config/linux-gnu-amd64.py</span><br>
         </li>
         <li>Using the bash shell, assuming BLAS,
 LAPACK, MPICH are not currently installed <font color="#551a8b">./config/configure.py</font>
@@ -159,7 +151,8 @@ PETSC_DIR=/home/petsc/petsc-2.3.2-p0<br>
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py
---download-f-blas-lapack=1 --download-mpich=1<br>
+--with-cc=gcc --with-fc=g77 --download-f-blas-lapack=1
+--download-mpich=1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -172,14 +165,16 @@ PETSC_DIR=/home/petsc/petsc-2.3.2-p0<br>
 cd $PETSC_DIR<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py
---download-f-blas-lapack=1 --download-mpich=1
+--with-cc=gcc --with-fc=g77 --with-cxx=g++ --download-f-blas-lapack=1
+--download-mpich=1
 --with-scalar-type=complex --with-clanguage=cxx<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make test</font></li>
         <li>Using the bash shell, assuming BLAS,
-LAPACK, MPICH software are installed at the specified locations:<br>
+LAPACK, MPICH software are installed at the specified locations, and
+use MPI compilers <span style="font-weight: bold;">mpicc/mpif77</span>:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">export
 PETSC_DIR=/home/petsc/petsc-2.3.2-p0<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -191,31 +186,8 @@ cd $PETSC_DIR<br>
 make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make test</font><font color="#ff0000"> </font></li>
-        <li>Using tcsh shell, install PETSc with default BLAS and
-LAPACK and no MPI:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv
-PETSC_DIR /home/petsc/petsc-2.3.2-p0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-cd $PETSC_DIR<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
---with-mpi=0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make test </font></li>
-        <li>Install PETSc with default BLAS, LAPACK and MPI using
-the
-GNU compilers, build the optimized version of the libraries:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">./config/configure.py
---with-vendor-compilers=0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make test </font></li>
-        <li>Using csh shell, install PETSc on Linux with two
-different
-sets of compilers:<br>
+        <li>Using csh shell, install 2 variants of PETSc, one with gnu,
+the other with intel compilers:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv
 PETSC_ARCH linux-gnu<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -305,43 +277,231 @@ from scratch.<br>
           </tr>
         </tbody>
       </table>
+      <p><font color="#551a8b"><b><a
+ href="installation.html#Docs:%20%20Installation">Return
+to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
+      <hr>
+      <p><font color="#551a8b"><b><a name="Compilers">Compilers:</a></b></font>
+Specify compilers and compiler options used to build PETSc [and perhaps
+external packages]<br>
+      </p>
+      <ul>
+        <li>Specify compilers using the options <span
+ style="color: rgb(255, 0, 0);">--with-cc --with-fc --with-cxx</span>
+for c, c++, fortran compilers</li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">--with-cc=gcc
+--with-fc=g77</span></li>
+        </ul>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">--with-cc=gcc
+--with-cxx=g++ --with-fc=gfortran --with-clanguage=cxx</span></li>
+        </ul>
+        <li>If fortran compiler is not available - then disabling using
+fortran</li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">--with-fc=0</span></li>
+        </ul>
+        <li>If no compilers are specified - configure will
+automatically look for available MPI or regular compilers in users PATH</li>
+        <ul>
+          <li>mpicc/mpiCC/mpif90 or mpif77<br>
+          </li>
+          <li>gcc/g++/gfortran or g77</li>
+          <li>cc/CC/f77 etc..</li>
+        </ul>
+        <li>Its best to use <a href="MPICompilers">MPI compilers</a>
+as this will avoid the situation where MPI is compiled with one set of
+compilers [like gcc/g77] and user specified incompatible
+compilers&nbsp; to PETSc [perhaps icc/ifort]</li>
+        <li>Configure defaults to building PETSc in debug mode. One can
+switch to using optimzed mode with the toggle option --with-debugging
+[defaults to debug enabled]. Additionally one can specify more suitable
+optimization flags
+with the options COPTFLAGS, FOPTFLAGS, CXXOPTFLAGS.</li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">./config/configure.py
+--with-cc=gcc --with-fc=g77 --with-debugging=0 COPTFLAGS='-O3 -march=p4
+-mtune=p4' FOPTFLAGS='-O3 -qarch=p4 -qtune=p4'</span></li>
+        </ul>
+        <li>Configure cannot detect compiler libraries for certain set
+of compilers. In this case one can specify additional system/compiler
+libraries using the LIBS option</li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">./config/configure.py
+LIBS='-ldl /usr/lib/libm.a'</span><br>
+          </li>
+        </ul>
+      </ul>
+      <p> </p>
+      <p><font color="#551a8b"><b><a
+ href="installation.html#Docs:%20%20Installation">Return
+to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
+      <hr>
+      <p><font color="#551a8b"><b><a name="external">External Packages:</a></b></font>
+PETSc provides interfaces to various <a
+ href="../miscellaneous/external.html">external packages</a>.
+Blas/Lapack and MPI are generally required packages - but one can
+optionally use <a href="linearsolvertable.html">external solvers</a>
+like Hypre, MUPMS etc.. from within PETSc aplications.<br>
+      </p>
+      <p>PETSc configure has the ability to download and install these
+external packages. Alternatively if these packages are already
+installed, then configure can detect and use them.</p>
+      <p>The following modes can be used to install/use external
+packages with configure.<br>
+      <span style="font-weight: bold;"></span></p>
+      <p><span style="color: rgb(153, 51, 153);">--download-PACKAGENAME=1</span>
+: Download specified package and install it. Then configure PETSc to
+use this package.<br>
+      </p>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">--download-f-blas-lapack=1
+--download-mpich=1</span></li>
+        <li><span style="color: rgb(255, 0, 0);">--download-blacs=1
+--download-scalapack=1 --download-mumps=1</span><br>
+        </li>
+      </ul>
+      <p><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(153, 51, 153);">--download-PACKAGENAME=/PATH/TO/package.tar.gz</span></span>
+: If configure cannot automatically download the package [due to
+network/firewall issues], one can download the package by alternaive
+means [perhaps wget or scp via some other machine]. Once the tarfile is
+downloaded, the path to this file can be specified to configure with
+this option. Configure will proceed to install this package and then
+configure PETSc with it.<br>
+      </p>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">--download-mpich</span><span
+ style="color: rgb(255, 0, 0);">=/home/petsc/mpich2-1.0.4p1.tar.gz</span><br>
+        </li>
+      </ul>
+      <p><span style="color: rgb(153, 51, 153);">--with-PACKAGENAME-dir=PATH</span>
+: If the external package is already installed - specify its location
+to configure [it will attempt to detect, include, library files from
+this location.] Normally this corresponds to the top-level installation
+dir for the package.<br>
+      </p>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">--with-mpi-dir=/home/petsc/software/mpich2-1.0.4p1</span></li>
+      </ul>
+      <span style="color: rgb(153, 51, 153);">--with-PACKAGENAME-include=INCLUDEPATH
+--with-PACKAGENAME-lib=LIBRARYLIST</span>: Usually a package is defined
+completely by its include file location - and library list. [If the
+package is already installed] - then one can use these two options to
+specify the package to configure.<br>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">--with-parmetis-include=/home/petsc/software/parmetis/include
+--with-parmetis-lib=/home/petsc/software/parmetis/lib/libparmetis.a</span></li>
+        <li><span style="color: rgb(255, 0, 0);">--with-mpi-include=/home/petsc/software/mpich2-1.0.4p1/include
+--with-mpi-lib=[/home/petsc/software/mpich2-1.0.4p1/lib/libmpich.a,-lpthread,-lrt]</span></li>
+      </ul>
+      <span style="font-weight: bold;">Notes</span>:<br>
+      <ul>
+        <li>Run <span style="color: rgb(255, 0, 0);"></span><span
+ style="color: rgb(255, 0, 0);"><span style="color: rgb(51, 0, 51);"><span
+ style="color: rgb(255, 0, 0); font-weight: bold;">config/configure.py-help</span></span></span><span
+ style="color: rgb(255, 0, 0);"></span> to get the list of external
+packages - and corresponding additional options&nbsp; [for example <span
+ style="color: rgb(255, 0, 0);">--with-mpirun</span> for mpich]<br>
+        </li>
+        <li>Generally one would use either one of the above 4
+modes for any given package - and not mix these. [i.e mixing <span
+ style="color: rgb(255, 0, 0);">-with-mpi-dir <span
+ style="color: rgb(51, 0, 51);">and</span> </span><span
+ style="color: rgb(255, 0, 0);">-with-mpi-include<span
+ style="color: rgb(51, 0, 51);"> etc.. should be avoided]</span></span></li>
+        <li><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(51, 0, 51);">Some packages might not support certain
+options like <span style="color: rgb(255, 0, 0);">--download-PACKAGENAME</span>
+or <span style="color: rgb(255, 0, 0);">--with-PACKAGENAME-dir</span>.
+Some architectures like Windows might have issues with these options.
+In these cases, <span style="color: rgb(255, 0, 0);">--with-PACKAGENAME-include
+--with-PACKAGENAME-lib</span> options should be prefered.</span></span></li>
+        <li><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(51, 0, 51);">Its best to install some external
+packages like SuperLU_DIST, MUMPS, Hypre with the option <span
+ style="color: rgb(255, 0, 0);">--download-PACKAGENAME</span>.&nbsp;
+[the correct options for these packages are <span
+ style="color: rgb(255, 0, 0);">--download-superlu_dist=1
+--download-mumps=1 --download-hypre=1</span>]<br>
+          </span></span></li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(51, 0, 51);">This will install the COMPATIBLE
+version of the external package. A generic install of this package
+might not be compatible with PETSc [perhaps due to version differences
+- or perhaps due to the requirement of additional patches for it to
+work with PETSc]</span></span></li>
+          <li><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(51, 0, 51);">All packages will be installed with the
+same set of compilers - this avoids problems [for ex: wiered link time
+errors] with mixing code compiled with multiple compilers [for example
+mixing g77 and ifort compiled code].<br>
+            </span></span></li>
+        </ul>
+        <li><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(51, 0, 51);">If one had to download a compatible
+external package manually, then the URL for this package is listed in
+configure source for this package. For example, check <span
+ style="color: rgb(153, 51, 153);">python/PETSc/packages/SuperLU.py</span>
+for the url for download this package.</span></span></li>
+      </ul>
+      <span style="font-weight: bold;">Additional options</span>:<br>
+      <p><span style="color: rgb(255, 0, 0);"><span
+ style="color: rgb(153, 51, 153);">--with-external-packages-dir=PATH</span></span>
+: By default, external packages will be installed in <span
+ style="color: rgb(255, 0, 0);">${PETSC_DIR}/externalpackages</span>.
+However one can choose a different location where these packages are
+installed.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
       <hr>
       <p><font color="#551a8b"><b><a name="BLAS/LAPACK">BLAS/LAPACK</a>:</b></font>
 these packages provide some basic numeric kernels used by PETSc.</p>
       <ul>
-        <li>If <font color="#0f0000">./config/configure.py</font>
-cannot locate BLAS and LAPACK you can use the options <font
- color="#0f0000">--with-blas-lapack-dir=directory</font>
-or <font color="#0f0000">--with-blas-lib=library</font>
-and <font color="#0f0000">--with-lapack-lib=library</font>
-or <font color="#0f0000">--with-blas-lapack-lib=library</font>
-to indicate the
-location of the libraries.
-          <ul>
-            <li>on Microsoft Windows, Linux and Intel based Apple
-Macs, one can use <a href="http://www.intel.com/software/products/mkl">Intel
-MKL</a></li>
-          </ul>
+        <li>Configure will automatically look for blas/lapck in certain
+standard locations</li>
+        <ul>
+          <li>&nbsp;/usr/lib/libblas.a,liblapack.a</li>
+          <li>Intel MKL on Windows or Linux</li>
+          <li>sunperf on solaris</li>
+          <li>VecLib on Macs</li>
+          <li>IBM ESSL<br>
+          </li>
+          <li>[and many more]<br>
+          </li>
+        </ul>
+        <li>One can use the following options to let configure
+download/install blas automatically. <br>
         </li>
-        <li>Use the <font color="#0f0000">./config/configure.py</font>
-options <font color="#0f0000">--download-f-blas-lapack=yes</font>
-or <font color="#0f0000">--download-f-blas-lapack=ifneeded</font>,
-then PETSc
-will download and install a BLAS and LAPACK for you. <br>
-        </li>
-        <li>Use <font color="#0f0000">--download-c-blas-lapack
-(as
-opposed to </font><font color="#0f0000">--download-f-blas-lapack)
-only
-if there is no fortran compiler.</font></li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">--download-f-blas-lapack=1</span>&nbsp;
+[when fortran compiler is present]<br>
+          </li>
+          <li><span style="color: rgb(255, 0, 0);">--download-c-blas-lapack=1</span>
+[when configuring without a fortran compiler - i.e --with-fc=0]</li>
+        </ul>
+        <li>Alternatively one can use other <a href="#external">externalpackages</a>
+installation options like the following.</li>
+        <ul>
+          <li><span style="color: rgb(255, 0, 0);">--with-blas-lapack-lib=libsunperf.a</span><br>
+          </li>
+        </ul>
+        <ul>
+          <li style="color: rgb(255, 0, 0);">--with-blas-lib=libblas.a
+--with-lapack-lib=liblapack.a</li>
+          <li><span style="color: rgb(255, 0, 0);">--with-blas-lapack-dir=opt/intel/mkl72</span></li>
+        </ul>
+      </ul>
+      <span style="font-weight: bold;">Notes:</span><br>
+      <ul>
         <li><font color="#0f0000">Sadly, IBM's ESSL
 does not have all the private routines of BLAS that some packages, such
 as SuperLU expect; in particular slamch, dlamch and xerbla. Therefor
-you need to either use </font><font color="#0f0000">--download-f-blas-lapack=yes
-or install a copy of BLAS/LAPACK from <a href="http://www.netlib.org">Netlib</a>
-instead of using ESSL directly.</font></li>
+you need a full implementation of blas/lapack when using these package.
+In this case, use </font><font style="color: rgb(255, 0, 0);"
+ color="#0f0000">--download-f-blas-lapack=yes</font></li>
       </ul>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
@@ -349,24 +509,79 @@ to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font></p>
       <p><font color="#551a8b"><b><a name="MPI:">MPI:</a></b></font>
 This software provides the parallel functionality for PETSc. </p>
       <ul>
-        <li> If <font color="#0f0000">./config/configure.py</font>
-cannot locate MPI you can indicate its location with <font
- color="#0f0000">--with-mpi-dir=directory</font> or <font
- color="#0f0000">--with-mpi-include=directory</font> <font
- color="#0f0000">--with-mpi-lib=libraryname</font> <font
- color="#0f0000">--with-mpirun=pathofmpirun</font> </li>
+        <li>Configure will automatically look for MPI compilers
+mpicc/mpif77 etc and use them if found [in default PATH]<br>
+        </li>
+        <li>One can use the following options to download/install<br>
+        </li>
+        <li>One can use the following options to let configure
+download/install MPI automatically</li>
         <ul>
-          <li>On parallel machines, Vendor provided MPI might
-already
-be installed.&nbsp; IBM, SGI, Cray etc provide their own.&nbsp;</li>
-          <li>If vendor provided MPI is not available, it can be
-installed from sources. We recommend MPICH</li>
+          <li><span style="color: rgb(255, 0, 0);">--download-mpich=1</span>&nbsp;&nbsp;
+[install and use MPICH]</li>
+          <li><span style="color: rgb(255, 0, 0);">--download-lam=1</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[Install LAM version of MPI]<br>
+          </li>
         </ul>
-        <li>Use the <font color="#0f0000">./config/configure.py</font>
-option <font color="#0f0000">--download-mpich=yes</font>
-then PETSc
-will download and install MPICH for you. </li>
+        <li>Alternatively one can use other <a
+ href="installation.html#external">externalpackages</a> installation
+options.</li>
       </ul>
+      <font color="#551a8b"><b><a name="MPICompilers"></a></b></font><span
+ style="font-weight: bold; color: rgb(153, 51, 153);">Using MPI
+Compilers</span>:<br>
+      <ul>
+        <li>Its best to install PETSc with MPI compilers - this way,
+the SAME compilers used to build MPI are used to build PETSc [this
+avoids incompatibilities which might crop up - when using libraries
+compiled with different c or fortran compilers.]. This can be achieved
+with the following modes.</li>
+        <ul>
+          <li>Vendor provided MPI might
+already
+be installed.&nbsp; IBM, SGI, Cray etc provide their own.<br>
+&nbsp; <span style="color: rgb(255, 0, 0);">./config/confiure.py
+--with-cc=mpcc --with-fc=mpf77</span><br>
+          </li>
+        </ul>
+        <ul>
+          <li>If <font color="#0f0000">using MPICH which is already
+installed [perhaps using myrinet/gm] then use:<br>
+&nbsp; <span style="color: rgb(255, 0, 0);">./config/configure.py</span></font><span
+ style="color: rgb(255, 0, 0);">
+--with-mpi-dir=/path-to-mpich-install</span></li>
+        </ul>
+      </ul>
+      <p><font color="#551a8b"><b><a name="I don't want to use MPI:">Installing
+without MPI:</a></b></font> <br>
+      </p>
+      <ul>
+        <li>You can build
+(sequential) PETSc
+without an MPI. This is useful for quickly installing PETSc [if MPI is
+not available - for whatever reason]. However - if there is any MPI
+code in user application, then its best to install a full MPI - even if
+the usage is currently limited to uniprocessor mode.</li>
+        <ul>
+          <li><font color="#ff0000">./config/configure.py
+--with-mpi=0</font></li>
+        </ul>
+      </ul>
+      <span style="font-weight: bold;">Notes:<br>
+      </span>
+      <ul>
+        <li>Avoid specifing compilers [with options <span
+ style="color: rgb(255, 0, 0);">--with-cc</span> or <span
+ style="color: rgb(255, 0, 0);">--with-fc</span>]&nbsp; when using the
+option <span style="color: rgb(255, 0, 0);">--with-mpi-dir</span>.
+[Option<span style="color: rgb(255, 0, 0);">--with-mpi-dir</span>
+specifies using MPI compilers - so its best to use them - and not
+overwride them with user specified <span style="color: rgb(255, 0, 0);">--with-cc</span>].</li>
+        <li>One can specify mpiexec or mpirun with the options <span
+ style="color: rgb(255, 0, 0);">--with-mpirun</span><br>
+        </li>
+      </ul>
+      <br>
       <table style="border-collapse: collapse;" id="AutoNumber5"
  border="1" bordercolor="#111111" cellpadding="0" cellspacing="0"
  width="72%">
@@ -410,16 +625,9 @@ Windows)</td>
           </tr>
         </tbody>
       </table>
-      <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
-      <hr>
-      <p><font color="#551a8b"><b><a name="I don't want to use MPI:">I
-don't want to use MPI:</a></b></font> You can build
-(sequential) PETSc
-without an MPI.</p>
-Run <font color="#ff0000">./config/configure.py
---with-mpi=0 ....</font>
-      <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
+      <br>
+      <p><font color="#551a8b"><b><a
+ href="installation.html#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp;&nbsp;</b></font> </p>
       <hr>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
@@ -503,12 +711,12 @@ and associated tools - to enable building PETSc libraries using make
 and other UNIX tools. For additional info, run
 ${PETSC_DIR}/bin/win32/win32fe without any options.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a>&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;</b></font> </p>
+to Installation Instructions</a></b></font> </p>
       <hr>
       <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
 on machine requiring cross compiler or a job scheduler:</font></a></h3>
-      <p>If one has to use a cross compiler - or go through the job scheduler to use MPI on a
+      <p>If one has to use a cross compiler - or go through the job
+scheduler to use MPI on a
 given machine - use the configure option <span
  style="font-weight: bold;">'--with-batch=1'</span> as follows:<br>
       </p>
@@ -547,7 +755,9 @@ script
 wrappers to compile PETSc-2.3.2. Please download <a
  href="ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz">ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz</a>
 and follow instructions provided in the <span
- style="font-weight: bold;">README</span> file.</p>
+ style="font-weight: bold;">README</span> file.<br>
+      </p>
+      <hr>
       <h3><a name="AdditionalMicrosoftWindowsNotes"><font
  color="#551a8b">Installing with TAU Instrumentation package:</font></a></h3>
       <p><a
@@ -565,10 +775,12 @@ for the installed TAU and PDT packages. For eg:<br>
  style="color: rgb(255, 0, 0);">--with-cc="`pwd`/bin/taucc.py
 -cc=gcc
 -pdt_parse=/homes/petsc/soft/linux-rh73/pdtoolkit-2.2b1/linux/bin/cxxparse
--tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"</span><br>
-      </p>
-      <h3><a name="PythonBindings"><font color="#551a8b">Installing
-TOPS components:</font></a></h3>
+-tau_lib_dir=/homes/petsc/soft/linux-rh73/tau-2.11.18/i386_linux/lib"<br>
+      </span></p>
+      <hr>
+      <p><a name="PythonBindings"><font color="#551a8b"><big
+ style="font-weight: bold;">Installing
+TOPS components</big>:</font></a></p>
       <p>To install TOPS components one has to download and
 install CCA
 Tools.&nbsp; [linux only]<br>
@@ -589,7 +801,7 @@ Check config/asterix-tops.py for an example.<br>
         <li>To test&nbsp; do: 'cd src/tops; make examples'<br>
         </li>
       </ul>
-      </p>
+      <p></p>
       <p><font color="#551a8b"><b><a
  href="installation.html#Docs:%20%20Installation">Return
 to Installation Instructions</a>&nbsp;&nbsp;&nbsp; <br>

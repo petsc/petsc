@@ -10,7 +10,7 @@ Input arguments are:\n\
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            A,A_save,B,P,C;
+  Mat            A,A_save,B,P,C,C1;
   Vec            x,v1,v2;
   PetscViewer    viewer;
   PetscErrorCode ierr;
@@ -101,6 +101,30 @@ int main(int argc,char **args)
     if (norm >= tol) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"Error: MatMatMult(), |v1 - v2|: %G\n",norm);CHKERRQ(ierr);
     }
+
+    /* Test MatDuplicate() of C */
+    ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(C1);CHKERRQ(ierr);
+
+    /* Test MatConvert() of C to its inherited matrix classes */
+#if defined(PETSC_HAVE_SUPERLU)
+    if (size == 1){
+      ierr = MatConvert(C,MATSUPERLU,MAT_INITIAL_MATRIX,&C1);CHKERRQ(ierr);
+      ierr = MatDestroy(C1);CHKERRQ(ierr);
+    }
+#endif
+#if defined(PETSC_HAVE_SUPERLU_DIST)
+    ierr = MatConvert(C,MATSUPERLU_DIST,MAT_INITIAL_MATRIX,&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(C1);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_MUMPS)
+    ierr = MatConvert(C,MATAIJMUMPS,MAT_INITIAL_MATRIX,&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(C1);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_SPOOLES)
+    ierr = MatConvert(C,MATAIJSPOOLES,MAT_INITIAL_MATRIX,&C1);CHKERRQ(ierr);
+    ierr = MatDestroy(C1);CHKERRQ(ierr);
+#endif
     ierr = MatDestroy(A);CHKERRQ(ierr);
     ierr = MatDestroy(C);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);

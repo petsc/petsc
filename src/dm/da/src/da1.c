@@ -326,11 +326,15 @@ PetscErrorCode DAView_Private(DA da)
 {
   PetscErrorCode ierr;
   PetscTruth     flg1;
+  PetscViewer    view;
 
   PetscFunctionBegin;
   ierr = PetscOptionsBegin(da->comm,da->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
     ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {ierr = DAView(da,PETSC_VIEWER_STDOUT_(da->comm));CHKERRQ(ierr);}
+    if (flg1) {
+      ierr = PetscViewerASCIIGetStdout(da->comm,&view);CHKERRQ(ierr);
+      ierr = DAView(da,view);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);

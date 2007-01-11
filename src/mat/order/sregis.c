@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"     /*I       "petscmat.h"   I*/
+#include "include/private/matimpl.h"     /*I       "petscmat.h"   I*/
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatOrdering_Natural(Mat,const MatOrderingType,IS*,IS*);

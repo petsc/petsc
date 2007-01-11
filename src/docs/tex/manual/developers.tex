@@ -647,8 +647,8 @@ We now discuss the specific functions in the PETSc common function table.
 
 Since the object composition allows one to {\bf only} compose PETSc objects
 with PETSc objects rather than any arbitrary pointer, PETsc provides
-the convenience object PetscObjectContainer, created with the
-routine PetscObjectContainerCreate(MPI\_Comm,PetscObjectContainer)
+the convenience object PetscContainer, created with the
+routine PetscContainerCreate(MPI\_Comm,PetscContainer)
 to allow one to wrap any kind of data into a PETSc object that can then be
 composed with a PETSc object.
 
@@ -800,7 +800,7 @@ A carefully commented implementation of a PC object can be found in
 
 
 \subsection{Krylov Solvers: KSP}
-The base PETSc KSP object is defined in the \trl{src/ksp/ksp/kspimpl.h} include file. 
+The base PETSc KSP object is defined in the \trl{include/private/kspimpl.h} include file. 
 A carefully commented implementation of a KSP object can be found in 
 \trl{src/ksp/ksp/impls/cg/cg.c}. 
 

@@ -2,6 +2,9 @@
 %   Papers that we reference, BUT NOT any paper that uses PETSc or is about PETSc
 % those belong in petscapps.bib
 %
+%   do NOT!! use the abbreviations below!!!! Just type the damn words out. Abbreviations are a
+%   huge pain when you share entries and what do they give you? Confusion.
+%
 @string(AJ="Astrophysics J.")
 @string{PC="Parallel Computing"}
 @string(AIAAJ="AIAA J.")
@@ -24,6 +27,112 @@
 @string(CPC="Computer Physics Communications")
 @string(jota = "J. Optimization Theory and Applications")
 @string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
+
+@Misc{salome1,
+  author =       "Laurent Dada and Daniel Caruge",
+  title =        "The SALOME Open Source CAE Platform Application to Reactor Physics Simulation",
+  year = 2005,
+  url = "http://conferences.esa.int/05c26/Seminar-2005-09-28-SALOME.pdf",
+  Note = "Presentation at an ESA/ESTEC conference"
+}
+
+@INPROCEEDINGS{downar1,
+        AUTHOR = "D. A. Barber and W. Wang and R. M. Miller and T. J. Downar and H. G. Joe and V. A. Mousseau and D. E. Ebert",
+        TITLE = "Application of a generalized interface module to the coupling of PARCS with both RELAP5 and TRAC-M",
+        BOOKTITLE = "Proceedings of 1999 annual meeting of the American Nuclear Society",
+        YEAR = "1999"
+} 
+
+@ARTICLE{lopez1,
+        AUTHOR = "A. P. Lopez and J. B. Sandova",
+        TITLE = "A methodology for the coupling of RAMONA-3B neutron kinetics and TRAC-BF1 thermal-hydraulics",
+        JOURNAL = "Annals of Nuclear Energy",
+        VOLUME = "32(6)",
+        PAGES = "621--634",
+        YEAR = "2005" 
+}
+
+@INPROCEEDINGS{OG-1996,  
+        AUTHOR = "C. R. E. de Oliveira and A. J. H. Goddard",
+        TITLE = "{EVENT} A Multidimensional Finite Element-Spherical Harmonics Radiation Transport Code",
+        BOOKTITLE = "Proceedings of the OECD International Seminar on 3D Deterministic Radiation Transport Codes",
+        EDITOR = "",
+        PUBLISHER = "",
+	PAGES = "",
+        NOTE = "Paris, France",
+        MONTH = "December 01--02,",
+        YEAR = "1996" 
+} 
+
+@ARTICLE{WO-2000,
+        AUTHOR = "P. Warner and C. R. E. de Oliveira",
+        TITLE = "Verification and Validation of the 3D Finite Element Transport Theory 
+                 Code {EVENT} for Shielding Applications",
+        JOURNAL = "J. Nucl. Sci. and Tech.",
+        VOLUME = "Supplement 1",
+        PAGES = "466--470",
+        YEAR = "2000" 
+}
+
+@TECHREPORT{GNEP-WEB,
+        AUTHOR = "",
+        TYPE = "Website",
+        TITLE = "Global Nuclear Energy Partnership ({GNEP})",
+        NOTE = "\url{ http://www.gnep.energy.gov}", 
+        INSTITUTION = "United States Department of Energy",
+        YEAR = "" 
+}
+
+@Book{LEWIS-MILLER-1984,
+  AUTHOR    = "E. E. Lewis and W. F. Miller, Jr.",
+  TITLE	    = "Computational Methods of Neutron Transport",
+  ADDRESS   = "",
+  PUBLISHER = "Wiley",
+  YEAR	    = "1984"
+}
+
+@Article{couple1,
+  author    = "J. M. Cook and D. Okrent and D. Satkus and R. B. Lazarus and M. B. Wells",
+  title     = "AX-1, A COMPUTING PROGRAM FOR COUPLED NEUTRONICS-HYDRODYNAMICS CALCULATIONS ON THE IBM-704",
+  journal =   "Nuclear Sci. and Eng.",
+  year      = 1959,
+  pages = "113--115",
+  volume = "2(1)"
+}
+
+@inproceedings{weber1,
+        AUTHOR = "D. P. Weber and S. S. Chen and C. Y. Wang and T. Y. C. Wei and S. Jansson",
+        TITLE = "Coupled {CFD/CSM} vibration design methodology for generation {IV} long-life fuel and component design",
+        BOOKTITLE = "4th International Conference on Supercomputing in Nuclear Applications",
+        YEAR = "2000"
+}
+
+@Misc{gnep:report,
+  author =       "David Keyes and Rick Stevens",
+  title =        "Report on the {DOE} joint {NE/SC} Workshop Simulation and Modeling for Advanced Nuclear Energy Systems",
+  year = 2006,
+  url = "figure out"
+}
+
+@Misc{fusion:report,
+  title =        "Report of the Fusion Energy Sciences Advisory Committee Burning Plasman Strategy Panel",
+  year = 2002,
+  url = "http://www.ofes.fusion.doe.gov/More_HTML/FESAC/Austinfinal.pdf"
+}
+
+@Misc{hecrtf:report,
+  title =        "Report of the High End Computing Revitalization Task Force (HECRTF)",
+  year = 2004,
+  url = "http://www.ostp.gov/nstc/html/HECRTF-FINAL_051004.pdf"
+}
+
+@Misc{doesc20years,
+  title = "{Facilities for the Future of Science: A Twenty-Year Outlook}",
+  key = "Office of Science, U.S. Department of Energy",
+  year = 2003,
+  howpublished = "Office of Science, U.S. Department of Energy,
+     see \url{http://www.sc.doe.gov/Scientific_User_Facilities/History/20-Year-Outlook-screen.pdf}"
+}
 
 @phdthesis{karpeev-thesis,
   author = "D. A. Karpeyev",
@@ -178,7 +287,7 @@
 }
 
 @Unpublished{petsc:coloringuse,
-  title = 	 "Code for computing sparse Jacobian",
+  title = 	 "Code for computing sparse {J}acobians",
   note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
   Institution = "Argonne National Laboratory"
 }
@@ -640,7 +749,7 @@ University of Colorado-Boulder",
 	KEY = "jones" }
 
 @incollection{jp:ima,
-  AUTHOR = jp,
+  AUTHOR = "Mark Jones and Paul Plassmann",
   title = "The Efficient Parallel Iterative Solution
   of Large Sparse Linear Systems",
   booktitle = "Graph Theory and Sparse Matrix Computation",
@@ -1003,7 +1112,7 @@ Producing {F}ortran interfaces to {C} source code",
     }
 
 @inproceedings{jp:bell_prize,
-    AUTHOR = jp,
+  AUTHOR = "Mark Jones and Paul Plassmann",
     TITLE = "Solution of Large, Sparse Systems of Linear Equations
     in Massively Parallel Applications",
     booktitle = "Proceedings of Supercomputing '92",
@@ -1036,7 +1145,7 @@ Producing {F}ortran interfaces to {C} source code",
 @Unpublished{ cweb-code,
   author = 	 "Silvio Levy and Donald E. Knuth",
   title = 	 "CWEB",
-  note = 	 "CWEB is available at ftp://pip.shsu.edu/tex-archive/web/c_cpp/cweb"
+  note = 	 "CWEB is available at ftp://pip.shsu.edu/tex-archive/web/c\_cpp/cweb"
 }
 
 @Article( componentware:94,
@@ -1050,7 +1159,7 @@ Producing {F}ortran interfaces to {C} source code",
     )
 
 @article{jp:scalable,
-  AUTHOR = jp,
+  AUTHOR = "Mark Jones and Paul Plassmann",
   TITLE = "Scalable Iterative Solution of Sparse Linear Systems",
   Journal = "Parallel Computing",
   Volume = "20",
@@ -2127,7 +2236,7 @@ mesh refinement",
 
 @Misc{tops:homepage,
   author =	 {David {Keyes (PI)}},
-  title =	 {{Terascale Optimal PDE Simulations (TOPS) Center}},
+  title =	 {{Towards Optimal Petascale Simulations (TOPS) Center}},
   howpublished = {\url{http://tops-scidac.org}}
 }
 
@@ -2198,6 +2307,26 @@ mesh refinement",
    title = "{SuperLU Web page}",
    howpublished  = "http://crd.lbl.gov/\~xiaoye/SuperLU"
 }
+
+@inproceedings{ccf98,
+ author=     "E. Chow and A. Cleary and R. Falgout",
+ title=      "Design of the hypre Preconditioner Library",
+ booktitle = "Proceedings of the SIAM Workshop on Object Oriented Methods for
+              Inter-operable Scientific and Engineering Computing",
+ publisher = "SIAM",
+ year=       1999,
+}
+
+
+@TechReport{hypre-users-manual,
+  author      = "R. Falgout and others",
+  title       = "{hypre} Users Manual",
+  number      = "Revision 2.0.0",
+  institution = "Lawrence Livermore National Laboratory",
+  year        = 2006,
+  note =        "\url{http://www.llnl.gov/CASC/hypre/}"
+}
+
 
 @misc{hypre:homepage,
    author = "R. {Falgout et al.}",
@@ -2270,7 +2399,7 @@ mesh refinement",
 
 @article{more:coloring,
   author  = "Thomas F. Coleman and Jorge J. More",
-  title   = "Estimation of Sparse Jacobian Matrices and Graph Coloring Problems",
+  title   = "Estimation of Sparse {J}acobian Matrices and Graph Coloring Problems",
   journal = "SIAM Journal on Numerical Analysis",
   year    = "1983",
   month   = "Feb.",
@@ -2430,7 +2559,7 @@ mesh refinement",
 }
 
 @Unpublished{ mtwm03,
-  author =       "G. G. Maisuradze, D. L. Thompson, A. F. Wagner, and M. Minkoff", 
+  author =       "G. G. Maisuradze and D. L. Thompson and A. F. Wagner and M. Minkoff", 
   title =        "Interpolating moving least squares methods for fitting 
                   potential energy surfaces:  Detailed analysis of one-dimensional applications",
   note =         "to appear in the Journal of Chemical Physics",
@@ -2550,14 +2679,43 @@ mesh refinement",
   year = {2001}
 }
 
-@techreport{SuperLU,
-  author = {James~W. Demmel and John~R. Gilbert and Xiaoye~S. Li},
-  title = {{SuperLU} User's Guide},
-  institution = {Lawrence Berkeley National Laboratory},
-  number = {LBNL-44289},
-  month = {October},
-  year = {2003}
+
+@article{lidemmel03,
+     AUTHOR = {Xiaoye S. Li and James W. Demmel},
+     TITLE = {{SuperLU\_DIST}: A Scalable Distributed-Memory Sparse Direct
+              Solver for Unsymmetric Linear Systems},
+     JOURNAL = {ACM Trans. Mathematical Software},
+     YEAR = 2003,
+     MONTH = {June},
+     VOLUME = {29},
+     NUMBER = {2},
+     PAGES = {110--140}
 }
+
+@TechReport{SuperLU,
+  author      = "James W. Demmel and John R. Gilbert and Xiaoye S. Li",
+  title       = "{SuperLU} Users' Guide",
+  number      = "LBNL-44289",
+  institution = "Lawrence Berkeley National Laboratory",
+  year        = 2003,
+  note =        "\url{http://crd.lbl.gov/\~xiaoye/SuperLU/}"
+}
+
+@techreport{Trilinos-Overview03, 
+title = "{An Overview of Trilinos}", 
+author = "Michael Heroux and Roscoe Bartlett and Vicki Howle Robert Hoekstra and Jonathan Hu and Tamara Kolda and Richard Lehoucq and Kevin Long and Roger Pawlowski and Eric Phipps and Andrew Salinger and Heidi Thornquist and Ray Tuminaro and James Willenbring and Alan Williams", 
+institution = "Sandia National Laboratories", 
+number = "SAND2003-2927", 
+year = 2003} 
+
+@techreport{Trilinos-Users-Guide, 
+title = "{Trilinos} Users Guide", 
+author = "Michael A. Heroux and James M. Willenbring", 
+institution = "Sandia National Laboratories", 
+number = "SAND2003-2952", 
+note =  "\url{http://software.sandia.gov/Trilinos}",
+year = 2003} 
+
 
 @article{PILUT01,
   author = {David Hysom and Alex Pothen},
@@ -2575,3 +2733,75 @@ mesh refinement",
   number = {UCRL-JC-133948},
   year = {2000}
 }
+
+@article{knollkeyes:04,
+  author  = "D. A. Knoll and D. E. Keyes", 
+  year    = 2004, 
+  title   = "Jacobian-free {Newton-Krylov} Methods: A Survey of Approaches and Applications", 
+  journal = "J. Comp. Phys.",
+  volume  = 193,
+  pages   = "357-397"
+} 
+
+@Misc{facets:homepage,
+  author =	 {John Cary (PI)}},
+  title =	 {{Framework Application for Core-Edge Transport Simulations (FACETS)}}
+  howpublished = {\url{http://www.facetsproject.org}}
+}
+
+@Misc{accel-scidac2-solicitation,
+  author       = {{DOE Office of Science}},
+  title        = {{Program Announcement LAB 07-09, SciDAC: Accelerator Science and Simulation}},
+  year         = 2006,
+  howpublished = {\url{http://www.science.doe.gov/grants/LAB07_09.html}}
+}
+
+@ARTICLE{Nieter04,
+   author = "C. Nieter and J. R. Cary",
+   title = "{VORPAL}: A Versatile Plasma Simulation Code",
+   journal = "J. Comp. Phys.",
+   year = "2004",
+   volume = "196",
+   pages = "448"
+}
+
+@Article{Synergia06,
+  author = "J. Amundson and P. Spentzouris and J. Qiang and R. Ryne",
+  title = "Synergia: An accelerator modeling tool with 3-D space charge",
+  journal = "J. Comp. Phys.",
+  year = 2006,
+  volume = "211",
+  pages = "229-248"
+}
+
+@unpublished{stoltz07,
+  author = "P. H. Stoltz",
+  title = "Maps of {RF} cavities generated from electromagnetic simulations",
+  year = 2007,
+  note = "to appear in Proceedings of the 2007 Particle Accelerator
+          Conference (PAC07), Albuquerque, NM, 2007"
+}
+
+@Misc{iter:homepage,
+  key = "{International Thermonuclear Experimental Reactor (ITER) homepage}",
+  year = 2007,
+  title = "{International Thermonuclear Experimental Reactor (ITER) homepage}",
+  howpublished = {\url{http://www.iter.org}}
+}
+
+@misc{epp2010,
+  author = {Committee on Elementary Particle Physics in the 21st Century, National Research Council},
+  title = {Revealing the Hidden Nature of Space and Time: Charting the Course for Elementary 
+           Particle Physics},
+  year = {2006},
+  howpublished = {The National Academies Press, ISBN: 0309101948}
+}
+
+@misc{post-fsp-report,
+author= "D.~E.~Post and D.~B.~Batchelor and R.~B.~Bramley and J.~R.~Cary and R.~H.~Cohen and P.~Colella and S.~C.~Jardin",
+title=  "Report of Fusion Simulation Project Steering Committee",
+month=  "August",
+year =  2004,
+note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
+}
+

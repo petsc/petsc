@@ -265,7 +265,7 @@ namespace ALE { namespace Coarsener {
           visited_nodes++;
           //double nearPointDist = 100; //keep track of the minimum space between this point and a point in the next level up.
           //int whyset = 0; //DEBUG for the process.
-          ALE::Mesh::point_type nearPoint = -1;
+          //ALE::Mesh::point_type nearPoint = -1;
 	  bool l_is_ok = true;
 	  double l_coords[dim];
 	  PetscMemcpy(l_coords, coords->restrict(rPatch, *l_points_iter), dim*sizeof(double));
@@ -400,6 +400,7 @@ namespace ALE { namespace Coarsener {
       } //end while over leaf spaces; after this point we have a complete MIS in globalNodes
       //Mesh building phase
       //if (curLevel != 0) {
+#ifdef PETSC_HAVE_TRIANGLE
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
   
@@ -520,6 +521,9 @@ namespace ALE { namespace Coarsener {
         coarsen_stats.minAngle[curLevel] = tmp_stats[0];
         coarsen_stats.maxAngle[curLevel] = tmp_stats[1];
       }
+#else
+      SETERRQ(PETSC_ERR_SUP, "No mesh generator available.");
+#endif
     }  //end of for over the number of coarsening levels.
     if (coarsen_stats.displayStats)coarsen_DisplayStats();
     PetscFunctionReturn(0);

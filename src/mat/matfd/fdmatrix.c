@@ -5,7 +5,7 @@
   used for finite difference computations of Jacobians using coloring.
 */
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 
 /* Logging support */
 PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE = 0;
@@ -104,7 +104,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(c->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(c->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(c,1,viewer,2);
 
@@ -375,17 +377,19 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
 {
   PetscErrorCode ierr;
   PetscTruth     flg;
+  PetscViewer    viewer;
 
   PetscFunctionBegin;
+  ierr = PetscViewerASCIIGetStdout(fd->comm,&viewer);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_info",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(fd->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(fd->comm));CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {

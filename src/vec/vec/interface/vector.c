@@ -37,12 +37,12 @@ EXTERN PetscErrorCode VecStashGetInfo_Private(VecStash*,PetscInt*,PetscInt*);
 .seealso: VecAssemblyBegin(), VecAssemblyEnd(), Vec, VecStashSetInitialSize(), VecStashView()
   
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *brealloc)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStashGetInfo(Vec vec,PetscInt *nstash,PetscInt *reallocs,PetscInt *bnstash,PetscInt *breallocs)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = VecStashGetInfo_Private(&vec->stash,nstash,reallocs);CHKERRQ(ierr);
-  ierr = VecStashGetInfo_Private(&vec->bstash,nstash,reallocs);CHKERRQ(ierr);
+  ierr = VecStashGetInfo_Private(&vec->bstash,bnstash,breallocs);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -157,7 +157,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAssemblyBegin(Vec vec)
 
   ierr = PetscOptionsHasName(vec->prefix,"-vec_view_stash",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = VecStashView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+    ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+    ierr = VecStashView(vec,viewer);CHKERRQ(ierr);
   }
 
   ierr = PetscLogEventBegin(VEC_AssemblyBegin,vec,0,0,0);CHKERRQ(ierr);
@@ -187,13 +189,17 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView_Private(Vec vec)
   ierr = PetscOptionsBegin(vec->comm,vec->prefix,"Vector Options","Vec");CHKERRQ(ierr);
     ierr = PetscOptionsName("-vec_view","Print vector to stdout","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+      ierr = VecView(vec,viewer);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-vec_view_matlab","Print vector to stdout in a format Matlab can read","VecView",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(vec->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-      ierr = VecView(vec,PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
-      ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      PetscViewer viewer;
+      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+      ierr = VecView(vec,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     }
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
     ierr = PetscOptionsName("-vec_view_matlab_file","Print vector to matlaboutput.mat format Matlab can read","VecView",&flg);CHKERRQ(ierr);
@@ -466,15 +472,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPointwiseDivide(Vec w,Vec x,Vec y)
 
 .seealso: VecDestroy(), VecDuplicateVecs(), VecCreate(), VecCopy()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec x,Vec *newv) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecDuplicate(Vec v,Vec *newv) 
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,1);
   PetscValidPointer(newv,2);
-  PetscValidType(x,1);
-  ierr = (*x->ops->duplicate)(x,newv);CHKERRQ(ierr);
+  PetscValidType(v,1);
+  ierr = (*v->ops->duplicate)(v,newv);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)*newv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -632,7 +638,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {
-      ierr = VecView(vec, PETSC_VIEWER_STDOUT_(vec->comm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+      ierr = VecView(vec, viewer);CHKERRQ(ierr);
     }
   }
   ierr = PetscOptionsHasName(vec->prefix, "-vec_view_draw", &opt);CHKERRQ(ierr);
@@ -662,7 +669,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
    Collective on Vec
 
    Input Parameters:
-+  v - the vector
++  vec - the vector
 -  viewer - an optional visualization context
 
    Notes:
@@ -709,7 +716,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec vec,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(vec,VEC_COOKIE,1);
   PetscValidType(vec,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(vec->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(vec,1,viewer,2);
   if (vec->stash.n || vec->bstash.n) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecAssemblyBegin/End() before viewing this vector");
@@ -846,10 +855,15 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
 
    Supported Options:
 +     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
-      entries destined to be stored on a separate processor. This can be used
-      to eliminate the global reduction in the VecAssemblyXXXX() if you know 
-      that you have only used VecSetValues() to set local elements
--   VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.
+          entries destined to be stored on a separate processor. This can be used
+          to eliminate the global reduction in the VecAssemblyXXXX() if you know 
+          that you have only used VecSetValues() to set local elements
+.     VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.
+.     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
+          in ix in calls to VecSetValues or VecGetValues. These rows are simply
+          ignored.
+-     VEC_TREAT_NEGATIVE_INDICES restores the treatment of negative indices in ix in
+          VecSetValues/VecGetValues.
 
    Level: intermediate
 
@@ -1004,10 +1018,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecLoadIntoVector(PetscViewer viewer,Vec vec)
    Collective on Vec
 
    Input Parameter:
-.  v - the vector 
+.  vec - the vector 
 
    Output Parameter:
-.  v - the vector reciprocal
+.  vec - the vector reciprocal
 
    Level: intermediate
 
@@ -1451,7 +1465,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetBlockSize(Vec v,PetscInt *bs)
 .  v - the object to check
 
    Output Parameter:
-   flg - flag indicating vector status, either
+.  flg - flag indicating vector status, either
    PETSC_TRUE if vector is valid, or PETSC_FALSE otherwise.
 
    Level: developer
@@ -1540,7 +1554,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecAppendOptionsPrefix(Vec v,const char prefix
    Not Collective
 
    Input Parameter:
-.  A - the Vec context
+.  v - the Vec context
 
    Output Parameter:
 .  prefix - pointer to the prefix string used
@@ -1722,7 +1736,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSwap(Vec x,Vec y)
    Collective on Vec
 
    Input Parameters:
-+  vec   - the vector
++  v - the vector
 -  viewer - the viewer
 
    Level: advanced

@@ -1,7 +1,7 @@
 
 #if !defined(__SPOOLES_H)
 #define __SPOOLES_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 
 EXTERN_C_BEGIN
@@ -62,9 +62,9 @@ EXTERN PetscErrorCode SetSpoolesOptions(Mat, Spooles_options *);
 EXTERN PetscErrorCode MatFactorInfo_Spooles(Mat,PetscViewer);
 
 EXTERN PetscErrorCode MatDestroy_SeqAIJSpooles(Mat);
-EXTERN PetscErrorCode MatSolve_SeqAIJSpooles(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat,MatFactorInfo*,Mat*); 
-EXTERN PetscErrorCode MatView_SeqAIJSpooles(Mat,PetscViewer);
+EXTERN PetscErrorCode MatSolve_SeqSpooles(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatFactorNumeric_SeqSpooles(Mat,MatFactorInfo*,Mat*); 
+EXTERN PetscErrorCode MatView_Spooles(Mat,PetscViewer);
 EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJSpooles(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatQRFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
@@ -72,8 +72,8 @@ EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqAIJSpooles(Mat,IS,MatFactorIn
 EXTERN PetscErrorCode MatDuplicate_Spooles(Mat,MatDuplicateOption,Mat*);
 
 EXTERN PetscErrorCode MatDestroy_MPIAIJSpooles(Mat);
-EXTERN PetscErrorCode MatSolve_MPIAIJSpooles(Mat,Vec,Vec);
-EXTERN PetscErrorCode MatFactorNumeric_MPIAIJSpooles(Mat,MatFactorInfo*,Mat*); 
+EXTERN PetscErrorCode MatSolve_MPISpooles(Mat,Vec,Vec);
+EXTERN PetscErrorCode MatFactorNumeric_MPISpooles(Mat,MatFactorInfo*,Mat*); 
 EXTERN PetscErrorCode MatAssemblyEnd_MPIAIJSpooles(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat,IS,IS,MatFactorInfo*,Mat*);
 

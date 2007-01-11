@@ -7,7 +7,7 @@
     complex numbers version, so most probably some are incorrect.
 */
 
-#include "src/ksp/ksp/kspimpl.h"
+#include "include/private/kspimpl.h"
 #include "src/ksp/ksp/impls/tcqmr/tcqmrp.h"
 
 #undef __FUNCT__  

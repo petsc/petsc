@@ -6,7 +6,7 @@
 #if !defined(__GMRES)
 #define __GMRES
 
-#include "src/ksp/ksp/kspimpl.h"        /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"        /*I "petscksp.h" I*/
 
 typedef struct {
   /* Hessenberg matrix and orthogonalization information.  Hes holds

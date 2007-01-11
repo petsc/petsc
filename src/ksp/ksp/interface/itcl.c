@@ -4,7 +4,7 @@
     Code for setting KSP options from the options database.
 */
 
-#include "src/ksp/ksp/kspimpl.h"  /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"  /*I "petscksp.h" I*/
 #include "petscsys.h"
 
 /*

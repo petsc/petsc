@@ -75,8 +75,8 @@ PetscErrorCode MatDestroy_SeqAIJSpooles(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSolve_SeqAIJSpooles"
-PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
+#define __FUNCT__ "MatSolve_SeqSpooles"
+PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
 {
   Mat_Spooles      *lu = (Mat_Spooles*)A->spptr;
   PetscScalar      *array;
@@ -152,8 +152,8 @@ PetscErrorCode MatSolve_SeqAIJSpooles(Mat A,Vec b,Vec x)
 }
 
 #undef __FUNCT__   
-#define __FUNCT__ "MatFactorNumeric_SeqAIJSpooles"
-PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
+#define __FUNCT__ "MatFactorNumeric_SeqSpooles"
+PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
 {  
   Mat_Spooles        *lu = (Mat_Spooles*)(*F)->spptr;
   ChvManager         *chvmanager ;
@@ -174,7 +174,7 @@ PetscErrorCode MatFactorNumeric_SeqAIJSpooles(Mat A,MatFactorInfo *info,Mat *F)
   
   PetscFunctionBegin;
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */      
-    (*F)->ops->solve   = MatSolve_SeqAIJSpooles;
+    (*F)->ops->solve   = MatSolve_SeqSpooles;
     (*F)->ops->destroy = MatDestroy_SeqAIJSpooles;  
     (*F)->assembled    = PETSC_TRUE; 
     
@@ -502,26 +502,33 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqAIJSpooles(Mat A,MatType 
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
+  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
+    lu->MatDuplicate               = B->ops->duplicate;
+    lu->MatCholeskyFactorSymbolic  = B->ops->choleskyfactorsymbolic;
+    lu->MatLUFactorSymbolic        = B->ops->lufactorsymbolic; 
+    lu->MatView                    = B->ops->view;
+    lu->MatAssemblyEnd             = B->ops->assemblyend;
+    lu->MatDestroy                 = B->ops->destroy;
+  } else {
+    lu->MatDuplicate               = A->ops->duplicate;
+    lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
+    lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
+    lu->MatView                    = A->ops->view;
+    lu->MatAssemblyEnd             = A->ops->assemblyend;
+    lu->MatDestroy                 = A->ops->destroy;
   }
-  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr); 
   B->spptr = (void*)lu;
-
   lu->basetype                   = MATSEQAIJ;
   lu->useQR                      = PETSC_FALSE;
   lu->CleanUpSpooles             = PETSC_FALSE;
-  lu->MatDuplicate               = A->ops->duplicate;
-  lu->MatCholeskyFactorSymbolic  = A->ops->choleskyfactorsymbolic;
-  lu->MatLUFactorSymbolic        = A->ops->lufactorsymbolic; 
-  lu->MatView                    = A->ops->view;
-  lu->MatAssemblyEnd             = A->ops->assemblyend;
-  lu->MatDestroy                 = A->ops->destroy;
+
   B->ops->duplicate              = MatDuplicate_Spooles;
   B->ops->choleskyfactorsymbolic = MatCholeskyFactorSymbolic_SeqAIJSpooles;
   B->ops->lufactorsymbolic       = MatLUFactorSymbolic_SeqAIJSpooles; 
-  B->ops->view                   = MatView_SeqAIJSpooles;
+  B->ops->view                   = MatView_Spooles;
   B->ops->assemblyend            = MatAssemblyEnd_SeqAIJSpooles;
   B->ops->destroy                = MatDestroy_SeqAIJSpooles;
 

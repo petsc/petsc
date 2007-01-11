@@ -55,8 +55,7 @@ M*/
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
 E*/
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
-               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} 
-               DAPeriodicType;
+               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} DAPeriodicType;
 
 /*E
     DAInterpolationType - Defines the type of interpolation that will be returned by 
@@ -481,6 +480,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetMatrix(DM, MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolation(DM,DM,Mat*,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInjection(DM,DM,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefine(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsen(DM,MPI_Comm,DM*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMRefineHierarchy(DM,PetscInt,DM**);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCoarsenHierarchy(DM,PetscInt,DM**);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGetInterpolationScale(DM,DM,Mat,Vec*);
 
 typedef struct NLF_DAAD* NLF;

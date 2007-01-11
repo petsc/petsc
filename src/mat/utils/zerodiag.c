@@ -5,7 +5,7 @@
     elements are nonzero.
  */
 
-#include "src/mat/matimpl.h"       /*I  "petscmat.h"  I*/
+#include "include/private/matimpl.h"       /*I  "petscmat.h"  I*/
 
 #define SWAP(a,b) {PetscInt _t; _t = a; a = b; b = _t; }
 

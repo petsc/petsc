@@ -579,6 +579,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInterpolateAdd(Mat,Vec,Vec,Vec);
 PetscPolymorphicSubroutine(MatInterpolateAdd,(Mat A,Vec x,Vec y),(A,x,y,y))
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestrict(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat,Vec*,Vec*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 
 /*MC
    MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
@@ -1401,7 +1402,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_SET_VALUES_ROW = 105,
                MATOP_GET_ROW_UTRIANGULAR=108,
                MATOP_RESTORE_ROW_UTRIANGULAR=109,
-               MATOP_MATSOLVE=110
+               MATOP_MATSOLVE=110,
+               MATOP_GET_REDUNDANTMATRIX=111
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));

@@ -7,12 +7,12 @@ static char help[] = "Tests ContainerCreate and ContainerDestroy.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscErrorCode       ierr;
-  PetscObjectContainer container;
+  PetscErrorCode ierr;
+  PetscContainer container;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  ierr = PetscObjectContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
-  ierr = PetscObjectContainerDestroy(container);CHKERRQ(ierr); 
+  ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
+  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

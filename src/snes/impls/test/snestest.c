@@ -1,6 +1,6 @@
 #define PETSCSNES_DLL
 
-#include "src/snes/snesimpl.h"
+#include "include/private/snesimpl.h"
 
 typedef struct {
   PetscTruth complete_print;
@@ -44,20 +44,24 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (!i) {ierr = MatConvert(A,MATSAME,MAT_INITIAL_MATRIX,&B);CHKERRQ(ierr);}
     ierr = SNESDefaultComputeJacobian(snes,x,&B,&B,&flg,snes->funP);CHKERRQ(ierr);
     if (neP->complete_print) {
-      MPI_Comm comm;
+      MPI_Comm    comm;
+      PetscViewer viewer;
       ierr = PetscPrintf(snes->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-      ierr = MatView(B,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+      ierr = MatView(B,viewer);CHKERRQ(ierr);
     }
     /* compare */
     ierr = MatAXPY(B,-1.0,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
     ierr = MatNorm(B,NORM_FROBENIUS,&nrm);CHKERRQ(ierr);
     ierr = MatNorm(A,NORM_FROBENIUS,&gnorm);CHKERRQ(ierr);
     if (neP->complete_print) {
-      MPI_Comm comm;
+      MPI_Comm    comm;
+      PetscViewer viewer;
       ierr = PetscPrintf(snes->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
-      ierr = MatView(A,PETSC_VIEWER_STDOUT_(comm));CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+      ierr = MatView(A,viewer);CHKERRQ(ierr);
     }
     ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }

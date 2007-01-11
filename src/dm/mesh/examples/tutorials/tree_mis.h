@@ -10,11 +10,11 @@
 #include <CoSieve.hh>
 #include <Completion.hh>
 #include <Distribution.hh>
+#include <Generator.hh>
 //#include "petscmesh.h"
 //#include "petscviewer.h"
 //#include "src/dm/mesh/meshpcice.h"
 //#include "src/dm/mesh/meshpylith.h"
-#include <triangle.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
@@ -38,7 +38,9 @@ namespace ALE {
       std::list<point_type> childColPoints;
     };
     bool isOverlap(mis_node *, mis_node *, int, double); //calculates if there is an intersection or overlap of these two domains
+#ifdef PETSC_HAVE_TRIANGLE
     extern PetscErrorCode TriangleToMesh(Obj<ALE::Mesh>, triangulateio *, patch_type);
+#endif
     void randPush(std::list<point_type> *, point_type); //breaks up patterns in the mesh that cause oddness
 
     PetscErrorCode tree_mis (Obj<ALE::Mesh>& mesh, int dim, patch_type patch, patch_type boundPatch, bool includePrevious, double beta) {
@@ -293,7 +295,7 @@ namespace ALE {
       }
       
       //tree is properly deallocated... continue.
-      
+#ifdef PETSC_HAVE_TRIANGLE
       triangulateio * input = new triangulateio;
       triangulateio * output = new triangulateio;
   
@@ -398,6 +400,9 @@ namespace ALE {
       delete output->edgelist;
       delete input;
       delete output;
+#else
+      SETERRQ(PETSC_ERR_SUP, "No mesh generator available.");
+#endif
       PetscFunctionReturn(0);
     }  //ending tree_mis
 

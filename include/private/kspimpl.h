@@ -1,6 +1,6 @@
 
-#ifndef _KSPIMPL
-#define _KSPIMPL
+#ifndef _KSPIMPL_H
+#define _KSPIMPL_H
 
 #include "petscksp.h"
 

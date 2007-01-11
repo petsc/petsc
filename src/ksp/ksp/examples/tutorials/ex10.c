@@ -278,7 +278,7 @@ int main(int argc,char **args)
        Create linear solver; set operators; set runtime options.
     */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
-
+    ierr = KSPSetType(ksp,KSPLGMRES);CHKERRQ(ierr);
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){

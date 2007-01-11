@@ -299,7 +299,7 @@ static char **PetscGlobalArgs = 0;
 
    Concepts: command line arguments
    
-.seealso: PetscFinalize(), PetscInitializeFortran()
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArguments()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
@@ -310,6 +310,75 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
   }
   *argc = PetscGlobalArgc;
   *args = PetscGlobalArgs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscGetArguments"
+/*@C
+   PetscGetArguments - Allows you to access the  command line arguments anywhere
+     after PetscInitialize() is called but before PetscFinalize().
+
+   Not Collective
+
+   Output Parameters:
+.  args - the command line arguments
+
+   Level: intermediate
+
+   Notes:
+      This does NOT start with the program name and IS null terminated (final arg is void)
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscFreeArguments()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscGetArguments(char ***args)
+{
+  PetscInt       i,argc = PetscGlobalArgc;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (!PetscGlobalArgs) {
+    SETERRQ(PETSC_ERR_ORDER,"You must call after PetscInitialize() but before PetscFinalize()");
+  }
+  ierr = PetscMalloc(argc*sizeof(char*),args);CHKERRQ(ierr);
+  for (i=0; i<argc-1; i++) {
+    ierr = PetscStrallocpy(PetscGlobalArgs[i+1],&(*args)[i]);CHKERRQ(ierr);
+  }
+  (*args)[argc-1] = 0;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscFreeArguments"
+/*@C
+   PetscFreeArguments - Frees the memory obtained with PetscGetArguments()
+
+   Not Collective
+
+   Output Parameters:
+.  args - the command line arguments 
+
+   Level: intermediate
+
+   Concepts: command line arguments
+   
+.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscGetArguments()
+
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
+{
+  PetscInt       i = 0;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  while (args[i]) {
+    ierr = PetscFree(args[i]);CHKERRQ(ierr);
+    i++;
+  }
+  ierr = PetscFree(args);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -326,8 +395,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
    Input Parameters:
 +  argc - count of number of command line arguments
 .  args - the command line arguments
-.  file - [optional] PETSc database file, defaults to ~username/.petscrc
-          (use PETSC_NULL for default)
+.  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_NULL to not check for
+          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
 -  help - [optional] Help message to print, use PETSC_NULL for no message
 
    If you wish PETSc to run on a subcommunicator of MPI_COMM_WORLD, create that
@@ -380,8 +449,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscGetArgs(int *argc,char ***args)
 $       call PetscInitialize(file,ierr)
 
 +   ierr - error return code
--   file - [optional] PETSc database file name, defaults to 
-           ~username/.petscrc (use PETSC_NULL_CHARACTER for default)
+-  file - [optional] PETSc database file, also checks ~username/.petscrc and .petscrc use PETSC_CHARACTER_NULL to not check for
+          code specific file. Use -skip_petscrc in the code specific file to skip the .petscrc files
            
    Important Fortran Note:
    In Fortran, you MUST use PETSC_NULL_CHARACTER to indicate a
@@ -397,7 +466,7 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt    flag, size;
+  PetscMPIInt    flag, size,nodesize;
   PetscTruth     flg;
   char           hostname[256];
 
@@ -504,9 +573,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   */
   ierr = PetscInitialize_DynamicLibraries();CHKERRQ(ierr);
 
-  /*
-     Initialize all the default viewers
-  */
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   ierr = PetscInfo1(0,"PETSc successfully started: number of processors = %d\n",size);CHKERRQ(ierr);
   ierr = PetscGetHostName(hostname,256);CHKERRQ(ierr);
@@ -516,6 +582,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   /* Check the options database for options related to the options database itself */
   ierr = PetscOptionsSetFromOptions(); CHKERRQ(ierr);
 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
+  if (flg) {
+#if defined(PETSC_HAVE_MPI_COMM_SPAWN)
+    ierr = PetscOpenMPSpawn(nodesize);CHKERRQ(ierr); 
+#else
+    SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_node_size instead");
+#endif
+  } else {
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
+    if (flg) {
+      ierr = PetscOpenMPMerge(nodesize);CHKERRQ(ierr); 
+    }
+  }
 
   PetscFunctionReturn(ierr);
 }
@@ -574,6 +653,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
+
+  ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-malloc_info",&flg2);CHKERRQ(ierr);

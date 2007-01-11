@@ -7,7 +7,7 @@
    the registry system, we provide a way to load only the truely necessary
    files) 
  */
-#include "src/ksp/ksp/kspimpl.h"   /*I "petscksp.h" I*/
+#include "include/private/kspimpl.h"   /*I "petscksp.h" I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultFreeWork"
@@ -404,7 +404,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (ksp->defaultconvergedinitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  if (ksp->defaultconvergedinitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
   ksp->defaultconvergedmininitialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }

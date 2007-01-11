@@ -4,7 +4,7 @@
    This is where the abstract matrix operations are defined
 */
 
-#include "src/mat/matimpl.h"        /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"        /*I "petscmat.h" I*/
 #include "private/vecimpl.h"  
 
 /* Logging support */
@@ -14,7 +14,7 @@ PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solv
 PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
 PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
 PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0;
+PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0, MAT_GetRedundantMatrix = 0;
 PetscEvent  MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
 PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
 PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
@@ -517,7 +517,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidType(mat,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mat->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(mat->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(mat,1,viewer,2);
   if (!mat->assembled) SETERRQ(PETSC_ERR_ORDER,"Must call MatAssemblyBegin/End() before viewing matrix");
@@ -1367,8 +1369,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat x,ISLocalToGlob
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {
-    x->mapping = mapping;
     ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+    x->mapping = mapping;
   }
   PetscFunctionReturn(0);
 }
@@ -1405,8 +1407,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalT
   if (x->bmapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   }
-  x->bmapping = mapping;
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  x->bmapping = mapping;
   PetscFunctionReturn(0);
 }
 
@@ -2495,7 +2497,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
 #undef __FUNCT__  
 #define __FUNCT__ "MatForwardSolve"
 /* @
-   MatForwardSolve - Solves L x = b, given a factored matrix, A = LU.
+   MatForwardSolve - Solves L x = b, given a factored matrix, A = LU, or
+                            U^T*D^(1/2) x = b, given a factored symmetric matrix, A = U^T*D*U,
 
    Collective on Mat and Vec
 
@@ -2510,8 +2513,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatSolve(Mat A,Mat B,Mat X)
    MatSolve() should be used for most applications, as it performs
    a forward solve followed by a backward solve.
 
-   The vectors b and x cannot be the same.  I.e., one cannot
+   The vectors b and x cannot be the same,  i.e., one cannot
    call MatForwardSolve(A,x,x).
+
+   For matrix in seqsbaij format with block size larger than 1,
+   the diagonal blocks are not implemented as D = D^(1/2) * D^(1/2) yet.
+   MatForwardSolve() solves U^T*D y = b, and
+   MatBackwardSolve() solves U x = y.
+   Thus they do not provide a symmetric preconditioner.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -2552,6 +2561,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 #define __FUNCT__ "MatBackwardSolve"
 /* @
    MatBackwardSolve - Solves U x = b, given a factored matrix, A = LU.
+                             D^(1/2) U x = b, given a factored symmetric matrix, A = U^T*D*U,
 
    Collective on Mat and Vec
 
@@ -2568,6 +2578,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatForwardSolve(Mat mat,Vec b,Vec x)
 
    The vectors b and x cannot be the same.  I.e., one cannot
    call MatBackwardSolve(A,x,x).
+
+   For matrix in seqsbaij format with block size larger than 1,
+   the diagonal blocks are not implemented as D = D^(1/2) * D^(1/2) yet.
+   MatForwardSolve() solves U^T*D y = b, and
+   MatBackwardSolve() solves U x = y.
+   Thus they do not provide a symmetric preconditioner.
 
    Most users should employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
@@ -3117,10 +3133,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     ierr = MatCreate(mat->comm,&B);CHKERRQ(ierr);
     ierr = MatSetSizes(B,mat->rmap.n,mat->cmap.n,mat->rmap.N,mat->cmap.N);CHKERRQ(ierr);
     ierr = MatSetType(B,newtype);CHKERRQ(ierr);
-    ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+    for (i=0; i<3; i++) {
+      ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,prefix[i]);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,newtype);CHKERRQ(ierr);
+      ierr = PetscStrcat(convname,"_C");CHKERRQ(ierr);
+      ierr = PetscObjectQueryFunction((PetscObject)B,convname,(void (**)(void))&conv);CHKERRQ(ierr);
+      if (conv) {
+        ierr = MatDestroy(B);CHKERRQ(ierr);      
+        goto foundconv;
+      }
+    }
 
     /* 3) See if a good general converter is registered for the desired class */
-    if (!conv) conv = B->ops->convert;
+    conv = B->ops->convertfrom;
     ierr = MatDestroy(B);CHKERRQ(ierr);
     if (conv) goto foundconv;
 
@@ -3793,22 +3821,34 @@ PetscErrorCode MatView_Private(Mat mat)
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
   if (flg1) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerASCIIGetStdout(mat->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   if (flg2) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerASCIIGetStdout(mat->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
   if (flg3) {
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerASCIIGetStdout(mat->comm,&viewer);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer);CHKERRQ(ierr);
   }
   if (flg4) {
-    ierr = PetscViewerPushFormat(PETSC_VIEWER_STDOUT_(mat->comm),PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
-    ierr = PetscViewerPopFormat(PETSC_VIEWER_STDOUT_(mat->comm));CHKERRQ(ierr);
+    PetscViewer viewer;
+
+    ierr = PetscViewerASCIIGetStdout(mat->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = MatView(mat,viewer);CHKERRQ(ierr);
+    ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   }
 #if defined(PETSC_USE_SOCKET_VIEWER)
   if (flg5) {
@@ -5701,11 +5741,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceAttach(Mat mat,MatNullSpace nullsp
   PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_COOKIE,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  if (mat->nullsp) {
-    ierr = MatNullSpaceDestroy(mat->nullsp);CHKERRQ(ierr);
-  }
-  mat->nullsp = nullsp;
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (mat->nullsp) { ierr = MatNullSpaceDestroy(mat->nullsp);CHKERRQ(ierr); }
+  mat->nullsp = nullsp;
   PetscFunctionReturn(0);
 }
 
@@ -6328,7 +6366,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFactorInfoInitialize(MatFactorInfo *info)
 +  A - the matrix
 .  P - the projection matrix
 .  scall - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
--  fill - expected fill as ratio of nnz(C)/(nnz(A) + nnz(P))
+-  fill - expected fill as ratio of nnz(C)/nnz(A) 
 
    Output Parameters:
 .  C - the product matrix
@@ -6761,3 +6799,57 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMultTranspose(Mat A,Mat B,MatReuse scall
   
   PetscFunctionReturn(0);
 } 
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRedundantMatrix"
+/*@C
+   MatGetRedundantMatrix - Create redundant matrices and put them into processors of subcommunicators. 
+
+   Collective on Mat
+
+   Input Parameters:
++  mat - the matrix
+.  nsubcomm - the number of subcommunicators (= number of redundant pareallel or sequential matrices)
+.  subcomm - MPI communicator split from the communicator where mat resides in
+.  mlocal_red - number of local rows of the redundant matrix
+-  reuse - either MAT_INITIAL_MATRIX or MAT_REUSE_MATRIX
+
+   Output Parameter:
+.  matredundant - redundant matrix
+
+   Notes:
+   MAT_REUSE_MATRIX can only be used when the nonzero structure of the 
+   original matrix has not changed from that last call to MatGetRedundantMatrix().
+
+   This routine creates the duplicated matrices in subcommunicators; you should NOT create them before
+   calling it. 
+
+   Only MPIAIJ matrix is supported. 
+   
+   Level: advanced
+
+   Concepts: subcommunicator
+   Concepts: duplicate matrix
+
+.seealso: MatDestroy()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat mat,PetscInt nsubcomm,MPI_Comm subcomm,PetscInt mlocal_red,MatReuse reuse,Mat *matredundant)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  if (nsubcomm && reuse == MAT_REUSE_MATRIX) {
+    PetscValidPointer(*matredundant,6);
+    PetscValidHeaderSpecific(*matredundant,MAT_COOKIE,6);
+  }
+  if (!mat->ops->getredundantmatrix) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = PetscLogEventBegin(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->getredundantmatrix)(mat,nsubcomm,subcomm,mlocal_red,reuse,matredundant);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetRedundantMatrix,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

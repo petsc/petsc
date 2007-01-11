@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatConvert_Basic"

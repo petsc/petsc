@@ -59,7 +59,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(mapping->comm);
+  if (!viewer) {
+    ierr = PetscViewerASCIIGetStdout(mapping->comm,&viewer);CHKERRQ(ierr);
+  }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
   ierr = MPI_Comm_rank(mapping->comm,&rank);CHKERRQ(ierr);

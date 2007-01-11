@@ -34,29 +34,31 @@ extern MPI_Op VecMin_Local_Op;
 
 .seealso: VecNorm(), VecStrideGather(), VecStrideScatter(), VecStrideMin(), VecStrideMax(), VecStrideScale()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScalar *scale)
+PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScale(Vec v,PetscInt start,PetscScalar scale)
 {
   PetscErrorCode ierr;
   PetscInt       i,n,bs;
-  PetscScalar    *x,xscale = *scale;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
-  PetscValidScalarPointer(scale,3);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
 
   bs   = v->map.bs;
-  if (start >= bs) {
+  if (start < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  } else if (start >= bs) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
   x += start;
 
   for (i=0; i<n; i+=bs) {
-    x[i] *= xscale;
+    x[i] *= scale;
   }
   x -= start;
+
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -112,7 +114,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNorm(Vec v,PetscInt start,NormType nt
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map.bs;
-  if (start >= bs) {
+  if (start < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  } else if (start >= bs) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
@@ -201,7 +205,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *id
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map.bs;
-  if (start >= bs) {
+  if (start < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  } else if (start >= bs) {
     SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
@@ -295,7 +301,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
   ierr = PetscObjectGetComm((PetscObject)v,&comm);CHKERRQ(ierr);
 
   bs   = v->map.bs;
-  if (start >= bs) {
+  if (start < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  } else if (start >= bs) {
     SETERRQ2(PETSC_ERR_ARG_WRONG,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
@@ -906,7 +914,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideGather(Vec v,PetscInt start,Vec s,Ins
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs   = v->map.bs;
-  if (start >= bs) {
+  if (start < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  } else if (start >= bs) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }
@@ -985,7 +995,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,In
   ierr = VecGetArray(s,&y);CHKERRQ(ierr);
 
   bs   = v->map.bs;
-  if (start >= bs) {
+  if (start < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative start %D",start);
+  } else if (start >= bs) {
     SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Start of stride subvector (%D) is too large for stride\n\
             Have you set the vector blocksize (%D) correctly with VecSetBlockSize()?",start,bs);
   }

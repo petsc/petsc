@@ -413,6 +413,127 @@ namespace ALE {
       };
     };
 
+    template<typename Topology_, typename Sieve_>
+    class SupportSizeSection : public ALE::ParallelObject {
+    public:
+      typedef Topology_                          topology_type;
+      typedef typename topology_type::patch_type patch_type;
+      typedef typename topology_type::sieve_type sieve_type;
+      typedef typename topology_type::point_type point_type;
+      typedef Sieve_                             support_sieve_type;
+      typedef int                                value_type;
+      typedef std::map<patch_type,int>           sizes_type;
+    protected:
+      Obj<topology_type>      _topology;
+      Obj<support_sieve_type> _sieve;
+      value_type              _size;
+    public:
+      SupportSizeSection(MPI_Comm comm, const Obj<support_sieve_type>& sieve, const int debug = 0) : ParallelObject(comm, debug), _sieve(sieve) {
+        this->_topology = new topology_type(comm, debug);
+      };
+      SupportSizeSection(const Obj<topology_type>& topology, const Obj<support_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve) {};
+      virtual ~SupportSizeSection() {};
+    public:
+      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
+      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        this->_size = this->_sieve->support(p)->size();
+        return &this->_size;
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        ostringstream txt;
+        int rank;
+
+        if (comm == MPI_COMM_NULL) {
+          comm = this->comm();
+          rank = this->commRank();
+        } else {
+          MPI_Comm_rank(comm, &rank);
+        }
+        if (name == "") {
+          if(rank == 0) {
+            txt << "viewing a SupportSizeSection" << std::endl;
+          }
+        } else {
+          if(rank == 0) {
+            txt << "viewing SupportSizeSection '" << name << "'" << std::endl;
+          }
+        }
+        PetscSynchronizedPrintf(comm, txt.str().c_str());
+        PetscSynchronizedFlush(comm);
+      };
+    };
+
+    template<typename Topology_, typename Sieve_>
+    class SupportSection : public ALE::ParallelObject {
+    public:
+      typedef Topology_                          topology_type;
+      typedef typename topology_type::patch_type patch_type;
+      typedef typename topology_type::sieve_type sieve_type;
+      typedef typename topology_type::point_type point_type;
+      typedef Sieve_                             support_sieve_type;
+      typedef point_type                         value_type;
+      typedef std::map<patch_type,int>           sizes_type;
+      typedef PartitionDomain<topology_type>     chart_type;
+    protected:
+      Obj<topology_type>      _topology;
+      Obj<support_sieve_type> _sieve;
+      int                     _supportSize;
+      value_type             *_support;
+      chart_type              _domain;
+      void ensureSupport(const int size) {
+        if (size > this->_supportSize) {
+          if (this->_support) delete [] this->_support;
+          this->_supportSize = size;
+          this->_support     = new value_type[this->_supportSize];
+        }
+      };
+    public:
+      SupportSection(MPI_Comm comm, const Obj<support_sieve_type>& sieve, const int debug = 0) : ParallelObject(comm, debug), _sieve(sieve), _supportSize(-1), _support(NULL) {
+        this->_topology = new topology_type(comm, debug);
+      };
+      SupportSection(const Obj<topology_type>& topology, const Obj<support_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve), _supportSize(-1), _support(NULL) {};
+      virtual ~SupportSection() {if (this->_support) delete [] this->_support;};
+    public:
+      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
+      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
+      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
+      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+        const Obj<typename support_sieve_type::traits::supportSequence>& support = this->_sieve->support(p);
+        int s = 0;
+
+        this->ensureSupport(support->size());
+        for(typename support_sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+          this->_support[s++] = *s_iter;
+        }
+        return this->_support;
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        ostringstream txt;
+        int rank;
+
+        if (comm == MPI_COMM_NULL) {
+          comm = this->comm();
+          rank = this->commRank();
+        } else {
+          MPI_Comm_rank(comm, &rank);
+        }
+        if (name == "") {
+          if(rank == 0) {
+            txt << "viewing a SupportSection" << std::endl;
+          }
+        } else {
+          if(rank == 0) {
+            txt << "viewing SupportSection '" << name << "'" << std::endl;
+          }
+        }
+        PetscSynchronizedPrintf(comm, txt.str().c_str());
+        PetscSynchronizedFlush(comm);
+      };
+    };
+
     template<typename Topology_, typename Value_>
     class Completion {
     public:
@@ -621,6 +742,37 @@ namespace ALE {
 
             for(int p = 0; p < size; p++) {
               sifterNew->addArrow(points[p], *b_iter, c++);
+            }
+          }
+        }
+      };
+      template<typename SifterType>
+      static void scatterSupports(const Obj<SifterType>& sifter, const Obj<SifterType>& sifterNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+        typedef typename ALE::New::SupportSizeSection<topology_type, SifterType>               support_size_section;
+        typedef typename ALE::New::SupportSection<topology_type, SifterType>                   support_section;
+        typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, value_type> send_section_type;
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, value_type> recv_section_type;
+        Obj<topology_type>        secTopology        = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
+        Obj<support_size_section> supportSizeSection = new support_size_section(secTopology, sifter);
+        Obj<support_section>      supportSection     = new support_section(secTopology, sifter);
+        Obj<send_section_type>    sendSection        = new send_section_type(sifter->comm(), sifter->debug());
+        Obj<recv_section_type>    recvSection        = new recv_section_type(sifter->comm(), sendSection->getTag(), sifter->debug());
+
+        ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, supportSizeSection, supportSection, sendSection, recvSection);
+        // Unpack the section into the sieve
+        const topology_type::sheaf_type& patches = recvSection->getTopology()->getPatches();
+
+        for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+          int                                                 rank = p_iter->first;
+
+          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
+            int size = recvSection->getFiberDimension(rank, *b_iter);
+            int c    = 0;
+
+            for(int p = 0; p < size; p++) {
+              sifterNew->addArrow(*b_iter, points[p], c++);
             }
           }
         }

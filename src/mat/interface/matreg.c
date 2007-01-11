@@ -3,7 +3,7 @@
 /*
      Mechanism for register PETSc matrix types
 */
-#include "src/mat/matimpl.h"      /*I "petscmat.h" I*/
+#include "include/private/matimpl.h"      /*I "petscmat.h" I*/
 #include "petscsys.h"
 
 PetscTruth MatRegisterAllCalled = PETSC_FALSE;

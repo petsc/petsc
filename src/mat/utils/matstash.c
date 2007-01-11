@@ -1,7 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"
-#include "src/mat/utils/matstashspace.h"
+#include "include/private/matimpl.h"
 
 /*
        The input to the stash is ALWAYS in MatScalar precision, and the 

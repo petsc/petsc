@@ -97,29 +97,28 @@ namespace ALE {
         ALE_LOG_EVENT_END;
       };
       template<typename PartitionType>
-      static PartitionType *subordinatePartition(const Obj<topology_type>& topology, const Obj<topology_type>& subTopology, const PartitionType assignment[]) {
+      static PartitionType *subordinatePartition(const Obj<topology_type>& topology, int levels, const Obj<topology_type>& subTopology, const PartitionType assignment[]) {
         typedef ALE::New::NumberingFactory<topology_type> NumberingFactory;
         const patch_type patch = 0;
-        const Obj<typename topology_type::label_sequence>&    cells      = subTopology->heightStratum(patch, 0);
         const Obj<typename NumberingFactory::numbering_type>& cNumbering = NumberingFactory::singleton(topology->debug())->getLocalNumbering(topology, patch, topology->depth(patch));
+        const Obj<typename topology_type::label_sequence>&    cells      = subTopology->heightStratum(patch, 0);
+        const Obj<typename NumberingFactory::numbering_type>& sNumbering = NumberingFactory::singleton(subTopology->debug())->getLocalNumbering(subTopology, patch, subTopology->depth(patch));
         const int        numCells      = cells->size();
         PartitionType   *subAssignment = new PartitionType[numCells];
-        int              c = 0;
 
-        if (topology->depth(patch) == subTopology->depth(patch)) {
-          for(typename topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-            subAssignment[c++] = assignment[cNumbering->getIndex(*c_iter)];
-          }
+        if (levels != 1) {
+          throw ALE::Exception("Cannot calculate subordinate partition for any level separation other than 1");
         } else {
           const Obj<typename topology_type::sieve_type>& sieve = topology->getPatch(patch);
 
           for(typename topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-            const Obj<typename topology_type::sieve_type::supportSequence>& support = sieve->cone();
+            const Obj<typename topology_type::sieve_type::supportSequence>& support = sieve->support(*c_iter);
 
-            if (support->size != 1) {
+            if (support->size() != 1) {
+              // Could relax this to choosing the first one
               throw ALE::Exception("Indeterminate subordinate partition");
             }
-            subAssignment[c++] = assignment[cNumbering->getIndex(*support->begin())];
+            subAssignment[sNumbering->getIndex(*c_iter)] = assignment[cNumbering->getIndex(*support->begin())];
           }
         }
         return subAssignment;

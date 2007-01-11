@@ -24,7 +24,7 @@ PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
   when using static libraries.
 
   Input Parameter:
-  path - The dynamic library path, or PETSC_NULL
+. path - The dynamic library path, or PETSC_NULL
 
   Level: developer
 

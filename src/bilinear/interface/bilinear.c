@@ -7,8 +7,8 @@ static char vcid[] = "$Id: bilinear.c,v 1.3 2000/01/10 03:12:26 knepley Exp $";
 */
 
 #include "src/bilinear/bilinearimpl.h"        /*I "bilinear.h" I*/
-#include "src/vec/vecimpl.h"  
-#include "src/mat/matimpl.h"  
+#include "include/private/vecimpl.h"
+#include "include/private/matimpl.h"
 
 /* Logging support */
 int BILINEAR_COOKIE;

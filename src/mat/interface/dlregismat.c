@@ -1,6 +1,6 @@
 #define PETSCMAT_DLL
 
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 const char *MatOptions[] = {"ROW_ORIENTED","COLUMN_ORIENTED","ROWS_SORTED",
               "COLUMNS_SORTED","NO_NEW_NONZERO_LOCATIONS",
@@ -106,6 +106,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   ierr = PetscLogEventRegister(&MAT_MatMultTranspose,         "MatMatMultTrans",  MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MatMultTransposeSymbolic, "MatMatMultTrnSym" ,MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MatMultTransposeNumeric,  "MatMatMultTrnNum", MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_GetRedundantMatrix,       "MAT_GetRedundantMatrix",MAT_COOKIE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */

@@ -69,7 +69,8 @@ class VTKViewer {
       for(typename Section::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const typename Section::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
 
-        if (idx.prefix > 0) {
+        // Perhaps there should be a flag for excluding boundary values
+        if (idx.prefix != 0) {
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);

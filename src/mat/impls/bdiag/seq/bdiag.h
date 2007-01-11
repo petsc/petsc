@@ -1,7 +1,7 @@
 
 #if !defined(__BDIAG_H)
 #define __BDIAG_H
-#include "src/mat/matimpl.h"
+#include "include/private/matimpl.h"
 
 
 /*

@@ -17,7 +17,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscMPIInt    size;
   PetscInt       n = 10,N,ndim=4,dim[4],DIM,i;
   Vec            x,y,z;
-  PetscScalar    *x_array,*y_array,*z_array,s;  
+  PetscScalar    s;  
   PetscRandom    rdm;
   PetscReal      enorm;
 
