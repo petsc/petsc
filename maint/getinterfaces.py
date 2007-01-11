@@ -12,18 +12,16 @@
 #  Calling sequence: 
 #      getinterfaces *.h
 ##
-import urllib
 import os
-import ftplib
-import httplib
 import re
 from exceptions import *
 import sys
 from string import *
+import pickle
 
 # list of classes found
 classes = {}
-enums = []
+enums = {}
 
 def getenums(filename):
   import re
@@ -31,6 +29,7 @@ def getenums(filename):
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   reg         = re.compile('}')
   regblank    = re.compile(' [ ]*')
+  regname     = re.compile('}[ A-Za-z]*')
   f = open(filename)
   line = f.readline()
   while line:
@@ -46,7 +45,19 @@ def getenums(filename):
   	  struct = struct.replace("typedef enum","")	  
           struct = regcomment.sub("",struct)
           struct = regblank.sub(" ",struct)
-	  enums.append(struct)
+
+          name = regname.search(struct)
+          name = name.group(0)
+          name = name.replace("} ","")
+
+          values = struct[struct.find("{")+1:struct.find("}")]
+          values = values.split(",")
+
+          if struct.find("=") == -1:
+            for i in range(len(values)):
+              values[i] = values[i] + " = " + str(i)
+            
+	  enums[name] = values
           break
         line = f.readline()
         struct = struct + line
@@ -70,7 +81,7 @@ def getclasses(filename):
       struct = regblank.sub("",struct)
       struct = regsemi.sub("",struct)      
       struct = struct.replace("\n","")
-      classes[struct] = []
+      classes[struct] = {}
     line = f.readline()
   
   f.close()
@@ -81,6 +92,7 @@ def getfunctions(filename):
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   regblank    = re.compile(' [ ]*')
   regarg      = re.compile('\([A-Za-z]*[,\)]')
+  regerror    = re.compile('PetscErrorCode')
   f = open(filename)
   line = f.readline()
   while line:
@@ -96,8 +108,11 @@ def getfunctions(filename):
       if fl:
         arg = fl.group(0)
         arg = arg[1:-1]
-	if arg in classes:
-	  classes[arg].append(struct)
+	if struct.find("PetscErrorCode") == -1 and struct.find("...") == -1 and struct.find("<") == -1 and arg in classes:
+          args = struct[struct.find("(")+1:struct.find(")")]
+          args = args.split(",")
+          name = struct[:struct.find("(")]
+	  classes[arg][name] = args
       
     line = f.readline()
   
@@ -106,16 +121,19 @@ def getfunctions(filename):
 def main(args):
   for i in args:
     getenums(i)
-  print enums
   for i in args:
     getclasses(i)
   for i in args:
     getfunctions(i)
-  print classes
+  file = open('classes.data','w')
+  pickle.dump(enums,file)
+  pickle.dump(classes,file)  
+
+  
     
 #
 # The classes in this file can also be used in other python-programs by using 'import'
 #
 if __name__ ==  '__main__': 
-  main(sys.argv)
+  main(sys.argv[1:])
 
