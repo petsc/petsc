@@ -22,6 +22,7 @@ import pickle
 # list of classes found
 classes = {}
 enums = {}
+aliases = {}
 
 def getenums(filename):
   import re
@@ -66,7 +67,7 @@ def getenums(filename):
 
 def getclasses(filename):
   import re
-  regclass    = re.compile('typedef struct _p_[A-Za-z_]*[ ]*\*')
+  regclass    = re.compile('typedef struct _[pn]_[A-Za-z_]*[ ]*\*')
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   regblank    = re.compile(' [ ]*')
   regsemi     = re.compile(';')  
@@ -93,6 +94,8 @@ def getfunctions(filename):
   regblank    = re.compile(' [ ]*')
   regarg      = re.compile('\([A-Za-z]*[,\)]')
   regerror    = re.compile('PetscErrorCode')
+
+  rejects     = ['PetscErrorCode','DALocalFunction','...','<','(*)','(**)']
   f = open(filename)
   line = f.readline()
   while line:
@@ -103,32 +106,49 @@ def getfunctions(filename):
       struct = regcomment.sub("",struct)      
       struct = regblank.sub(" ",struct)
       struct = struct.replace("\n","")
-      struct = struct.replace(";","")      
+      struct = struct.replace(";","")
+      struct = struct.strip()
       fl = regarg.search(struct)
       if fl:
         arg = fl.group(0)
         arg = arg[1:-1]
-	if struct.find("PetscErrorCode") == -1 and struct.find("...") == -1 and struct.find("<") == -1 and arg in classes:
+        reject = 0
+        for i in rejects:
+          if struct.find(i) > 0:
+            reject = 1
+	if arg in classes and struct.startswith(arg) and not reject:
           args = struct[struct.find("(")+1:struct.find(")")]
           args = args.split(",")
           name = struct[:struct.find("(")]
-	  classes[arg][name] = args
+          classes[arg][name] = args
       
     line = f.readline()
   
   f.close()
-
+#
+#  For now, hardwire aliases
+#
+def getaliases():
+  aliases['PetscInt']    = 'int'
+  aliases['PetscScalar'] = 'double'
+  aliases['PetscReal']   = 'double'  
+  aliases['MPI_Comm']    = 'int'
+  aliases['FILE']        = 'int'
+  aliases['PetscMPIInt'] = 'int'      
+  
 def main(args):
   for i in args:
     getenums(i)
+  getaliases()
   for i in args:
     getclasses(i)
   for i in args:
     getfunctions(i)
   file = open('classes.data','w')
   pickle.dump(enums,file)
-  pickle.dump(classes,file)  
-
+  pickle.dump(aliases,file)    
+  pickle.dump(classes,file)
+  
   
     
 #

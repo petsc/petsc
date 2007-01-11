@@ -154,7 +154,7 @@ extern PETSC_DLLEXPORT StageLog _stageLog;
 typedef struct _n_IntStack *IntStack;
 
 /* The structures for logging performance */
-typedef struct _EventPerfInfo {
+typedef struct {
   int            id;            /* The integer identifying this section */
   PetscTruth     active;        /* The flag to activate logging */
   PetscTruth     visible;       /* The flag to print info in summary */
@@ -167,7 +167,7 @@ typedef struct _EventPerfInfo {
   PetscLogDouble numReductions; /* The number of reductions in this section */
 } EventPerfInfo;
 
-typedef struct _ClassPerfInfo {
+typedef struct {
   int            id;           /* The integer identifying this class */
   int            creations;    /* The number of objects of this class created */
   int            destructions; /* The number of objects of this class destroyed */
@@ -176,17 +176,17 @@ typedef struct _ClassPerfInfo {
 } ClassPerfInfo;
 
 /* The structures for logging registration */
-typedef struct _ClassRegInfo {
-  char            *name;   /* The class name */
+typedef struct  {
+  char        *name;   /* The class name */
   PetscCookie cookie; /* The integer identifying this class */
 } ClassRegInfo;
 
-typedef struct _EventRegInfo {
-  char            *name;   /* The name of this event */
+typedef struct {
+  char        *name;   /* The name of this event */
   PetscCookie cookie; /* The class id for this event (should maybe give class ID instead) */
 #if defined (PETSC_HAVE_MPE)
-  int             mpe_id_begin; /* MPE IDs that define the event */
-  int             mpe_id_end;
+  int         mpe_id_begin; /* MPE IDs that define the event */
+  int         mpe_id_end;
 #endif
 } EventRegInfo;
 
