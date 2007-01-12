@@ -239,10 +239,53 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Redundant options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_redundant_number_comm","Number of subcommunicators","PCRedundantSetNumComm",red->nsubcomm,&red->nsubcomm,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantSetNumber_Redundant"
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
+{
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  red->nsubcomm = nreds; 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantSetNumber"
+/*@
+   PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  nredundant - number of redundant preconditioner contexts
+
+   Level: advanced
+
+.keywords: PC, redundant solve
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC pc,PetscInt nredundant)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscInt);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (nredundant <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetNumber_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,nredundant);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}  
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -425,6 +468,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   pc->ops->view            = PCView_Redundant;    
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetNumber_C","PCRedundantSetNumber_Redundant",
+                    PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetPC_C","PCRedundantGetPC_Redundant",
                     PCRedundantGetPC_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",
