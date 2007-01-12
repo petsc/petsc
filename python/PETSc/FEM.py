@@ -14,7 +14,7 @@ class QuadratureGenerator(script.Script):
     import sys, os
 
     petscDir = os.getenv('PETSC_DIR')
-    sys.path.append(os.path.join(petscDir, 'externalpackages', 'fiat-0.2.3'))
+    sys.path.append(os.path.join(petscDir, 'externalpackages', 'FIAT-0.2.5a'))
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'ffc-0.2.3'))
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'Generator'))
     return
@@ -169,23 +169,23 @@ class QuadratureGenerator(script.Script):
     mVar = self.Cxx.getVar('m')
     decls.append(self.Cxx.getDeclaration(optionsVar, optionsType, self.Cxx.castToType(ctxVar, optionsType)))
     paramDecl = Declarator()
-    paramDecl.setType(self.Cxx.getType('double', isConst = 1, numPointers = 1))
+    paramDecl.type = self.Cxx.getType('double', isConst = 1, numPointers = 1)
     funcHead = DeclaratorGroup()
     #   This is almost certainly wrong
     funcHead.setChildren([self.Cxx.getIndirection(funcVar)])
     funcDecl = Function()
     funcDecl.setChildren([funcHead])
-    funcDecl.setType(self.Cxx.getType('PetscScalar'))
-    funcDecl.setParameters([paramDecl])
-    funcDecl.setInitializer(self.Cxx.getStructRef(optionsVar, 'rhsFunc'))
+    funcDecl.type = self.Cxx.getType('PetscScalar')
+    funcDecl.parameters = [paramDecl]
+    funcDecl.initializer = self.Cxx.getStructRef(optionsVar, 'rhsFunc')
     decls.append(self.Cxx.getDecl(funcDecl))
     decls.append(self.Cxx.getDeclaration(mVar, self.Cxx.getType('ALE::Obj<ALE::Mesh>'), self.Cxx.getNullVar()))
     decls.extend([self.Cxx.getDeclaration(self.Cxx.getVar('numQuadPoints'), self.Cxx.getTypeMap()['int']),
                   self.Cxx.getDeclaration(self.Cxx.getVar('numBasisFuncs'), self.Cxx.getTypeMap()['int'])])
-    decls.extend([self.Cxx.getDeclaration(self.Cxx.getVar('quadPoints'),  self.Cxx.getType('double', 1)),
-                  self.Cxx.getDeclaration(self.Cxx.getVar('quadWeights'), self.Cxx.getType('double', 1)),
-                  self.Cxx.getDeclaration(self.Cxx.getVar('basis'),       self.Cxx.getType('double', 1)),
-                  self.Cxx.getDeclaration(self.Cxx.getVar('basisDer'),    self.Cxx.getType('double', 1))])
+    decls.extend([self.Cxx.getDeclaration(self.Cxx.getVar('quadPoints'),  self.Cxx.getType('double pointer')),
+                  self.Cxx.getDeclaration(self.Cxx.getVar('quadWeights'), self.Cxx.getType('double pointer')),
+                  self.Cxx.getDeclaration(self.Cxx.getVar('basis'),       self.Cxx.getType('double pointer')),
+                  self.Cxx.getDeclaration(self.Cxx.getVar('basisDer'),    self.Cxx.getType('double pointer'))])
     decls.append(self.Cxx.getDeclaration(self.Cxx.getVar('ierr'),  self.Cxx.getType('PetscErrorCode')))
     # C++ Declarations and Setup
     stmts = []
@@ -236,7 +236,7 @@ class QuadratureGenerator(script.Script):
     lType.identifier = 'ALE::Mesh::topology_type::label_sequence::iterator'
     decl = Declarator()
     decl.identifier = 'c_iter'
-    decl.setType(lType)
+    decl.type = lType
     loop = self.Cxx.getSimpleLoop(decl, lowerBound, upperBound, allowInequality = 1, isPrefix = 1)
     loop.comments = [self.Cxx.getComment('Loop over elements')]
     loopCmpd = loop.children[0]
@@ -310,8 +310,8 @@ class QuadratureGenerator(script.Script):
           #name = element.family+str(element.n)
           name = ''
           defns.extend(self.getBasisStructs(name, element, quadrature, n))
-      defns.extend(self.getQuadratureSetup())
-      defns.extend(self.getElementIntegrals())
+      #defns.extend(self.getQuadratureSetup())
+      #defns.extend(self.getElementIntegrals())
     except CompilerException, e:
       print e
       raise RuntimeError('Quadrature source generation failed')
