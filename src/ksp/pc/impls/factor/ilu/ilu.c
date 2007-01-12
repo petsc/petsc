@@ -144,8 +144,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatOrdering_ILU"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_ILU(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrderingType_ILU"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ILU(PC pc,MatOrderingType ordering)
 {
   PC_ILU         *dir = (PC_ILU*)pc->data;
   PetscErrorCode ierr;
@@ -412,9 +412,9 @@ static PetscErrorCode PCSetFromOptions_ILU(PC pc)
     }
 
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCFactorSetMatOrdering",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ILU","PCFactorSetMatOrderingType",ordlist,ilu->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
     }
     flg = ilu->info.pivotinblocks ? PETSC_TRUE : PETSC_FALSE;
     ierr = PetscOptionsTruth("-pc_factor_pivot_in_blocks","Pivot inside matrix blocks for BAIJ and SBAIJ","PCFactorSetPivotInBlocks",flg,&flg,&set);CHKERRQ(ierr);
@@ -644,7 +644,7 @@ static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), PCFactorSetUseDropTolerance(),
-           PCFactorSetFill(), PCFactorSetMatOrdering(), PCFactorSetReuseOrdering(),
+           PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(),
            PCFactorSetLevels(), PCFactorSetUseInPlace(), PCFactorSetAllowDiagonalFill(), PCFactorSetPivotInBlocks(),
            PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
@@ -704,8 +704,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
                     PCFactorSetUseDropTolerance_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ILU",
                     PCFactorSetFill_ILU);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_ILU",
-                    PCFactorSetMatOrdering_ILU);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_ILU",
+                    PCFactorSetMatOrderingType_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseOrdering_C","PCFactorSetReuseOrdering_ILU",
                     PCFactorSetReuseOrdering_ILU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseFill_C","PCFactorSetReuseFill_ILU",

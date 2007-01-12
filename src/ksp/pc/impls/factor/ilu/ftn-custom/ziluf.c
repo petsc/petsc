@@ -12,7 +12,7 @@ void PETSC_STDCALL pcfactorsetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(
   char *t;
 
     FIXCHAR(ordering,len,t);
-    *ierr = PCFactorSetMatOrdering(*pc,t);
+    *ierr = PCFactorSetMatOrderingType(*pc,t);
     FREECHAR(ordering,t);
 }
 

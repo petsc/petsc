@@ -126,9 +126,9 @@ static PetscErrorCode PCSetFromOptions_Cholesky(PC pc)
   }
   
   ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-  ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in Cholesky","PCFactorSetMatOrdering",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reordering to reduce nonzeros in Cholesky","PCFactorSetMatOrderingType",ordlist,lu->ordering,tname,256,&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
+    ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
   }
   ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
   if (flg) {
@@ -353,8 +353,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatOrdering_Cholesky"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_Cholesky(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrderingType_Cholesky"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_Cholesky(PC pc,MatOrderingType ordering)
 {
   PC_Cholesky    *dir = (PC_Cholesky*)pc->data;
   PetscErrorCode ierr;
@@ -463,7 +463,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscTruth flag)
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCILU, PCLU, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCGetFactoredMatrix(),
            PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),
-	   PCFactorSetUseInPlace(), PCFactorSetMatOrdering(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
+	   PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
 M*/
 
@@ -514,8 +514,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
                     PCFactorSetFill_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetUseInPlace_C","PCFactorSetUseInPlace_Cholesky",
                     PCFactorSetUseInPlace_Cholesky);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_Cholesky",
-                    PCFactorSetMatOrdering_Cholesky);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_Cholesky",
+                    PCFactorSetMatOrderingType_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseOrdering_C","PCFactorSetReuseOrdering_Cholesky",
                     PCFactorSetReuseOrdering_Cholesky);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetReuseFill_C","PCFactorSetReuseFill_Cholesky",

@@ -69,7 +69,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   Vec            vec;
   PetscInt       mlocal_sub;
   PetscMPIInt    subsize,subrank;
-  PetscInt       rstart_sub,rend_sub,mloc_sub,nsubcomm;
+  PetscInt       rstart_sub,rend_sub,mloc_sub;
   const char     *prefix;
 
   PetscFunctionBegin;
@@ -224,8 +224,8 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   if (red->pmats) {
     ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
   }
-  ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);
-  ierr = PCDestroy(red->pc);CHKERRQ(ierr);
+  if (red->psubcomm) {ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);}
+  if (red->pc) {ierr = PCDestroy(red->pc);CHKERRQ(ierr);}
   ierr = PetscFree(red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -236,7 +236,6 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Redundant options");CHKERRQ(ierr);

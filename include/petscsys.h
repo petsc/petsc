@@ -24,10 +24,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt,cons
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
+#define PetscRandomType const char*
 #define PETSCRAND               "petscrand"
 #define PETSCRAND48             "petscrand48"
 #define SPRNG                   "sprng"          
-#define PetscRandomType const char*
 
 /* Logging support */
 extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;

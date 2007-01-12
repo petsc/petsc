@@ -19,7 +19,7 @@ extern PetscFList PPetscFList;
 
 .seealso: PFSetType(), PF
 E*/
-#define PFType char*
+#define PFType const char*
 #define PFCONSTANT      "constant"
 #define PFMAT           "mat"
 #define PFSTRING        "string"

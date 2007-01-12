@@ -42,12 +42,12 @@ typedef struct _p_VecScatter*  VecScatter;
 
 .seealso: VecSetType(), Vec
 E*/
+#define VecType const char*
 #define VECSEQ         "seq"
 #define VECMPI         "mpi"
 #define VECFETI        "feti"
 #define VECSHARED      "shared"
 #define VECSIEVE       "sieve"
-#define VecType const char*
 
 /* Logging support */
 #define    VEC_FILE_COOKIE 1211214

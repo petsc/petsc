@@ -23,6 +23,7 @@ import pickle
 classes = {}
 enums = {}
 aliases = {}
+senums = {} # like enums except strings instead of integer values
 
 def getenums(filename):
   import re
@@ -62,6 +63,25 @@ def getenums(filename):
           break
         line = f.readline()
         struct = struct + line
+    line = f.readline()
+  f.close()
+
+def getsenums(filename):
+  import re
+  regdefine   = re.compile('#define [A-Za-z]*Type ')
+  regblank    = re.compile(' [ ]*')
+  f = open(filename)
+  line = f.readline()
+  while line:
+    fl = regdefine.search(line)
+    if fl:
+      senum = fl.group(0)[8:-1]
+      senums[senum] = {}
+      line = regblank.sub(" ",f.readline().strip())
+      while line:
+        values = line.split(" ")
+        senums[senum][values[1]] = values[2]
+        line = regblank.sub(" ",f.readline().strip())
     line = f.readline()
   f.close()
 
@@ -139,6 +159,8 @@ def getaliases():
 def main(args):
   for i in args:
     getenums(i)
+  for i in args:
+    getsenums(i)
   getaliases()
   for i in args:
     getclasses(i)
@@ -146,6 +168,7 @@ def main(args):
     getfunctions(i)
   file = open('classes.data','w')
   pickle.dump(enums,file)
+  pickle.dump(senums,file)  
   pickle.dump(aliases,file)    
   pickle.dump(classes,file)
   

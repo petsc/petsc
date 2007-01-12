@@ -22,6 +22,7 @@ import pickle
 def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
+  senums  = pickle.load(file)  
   aliases = pickle.load(file)  
   classes = pickle.load(file)
   outfile = open('petsc.d','w')
@@ -29,6 +30,11 @@ def main(args):
   for i in aliases:
     outfile.write("alias "+aliases[i]+" "+i+"; \n")
   outfile.write("\n")
+
+  for i in senums:
+    outfile.write("alias char* "+i+"; \n")
+#    for j in senums[i]:
+#      outfile.write("alias "+senums[i][j]+" "+j+"; \n")
   
   for i in enums:
     outfile.write("enum "+i+"\n")

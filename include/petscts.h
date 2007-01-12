@@ -27,13 +27,13 @@ typedef struct _p_TS* TS;
 
 .seealso: TSSetType(), TS
 E*/
+#define TSType const char*
 #define TS_EULER           "euler"
 #define TS_BEULER          "beuler"
 #define TS_PSEUDO          "pseudo"
 #define TS_CRANK_NICHOLSON "crank-nicholson"
 #define TS_SUNDIALS        "sundials"
 #define TS_RUNGE_KUTTA     "runge-kutta"
-#define TSType char*
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve

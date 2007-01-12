@@ -26,10 +26,10 @@ typedef struct _p_SNES* SNES;
 
 .seealso: SNESSetType(), SNES
 E*/
+#define SNESType const char*
 #define SNESLS          "ls"
 #define SNESTR          "tr"
 #define SNESTEST        "test"
-#define SNESType const char*
 
 /* Logging support */
 extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
@@ -141,9 +141,17 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDSSetUmin(Mat,PetscReal);
 
 typedef struct _p_MatSNESMFCtx* MatSNESMFCtx;
 
+/*E
+    MatSNESMFType - algorithm used to compute the h used in computing matrix-vector products via differencing of the function
+
+   Level: beginner
+
+.seealso: MatSNESMFSetType(), MatSNESMFRegister()
+E*/
+#define MatSNESMFType const char*
 #define MATSNESMF_DS  "ds"
 #define MATSNESMF_WP  "wp"
-#define MatSNESMFType char*
+
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat,const MatSNESMFType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatSNESMFCtx));
 

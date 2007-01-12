@@ -67,7 +67,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsub
   PetscMPIInt    rank,size,*subsize,duprank,subrank;
   PetscInt       np_subcomm,nleftover,i,j,color;
   MPI_Comm       subcomm=0,dupcomm=0;
-  const char     *prefix;
   PetscSubcomm   *psubcomm_tmp;
 
   PetscFunctionBegin;
