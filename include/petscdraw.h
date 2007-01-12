@@ -83,7 +83,7 @@ M*/
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawGetType(PetscDraw,PetscDrawType*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw,const PetscDrawType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw,PetscDrawType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw);
 
