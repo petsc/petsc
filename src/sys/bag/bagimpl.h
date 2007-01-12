@@ -16,7 +16,7 @@ struct _n_PetscBagItem {
   PetscBagItem  next;
 };
 
-struct _p_PetscBag {
+struct _n_PetscBag {
   MPI_Comm     bagcomm;
   PetscInt     bagsize;
   PetscInt     count;

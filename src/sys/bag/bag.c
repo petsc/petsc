@@ -2,7 +2,7 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
-#include "bagimpl.h"     /*I  "petscbag.h"   I*/
+#include "src/sys/bag/bagimpl.h"     /*I  "petscbag.h"   I*/
 
 /*
    Ugly variable to indicate if we are inside a PetscBagLoad() and should not call PetscOptions....

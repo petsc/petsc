@@ -65,7 +65,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
-  MPI_Comm       comm = pc->comm;
+  MPI_Comm       comm = pc->comm,subcomm;
   Vec            vec;
   PetscInt       mlocal_sub;
   PetscMPIInt    subsize,subrank;
@@ -81,7 +81,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
-    MPI_Comm subcomm = red->psubcomm->comm;
+    subcomm = red->psubcomm->comm;
     ierr = PCCreate(subcomm,&red->pc);CHKERRQ(ierr);
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
