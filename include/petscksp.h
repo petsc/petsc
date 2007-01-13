@@ -28,6 +28,7 @@ typedef struct _p_KSP*     KSP;
 
 .seealso: KSPSetType(), KSP
 E*/
+#define KSPType const char*
 #define KSPRICHARDSON "richardson"
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
@@ -49,7 +50,6 @@ E*/
 #define KSPMINRES     "minres"
 #define KSPSYMMLQ     "symmlq"
 #define KSPLCD        "lcd"
-#define KSPType const char*
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT KSP_COOKIE;

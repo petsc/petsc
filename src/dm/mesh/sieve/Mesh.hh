@@ -537,6 +537,137 @@ namespace ALE {
       ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
       return mesh;
     }
+    #undef __FUNCT__
+    #define __FUNCT__ "createCubeBoundary"
+    /*
+      Simple cubic boundary:
+
+     30----31-----32
+      |     |     |
+      |  3  |  2  |
+      |     |     |
+     27----28-----29
+      |     |     |
+      |  0  |  1  |
+      |     |     |
+     24----25-----26
+    */
+    static Obj<Mesh> createCubeBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int faces[], const int debug = 0) {
+      Obj<Mesh> mesh        = new ALE::Mesh(comm, 2, debug);
+      int       numVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
+      int       numFaces    = 6;
+      double   *coords      = new double[numVertices*3];
+      const Obj<Mesh::sieve_type>           sieve    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
+      const Obj<Mesh::topology_type>        topology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug());
+      Mesh::point_type                     *vertices = new Mesh::point_type[numVertices];
+      const Mesh::topology_type::patch_type patch    = 0;
+      int                                   order    = 0;
+
+      topology->setPatch(patch, sieve);
+      mesh->setTopology(topology);
+      const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+      if (mesh->commRank() == 0) {
+        /* Create topology and ordering */
+        for(int v = numFaces; v < numFaces+numVertices; v++) {
+          vertices[v-numFaces] = ALE::Mesh::point_type(v);
+          topology->setValue(markers, vertices[v-numFaces], 1);
+        }
+        {
+          // Side 0 (Front)
+          ALE::Mesh::point_type face(0);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
+          topology->setValue(markers, face, 1);
+        }
+        {
+          // Side 1 (Back)
+          ALE::Mesh::point_type face(1);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
+          sieve->addArrow(vertices[7], face, order++);
+          topology->setValue(markers, face, 1);
+        }
+        {
+          // Side 2 (Bottom)
+          ALE::Mesh::point_type face(2);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[0], face, order++);
+          topology->setValue(markers, face, 1);
+        }
+        {
+          // Side 3 (Top)
+          ALE::Mesh::point_type face(3);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
+          sieve->addArrow(vertices[7], face, order++);
+          topology->setValue(markers, face, 1);
+        }
+        {
+          // Side 4 (Left)
+          ALE::Mesh::point_type face(4);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[7], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          topology->setValue(markers, face, 1);
+        }
+        {
+          // Side 5 (Right)
+          ALE::Mesh::point_type face(5);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
+          topology->setValue(markers, face, 1);
+        }
+      }
+      sieve->stratify();
+      topology->stratify();
+#if 0
+      for(int vz = 0; vz <= edges[2]; ++vz) {
+        for(int vy = 0; vy <= edges[1]; ++vy) {
+          for(int vx = 0; vx <= edges[0]; ++vx) {
+            coords[((vz*(edges[1]+1)+vy)*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/faces[0])*vx;
+            coords[((vz*(edges[1]+1)+vy)*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/faces[1])*vy;
+            coords[((vz*(edges[1]+1)+vy)*(edges[0]+1)+vx)*2+2] = lower[2] + ((upper[2] - lower[2])/faces[2])*vz;
+          }
+        }
+      }
+#else
+      coords[0*2+0] = lower[0];
+      coords[0*2+1] = lower[1];
+      coords[0*2+2] = upper[2];
+      coords[1*2+0] = upper[0];
+      coords[1*2+1] = lower[1];
+      coords[1*2+2] = upper[2];
+      coords[2*2+0] = upper[0];
+      coords[2*2+1] = upper[1];
+      coords[2*2+2] = upper[2];
+      coords[3*2+0] = lower[0];
+      coords[3*2+1] = upper[1];
+      coords[3*2+2] = upper[2];
+      coords[4*2+0] = upper[0];
+      coords[4*2+1] = lower[1];
+      coords[4*2+2] = lower[2];
+      coords[5*2+0] = lower[0];
+      coords[5*2+1] = lower[1];
+      coords[5*2+2] = lower[2];
+      coords[6*2+0] = lower[0];
+      coords[6*2+1] = upper[1];
+      coords[6*2+2] = lower[2];
+      coords[7*2+0] = upper[0];
+      coords[7*2+1] = upper[1];
+      coords[7*2+2] = lower[2];
+#endif
+      ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
+      return mesh;
+    }
   };
 } // namespace ALE
 

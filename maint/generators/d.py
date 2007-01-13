@@ -18,16 +18,23 @@ import sys
 from string import *
 import pickle
 
-# list of classes found
-classes = {}
-enums = {}
-
 
 def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
+  senums  = pickle.load(file)  
+  aliases = pickle.load(file)  
   classes = pickle.load(file)
   outfile = open('petsc.d','w')
+
+  for i in aliases:
+    outfile.write("alias "+aliases[i]+" "+i+"; \n")
+  outfile.write("\n")
+
+  for i in senums:
+    outfile.write("alias char* "+i+"; \n")
+#    for j in senums[i]:
+#      outfile.write("alias "+senums[i][j]+" "+j+"; \n")
   
   for i in enums:
     outfile.write("enum "+i+"\n")
@@ -42,18 +49,16 @@ def main(args):
   outfile.write("\n")
 
   for i in classes:
-    outfile.write("class "+i+"{}\n")
-
-  for i in classes:
     outfile.write("class "+i+"\n")
     outfile.write("{\n")
     for j in classes[i]:
       outfile.write("  int "+j+"(")
       cnt = 0
       for k in classes[i][j]:
-        outfile.write(k.replace("const ",""))
+        if cnt > 0:
+          outfile.write(k.replace("const ","").replace("unsigned long","ulong"))
+          if cnt < len(classes[i][j])-1: outfile.write(",")
         cnt = cnt + 1
-        if not cnt == len(classes[i][j]): outfile.write(",")
       outfile.write(");\n")
     outfile.write("}\n")        
   

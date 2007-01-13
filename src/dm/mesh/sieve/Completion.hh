@@ -118,9 +118,6 @@ namespace ALE {
       virtual ~PartitionSizeSection() {};
     public:
       bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch) {
-        throw ALE::Exception("Cannot restrict to a patch with a PartitionSizeSection");
-      };
       const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
         return &this->_sizes[p];
@@ -282,9 +279,6 @@ namespace ALE {
       virtual ~ConeSizeSection() {};
     public:
       bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch) {
-        throw ALE::Exception("Cannot restrict to a patch with a ConeSizeSection");
-      };
       const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
         this->_size = this->_sieve->cone(p)->size();

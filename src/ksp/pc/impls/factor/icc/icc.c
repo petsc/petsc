@@ -60,8 +60,8 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCFactorSetMatOrdering_ICC"
-PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrdering_ICC(PC pc,MatOrderingType ordering)
+#define __FUNCT__ "PCFactorSetMatOrderingType_ICC"
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType_ICC(PC pc,MatOrderingType ordering)
 {
   PC_ICC         *dir = (PC_ICC*)pc->data;
   PetscErrorCode ierr;
@@ -205,9 +205,9 @@ static PetscErrorCode PCSetFromOptions_ICC(PC pc)
     ierr = PetscOptionsReal("-pc_factor_levels","levels of fill","PCFactorSetLevels",icc->info.levels,&icc->info.levels,&flg);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-pc_factor_fill","Expected fill in factorization","PCFactorSetFill",icc->info.fill,&icc->info.fill,&flg);CHKERRQ(ierr);
     ierr = MatGetOrderingList(&ordlist);CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCFactorSetMatOrdering",ordlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pc_factor_mat_ordering_type","Reorder to reduce nonzeros in ICC","PCFactorSetMatOrderingType",ordlist,icc->ordering,tname,256,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PCFactorSetMatOrdering(pc,tname);CHKERRQ(ierr);
+      ierr = PCFactorSetMatOrderingType(pc,tname);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-pc_factor_shift_nonzero","Shift added to diagonal","PCFactorSetShiftNonzero",&flg);CHKERRQ(ierr);
     if (flg) {
@@ -295,7 +295,7 @@ static PetscErrorCode PCView_ICC(PC pc,PetscViewer viewer)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCSOR, MatOrderingType,
            PCFactorSetZeroPivot(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(), 
-           PCFactorSetFill(), PCFactorSetMatOrdering(), PCFactorSetReuseOrdering(), 
+           PCFactorSetFill(), PCFactorSetMatOrderingType(), PCFactorSetReuseOrdering(), 
            PCFactorSetLevels(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(),
 
 M*/
@@ -346,8 +346,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
                     PCFactorSetLevels_ICC);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetFill_C","PCFactorSetFill_ICC",
                     PCFactorSetFill_ICC);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrdering_C","PCFactorSetMatOrdering_ICC",
-                    PCFactorSetMatOrdering_ICC);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetMatOrderingType_C","PCFactorSetMatOrderingType_ICC",
+                    PCFactorSetMatOrderingType_ICC);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

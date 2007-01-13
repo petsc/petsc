@@ -32,7 +32,7 @@ PetscEvent  MATSNESMF_Mult = 0;
 
 .seealso: MatCreateSNESMF(), MatSNESMFRegisterDynamic)
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat mat,const MatSNESMFType ftype)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
 {
   PetscErrorCode ierr,(*r)(MatSNESMFCtx);
   MatSNESMFCtx   ctx = (MatSNESMFCtx)mat->data;

@@ -26,6 +26,7 @@ typedef struct _p_Mat*           Mat;
 
 .seealso: MatSetType(), Mat
 E*/
+#define MatType const char*
 #define MATSAME            "same"
 #define MATSEQMAIJ         "seqmaij"
 #define MATMPIMAIJ         "mpimaij"
@@ -79,7 +80,6 @@ E*/
 #define MATBLOCKMAT        "blockmat"
 #define MATCOMPOSITE       "composite"
 #define MATSEQFFTW         "seqfftw"
-#define MatType const char*
 
 /* Logging support */
 #define    MAT_FILE_COOKIE 1211216    /* used to indicate matrices in binary files */
@@ -914,6 +914,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetCtx(Mat,void*);
 
    Level: beginner
 
+   Cannot use const because the PC objects manipulate the string
+
 .seealso: MatGetOrdering()
 E*/
 #define MatOrderingType char*
@@ -1068,14 +1070,14 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPBRelax(Mat,Vec,PetscReal,MatSORType
 
 .seealso: MatGetColoring()
 E*/
-#define MatColoringType char*
+#define MatColoringType const char*
 #define MATCOLORING_NATURAL "natural"
 #define MATCOLORING_SL      "sl"
 #define MATCOLORING_LF      "lf"
 #define MATCOLORING_ID      "id"
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,const MatColoringType,ISColoring*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,const MatColoringType,ISColoring *));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat,MatColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegister(const char[],const char[],const char[],PetscErrorCode(*)(Mat,MatColoringType,ISColoring *));
 
 /*MC
    MatColoringRegisterDynamic - Adds a new sparse matrix coloring to the 
@@ -1177,7 +1179,7 @@ typedef struct _p_MatPartitioning* MatPartitioning;
 
 .seealso: MatPartitioningCreate(), MatPartitioning
 E*/
-#define MatPartitioningType char*
+#define MatPartitioningType const char*
 #define MAT_PARTITIONING_CURRENT  "current"
 #define MAT_PARTITIONING_SQUARE   "square"
 #define MAT_PARTITIONING_PARMETIS "parmetis"
@@ -1188,7 +1190,7 @@ E*/
 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate(MPI_Comm,MatPartitioning*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,const MatPartitioningType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning,MatPartitioningType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetNParts(MatPartitioning,PetscInt);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetAdjacency(MatPartitioning,Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetVertexWeights(MatPartitioning,const PetscInt[]);

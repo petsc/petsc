@@ -134,7 +134,8 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "LogEventRegister"
   LogEvent LogEventRegister(LogCookie cookie, const char *name){
-    LogEvent event;
+    LogEvent event = 0;
+#if 0
     std::string event_name(name);
     if(_log_event.find(event_name) == _log_event.end()) {    
       PetscErrorCode ierr = PetscLogEventRegister(&event, name, cookie);
@@ -147,7 +148,8 @@ namespace ALE {
     else {                                                   
       // event by that name already registered, so we retrieve its registration number.
       event = _log_event[event_name];                   
-    }                                                        
+    }
+#endif                                                        
     return event;
   }
 

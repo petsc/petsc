@@ -15,7 +15,7 @@ extern PetscCookie PETSC_DRAW_COOKIE;
 
 .seealso: PetscDrawSetType(), PetscDraw, PetscViewer
 E*/
-#define PetscDrawType char*
+#define PetscDrawType const char*
 #define PETSC_DRAW_X     "x"
 #define PETSC_DRAW_NULL  "null"
 #define PETSC_DRAW_PS    "ps"
@@ -83,7 +83,7 @@ M*/
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawGetType(PetscDraw,PetscDrawType*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw,const PetscDrawType);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw,PetscDrawType);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm,const char[],const char[],int,int,int,int,PetscDraw*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw);
 

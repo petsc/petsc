@@ -43,7 +43,7 @@ PetscTruth TSRegisterAllCalled          = PETSC_FALSE;
 .keywords: TS, set, type
 
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts, const TSType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,TSType type)
 {
   PetscErrorCode (*r)(TS);
   PetscTruth     match;

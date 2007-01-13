@@ -6,102 +6,6 @@
 #include "private/pcimpl.h"     /*I "petscpc.h" I*/
 #include "petscksp.h"
 
-typedef struct { 
-  MPI_Comm   parent;      /* parent communicator */
-  MPI_Comm   dupparent;   /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
-  MPI_Comm   comm;        /* this communicator */
-  PetscInt   n;           /* num of subcommunicators under the parent communicator */
-  PetscInt   color;       /* color of processors belong to this communicator */
-} PetscSubcomm;
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSubcommDestroy"
-PetscErrorCode PetscSubcommDestroy(PetscSubcomm *psubcomm)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = PetscFree(psubcomm);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-/*--------------------------------------------------------------------------------------------------
-    To avoid data scattering from subcomm back to original comm, we create subcomm by iteratively taking a
-     processe into a subcomm. 
-     An example: size=4, nsubcomm=3
-      pc->comm:
-      rank:     [0]  [1]  [2]  [3]
-      color:     0    1    2    0
-
-     subcomm:
-      subrank:  [0]  [0]  [0]  [1]    
-
-     dupcomm:
-      duprank:  [0]  [2]  [3]  [1]
-
-     Here, subcomm[color = 0] has subsize=2, owns process [0] and [3]
-           subcomm[color = 1] has subsize=1, owns process [1]
-           subcomm[color = 2] has subsize=1, owns process [2]
-          dupcomm has same number of processes as pc->comm, and its duprank maps
-          processes in subcomm contiguously into a 1d array:
-            duprank: [0] [1]      [2]         [3]
-            rank:    [0] [3]      [1]         [2]
-                    subcomm[0] subcomm[1]  subcomm[2]
-     ----------------------------------------------------------------------------------------*/
-#undef __FUNCT__  
-#define __FUNCT__ "PetscSubcommCreate"
-PetscErrorCode PetscSubcommCreate(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm **psubcomm)
-{
-  PetscErrorCode ierr;
-  PetscMPIInt    rank,size,*subsize,duprank,subrank;
-  PetscInt       np_subcomm,nleftover,i,j,color;
-  MPI_Comm       subcomm=0,dupcomm=0;
-  const char     *prefix;
-  PetscSubcomm   *psubcomm_tmp;
-
-  PetscFunctionBegin;
-  ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
-  if (nsubcomm < 1 || nsubcomm > size) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Num of subcommunicators %D cannot be < 1 or > input comm size %D",nsubcomm,size);
-
-  /* get size of each subcommunicator */
-  ierr = PetscMalloc((1+nsubcomm)*sizeof(PetscMPIInt),&subsize);CHKERRQ(ierr);
-  np_subcomm = size/nsubcomm;
-  nleftover  = size - nsubcomm*np_subcomm;
-  for (i=0; i<nsubcomm; i++){
-    subsize[i] = np_subcomm;
-    if (i<nleftover) subsize[i]++;
-  }
-
-  /* find color for this proc */
-  color   = rank%nsubcomm;
-  subrank = rank/nsubcomm;
-
-  ierr = MPI_Comm_split(comm,color,subrank,&subcomm);CHKERRQ(ierr);
-
-  j = 0; duprank = 0;
-  for (i=0; i<nsubcomm; i++){
-    if (j == color){
-      duprank += subrank;
-      break;
-    }
-    duprank += subsize[i]; j++;
-  }
- 
-  /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
-  ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-  ierr = PetscFree(subsize);CHKERRQ(ierr);
- 
-  ierr = PetscNew(PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
-  psubcomm_tmp->parent    = comm;
-  psubcomm_tmp->dupparent = dupcomm;
-  psubcomm_tmp->comm      = subcomm;
-  psubcomm_tmp->n         = nsubcomm;
-  psubcomm_tmp->color     = color;
-  *psubcomm = psubcomm_tmp;
-  PetscFunctionReturn(0);
-}
-
 typedef struct {
   PC           pc;                   /* actual preconditioner used on each processor */
   Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of pc->comm */
@@ -161,11 +65,11 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
-  MPI_Comm       comm = pc->comm;
+  MPI_Comm       comm = pc->comm,subcomm;
   Vec            vec;
   PetscInt       mlocal_sub;
   PetscMPIInt    subsize,subrank;
-  PetscInt       rstart_sub,rend_sub,mloc_sub,nsubcomm;
+  PetscInt       rstart_sub,rend_sub,mloc_sub;
   const char     *prefix;
 
   PetscFunctionBegin;
@@ -177,7 +81,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = PetscLogObjectMemory(pc,sizeof(PetscSubcomm));CHKERRQ(ierr);
 
     /* create a new PC that processors in each subcomm have copy of */
-    MPI_Comm subcomm = red->psubcomm->comm;
+    subcomm = red->psubcomm->comm;
     ierr = PCCreate(subcomm,&red->pc);CHKERRQ(ierr);
     ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
@@ -320,8 +224,8 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
   if (red->pmats) {
     ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
   }
-  ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);
-  ierr = PCDestroy(red->pc);CHKERRQ(ierr);
+  if (red->psubcomm) {ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);}
+  if (red->pc) {ierr = PCDestroy(red->pc);CHKERRQ(ierr);}
   ierr = PetscFree(red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -332,14 +236,56 @@ static PetscErrorCode PCSetFromOptions_Redundant(PC pc)
 {
   PetscErrorCode ierr;
   PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscMPIInt    size;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("Redundant options");CHKERRQ(ierr);
-  ierr = PetscOptionsInt("-pc_redundant_number_comm","Number of subcommunicators","PCRedundantSetNumComm",red->nsubcomm,&red->nsubcomm,0);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_redundant_number","Number of redundant pc","PCRedundantSetNumber",red->nsubcomm,&red->nsubcomm,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantSetNumber_Redundant"
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
+{
+  PC_Redundant   *red = (PC_Redundant*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  red->nsubcomm = nreds; 
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCRedundantSetNumber"
+/*@
+   PCRedundantSetNumber - Sets the number of redundant preconditioner contexts.
+
+   Collective on PC
+
+   Input Parameters:
++  pc - the preconditioner context
+-  nredundant - number of redundant preconditioner contexts
+
+   Level: advanced
+
+.keywords: PC, redundant solve
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC pc,PetscInt nredundant)
+{
+  PetscErrorCode ierr,(*f)(PC,PetscInt);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  if (nredundant <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "num of redundant pc %D must be positive",nredundant);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCRedundantSetNumber_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,nredundant);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}  
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -522,6 +468,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   pc->ops->view            = PCView_Redundant;    
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetScatter_C","PCRedundantSetScatter_Redundant",
                     PCRedundantSetScatter_Redundant);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantSetNumber_C","PCRedundantSetNumber_Redundant",
+                    PCRedundantSetNumber_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetPC_C","PCRedundantGetPC_Redundant",
                     PCRedundantGetPC_Redundant);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCRedundantGetOperators_C","PCRedundantGetOperators_Redundant",

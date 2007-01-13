@@ -27,13 +27,13 @@ typedef struct _p_TS* TS;
 
 .seealso: TSSetType(), TS
 E*/
+#define TSType const char*
 #define TS_EULER           "euler"
 #define TS_BEULER          "beuler"
 #define TS_PSEUDO          "pseudo"
 #define TS_CRANK_NICHOLSON "crank-nicholson"
 #define TS_SUNDIALS        "sundials"
 #define TS_RUNGE_KUTTA     "runge-kutta"
-#define TSType char*
 
 /*E
     TSProblemType - Determines the type of problem this TS object is to be used to solve
@@ -116,7 +116,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSJacobian(TS,PetscReal,Vec,M
 extern PetscFList TSList;
 extern PetscTruth TSRegisterAllCalled;
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetType(TS,TSType*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetType(TS,const TSType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetType(TS,TSType);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegister(const char[], const char[], const char[], PetscErrorCode (*)(TS));
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegisterDestroy(void);
@@ -197,7 +197,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGramSchmidtType(TS,TSSundi
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetGMRESRestart(TS,PetscInt);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetLinearTolerance(TS,PetscReal);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetExactFinalTime(TS,PetscTruth);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetParameters(TS,PetscInt *,long int*[],double*[]);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetParameters(TS,PetscInt *,long*[],double*[]);
 #endif
 
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRKSetTolerance(TS,PetscReal);

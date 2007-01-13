@@ -26,6 +26,8 @@ enums = {}
 def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
+  senums  = pickle.load(file)  
+  aliases = pickle.load(file)  
   classes = pickle.load(file)
 
   for i in enums:
@@ -33,6 +35,14 @@ def main(args):
     for j in enums[i]:
       print "  "+j
   print " "
+  for i in aliases:
+    print i+" = "+aliases[i]
+  print " "
+  for i in senums:
+    print i+" = "+"char*"
+    for j in senums[i]:
+      print "  "+j+" = "+senums[i][j]
+  print " "    
   for i in classes:
     print i
     for j in classes[i]:

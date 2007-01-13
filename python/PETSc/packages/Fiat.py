@@ -3,7 +3,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download = ['http://www.fenics.org/pub/software/fiat/FIAT-0.2.5.tar.gz']
+    self.download = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/FIAT-0.2.5a.tar.gz', 'http://www.fenics.org/pub/software/fiat/FIAT-0.2.5.tar.gz']
     self.downloadname = self.name.upper()
     return
 

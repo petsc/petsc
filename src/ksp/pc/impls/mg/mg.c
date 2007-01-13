@@ -100,9 +100,9 @@ static PetscErrorCode PCMGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI
       ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
       if (size > 1) {
         ierr = PCSetType(ipc,PCREDUNDANT);CHKERRQ(ierr);
-        ierr = PCRedundantGetPC(ipc,&ipc);CHKERRQ(ierr);
+      } else {
+        ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
       }
-      ierr = PCSetType(ipc,PCLU);CHKERRQ(ierr);
 
     } else {
       char tprefix[128];
