@@ -377,7 +377,6 @@ namespace ALE {
 //           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
 //           std::cout << "no inner _low following current_iter; going to the end of subsegment" << std::endl;
 //           // If there is no inner _low or current_iter doesn't precede it, go to the end of the subsegment.
-//           // CONTINUE:
 //           // IMPROVE: should pass innerSegmentEnd in (perhaps instead of outerSegmentEnd).
 //           this->end(current_iter, outerSegmentEnd, outer_filter, iter);
 //         }
@@ -521,9 +520,6 @@ namespace ALE {
           segmentBegin = this->_index->begin();
         }
         if(Strided) {
-          if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": strided filter" << std::endl;
-          }
           if(this->_have_high) {
             segmentEnd = this->_index->upper_bound(ALE::singleton<key_type>(this->_high));
           }
@@ -532,9 +528,6 @@ namespace ALE {
           }
         }
         else {
-          if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": non-strided filter" << std::endl;
-          }
           segmentEnd   = this->_index->upper_bound(ALE::singleton<key_type>(this->key(segmentBegin)));
         }
         //
@@ -554,10 +547,13 @@ namespace ALE {
       template<typename OuterFilter_>
       void firstSegment(const OuterFilter_& outer_filter, const iterator& current_iter, const iterator& outerEnd, iterator& segmentBegin, iterator& segmentEnd) const {
         typedef typename OuterFilter_::key_type         outer_key_type;
+        static key_compare_type keyCompare;
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *current_iter: " << *current_iter << std::endl;
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*current_iter: " << *current_iter << ", *outerEnd: " << *outerEnd << std::endl;
         }
         if(this->_have_low) {
           segmentBegin = this->_index->lower_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter), this->_low));
@@ -565,22 +561,31 @@ namespace ALE {
         else {
           segmentBegin = current_iter;
         }
-        if(Strided) {
-          if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": strided filter" << std::endl;
-          }
+        if(Strided) { // if filter is strided
+          // and if there is a high bound 
           if(this->_have_high) {
-            segmentEnd = this->_index->upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter),this->_high));
+            if(!keyCompare(this->_high,this->key(segmentBegin))) {// and if inner begin has not overshot it
+              segmentEnd = this->_index->upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter),this->_high));
+            }
+            else { // an overshot produces an empty inner segment
+              segmentEnd = segmentBegin;
+            }
+          }// there is an inner high
+          // if there is no high bound, the inner end is at the outer end
+          else {// if there is no inner high
+            segmentEnd = outerEnd;
+          }// if there is no high high
+        }// filter is strided
+        else { // if filter is not strided
+          // if inner begin is not at the outer end and not above high (if there is any)
+          if(segmentBegin != outerEnd && (!this->_have_high || !keyCompare(this->_high, this->key(segmentBegin)))) { 
+            // the inner segment end is 'one up' from the inner begin
+            segmentEnd = this->_index->upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter), this->key(segmentBegin)));
           }
           else {
-            segmentEnd = this->_index->end();
+            // otherwise the inner segment end is equal to inner begin
+            segmentEnd = segmentBegin;
           }
-        }
-        else {
-          if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": non-strided filter" << std::endl;
-          }
-          segmentEnd = this->_index->upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter), this->key(segmentBegin)));
         }
         //
         if(ALE_XDEBUG(__ALE_XDEBUG__)){
@@ -644,7 +649,7 @@ namespace ALE {
           segmentEnd   = this->_index->end();
         }
         else {// if current_iter is not at index end
-          // Go to segmentEnd -- iterator with the following key
+          // Go to segmentEnd -- iterator with the following key or the segment end, if strided
           segmentBegin = segmentEnd;
           // Check for an overshot: whether segmentBegin follows inner _high;  
           if( !oKeyCompare(outer_filter.key(segmentBegin), outer_filter.key(outerEnd)) /* outerEnd overshot */ ||
@@ -681,7 +686,13 @@ namespace ALE {
         else {
           os << "none";
         }
-        os << "]";
+        os << "] ";
+        if(Strided) {
+          os << "strided";
+        }
+        else {
+          os << "non-strided";
+        }
         return os;
       };
       friend std::ostream& operator<<(std::ostream& os, const Obj<RangeFilter>& f) {
@@ -819,17 +830,69 @@ namespace ALE {
       //
       #undef  __FUNCT__
       #define __FUNCT__ "begin"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 5
       iterator begin() {
-        if(ALE_XDEBUG(1)) {
+        if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
         }
         static itor_type itor, outerEnd, innerEnd;
+        if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": looking for the beginning segment pair" << std::endl;
+        }
         this->outerFilter().firstSegment(itor, outerEnd);
         this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
-        if(ALE_XDEBUG(1)){
+        if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an outer segment and an inner segment " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd << std::endl; 
+        }
+        while(!(itor != innerEnd || itor == this->_index->end())) {
+          while(!(itor != outerEnd || itor == this->_index->end())) { // find the next non-empty outer segment
+            if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": looking for a non-empty outer segment; starting with:" << std::endl;
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+              std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd << std::endl; 
+            }
+            this->outerFilter().nextSegment(itor, itor, outerEnd);
+            if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an outer segment:" << std::endl;
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+              std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << std::endl;
+            }
+            if(itor != outerEnd || itor == this->_index->end()) {
+              if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": have a non-empty outer segment; looking for the first inner segment; starting with:";
+                std::cout << std::endl;
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+                std::cout << "*itor : " << *itor << ", *innerEnd: " << *innerEnd << ", *outerEnd: " << *outerEnd << std::endl;
+              }
+              this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+              if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an inner segment:" << std::endl;
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+                std::cout << "*itor : " << *itor << ", *innerEnd: " << *innerEnd << *innerEnd << ", *outerEnd: " << *outerEnd << std::endl; 
+              }
+            }// non-empty outer segment: looking for the first inner
+          }
+          if(itor == innerEnd){
+            if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": looking for the next non-empty inner segment" << std::endl;
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+              std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd << std::endl; 
+            }
+            this->innerFilter().nextSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+            if(ALE_XDEBUG(__ALE_XDEBUG__)) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an inner segment" << std::endl;
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+              std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd << std::endl; 
+            }
+          }
+        }
+        if(ALE_XDEBUG(__ALE_XDEBUG__)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor: " << *itor;
           std::cout << ", (okey, ikey): (" << this->outerFilter().key(itor) << ", " << this->innerFilter().key(itor) << ") ";
@@ -862,7 +925,7 @@ namespace ALE {
           std::cout << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd; 
           std::cout << std::endl;
         }
-        // We assume that it is safe to advance the iterator first and then check for segment ends.
+        // We assume that it is safe to advance the iterator first and then check whether one of the segment ends has been reached.
         // If iteration is to be strided we skip the remainder of the current subsegment and go over to the following subsegment within the same segment:
         // effectively, we iterate over subsegments.
         if(Strided) {
@@ -878,34 +941,18 @@ namespace ALE {
           }
           ++itor; 
         }// not Strided
-
-        // Check to see if we have reached the subsegment end
-        if(itor == innerEnd) { // at subsegment end
-          if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": at inner end ..." << std::endl;
-          }
-          // Check whether the end of the outer segment has been reached
-          if(itor != outerEnd) {
-            if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": but not at outer end" << std::endl;
+        while(!(itor != innerEnd || itor == this->_index->end())) {
+          while(!(itor != outerEnd || itor == this->_index->end())) { // find the next non-empty outer segment
+            this->outerFilter().nextSegment(itor, itor, outerEnd);
+            if(itor != outerEnd || itor == this->_index->end()){
+              this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd); // find first inner segment within new outer segment
             }
+          }// outerDone
+          if(!(itor != innerEnd || itor == this->_index->end())) { // if inner segment empty
             // go to the next inner segment
             this->innerFilter().nextSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
           }
-          else {// go to the next outer segment
-            if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": and at outer end" << std::endl;
-            }
-            this->outerFilter().nextSegment(itor, itor, outerEnd);
-            // Select the first inner segment within the new outer segment
-            this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
-          }
-        }
-        else { // not at subsegment end
-          if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": not at inner end" << std::endl;
-          }
-        }// not at subsegment end
+        }// innerDone
         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
           std::cout << ", (okey, ikey): (" << this->outerFilter().key(itor) << ", " << this->innerFilter().key(itor) << ") ";
@@ -1315,9 +1362,17 @@ namespace ALE {
     void cone(const target_type& t, ConeSequence& seq) {
       seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index,t,t),cone_predicate_filter_type(&this->_cone_index));
     };
+    void cone(const target_type& t, const predicate_type& p, ConeSequence& seq) {
+      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index,t,t),cone_predicate_filter_type(&this->_cone_index,p,p));
+    };
     ConeSequence& cone(const target_type& t) {
       static ConeSequence cseq;
       this->cone(t,cseq);
+      return cseq;
+    };
+    ConeSequence& cone(const target_type& t, const predicate_type& p) {
+      static ConeSequence cseq;
+      this->cone(t,p,cseq);
       return cseq;
     };
     //
@@ -1325,9 +1380,18 @@ namespace ALE {
       //seq.reset(this, &this->_base_index,base_predicate_filter_type(&this->_base_index),base_target_filter_type(&this->_base_index));
       seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_filter_type(&this->_cone_index));
     };
+    void base(const predicate_type& p, BaseSequence& seq) {
+      //seq.reset(this, &this->_base_index,base_predicate_filter_type(&this->_base_index),base_target_filter_type(&this->_base_index));
+      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_filter_type(&this->_cone_index,p,p));
+    };
     BaseSequence& base() {
       static BaseSequence bseq;
       this->base(bseq);
+      return bseq;
+    };
+    BaseSequence& base(const predicate_type& p) {
+      static BaseSequence bseq;
+      this->base(p,bseq);
       return bseq;
     };
     //
