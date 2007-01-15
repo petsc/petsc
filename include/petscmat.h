@@ -1007,7 +1007,7 @@ typedef struct {
   PetscReal     dt;             /* drop tolerance */
   PetscReal     dtcol;          /* tolerance for pivoting */
   PetscReal     dtcount;        /* maximum nonzeros to be allowed per row */
-  PetscReal     fill;           /* expected fill; nonzeros in factored matrix/nonzeros in original matrix*/
+  PetscReal     fill;           /* expected fill, nonzeros in factored matrix/nonzeros in original matrix */
   PetscReal     levels;         /* ICC/ILU(levels) */ 
   PetscReal     pivotinblocks;  /* for BAIJ and SBAIJ matrices pivot in factorization on blocks, default 1.0 
                                    factorization may be faster if do not pivot */

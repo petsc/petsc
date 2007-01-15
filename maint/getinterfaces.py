@@ -24,6 +24,8 @@ classes = {}
 enums = {}
 aliases = {}
 senums = {} # like enums except strings instead of integer values
+structs = {}
+
 
 def getenums(filename):
   import re
@@ -82,6 +84,43 @@ def getsenums(filename):
         values = line.split(" ")
         senums[senum][values[1]] = values[2]
         line = regblank.sub(" ",f.readline().strip())
+    line = f.readline()
+  f.close()
+
+def getstructs(filename):
+  import re
+  regtypedef  = re.compile('^typedef [ ]*struct {')
+  regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*/0-9.]* \*/')
+  reg         = re.compile('}')
+  regblank    = re.compile(' [ ]*')
+  regname     = re.compile('}[ A-Za-z]*')
+  f = open(filename)
+  line = f.readline()
+  while line:
+    fl = regtypedef.search(line)
+    if fl:
+      struct = line
+      while line:
+        fl = reg.search(line)
+        if fl:
+	  struct = struct.replace("\\","")
+  	  struct = struct.replace("\n","")
+  	  struct = struct.replace("typedef struct {","")
+          struct = regblank.sub(" ",struct)
+  	  struct = struct.replace("; ",";")	            
+          struct = regcomment.sub("",struct)
+
+          name = regname.search(struct)
+          name = name.group(0)
+          name = name.replace("} ","")
+
+          values = struct[struct.find("{")+1:struct.find(";}")]
+          if not values.find('#') == -1: break
+          values = values.split(";")
+	  structs[name] = values
+          break
+        line = f.readline()
+        struct = struct + line
     line = f.readline()
   f.close()
 
@@ -149,12 +188,16 @@ def getfunctions(filename):
 #  For now, hardwire aliases
 #
 def getaliases():
-  aliases['PetscInt']    = 'int'
-  aliases['PetscScalar'] = 'double'
-  aliases['PetscReal']   = 'double'  
-  aliases['MPI_Comm']    = 'int'
-  aliases['FILE']        = 'int'
-  aliases['PetscMPIInt'] = 'int'      
+  aliases['PetscInt']           = 'int'
+  aliases['PetscScalar']        = 'double'
+  aliases['PetscReal']          = 'double'  
+  aliases['MPI_Comm']           = 'int'
+  aliases['FILE']               = 'int'
+  aliases['PetscMPIInt']        = 'int'
+  aliases['PetscCookie']        = 'int'
+  aliases['PetscLogDouble']     = 'double'
+  aliases['PetscTablePosition'] = 'int*'
+  aliases['ISColoringValue']    = 'ushort'            
   
 def main(args):
   for i in args:
@@ -163,12 +206,15 @@ def main(args):
     getsenums(i)
   getaliases()
   for i in args:
+    getstructs(i)
+  for i in args:
     getclasses(i)
   for i in args:
     getfunctions(i)
   file = open('classes.data','w')
   pickle.dump(enums,file)
-  pickle.dump(senums,file)  
+  pickle.dump(senums,file)
+  pickle.dump(structs,file)    
   pickle.dump(aliases,file)    
   pickle.dump(classes,file)
   

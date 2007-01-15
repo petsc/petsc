@@ -216,7 +216,10 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawZoom(PetscDraw,PetscErrorCode (*)
 S*/
 typedef struct {
   PetscInt  nports;
-  PetscReal *xl,*xr,*yl,*yr;
+  PetscReal *xl;
+  PetscReal *xr;
+  PetscReal *yl;
+  PetscReal *yr;
   PetscDraw draw;
 } PetscDrawViewPorts;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw,int,PetscDrawViewPorts**);

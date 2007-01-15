@@ -95,7 +95,10 @@ def petsc_configure(configure_options):
   if os.getuid() == 0:
     print '================================================================================='
     print '             *** Do not run configure as root, or using sudo. ***'
-    print '             ***** That should be reserved for installation *****'
+    print '             *** Use the --with-sudo=sudo option to have      ***'
+    print '             *** installs of external packages done with sudo ***'
+    print '             *** use only with --prefix= when installing in   ***'
+    print '             *** system directories                           ***'
     print '================================================================================='
     sys.exit(3)
 
