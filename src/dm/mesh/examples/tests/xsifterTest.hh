@@ -15,6 +15,7 @@ namespace ALE {
         int      codebug; // The codebugging level
         PetscInt iters;   // The number of test repetitions
         PetscInt capSize; // The size of the sifter cap
+        PetscInt predicate; // The slice predicate; negative means 'all arrows'
         Options(MPI_Comm comm = PETSC_COMM_WORLD){
           PetscErrorCode ierr = ProcessOptions(comm, this); 
           ALE::CHKERROR(ierr, "Error in Options constructor/ProcessOptions");
@@ -27,16 +28,17 @@ namespace ALE {
           PetscErrorCode ierr;
           
           PetscFunctionBegin;
-          options->debug   = 0;
-          options->codebug = 0;
-          options->iters   = 1;
-          options->capSize = 10;
-          
+          options->debug     = 0;
+          options->codebug   = 0;
+          options->iters     = 1;
+          options->capSize   = 10;
+          options->predicate = -1;
           ierr = PetscOptionsBegin(comm, "", "Options for xsifter basic test", "XSifter");CHKERRQ(ierr);
-          ierr = PetscOptionsInt("-debug",   "The debugging level", "xsifter0.cxx", 0, &options->debug, PETSC_NULL);CHKERRQ(ierr);
-          ierr = PetscOptionsInt("-codebug", "The co-debugging level", "xsifter0.cxx", 0, &options->codebug, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsInt("-debug",   "The debugging level", "xsifter0.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsInt("-codebug", "The co-debugging level", "xsifter0.cxx", options->codebug, &options->codebug, PETSC_NULL);CHKERRQ(ierr);
           ierr = PetscOptionsInt("-iterations","The number of test repetitions", "xsifter0.cxx", options->iters, &options->iters, PETSC_NULL);CHKERRQ(ierr);
-          ierr = PetscOptionsInt("-capSize", "The size of xsifter cap", "xsifter0.cxx", options->iters, &options->capSize, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsInt("-capSize", "The size of xsifter cap", "xsifter0.cxx", options->capSize, &options->capSize, PETSC_NULL);CHKERRQ(ierr);
+          ierr = PetscOptionsInt("-predicate", "The slice predicate (negative implies 'all'", "xsifter0.cxx", options->predicate, &options->predicate, PETSC_NULL);CHKERRQ(ierr);
           ierr = PetscOptionsEnd();
           //
           ALE::XSifterDef::debug   = options->debug;

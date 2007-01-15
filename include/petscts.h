@@ -116,7 +116,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSComputeRHSJacobian(TS,PetscReal,Vec,M
 extern PetscFList TSList;
 extern PetscTruth TSRegisterAllCalled;
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSGetType(TS,TSType*);
-EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetType(TS,const TSType);
+EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSetType(TS,TSType);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegister(const char[], const char[], const char[], PetscErrorCode (*)(TS));
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegisterAll(const char[]);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSRegisterDestroy(void);

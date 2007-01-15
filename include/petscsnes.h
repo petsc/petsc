@@ -152,7 +152,7 @@ E*/
 #define MATSNESMF_DS  "ds"
 #define MATSNESMF_WP  "wp"
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat,const MatSNESMFType);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat,MatSNESMFType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatSNESMFCtx));
 
 /*MC

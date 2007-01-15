@@ -96,7 +96,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char display[
 
 .seealso: PetscDrawSetFromOptions(), PetscDrawCreate(), PetscDrawDestroy()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,const PetscDrawType type)
+PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
   PetscErrorCode ierr,(*r)(PetscDraw);
   PetscTruth    match;
