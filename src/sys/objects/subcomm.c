@@ -3,7 +3,7 @@
      Provides utility routines for split MPI communicator.
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
-#include "petscsys.h"
+#include "petscsys.h" /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSubcommDestroy"
@@ -18,7 +18,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm *psubcomm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSubcommCreate"
-/*@
+/*@C
   PetscSubcommCreate - Create a PetscSubcomm context.
 
    Collective on MPI_Comm

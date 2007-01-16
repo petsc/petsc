@@ -249,8 +249,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCRedundantSetNumber_Redundant"
 PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
-  PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
+  PC_Redundant *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
   red->nsubcomm = nreds; 
