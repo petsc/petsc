@@ -22,7 +22,8 @@ import pickle
 def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
-  senums  = pickle.load(file)  
+  senums  = pickle.load(file)
+  structs = pickle.load(file)    
   aliases = pickle.load(file)  
   classes = pickle.load(file)
   outfile = open('petsc.d','w')
@@ -48,6 +49,14 @@ def main(args):
     outfile.write("};\n")      
   outfile.write("\n")
 
+  for i in structs:
+    outfile.write("struct "+i+"\n")
+    outfile.write("{\n")
+    for j in structs[i]:
+      outfile.write("    "+j+";\n")
+    outfile.write("};\n")      
+  outfile.write("\n")
+
   for i in classes:
     outfile.write("class "+i+"\n")
     outfile.write("{\n")
@@ -59,7 +68,7 @@ def main(args):
           outfile.write(k.replace("const ","").replace("unsigned long","ulong"))
           if cnt < len(classes[i][j])-1: outfile.write(",")
         cnt = cnt + 1
-      outfile.write(");\n")
+      outfile.write("){return 0;};\n")
     outfile.write("}\n")        
   
     
