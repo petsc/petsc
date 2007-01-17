@@ -6,8 +6,7 @@
     The interface to PVODE (old version of CVODE) was originally contributed 
     by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
 */
-
-#include "src/ts/impls/implicit/sundials/sundials.h"  /*I "petscts.h" I*/    
+#include "sundials.h"  /*I "petscts.h" I*/
 
 /*
       TSPrecond_Sundials - function that we provide to SUNDIALS to

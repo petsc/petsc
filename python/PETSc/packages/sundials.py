@@ -9,7 +9,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-April_2006.tar.gz']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sundials-Nov_2006.tar.gz']
     self.functions = ['CVSpgmr']
     self.includes  = ['sundials/sundials_nvector.h'] 
     self.liblist   = [['libsundials_cvode.a','libsundials_nvecserial.a','libsundials_nvecparallel.a']] #currently only support CVODE
