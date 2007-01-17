@@ -499,11 +499,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscTokenFind(PetscToken *a,char *result[])
 PetscErrorCode PETSC_DLLEXPORT PetscTokenCreate(const char a[],const char b,PetscToken **t)
 {
   PetscErrorCode ierr;
-  size_t         len;
 
   PetscFunctionBegin;
   ierr = PetscNew(PetscToken,t);CHKERRQ(ierr);
-  ierr = PetscStrlen(a,&len);CHKERRQ(ierr);
   ierr = PetscStrallocpy(a,&(*t)->array);CHKERRQ(ierr);
   (*t)->current = (*t)->array;   
   (*t)->token   = b;

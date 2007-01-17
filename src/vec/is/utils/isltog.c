@@ -146,7 +146,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreate(MPI_Comm cm,Petsc
   PetscInt       *in;
 
   PetscFunctionBegin;
-  PetscValidIntPointer(indices,3);
+  if (n) PetscValidIntPointer(indices,3);
   PetscValidPointer(mapping,4);
   ierr = PetscMalloc(n*sizeof(PetscInt),&in);CHKERRQ(ierr);
   ierr = PetscMemcpy(in,indices,n*sizeof(PetscInt));CHKERRQ(ierr);
