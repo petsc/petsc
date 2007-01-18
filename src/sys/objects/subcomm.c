@@ -102,7 +102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsub
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   ierr = PetscFree(subsize);CHKERRQ(ierr);
  
-  ierr = PetscNew(_p_PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
+  ierr = PetscNew(struct _n_PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
   psubcomm_tmp->parent    = comm;
   psubcomm_tmp->dupparent = dupcomm;
   psubcomm_tmp->comm      = subcomm;

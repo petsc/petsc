@@ -278,9 +278,9 @@ M*/
 
    Concepts: communicator, create
 S*/
-typedef struct _p_PetscSubcomm* PetscSubcomm;
+typedef struct _n_PetscSubcomm* PetscSubcomm;
 
-struct _p_PetscSubcomm { 
+struct _n_PetscSubcomm { 
   MPI_Comm   parent;      /* parent communicator */
   MPI_Comm   dupparent;   /* duplicate parent communicator, under which the processors of this subcomm have contiguous rank */
   MPI_Comm   comm;        /* this communicator */
