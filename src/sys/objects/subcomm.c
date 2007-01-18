@@ -2,12 +2,12 @@
 /*
      Provides utility routines for split MPI communicator.
 */
-#include "petsc.h"  /*I   "petsc.h"    I*/
+#include "petsc.h"    /*I   "petsc.h"    I*/
 #include "petscsys.h" /*I   "petscsys.h"    I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscSubcommDestroy"
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm *psubcomm)
+PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
 {
   PetscErrorCode ierr;
 
@@ -61,13 +61,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm *psubcomm)
 
 .seealso: PetscSubcommDestroy()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm **psubcomm)
+PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsubcomm,PetscSubcomm *psubcomm)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank,size,*subsize,duprank,subrank;
   PetscInt       np_subcomm,nleftover,i,j,color;
   MPI_Comm       subcomm=0,dupcomm=0;
-  PetscSubcomm   *psubcomm_tmp;
+  PetscSubcomm   psubcomm_tmp;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsub
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
   ierr = PetscFree(subsize);CHKERRQ(ierr);
  
-  ierr = PetscNew(PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
+  ierr = PetscNew(_p_PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
   psubcomm_tmp->parent    = comm;
   psubcomm_tmp->dupparent = dupcomm;
   psubcomm_tmp->comm      = subcomm;

@@ -13,7 +13,7 @@ typedef struct {
   Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
   PetscTruth   useparallelmat;
-  PetscSubcomm *psubcomm;          
+  PetscSubcomm psubcomm;          
   PetscInt     nsubcomm;           /* num of data structure PetscSubcomm */
 } PC_Redundant;
 
