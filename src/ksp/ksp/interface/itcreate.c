@@ -144,6 +144,33 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPGetNormType"
+/*@
+   KSPGetNormType - Sets the norm that is used for convergence testing.
+
+   Not Collective
+
+   Input Parameter:
+.  ksp - Krylov solver context
+
+   Output Parameter:
+.  normtype - norm that is used for convergence testing
+
+   Level: advanced
+
+.keywords: KSP, create, context, norms
+
+.seealso: KSPNormType, KSPSetNormType(), KSPSkipConverged()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP ksp, KSPNormType *normtype) {
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(normtype, 2);
+  *normtype = ksp->normtype;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
 {
