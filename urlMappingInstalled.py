@@ -1,6 +1,6 @@
 import urlparse
 # Fix parsing for nonstandard schemes
-urlparse.uses_netloc.extend(['bk', 'ssh'])
+urlparse.uses_netloc.extend(['hg', 'ssh'])
 
 def installedUrlMap(self, url):
   import os
@@ -8,7 +8,7 @@ def installedUrlMap(self, url):
   if project:
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(url)
     path = project.getRoot()
-    return (1, urlparse.urlunparse(('bkfile', '', path, parameters, query, fragment)))
+    return (1, urlparse.urlunparse(('hgfile', '', path, parameters, query, fragment)))
   return (0, url)
 
 def setupUrlMapping(self, urlMaps):

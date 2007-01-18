@@ -69,7 +69,7 @@ class Logger(args.ArgumentProcessor):
     argDB.setType('log',           nargs.Arg(None, 'build.log', 'The filename for the log'))
     argDB.setType('logAppend',     nargs.ArgBool(None, 0, 'The flag determining whether we backup or append to the current log', isTemporary = 1))
     argDB.setType('debugLevel',    nargs.ArgInt(None, 3, 'Integer 0 to 4, where a higher level means more detail', 0, 5))
-    argDB.setType('debugSections', nargs.Arg(None, [], 'Message types to print, e.g. [compile,link,bk,install]'))
+    argDB.setType('debugSections', nargs.Arg(None, [], 'Message types to print, e.g. [compile,link,hg,install]'))
     argDB.setType('debugIndent',   nargs.Arg(None, '  ', 'The string used for log indentation'))
     argDB.setType('scrollOutput',  nargs.ArgBool(None, 0, 'Flag to allow output to scroll rather than overwriting a single line'))
     argDB.setType('noOutput',      nargs.ArgBool(None, 0, 'Flag to suppress output to the terminal'))

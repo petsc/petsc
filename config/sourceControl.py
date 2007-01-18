@@ -15,16 +15,16 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('SourceControl', '-with-bk=<executable>',  nargs.Arg(None, 'bk', 'Specify the BitKeeper executable'))
+    help.addArgument('SourceControl', '-with-hg=<executable>',  nargs.Arg(None, 'hg', 'Specify the Mercurial executable'))
     help.addArgument('SourceControl', '-with-cvs=<executable>', nargs.Arg(None, 'cvs', 'Specify the CVS executable'))
     help.addArgument('SourceControl', '-with-svn=<executable>', nargs.Arg(None, 'svn', 'Specify the Subversion executable'))
     return
 
-  def configureBitKeeper(self):
-    '''Find the BitKeeper executable'''
-    if 'with-bk' in self.framework.argDB and self.framework.argDB['with-bk'] == '0':
+  def configureMercurial(self):
+    '''Find the Mercurial executable'''
+    if 'with-hg' in self.framework.argDB and self.framework.argDB['with-hg'] == '0':
       return
-    self.getExecutable(self.framework.argDB['with-bk'], resultName = 'bk')
+    self.getExecutable(self.framework.argDB['with-hg'], resultName = 'hg')
     return
 
   def configureCVS(self):
@@ -38,7 +38,7 @@ class Configure(config.base.Configure):
     return
 
   def configure(self):
-    self.executeTest(self.configureBitKeeper)
+    self.executeTest(self.configureMercurial)
     self.executeTest(self.configureCVS)
     self.executeTest(self.configureSubversion)
     return

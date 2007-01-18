@@ -74,7 +74,7 @@ class RemoteBuild(script.Script):
   def build(self):
     self.clean()
     self.bootstrap()
-    self.install('bk://mpib.bkbits.net/mpib-dev', ['--with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4'])
+    self.install('http://petsc.cs.iit.edu/petsc/mpib-dev', ['--with-mpi-dir=/home/petsc/soft/linux-rh73/mpich-1.2.4'])
     return
 
   def copyLog(self):
