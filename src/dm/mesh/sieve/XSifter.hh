@@ -562,19 +562,14 @@ namespace ALE {
           segmentBegin = current_iter;
         }
         if(Strided) { // if filter is strided
-          // and if there is a high bound 
-          if(this->_have_high) {
-            if(!keyCompare(this->_high,this->key(segmentBegin))) {// and if inner begin has not overshot it
-              segmentEnd = this->_index->upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(current_iter),this->_high));
-            }
-            else { // an overshot produces an empty inner segment
-              segmentEnd = segmentBegin;
-            }
-          }// there is an inner high
-          // if there is no high bound, the inner end is at the outer end
-          else {// if there is no inner high
-            segmentEnd = outerEnd;
-          }// if there is no high high
+          // if the segment is empty, both begin and end must be at outer end 
+          // otherwise, only the inner end is at outer end
+          segmentEnd = outerEnd;
+          // detect an overshoot of high by segment begin: indicating an empty inner segment
+          if(segmentBegin != outerEnd && this->_have_high && keyCompare(this->_high,this->key(segmentBegin))) {// inner begin overshoots inner high
+            // Move segmentBegin to segmentEnd to indicate an empty inner segment
+            segmentBegin = segmentEnd;
+          }
         }// filter is strided
         else { // if filter is not strided
           // if inner begin is not at the outer end and not above high (if there is any)
@@ -636,34 +631,34 @@ namespace ALE {
       void nextSegment(const OuterFilter_& outer_filter, const iterator& current_iter, const iterator& outerEnd, iterator& segmentBegin, iterator& segmentEnd) const {         
         typedef typename OuterFilter_::key_type         outer_key_type;
         typedef typename OuterFilter_::key_compare_type outer_key_compare_type;
-        static outer_key_compare_type oKeyCompare;
         static OuterInnerKeyOrder<outer_key_type, key_type, outer_key_compare_type, key_compare_type> oiKeyCompare;
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *current_iter: " << *current_iter << std::endl;
+          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*current_iter: " << *current_iter << ", *outerEnd:" <<  *outerEnd << std::endl;
         }
-        // Check if current_iter is at the end of the index already
-        if(current_iter == this->_index->end()) {
-          segmentBegin = this->_index->end();
-          segmentEnd   = this->_index->end();
+        // Check if current_iter is at the outer end
+        if(current_iter == outerEnd) {
+          segmentBegin = outerEnd;
+          segmentEnd   = outerEnd;
         }
-        else {// if current_iter is not at index end
+        else {// if current_iter is not at outer end
           // Go to segmentEnd -- iterator with the following key or the segment end, if strided
           segmentBegin = segmentEnd;
-          // Check for an overshot: whether segmentBegin follows inner _high;  
-          if( !oKeyCompare(outer_filter.key(segmentBegin), outer_filter.key(outerEnd)) /* outerEnd overshot */ ||
-              (this->_have_high && 
-               oiKeyCompare(outer_filter.key(current_iter), this->_high, outer_filter.key(segmentBegin), this->key(segmentBegin))) /* inner high overshot */
-            )
-          {// overshoot
-            // go to the outer end
+          // Check for overshoots
+          if(segmentBegin == outerEnd) { // outerEnd reached
+            segmentEnd = outerEnd;
+          }
+          else if((this->_have_high && oiKeyCompare(outer_filter.key(current_iter), this->_high, outer_filter.key(segmentBegin), this->key(segmentBegin))))
+          {// inner high overshoot
             segmentBegin = outerEnd; segmentEnd = outerEnd;
           }
           else {// no overshoot
             segmentEnd = this->_index->upper_bound(ALE::pair<outer_key_type, key_type>(outer_filter.key(segmentBegin), this->key(segmentBegin)));
           }
-        }// if current_iter is not at index end
+        }// if current_iter is not at outer end
         if(ALE_XDEBUG(__ALE_XDEBUG__)){
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*segmentBegin " << *segmentBegin;
@@ -1334,11 +1329,12 @@ namespace ALE {
     //typedef ALE::XSifterDef::RangeFilter<base_index_type, target_extractor_type, target_order_type>       base_target_filter_type;
     typedef ALE::XSifterDef::RangeFilter<cone_index_type, target_extractor_type, target_order_type>       cone_target_filter_type;
     typedef ALE::XSifterDef::RangeFilter<cone_index_type, predicate_extractor_type, predicate_order_type> cone_predicate_filter_type;
+    typedef ALE::XSifterDef::RangeFilter<cone_index_type, predicate_extractor_type, predicate_order_type, true> cone_predicate_strided_filter_type;
     //
     // Specialized sequence types
     //
     //typedef ArrowSequence<base_index_type, base_predicate_filter_type, base_target_filter_type, target_extractor_type, true>  BaseSequence;
-    typedef ArrowSequence<cone_index_type, cone_target_filter_type, cone_predicate_filter_type, target_extractor_type, true>  BaseSequence;
+    typedef ArrowSequence<cone_index_type, cone_target_filter_type, cone_predicate_strided_filter_type, target_extractor_type, true>  BaseSequence;
 
     typedef ArrowSequence<cone_index_type, cone_target_filter_type, cone_predicate_filter_type, source_extractor_type>        ConeSequence;
     //
@@ -1378,11 +1374,11 @@ namespace ALE {
     //
     void base(BaseSequence& seq) {
       //seq.reset(this, &this->_base_index,base_predicate_filter_type(&this->_base_index),base_target_filter_type(&this->_base_index));
-      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_filter_type(&this->_cone_index));
+      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_strided_filter_type(&this->_cone_index));
     };
     void base(const predicate_type& p, BaseSequence& seq) {
       //seq.reset(this, &this->_base_index,base_predicate_filter_type(&this->_base_index),base_target_filter_type(&this->_base_index));
-      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_filter_type(&this->_cone_index,p,p));
+      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_strided_filter_type(&this->_cone_index,p,p));
     };
     BaseSequence& base() {
       static BaseSequence bseq;
@@ -1414,6 +1410,14 @@ namespace ALE {
         }
       os << ")" << std::endl;
     };
+    //
+    // Backdoor
+    //
+    typedef typename cone_index_type::iterator iterator;
+    iterator begin() const {return this->_cone_index.begin();};
+    //
+    iterator end() const {return this->_cone_index.end();};
+    
   protected:
     // set of arrow records
     rec_set_type     _rec_set;
