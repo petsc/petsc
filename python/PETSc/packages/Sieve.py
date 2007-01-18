@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     self.archIndependent = 1
     self.cxx             = 1
     self.complex         = 1
+    self.required        = 1
     return
 
   def setupDependencies(self, framework):
@@ -32,3 +33,10 @@ class Configure(PETSc.package.Package):
     sieveDir = self.getDir()
     self.framework.actions.addArgument('Sieve', 'Install', 'Installed Sieve into '+sieveDir)
     return sieveDir
+
+  def configure(self):
+    '''Determines if the package should be configured for, then calls the configure'''
+    if not self.boost.found:
+      self.logPrint('Disabling Sieve since Boost was not located')
+      self.framework.argDB['with-'+self.package] = 0
+    return PETSc.package.Package.configure(self)
