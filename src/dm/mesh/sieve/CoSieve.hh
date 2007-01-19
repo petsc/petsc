@@ -61,6 +61,7 @@ namespace ALE {
         int debug = sieve->debug();
 
         if (debug > 1) {std::cout << "  Building hex faces for boundary of " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;}
+        faces[dim].clear();
         if (dim > 3) {
           throw ALE::Exception("Cannot do hexes of dimension greater than three");
         } else if (dim > 2) {
@@ -70,6 +71,7 @@ namespace ALE {
           for(int b = 0; b < 6; b++) {
             typename sieve_type::point_type face;
 
+            bdVertices[dim-1].clear();
             for(int c = 0; c < 4; c++) {
               bdVertices[dim-1].push_back(bdVertices[dim][nodes[b*4+c]]);
             }
@@ -84,10 +86,18 @@ namespace ALE {
           for(int b = 0; b < boundarySize; b++) {
             typename sieve_type::point_type face;
 
+            bdVertices[dim-1].clear();
             for(int c = 0; c < 2; c++) {
               bdVertices[dim-1].push_back(bdVertices[dim][(b+c)%boundarySize]);
             }
-            if (debug > 1) {std::cout << "    boundary point " << bdVertices[dim][b] << std::endl;}
+            if (debug > 1) {
+              std::cout << "    boundary point " << bdVertices[dim][b] << std::endl;
+              std::cout << "      boundary vertices";
+              for(int c = 0; c < (int) bdVertices[dim-1].size(); c++) {
+                std::cout << " " << bdVertices[dim-1][c];
+              }
+              std::cout << std::endl;
+            }
             buildHexFaces(sieve, dim-1, curElement, bdVertices, faces, face);
             if (debug > 1) {std::cout << "    added face " << face << std::endl;}
             faces[dim].push_back(face);
@@ -972,6 +982,7 @@ namespace ALE {
       };
       void orderPatches() {};
     public: // Restriction
+      // Return a pointer to the entire contiguous storage array
       const array_type& restrict(const patch_type& patch) {
         this->checkPatch(patch);
         return this->_arrays[patch];
@@ -988,21 +999,21 @@ namespace ALE {
 
         // We could actually ask for the height of the individual point
         if (this->getTopology()->height(patch) < 2) {
-          // Only avoids the copy of closure()
-          const int& dim = this->_atlas->restrict(patch, p)[0];
+          // Avoids only the copy of closure()
+          const int& dim = this->_atlas->restrictPoint(patch, p)[0];
 
           if (chart.count(p)) {
             for(int i = 0; i < dim; ++i) {
               values[++j] = array[p].v[i];
             }
           }
-          // Should be closure()
+          // Need only the cone
           const Obj<typename sieve_type::coneSequence>& cone = this->getTopology()->getPatch(patch)->cone(p);
           typename sieve_type::coneSequence::iterator   end  = cone->end();
 
           for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
             if (chart.count(*p_iter)) {
-              const int& dim = this->_atlas->restrict(patch, *p_iter)[0];
+              const int& dim = this->_atlas->restrictPoint(patch, *p_iter)[0];
 
               for(int i = 0; i < dim; ++i) {
                 values[++j] = array[*p_iter].v[i];
@@ -1010,7 +1021,19 @@ namespace ALE {
             }
           }
         } else {
-          throw ALE::Exception("Not yet implemented for interpolated sieves");
+          // Right now, we have no way of consistently ordering the closure()
+          const Obj<typename sieve_type::coneSet>& closure = this->getTopology()->getPatch(patch)->closure(p);
+          typename sieve_type::coneSet::iterator   end     = closure->end();
+
+          for(typename sieve_type::coneSet::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+            if (chart.count(*p_iter)) {
+              const int& dim = this->_atlas->restrictPoint(patch, *p_iter)[0];
+
+              for(int i = 0; i < dim; ++i) {
+                values[++j] = array[*p_iter].v[i];
+              }
+            }
+          }
         }
         if (j != size-1) {
           ostringstream txt;

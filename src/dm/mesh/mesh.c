@@ -1229,6 +1229,7 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 + dim - The topological mesh dimension
 . coordFilename - The file containing vertex coordinates
 . adjFilename - The file containing the vertices for each element
+. interpolate - The flag for construction of intermediate elements
 . bcFilename - The file containing the boundary topology and conditions
 . numBdFaces - The number of boundary faces (or edges)
 - numBdVertices - The number of boundary vertices
@@ -1241,7 +1242,7 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 .keywords: mesh, PCICE
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], const char bcFilename[], const int numBdFaces, const int numBdVertices, Mesh *mesh)
+PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscTruth interpolate, const char bcFilename[], const int numBdFaces, const int numBdVertices, Mesh *mesh)
 {
   ALE::Obj<ALE::Mesh> m;
   PetscInt            debug = 0;
@@ -1252,7 +1253,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
   try {
-    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, false, debug);
+    m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
   }
