@@ -74,13 +74,11 @@
         YEAR = "2000" 
 }
 
-@TECHREPORT{GNEP-WEB,
-        AUTHOR = "",
-        TYPE = "Website",
+@unpublished{GNEP-WEB,
+        AUTHOR = "U.S. Department of Energy",
         TITLE = "Global Nuclear Energy Partnership ({GNEP})",
         NOTE = "\url{ http://www.gnep.energy.gov}", 
-        INSTITUTION = "United States Department of Energy",
-        YEAR = "" 
+        YEAR = "2007" 
 }
 
 @Book{LEWIS-MILLER-1984,
@@ -115,13 +113,15 @@
 }
 
 @Misc{fusion:report,
-  title =        "Report of the Fusion Energy Sciences Advisory Committee Burning Plasman Strategy Panel",
+  title =  "Report of the Fusion Energy Sciences Advisory Committee Burning Plasma Strategy Panel",
+  author = "Fusion Energy Sciences Advisory Committee",
   year = 2002,
   url = "http://www.ofes.fusion.doe.gov/More_HTML/FESAC/Austinfinal.pdf"
 }
 
 @Misc{hecrtf:report,
-  title =        "Report of the High End Computing Revitalization Task Force (HECRTF)",
+  title = "Report of the High End Computing Revitalization Task Force (HECRTF)",
+  author = "High End Computing Revitalization Task Force (HECRTF)",
   year = 2004,
   url = "http://www.ostp.gov/nstc/html/HECRTF-FINAL_051004.pdf"
 }
@@ -294,13 +294,14 @@
 
 @Unpublished{petsc:external,
   title = 	 "External Software Used by PETSc",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
+  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:prizes,
+  author =	 {B. {Smith et al.}},
   title = 	 "Prizes Won Using PETSc",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
+  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
   Institution = "Argonne National Laboratory"
 }
 
@@ -1957,6 +1958,14 @@ Booktitle = "Supercomputing '95 Proceedings",
   annote =	 {fast FFT.  Parallel versions with MPI and Cilk}
 }
 
+@BOOK{Kelley95,
+      AUTHOR="C. T. Kelley",
+      TITLE="Iterative Methods for Linear and Nonlinear Equations",
+      YEAR="1995",
+      PUBLISHER="SIAM",
+      address="Philadelphia"
+      }
+
 @BOOK{NW99,
       AUTHOR="Jorge Nocedal and Stephen J. Wright",
       TITLE="Numerical Optimization",
@@ -2804,4 +2813,30 @@ month=  "August",
 year =  2004,
 note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 }
+
+@article{falgout05a,
+  author = "R. D. Falgout and J. E. Jones and U. M. Yang", 
+  title = "Conceptual Interfaces in hypre", 
+  journal = "Future Generation Computer Systems", 
+  note = "Special issue on PDE software",
+  volume = 22,
+  year = 2005, 
+  pages = "239--251" 
+}
+
+@article{falgout05b,
+  author = "R. D. Falgout and J. E. Jones and U. M. Yang", 
+  title = "Pursuing Scalability for hypre's Conceptual Interfaces",
+  journal = "ACM Trans. Math. Softw.",
+  volume = 31,
+  year = 2005, 
+  pages = "326--350" 
+}
+
+@unpublished{compass07:proposal,
+  author = {Panagiotis Spentzouris (PI)},
+  title  = {Community Petascale Project for Accelerator Science and Simulation},
+  note   = {SciDAC2 accelerator sciences proposal, January 2007},
+}
+
 
