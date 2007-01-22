@@ -10,7 +10,7 @@ typedef arrow_type::color_type               color_type;
 
 typedef ALE::Test::XSifter::xsifter_type     xsifter_type;
 
-typedef xsifter_type::rec_type               rec_type;
+typedef xsifter_type::arrow_rec_type         arrow_rec_type;
 typedef xsifter_type::predicate_type         predicate_type;
 
 
@@ -51,13 +51,13 @@ int main(int argc, char *argv[])
 //     target_type    t0(0);
 //     color_type     c0('X');
 //     predicate_type p0(0);
-//     rec_type       r0(arrow_type(s0,t0,c0),p0);
+//     arrow_rec_type       r0(arrow_type(s0,t0,c0),p0);
 //     //
 //     source_type    s1(1);
 //     target_type    t1(1);
 //     color_type     c1('Y');
 //     predicate_type p1(1);
-//     rec_type       r1(arrow_type(s1,t1,c1),p1);
+//     arrow_rec_type       r1(arrow_type(s1,t1,c1),p1);
 //     //
 //     //
 //     if(p_less(p0,p0)) {
