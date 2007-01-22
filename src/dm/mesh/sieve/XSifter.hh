@@ -237,6 +237,8 @@ namespace ALE {
       typedef typename key_extractor_type::result_type         key_type;
       typedef PredicateTraits<key_type>                        key_traits;
       typedef typename index_type::iterator                    iterator;
+      //
+      typedef iterator                                         cookie_type;
     protected:
       index_type*                           _index; // a pointer rather than a reference is used for use in default constructor
       bool                                  _have_low, _have_high;
@@ -259,260 +261,21 @@ namespace ALE {
       bool             haveLow()   const {return this->_have_low;};
       bool             haveHigh()  const {return this->_have_high;};
       //
-      static key_type  key(const iterator& iter)  { static key_extractor_type kex; return kex(*iter);};
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "begin"
-//       // Returns the start of the first allowed segment.
-//       void begin(iterator& iter) const {         
-//         if(ALE_XDEBUG(1)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << std::endl;
-//         }
-//         if(this->_have_low) {
-//           // ASSUMPTION: index ordering operator can compare against key_type singleton
-//           iter = this->_index->lower_bound(ALE::singleton<key_type>(this->_low));
-//         }
-//         else {
-//           iter = this->_index->begin();
-//         }
-//         if(ALE_XDEBUG(1)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//begin()
-
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "begin<OuterFilter_>"
-//       #undef  __ALE_XSIFTER_DEBUG__
-//       #define __ALE_XSIFTER_DEBUG__ 5
-//       // Returns the start of the first allowed subsegment following current_iter within the same segment (defined by the outer key).
-//       // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
-//       template<typename OuterFilter_>
-//       void begin(const iterator& current_iter, const iterator& outerEnd, const OuterFilter_& outer_filter, iterator& iter) const { 
-//         typedef typename OuterFilter_::key_type         outer_key_type;
-//         typedef typename OuterFilter_::key_compare_type outer_key_compare_type;
-//         static OuterInnerKeyOrder<outer_key_type, key_type, outer_key_compare_type, key_compare_type> oiKeyCompare;
-//         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << ", outer filter: " << outer_filter  << ", *current_iter: " << *current_iter << std::endl;
-//         }
-//         // If current_iter precedes inner _low, go to inner _low
-//         if(this->_have_low &&  oiKeyCompare(outer_filter.key(current_iter),this->key(current_iter), outer_filter.key(current_iter),this->_low)) {
-//           if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-//             std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//             std::cout << "looking for lower bound of pair (okey,ikey): (" << outer_filter.key(current_iter) << ", " << this->_low << ")" << std::endl;
-//           }
-//           // ASSUMPTION: index ordering operator can compare against (outer_key_type,key_type) pairs
-//           iter = this->_index->lower_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(current_iter),this->_low));
-//         }
-//         else {
-//           // If there is no inner _low or current_iter doesn't precede it, return current_iter unchanged.
-//           iter = current_iter;
-//         }
-//         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//begin<OuterFilter_>()
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "next(current_iterator)"
-//       // Returns the start of the first allowed segment following current_iter.
-//       void next(const iterator& current_iter, iterator& iter) const {         
-//         static key_compare_type keyCompare;
-//         if(ALE_XDEBUG(1)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << std::endl;
-//         }
-//         // If current_iter precedes _low, go to _low;  
-//         if(this->_have_low && keyCompare(this->key(current_iter),this->_low)) {
-//           // ASSUMPTION: index ordering operator can compare against key_type singleton
-//           iter = this->_index->lower_bound(ALE::singleton<key_type>(this->_low));
-//         }
-//         // If there is no _low or current_iter does not precede it, go to segment end
-//         else {
-//           this->end(iter);
-//         }
-//         if(ALE_XDEBUG(1)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//next(current_iterator)
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "next<OuterFilter_>"
-//       #undef  __ALE_XSIFTER_DEBUG__
-//       #define __ALE_XSIFTER_DEBUG__ 5
-//       // Returns the start of the first allowed subsegment following current_iter within the same segment (defined by the outer key).
-//       // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
-//       template<typename OuterFilter_>
-//       void next(const iterator& current_iter, const iterator& outerSegmentEnd, const OuterFilter_& outer_filter, iterator& iter) const { 
-//         typedef typename OuterFilter_::key_type         outer_key_type;
-//         typedef typename OuterFilter_::key_compare_type outer_key_compare_type;
-//         static OuterInnerKeyOrder<outer_key_type, key_type, outer_key_compare_type, key_compare_type> oiKeyCompare;
-//         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << ", outer filter: " << outer_filter  << ", *current_iter: " << *current_iter;
-//           std::cout << "*outerSegmentEnd: " << *outerSegmentEnd << std::endl;
-//         }
-//         // If current_iter precedes inner _low, go to inner _low
-//         if(this->_have_low &&  oiKeyCompare(outer_filter.key(current_iter),this->key(current_iter), outer_filter.key(current_iter),this->_low)) {
-//           if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-//             std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//             std::cout << "looking for lower bound of pair (okey,ikey): (" << outer_filter.key(current_iter) << ", " << this->_low << ")" << std::endl;
-//           }
-//           // ASSUMPTION: index ordering operator can compare against (outer_key_type,key_type) pairs
-//           iter = this->_index->lower_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(current_iter),this->_low));
-//         }
-//         else {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "no inner _low following current_iter; going to the end of subsegment" << std::endl;
-//           // If there is no inner _low or current_iter doesn't precede it, go to the end of the subsegment.
-//           // IMPROVE: should pass innerSegmentEnd in (perhaps instead of outerSegmentEnd).
-//           this->end(current_iter, outerSegmentEnd, outer_filter, iter);
-//         }
-//         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//next<OuterFilter_>()
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "end"
-//       #undef  __ALE_XDEBUG__ 
-//       #define __ALE_XDEBUG__ 5
-//       // Returns the end of the last allowed segment within the index.
-//       void end(iterator& iter) const {
-//         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << std::endl;
-//         }
-//         // Determine the upper limit
-//         if(this->_have_high) {
-//           if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-//             std::cout << __CLASS__ << "::" << __FUNCT__ << ": have_high, looking for upper bound of " << this->high() << std::endl;
-//           }
-//           // ASSUMPTION: index ordering operator can compare against (key_type) singletons
-//           iter = this->_index->upper_bound(ALE::singleton<key_type>(this->high()));
-//         }
-//         else {
-//           if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-//             std::cout << __CLASS__ << "::" << __FUNCT__ << ": !have_high, looking for index end" << std::endl;
-//           }
-//           iter = this->_index->end();
-//         }
-//         if(ALE_XDEBUG(__ALE_XDEBUG__)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//end()
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "end<OuterFilter_>"
-//       #undef  __ALE_XSIFTER_DEBUG__
-//       #define __ALE_XSIFTER_DEBUG__ 5
-//       // Returns the end of the allowed subsegment following current_iter within the same allowable segment.
-//       // The outer key is extracted using a OuterFilter, although only the key extraction capabilities of OuterFilter are used.
-//       template <typename OuterFilter_>
-//       void end(const iterator& current_iter, const iterator& outerEnd, const OuterFilter_& outer_filter, iterator& iter) const {
-//         typedef typename OuterFilter_::key_type         outer_key_type;
-//         typedef typename OuterFilter_::key_compare_type outer_key_compare_type;
-//         static OuterInnerKeyOrder<outer_key_type, key_type, outer_key_compare_type, key_compare_type> oiKeyCompare;
-//         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << ", outer filter: " << outer_filter << ", *current_iter: " << *current_iter;
-//           std::cout << "*outerEnd: " << *outerEnd << std::endl;
-//         }
-//         if(current_iter == this->_index->end()) {
-//           iter = current_iter;
-//         }
-//         else {
-//           // If there is a high
-//           if(this->_have_high) {
-//             // and if current_iter precedes _high within the segment, return an upper bound on _high within the segment.
-//             if(oiKeyCompare(outer_filter.key(current_iter), this->key(current_iter), outer_filter.key(current_iter), this->_high)){
-//               iter = this->_index->upper_bound(ALE::pair<outer_key_type,key_type>(outer_filter.key(current_iter),this->_high));
-//             }
-//             // else, current_iter does not precede _high and is returned unchanged
-//             else { 
-//               iter = current_iter;
-//             }
-//           }
-//           // If the inner filter is unbounded, return the end of the outer segment
-//           else {
-//             iter = outerEnd;
-//           }
-//         }
-//         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//end<OuterFilter_>()
-//       //
-//       #undef  __FUNCT__
-//       #define __FUNCT__ "last"
-//       #undef  __ALE_XDEBUG__ 
-//       #define __ALE_XDEBUG__ 5
-//       // Returns the last iterator of the last allowed segment within the index.
-//       void last(iterator& iter) const {
-//         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "filter: " << *this << std::endl;
-//         }
-//         iterator filterEnd;
-//         this->end(filterEnd);
-//         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//           std::cout << "*filterEnd: " << *filterEnd << std::endl;
-//         }
-//         if(filterEnd != this->_index->begin()) {
-//           if(ALE_XDEBUG(__ALE_XDEBUG__)) {
-//             std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//             std::cout << "filterEnd not at index beginning" << std::endl;
-//             if(filterEnd == this->_index->end()){
-//               std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//               std::cout << "filterEnd at index end" << std::endl;
-//             }
-//             else {
-//               std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-//               std::cout << "filterEnd not at index end: " << std::endl;
-//             }
-//           }
-//             iter = --filterEnd;
-//         }
-//         if(ALE_XDEBUG(__ALE_XDEBUG__)){
-//           //
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter " << *iter << std::endl; 
-//           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-//         }
-//       };//last()
+      static iterator& end(cookie_type& cookie)  {return cookie;};
+      static key_type  key(const iterator& iter) { static key_extractor_type kex; return kex(*iter);};
       //
       #undef  __FUNCT__
       #define __FUNCT__ "firstSegment"
       #undef  __ALE_XDEBUG__ 
       #define __ALE_XDEBUG__ 5
       // Returns the first allowed segment.
-      void firstSegment(iterator& segmentBegin, iterator& segmentEnd) const {         
+      void firstSegment(iterator& segmentBegin, cookie_type& segmentCookie) const {         
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
         }
+        iterator& segmentEnd = this->end(segmentCookie);
         if(this->_have_low) {
           segmentBegin = this->_index->lower_bound(ALE::singleton<key_type>(this->_low));
         }
@@ -545,13 +308,15 @@ namespace ALE {
       #define __ALE_XDEBUG__ 5
       // Returns the first allowed subsegment within the segment containing current_iter.
       template<typename OuterFilter_>
-      void firstSegment(const OuterFilter_& outer_filter, const iterator& current_iter, const iterator& outerEnd, iterator& segmentBegin, iterator& segmentEnd) const {
-        typedef typename OuterFilter_::key_type         outer_key_type;
+      void firstSegment(const OuterFilter_& outer_filter, iterator& current_iter, typename OuterFilter_::cookie_type& outerCookie, iterator& segmentBegin, cookie_type& segmentCookie) const {
+        typedef typename OuterFilter_::key_type outer_key_type;
         static key_compare_type keyCompare;
+        iterator& outerEnd = outer_filter.end(outerCookie);
+        iterator& segmentEnd = this->end(segmentCookie);
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << ", outer filter: " << outer_filter << std::endl;
+          std::cout << "filter: " << *this << ", outer_filter: " << outer_filter << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "*current_iter: " << *current_iter << ", *outerEnd: " << *outerEnd << std::endl;
         }
@@ -564,7 +329,7 @@ namespace ALE {
         if(Strided) { // if filter is strided
           // if the segment is empty, both begin and end must be at outer end 
           // otherwise, only the inner end is at outer end
-          segmentEnd = outerEnd;
+          segmentEnd = outer_filter.end(outerCookie);
           // detect an overshoot of high by segment begin: indicating an empty inner segment
           if(segmentBegin != outerEnd && this->_have_high && keyCompare(this->_high,this->key(segmentBegin))) {// inner begin overshoots inner high
             // Move segmentBegin to segmentEnd to indicate an empty inner segment
@@ -596,13 +361,14 @@ namespace ALE {
       #undef  __ALE_XDEBUG__ 
       #define __ALE_XDEBUG__ 5
       // Returns the allowed segment immediately following current_iter.
-      void nextSegment(const iterator& current_iter, iterator& segmentBegin, iterator& segmentEnd) const {         
+      void nextSegment(iterator& current_iter, iterator& segmentBegin, cookie_type& segmentCookie) const {         
         static key_compare_type keyCompare;
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
         }
+        iterator& segmentEnd = this->end(segmentCookie);
         // Go to the segmentEnd --- iterator with the following key;  
         segmentBegin = segmentEnd;
         // Check for an overshoot
@@ -628,10 +394,12 @@ namespace ALE {
       #define __ALE_XDEBUG__ 5
       // Returns the allowed subsegment immediately following current_iter within the same segment.
       template <typename OuterFilter_>
-      void nextSegment(const OuterFilter_& outer_filter, const iterator& current_iter, const iterator& outerEnd, iterator& segmentBegin, iterator& segmentEnd) const {         
+      void nextSegment(const OuterFilter_& outer_filter, iterator& current_iter, typename OuterFilter_::cookie_type& outerCookie, iterator& segmentBegin, cookie_type& segmentCookie) const {         
         typedef typename OuterFilter_::key_type         outer_key_type;
         typedef typename OuterFilter_::key_compare_type outer_key_compare_type;
         static OuterInnerKeyOrder<outer_key_type, key_type, outer_key_compare_type, key_compare_type> oiKeyCompare;
+        iterator& outerEnd   = outer_filter.end(outerCookie);
+        iterator& segmentEnd = this->end(segmentCookie);
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
@@ -695,6 +463,7 @@ namespace ALE {
       };
     };// RangeFilter
 
+
     //
     // FilteredIndexSequence definition
     // 
@@ -720,11 +489,14 @@ namespace ALE {
       typedef Index_                                           index_type;
       typedef InnerFilter_                                     inner_filter_type;
       typedef OuterFilter_                                     outer_filter_type;
-      //
+       //
       typedef typename outer_filter_type::key_extractor_type   outer_key_extractor_type;
       typedef typename outer_key_extractor_type::result_type   outer_key_type;
       typedef typename inner_filter_type::key_extractor_type   inner_key_extractor_type;
       typedef typename inner_key_extractor_type::result_type   inner_key_type;
+      //
+      typedef typename inner_filter_type::cookie_type          inner_cookie_type;
+      typedef typename outer_filter_type::cookie_type          outer_cookie_type;
       //
       typedef ValueExtractor_                                  value_extractor_type;
       typedef typename value_extractor_type::result_type       value_type;
@@ -746,9 +518,10 @@ namespace ALE {
       protected:
         // Parent sequence
         sequence_type  *_sequence;
-        // Underlying iterator & segment boundary
+        // Underlying iterator & segment filter cookies
         itor_type       _itor;
-        itor_type       _outerEnd, _innerEnd;
+        outer_cookie_type _outerCookie;
+        inner_cookie_type _innerCookie;
         //
         // Key and Value extractors
         outer_key_extractor_type _okex;
@@ -756,16 +529,16 @@ namespace ALE {
         value_extractor_type     _ex;
       public:
         iterator() : _sequence(NULL) {};
-        iterator(sequence_type *sequence, const itor_type& itor, const itor_type& outerEnd, const itor_type& innerEnd) : 
-          _sequence(sequence), _itor(itor), _outerEnd(outerEnd), _innerEnd(innerEnd) {};
-        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor), _outerEnd(iter._outerEnd), _innerEnd(iter._innerEnd) {};
+        iterator(sequence_type *sequence, const itor_type& itor, const outer_cookie_type& outerCookie, const inner_cookie_type& innerCookie) : 
+          _sequence(sequence), _itor(itor), _outerCookie(outerCookie), _innerCookie(innerCookie) {};
+        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor), _outerCookie(iter._outerCookie), _innerCookie(iter._innerCookie) {};
         virtual ~iterator() {};
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
         virtual const value_type  operator*() const {return _ex(*(this->_itor));};
         virtual iterator   operator++() {
-          this->_sequence->next(this->_itor, this->_outerEnd, this->_innerEnd);
+          this->_sequence->next(this->_itor, this->_outerCookie, this->_innerCookie);
           return *this;
         };
         virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
@@ -834,12 +607,16 @@ namespace ALE {
           std::cout << "outer filter: " << this->outerFilter() << ", ";
           std::cout << "inner filter: " << this->innerFilter() << std::endl;
         }
-        static itor_type itor, outerEnd, innerEnd;
+        static itor_type itor;
+        inner_cookie_type innerCookie;
+        outer_cookie_type outerCookie;
+        itor_type& innerEnd = this->innerFilter().end(innerCookie);
+        itor_type& outerEnd = this->outerFilter().end(outerCookie);
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": looking for the beginning segment pair" << std::endl;
         }
-        this->outerFilter().firstSegment(itor, outerEnd);
-        this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+        this->outerFilter().firstSegment(itor, outerCookie);
+        this->innerFilter().firstSegment(this->outerFilter(), itor, outerCookie, itor, innerCookie);
         if(ALE_XDEBUG(__ALE_XDEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an outer segment and an inner segment " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
@@ -852,7 +629,7 @@ namespace ALE {
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
               std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd << std::endl; 
             }
-            this->outerFilter().nextSegment(itor, itor, outerEnd);
+            this->outerFilter().nextSegment(itor, itor, outerCookie);
             if(ALE_XDEBUG(__ALE_XDEBUG__)) {
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an outer segment:" << std::endl;
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
@@ -865,7 +642,7 @@ namespace ALE {
                 std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
                 std::cout << "*itor : " << *itor << ", *innerEnd: " << *innerEnd << ", *outerEnd: " << *outerEnd << std::endl;
               }
-              this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+              this->innerFilter().firstSegment(this->outerFilter(), itor, outerCookie, itor, innerCookie);
               if(ALE_XDEBUG(__ALE_XDEBUG__)) {
                 std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an inner segment:" << std::endl;
                 std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
@@ -879,7 +656,7 @@ namespace ALE {
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
               std::cout << "*itor : " << *itor << ", *outerEnd: " << *outerEnd << ", *innerEnd: " << *innerEnd << std::endl; 
             }
-            this->innerFilter().nextSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+            this->innerFilter().nextSegment(this->outerFilter(), itor, outerCookie, itor, innerCookie);
             if(ALE_XDEBUG(__ALE_XDEBUG__)) {
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": found an inner segment" << std::endl;
               std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
@@ -895,14 +672,16 @@ namespace ALE {
           std::cout << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
-        return iterator(this, itor, outerEnd, innerEnd);
+        return iterator(this, itor, outerCookie, innerCookie);
       }; // begin()
       //
       #undef  __FUNCT__
       #define __FUNCT__ "next"
       #undef  __ALE_XSIFTER_DEBUG__
       #define __ALE_XSIFTER_DEBUG__ 5
-      void next(itor_type& itor, itor_type& outerEnd, itor_type& innerEnd) {
+      void next(itor_type& itor, outer_cookie_type& outerCookie, inner_cookie_type& innerCookie) {
+        itor_type& innerEnd = this->innerFilter().end(innerCookie);
+        itor_type& outerEnd = this->outerFilter().end(outerCookie);
         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
@@ -927,7 +706,7 @@ namespace ALE {
           if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
             std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided sequence" << std::endl;
           }
-          this->innerFilter().nextSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+          this->innerFilter().nextSegment(this->outerFilter(), itor, outerCookie, itor, innerCookie);
         }// Strided
         // Otherwise, we iterate *within* a segment until its end is reached; then the following segment is started.
         else {
@@ -938,14 +717,14 @@ namespace ALE {
         }// not Strided
         while(!(itor != innerEnd || itor == this->_index->end())) {
           while(!(itor != outerEnd || itor == this->_index->end())) { // find the next non-empty outer segment
-            this->outerFilter().nextSegment(itor, itor, outerEnd);
+            this->outerFilter().nextSegment(itor, itor, outerCookie);
             if(itor != outerEnd || itor == this->_index->end()){
-              this->innerFilter().firstSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd); // find first inner segment within new outer segment
+              this->innerFilter().firstSegment(this->outerFilter(), itor, outerCookie, itor, innerCookie); // find first inner segment within new outer segment
             }
           }// outerDone
           if(!(itor != innerEnd || itor == this->_index->end())) { // if inner segment empty
             // go to the next inner segment
-            this->innerFilter().nextSegment(this->outerFilter(), itor, outerEnd, itor, innerEnd);
+            this->innerFilter().nextSegment(this->outerFilter(), itor, outerCookie, itor, innerCookie);
           }
         }// innerDone
         if(ALE_XDEBUG(__ALE_XSIFTER_DEBUG__)) {
@@ -974,7 +753,11 @@ namespace ALE {
             std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided sequence" << std::endl;
           }
         }
-        static itor_type itor, outerEnd, innerEnd;
+        inner_cookie_type innerCookie;
+        outer_cookie_type outerCookie;
+        static itor_type itor;
+        itor_type& outerEnd = this->outerFilter().end(outerCookie);
+        itor_type& innerEnd = this->innerFilter().end(innerCookie);
         itor  = this->_index->end();
         outerEnd = itor;
         innerEnd = itor;
@@ -986,15 +769,9 @@ namespace ALE {
           std::cout << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << std::endl;
         }
-        return iterator(this, itor, outerEnd, innerEnd); 
+        return iterator(this, itor, outerCookie, innerCookie); 
       };// end()
       //
-      virtual bool contains(const outer_key_type& ok, const inner_key_type& ik) {
-        // FIX: This has to be implemented correctly, using the index ordering operator.
-        //return (this->_index->find(ALE::pair<outer_key_type,inner_key_type>(ok,ik)) != this->_index->end());
-        return true;
-      };
-     //
       template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL){
         if(label != NULL) {
@@ -1413,6 +1190,7 @@ namespace ALE {
     //
     // Backdoor
     //
+    // Whole container begin/end
     typedef typename cone_index_type::iterator iterator;
     iterator begin() const {return this->_cone_index.begin();};
     //
