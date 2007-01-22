@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['bk://petsc.bkbits.net/lgrind-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/lgrind-dev.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/lgrind-dev.tar.gz']
     #
     #  lgrind is currently not used by PETSc
     #

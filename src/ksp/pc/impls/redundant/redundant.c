@@ -13,7 +13,7 @@ typedef struct {
   Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
   PetscTruth   useparallelmat;
-  PetscSubcomm *psubcomm;          
+  PetscSubcomm psubcomm;          
   PetscInt     nsubcomm;           /* num of data structure PetscSubcomm */
 } PC_Redundant;
 
@@ -249,8 +249,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCRedundantSetNumber_Redundant"
 PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber_Redundant(PC pc,PetscInt nreds)
 {
-  PC_Redundant   *red = (PC_Redundant*)pc->data;
-  PetscErrorCode ierr;
+  PC_Redundant *red = (PC_Redundant*)pc->data;
 
   PetscFunctionBegin;
   red->nsubcomm = nreds; 

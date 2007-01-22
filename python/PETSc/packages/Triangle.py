@@ -4,7 +4,7 @@ import os
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download  = ['bk://triangle.bkbits.net/triangle-dev','ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Triangle.tar.gz']
+    self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/Triangle.tar.gz']
     self.functions = ['triangulate']
     self.includes  = ['triangle.h']
     self.liblist   = [['libtriangle.a']]
