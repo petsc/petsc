@@ -28,6 +28,23 @@
 @string(jota = "J. Optimization Theory and Applications")
 @string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
 
+@ARTICLE{vm1,
+        AUTHOR = "V. A. Mousseau",
+        TITLE = "Implicitly Balanced Solution of the Two-Phase Flow Equations Coupled to Nonlinear Heat Conduction",
+        JOURNAL = "Journal Of Computational Physics",
+        VOLUME = "200",
+        PAGES = "104--132",
+        YEAR = "2004" 
+}
+@ARTICLE{vm2,
+        AUTHOR = "V. A. Mousseau",
+        TITLE = "A Fully Implicit Hybrid Solution Method for a Two-Phase Thermal-Hydraulic Model",
+        JOURNAL = "Journal Of Heat Transfer",
+        VOLUME = "127",
+        PAGES = "531--539",
+        YEAR = "2005" 
+}
+
 @Misc{salome1,
   author =       "Laurent Dada and Daniel Caruge",
   title =        "The SALOME Open Source CAE Platform Application to Reactor Physics Simulation",
@@ -74,13 +91,11 @@
         YEAR = "2000" 
 }
 
-@TECHREPORT{GNEP-WEB,
-        AUTHOR = "",
-        TYPE = "Website",
+@unpublished{GNEP-WEB,
+        AUTHOR = "U.S. Department of Energy",
         TITLE = "Global Nuclear Energy Partnership ({GNEP})",
         NOTE = "\url{ http://www.gnep.energy.gov}", 
-        INSTITUTION = "United States Department of Energy",
-        YEAR = "" 
+        YEAR = "2007" 
 }
 
 @Book{LEWIS-MILLER-1984,
@@ -108,20 +123,27 @@
 }
 
 @Misc{gnep:report,
-  author =       "David Keyes and Rick Stevens",
+  author =       "Phillip Finck and David Keyes and Rick Stevens",
   title =        "Report on the {DOE} joint {NE/SC} Workshop Simulation and Modeling for Advanced Nuclear Energy Systems",
-  year = 2006,
-  url = "figure out"
+  year = 2006
+}
+@Misc{subsurface-workshop-ref,
+  author =       "David Zachman", 
+  title =        "Computational Subsurface Sciences Workshop",
+  url = "http://subsurface2007.labworks.org/",
+  year = 2007
 }
 
 @Misc{fusion:report,
-  title =        "Report of the Fusion Energy Sciences Advisory Committee Burning Plasman Strategy Panel",
+  title =  "Report of the Fusion Energy Sciences Advisory Committee Burning Plasma Strategy Panel",
+  author = "Fusion Energy Sciences Advisory Committee",
   year = 2002,
   url = "http://www.ofes.fusion.doe.gov/More_HTML/FESAC/Austinfinal.pdf"
 }
 
 @Misc{hecrtf:report,
-  title =        "Report of the High End Computing Revitalization Task Force (HECRTF)",
+  title = "Report of the High End Computing Revitalization Task Force (HECRTF)",
+  author = "High End Computing Revitalization Task Force (HECRTF)",
   year = 2004,
   url = "http://www.ostp.gov/nstc/html/HECRTF-FINAL_051004.pdf"
 }
@@ -293,14 +315,23 @@
 }
 
 @Unpublished{petsc:external,
-  title = 	 "External Software Used by PETSc",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
+  author =	 {B. {Smith et al.}},
+  title = 	 "External Software Used by {PETSc}",
+  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:prizes,
-  title = 	 "Prizes Won Using PETSc",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
+  author =	 {B. {Smith et al.}},
+  title = 	 "Prizes Won Using {PETSc}",
+  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
+  Institution = "Argonne National Laboratory"
+}
+
+@Unpublished{petsc:csgf,
+  author =	 {B. {Smith et al.}},
+  title = 	 "DOE CSGF users of PETSc",
+  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
   Institution = "Argonne National Laboratory"
 }
 
@@ -1687,12 +1718,6 @@ pages="16--32"
         YEAR = "1999",
 }
 
-@misc {
-   cca-web-page,
-   author = "{Common Component Architecture Forum}",
-   note   = "\url{http://www.cca-forum.org}"
-}
-
 
 @inproceedings{pooma-atlas,
 author = "S. Atlas and S. Banerjee and J. C. Cummings and P. J. Hinker and
@@ -1956,6 +1981,14 @@ Booktitle = "Supercomputing '95 Proceedings",
   note =	 {\texttt{http://www.fftw.org/}},
   annote =	 {fast FFT.  Parallel versions with MPI and Cilk}
 }
+
+@BOOK{Kelley95,
+      AUTHOR="C. T. Kelley",
+      TITLE="Iterative Methods for Linear and Nonlinear Equations",
+      YEAR="1995",
+      PUBLISHER="SIAM",
+      address="Philadelphia"
+      }
 
 @BOOK{NW99,
       AUTHOR="Jorge Nocedal and Stephen J. Wright",
@@ -2250,7 +2283,7 @@ mesh refinement",
 @Misc{petsc:applications,
   author =	 {B. {Smith et al.}},
   title =	 {{Scientific Applications Using {PETSc}}},
-  howpublished = {http://www.mcs.anl.gov/petsc/petsc-as/publications}
+  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/publications}}
 }
 
 @Misc{petsc:users,
@@ -2268,7 +2301,7 @@ mesh refinement",
 @Misc{m3d:homepage,
   author =	 {Steve {Jardin et al.}},
   title =	 {{M3D Web page}},
-  howpublished = {\url{http://w3.pppl.gov/~jchen}}
+  howpublished = {\url{http://w3.pppl.gov/m3d}}
 }
 
 @Misc{nimrod:homepage,
@@ -2805,3 +2838,122 @@ year =  2004,
 note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 }
 
+@article{falgout05a,
+  author = "R. D. Falgout and J. E. Jones and U. M. Yang", 
+  title = "Conceptual Interfaces in hypre", 
+  journal = "Future Generation Computer Systems", 
+  note = "Special issue on PDE software",
+  volume = 22,
+  year = 2005, 
+  pages = "239--251" 
+}
+
+@article{falgout05b,
+  author = "R. D. Falgout and J. E. Jones and U. M. Yang", 
+  title = "Pursuing Scalability for hypre's Conceptual Interfaces",
+  journal = "ACM Trans. Math. Softw.",
+  volume = 31,
+  year = 2005, 
+  pages = "326--350" 
+}
+
+@unpublished{compass07:proposal,
+  author = {Panagiotis Spentzouris (PI)},
+  title  = {Community Petascale Project for Accelerator Science and Simulation},
+  note   = {SciDAC2 accelerator sciences proposal, January 2007},
+}
+
+@Misc{scidac:homepage,
+  author       = {{DOE Office of Science}},
+  title        = {{Scientific Discovery through Advanced Computing}},
+  year         = 2007,
+  howpublished = {\url{http://www.scidac.gov}}
+}
+
+@misc{corba,
+    author = "{Object Management Group}",
+    year = 2007,
+    title="{Common Object Request Broker Architecture (CORBA)}",
+    howpublished="\url{http://www.corba.org}"
+}
+
+@Article{         uedge,
+  author        = "T.~D. Rognlien and D.~D. Ryutov and N. Mattor and and G.~D. Porter",
+  title         = "Two-Dimensional Electric Fields and Drifts near the Magnetic Separatrix in Divertor Tokamak",
+  journal       = "J. Plasma Physics",
+  year          = "1999",
+  volume        = "6",
+  pages         = "1851",
+  note          = "also see user manual at http://www.mfescience.org, then UEDGE link"
+}
+
+@Article{         bout,
+  author        = "X.~Q. Xu and R.~H. Cohen and T.~D. Rognlien and J.~R. Myra",
+  title         = "Low-to-High Confinement Transition Simulations in
+    Divertor Geometry",
+  journal       = "J. Plasma Physics",
+  year          = "2000",
+  volume        = "7",
+  pages         = "1951",
+  note          = ""
+}
+
+@Article{         tempest,
+  author        = "Z. Xiong and X.Q. Xu and B.I. Cohen and R. Cohen and
+	  M.R. Dorr and J.A. Hittinger and G.  Kerbel and W.M. Nevins and
+	  T. Rognlien", 
+  title         = "Simulation of Plasma Transport in a Toroidal Annulus with TEMPEST",
+  journal       = "Bull. Am. Phys. Soc. ",
+  year          = "2005",
+  volume        = "50",
+  number        = "86",
+  pages         = "CP1",
+  note          = ""
+}
+
+@Misc{mct-website,
+  key = {MCT},
+  title ="{M}odel {C}oupling {T}oolkit ({MCT}) {W}eb {S}ite",
+  howpublished="\url{http://www.mcs.anl.gov/mct}"
+}
+
+@article{larson:05,
+  author="Jay Larson and Robert Jacob and Everest Ong",
+  title="The Model Coupling Toolkit: A New Fortran90 Toolkit for
+  Building Multi-Physics Parallel Coupled Models",
+  journal="Int. J. High Perf. Comp. App.",
+  year=2005,
+  pages="277--292"
+  }
+
+@Article{ccahpc,
+  author = {David E. Bernholdt and Benjamin A. Allan and Robert
+                  Armstrong and Felipe Bertrand and Kenneth Chiu and
+                  Tamara L. Dahlgren and Kostadin Damevski and Wael
+                  R. Elwasif and Thomas G. W. Epperly and Madhusudhan
+                  Govindaraju and Daniel S. Katz and James A. Kohl and
+                  Manoj Krishnan and Gary Kumfert and J. Walter Larson
+                  and Sophia Lefantzi and Michael J. Lewis and Allen
+                  D. Malony and Lois C. McInnes and Jarek Nieplocha
+                  and Boyana Norris and Steven G. Parker and Jaideep
+                  Ray and Sameer Shende and Theresa L. Windus and
+                  Shujia Zhou},
+  title = {A Component Architecture for High-Performance Scientific
+                  Computing},
+  journal = {Intl. J. High-Perf. Computing Appl.},
+  year = {2005},
+  note = {Submitted to ACTS Collection special issue}
+}
+
+@misc{cca-forum:homepage,
+   author = "{Common Component Architecture Forum}",
+   note   = "\url{http://www.cca-forum.org}",
+   year   = 2007
+}
+
+@misc{petsc:driven-cavity-example,
+  title =    {{PETSc Driven Cavity Example Code}},
+  author =	 {B. {Smith et al.}},
+  year = 2007,
+  howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex19.c.html}}
+}

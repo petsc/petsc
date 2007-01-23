@@ -3,7 +3,7 @@ static char help[] = "Sifter Cone and Support Tests.\n\n";
 #include <petsc.h>
 #include "xsifterTest.hh"
 
-typedef ALE::Test::XSifter::arrow_type  arrow_type;
+typedef ALE::Test::XSifter::arrow_type   arrow_type;
 typedef ALE::Test::XSifter::xsifter_type xsifter_type;
 typedef ALE::Test::XSifter::RealCone     RealCone;
 

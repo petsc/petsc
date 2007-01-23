@@ -101,7 +101,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt nodesize)
 .  nodesize - size of each compute node that will share processors
 
    Options Database:
-.   -openmp_merge_size
+.   -openmp_merge_size <n>
 
    Level: developer
 

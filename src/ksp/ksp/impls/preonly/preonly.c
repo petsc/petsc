@@ -15,7 +15,6 @@ static PetscErrorCode KSPSetUp_PREONLY(KSP ksp)
 static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
 {
   PetscErrorCode ierr;
-  Vec            X,B;
   PetscTruth     diagonalscale;
 
   PetscFunctionBegin;
@@ -26,9 +25,7 @@ static PetscErrorCode  KSPSolve_PREONLY(KSP ksp)
                you probably want a KSP type of Richardson");
   }
   ksp->its    = 0;
-  X           = ksp->vec_sol;
-  B           = ksp->vec_rhs;
-  ierr        = KSP_PCApply(ksp,B,X);CHKERRQ(ierr);
+  ierr        = KSP_PCApply(ksp,ksp->vec_rhs,ksp->vec_sol);CHKERRQ(ierr);
   ksp->its    = 1;
   ksp->reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);
