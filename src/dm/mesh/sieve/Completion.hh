@@ -5,42 +5,14 @@
 #include <CoSieve.hh>
 #endif
 
+#ifndef  included_ALE_Sections_hh
+#include <Sections.hh>
+#endif
+
 extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
 
 namespace ALE {
   namespace New {
-    template<typename Section_>
-    class SizeSection : public ALE::ParallelObject {
-    public:
-      typedef Section_                          section_type;
-      typedef typename section_type::patch_type patch_type;
-      typedef typename section_type::point_type point_type;
-      typedef int                               value_type;
-    protected:
-      Obj<section_type> _section;
-      const patch_type  _patch;
-      value_type        _size;
-    public:
-      SizeSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
-      virtual ~SizeSection() {};
-    public:
-      bool hasPoint(const patch_type& patch, const point_type& point) {
-        return this->_section->hasPoint(patch, point);
-      };
-      const value_type *restrict(const patch_type& patch, const point_type& p) {
-        this->_size = this->_section->getFiberDimension(this->_patch, p); // Could be size()
-        return &this->_size;
-      };
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        this->_size = this->_section->getFiberDimension(this->_patch, p);
-        return &this->_size;
-      };
-    public:
-      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
-        this->_section->view(name, comm);
-      };
-    };
-
     template<typename Section_>
     class PatchlessSection : public ALE::ParallelObject {
     public:
@@ -91,172 +63,6 @@ namespace ALE {
       };
     };
 
-    template<typename Topology_, typename Marker_>
-    class PartitionSizeSection : public ALE::ParallelObject {
-    public:
-      typedef Topology_                          topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef Marker_                            marker_type;
-      typedef int                                value_type;
-      typedef std::map<patch_type,int>           sizes_type;
-    protected:
-      Obj<topology_type> _topology;
-      sizes_type         _sizes;
-      void _init(const int numElements, const marker_type partition[]) {
-        for(int e = 0; e < numElements; e++) {
-          this->_sizes[partition[e]]++;
-        }
-      };
-    public:
-      PartitionSizeSection(MPI_Comm comm, const int numElements, const marker_type *partition, const int debug = 0) : ParallelObject(comm, debug) {
-        this->_topology = new topology_type(comm, debug);
-        this->_init(numElements, partition);
-      };
-      PartitionSizeSection(const Obj<topology_type>& topology, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology) {this->_init(numElements, partition);};
-      virtual ~PartitionSizeSection() {};
-    public:
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        return &this->_sizes[p];
-      };
-      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a PartitionSizeSection");
-      };
-      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a PartitionSizeSection");
-      };
-      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a PartitionSizeSection");
-      };
-      template<typename Input>
-      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
-        throw ALE::Exception("Cannot update a PartitionSizeSection");
-      };
-    public:
-      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
-        ostringstream txt;
-        int rank;
-
-        if (comm == MPI_COMM_NULL) {
-          comm = this->comm();
-          rank = this->commRank();
-        } else {
-          MPI_Comm_rank(comm, &rank);
-        }
-        if (name == "") {
-          if(rank == 0) {
-            txt << "viewing a PartitionSizeSection" << std::endl;
-          }
-        } else {
-          if(rank == 0) {
-            txt << "viewing PartitionSizeSection '" << name << "'" << std::endl;
-          }
-        }
-        PetscSynchronizedPrintf(comm, txt.str().c_str());
-        PetscSynchronizedFlush(comm);
-      };
-    };
-
-    template<typename Topology_>
-    class PartitionDomain {
-    public:
-      typedef Topology_                          topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::point_type point_type;
-    public:
-      PartitionDomain() {};
-      ~PartitionDomain() {};
-    public:
-      int count(const point_type& point) const {return 1;};
-    };
-
-    template<typename Topology_, typename MeshTopology_, typename Marker_>
-    class PartitionSection : public ALE::ParallelObject {
-    public:
-      typedef Topology_                          topology_type;
-      typedef MeshTopology_                      mesh_topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef Marker_                            marker_type;
-      typedef int                                value_type;
-      typedef std::map<patch_type,point_type*>   points_type;
-      typedef PartitionDomain<topology_type>     chart_type;
-    protected:
-      Obj<topology_type> _topology;
-      points_type        _points;
-      chart_type         _domain;
-      void _init(const Obj<mesh_topology_type>& topology, const int numElements, const marker_type partition[]) {
-        std::map<patch_type,int> sizes;
-        std::map<patch_type,int> offsets;
-
-        for(int e = 0; e < numElements; e++) {
-          sizes[partition[e]]++;
-        }
-        for(typename std::map<patch_type,int>::iterator p_iter = sizes.begin(); p_iter != sizes.end(); ++p_iter) {
-          this->_points[p_iter->first] = new point_type[p_iter->second];
-          offsets[p_iter->first] = 0;
-        }
-        int e = 0;
-
-        if (topology->hasPatch(0)) {
-          const Obj<typename topology_type::label_sequence>& cells = topology->heightStratum(0, 0);
-
-          for(typename topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-            this->_points[partition[e]][offsets[partition[e]]++] = *e_iter;
-            e++;
-          }
-        }
-        for(typename std::map<patch_type,int>::iterator p_iter = sizes.begin(); p_iter != sizes.end(); ++p_iter) {
-          if (offsets[p_iter->first] != sizes[p_iter->first]) {
-            ostringstream txt;
-            txt << "Invalid offset for partition " << p_iter->first << ": " << offsets[p_iter->first] << " should be " << sizes[p_iter->first];
-            throw ALE::Exception(txt.str().c_str());
-          }
-        }
-      };
-    public:
-      PartitionSection(const Obj<topology_type>& topology, const Obj<mesh_topology_type>& meshTopology, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology) {this->_init(meshTopology, numElements, partition);};
-      virtual ~PartitionSection() {
-        for(typename points_type::iterator p_iter = this->_points.begin(); p_iter != this->_points.end(); ++p_iter) {
-          delete [] p_iter->second;
-        }
-      };
-    public:
-      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        return this->_points[p];
-      };
-    public:
-      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
-        ostringstream txt;
-        int rank;
-
-        if (comm == MPI_COMM_NULL) {
-          comm = this->comm();
-          rank = this->commRank();
-        } else {
-          MPI_Comm_rank(comm, &rank);
-        }
-        if (name == "") {
-          if(rank == 0) {
-            txt << "viewing a PartitionSection" << std::endl;
-          }
-        } else {
-          if(rank == 0) {
-            txt << "viewing PartitionSection '" << name << "'" << std::endl;
-          }
-        }
-        PetscSynchronizedPrintf(comm, txt.str().c_str());
-        PetscSynchronizedFlush(comm);
-      };
-    };
-
     template<typename Topology_, typename Sieve_>
     class ConeSizeSection : public ALE::ParallelObject {
     public:
@@ -283,19 +89,6 @@ namespace ALE {
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
         this->_size = this->_sieve->cone(p)->size();
         return &this->_size;
-      };
-      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a ConeSizeSection");
-      };
-      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a ConeSizeSection");
-      };
-      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a ConeSizeSection");
-      };
-      template<typename Input>
-      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
-        throw ALE::Exception("Cannot update a ConeSizeSection");
       };
     public:
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
@@ -368,19 +161,6 @@ namespace ALE {
           this->_cone[c++] = *c_iter;
         }
         return this->_cone;
-      };
-      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a ConeSection");
-      };
-      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a ConeSection");
-      };
-      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
-        throw ALE::Exception("Cannot update a ConeSection");
-      };
-      template<typename Input>
-      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
-        throw ALE::Exception("Cannot update a ConeSection");
       };
     public:
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
@@ -650,20 +430,32 @@ namespace ALE {
 
         for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
           if (assignment[e] == rank) {
-            const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
+            Obj<typename sieve_type::coneSet> current = new typename sieve_type::coneSet();
+            Obj<typename sieve_type::coneSet> next    = new typename sieve_type::coneSet();
+            Obj<typename sieve_type::coneSet> tmp;
 
-            for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-              sieveNew->addArrow(*c_iter, *e_iter, c_iter.color());
+            current->insert(*e_iter);
+            while(current->size()) {
+              for(typename sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+                const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(*p_iter);
+            
+                for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                  sieveNew->addArrow(*c_iter, *p_iter, c_iter.color());
+                  next->insert(*c_iter);
+                }
+              }
+              tmp = current; current = next; next = tmp;
+              next->clear();
             }
           }
           e++;
         }
         sieveNew->stratify();
         // Complete sizer section
-        typedef typename ALE::New::PartitionSizeSection<topology_type, PartitionType>                 partition_size_section;
-        typedef typename ALE::New::PartitionSection<topology_type, mesh_topology_type, PartitionType> partition_section;
+        typedef typename ALE::New::PartitionSizeSection<topology_type, mesh_topology_type, PartitionType> partition_size_section;
+        typedef typename ALE::New::PartitionSection<topology_type, mesh_topology_type, PartitionType>     partition_section;
         Obj<topology_type>          secTopology          = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
-        Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, numCells, assignment);
+        Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, topology, numCells, assignment);
         Obj<partition_section>      partitionSection     = new partition_section(secTopology, topology, numCells, assignment);
         Obj<send_section_type>      sendSection          = new send_section_type(sieve->comm(), sieve->debug());
         Obj<recv_section_type>      recvSection          = new recv_section_type(sieve->comm(), sendSection->getTag(), sieve->debug());
@@ -707,6 +499,79 @@ namespace ALE {
         }
         // Receive the point section
         ALE::New::Completion<mesh_topology_type,value_type>::scatterCones(sieve, sieveNew, sendOverlap, recvOverlap);
+        sieveNew->stratify();
+      };
+      template<typename PartitionType>
+      static void scatterSieveByFace(const Obj<mesh_topology_type>& topology, const Obj<sieve_type>& sieve, const int dim, const Obj<sieve_type>& sieveNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const int numFaces, const PartitionType assignment[]) {
+        typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, value_type> send_section_type;
+        typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, value_type> recv_section_type;
+        const typename topology_type::patch_type patch = 0;
+        int rank  = sieve->commRank();
+        int debug = sieve->debug();
+
+        // Create local sieve
+        const Obj<topology_type::label_sequence>& faces = topology->heightStratum(patch, 1);
+        int f = 0;
+
+        for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+          if (assignment[f] == rank) {
+            const Obj<typename sieve_type::traits::supportSequence>& support = sieve->support(*f_iter);
+
+            for(typename sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+              sieveNew->addArrow(*f_iter, *s_iter, s_iter.color());
+            }
+          }
+          f++;
+        }
+        sieveNew->stratify();
+        // Complete sizer section
+        typedef typename ALE::New::PartitionSizeSection<topology_type, mesh_topology_type, PartitionType> partition_size_section;
+        typedef typename ALE::New::PartitionSection<topology_type, mesh_topology_type, PartitionType>     partition_section;
+        Obj<topology_type>          secTopology          = ALE::New::Completion<mesh_topology_type,value_type>::createSendTopology(sendOverlap);
+        Obj<partition_size_section> partitionSizeSection = new partition_size_section(secTopology, topology, numFaces, assignment);
+        Obj<partition_section>      partitionSection     = new partition_section(secTopology, topology, numFaces, assignment);
+        Obj<send_section_type>      sendSection          = new send_section_type(sieve->comm(), sieve->debug());
+        Obj<recv_section_type>      recvSection          = new recv_section_type(sieve->comm(), sendSection->getTag(), sieve->debug());
+
+        ALE::New::Completion<mesh_topology_type,value_type>::completeSection(sendOverlap, recvOverlap, partitionSizeSection, partitionSection, sendSection, recvSection);
+        // Unpack the section into the overlap
+        sendOverlap->clear();
+        recvOverlap->clear();
+        const topology_type::sheaf_type& sendPatches = sendSection->getTopology()->getPatches();
+
+        for(topology_type::sheaf_type::const_iterator p_iter = sendPatches.begin(); p_iter != sendPatches.end(); ++p_iter) {
+          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+
+          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename send_section_type::value_type *points = sendSection->restrict(p_iter->first, *b_iter);
+            int size = sendSection->size(p_iter->first, *b_iter);
+
+            for(int p = 0; p < size; p++) {
+              sendOverlap->addArrow(points[p], p_iter->first, points[p]);
+            }
+          }
+        }
+        const topology_type::sheaf_type& recvPatches = recvSection->getTopology()->getPatches();
+
+        for(topology_type::sheaf_type::const_iterator p_iter = recvPatches.begin(); p_iter != recvPatches.end(); ++p_iter) {
+          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+          int                                                 rank = p_iter->first;
+
+          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const typename recv_section_type::value_type *points = recvSection->restrict(rank, *b_iter);
+            int size = recvSection->getFiberDimension(rank, *b_iter);
+
+            for(int p = 0; p < size; p++) {
+              recvOverlap->addArrow(rank, points[p], points[p]);
+            }
+          }
+        }
+        if (debug) {
+          sendOverlap->view(std::cout, "Send overlap for points");
+          recvOverlap->view(std::cout, "Receive overlap for points");
+        }
+        // Receive the point section
+        ALE::New::Completion<mesh_topology_type,value_type>::scatterSupports(sieve, sieveNew, sendOverlap, recvOverlap);
         sieveNew->stratify();
       };
       template<typename SifterType>

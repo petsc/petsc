@@ -1494,7 +1494,7 @@ namespace ALE {
         }
         const index_type idx(dim, -1);
         this->_atlasNew->updatePatch(patch, point);
-        this->_atlasNew->update(patch, point, &idx);
+        this->_atlasNew->updatePoint(patch, point, &idx);
       };
       void reallocate() {
         if (this->_atlasNew.isNull()) return;
@@ -1507,8 +1507,8 @@ namespace ALE {
           index_type                             defaultIdx(0, -1);
 
           for(typename atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            defaultIdx.prefix = this->_atlasNew->restrict(patch, *c_iter)[0].prefix;
-            this->_atlasNew->update(patch, *c_iter, &defaultIdx);
+            defaultIdx.prefix = this->_atlasNew->restrictPoint(patch, *c_iter)[0].prefix;
+            this->_atlasNew->updatePoint(patch, *c_iter, &defaultIdx);
           }
         }
         this->orderPatches(this->_atlasNew);
@@ -1525,10 +1525,10 @@ namespace ALE {
           const value_type                      *array    = this->_arrays[patch];
 
           for(typename atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            const index_type& idx       = this->_atlas->restrict(patch, *c_iter)[0];
+            const index_type& idx       = this->_atlas->restrictPoint(patch, *c_iter)[0];
             const int         size      = idx.prefix;
             const int         offset    = idx.index;
-            const int&        newOffset = this->_atlasNew->restrict(patch, *c_iter)[0].index;
+            const int&        newOffset = this->_atlasNew->restrictPoint(patch, *c_iter)[0].index;
 
             for(int i = 0; i < size; ++i) {
               newArray[newOffset+i] = array[offset+i];

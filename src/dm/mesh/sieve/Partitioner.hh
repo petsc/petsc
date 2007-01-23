@@ -20,6 +20,7 @@ extern "C" {
 #ifdef PETSC_HAVE_CHACO
 extern "C" {
   extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
+  extern void HMETIS_PartKway(int nvtxs, int nhedges, int *vwgts, int *eptr, int *eind, int *hewgts, int nparts, int ubfactor, int *options, int *part, int *edgeCut);
 }
 #endif
 
@@ -40,58 +41,131 @@ namespace ALE {
         ALE_LOG_EVENT_BEGIN;
         const Obj<sieve_type>&                             sieve    = topology->getPatch(patch);
         const Obj<typename topology_type::label_sequence>& elements = topology->heightStratum(patch, 0);
-        int numElements = elements->size();
-        int corners     = sieve->cone(*elements->begin())->size();
-        int *off        = new int[numElements+1];
+        int  numElements = elements->size();
+        int *off         = new int[numElements+1];
+        int  offset      = 0;
+        int *adj;
 
-        std::set<point_type> *neighborCells = new std::set<point_type>[numElements];
-        int faceVertices = -1;
+        if (topology->depth(patch) == dim) {
+          int e = 1;
 
-        if (topology->depth(patch) != 1) {
-          throw ALE::Exception("Not yet implemented for interpolated meshes");
-        }
-        if (corners == dim+1) {
-          faceVertices = dim;
-        } else if ((dim == 2) && (corners == 4)) {
-          faceVertices = 2;
-        } else if ((dim == 3) && (corners == 8)) {
-          faceVertices = 4;
-        } else {
-          throw ALE::Exception("Could not determine number of face vertices");
-        }
-        for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-          const Obj<typename sieve_type::traits::coneSequence>& vertices  = sieve->cone(*e_iter);
-          typename sieve_type::traits::coneSequence::iterator vEnd = vertices->end();
+          off[0] = 0;
+          for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& faces  = sieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator   fBegin = faces->begin();
+            typename sieve_type::traits::coneSequence::iterator   fEnd   = faces->end();
 
-          for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
-            const Obj<typename sieve_type::traits::supportSequence>& neighbors = sieve->support(*v_iter);
-            typename sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
+            off[e] = off[e-1];
+            for(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+              if (sieve->support(*f_iter)->size() == 2) off[e]++;
+            }
+            e++;
+          }
+          adj = new int[off[numElements]];
+          for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& faces  = sieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator   fBegin = faces->begin();
+            typename sieve_type::traits::coneSequence::iterator   fEnd   = faces->end();
 
-            for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
-              if (*e_iter == *n_iter) continue;
-              if ((int) sieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
-                neighborCells[*e_iter].insert(*n_iter);
+            for(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+              const Obj<typename sieve_type::traits::supportSequence>& neighbors = sieve->support(*f_iter);
+              typename sieve_type::traits::supportSequence::iterator   nBegin    = neighbors->begin();
+              typename sieve_type::traits::supportSequence::iterator   nEnd      = neighbors->end();
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = nBegin; n_iter != nEnd; ++n_iter) {
+                if (*n_iter != *e_iter) adj[offset++] = *n_iter;
               }
             }
           }
-        }
-        off[0] = 0;
-        for(int e = 1; e <= numElements; e++) {
-          off[e] = neighborCells[e-1].size() + off[e-1];
-        }
-        int *adj    = new int[off[numElements]];
-        int  offset = 0;
-        for(int e = 0; e < numElements; e++) {
-          for(typename std::set<point_type>::iterator n_iter = neighborCells[e].begin(); n_iter != neighborCells[e].end(); ++n_iter) {
-            adj[offset++] = *n_iter;
+        } else if (topology->depth(patch) == 1) {
+          std::set<point_type> *neighborCells = new std::set<point_type>[numElements];
+          int corners      = sieve->cone(*elements->begin())->size();
+          int faceVertices = -1;
+
+          if (corners == dim+1) {
+            faceVertices = dim;
+          } else if ((dim == 2) && (corners == 4)) {
+            faceVertices = 2;
+          } else if ((dim == 3) && (corners == 8)) {
+            faceVertices = 4;
+          } else {
+            throw ALE::Exception("Could not determine number of face vertices");
           }
+          for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& vertices  = sieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator vEnd = vertices->end();
+
+            for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+              const Obj<typename sieve_type::traits::supportSequence>& neighbors = sieve->support(*v_iter);
+              typename sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
+                if (*e_iter == *n_iter) continue;
+                if ((int) sieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
+                  neighborCells[*e_iter].insert(*n_iter);
+                }
+              }
+            }
+          }
+          off[0] = 0;
+          for(int e = 1; e <= numElements; e++) {
+            off[e] = neighborCells[e-1].size() + off[e-1];
+          }
+          adj = new int[off[numElements]];
+          for(int e = 0; e < numElements; e++) {
+            for(typename std::set<point_type>::iterator n_iter = neighborCells[e].begin(); n_iter != neighborCells[e].end(); ++n_iter) {
+              adj[offset++] = *n_iter;
+            }
+          }
+          delete [] neighborCells;
+        } else {
+          throw ALE::Exception("Dual creation not defined for partially interpolated meshes");
         }
-        delete [] neighborCells;
         if (offset != off[numElements]) {
           ostringstream msg;
           msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numElements];
           throw ALE::Exception(msg.str().c_str());
         }
+        *offsets   = off;
+        *adjacency = adj;
+        ALE_LOG_EVENT_END;
+      };
+      #undef __FUNCT__
+      #define __FUNCT__ "buildFaceCSR"
+      // This creates a CSR representation of the adjacency hypergraph for faces
+      static void buildFaceCSR(const Obj<topology_type>& topology, const int dim, const patch_type& patch, const Obj<ALE::Mesh::numbering_type>& fNumbering, int *numEdges, int **offsets, int **adjacency) {
+        ALE_LOG_EVENT_BEGIN;
+        const Obj<sieve_type>&                             sieve      = topology->getPatch(patch);
+        const Obj<typename topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
+        int  numElements = elements->size();
+        int *off         = new int[numElements+1];
+        int  e;
+
+        if (topology->depth(patch) != dim) {
+          throw ALE::Exception("Not yet implemented for non-interpolated meshes");
+        }
+        off[0] = 0;
+        e      = 1;
+        for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          off[e] = sieve->cone(*e_iter)->size() + off[e-1];
+          e++;
+        }
+        int *adj    = new int[off[numElements]];
+        int  offset = 0;
+        for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          const Obj<typename sieve_type::traits::coneSequence>& faces = sieve->cone(*e_iter);
+          typename sieve_type::traits::coneSequence::iterator   fEnd  = faces->end();
+
+          for(typename sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter) {
+            adj[offset++] = fNumbering->getIndex(*f_iter);
+          }
+        }
+        if (offset != off[numElements]) {
+          ostringstream msg;
+          msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numElements];
+          throw ALE::Exception(msg.str().c_str());
+        }
+        *numEdges  = numElements;
         *offsets   = off;
         *adjacency = adj;
         ALE_LOG_EVENT_END;
@@ -262,6 +336,53 @@ namespace ALE {
               METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
               delete [] xadj;
               delete [] adjncy;
+            }
+          } else {
+            assignment = NULL;
+          }
+          return assignment;
+        };
+        #undef __FUNCT__
+        #define __FUNCT__ "ParMetisPartitionSieveByFace"
+        static part_type *partitionSieveByFace(const Obj<topology_type>& topology, const int dim) {
+          int    nvtxs;      // The number of vertices
+          int    nhedges;    // The number of hyperedges
+          int   *vwgts;      // The vertex weights
+          int   *eptr;       // The offsets of each hyperedge
+          int   *eind;       // The vertices in each hyperedge, indexed by eptr
+          int   *hewgts;     // The hyperedge weights
+          int    nparts;     // The number of partitions
+          int    ubfactor;   // The allowed load imbalance (1-50)
+          int    options[9]; // Options
+          // Outputs
+          int    edgeCut;    // The number of edges cut by the partition
+          int   *assignment; // The vertex partition
+          const typename topology_type::patch_type patch = 0;
+          const Obj<ALE::Mesh::numbering_type>& fNumbering = ALE::New::NumberingFactory<topology_type>::singleton(topology->debug())->getNumbering(topology, patch, topology->depth()-1);
+
+          if (topology->commRank() == 0) {
+            nvtxs      = topology->heightStratum(patch, 1)->size();
+            vwgts      = NULL;
+            hewgts     = NULL;
+            nparts     = topology->commSize();
+            ubfactor   = 5;
+            options[0] = 1;  // Use all defaults
+            options[1] = 10; // Number of bisections tested
+            options[2] = 1;  // Vertex grouping scheme
+            options[3] = 1;  // Objective function
+            options[4] = 1;  // V-cycle refinement
+            options[7] = -1; // Random seed
+            options[8] = 24; // Debugging level
+            assignment = new part_type[nvtxs];
+
+            if (topology->commSize() == 1) {
+              PetscMemzero(assignment, nvtxs * sizeof(part_type));
+            } else {
+              ALE::New::Partitioner<topology_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges, &eptr, &eind);
+              HMETIS_PartKway(nvtxs, nhedges, vwgts, eptr, eind, hewgts, nparts, ubfactor, options, assignment, &edgeCut);
+
+              delete [] eptr;
+              delete [] eind;
             }
           } else {
             assignment = NULL;
