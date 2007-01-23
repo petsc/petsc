@@ -587,7 +587,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
     ierr = PetscOpenMPSpawn(nodesize);CHKERRQ(ierr); 
 #else
-    SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_node_size instead");
+    SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
 #endif
   } else {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
