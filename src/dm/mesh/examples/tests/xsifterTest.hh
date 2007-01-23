@@ -8,7 +8,7 @@ namespace ALE {
   namespace Test {
     namespace XSifter {
       typedef ALE::XSifterDef::Arrow<double,int,char>    arrow_type;
-      typedef ALE::XSifter<arrow_type>                   xsifter_type;
+      typedef ALE::ALE_XSIFTER_TYPE<arrow_type>          xsifter_type;
       typedef std::set<arrow_type::target_type>          RealBase;
       typedef std::set<arrow_type::source_type>          RealCone;
       //
