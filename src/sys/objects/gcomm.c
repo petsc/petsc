@@ -31,7 +31,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject obj,MPI_Comm *comm
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
+  PetscValidHeader(obj,1);
+  PetscValidPointer(comm,2);
   if (obj->bops->getcomm) {
     ierr = obj->bops->getcomm(obj,comm);CHKERRQ(ierr);
   } else {

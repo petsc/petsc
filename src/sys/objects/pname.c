@@ -26,7 +26,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char nam
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
+  PetscValidHeader(obj,1);
   ierr = PetscStrfree(obj->name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -57,6 +57,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject obj)
   static int counter = 0;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   if (!obj->name) {
     sprintf(name,"%s_%d",obj->class_name,counter++);
     ierr = PetscStrallocpy(name,&obj->name);CHKERRQ(ierr);
@@ -104,6 +105,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectChangeTypeName(PetscObject obj,const c
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
   ierr = PetscObjectTakeAccess(obj);CHKERRQ(ierr);
   ierr = PetscStrfree(obj->type_name);CHKERRQ(ierr);
   ierr = PetscStrallocpy(type_name,&obj->type_name);CHKERRQ(ierr);

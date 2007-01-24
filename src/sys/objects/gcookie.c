@@ -25,7 +25,7 @@
 PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject obj,int *cookie)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
+  PetscValidHeader(obj,1);
   *cookie = obj->cookie;
   PetscFunctionReturn(0);
 }

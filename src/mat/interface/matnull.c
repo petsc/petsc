@@ -31,6 +31,7 @@ PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE = 0;
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceSetFunction(MatNullSpace sp, PetscErrorCode (*rem)(Vec,void*),void *ctx)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
   sp->remove = rem;
   sp->rmctx  = ctx;
   PetscFunctionReturn(0);
@@ -122,6 +123,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
   if (--sp->refct > 0) PetscFunctionReturn(0);
 
   if (sp->vec) {ierr = VecDestroy(sp->vec);CHKERRQ(ierr);}
@@ -214,14 +216,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
 {
   PetscScalar    sum;
   PetscReal      nrm;
-  PetscInt       j,n = sp->n,N,m;
+  PetscInt       j,n,N,m;
   PetscErrorCode ierr;
   Vec            l,r;
-  MPI_Comm       comm = sp->comm;
   PetscTruth     flg1,flg2;
   PetscViewer    viewer;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1);
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,2);
+  n = sp->n;
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view",&flg1);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_null_space_test_view_draw",&flg2);CHKERRQ(ierr);
 
@@ -235,7 +239,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
   }
   l    = sp->vec;
 
-  ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetStdout(sp->comm,&viewer);CHKERRQ(ierr);
   if (sp->has_cnst) {
     ierr = VecDuplicate(l,&r);CHKERRQ(ierr);
     ierr = VecGetSize(l,&N);CHKERRQ(ierr);
@@ -243,9 +247,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
     ierr = VecSet(l,sum);CHKERRQ(ierr);
     ierr = MatMult(mat,l,r);CHKERRQ(ierr);
     ierr = VecNorm(r,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Constants are likely null vector");CHKERRQ(ierr);}
-    else {ierr = PetscPrintf(comm,"Constants are unlikely null vector ");CHKERRQ(ierr);}
-    ierr = PetscPrintf(comm,"|| A * 1 || = %G\n",nrm);CHKERRQ(ierr);
+    if (nrm < 1.e-7) {ierr = PetscPrintf(sp->comm,"Constants are likely null vector");CHKERRQ(ierr);}
+    else {ierr = PetscPrintf(sp->comm,"Constants are unlikely null vector ");CHKERRQ(ierr);}
+    ierr = PetscPrintf(sp->comm,"|| A * 1 || = %G\n",nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(r,viewer);CHKERRQ(ierr);}
     ierr = VecDestroy(r);CHKERRQ(ierr);
@@ -254,9 +258,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceTest(MatNullSpace sp,Mat mat)
   for (j=0; j<n; j++) {
     ierr = (*mat->ops->mult)(mat,sp->vecs[j],l);CHKERRQ(ierr);
     ierr = VecNorm(l,NORM_2,&nrm);CHKERRQ(ierr);
-    if (nrm < 1.e-7) {ierr = PetscPrintf(comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);}
-    else {ierr = PetscPrintf(comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);}
-    ierr = PetscPrintf(comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
+    if (nrm < 1.e-7) {ierr = PetscPrintf(sp->comm,"Null vector %D is likely null vector",j);CHKERRQ(ierr);}
+    else {ierr = PetscPrintf(sp->comm,"Null vector %D unlikely null vector ",j);CHKERRQ(ierr);}
+    ierr = PetscPrintf(sp->comm,"|| A * v[%D] || = %G\n",j,nrm);CHKERRQ(ierr);
     if (nrm > 1.e-7 && flg1) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
     if (nrm > 1.e-7 && flg2) {ierr = VecView(l,viewer);CHKERRQ(ierr);}
   }

@@ -26,11 +26,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetName(PetscObject obj,const char *na
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
-  if (!name) SETERRQ(PETSC_ERR_ARG_BADPTR,"Void location for name");
-  if (!obj->name) {
-    ierr = PetscObjectName(obj);CHKERRQ(ierr);
-  }
+  PetscValidHeader(obj,1);
+  PetscValidPointer(name,2);
+  if (!obj->name) { ierr = PetscObjectName(obj);CHKERRQ(ierr); }
   *name = obj->name;
   PetscFunctionReturn(0);
 }

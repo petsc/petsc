@@ -28,6 +28,15 @@
 @string(jota = "J. Optimization Theory and Applications")
 @string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
 
+@ARTICLE{ow1,
+        AUTHOR = "T. Washio and C. W. Oosterlee",
+        TITLE = "Krylov Subspace Acceleration for Nonlinear Multigrid Schemes",
+        JOURNAL = "Electron. Trans. Numer. Anal.",
+        VOLUME = "6",
+        PAGES = "271--290",
+        YEAR = "1997" 
+}
+
 @ARTICLE{vm1,
         AUTHOR = "V. A. Mousseau",
         TITLE = "Implicitly Balanced Solution of the Two-Phase Flow Equations Coupled to Nonlinear Heat Conduction",
@@ -62,7 +71,7 @@
 
 @ARTICLE{lopez1,
         AUTHOR = "A. P. Lopez and J. B. Sandova",
-        TITLE = "A methodology for the coupling of RAMONA-3B neutron kinetics and TRAC-BF1 thermal-hydraulics",
+        TITLE = "A methodology for the coupling of {RAMONA-3B} neutron kinetics and {TRAC-BF1} thermal-hydraulics",
         JOURNAL = "Annals of Nuclear Energy",
         VOLUME = "32(6)",
         PAGES = "621--634",
@@ -92,7 +101,7 @@
 }
 
 @unpublished{GNEP-WEB,
-        AUTHOR = "U.S. Department of Energy",
+        AUTHOR = "{U.S. Department of Energy}",
         TITLE = "Global Nuclear Energy Partnership ({GNEP})",
         NOTE = "\url{ http://www.gnep.energy.gov}", 
         YEAR = "2007" 
@@ -124,28 +133,28 @@
 
 @Misc{gnep:report,
   author =       "Phillip Finck and David Keyes and Rick Stevens",
-  title =        "Report on the {DOE} joint {NE/SC} Workshop Simulation and Modeling for Advanced Nuclear Energy Systems",
+  title =        "{Report on the {DOE} joint {NE/SC} Workshop Simulation and Modeling for Advanced Nuclear Energy Systems}",
   year = 2006
 }
+
 @Misc{subsurface-workshop-ref,
-  author =       "David Zachman", 
-  title =        "Computational Subsurface Sciences Workshop",
-  url = "http://subsurface2007.labworks.org/",
-  year = 2007
+  author =       "{David Zachman (Chair)}", 
+  title =        "{Computational Subsurface Sciences Workshop}",
+  note = "January 9--12, 2007, Bethesda, MD, see \url{http://subsurface2007.labworks.org/}",
 }
 
 @Misc{fusion:report,
-  title =  "Report of the Fusion Energy Sciences Advisory Committee Burning Plasma Strategy Panel",
-  author = "Fusion Energy Sciences Advisory Committee",
+  title =  "{Report of the Fusion Energy Sciences Advisory Committee Burning Plasma Strategy Panel}",
+  author = "{Fusion Energy Sciences Advisory Committee}",
   year = 2002,
-  url = "http://www.ofes.fusion.doe.gov/More_HTML/FESAC/Austinfinal.pdf"
+  note = "see \url{http://www.ofes.fusion.doe.gov/More_HTML/FESAC/Austinfinal.pdf}"
 }
 
 @Misc{hecrtf:report,
-  title = "Report of the High End Computing Revitalization Task Force (HECRTF)",
-  author = "High End Computing Revitalization Task Force (HECRTF)",
+  title = "{Report of the High End Computing Revitalization Task Force (HECRTF)}",
+  key = "HECRTF",
   year = 2004,
-  url = "http://www.ostp.gov/nstc/html/HECRTF-FINAL_051004.pdf"
+  howpublished = "see \url{http://www.ostp.gov/nstc/html/HECRTF-FINAL_051004.pdf}"
 }
 
 @Misc{doesc20years,
@@ -310,28 +319,28 @@
 
 @Unpublished{petsc:coloringuse,
   title = 	 "Code for computing sparse {J}acobians",
-  note = 	 "http://www..mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
+  note = 	 "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:external,
-  author =	 {B. {Smith et al.}},
-  title = 	 "External Software Used by {PETSc}",
-  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html",
+  author =       {B. {Smith et al.}},
+  title =        "{External Software Used by PETSc}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:prizes,
-  author =	 {B. {Smith et al.}},
-  title = 	 "Prizes Won Using {PETSc}",
-  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
+  author =       {B. {Smith et al.}},
+  title =        "{Prizes Won Using PETSc}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html}",
   Institution = "Argonne National Laboratory"
 }
 
 @Unpublished{petsc:csgf,
-  author =	 {B. {Smith et al.}},
-  title = 	 "DOE CSGF users of PETSc",
-  note = 	 "http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html",
+  author =       {B. {Smith et al.}},
+  title =        "{DOE Computational Science Graduate Fellowship (CSGF) Users of PETSc}",
+  note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/publications/prizes.html}",
   Institution = "Argonne National Laboratory"
 }
 
@@ -2776,17 +2785,17 @@ year = 2003}
   pages   = "357-397"
 } 
 
-@Misc{facets:homepage,
-  author =	 {John Cary (PI)}},
-  title =	 {{Framework Application for Core-Edge Transport Simulations (FACETS)}}
-  howpublished = {\url{http://www.facetsproject.org}}
+@unpublished{facets:homepage,
+  author =	 "John {Cary (PI)}",
+  title =	 "{Framework Application for Core-Edge Transport Simulations (FACETS)}",
+  note = "SciDAC2 project, see \url{http://www.facetsproject.org}"
 }
 
 @Misc{accel-scidac2-solicitation,
   author       = {{DOE Office of Science}},
   title        = {{Program Announcement LAB 07-09, SciDAC: Accelerator Science and Simulation}},
   year         = 2006,
-  howpublished = {\url{http://www.science.doe.gov/grants/LAB07_09.html}}
+  note = {\url{http://www.science.doe.gov/grants/LAB07_09.html}}
 }
 
 @ARTICLE{Nieter04,
@@ -2800,7 +2809,7 @@ year = 2003}
 
 @Article{Synergia06,
   author = "J. Amundson and P. Spentzouris and J. Qiang and R. Ryne",
-  title = "Synergia: An accelerator modeling tool with 3-D space charge",
+  title = "Synergia: An accelerator modeling tool with {3-D} space charge",
   journal = "J. Comp. Phys.",
   year = 2006,
   volume = "211",
@@ -2823,7 +2832,7 @@ year = 2003}
 }
 
 @misc{epp2010,
-  author = {Committee on Elementary Particle Physics in the 21st Century, National Research Council},
+  author = {{Committee on Elementary Particle Physics in the 21st Century, National Research Council}},
   title = {Revealing the Hidden Nature of Space and Time: Charting the Course for Elementary 
            Particle Physics},
   year = {2006},
@@ -2832,7 +2841,7 @@ year = 2003}
 
 @misc{post-fsp-report,
 author= "D.~E.~Post and D.~B.~Batchelor and R.~B.~Bramley and J.~R.~Cary and R.~H.~Cohen and P.~Colella and S.~C.~Jardin",
-title=  "Report of Fusion Simulation Project Steering Committee",
+title=  "{Report of Fusion Simulation Project Steering Committee}",
 month=  "August",
 year =  2004,
 note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
@@ -2858,9 +2867,9 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 }
 
 @unpublished{compass07:proposal,
-  author = {Panagiotis Spentzouris (PI)},
+  author = {Panagiotis {Spentzouris (PI)}},
   title  = {Community Petascale Project for Accelerator Science and Simulation},
-  note   = {SciDAC2 accelerator sciences proposal, January 2007},
+  note   = {SciDAC2 accelerator sciences proposal, submitted January, 2007},
 }
 
 @Misc{scidac:homepage,
@@ -2878,7 +2887,7 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 }
 
 @Article{         uedge,
-  author        = "T.~D. Rognlien and D.~D. Ryutov and N. Mattor and and G.~D. Porter",
+  author        = "T.~D. Rognlien and D.~D. Ryutov and N. Mattor and G.~D. Porter",
   title         = "Two-Dimensional Electric Fields and Drifts near the Magnetic Separatrix in Divertor Tokamak",
   journal       = "J. Plasma Physics",
   year          = "1999",
@@ -2954,6 +2963,5 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 @misc{petsc:driven-cavity-example,
   title =    {{PETSc Driven Cavity Example Code}},
   author =	 {B. {Smith et al.}},
-  year = 2007,
   howpublished = {\url{http://www.mcs.anl.gov/petsc/petsc-as/snapshots/petsc-current/src/snes/examples/tutorials/ex19.c.html}}
 }
