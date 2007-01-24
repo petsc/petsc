@@ -82,35 +82,42 @@ namespace ALE {
       //     we assume identity of points, so only the cone of the new mesh is used
       #undef __FUNCT__
       #define __FUNCT__ "createConeOverlap"
-      static void createConeOverlap(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Mesh>& oldMesh, const Obj<Mesh>& newMesh) {
-        const Obj<Mesh::sieve_type>                                 oldSieve = oldMesh->getTopology()->getPatch(0);
-        const Obj<Mesh::sieve_type>                                 newSieve = newMesh->getTopology()->getPatch(0);
-        const Obj<typename send_overlap_type::traits::capSequence>  cap      = sendOverlap->cap();
-        const Obj<typename recv_overlap_type::traits::baseSequence> base     = recvOverlap->base();
+      static void createConeOverlap(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Mesh>& oldMesh, const Obj<Mesh>& newMesh, const int minimumHeight = 0) {
+        const Mesh::patch_type                                      patch       = 0;
+        const Obj<Mesh::topology_type>                              oldTopology = oldMesh->getTopology();
+        const Obj<Mesh::topology_type>                              newTopology = newMesh->getTopology();
+        const Obj<Mesh::sieve_type>                                 oldSieve    = oldTopology->getPatch(patch);
+        const Obj<Mesh::sieve_type>                                 newSieve    = newTopology->getPatch(patch);
+        const Obj<typename send_overlap_type::traits::capSequence>  cap         = sendOverlap->cap();
+        const Obj<typename recv_overlap_type::traits::baseSequence> base        = recvOverlap->base();
 
         for(typename send_overlap_type::traits::capSequence::iterator p_iter = cap->begin(); p_iter != cap->end(); ++p_iter) {
-          const Obj<typename send_overlap_type::traits::supportSequence>&     ranks = sendOverlap->support(*p_iter);
-          const typename send_overlap_type::traits::supportSequence::iterator end   = ranks->end();
+          if ((minimumHeight == 0) || (oldTopology->height(patch, *p_iter) >= minimumHeight)) {
+            const Obj<typename send_overlap_type::traits::supportSequence>&     ranks = sendOverlap->support(*p_iter);
+            const typename send_overlap_type::traits::supportSequence::iterator end   = ranks->end();
 
-          for(typename send_overlap_type::traits::supportSequence::iterator r_iter = ranks->begin(); r_iter != end; ++r_iter) {
-            const Obj<typename Mesh::sieve_type::traits::coneSequence>&     cone = oldSieve->cone(*p_iter);
-            const typename Mesh::sieve_type::traits::coneSequence::iterator cEnd = cone->end();
+            for(typename send_overlap_type::traits::supportSequence::iterator r_iter = ranks->begin(); r_iter != end; ++r_iter) {
+              const Obj<typename Mesh::sieve_type::traits::coneSequence>&     cone = oldSieve->cone(*p_iter);
+              const typename Mesh::sieve_type::traits::coneSequence::iterator cEnd = cone->end();
 
-            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
-              sendOverlap->addArrow(*c_iter, *r_iter, *c_iter);
+              for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
+                sendOverlap->addArrow(*c_iter, *r_iter, *c_iter);
+              }
             }
           }
         }
         for(typename recv_overlap_type::traits::baseSequence::iterator p_iter = base->begin(); p_iter != base->end(); ++p_iter) {
-          const Obj<typename recv_overlap_type::traits::coneSequence>&     ranks = recvOverlap->cone(*p_iter);
-          const typename recv_overlap_type::traits::coneSequence::iterator end   = ranks->end();
+          if ((minimumHeight == 0) || (newTopology->height(patch, *p_iter) >= minimumHeight)) {
+            const Obj<typename recv_overlap_type::traits::coneSequence>&     ranks = recvOverlap->cone(*p_iter);
+            const typename recv_overlap_type::traits::coneSequence::iterator end   = ranks->end();
 
-          for(typename send_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != end; ++r_iter) {
-            const Obj<typename ALE::Mesh::sieve_type::traits::coneSequence>& cone = newSieve->cone(*p_iter);
-            const typename Mesh::sieve_type::traits::coneSequence::iterator  cEnd = cone->end();
+            for(typename send_overlap_type::traits::coneSequence::iterator r_iter = ranks->begin(); r_iter != end; ++r_iter) {
+              const Obj<typename ALE::Mesh::sieve_type::traits::coneSequence>& cone = newSieve->cone(*p_iter);
+              const typename Mesh::sieve_type::traits::coneSequence::iterator  cEnd = cone->end();
 
-            for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
-              recvOverlap->addArrow(*r_iter, *c_iter, *c_iter);
+              for(typename Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cEnd; ++c_iter) {
+                recvOverlap->addArrow(*r_iter, *c_iter, *c_iter);
+              }
             }
           }
         }
@@ -519,9 +526,24 @@ namespace ALE {
         }
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
-        createConeOverlap(sendOverlap, recvOverlap, serialMesh, parallelMesh);
+        createConeOverlap(sendOverlap, recvOverlap, serialMesh, parallelMesh, 1);
         parallelTopology->setDistSendOverlap(sendOverlap);
         parallelTopology->setDistRecvOverlap(recvOverlap);
+
+        // Distribute sections
+        Obj<std::set<std::string> > sections = serialMesh->getRealSections();
+
+        for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+          parallelMesh->setRealSection(*name, distributeSection(serialMesh->getRealSection(*name), parallelMesh->getTopology(), sendOverlap, recvOverlap));
+        }
+        sections = serialMesh->getIntSections();
+        for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+          parallelMesh->setIntSection(*name, distributeSection(serialMesh->getIntSection(*name), parallelMesh->getTopology(), sendOverlap, recvOverlap));
+        }
+        sections = serialMesh->getPairSections();
+        for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+          parallelMesh->setPairSection(*name, distributeSection(serialMesh->getPairSection(*name), parallelMesh->getTopology(), sendOverlap, recvOverlap));
+        }
 
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
