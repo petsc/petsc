@@ -153,6 +153,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,PCType *meth)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  PetscValidPointer(meth,2);
   *meth = (PCType) pc->type_name;
   PetscFunctionReturn(0);
 }

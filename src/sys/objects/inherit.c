@@ -275,6 +275,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCompose(PetscObject obj,const char nam
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
+  if (ptr) PetscValidHeader(ptr,3);
   ierr = (*obj->bops->compose)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -308,6 +311,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectQuery(PetscObject obj,const char name[
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
+  PetscValidPointer(ptr,3);
   ierr = (*obj->bops->query)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -319,6 +325,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectComposeFunction(PetscObject obj,const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
+  PetscValidCharPointer(fname,2);
   ierr = (*obj->bops->composefunction)(obj,name,fname,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -353,6 +362,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectQueryFunction(PetscObject obj,const ch
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeader(obj,1);
+  PetscValidCharPointer(name,2);
   ierr = (*obj->bops->queryfunction)(obj,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -384,6 +395,8 @@ struct _p_PetscContainer {
 PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void **ptr)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  PetscValidPointer(ptr,2);
   *ptr = obj->ptr;
   PetscFunctionReturn(0);
 }
@@ -408,6 +421,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerGetPointer(PetscContainer obj,void 
 PetscErrorCode PETSC_DLLEXPORT PetscContainerSetPointer(PetscContainer obj,void *ptr)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
+  if (ptr) PetscValidPointer(ptr,2);
   obj->ptr = ptr;
   PetscFunctionReturn(0);
 }
@@ -430,6 +445,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
   if (--obj->refct > 0) PetscFunctionReturn(0);
   if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
@@ -454,6 +470,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
 PetscErrorCode PETSC_DLLEXPORT PetscContainerSetUserDestroy(PetscContainer obj, PetscErrorCode (*des)(void*))
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
   obj->userdestroy = des;
   PetscFunctionReturn(0);
 }
@@ -482,10 +499,11 @@ PetscCookie PETSC_DLLEXPORT PETSC_CONTAINER_COOKIE = 0;
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer *container)
 {
-  PetscErrorCode       ierr;
+  PetscErrorCode ierr;
   PetscContainer contain;
 
   PetscFunctionBegin;
+  PetscValidPointer(container,2);
   if (!PETSC_CONTAINER_COOKIE) {
     ierr = PetscLogClassRegister(&PETSC_CONTAINER_COOKIE, "Container");CHKERRQ(ierr);
   }
@@ -517,7 +535,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerCreate(MPI_Comm comm,PetscContainer
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidHeader(obj,1);
   PetscFunctionReturn(0); 
 }
 
@@ -542,6 +560,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetFromOptions(PetscObject obj)
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetUp(PetscObject obj)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidHeader(obj,1);
   PetscFunctionReturn(0);
 }
