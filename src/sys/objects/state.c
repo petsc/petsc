@@ -35,7 +35,8 @@
 PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject obj,PetscInt *state)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
+  PetscValidHeader(obj,1);
+  PetscValidIntPointer(state,2);
   *state = obj->state;
   PetscFunctionReturn(0);
 }
@@ -69,7 +70,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectStateQuery(PetscObject obj,PetscInt *s
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetState(PetscObject obj,PetscInt state)
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT,"Null object");
+  PetscValidHeader(obj,1);
   obj->state = state;
   PetscFunctionReturn(0);
 }

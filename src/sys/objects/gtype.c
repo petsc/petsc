@@ -26,7 +26,7 @@
 PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject obj, const char *type[])
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidHeader(obj,1);
   PetscValidPointer(type,2);
   *type = obj->type_name;
   PetscFunctionReturn(0);
@@ -54,7 +54,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject obj, const char *t
 PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject obj, const char type[])
 {
   PetscFunctionBegin;
-  if (!obj) SETERRQ(PETSC_ERR_ARG_CORRUPT, "Null object");
+  PetscValidHeader(obj,1);
   PetscValidCharPointer(type,2);
   SETERRQ(PETSC_ERR_SUP, "Cannot set the type of a generic PetscObject")
 }

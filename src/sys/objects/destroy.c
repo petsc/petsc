@@ -48,7 +48,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
-
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
@@ -93,7 +92,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCook
 
   PetscFunctionBegin;
   PetscValidPointer(obj,2);
-
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
@@ -131,7 +129,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject obj)
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-
   if (obj->bops->destroy) {
     ierr = (*obj->bops->destroy)(obj);CHKERRQ(ierr);
   } else {
@@ -220,8 +217,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject obj,const char type_
   PetscFunctionReturn(0);
 }
 
+#define MAXREGDESOBJS 256
 static int         PetscObjectRegisterDestroy_Count = 0;
-static PetscObject PetscObjectRegisterDestroy_Objects[256];
+static PetscObject PetscObjectRegisterDestroy_Objects[MAXREGDESOBJS];
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscObjectRegisterDestroy"
@@ -248,7 +246,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  if (PetscObjectRegisterDestroy_Count < MAXREGDESOBJS) {
+    PetscObjectRegisterDestroy_Objects[PetscObjectRegisterDestroy_Count++] = obj;
+  } else {
+    SETERRQ1(PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGDESOBJS\n",MAXREGDESOBJS);
+    
+  }
   PetscFunctionReturn(0);
 }
 
@@ -274,6 +277,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroyAll(void)
   for (i=0; i<PetscObjectRegisterDestroy_Count; i++) {
     ierr = PetscObjectDestroy(PetscObjectRegisterDestroy_Objects[i]);CHKERRQ(ierr);
   }
+  PetscObjectRegisterDestroy_Count = 0;
   PetscFunctionReturn(0);
 }
 
