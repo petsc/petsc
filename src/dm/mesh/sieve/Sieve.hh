@@ -8,12 +8,6 @@
 #include <boost/multi_index/composite_key.hpp>
 #include <iostream>
 
-#ifndef  included_ALE_hh
-#include <ALE.hh>
-#endif
-
-// ALE extensions
-
 #ifndef  included_ALE_Sifter_hh
 #include <Sifter.hh>
 #endif

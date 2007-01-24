@@ -9,6 +9,10 @@
 #include <Partitioner.hh>
 #endif
 
+#ifndef  included_ALE_Completion_hh
+#include <Completion.hh>
+#endif
+
 extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
 
 // Attempt to unify all of the distribution mechanisms:
@@ -66,12 +70,12 @@ namespace ALE {
     template<typename Topology_>
     class Distribution {
     public:
-      typedef Topology_                                                       topology_type;
-      typedef typename topology_type::sieve_type                              sieve_type;
-      typedef ALE::New::Completion<Topology_, Mesh::sieve_type::point_type>   sieveCompletion;
-      typedef ALE::New::Completion<Topology_, Mesh::real_section_type::value_type> sectionCompletion;
-      typedef typename sectionCompletion::send_overlap_type                   send_overlap_type;
-      typedef typename sectionCompletion::recv_overlap_type                   recv_overlap_type;
+      typedef Topology_                                                                   topology_type;
+      typedef typename topology_type::sieve_type                                          sieve_type;
+      typedef ALE::New::Completion<Topology_, Mesh::sieve_type::point_type>               sieveCompletion;
+      typedef ALE::New::SectionCompletion<Topology_, Mesh::real_section_type::value_type> sectionCompletion;
+      typedef typename sectionCompletion::send_overlap_type                               send_overlap_type;
+      typedef typename sectionCompletion::recv_overlap_type                               recv_overlap_type;
     public:
       // Creates a subordinate overlap
       //   If two points overlap in the original, the corresponding cones overlap here
@@ -239,14 +243,14 @@ namespace ALE {
       template<typename SendSection, typename RecvSection>
       static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<topology_type>& topology, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
         if (sendOverlap->commSize() == 1) return;
-        typedef typename ALE::New::Completion<topology_type, typename topology_type::point_type> completion_type;
+        typedef typename ALE::New::SectionCompletion<topology_type, typename sieve_type::point_type> completion;
 
         // Distribute cones
         const typename topology_type::patch_type               patch           = 0;
-        const Obj<typename completion_type::topology_type>     secTopology     = completion_type::createSendTopology(sendOverlap);
-        const Obj<typename completion_type::cone_size_section> coneSizeSection = new typename completion_type::cone_size_section(secTopology, topology->getPatch(patch));
-        const Obj<typename completion_type::cone_section>      coneSection     = new typename completion_type::cone_section(secTopology, topology->getPatch(patch));
-        sectionCompletion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+        const Obj<typename sieveCompletion::topology_type>     secTopology     = completion::createSendTopology(sendOverlap);
+        const Obj<typename sieveCompletion::cone_size_section> coneSizeSection = new typename sieveCompletion::cone_size_section(secTopology, topology, topology->getPatch(patch));
+        const Obj<typename sieveCompletion::cone_section>      coneSection     = new typename sieveCompletion::cone_section(secTopology, topology->getPatch(patch));
+        completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
         // Update cones
         updateSieve(recvSection, topology);
       };
@@ -545,7 +549,7 @@ namespace ALE {
         const Obj<SectionFiller>           filler          = new SectionFiller(serialSection, patch);
 
         updateSectionLocal(serialSection, parallelSection);
-        sieveCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
+        sectionCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
         updateSectionRemote(recvOverlap, recvSection, parallelSection);
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         PetscCommSynchronizeTags(PETSC_COMM_WORLD);
@@ -579,7 +583,7 @@ namespace ALE {
         const Obj<SectionSizer>      sizer       = new SectionSizer(section, patch);
         const Obj<SectionFiller>     filler      = new SectionFiller(section, patch);
 
-        sieveCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
+        sectionCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
         // Update section with remote data
         const Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = topology->getRecvOverlap()->base();
 
