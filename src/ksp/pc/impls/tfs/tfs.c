@@ -91,6 +91,9 @@ static PetscErrorCode LocalMult_TFS(PC pc,PetscScalar *xin,PetscScalar *xout)
   ierr = VecPlaceArray(tfs->xo,xin+tfs->nd);CHKERRQ(ierr);
   ierr = MatMult(a->A,tfs->xd,tfs->b);CHKERRQ(ierr);
   ierr = MatMultAdd(a->B,tfs->xo,tfs->b,tfs->b);CHKERRQ(ierr);
+  ierr = VecResetArray(tfs->b);CHKERRQ(ierr);
+  ierr = VecResetArray(tfs->xd);CHKERRQ(ierr);
+  ierr = VecResetArray(tfs->xo);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
