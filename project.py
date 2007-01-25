@@ -43,12 +43,12 @@ class Project(object):
   def getName(self):
     import urlparse
     # Fix parsing for nonstandard schemes
-    urlparse.uses_netloc.extend(['bk', 'ssh'])
+    urlparse.uses_netloc.extend(['hg', 'ssh'])
     (scheme, location, path, parameters, query, fragment) = urlparse.urlparse(self.getUrl())
     return path.lower().replace('/', '-')
 
   def getUrl(self):
-    '''Return the project URL, e.g. bk://petsc.bkbits.net/petsc-dev'''
+    '''Return the project URL, e.g. http://petsc.cs.iit.edu/petsc/petsc-dev'''
     return self.url
 
   def setWebDirectory(self,webdirectory):

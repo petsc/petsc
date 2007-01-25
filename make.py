@@ -8,7 +8,7 @@ import os
 class Make(maker.Make):
   def __init__(self):
     maker.Make.__init__(self)
-    self.project = project.Project('bk://sidl.bkbits.net/BuildSystem', self.getRoot())
+    self.project = project.Project('http://petsc.cs.iit.edu/petsc/BuildSystem', self.getRoot())
     self.project.setWebDirectory('petsc@harley.mcs.anl.gov://mcs/www-unix/ase')
     return
 
