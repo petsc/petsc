@@ -311,7 +311,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter sca
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(scatter,VEC_SCATTER_COOKIE,2);
-  PetscCheckSameComm((PetscObject)scatter,(PetscObject)mat,1,2);
+  PetscCheckSameComm((PetscObject)scatter,1,(PetscObject)mat,2);
   if (mat->rmap.n != scatter->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap.n,scatter->to_n);
   if (mat->cmap.n != scatter->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap.n,scatter->from_n);
 

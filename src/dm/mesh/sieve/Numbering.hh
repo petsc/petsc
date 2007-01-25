@@ -1,8 +1,8 @@
 #ifndef included_ALE_Numbering_hh
 #define included_ALE_Numbering_hh
 
-#ifndef  included_ALE_Completion_hh
-#include <Completion.hh>
+#ifndef  included_ALE_SectionCompletion_hh
+#include <SectionCompletion.hh>
 #endif
 
 extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
@@ -141,6 +141,7 @@ namespace ALE {
       typedef std::map<patch_type, sectionMap_type>                               oPatchMap_type;
       typedef std::map<topology_type*, oPatchMap_type>                            orders_type;
       typedef typename order_type::value_type                                     oValue_type;
+      typedef typename ALE::New::SectionCompletion<topology_type, int>            completion;
     protected:
       int             _debug;
       numberings_type _localNumberings;
@@ -266,7 +267,7 @@ namespace ALE {
         const Obj<recv_section_type> recvSection = new recv_section_type(numbering->comm(), sendSection->getTag(), this->debug());
         //const Obj<constant_sizer>    sizer       = new constant_sizer(numbering->comm(), 1, this->debug());
 
-        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, numbering->getAtlas(), numbering, sendSection, recvSection);
+        completion::completeSection(sendOverlap, recvOverlap, numbering->getAtlas(), numbering, sendSection, recvSection);
         const typename recv_section_type::topology_type::sheaf_type& patches = recvSection->getTopology()->getPatches();
 
         for(typename recv_section_type::topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
@@ -336,7 +337,7 @@ namespace ALE {
         const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
         const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());
 
-        Completion<topology_type, int>::completeSection(sendOverlap, recvOverlap, sizer, order, sendSection, recvSection);
+        completion::completeSection(sendOverlap, recvOverlap, sizer, order, sendSection, recvSection);
         Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {

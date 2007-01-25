@@ -127,6 +127,11 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /* destroy the container 'Mat_MatMatMultMPI' in case that P is attached to it */
   ierr = PetscObjectQuery((PetscObject)P,"Mat_MatMatMultMPI",(PetscObject *)&container);CHKERRQ(ierr);
   if (container) { 
+    /* reset functions */
+    ierr = PetscContainerGetPointer(container,(void **)&ap);CHKERRQ(ierr);
+    P->ops->destroy = ap->MatDestroy;
+    P->ops->duplicate = ap->MatDuplicate;
+    /* destroy container and contents */
     ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
     ierr = PetscObjectCompose((PetscObject)P,"Mat_MatMatMultMPI",0);CHKERRQ(ierr);
   }
