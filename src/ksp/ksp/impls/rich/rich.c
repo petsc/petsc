@@ -29,6 +29,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   PetscReal      rnorm = 0.0;
   PetscScalar    scale,dt;
   Vec            x,b,r,z;
+  PetscInt       xs, ws;
   Mat            Amat,Pmat;
   KSP_Richardson *richardsonP = (KSP_Richardson*)ksp->data;
   PetscTruth     exists,diagonalscale;
@@ -42,6 +43,12 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   ierr    = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
   x       = ksp->vec_sol;
   b       = ksp->vec_rhs;
+  ierr    = VecGetSize(x,&xs);CHKERRQ(ierr);
+  ierr    = VecGetSize(ksp->work[0],&ws);CHKERRQ(ierr);
+  if (xs != ws) {
+    ierr  = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
+    ierr  = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
+  }
   r       = ksp->work[0];
   z       = ksp->work[1];
   maxit   = ksp->max_it;
