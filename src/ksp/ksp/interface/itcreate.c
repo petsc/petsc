@@ -400,6 +400,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->guess_zero          = PETSC_TRUE;
   ksp->calc_sings          = PETSC_FALSE;
   ksp->res_hist            = PETSC_NULL;
+  ksp->res_hist_alloc      = PETSC_NULL;
   ksp->res_hist_len        = 0;
   ksp->res_hist_max        = 0;
   ksp->res_hist_reset      = PETSC_TRUE;

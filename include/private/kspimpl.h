@@ -56,8 +56,9 @@ struct _p_KSP {
                                       never touched by the code, only 
                                       passed back to the user */ 
   PetscReal     *res_hist;            /* If !0 stores residual at iterations*/
-  PetscInt           res_hist_len;         /* current size of residual history array */
-  PetscInt           res_hist_max;         /* actual amount of data in residual_history */
+  PetscReal     *res_hist_alloc;      /* If !0 means user did not provide buffer, needs deallocation */
+  PetscInt      res_hist_len;         /* current size of residual history array */
+  PetscInt      res_hist_max;         /* actual amount of data in residual_history */
   PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
 
   /* --------User (or default) routines (most return -1 on error) --------*/

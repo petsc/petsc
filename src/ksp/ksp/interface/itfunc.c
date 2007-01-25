@@ -607,6 +607,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->ops->destroy) {
     ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
   }
+  ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
@@ -1305,8 +1306,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetMonitorContext(KSP ksp,void **ctx)
    Notes: The array is NOT freed by PETSc so the user needs to keep track of 
            it and destroy once the KSP object is destroyed.
 
-   If 'na' is PETSC_DECIDE or 'a' is PETSC_NULL, then a default array of
-   length 1000 is allocated.
+   If 'na' is PETSC_DECIDE or PETSC_DEFAULT, or 'a' is PETSC_NULL, then a 
+   default array of length 10000 is allocated.
 
 .keywords: KSP, set, residual, history, norm
 
@@ -1319,16 +1320,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetResidualHistory(KSP ksp,PetscReal a[],Pe
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (na != PETSC_DECIDE && a) {
+
+  ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
+  if (na != PETSC_DECIDE && na != PETSC_DEFAULT && a) {
     ksp->res_hist        = a;
     ksp->res_hist_max    = na;
   } else {
-    ksp->res_hist_max    = 1000;
-    ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist);CHKERRQ(ierr);
+    if (na != PETSC_DECIDE && na != PETSC_DEFAULT)
+      ksp->res_hist_max = na;
+    else
+      ksp->res_hist_max = 10000; /* like default ksp->max_it */
+    ierr = PetscMalloc(ksp->res_hist_max*sizeof(PetscReal),&ksp->res_hist_alloc);CHKERRQ(ierr);
+    ksp->res_hist = ksp->res_hist_alloc;
   }
   ksp->res_hist_len    = 0;
   ksp->res_hist_reset  = reset;
-
 
   PetscFunctionReturn(0);
 }
@@ -1365,7 +1371,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetResidualHistory(KSP ksp,PetscReal *a[],P
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (a)  *a = ksp->res_hist;
+  if (a)  *a  = ksp->res_hist;
   if (na) *na = ksp->res_hist_len;
   PetscFunctionReturn(0);
 }
