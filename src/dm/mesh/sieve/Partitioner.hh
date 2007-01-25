@@ -366,7 +366,7 @@ namespace ALE {
             hewgts     = NULL;
             nparts     = topology->commSize();
             ubfactor   = 5;
-            options[0] = 1;  // Use all defaults
+            options[0] = 0;  // Use all defaults
             options[1] = 10; // Number of bisections tested
             options[2] = 1;  // Vertex grouping scheme
             options[3] = 1;  // Objective function
