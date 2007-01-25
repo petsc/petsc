@@ -1113,8 +1113,8 @@ class Configure(config.base.Configure):
     # Mac OSX
     if Configure.isDarwin():
       if hasattr(self, 'CXX') and self.mainLanguage == 'Cxx':
-        yield (self.CXX, ['-bundle', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'so')
-      yield (self.CC, ['-bundle', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'so')
+        yield (self.CXX, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
+      yield (self.CC, ['-dynamiclib -single_module', '-undefined dynamic_lookup', '-multiply_defined suppress'], 'dylib')
     # Shared default
     if hasattr(self, 'sharedLinker'):
       yield (self.sharedLinker, self.sharedLibraryFlags, 'so')
