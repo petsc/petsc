@@ -30,7 +30,9 @@
 
       offset = 0
       call VecRestoreArray(v,array,offset,ierr)
+      nullify(array)
 
+      return
       end subroutine
 
 #endif
