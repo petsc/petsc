@@ -80,7 +80,7 @@
 
 @INPROCEEDINGS{OG-1996,  
         AUTHOR = "C. R. E. de Oliveira and A. J. H. Goddard",
-        TITLE = "{EVENT} A Multidimensional Finite Element-Spherical Harmonics Radiation Transport Code",
+        TITLE = "{EVENT}: A Multidimensional Finite Element-Spherical Harmonics Radiation Transport Code",
         BOOKTITLE = "Proceedings of the OECD International Seminar on 3D Deterministic Radiation Transport Codes",
         EDITOR = "",
         PUBLISHER = "",
@@ -2920,21 +2920,6 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
   note          = ""
 }
 
-@Misc{mct-website,
-  key = {MCT},
-  title ="{M}odel {C}oupling {T}oolkit ({MCT}) {W}eb {S}ite",
-  howpublished="\url{http://www.mcs.anl.gov/mct}"
-}
-
-@article{larson:05,
-  author="Jay Larson and Robert Jacob and Everest Ong",
-  title="The Model Coupling Toolkit: A New Fortran90 Toolkit for
-  Building Multi-Physics Parallel Coupled Models",
-  journal="Int. J. High Perf. Comp. App.",
-  year=2005,
-  pages="277--292"
-  }
-
 @Article{ccahpc,
   author = {David E. Bernholdt and Benjamin A. Allan and Robert
                   Armstrong and Felipe Bertrand and Kenneth Chiu and
@@ -2969,4 +2954,104 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
 @misc{unic-ref,
   author = "Giuseppe Palmiotti",
   title  = "{UNIC neutronics software, Nuclear Engineering Division, Argonne National Laboratory}"
+}
+
+% -----------------------------------------------------------------------
+% Model coupling refs
+
+@Misc{mct-website,
+  key = {MCT},
+  title ="{M}odel {C}oupling {T}oolkit ({MCT}) {W}eb {S}ite",
+  howpublished="\url{http://www.mcs.anl.gov/mct}"
+}
+
+@article{larson:05,
+  author="Jay Larson and Robert Jacob and Everest Ong",
+  title="The Model Coupling Toolkit: A New Fortran90 Toolkit for
+  Building Multi-Physics Parallel Coupled Models",
+  journal="Int. J. High Perf. Comp. App.",
+  year=2005,
+  pages="277--292"
+}
+
+@inproceedings{bettge01,
+  author = "T. Bettge and A. Craig and R. James and V. Wayland and G. Strand",
+  year = 2001,
+  title = "The {DOE} Parallel Climate Model {(PCM)}: The Computational Highway
+           and Backroads",
+  booktitle = "Proc. International Conference on Computational Science (ICCS) 2001",
+  editors = "V. N. Alexandrow and J. J. Dongarra and C. J. K. Tan",
+  pages = "148 -- 156",
+  series = "Lecture Notes in Computer Science",
+  volume = 2073,
+  publisher = "Springer-Verlag",
+}
+
+@inproceedings{jacob01,
+  author = "R. Jacob and C. Schafer and I. Foster and M. Tobis and J. Anderson",
+  year = 2001,
+  title = "Computational Design and Performance of the Gast Ocean Atmosphere Model",
+  booktitle = "Proc. International Conference on Computational Science (ICCS) 2001",
+  editors = "V. N. Alexandrow and J. J. Dongarra and C. J. K. Tan",
+  series = "Lecture Notes in Computer Science",
+  volume = 2073,
+  publisher = "Springer-Verlag",
+}
+
+@inproceedings{baum01,
+  author = "J. Baum and H. Luo and E. Mestreau and D. Sharov and R. Loehner and D. Pelessone and C. Charman",
+  year = 2001,
+  title = "Recent Developments of a Coupled {CFD/CSD} Methodology",
+  booktitle = "Proc. International Conference on Computational Science (ICCS) 2001",
+  editors = "V. N. Alexandrow and J. J. Dongarra and C. J. K. Tan",
+  series = "Lecture Notes in Computer Science",
+  volume = 2073,
+  publisher = "Springer-Verlag",
+}
+
+@inproceedings{lefantzi03,
+  author = "S. Lefantzi and J. Ray",
+  year = 2003,
+  title = "A Component-based Scientific Toolkit for Reacting Flows",
+  booktitle = "Proc. Second MIT Conference on Computational Fluid and Solid Mechanics",
+  volume = 2,
+  publisher = "Elsevier"
+}
+
+@article{boville98,
+  author = "B. A. Boville and P. R. Gent",
+  title = "The {NCAR} Climate System Model, Version One",
+  journal = "Journal of Climate",
+  volume = 11,
+  year = 1998,
+  pages = "1115--1130"
+}
+  
+@inproceedings{uiuc-rocket-center02,
+  author = "W. A. Dick and M. T. Heath",
+  title = "Whole System Simulation of Solid Propellant Rockets",
+  booktitle = "Proceedings of the AIAA Joint Propulsion Conference, AIAA2002-4345",
+  month = "July",
+  year = 2002,
+}
+
+@inproceedings{toth04,
+  AUTHOR = "G. Toth and O. Volberg and A. J. Ridley and T. I Gombosi and D. DeZeeuw and
+            K. W. Hansen and D. R. Chesney and Q. F. Stout and K. G. Powell and K. Kane and
+            R. Oehmke",
+  TITLE = "A Physics-Based Software Framework for Sun-Earth Connection Modeling",
+  editor = "A. T. Y. Lui and Y. Kamide and G. Consolini",
+  booktitle = "Multiscale Coupling of Sun-Earth Processes, Proceedings of the Conference 
+            on the Sun-Earth Connection",
+  YEAR="2004",
+  PUBLISHER="Elsevier",
+  PAGES="383--397"
+}
+
+@techreport{utah-csafe03,
+  author = "J. Guilkey and T. Harman and A. Xia and B. Kashiwa and P. McMurtry",
+  title = "An Eulerian-Lagrangian Approach for Large Deformation Fluid Structure Interaction 
+           Problems, Part 1: Algorithm Development",
+  institution = "University of Utah, Center for the Simulation of Accidental Fires and Explosions",
+  year = 2003
 }
