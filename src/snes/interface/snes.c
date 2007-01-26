@@ -1627,11 +1627,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergedReason(SNES snes,SNESConverge
 .seealso: SNESGetConvergenceHistory()
 
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt *its,PetscInt na,PetscTruth reset)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceHistory(SNES snes,PetscReal a[],PetscInt its[],PetscInt na,PetscTruth reset)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (na) PetscValidScalarPointer(a,2);
+  if (na)  PetscValidScalarPointer(a,2);
+  if (its) PetscValidIntPointer(its,3);
   snes->conv_hist       = a;
   snes->conv_hist_its   = its;
   snes->conv_hist_max   = na;
@@ -1676,7 +1677,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetConvergenceHistory(SNES snes,PetscReal
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (a)   *a   = snes->conv_hist;
   if (its) *its = snes->conv_hist_its;
-  if (na) *na   = snes->conv_hist_len;
+  if (na)  *na  = snes->conv_hist_len;
   PetscFunctionReturn(0);
 }
 
