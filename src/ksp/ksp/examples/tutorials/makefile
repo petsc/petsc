@@ -439,36 +439,36 @@ runex10_19:
 	${RM} -f ex10_19aij.tmp ex10_19sbaij.tmp
 
 runex10_20: # test ilu with shift
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_factor_shift_nonzero 0.1 > ex10_20.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type gmres -pc_factor_shift_nonzero 0.1 > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_20shiftnz.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_20shiftnz, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -pc_factor_shift_positive_definite > ex10_20.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type gmres -pc_factor_shift_positive_definite > ex10_20.tmp 2>&1; \
 	   if (${DIFF} output/ex10_20shiftpd.out ex10_20.tmp) then true; \
 	   else echo "Possible problem with ex10_20shiftpd, diffs above"; fi; \
 	   ${RM} -f ex10_20.tmp
 runex10_21: #test icc with shift
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 > ex10_21.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -ksp_max_it 1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftnz on aij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -mat_type baij > ex10_21.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -mat_type baij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftnz on baij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -mat_type sbaij > ex10_21.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_nonzero 0.1 -mat_type sbaij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftnz.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftnz on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite > ex10_21.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -ksp_max_it 1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftpd on aij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -mat_type baij > ex10_21.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -mat_type baij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftpd on baij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
-	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -mat_type sbaij > ex10_21.tmp 2>&1; \
+	-@${MPIRUN} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -mat_sigma -3.0 -ksp_type cg -pc_type icc -pc_factor_shift_positive_definite -mat_type sbaij -ksp_max_it 1 > ex10_21.tmp 2>&1; \
 	   if (${DIFF} output/ex10_21shiftpd.out ex10_21.tmp) then true; \
 	   else echo "Possible problem with ex10_21shiftpd on sbaij matrix, diffs above"; fi; \
 	   ${RM} -f ex10_21.tmp
