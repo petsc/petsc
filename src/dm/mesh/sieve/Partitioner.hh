@@ -17,9 +17,13 @@ extern "C" {
   extern int FREE_GRAPH;
 }
 #endif
-#ifdef PETSC_HAVE_CHACO
+#ifdef PETSC_HAVE_PARMETIS
 extern "C" {
   extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
+}
+#endif
+#ifdef PETSC_HAVE_HMETIS
+extern "C" {
   extern void HMETIS_PartKway(int nvtxs, int nhedges, int *vwgts, int *eptr, int *eind, int *hewgts, int nparts, int ubfactor, int *options, int *part, int *edgeCut);
 }
 #endif
@@ -379,7 +383,9 @@ namespace ALE {
               PetscMemzero(assignment, nvtxs * sizeof(part_type));
             } else {
               ALE::New::Partitioner<topology_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges, &eptr, &eind);
+#ifdef PETSC_HAVE_HMETIS
               HMETIS_PartKway(nvtxs, nhedges, vwgts, eptr, eind, hewgts, nparts, ubfactor, options, assignment, &edgeCut);
+#endif
 
               delete [] eptr;
               delete [] eind;
