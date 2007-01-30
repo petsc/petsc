@@ -731,10 +731,10 @@ namespace ALE {
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
     //   number here by bundle, but we can fix it by traversing the elements like the vertices
     PetscErrorCode Viewer::writeSplitLocal(const Obj<Mesh>& mesh, const Obj<Builder::pair_section_type>& splitField, PetscViewer viewer) {
-      const Obj<Mesh::topology_type>&         topology   = mesh->getTopology();
+      const Obj<Mesh::topology_type>&        topology   = mesh->getTopology();
       Builder::pair_section_type::patch_type patch      = 0;
-      const Obj<Mesh::numbering_type>&        eNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, topology->depth());
-      const Obj<Mesh::numbering_type>&        vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
+      const Obj<Mesh::numbering_type>&       eNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, topology->depth());
+      const Obj<Mesh::numbering_type>&       vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -743,11 +743,11 @@ namespace ALE {
       for(Builder::pair_section_type::atlas_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
         const Builder::pair_section_type::point_type& e      = *c_iter;
         const Builder::pair_section_type::value_type *values = splitField->restrict(patch, e);
-        const int                                      size   = splitField->getFiberDimension(patch, e);
+        const int                                     size   = splitField->getFiberDimension(patch, e);
 
         for(int i = 0; i < size; i++) {
-          const Builder::pair_section_type::point_type& v      = values[i].first;
-          const ALE::Mesh::base_type::split_value&      split  = values[i].second;
+          const Builder::pair_section_type::point_type& v     = values[i].first;
+          const ALE::Mesh::base_type::split_value&      split = values[i].second;
 
           // No time history
           ierr = PetscViewerASCIIPrintf(viewer, "%6d %6d 0 %15.9g %15.9g %15.9g\n", eNumbering->getIndex(e)+1, vNumbering->getIndex(v)+1, split.x, split.y, split.z);CHKERRQ(ierr);

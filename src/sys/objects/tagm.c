@@ -290,6 +290,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
   PetscErrorCode ierr;
   PetscMPIInt    *tagvalp,*maxval;
   PetscTruth     flg;
+#if defined(PETSC_USE_DEBUG)
+  PetscMPIInt    tag;
+#endif
 
   PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
@@ -333,15 +336,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       ierr = PetscInfo2(0,"Using internal PETSc communicator %ld %ld\n",(long)comm_in,(long)*comm_out);CHKERRQ(ierr);
     }
   } else {
-#if defined(PETSC_USE_DEBUG)
-    PetscMPIInt tag;
-    ierr = MPI_Allreduce(tagvalp,&tag,1,MPI_INT,MPI_BOR,comm_in);CHKERRQ(ierr);
-    if (tag != tagvalp[0]) {
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Communicator was used on subset of processors.");
-    }
-#endif
     *comm_out = comm_in;
   }
+
+#if defined(PETSC_USE_DEBUG)
+  /* 
+     Hanging here means that some processes have called PetscCommDuplicate() and others have not.
+     This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
+     ALL processes that share a communicator MUST shared objects created from that communicator.
+  */
+  ierr = MPI_Allreduce(tagvalp,&tag,1,MPI_INT,MPI_BOR,comm_in);CHKERRQ(ierr);
+  if (tag != tagvalp[0]) {
+    SETERRQ(PETSC_ERR_ARG_CORRUPT,"Communicator was used on subset of processors.");
+  }
+#endif
 
   if (tagvalp[0] < 1) {
     ierr = PetscInfo1(0,"Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]);CHKERRQ(ierr);
@@ -354,6 +362,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
 
   if (first_tag) {
     *first_tag = tagvalp[0]--;
+    ierr = PetscInfo1(0,"  returning tag %ld\n",(long)*first_tag);CHKERRQ(ierr);
   }
   tagvalp[1]++; /* number of references to this comm */
   PetscFunctionReturn(0);
