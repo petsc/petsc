@@ -2348,7 +2348,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
                                      "MatMPIBAIJSetPreallocation_MPIBAIJ",
                                      MatMPIBAIJSetPreallocation_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIBAIJSetPreallocationCSR_C",
-				     "MatMPIBAIJSetPreallocationCSR_MPIAIJ",
+				     "MatMPIBAIJSetPreallocationCSR_MPIBAIJ",
 				     MatMPIBAIJSetPreallocationCSR_MPIBAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDiagonalScaleLocal_C",
                                      "MatDiagonalScaleLocal_MPIBAIJ",
