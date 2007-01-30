@@ -225,8 +225,8 @@ namespace ALE {
   void logged_allocator<T, O>::__alloc_initialize() {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
     const char *id_name = ALE::getClassName<T>();
-    PetscErrorCode ierr = PetscObjectCreateGeneric(PETSC_COMM_WORLD, logged_allocator::_cookie, id_name, &this->_petscObj);
-    CHKERROR(ierr, "Failed in PetscObjectCreate");
+//     PetscErrorCode ierr = PetscObjectCreateGeneric(PETSC_COMM_WORLD, logged_allocator::_cookie, id_name, &this->_petscObj);
+//     CHKERROR(ierr, "Failed in PetscObjectCreate");
     ALE::restoreClassName<T>(id_name);
 #endif
   }// logged_allocator<T,O>::__alloc_initialize
@@ -234,10 +234,10 @@ namespace ALE {
   template <class T, bool O>
   void logged_allocator<T, O>::__alloc_finalize() {
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    if (this->_petscObj) {
-      PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); 
-      CHKERROR(ierr, "Failed in PetscObjectDestroy");
-    }
+//     if (this->_petscObj) {
+//       PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); 
+//       CHKERROR(ierr, "Failed in PetscObjectDestroy");
+//     }
 #endif
   }// logged_allocator<T,O>::__alloc_finalize
 
@@ -264,8 +264,8 @@ namespace ALE {
 #endif
     T* _p = polymorphic_allocator<T>::allocate(_n);
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, _n*polymorphic_allocator<T>::sz); 
-    CHKERROR(ierr, "Error in PetscLogObjectMemory");
+//     PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, _n*polymorphic_allocator<T>::sz); 
+//     CHKERROR(ierr, "Error in PetscLogObjectMemory");
     LogEventEnd(logged_allocator::_allocate_event); 
 #endif
     return _p;
@@ -311,8 +311,8 @@ namespace ALE {
 #endif
     T* _p = polymorphic_allocator<T>::create(_val);
 #if defined ALE_USE_LOGGING && defined ALE_LOGGING_LOG_MEM
-    PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, polymorphic_allocator<T>::sz); 
-    CHKERROR(ierr, "Error in PetscLogObjectMemory");
+//     PetscErrorCode ierr = PetscLogObjectMemory(this->_petscObj, polymorphic_allocator<T>::sz); 
+//     CHKERROR(ierr, "Error in PetscLogObjectMemory");
     LogEventEnd(logged_allocator::_create_event);
 #endif
     return _p;

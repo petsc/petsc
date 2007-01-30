@@ -28,16 +28,20 @@ namespace ALE {
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_size");
+#ifdef USE_PETSC_OBJ
       ierr = PetscObjectCreateGeneric(this->_comm, objType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
+#endif
       //ALE::restoreClassName<T>(id_name);
     };
   public:
     ParallelObject(MPI_Comm comm = PETSC_COMM_SELF, const int debug = 0) : _debug(debug), _petscObj(NULL) {__init(comm);}
     virtual ~ParallelObject() {
+#ifdef USE_PETSC_OBJ
       if (this->_petscObj) {
         PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
         this->_petscObj = NULL;
       }
+#endif
     };
   public:
     int                debug()    const {return this->_debug;};
@@ -45,7 +49,9 @@ namespace ALE {
     MPI_Comm           comm()     const {return this->_comm;};
     int                commSize() const {return this->_commSize;};
     int                commRank() const {return this->_commRank;}
+#ifdef USE_PETSC_OBJ
     PetscObject        petscObj() const {return this->_petscObj;};
+#endif
     const std::string& getName() const {return this->_name;};
     void               setName(const std::string& name) {this->_name = name;};
   };
@@ -516,8 +522,10 @@ namespace ALE {
     public:
       void constructOverlap(const patch_type& patch) {
         if (this->_calculatedOverlap) return;
-        this->constructOverlap(this->getPatch(patch)->base(), this->_sendOverlap, this->_recvOverlap);
-        this->constructOverlap(this->getPatch(patch)->cap(), this->_sendOverlap, this->_recvOverlap);
+        if (this->hasPatch(patch)) {
+          this->constructOverlap(this->getPatch(patch)->base(), this->_sendOverlap, this->_recvOverlap);
+          this->constructOverlap(this->getPatch(patch)->cap(), this->_sendOverlap, this->_recvOverlap);
+        }
         if (this->debug()) {
           this->_sendOverlap->view("Send overlap");
           this->_recvOverlap->view("Receive overlap");

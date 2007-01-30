@@ -145,7 +145,7 @@ namespace ALE {
         *coordinates = coords;
       }
     };
-    // numSplit is the number of split nodes
+    // numSplit is the number of split node entries (lines in the file)
     // splitInd[] is an array of numSplit pairs, <element, vertex>
     // splitValues[] is an array of numSplit*dim displacements
     void Builder::readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]) {
