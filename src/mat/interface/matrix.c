@@ -5426,7 +5426,8 @@ M*/
     Level: advanced
 
     Notes: the iscol argument MUST be the same on each processor. You might be 
-    able to create the iscol argument with ISAllGather().
+    able to create the iscol argument with ISAllGather(). The rows is isrow will be
+    sorted into the same order as the original matrix.
 
       The first time this is called you should use a cll of MAT_INITIAL_MATRIX,
    the MatGetSubMatrix() routine will create the newmat for you. Any additional calls
