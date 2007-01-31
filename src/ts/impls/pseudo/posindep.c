@@ -260,7 +260,6 @@ static PetscErrorCode TSSetUp_Pseudo(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* ierr = SNESSetFromOptions(ts->snes);CHKERRQ(ierr); */
   ierr = VecDuplicate(ts->vec_sol,&pseudo->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&pseudo->func);CHKERRQ(ierr);  
   ierr = SNESSetFunction(ts->snes,pseudo->func,TSPseudoFunction,ts);CHKERRQ(ierr);
