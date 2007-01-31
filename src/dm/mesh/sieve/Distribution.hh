@@ -308,6 +308,34 @@ namespace ALE {
         topologyNew->stratify();
         return assignment;
       };
+      #undef __FUNCT__
+      #define __FUNCT__ "scatterTopologyByFace"
+      // Partition a topology on process 0 and scatter to all processes
+      static void scatterTopologyByFace(const Obj<topology_type>& topology, const int dim, const Obj<topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const std::string& partitioner) {
+        if (partitioner == "zoltan") {
+#ifdef PETSC_HAVE_ZOLTAN
+          typedef typename ALE::New::Zoltan::Partitioner<topology_type> Partitioner;
+          typedef typename Partitioner::part_type                       part_type;
+
+          part_type *assignment = scatterTopologyByFace<Partitioner>(topology, dim, topologyNew, sendOverlap, recvOverlap);
+          delete [] assignment;
+#else
+          throw ALE::Exception("Zoltan is not installed. Reconfigure with the flag --download-zoltan");
+#endif
+        } else if (partitioner == "parmetis") {
+#ifdef PETSC_HAVE_PARMETIS
+          typedef typename ALE::New::ParMetis::Partitioner<topology_type> Partitioner;
+          typedef typename Partitioner::part_type                         part_type;
+
+          part_type *assignment = scatterTopologyByFace<Partitioner>(topology, dim, topologyNew, sendOverlap, recvOverlap);
+          delete [] assignment;
+#else
+          throw ALE::Exception("ParMetis is not installed. Reconfigure with the flag --download-parmetis");
+#endif
+        } else {
+          throw ALE::Exception("Unknown partitioner");
+        }
+      };
       template<typename Partitioner>
       static typename Partitioner::part_type *scatterTopologyByFace(const Obj<topology_type>& topology, const int dim, const Obj<topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
         typename Partitioner::part_type         *assignment = createAssignmentByFace<Partitioner>(topology, dim, sendOverlap, recvOverlap);
@@ -447,7 +475,7 @@ namespace ALE {
       };
       #undef __FUNCT__
       #define __FUNCT__ "distributeMeshByFace"
-      static Obj<Mesh> distributeMeshByFace(const Obj<Mesh>& serialMesh, const std::string& partitioner = "chaco") {
+      static Obj<Mesh> distributeMeshByFace(const Obj<Mesh>& serialMesh, const std::string& partitioner = "parmetis") {
         Obj<Mesh> parallelMesh = new Mesh(serialMesh->comm(), serialMesh->getDimension(), serialMesh->debug());
         const Obj<Mesh::topology_type>& serialTopology   = serialMesh->getTopology();
         const Obj<Mesh::topology_type>& parallelTopology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug());
@@ -466,14 +494,7 @@ namespace ALE {
         // Distribute cones
         Obj<send_overlap_type> sendOverlap = new send_overlap_type(serialTopology->comm(), serialTopology->debug());
         Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(serialTopology->comm(), serialTopology->debug());
-        //scatterTopology(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
-        {
-          typedef ALE::New::ParMetis::Partitioner<topology_type> Partitioner;
-          typedef typename Partitioner::part_type                part_type;
-
-          part_type *assignment = scatterTopologyByFace<Partitioner>(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap);
-          delete [] assignment;
-        }
+        scatterTopologyByFace(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
         // This is necessary since we create types (like PartitionSection) on a subset of processors
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setDistSendOverlap(sendOverlap);
