@@ -471,7 +471,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   PetscMPIInt    flag, size,nodesize;
   PetscTruth     flg;
   char           hostname[256];
-  PetscCookie    cookie;
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);

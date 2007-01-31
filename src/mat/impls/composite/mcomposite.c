@@ -370,6 +370,5 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
   }
   ierr = MatDestroy_Composite(mat);CHKERRQ(ierr);
 
-  ierr = PetscMemcpy(
   PetscFunctionReturn(0);
 }
