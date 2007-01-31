@@ -4,12 +4,12 @@
 ALL: lib
 
 CPPFLAGS = ${SIEVE_FLAGS}
-CFLAGS   = -Isieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
+CFLAGS   = -Isieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE} ${ZOLTAN_INCLUDE}
 FFLAGS   =
-SOURCEC  = mesh.c meshpcice.c meshpylith.c section.c
+SOURCEC  = mesh.c meshpcice.c meshpylith.c meshzoltan.c section.c
 SOURCEF  = 
 SOURCEH  = 
-OBJSC    = mesh.o meshpcice.o meshpylith.o section.o
+OBJSC    = mesh.o meshpcice.o meshpylith.o meshzoltan.o section.o
 OBJSF    =
 DIRS     = sieve
 LIBBASE  = libpetscdm
