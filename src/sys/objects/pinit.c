@@ -406,6 +406,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
 +  -start_in_debugger [noxterm,dbx,xdb,gdb,...] - Starts program in debugger
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
 .  -on_error_emacs <machinename> causes emacsclient to jump to error file
+.  -on_error_abort calls abort() when error detected (no traceback)
+.  -on_error_stop calls MPI_abort() when error detected
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
@@ -469,6 +471,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   PetscMPIInt    flag, size,nodesize;
   PetscTruth     flg;
   char           hostname[256];
+  PetscCookie    cookie;
 
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
@@ -653,7 +656,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
     PetscFunctionReturn(0);
   }
-
   ierr = PetscOpenMPFinalize();CHKERRQ(ierr); 
 
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
