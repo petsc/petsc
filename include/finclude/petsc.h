@@ -72,11 +72,14 @@
 !
       PetscEnum PETSC_INT,PETSC_DOUBLE,PETSC_COMPLEX
       PetscEnum PETSC_LONG,PETSC_SHORT,PETSC_FLOAT
-      PetscEnum PETSC_CHAR,PETSC_LOGICAL
+      PetscEnum PETSC_CHAR,PETSC_LOGICAL,PETSC_ENUM
+      PetscEnum PETSC_TRUTH,PETSC_LONG_DOUBLE
+
 
       parameter (PETSC_INT=0,PETSC_DOUBLE=1,PETSC_COMPLEX=2)
       parameter (PETSC_LONG=3,PETSC_SHORT=4,PETSC_FLOAT=5)
-      parameter (PETSC_CHAR=6,PETSC_LOGICAL=7)
+      parameter (PETSC_CHAR=6,PETSC_LOGICAL=7,PETSC_ENUM=8)
+      parameter (PETSC_TRUTH=9,PETSC_LONG_DOUBLE=10)
 !
 ! ------------------------------------------------------------------------
 !     PETSc mathematics include file. Defines certain basic mathematical 

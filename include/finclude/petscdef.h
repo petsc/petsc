@@ -56,11 +56,13 @@
 #if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
+#define PetscFortranLongDouble real(kind=selected_real_kind(16))
 #define PetscFortranComplex complex(kind=selected_real_kind(10))
 #define PetscChar(a) character(len = a) ::
 #else
 #define PetscFortranFloat real*4
 #define PetscFortranDouble real*8
+#define PetscFortranLongDouble real*16
 #define PetscFortranComplex complex*16
 #define PetscChar(a) character*(a)
 #endif
@@ -70,6 +72,8 @@
 #else
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_SCALAR PETSC_FLOAT
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PETSC_SCALAR PETSC_LONG_DOUBLE
 #else
 #define PETSC_SCALAR PETSC_DOUBLE
 #endif     
@@ -95,17 +99,23 @@
 #else
 #if defined (PETSC_USE_SINGLE)
 #define PetscScalar PetscFortranFloat
+#define MPIU_SCALAR MPI_REAL
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PetscScalar PetscFortranLongDouble
+#define MPIU_SCALAR MPI_2DOUBLE_PRECISION
 #else
 #define PetscScalar PetscFortranDouble
+#define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 #define PetscRealPart(a) a
 #define PetscConj(a) a
 #define PetscImaginaryPart(a) a
-#define MPIU_SCALAR MPI_DOUBLE_PRECISION
 #endif
 
 #if defined (PETSC_USE_SINGLE)
 #define PetscReal PetscFortranFloat
+#elif defined(PETSC_USE_LONG_DOUBLE)
+#define PetscReal PetscFortranLongDouble
 #else
 #define PetscReal PetscFortranDouble
 #endif
