@@ -28,6 +28,10 @@ extern "C" {
 }
 #endif
 
+#ifdef PETSC_HAVE_ZOLTAN
+#include <zoltan.h>
+#endif
+
 namespace ALE {
   namespace New {
     template<typename Topology_>
@@ -392,6 +396,138 @@ namespace ALE {
             }
           } else {
             assignment = NULL;
+          }
+          return assignment;
+        };
+      };
+    };
+#endif
+#ifdef PETSC_HAVE_ZOLTAN
+    // Inputs
+    static int  nvtxs;   // The number of vertices
+    static int  nhedges; // The number of hyperedges
+    static int *eptr;    // The offsets of each hyperedge
+    static int *eind;    // The vertices in each hyperedge, indexed by eptr
+
+    extern "C" {
+      int getNumVertices(void *data, int *ierr) {
+        *ierr = 0;
+        return nvtxs;
+      };
+
+      void getLocalElements(void *data, int num_gid_entries, int num_lid_entries, ZOLTAN_ID_PTR global_ids, ZOLTAN_ID_PTR local_ids, int wgt_dim, float *obj_wgts, int *ierr) {
+        if ((wgt_dim != 0) || (num_gid_entries != 1) || (num_lid_entries != 1)) {
+          *ierr = 1;
+          return;
+        }
+        *ierr = 0;
+        for(int v = 0; v < nvtxs; ++v) {
+          global_ids[v]= v;
+          local_ids[v] = v;
+        }
+        return;
+      };
+
+      void getHgSizes(void *data, int *num_lists, int *num_pins, int *format, int *ierr) {
+        *ierr = 0;
+        *num_lists = nhedges;
+        *num_pins  = eptr[nhedges];
+        *format    = ZOLTAN_COMPRESSED_EDGE;
+      };
+
+      void getHg(void *data, int num_gid_entries, int num_row_or_col, int num_pins, int format, ZOLTAN_ID_PTR vtxedge_GID, int *vtxedge_ptr, ZOLTAN_ID_PTR pin_GID, int *ierr) {
+        if ((num_gid_entries != 1) || (num_row_or_col != nhedges) || (num_pins != eptr[nhedges]) || (format != ZOLTAN_COMPRESSED_EDGE)) {
+          *ierr = 1;
+          return;
+        }
+        *ierr = 0;
+        for(int e = 0; e < num_row_or_col; ++e) {
+          vtxedge_GID[e] = e;
+        }
+        for(int e = 0; e < num_row_or_col; ++e) {
+          vtxedge_ptr[e] = eptr[e];
+        }
+        for(int p = 0; p < num_pins; ++p) {
+          pin_GID[p] = eind[p];
+        }
+      };
+    }
+
+    namespace Zoltan {
+      template<typename Topology_>
+      class Partitioner {
+      public:
+        typedef Topology_                          topology_type;
+        typedef typename topology_type::sieve_type sieve_type;
+        typedef typename topology_type::patch_type patch_type;
+        typedef typename topology_type::point_type point_type;
+        typedef int                                part_type;
+      public:
+        #undef __FUNCT__
+        #define __FUNCT__ "ZoltanPartitionSieveByFace"
+        static part_type *partitionSieveByFace(const Obj<topology_type>& topology, const int dim) {
+          // Outputs
+          float         version;           // The library version
+          int           changed;           // Did the partition change?
+          int           numGidEntries;     // Number of array entries for a single global ID (1)
+          int           numLidEntries;     // Number of array entries for a single local ID (1)
+          int           numImport;         // The number of imported points
+          ZOLTAN_ID_PTR import_global_ids; // The imported points
+          ZOLTAN_ID_PTR import_local_ids;  // The imported points
+          int          *import_procs;      // The proc each point was imported from
+          int          *import_to_part;    // The partition of each imported point
+          int           numExport;         // The number of exported points
+          ZOLTAN_ID_PTR export_global_ids; // The exported points
+          ZOLTAN_ID_PTR export_local_ids;  // The exported points
+          int          *export_procs;      // The proc each point was exported to
+          int          *export_to_part;    // The partition assignment of all local points
+          int          *assignment;        // The partition assignment of all local points
+
+          const typename topology_type::patch_type patch = 0;
+          const Obj<ALE::Mesh::numbering_type>& fNumbering = ALE::New::NumberingFactory<topology_type>::singleton(topology->debug())->getNumbering(topology, patch, topology->depth()-1);
+
+          if (topology->commSize() == 1) {
+            PetscMemzero(assignment, nvtxs * sizeof(part_type));
+          } else {
+            if (topology->commRank() == 0) {
+              nvtxs      = topology->heightStratum(patch, 1)->size();
+              ALE::New::Partitioner<topology_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges, &eptr, &eind);
+              assignment = new int[nvtxs];
+            } else {
+              nvtxs      = topology->heightStratum(patch, 1)->size();
+              nhedges    = 0;
+              eptr       = new int[1];
+              eind       = new int[1];
+              eptr[0]    = 0;
+              assignment = NULL;
+            }
+
+            int ierr = Zoltan_Initialize(0, NULL, &version);
+            struct Zoltan_Struct *zz = Zoltan_Create(topology->comm());
+            // General parameters
+            Zoltan_Set_Param(zz, "DEBUG_LEVEL", "2");
+            Zoltan_Set_Param(zz, "LB_METHOD", "PHG");
+            Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTITION");
+            // PHG parameters
+            Zoltan_Set_Param(zz, "PHG_OUTPUT_LEVEL", "2");
+            // Call backs
+            Zoltan_Set_Num_Obj_Fn(zz, getNumVertices, NULL);
+            Zoltan_Set_Obj_List_Fn(zz, getLocalElements, NULL);
+            Zoltan_Set_HG_Size_CS_Fn(zz, getHgSizes, NULL);
+            Zoltan_Set_HG_CS_Fn(zz, getHg, NULL);
+
+            ierr = Zoltan_LB_Partition(zz, &changed, &numGidEntries, &numLidEntries,
+                                       &numImport, &import_global_ids, &import_local_ids, &import_procs, &import_to_part,
+                                       &numExport, &export_global_ids, &export_local_ids, &export_procs, &export_to_part);
+            for(int v = 0; v < nvtxs; ++v) {
+              assignment[v] = export_to_part[v];
+            }
+            Zoltan_LB_Free_Part(&import_global_ids, &import_local_ids, &import_procs, &import_to_part);
+            Zoltan_LB_Free_Part(&export_global_ids, &export_local_ids, &export_procs, &export_to_part);
+            Zoltan_Destroy(&zz);
+
+            delete [] eptr;
+            delete [] eind;
           }
           return assignment;
         };

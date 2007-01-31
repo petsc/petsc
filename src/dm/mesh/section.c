@@ -561,7 +561,9 @@ PetscErrorCode SectionRealZero(SectionReal section)
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  s->zero(patch);CHKERRQ(ierr);
+  if (s->hasPatch(patch)) {
+    s->zero(patch);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
