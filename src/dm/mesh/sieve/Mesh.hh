@@ -376,7 +376,7 @@ namespace ALE {
       const std::string& name  = this->_boundaryCondition->getLabelName();
       const patch_type   patch = 0;
 
-      for(int d = 0; d < this->_dim; ++d) {
+      for(int d = 0; d <= this->_dim; ++d) {
         s->setFiberDimensionByDepth(patch, d, this->_discretization->getNumDof(d));
       }
       if (!name.empty()) {

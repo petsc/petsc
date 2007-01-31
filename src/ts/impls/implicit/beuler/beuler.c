@@ -261,7 +261,6 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Constant_Matrix(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
     
@@ -280,7 +279,6 @@ static PetscErrorCode TSSetUp_BEuler_Linear_Variable_Matrix(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&beuler->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&beuler->rhs);CHKERRQ(ierr);  
   PetscFunctionReturn(0);

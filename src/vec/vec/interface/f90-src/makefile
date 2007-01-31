@@ -1,7 +1,7 @@
 ALL: lib
 SPECIALFASTLIB = yes
 specialfastlib: lib
-#requirespackage PETSC_USING_F90
+#requirespackage 'PETSC_USING_F90'
 
 CFLAGS   =
 FFLAGS   =

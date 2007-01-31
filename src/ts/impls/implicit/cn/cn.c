@@ -380,7 +380,6 @@ static PetscErrorCode TSSetUp_CN_Linear_Constant_Matrix(TS ts)
   PetscTruth shelltype;
 
   PetscFunctionBegin;
-  ierr = KSPSetFromOptions(ts->ksp);CHKERRQ(ierr);
   ierr = VecDuplicate(ts->vec_sol,&cn->update);CHKERRQ(ierr);  
   ierr = VecDuplicate(ts->vec_sol,&cn->rhs);CHKERRQ(ierr);  
     

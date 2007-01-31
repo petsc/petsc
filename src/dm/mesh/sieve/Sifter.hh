@@ -662,7 +662,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_comm = comm;
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
       ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_rank"); 
+#ifdef USE_PETSC_OBJ
       ierr = PetscObjectCreateGeneric(this->_comm, sifterType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
+#endif
       //ALE::restoreClassName<T>(id_name);
     };
     // We store these sequence objects to avoid creating them each query
@@ -678,11 +680,13 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       this->_supportSeq = new typename traits::supportSequence(*this, ::boost::multi_index::get<typename traits::supportInd>(this->_arrows.set), typename traits::source_type());
    }
     virtual ~ASifter() {
+#ifdef USE_PETSC_OBJ
       if (this->_petscObj) {
         PetscErrorCode ierr;
         ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
         this->_petscObj = NULL;
       }
+#endif
     };
     //
     // Query methods
@@ -692,7 +696,9 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
     MPI_Comm    comm()     const {return this->_comm;};
     int         commSize() const {return this->_commSize;};
     int         commRank() const {return this->_commRank;}
+#ifdef USE_PETSC_OBJ
     PetscObject petscObj() const {return this->_petscObj;};
+#endif
 
     // FIX: need const_cap, const_base returning const capSequence etc, but those need to have const_iterators, const_begin etc.
     Obj<typename traits::capSequence> cap() {
