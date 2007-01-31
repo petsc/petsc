@@ -5,6 +5,10 @@
 #include <Numbering.hh>
 #endif
 
+#ifndef  included_ALE_ZOLTAN_hh
+#include <src/dm/mesh/meshzoltan.h>
+#endif
+
 #ifdef PETSC_HAVE_CHACO
 /* Chaco does not have an include file */
 extern "C" {
@@ -26,10 +30,6 @@ extern "C" {
 extern "C" {
   extern void HMETIS_PartKway(int nvtxs, int nhedges, int *vwgts, int *eptr, int *eind, int *hewgts, int nparts, int ubfactor, int *options, int *part, int *edgeCut);
 }
-#endif
-
-#ifdef PETSC_HAVE_ZOLTAN
-#include <zoltan.h>
 #endif
 
 namespace ALE {
@@ -403,56 +403,6 @@ namespace ALE {
     };
 #endif
 #ifdef PETSC_HAVE_ZOLTAN
-    // Inputs
-    static int  nvtxs;   // The number of vertices
-    static int  nhedges; // The number of hyperedges
-    static int *eptr;    // The offsets of each hyperedge
-    static int *eind;    // The vertices in each hyperedge, indexed by eptr
-
-    extern "C" {
-      int getNumVertices(void *data, int *ierr) {
-        *ierr = 0;
-        return nvtxs;
-      };
-
-      void getLocalElements(void *data, int num_gid_entries, int num_lid_entries, ZOLTAN_ID_PTR global_ids, ZOLTAN_ID_PTR local_ids, int wgt_dim, float *obj_wgts, int *ierr) {
-        if ((wgt_dim != 0) || (num_gid_entries != 1) || (num_lid_entries != 1)) {
-          *ierr = 1;
-          return;
-        }
-        *ierr = 0;
-        for(int v = 0; v < nvtxs; ++v) {
-          global_ids[v]= v;
-          local_ids[v] = v;
-        }
-        return;
-      };
-
-      void getHgSizes(void *data, int *num_lists, int *num_pins, int *format, int *ierr) {
-        *ierr = 0;
-        *num_lists = nhedges;
-        *num_pins  = eptr[nhedges];
-        *format    = ZOLTAN_COMPRESSED_EDGE;
-      };
-
-      void getHg(void *data, int num_gid_entries, int num_row_or_col, int num_pins, int format, ZOLTAN_ID_PTR vtxedge_GID, int *vtxedge_ptr, ZOLTAN_ID_PTR pin_GID, int *ierr) {
-        if ((num_gid_entries != 1) || (num_row_or_col != nhedges) || (num_pins != eptr[nhedges]) || (format != ZOLTAN_COMPRESSED_EDGE)) {
-          *ierr = 1;
-          return;
-        }
-        *ierr = 0;
-        for(int e = 0; e < num_row_or_col; ++e) {
-          vtxedge_GID[e] = e;
-        }
-        for(int e = 0; e < num_row_or_col; ++e) {
-          vtxedge_ptr[e] = eptr[e];
-        }
-        for(int p = 0; p < num_pins; ++p) {
-          pin_GID[p] = eind[p];
-        }
-      };
-    }
-
     namespace Zoltan {
       template<typename Topology_>
       class Partitioner {
@@ -487,19 +437,19 @@ namespace ALE {
           const Obj<ALE::Mesh::numbering_type>& fNumbering = ALE::New::NumberingFactory<topology_type>::singleton(topology->debug())->getNumbering(topology, patch, topology->depth()-1);
 
           if (topology->commSize() == 1) {
-            PetscMemzero(assignment, nvtxs * sizeof(part_type));
+            PetscMemzero(assignment, topology->heightStratum(patch, 1)->size() * sizeof(part_type));
           } else {
             if (topology->commRank() == 0) {
-              nvtxs      = topology->heightStratum(patch, 1)->size();
-              ALE::New::Partitioner<topology_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges, &eptr, &eind);
-              assignment = new int[nvtxs];
+              nvtxs_Zoltan = topology->heightStratum(patch, 1)->size();
+              ALE::New::Partitioner<topology_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges_Zoltan, &eptr_Zoltan, &eind_Zoltan);
+              assignment = new int[nvtxs_Zoltan];
             } else {
-              nvtxs      = topology->heightStratum(patch, 1)->size();
-              nhedges    = 0;
-              eptr       = new int[1];
-              eind       = new int[1];
-              eptr[0]    = 0;
-              assignment = NULL;
+              nvtxs_Zoltan   = topology->heightStratum(patch, 1)->size();
+              nhedges_Zoltan = 0;
+              eptr_Zoltan    = new int[1];
+              eind_Zoltan    = new int[1];
+              eptr_Zoltan[0] = 0;
+              assignment     = NULL;
             }
 
             int ierr = Zoltan_Initialize(0, NULL, &version);
@@ -511,23 +461,23 @@ namespace ALE {
             // PHG parameters
             Zoltan_Set_Param(zz, "PHG_OUTPUT_LEVEL", "2");
             // Call backs
-            Zoltan_Set_Num_Obj_Fn(zz, getNumVertices, NULL);
-            Zoltan_Set_Obj_List_Fn(zz, getLocalElements, NULL);
-            Zoltan_Set_HG_Size_CS_Fn(zz, getHgSizes, NULL);
-            Zoltan_Set_HG_CS_Fn(zz, getHg, NULL);
+            Zoltan_Set_Num_Obj_Fn(zz, getNumVertices_Zoltan, NULL);
+            Zoltan_Set_Obj_List_Fn(zz, getLocalElements_Zoltan, NULL);
+            Zoltan_Set_HG_Size_CS_Fn(zz, getHgSizes_Zoltan, NULL);
+            Zoltan_Set_HG_CS_Fn(zz, getHg_Zoltan, NULL);
 
             ierr = Zoltan_LB_Partition(zz, &changed, &numGidEntries, &numLidEntries,
                                        &numImport, &import_global_ids, &import_local_ids, &import_procs, &import_to_part,
                                        &numExport, &export_global_ids, &export_local_ids, &export_procs, &export_to_part);
-            for(int v = 0; v < nvtxs; ++v) {
+            for(int v = 0; v < nvtxs_Zoltan; ++v) {
               assignment[v] = export_to_part[v];
             }
             Zoltan_LB_Free_Part(&import_global_ids, &import_local_ids, &import_procs, &import_to_part);
             Zoltan_LB_Free_Part(&export_global_ids, &export_local_ids, &export_procs, &export_to_part);
             Zoltan_Destroy(&zz);
 
-            delete [] eptr;
-            delete [] eind;
+            delete [] eptr_Zoltan;
+            delete [] eind_Zoltan;
           }
           return assignment;
         };
