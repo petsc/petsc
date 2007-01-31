@@ -118,7 +118,7 @@ class Configure(config.package.Package):
       if foundBlas and foundLapack:
         self.framework.logPrint('Found cblaslapack (underscore) name mangling')
         self.f2c = 1
-        self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
+    self.f2cpkg = self.checkBlas(blasLibrary, self.getOtherLibs(foundBlas, blasLibrary), 0, 'f2cblaslapack_id_')
     return (foundBlas, foundLapack)
 
   def generateGuesses(self):
@@ -142,7 +142,7 @@ class Configure(config.package.Package):
         self.download= 'file://'+os.path.abspath(self.framework.argDB['download-c-blas-lapack'])
       self.f2c = 1
       
-      if hasattr(self.compilers, 'FC'):
+      if hasattr(self.compilers, 'FC') and not (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
       yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
