@@ -1,4 +1,4 @@
-#include "include/finclude/petsc.h"
+#include "petscdef.h"
 #if defined(PETSC_HAVE_F90_H)
       subroutine dummy_VecGetArrayF90()
       return
