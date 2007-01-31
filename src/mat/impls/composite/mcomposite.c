@@ -91,7 +91,14 @@ PetscErrorCode MatGetDiagonal_Composite(Mat A,Vec v)
 #define __FUNCT__ "MatAssemblyEnd_Composite"
 PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
 {
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+
   PetscFunctionBegin;
+  ierr = PetscOptionsHasName(Y->prefix,"-mat_composite_merge",&flg);CHKERRQ(ierr);
+  if (flg) {
+    ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -201,7 +208,7 @@ static struct _MatOps MatOps_Values = {0,
 
   Level: advanced
 
-.seealso: MatCreateComposite
+.seealso: MatCreateComposite(), MatCompositeAddMat(), MatSetType(), MatCompositeMerge()
 M*/
 
 EXTERN_C_BEGIN
@@ -253,8 +260,10 @@ $       MatSetType(mat,MATCOMPOSITE);
 $       MatCompositeAddMat(mat,mats[0]);
 $       ....
 $       MatCompositeAddMat(mat,mats[nmat-1]);
+$       MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);
+$       MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);
 
-.seealso: MatDestroy(), MatMult(), MatCompositeAddMat()
+.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCompositeMerge()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat,const Mat *mats,Mat *mat)
@@ -274,6 +283,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
   for (i=0; i<nmat; i++) {
     ierr = MatCompositeAddMat(*mat,mats[i]);CHKERRQ(ierr);
   }
+  ierr = MatAssemblyBegin(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -318,3 +329,46 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatCompositeMerge"
+/*@C
+   MatCompositeMerge - Given a composite matrix, replaces it with a "regular" matrix
+     by summing all the matrices inside the composite matrix.
+
+  Collective on MPI_Comm
+
+   Input Parameters:
+.  mat - the composite matrix
+
+
+   Options Database:
+.  -mat_composite_merge  (you must call MatAssemblyBegin()/MatAssemblyEnd() to have this checked)
+
+   Level: advanced
+
+   Notes:
+      The MatType of the resulting matrix will be the same as the MatType of the FIRST
+    matrix in the composite matrix.
+
+.seealso: MatDestroy(), MatMult(), MatCompositeAddMat(), MatCreateComposite(), MATCOMPOSITE
+
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat mat)
+{
+  Mat_Composite     *shell = (Mat_Composite*)mat->data;  
+  Mat_CompositeLink next = shell->head;
+  PetscErrorCode    ierr;
+  Mat               tmat;
+
+  PetscFunctionBegin;
+  if (!next) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must provide at least one matrix with MatCompositeAddMat()");
+
+  PetscFunctionBegin;
+  ierr = MatDuplicate(next->mat,MAT_COPY_VALUES,&tmat);CHKERRQ(ierr);
+  while ((next = next->next)) {
+    ierr = MatAXPY(tmat,1.0,next->mat,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
+  }
+  ierr = MatDestroy_Composite(mat);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}

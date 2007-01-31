@@ -1005,7 +1005,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char opt[],const ch
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsHead"
 /*@C
-     PetscOptionsHead - Puts a heading before list any more published options. Used, for example,
+     PetscOptionsHead - Puts a heading before listing any more published options. Used, for example,
             in KSPSetFromOptions_GMRES().
 
    Collective on the communicator passed in PetscOptionsBegin()
@@ -1018,7 +1018,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char opt[],const ch
 
    Notes: Must be between a PetscOptionsBegin() and a PetscOptionsEnd()
 
-          Must be followed by a call to PetscOptionsTail() in the same function.
+          Can be followed by a call to PetscOptionsTail() in the same function.
 
    Concepts: options database^subheading
 

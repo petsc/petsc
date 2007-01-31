@@ -129,6 +129,12 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsHead(const char[]);
 
           Must be preceded by a call to PetscOptionsHead() in the same function.
 
+          This needs to be used only if the code below PetscOptionsTail() can be run ONLY once.
+      See, for example, PCSetFromOptions_Composite(). This is a return(0) in it for early exit
+      from the function.
+
+          This is only for use with the PETSc options GUI; which does not currently exist.
+
    Concepts: options database^subheading
 
 .seealso: PetscOptionsGetInt(), PetscOptionsGetReal(),  

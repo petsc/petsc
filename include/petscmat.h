@@ -259,6 +259,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat,VecScatter)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatScatterGetVecScatter(Mat,VecScatter*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateBlockMat(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt*,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat,Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeMerge(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm,PetscInt,const Mat*,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm,PetscInt,const PetscInt[],Mat*);
 
