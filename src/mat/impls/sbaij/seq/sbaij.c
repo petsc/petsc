@@ -968,10 +968,12 @@ PetscErrorCode MatICCFactor_SeqSBAIJ(Mat inA,IS row,MatFactorInfo *info)
     break;
   } 
            
+  ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
   a->row = row;
+  ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  if (a->col) { ierr = ISDestroy(a->col);CHKERRQ(ierr); }
   a->col = row;
-  ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  ierr   = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
     
   /* Create the invert permutation so that it can be used in MatCholeskyFactorNumeric() */
   if (a->icol) {ierr = ISInvertPermutation(row,PETSC_DECIDE, &a->icol);CHKERRQ(ierr);}

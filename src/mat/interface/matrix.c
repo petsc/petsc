@@ -1370,6 +1370,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMapping(Mat x,ISLocalToGlob
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {
     ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+    if (x->mapping) { ierr = ISLocalToGlobalMappingDestroy(x->mapping);CHKERRQ(ierr); }
     x->mapping = mapping;
   }
   PetscFunctionReturn(0);
@@ -1408,6 +1409,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetLocalToGlobalMappingBlock(Mat x,ISLocalT
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   }
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->mapping);CHKERRQ(ierr); }
   x->bmapping = mapping;
   PetscFunctionReturn(0);
 }
@@ -5741,7 +5743,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceAttach(Mat mat,MatNullSpace nullsp
   PetscValidType(mat,1);
   PetscValidHeaderSpecific(nullsp,MAT_NULLSPACE_COOKIE,2);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
-
   ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
   if (mat->nullsp) { ierr = MatNullSpaceDestroy(mat->nullsp);CHKERRQ(ierr); }
   mat->nullsp = nullsp;

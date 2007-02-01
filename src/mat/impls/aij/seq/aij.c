@@ -1740,10 +1740,12 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 
   outA          = inA; 
   inA->factor   = FACTOR_LU;
-  a->row        = row;
-  a->col        = col;
   ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  if (a->row) { ierr = ISDestroy(a->row); CHKERRQ(ierr);}
+  a->row = row;
   ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
+  if (a->col) { ierr = ISDestroy(a->col); CHKERRQ(ierr);}
+  a->col = col;
 
   /* Create the inverse permutation so that it can be used in MatLUFactorNumeric() */
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);} /* need to remove old one */

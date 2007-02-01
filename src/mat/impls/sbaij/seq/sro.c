@@ -145,10 +145,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatReorderingSeqSBAIJ(Mat A,IS perm)
   if (a->icol) {
     ierr = ISDestroy(a->icol);CHKERRQ(ierr);
   }
+  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
   a->row  = perm;
+  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
+  if (a->icol) { ierr = ISDestroy(a->icol);CHKERRQ(ierr); }
   a->icol = perm;
-  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
-  ierr = PetscObjectReference((PetscObject)perm);CHKERRQ(ierr);
 
   ierr = PetscFree(nzr);CHKERRQ(ierr); 
   ierr = PetscFree(r);CHKERRQ(ierr); 

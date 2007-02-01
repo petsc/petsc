@@ -295,10 +295,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetScatter_Redundant(PC pc,VecScatt
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  red->scatterin  = in; 
-  red->scatterout = out;
   ierr = PetscObjectReference((PetscObject)in);CHKERRQ(ierr);
+  if (red->scatterin) { ierr = VecScatterDestroy(red->scatterin);CHKERRQ(ierr); }
+  red->scatterin  = in; 
   ierr = PetscObjectReference((PetscObject)out);CHKERRQ(ierr);
+  if (red->scatterout) { ierr = VecScatterDestroy(red->scatterout);CHKERRQ(ierr); }
+  red->scatterout = out;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

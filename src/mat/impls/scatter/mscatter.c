@@ -315,9 +315,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScatterSetVecScatter(Mat mat,VecScatter sca
   if (mat->rmap.n != scatter->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local rows in matrix %D not equal local scatter size %D",mat->rmap.n,scatter->to_n);
   if (mat->cmap.n != scatter->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Number of local columns in matrix %D not equal local scatter size %D",mat->cmap.n,scatter->from_n);
 
+  ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
   if (mscatter->scatter) {ierr = VecScatterDestroy(mscatter->scatter);CHKERRQ(ierr);}
   mscatter->scatter = scatter;
-  ierr = PetscObjectReference((PetscObject)scatter);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

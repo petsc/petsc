@@ -41,8 +41,8 @@ PetscErrorCode MatDestroy_Normal(Mat N)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectDereference((PetscObject)Na->A);CHKERRQ(ierr);
-  ierr = VecDestroy(Na->w);CHKERRQ(ierr);
+  if (Na->A) { ierr = MatDestroy(Na->A);CHKERRQ(ierr); }
+  if (Na->w) { ierr = VecDestroy(Na->w);CHKERRQ(ierr); }
   ierr = PetscFree(Na);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -116,8 +116,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
   
   ierr      = PetscNew(Mat_Normal,&Na);CHKERRQ(ierr);
-  Na->A     = A;
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
+  Na->A     = A;
   (*N)->data = (void*) Na;
 
   ierr    = VecCreateMPI(A->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);

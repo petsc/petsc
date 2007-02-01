@@ -24,8 +24,8 @@ PetscErrorCode TSSetKSPOperators_BEuler(TS ts)
 
   PetscFunctionBegin;
   if (!ts->A){
-    ts->A = ts->Arhs;
     ierr  = PetscObjectReference((PetscObject)ts->Arhs);CHKERRQ(ierr);
+    ts->A = ts->Arhs;
   }
 
   ierr = MatScale(ts->A,-1.0);CHKERRQ(ierr);

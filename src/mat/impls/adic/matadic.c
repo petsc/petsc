@@ -368,8 +368,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
   int nc,nx,ny,nz,Nx,Ny,Nz;
 
   PetscFunctionBegin;
-  a->da = da;
   ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
+  if (a->da) { ierr = DADestroy(a->da);CHKERRQ(ierr); }
+  a->da = da;
   ierr  = DAGetInfo(da,0,&Nx,&Ny,&Nz,0,0,0,&nc,0,0,0);CHKERRQ(ierr);
   ierr  = DAGetCorners(da,0,0,0,&nx,&ny,&nz);CHKERRQ(ierr);
   A->rmap.n  = A->cmap.n = nc*nx*ny*nz;

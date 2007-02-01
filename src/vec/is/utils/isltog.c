@@ -249,8 +249,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
     ierr = ISLocalToGlobalMappingCreate(inmap->comm,n,ii,outmap);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
-    *outmap = inmap;
     ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
+    *outmap = inmap;
   }
   PetscFunctionReturn(0);
 }

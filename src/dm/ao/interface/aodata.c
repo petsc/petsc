@@ -910,9 +910,10 @@ PetscErrorCode PETSCDM_DLLEXPORT AODataKeySetLocalToGlobalMapping(AOData aodata,
   if (ikey->ltog) {
     SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Database key %s already has local to global mapping",name);
   }
-
-  ikey->ltog = map;
+  
   ierr = PetscObjectReference((PetscObject)map);CHKERRQ(ierr);
+  if (ikey->ltog) { ierr = ISLocalToGlobalMappingDestroy(ikey->ltog);CHKERRQ(ierr); }
+  ikey->ltog = map;
 
   PetscFunctionReturn(0);
 

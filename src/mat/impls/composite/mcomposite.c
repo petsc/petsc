@@ -312,10 +312,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(smat,MAT_COOKIE,2);
-  ierr       = PetscNew(struct _Mat_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNew(struct _Mat_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
-  ilink->mat  = smat;
   ierr        = PetscObjectReference((PetscObject)smat);CHKERRQ(ierr);
+  ilink->mat  = smat;
 
   next = shell->head;
   if (!next) {

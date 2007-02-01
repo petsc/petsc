@@ -168,8 +168,9 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for matrix");
   }
   PetscCheckSameComm(A,1,mapping,2);
-  is->mapping = mapping;
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  if (is->mapping) { ierr = ISLocalToGlobalMappingDestroy(is->mapping);CHKERRQ(ierr); }
+  is->mapping = mapping;
 
   /* Create the local matrix A */
   ierr = ISLocalToGlobalMappingGetSize(mapping,&n);CHKERRQ(ierr);

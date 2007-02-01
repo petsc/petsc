@@ -1073,8 +1073,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscEr
   if (B) PetscValidHeaderSpecific(B,MAT_COOKIE,3);
   if (A) PetscCheckSameComm(snes,1,A,2);
   if (B) PetscCheckSameComm(snes,1,B,2);
-   if (func) snes->ops->computejacobian = func;
-   if (ctx)  snes->jacP                 = ctx;
+  if (func) snes->ops->computejacobian = func;
+  if (ctx)  snes->jacP                 = ctx;
   if (A) {
     ierr = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
     if (snes->jacobian) {ierr = MatDestroy(snes->jacobian);CHKERRQ(ierr);}

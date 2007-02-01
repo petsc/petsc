@@ -1774,10 +1774,12 @@ PetscErrorCode MatILUFactor_SeqBAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 
   ierr = MatMarkDiagonal_SeqBAIJ(inA);CHKERRQ(ierr);
 
-  a->row        = row;
-  a->col        = col;
-  ierr          = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
-  ierr          = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)row);CHKERRQ(ierr);
+  if (a->row) { ierr = ISDestroy(a->row);CHKERRQ(ierr); }
+  a->row = row;
+  ierr = PetscObjectReference((PetscObject)col);CHKERRQ(ierr);
+  if (a->col) { ierr = ISDestroy(a->col);CHKERRQ(ierr); }
+  a->col = col;
   
   /* Create the invert permutation so that it can be used in MatLUFactorNumeric() */
   ierr = ISInvertPermutation(col,PETSC_DECIDE,&a->icol);CHKERRQ(ierr);

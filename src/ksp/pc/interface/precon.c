@@ -156,11 +156,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleSet(PC pc,Vec s)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(s,VEC_COOKIE,2);
   pc->diagonalscale     = PETSC_TRUE;
+  ierr = PetscObjectReference((PetscObject)s);CHKERRQ(ierr);
   if (pc->diagonalscaleleft) {
     ierr = VecDestroy(pc->diagonalscaleleft);CHKERRQ(ierr);
   }
   pc->diagonalscaleleft = s;
-  ierr                  = PetscObjectReference((PetscObject)s);CHKERRQ(ierr);
   if (!pc->diagonalscaleright) {
     ierr = VecDuplicate(s,&pc->diagonalscaleright);CHKERRQ(ierr);
   }

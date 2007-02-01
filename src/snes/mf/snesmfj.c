@@ -983,13 +983,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFAddNullSpace(Mat J,MatNullSpace null
 {
   PetscErrorCode ierr;
   MatSNESMFCtx   ctx = (MatSNESMFCtx)J->data;
-  MPI_Comm       comm;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)J,&comm);CHKERRQ(ierr);
-
+  ierr = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
+  if (ctx->sp) { ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr); }
   ctx->sp = nullsp;
-  ierr    = PetscObjectReference((PetscObject)nullsp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -38,8 +38,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer viewer,PetscV
   PetscValidPointer(outviewer,2);
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    *outviewer = viewer;
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
+    *outviewer = viewer;
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
@@ -120,8 +120,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm
   PetscValidPointer(outviewer,3);
   ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
-    *outviewer = viewer;
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
+    *outviewer = viewer;
   } else if (viewer->ops->getsubcomm) {
     ierr = (*viewer->ops->getsubcomm)(viewer,subcomm,outviewer);CHKERRQ(ierr);
   } else {

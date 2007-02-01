@@ -798,12 +798,12 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
   PetscFunctionBegin;
   ierr = VecCreateSeq(win->comm,win->map.n,V);CHKERRQ(ierr);
   if (win->mapping) {
-    (*V)->mapping = win->mapping;
     ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
+    (*V)->mapping = win->mapping;
   }
   if (win->bmapping) {
-    (*V)->bmapping = win->bmapping;
     ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
+    (*V)->bmapping = win->bmapping;
   }
   (*V)->map.bs = win->map.bs;
   ierr = PetscOListDuplicate(win->olist,&(*V)->olist);CHKERRQ(ierr);

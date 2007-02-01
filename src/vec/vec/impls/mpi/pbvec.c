@@ -642,14 +642,14 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
   ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
   if (win->mapping) {
-    (*v)->mapping = win->mapping;
     ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
+    (*v)->mapping = win->mapping;
   }
   if (win->bmapping) {
-    (*v)->bmapping = win->bmapping;
     ierr = PetscObjectReference((PetscObject)win->bmapping);CHKERRQ(ierr);
+    (*v)->bmapping = win->bmapping;
   }
-  (*v)->map.bs        = win->map.bs;
+  (*v)->map.bs    = win->map.bs;
   (*v)->bstash.bs = win->bstash.bs;
 
   PetscFunctionReturn(0);

@@ -114,9 +114,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetRestriction_Galerkin(PC pc,Mat R)
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
   if (jac->R) {ierr = MatDestroy(jac->R);CHKERRQ(ierr);}
   jac->R = R;
-  ierr = PetscObjectReference((PetscObject)R);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -130,9 +130,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGalerkinSetInterpolation_Galerkin(PC pc,Mat 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
+  ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
   if (jac->P) {ierr = MatDestroy(jac->P);CHKERRQ(ierr);}
   jac->P = P;
-  ierr = PetscObjectReference((PetscObject)P);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

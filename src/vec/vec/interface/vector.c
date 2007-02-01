@@ -84,8 +84,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMapping(Vec x,ISLocalToGlob
   if (x->ops->setlocaltoglobalmapping) {
     ierr = (*x->ops->setlocaltoglobalmapping)(x,mapping);CHKERRQ(ierr);
   } else {
-    x->mapping = mapping;
     ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+    if (x->mapping) { ierr = ISLocalToGlobalMappingDestroy(x->mapping);CHKERRQ(ierr); }
+    x->mapping = mapping;
   }
   PetscFunctionReturn(0);
 }
@@ -124,8 +125,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetLocalToGlobalMappingBlock(Vec x,ISLocalT
   if (x->bmapping) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Mapping already set for vector");
   }
-  x->bmapping = mapping;
   ierr = PetscObjectReference((PetscObject)mapping);CHKERRQ(ierr);
+  if (x->bmapping) { ierr = ISLocalToGlobalMappingDestroy(x->bmapping);CHKERRQ(ierr); }
+  x->bmapping = mapping;
   PetscFunctionReturn(0);
 }
 
