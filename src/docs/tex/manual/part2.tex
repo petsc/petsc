@@ -372,7 +372,7 @@ the application ordering correspond, respectively, to nodes 2, 1, 4, and 0 of
 the PETSc ordering.
 We can write this correspondence as
 \[
- { 0, 1, 2, 3, 4 }  \rightarrow  { 3, 2, 1, 4, 0 }. 
+ { 0, 1, 2, 3, 4 }  \to  { 3, 2, 1, 4, 0 }. 
 \]
 The user can create the PETSc-AO mappings in a number of ways.  For example,
 if using two processes, one could call
@@ -1739,11 +1739,11 @@ matrix operations as well.  The file
 \trl{${PETSC_DIR}/include/petscmat.h} provides a complete list of matrix
 operations, which have the form \trl{MATOP_<OPERATION>}, where \trl{
 <OPERATION>} is the name (in all capital letters) of the user
-interface routine (for example, MatMult() $ \rightarrow $ \trl{MATOP_MULT}).  All
+interface routine (for example, MatMult() $ \to $ \trl{MATOP_MULT}).  All
 user-provided functions have the same calling sequence as the
 usual matrix interface routines, since the user-defined functions are
 intended to be accessed through the same interface, e.g., 
-\trl{MatMult(Mat,Vec,Vec)} $ \rightarrow$ \trl{UserMult(Mat,Vec,Vec)}.
+\trl{MatMult(Mat,Vec,Vec)} $ \to$ \trl{UserMult(Mat,Vec,Vec)}.
 The final argument for MatShellSetOperation() needs to be cast
 to a \trl{void *}, since the final argument could (depending on the 
 MatOperation) be a variety of different functions.
@@ -3291,7 +3291,7 @@ The SNES class includes methods for solving systems of nonlinear equations of th
 \F(\x) = 0,
 \label{eq_F=0}
 \end{equation}
-where $\F: \, \Re^n \rightarrow \Re^n$.
+where $\F: \, \Re^n \to \Re^n$.
 Newton-like methods provide the core of the package, including
 \sindex{Newton-like methods} both line search \sindex{line search} 
 and trust region \sindex{trust region} techniques, which are discussed
@@ -4058,14 +4058,32 @@ steady-state problems using pseudo-timestepping.
 \]
 where $ u $ is a finite-dimensional vector, usually obtained from
 discretizing a PDE with finite differences, finite elements, etc.
-For example, discretizing the heat equation 
+For example, in the backward Euler method, discretizing the heat equation 
 \[
           u_t = u_{xx} 
 \]
 with centered finite differences results in 
 \[
-          (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2}.
+          (u_i)_t = \frac{u_{i+1} - 2 u_{i} + u_{i-1}}{h^2};
 \]
+or with piecewise linear finite elements approximation
+$ u(x,t) \doteq \sum_i \xi_i(t) \phi_i(x)$ yeilds semi-discrete equation
+\[
+          B {\xi}'(t) = A \xi(t)
+\]
+and discrete equation
+\[
+        ( B - dt^n A  ) u^{n+1} = A u^n, 
+\]
+in which 
+\[
+         {u^n}_i = \xi_i(t_n) \doteq u(x_i,t_n),
+\]
+\[  
+         {\xi}'(t_{n+1}) \doteq \frac{{u^{n+1}}_i - {u^{n}}_i }{dt^{n}},
+\]
+$A$ is the stiffness matrix and $B$ is the mass matrix.
+
 The TS library provides code to solve these equations (currently 
 using the forward or backward Euler method) as well as an interface to 
 other sophisticated ODE solvers, in a clean and easy manner,
@@ -4086,18 +4104,20 @@ we can use pseudo-transient continuation by solving
 \[
            u_t = F(u).
 \]
-By using time differencing with the backward Euler method, we obtain
+Using time differencing 
 \[
-           \frac{u^{n+1} - u^{n}}{dt^{n}} = F(u^{n+1}).
+   u_t \doteq \frac{{u^{n+1}} - {u^{n}} }{dt^{n}}
 \]
-More generally we can consider a diagonal matrix $ Dt^{n} $ that has a
-pseudo-timestep for each node point to obtain the series of nonlinear equations
+with the backward Euler method, we obtain
+nonlinear equations at a series of pseudo-timesteps
 \[
-        Dt^{n^{-1}}(u^{n+1} - u^{n}) =  F(u^{n+1}).
+           \frac{1}{dt^n} B (u^{n+1} - u^{n} ) = F(u^{n+1}).
 \]
-For this problem the user must provide $ F(u) $ and the diagonal 
-matrix $ Dt^{n} $, (or optionally, if the timestep is position independent,
-a scalar timestep) as well as optionally the Jacobian of $ F(u).$ 
+For this problem the user must provide $F(u)$,
+the time steps $dt^{n}$ and the left-hand-side matrix $B$
+(or optionally, if the timestep is position independent and $B$ is the
+identity matrix,
+a scalar timestep), as well as optionally the Jacobian of $F(u)$. 
 
 \section{Basic Usage}
 
@@ -4171,20 +4191,21 @@ for the ODE. \findex{TSSetSolution()}
 \subitem $ \bullet $ For linear functions (solved with implicit timestepping),
  the user must call 
 \begin{tabbing}
- TSSetRHSMatrix(TS ts,Mat A, Mat B,\\
- PetscErrorCode (*f)(TS,double,Mat*,Mat*,MatStructure*,void*),void *fP);
+TSSetMatrices(TS ts,\\
+Mat A,PetscErrorCode (*frhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),\\
+Mat B,PetscErrorCode (*flhs)(TS,PetscReal,Mat*,Mat*,MatStructure*,void*),\\
+MatStructure flag,void *ctx)
 \end{tabbing}
-The matrix \trl{B} (although usually the same as \trl{A}) allows one to 
-provide \findex{TSSetRHSMatrix()}
-a different matrix to be used in the construction of the preconditioner.
-The function \trl{f} is used to form the matrices \trl{A} and \trl{B} 
+The matrices \trl{A} and \trl{B} are right and left hand-side matrix respectively.
+The functions \trl{frhs} and \trl{flhs} are used to form the matrices \trl{A} and \trl{B} 
 at each timestep if the matrices are time dependent.
-If the matrix does not depend on time, the user should 
-pass in \trl{PETSC_NULL} for \trl{f}.  The variable \trl{fP} allows 
-users to pass in an application context that is passed to the \trl{f()} function 
-whenever it is called, as the final argument. The user must provide the matrices
-\trl{A} and \trl{B}; if they have the right-hand side only as a linear
-function, they must construct a \trl{MatShell} matrix. Note that this is 
+If the matrices do not depend on time, the user should 
+pass in \trl{PETSC_NULL}.  The variable \trl{ctx} allows 
+users to pass in an application context that is passed to the \trl{frhs()} or \trl{flhs()} function 
+whenever they are called, as the final argument. The user must provide the matrices
+\trl{A}. If \trl{B} is an indentity matrix, the user should pass in \trl{PETSC_NULL}. 
+If the right-hand side is provided only as a linear
+function, the user must construct a \trl{MatShell} matrix. Note that this is 
 the same interface as that for SNESSetJacobian(). \findex{SNESSetJacobian()}
 
 \subitem $ \bullet $  For nonlinear problems (or linear problems solved using
@@ -4203,7 +4224,7 @@ variable \trl{fP}.
 (approximate) Jacobian matrix of \trl{F(u,t)} and a function to
 compute it at each Newton iteration. This is done with the command
 \begin{tabbing}
- TSSetRHSJacobian(\=TS ts,Mat A, Mat B,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
+ TSSetRHSJacobian(\=TS ts,Mat A, Mat P,PetscErrorCode (*fjac)(TS,double,Vec,Mat*,Mat*,\\
                   \>        MatStructure*,void*),void *fP);
 \end{tabbing}
 The \findex{TSSetRHSJacobian} arguments for the function \trl{fjac()} are
@@ -6629,7 +6650,7 @@ use the command \findex{PetscDrawSetViewPort()}
 \end{tabbing}
 These arguments, which indicate the fraction of the window in which the 
 drawing should be done, must satisfy 
-$ 0 \le {\tt xl} \le {\tt xr} \le 1 $ and $ 0 \le {\tt yl} \le {\tt yr} \le 1.$ 
+$ 0 \leq {\tt xl} \leq {\tt xr} \leq 1 $ and $ 0 \leq {\tt yl} \leq {\tt yr} \leq 1.$ 
 
 To draw a line, one uses
  the command \findex{PetscDrawLine()} \sindex{lines, drawing}
