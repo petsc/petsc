@@ -76,7 +76,9 @@ PetscErrorCode SNESSolve_Test(SNES snes)
 #define __FUNCT__ "SNESDestroy_Test"
 PetscErrorCode SNESDestroy_Test(SNES snes)
 {
+  PetscErrorCode ierr;
   PetscFunctionBegin;
+  ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -167,10 +167,8 @@ PetscErrorCode KSPDestroy_LCD(KSP ksp)
 
   PetscFunctionBegin;
   ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-
-  VecDestroyVecs(lcd->P, lcd->restart+1);
-  VecDestroyVecs(lcd->Q, lcd->restart+1);
-  
+  if (lcd->P) { ierr = VecDestroyVecs(lcd->P, lcd->restart+1);CHKERRQ(ierr); }
+  if (lcd->Q) { ierr = VecDestroyVecs(lcd->Q, lcd->restart+1);CHKERRQ(ierr); }
   ierr = PetscFree(lcd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
