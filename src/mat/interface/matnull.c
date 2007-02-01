@@ -72,8 +72,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (n) PetscValidPointer(vecs,4); 
-  for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_COOKIE,4); 
+  if (n < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",n);
+  if (n) PetscValidPointer(vecs,4);
+  for (i=0; i<n; i++) PetscValidHeaderSpecific(vecs[i],VEC_COOKIE,4);
   PetscValidPointer(SP,5); 
  
   *SP = PETSC_NULL; 
@@ -84,19 +85,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceCreate(MPI_Comm comm,PetscTruth ha
   ierr = PetscHeaderCreate(sp,_p_MatNullSpace,int,MAT_NULLSPACE_COOKIE,0,"MatNullSpace",comm,MatNullSpaceDestroy,0);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(sp,sizeof(struct _p_MatNullSpace));CHKERRQ(ierr);
 
-  sp->has_cnst = has_cnst; 
+  sp->has_cnst = has_cnst;
   sp->n        = n;
-  sp->vec      = PETSC_NULL;
+  sp->vecs     = 0;
+  sp->alpha    = 0;
+  sp->vec      = 0;
+  sp->remove   = 0;
+  sp->rmctx    = 0;
+
   if (n) {
     ierr = PetscMalloc(n*sizeof(Vec),&sp->vecs);CHKERRQ(ierr);
-    for (i=0; i<n; i++) sp->vecs[i] = vecs[i];
-  } else {
-    sp->vecs = 0;
+    ierr = PetscMalloc(n*sizeof(PetscScalar),&sp->alpha);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(sp,n*(sizeof(Vec)+sizeof(PetscScalar)));CHKERRQ(ierr);
+    for (i=0; i<n; i++) {
+      ierr = PetscObjectReference((PetscObject)vecs[i]);CHKERRQ(ierr);
+      sp->vecs[i] = vecs[i];
+    }
   }
 
-  for (i=0; i<n; i++) {
-    ierr = PetscObjectReference((PetscObject)sp->vecs[i]);CHKERRQ(ierr);
-  }
   *SP          = sp;
   PetscFunctionReturn(0);
 }
@@ -126,10 +132,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
   if (--sp->refct > 0) PetscFunctionReturn(0);
 
-  if (sp->vec) {ierr = VecDestroy(sp->vec);CHKERRQ(ierr);}
-  if (sp->vecs) {
-    ierr = VecDestroyVecs(sp->vecs,sp->n);CHKERRQ(ierr);
-  }
+  if (sp->vec)  { ierr = VecDestroy(sp->vec);CHKERRQ(ierr); }
+  if (sp->vecs) { ierr = VecDestroyVecs(sp->vecs,sp->n);CHKERRQ(ierr); }
+  ierr = PetscFree(sp->alpha);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(sp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -158,9 +163,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceDestroy(MatNullSpace sp)
 PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec *out)
 {
   PetscScalar    sum;
+  PetscInt       i,N;
   PetscErrorCode ierr;
-  PetscInt       j,n = sp->n,N;
-  Vec            l = vec;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(sp,MAT_NULLSPACE_COOKIE,1); 
@@ -168,28 +172,31 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatNullSpaceRemove(MatNullSpace sp,Vec vec,Vec
 
   if (out) {
     PetscValidPointer(out,3); 
-    if (!sp->vec) {
-      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr);
+    if (!sp->vec) { 
+      ierr = VecDuplicate(vec,&sp->vec);CHKERRQ(ierr); 
+      ierr = PetscLogObjectParent(sp,sp->vec);CHKERRQ(ierr);
     }
-    *out = sp->vec;
-    ierr = VecCopy(vec,*out);CHKERRQ(ierr);
-    l    = *out;
+    ierr = VecCopy(vec,sp->vec);CHKERRQ(ierr);
+    vec = *out = sp->vec;
   }
-
+  
   if (sp->has_cnst) {
-    ierr = VecSum(l,&sum);CHKERRQ(ierr);
-    ierr = VecGetSize(l,&N);CHKERRQ(ierr);
-    sum  = sum/(-1.0*N);
-    ierr = VecShift(l,sum);CHKERRQ(ierr);
+    ierr = VecGetSize(vec,&N);CHKERRQ(ierr);
+    if (N > 0) {
+      ierr = VecSum(vec,&sum);CHKERRQ(ierr);
+      sum  = sum/(-1.0*N);
+      ierr = VecShift(vec,sum);CHKERRQ(ierr);
+    }
   }
-
-  for (j=0; j<n; j++) {
-    ierr = VecDot(l,sp->vecs[j],&sum);CHKERRQ(ierr);
-    ierr = VecAXPY(l,-sum,sp->vecs[j]);CHKERRQ(ierr);
+  
+  if (sp->n) {
+    ierr = VecMDot(vec,sp->n,sp->vecs,sp->alpha);CHKERRQ(ierr);
+    for (i=0; i<sp->n; i++) sp->alpha[i] = -sp->alpha[i];
+    ierr = VecMAXPY(vec,sp->n,sp->alpha,sp->vecs);CHKERRQ(ierr);
   }
 
   if (sp->remove){
-    ierr = (*sp->remove)(l,sp->rmctx);
+    ierr = (*sp->remove)(vec,sp->rmctx);
   }
   PetscFunctionReturn(0);
 }

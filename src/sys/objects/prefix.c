@@ -124,12 +124,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetOptionsPrefix(PetscObject obj,const
 */
 PetscErrorCode PETSC_DLLEXPORT PetscObjectPrependOptionsPrefix(PetscObject obj,const char prefix[])
 {
-  char   *buf = obj->prefix;
+  char           *buf;
+  size_t         len1,len2;
   PetscErrorCode ierr;
-  size_t len1,len2;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
+  buf = obj->prefix;
   if (!prefix) {PetscFunctionReturn(0);}
   if (!buf) {
     ierr = PetscObjectSetOptionsPrefix(obj,prefix);CHKERRQ(ierr);
