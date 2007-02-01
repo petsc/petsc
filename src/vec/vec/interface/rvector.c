@@ -1022,7 +1022,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(x,VEC_COOKIE,2); 
+  PetscValidHeaderSpecific(x,VEC_COOKIE,1); 
   if (!nv) PetscFunctionReturn(0);
   if (nv < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of vectors (given %D) cannot be negative",nv);
   PetscValidPointer(y,3);
