@@ -489,8 +489,8 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG preconditioning\n");CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of levels %d\n",jac->maxlevels);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations PER hypre call%d\n",jac->maxiter);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance PER hypre call%G\n",jac->tol);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations PER hypre call %d\n",jac->maxiter);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance PER hypre call %G\n",jac->tol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Threshold for strong coupling %G\n",jac->strongthreshold);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum row sums %G\n",jac->maxrowsum);CHKERRQ(ierr);
 
