@@ -460,11 +460,14 @@ namespace ALE {
             Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTITION");
             // PHG parameters
             Zoltan_Set_Param(zz, "PHG_OUTPUT_LEVEL", "2");
+            Zoltan_Set_Param(zz, "PHG_EDGE_SIZE_THRESHOLD", "1.0"); // Do not throw out dense edges
             // Call backs
             Zoltan_Set_Num_Obj_Fn(zz, getNumVertices_Zoltan, NULL);
             Zoltan_Set_Obj_List_Fn(zz, getLocalElements_Zoltan, NULL);
             Zoltan_Set_HG_Size_CS_Fn(zz, getHgSizes_Zoltan, NULL);
             Zoltan_Set_HG_CS_Fn(zz, getHg_Zoltan, NULL);
+            // Debugging
+            //Zoltan_Generate_Files(zz, "zoltan.debug", 1, 0, 0, 1); // if using hypergraph callbacks
 
             ierr = Zoltan_LB_Partition(zz, &changed, &numGidEntries, &numLidEntries,
                                        &numImport, &import_global_ids, &import_local_ids, &import_procs, &import_to_part,
