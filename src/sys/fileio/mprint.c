@@ -14,6 +14,12 @@ extern FILE *petsc_history;
      writes to go to terminal XX; assuming you have write permission there
 */
 FILE *PETSC_STDOUT = 0;
+/*
+     Allows one to overwrite where standard error is sent. For example
+     PETSC_STDERR = fopen("/dev/ttyXX","w") will cause all standard error
+     writes to go to terminal XX; assuming you have write permission there
+*/
+FILE *PETSC_STDERR = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"

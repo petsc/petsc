@@ -176,6 +176,12 @@ typedef int PetscInt;
 */
 extern FILE* PETSC_STDOUT;
 
+/*
+      You can use PETSC_STDERR as a replacement of stderr. You can also change
+    the value of PETSC_STDERR to redirect all standard error elsewhere
+*/
+extern FILE* PETSC_STDERR;
+
 #if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 /*MC
       PetscPolymorphicSubroutine - allows defining a C++ polymorphic version of 

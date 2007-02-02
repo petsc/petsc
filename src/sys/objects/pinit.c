@@ -477,8 +477,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
 
-  /* this must be initialized in a routine, not as a constant declaration*/
-  PETSC_STDOUT = stdout;  
+  /* these must be initialized in a routine, not as a constant declaration*/
+  PETSC_STDOUT = stdout;
+  PETSC_STDERR = stderr;
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 

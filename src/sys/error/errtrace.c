@@ -50,7 +50,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int line,const char *fun,
 static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
 static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char version[256];
-static FILE *PetscErrorPrintfFILE = stdout;
+static FILE *PetscErrorPrintfFILE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfInitialize"
@@ -73,10 +73,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);CHKERRQ(ierr);
   if (use_stderr) {
-      PetscErrorPrintfFILE = stderr;
-    } else {
-      PetscErrorPrintfFILE = PETSC_STDOUT;
-    }
+    PetscErrorPrintfFILE = PETSC_STDERR;
+  } else {
+    PetscErrorPrintfFILE = PETSC_STDOUT;
+  }
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -92,8 +92,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfNone(const char format[],...)
 #define __FUNCT__ "PetscErrorPrintfDefault" 
 PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 {
-  va_list            Argp;
-  static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
+  va_list           Argp;
+  static PetscTruth PetscErrorPrintfCalled = PETSC_FALSE;
 
   /*
       This function does not call PetscFunctionBegin and PetscFunctionReturn() because
@@ -103,7 +103,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
   */
 
   if (!PetscErrorPrintfCalled) {
-    PetscErrorPrintfCalled    = PETSC_TRUE;
+    PetscErrorPrintfCalled = PETSC_TRUE;
+    if (PetscErrorPrintfFILE == 0) PetscErrorPrintfFILE = PETSC_STDERR;
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
