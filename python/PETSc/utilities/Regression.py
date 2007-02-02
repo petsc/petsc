@@ -40,7 +40,7 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
-      if self.x11.foundX11:
+      if self.x11.found:
         jobs.append('C_X11')
       if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
