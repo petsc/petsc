@@ -11,11 +11,11 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
     PETSc.package.Package.__init__(self, framework)
     self.headerPrefix = ''
     self.substPrefix  = ''
-    self.foundX11     = 0
+    self.found        = 0
     return
 
   def __str__(self):
-    if self.foundX11:
+    if self.found:
       desc = ['X11:']	
       desc.append('  Includes: '+str(self.include))
       desc.append('  Library: '+str(self.lib))
@@ -25,6 +25,7 @@ class Configure(PETSc.package.Package,config.autoconf.Configure):
   def setupHelp(self, help):
     import nargs
     help.addArgument('X11', '-with-x=<bool>',                nargs.ArgBool(None, 1,   'Activate X11'))
+    help.addArgument('X11', '-with-x11=<bool>',              nargs.ArgBool(None, 1,   'Activate X11'))
     help.addArgument('X11', '-with-x-include=<include dir>', nargs.ArgDir(None, None, 'Specify an include directory for X11'))
     help.addArgument('X11', '-with-x-lib=<X11 lib>',         nargs.Arg(None, None,    'Specify X11 library file'))
     help.addArgument('X11', '-with-xt=<bool>',               nargs.ArgBool(None, 0,   'Activate Xt'))
@@ -204,7 +205,7 @@ acfindx:
           
     if foundInclude and foundLibrary:
       self.logPrint('Found X11 includes and libraries')
-      self.foundX11  = 1
+      self.found     = 1
       if includeDir:
         self.include = '-I'+includeDir
       else:
