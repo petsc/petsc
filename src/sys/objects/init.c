@@ -49,8 +49,6 @@ PetscInt PETSC_DLLEXPORT _BT_idx  = 0;
 /*
        Function that is called to display all error messages
 */
-EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
-EXTERN PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 PetscErrorCode PETSC_DLLEXPORT (*PetscErrorPrintf)(const char [],...)          = PetscErrorPrintfDefault;
 PetscErrorCode PETSC_DLLEXPORT (*PetscHelpPrintf)(MPI_Comm,const char [],...)  = PetscHelpPrintfDefault;
 
@@ -306,11 +304,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (flg1) { ierr = PetscSetFPTrap(PETSC_FP_TRAP_ON);CHKERRQ(ierr); }
   ierr = PetscOptionsHasName(PETSC_NULL,"-on_error_abort",&flg1);CHKERRQ(ierr);
   if (flg1) { ierr = PetscPushErrorHandler(PetscAbortErrorHandler,0);CHKERRQ(ierr)} 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-on_error_stop",&flg1);CHKERRQ(ierr);
-  if (flg1) { ierr = PetscPushErrorHandler(PetscStopErrorHandler,0);CHKERRQ(ierr)}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-on_error_mpiabort",&flg1);CHKERRQ(ierr);
+  if (flg1) { ierr = PetscPushErrorHandler(PetscMPIAbortErrorHandler,0);CHKERRQ(ierr)}
   ierr = PetscOptionsHasName(PETSC_NULL,"-mpi_return_on_error",&flg1);CHKERRQ(ierr);
   if (flg1) {
     ierr = MPI_Errhandler_set(comm,MPI_ERRORS_RETURN);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_none",&flg1);CHKERRQ(ierr);
+  if (flg1) {
+    PetscErrorPrintf = PetscErrorPrintfNone;
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-no_signal_handler",&flg1);CHKERRQ(ierr);
   if (!flg1) { ierr = PetscPushSignalHandler(PetscDefaultSignalHandler,(void*)0);CHKERRQ(ierr) }

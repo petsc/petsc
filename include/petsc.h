@@ -1360,9 +1360,18 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintf(FILE*,const char[],va_list)
 .   format - the usual printf() format string 
 
    Options Database Keys:
-.    -error_output_stderr - cause error messages to be printed to stderr instead of the
++    -error_output_stderr - cause error messages to be printed to stderr instead of the
          (default) stdout
+-    -error_output_none to turn off all printing of error messages (does not change the way the 
+          error is handled.)
 
+   Notes: Use
+     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the 
+           error is handled.) and
+     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
+
+
+  
 
    Level: developer
 
@@ -1398,6 +1407,10 @@ EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 .seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscErrorPrintf()
 M*/
 EXTERN PETSC_DLLEXPORT PetscErrorCode  (*PetscHelpPrintf)(MPI_Comm,const char[],...);
+
+EXTERN PetscErrorCode  PetscErrorPrintfDefault(const char [],...);
+EXTERN PetscErrorCode  PetscErrorPrintfNone(const char [],...);
+EXTERN PetscErrorCode  PetscHelpPrintfDefault(MPI_Comm,const char [],...);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPOpen(MPI_Comm,const char[],const char[],const char[],FILE **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscPClose(MPI_Comm,FILE*);

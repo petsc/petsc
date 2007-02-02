@@ -115,7 +115,7 @@ $    int handler(int line,char *func,char *file,char *dir,PetscErrorCode n,int p
    Notes:
    The
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler(), PetscReturnErrorHandler().
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscMPIAbortErrorHandler(), PetscReturnErrorHandler().
 
 .seealso: PetscPopErrorHandler(), PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
 
@@ -196,7 +196,7 @@ $     SETERRQ(number,p,mess)
 
    Use PetscPushErrorHandler() to set the desired error handler.  The
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscStopErrorHandler()
+   PetscAttachDebuggerErrorHandler(), PetscAbortErrorHandler(), and PetscAbortErrorHandler()
 
    Concepts: error handler
 

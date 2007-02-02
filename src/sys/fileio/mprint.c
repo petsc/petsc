@@ -479,64 +479,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscErrorPrintfDefault" 
-PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
-{
-  va_list            Argp;
-  static  PetscTruth PetscErrorPrintfCalled    = PETSC_FALSE;
-  static  PetscTruth InPetscErrorPrintfDefault = PETSC_FALSE;
-  static  FILE       *fd;
-
-  /*
-      InPetscErrorPrintfDefault is used to prevent the error handler called (potentially)
-     from PetscSleep(), PetscGetArchName(), ... below from printing its own error message.
-  */
-
-  /*
-      This function does not call PetscFunctionBegin and PetscFunctionReturn() because
-    it may be called by PetscStackView().
-
-      This function does not do error checking because it is called by the error handlers.
-  */
-
-  if (!PetscErrorPrintfCalled) {
-    PetscTruth use_stderr;
-
-    PetscErrorPrintfCalled    = PETSC_TRUE;
-    InPetscErrorPrintfDefault = PETSC_TRUE;
-
-    PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);
-    if (use_stderr) {
-      fd = stderr;
-    } else {
-      fd = PETSC_STDOUT;
-    }
-
-    /*
-        On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
-      different processors, the messages are printed all jumbled up; to try to 
-      prevent this we have each processor wait based on their rank
-    */
-#if defined(PETSC_CAN_SLEEP_AFTER_ERROR)
-    {
-      PetscMPIInt rank;
-      if (PetscGlobalRank > 8) rank = 8; else rank = PetscGlobalRank;
-      PetscSleep(rank);
-    }
-#endif
-    InPetscErrorPrintfDefault = PETSC_FALSE;
-  }
-    
-  if (!InPetscErrorPrintfDefault) {
-    PetscFPrintf(PETSC_COMM_SELF,fd,"[%d]PETSC ERROR: ",PetscGlobalRank);
-    va_start(Argp,format);
-    PetscVFPrintf(fd,format,Argp);
-    va_end(Argp);
-  }
-  return 0;
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "PetscSynchronizedFGets" 
 /*@C
     PetscSynchronizedFGets - Several processors all get the same line from a file.
