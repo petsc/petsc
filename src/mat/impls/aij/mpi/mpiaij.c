@@ -1628,6 +1628,7 @@ PetscErrorCode MatAXPY_MPIAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(xx->B->rmap.n,x->i,x->j,xx->garray,y->i,y->j,yy->garray,&y->xtoy);CHKERRQ(ierr);
       y->XtoY = xx->B;
+      ierr = PetscObjectReference((PetscObject)xx->B);CHKERRQ(ierr);
     } 
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]);   
   } else {

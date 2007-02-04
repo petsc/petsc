@@ -715,6 +715,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
   if (a->coloring) {ierr = ISColoringDestroy(a->coloring);CHKERRQ(ierr);}
   ierr = PetscFree(a->xtoy);CHKERRQ(ierr);
+  if (a->XtoY) {ierr = MatDestroy(a->XtoY);CHKERRQ(ierr);}
   if (a->compressedrow.use){ierr = PetscFree(a->compressedrow.i);} 
 
   ierr = MatDestroy_Inode(A);CHKERRQ(ierr);
@@ -2132,6 +2133,7 @@ PetscErrorCode MatAXPY_SeqAIJ(Mat Y,PetscScalar a,Mat X,MatStructure str)
     if (!y->xtoy) { /* get xtoy */
       ierr = MatAXPYGetxtoy_Private(X->rmap.n,x->i,x->j,PETSC_NULL, y->i,y->j,PETSC_NULL, &y->xtoy);CHKERRQ(ierr);
       y->XtoY = X;
+      ierr = PetscObjectReference((PetscObject)X);CHKERRQ(ierr);
     }
     for (i=0; i<x->nz; i++) y->a[y->xtoy[i]] += a*(x->a[i]); 
     ierr = PetscInfo3(0,"ratio of nnz(X)/nnz(Y): %d/%d = %G\n",x->nz,y->nz,(PetscReal)(x->nz)/y->nz);CHKERRQ(ierr);

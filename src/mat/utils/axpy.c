@@ -13,7 +13,8 @@
 +  a - the scalar multiplier
 .  X - the first matrix
 .  Y - the second matrix
--  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
+-  str - either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN 
+         or SUBSET_NONZERO_PATTERN (nonzeros of X is a subset of Y's)
 
    Notes:
      Will only be efficient if one has the SAME_NONZERO_PATTERN or SUBSET_NONZERO_PATTERN
