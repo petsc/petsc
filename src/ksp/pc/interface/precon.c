@@ -519,7 +519,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHasApplyTranspose(PC pc,PetscTruth *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidPointer(flg,2);
-  *flg = (PetscTruth) (pc->ops->applytranspose == 0);
+  *flg = (PetscTruth) (pc->ops->applytranspose != 0);
   PetscFunctionReturn(0);
 }
 

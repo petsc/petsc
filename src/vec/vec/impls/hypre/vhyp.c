@@ -9,6 +9,8 @@ EXTERN_C_BEGIN
 #include "IJ_mv.h"
 EXTERN_C_END
 
+#undef __FUNCT__
+#define __FUNCT__ "VecHYPRE_IJVectorCreate"
 PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
 {
   PetscErrorCode ierr;
@@ -21,6 +23,8 @@ PetscErrorCode VecHYPRE_IJVectorCreate(Vec v,HYPRE_IJVector *ij)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecHYPRE_IJVectorCopy"
 PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
 {
   PetscErrorCode ierr;
@@ -35,6 +39,8 @@ PetscErrorCode VecHYPRE_IJVectorCopy(Vec v,HYPRE_IJVector ij)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "VecHYPRE_IJVectorCopyFrom"
 PetscErrorCode VecHYPRE_IJVectorCopyFrom(HYPRE_IJVector ij,Vec v)
 {
   PetscErrorCode ierr;

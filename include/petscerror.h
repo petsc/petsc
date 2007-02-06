@@ -413,7 +413,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorMessage(int,const char*[],char *
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTraceBackErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscEmacsClientErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscStopErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAbortErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscAttachDebuggerErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscReturnErrorHandler(int,const char*,const char*,const char*,PetscErrorCode,int,const char*,void*);

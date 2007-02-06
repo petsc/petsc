@@ -407,7 +407,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFreeArguments(char **args)
 .  -on_error_attach_debugger [noxterm,dbx,xdb,gdb,...] - Starts debugger when error detected
 .  -on_error_emacs <machinename> causes emacsclient to jump to error file
 .  -on_error_abort calls abort() when error detected (no traceback)
-.  -on_error_stop calls MPI_abort() when error detected
+.  -on_error_mpiabort calls MPI_abort() when error detected
+.  -error_output_stderr prints error messages to stderr instead of the default stdout
+.  -error_output_none does not print the error messages (but handles errors in the same way as if this was not called)
 .  -debugger_nodes [node1,node2,...] - Indicates nodes to start in debugger
 .  -debugger_pause [sleeptime] (in seconds) - Pauses debugger
 .  -stop_for_debugger - Print message on how to attach debugger manually to 
@@ -475,8 +477,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   PetscFunctionBegin;
   if (PetscInitializeCalled) PetscFunctionReturn(0);
 
-  /* this must be initialized in a routine, not as a constant declaration*/
-  PETSC_STDOUT = stdout;  
+  /* these must be initialized in a routine, not as a constant declaration*/
+  PETSC_STDOUT = stdout;
+  PETSC_STDERR = stderr;
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
@@ -551,7 +554,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
   /*
-     Build the options database and check for user setup requests
+     Build the options database
   */
   ierr = PetscOptionsInsert(argc,args,file);CHKERRQ(ierr);
 
@@ -755,7 +758,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 
   /* to prevent PETSc -options_left from warning */
   ierr = PetscOptionsHasName(PETSC_NULL,"-nox_warning",&flg1);CHKERRQ(ierr)
-  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&flg1);CHKERRQ(ierr);
 
   flg3 = PETSC_FALSE; /* default value is required */
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-options_left",&flg3,&flg1);CHKERRQ(ierr);

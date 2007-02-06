@@ -3,9 +3,9 @@
 #include "petsc.h"           /*I "petsc.h" I*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscStopErrorHandler" 
+#define __FUNCT__ "PetscMPIAbortErrorHandler" 
 /*@C
-   PetscStopErrorHandler - Calls MPI_abort() and exits.
+   PetscMPIAbortErrorHandler - Calls MPI_abort() and exits.
 
    Not Collective
 
@@ -30,14 +30,14 @@ $     SETERRQ(n,p,mess)
    Notes for experienced users:
    Use PetscPushErrorHandler() to set the desired error handler.  The
    currently available PETSc error handlers include PetscTraceBackErrorHandler(),
-   PetscStopErrorHandler(), PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
+   PetscMPIAbortErrorHandler(), PetscAttachDebuggerErrorHandler(), and PetscAbortErrorHandler().
 
    Concepts: error handler^stopping
 
 .seealso:  PetscPushErrorHandler(), PetscAttachDebuggerErrorHandler(), 
            PetscAbortErrorHandler(), PetscTraceBackErrorHandler()
  @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStopErrorHandler(int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
+PetscErrorCode PETSC_DLLEXPORT PetscMPIAbortErrorHandler(int line,const char *fun,const char *file,const char *dir,PetscErrorCode n,int p,const char *mess,void *ctx)
 {
   PetscTruth     flg1,flg2;
   PetscLogDouble mem,rss;

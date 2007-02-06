@@ -35,8 +35,10 @@ typedef struct
   PetscInt   default_smoothu;              /* number of smooths per level if not over-ridden */
   PetscInt   default_smoothd;              /*  with calls to KSPSetTolerances() */
   PetscReal  rtol,abstol,dtol,ttol;        /* tolerances for when running with PCApplyRichardson_MG */
-  PetscEvent eventsetup;                   /* if logging times for each level */
-  PetscEvent eventsolve;      
+  PetscEvent eventsmoothsetup;             /* if logging times for each level */
+  PetscEvent eventsmoothsolve;  
+  PetscEvent eventresidual;
+  PetscEvent eventinterprestrict;    
 }  PC_MG;
 
 

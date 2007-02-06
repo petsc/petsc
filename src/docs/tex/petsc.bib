@@ -28,6 +28,7 @@
 @string(jota = "J. Optimization Theory and Applications")
 @string(ZaMM = "Zeitschrift f\:{u}r angewandte Mathematik und Mechanik")
 
+
 @ARTICLE{imex,
         AUTHOR = "Uri M. Ascher and Steven J. Ruuth and Brian T. R. Wetton",
         TITLE = "Implicit-Explicit Methods for Time-Dependent Partial Differential Equations",
@@ -66,7 +67,7 @@
 
 @Misc{salome1,
   author =       "Laurent Dada and Daniel Caruge",
-  title =        "The SALOME Open Source CAE Platform Application to Reactor Physics Simulation",
+  title =        "The {SALOME} Open Source {CAE} Platform Application to Reactor Physics Simulation",
   year = 2005,
   url = "http://conferences.esa.int/05c26/Seminar-2005-09-28-SALOME.pdf",
   Note = "Presentation at an ESA/ESTEC conference"
@@ -74,7 +75,7 @@
 
 @INPROCEEDINGS{downar1,
         AUTHOR = "D. A. Barber and W. Wang and R. M. Miller and T. J. Downar and H. G. Joe and V. A. Mousseau and D. E. Ebert",
-        TITLE = "Application of a generalized interface module to the coupling of PARCS with both RELAP5 and TRAC-M",
+        TITLE = "Application of a generalized interface module to the coupling of {PARCS} with both {RELAP5} and {TRAC-M}",
         BOOKTITLE = "Proceedings of 1999 annual meeting of the American Nuclear Society",
         YEAR = "1999"
 } 
@@ -127,7 +128,7 @@
 
 @Article{couple1,
   author    = "J. M. Cook and D. Okrent and D. Satkus and R. B. Lazarus and M. B. Wells",
-  title     = "AX-1, A COMPUTING PROGRAM FOR COUPLED NEUTRONICS-HYDRODYNAMICS CALCULATIONS ON THE IBM-704",
+  title     = "{AX-1}, A COMPUTING PROGRAM FOR COUPLED NEUTRONICS-HYDRODYNAMICS CALCULATIONS ON THE {IBM-704}",
   journal =   "Nuclear Sci. and Eng.",
   year      = 1959,
   pages = "113--115",
@@ -337,6 +338,13 @@
   author =       {B. {Smith et al.}},
   title =        "{External Software Used by PETSc}",
   note =         "\url{http://www.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html}",
+  Institution = "Argonne National Laboratory"
+}
+
+@Unpublished{petsc:use-by-external-packages,
+  author =       {B. {Smith et al.}},
+  title =        "{Software Packages that Use or Interface to PETSc}",
+  note =         "\url{http://www-unix.mcs.anl.gov/petsc/petsc-as/publications/petscapps.html#packages}",
   Institution = "Argonne National Laboratory"
 }
 
@@ -822,7 +830,7 @@ University of Colorado-Boulder",
 
 @Article{ pw98,
   AUTHOR = "M. Pernice and H. F. Walker",
-  TITLE = "{NITSOL}: A Newton Iterative Solver for Nonlinear Systems",
+  TITLE = "{NITSOL}: A {Newton} Iterative Solver for Nonlinear Systems",
   journal =	 "SIAM J. Sci. Stat. Comput.",
   year =	 1998,
   volume =	 19,
@@ -2104,11 +2112,21 @@ Booktitle = "Supercomputing '95 Proceedings",
   institution = "Cornell University and Argonne National Laboratory"
 }
 
-@misc{sundials-web-page,
-  title       = "{SUNDIALS} {W}eb Page",
-  note        =	"\url{http://www.llnl.gov/CASC/sundials}",
-  author      = "Allan Hindmarsh and Radu Serban and Carol Woodward",
-  institution = "Lawrence Livermore National Laboratory"
+@misc{sundials-user-ref,
+  title       = "{SUNDIALS}: Suite of Nonlinear and Differential/Algebraic Equation Solvers",
+  note        =	"See \url{http://www.llnl.gov/CASC/sundials}",
+  author      = "Allan Hindmarsh and Peter Brown and Keith Grant and Steven Lee and Radu Serban and Dan Shumaker and Carol Woodward",
+  institution = "Center for Applied Scientific Computing, Lawrence Livermore National Laboratory",
+  number = "UCRL-JP-200037",
+  year = 2003
+}
+
+@techreport{kinsol-user-ref,
+  title       = "User Documentation for {KINSOL}, A Nonlinear Solver for Sequential and Parallel Computers",
+  author      = "Allan Taylor and Alan Hindmarsh",
+  institution = "Center for Applied Scientific Computing, Lawrence Livermore National Laboratory",
+  number      = "UCRL-ID-131185",
+  year = 1998
 }
 
 @article{FiardManteuffelMcCormick98,
@@ -2794,6 +2812,33 @@ year = 2003}
   pages   = "357-397"
 } 
 
+@article{chacon02,
+  author = "L. Chacon and D. A. Knoll and J. M. Finn",
+  title = "An Implicit Nonlinear Reduced Resistive {MHD} Solver",
+  journal = "J. Comput. Phys",
+  volume = 188,
+  year = 2002,
+  pages = "15--36"
+}
+
+@article{mousseau03,
+  author = "V. A. Mousseau and D. A. Knoll",
+  title = "New Physics-based Preconditioning of Implicit Methods for 
+           Non-Equilibrium Radiation Diffusion",
+  journal = "J. Comput. Physics",
+  year = 2003
+}
+
+@article{mousseau00,
+  author = "V. A. Mousseau and D. A. Knoll and W. J. Rider",
+  title = "Physics-based Preconditioning and the {Newton-Krylov} Method
+           for Non-Equilibrium Radiation Diffusion",
+  journal = "J. Comput. Physics",
+  year = 2000,
+  pages = "743--765",
+  volume = 160
+}
+
 @unpublished{facets:homepage,
   author =	 "John {Cary (PI)}",
   title =	 "{Framework Application for Core-Edge Transport Simulations (FACETS)}",
@@ -2958,8 +3003,10 @@ note = "Available via \url{http://w3.pppl.gov/usjapanim/FSPReport.pdf}"
   title = {A Component Architecture for High-Performance Scientific
                   Computing},
   journal = {Intl. J. High-Perf. Computing Appl.},
-  year = {2005},
-  note = {Submitted to ACTS Collection special issue}
+  volume        = 20,
+  pages         = {163--202},
+  year		= 2006,
+  note		= {ACTS Collection special issue},
 }
 
 @misc{cca-forum:homepage,
@@ -3186,6 +3233,12 @@ http://csdrm.caltech.edu/
   key = "{Open Grid Forum}",
   title = "{Open Grid Forum}",
   note = "See \url{http://www.ogf.org}"
+}
+
+@Misc{nox:web,
+  author = "Tamara Kolda and Roger {Pawlowski et al.}",
+  title = "Nonlinear Object-Oriented Solutions {(NOX)}",
+  note = "See \url{http://software.sandia.gov/nox}"
 }
 
 @Misc{chombo:web,

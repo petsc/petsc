@@ -8,10 +8,10 @@ ALL: lib
 
 CFLAGS   = ${HYPRE_INCLUDE}
 FFLAGS   =
-SOURCEC  = hyppilut.c
+SOURCEC  = hypre.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = hyppilut.o
+OBJSC    = hypre.o
 OBJSF    =
 LIBBASE  = libpetscksp
 MANSEC   = PC
