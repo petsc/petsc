@@ -1,8 +1,8 @@
 #ifndef included_ALE_Partitioner_hh
 #define included_ALE_Partitioner_hh
 
-#ifndef  included_ALE_Numbering_hh
-#include <Numbering.hh>
+#ifndef  included_ALE_Completion_hh
+#include <Completion.hh>
 #endif
 
 #ifndef  included_ALE_ZOLTAN_hh
@@ -23,6 +23,7 @@ extern "C" {
 #endif
 #ifdef PETSC_HAVE_PARMETIS
 extern "C" {
+  #include <parmetis.h>
   extern void METIS_PartGraphKway(int *, int *, int *, int *, int *, int *, int *, int *, int *, int *, int *);
 }
 #endif
@@ -47,13 +48,21 @@ namespace ALE {
       // This creates a CSR representation of the adjacency matrix for cells
       static void buildDualCSR(const Obj<topology_type>& topology, const int dim, const patch_type& patch, int **offsets, int **adjacency) {
         ALE_LOG_EVENT_BEGIN;
-        const Obj<sieve_type>&                             sieve    = topology->getPatch(patch);
-        const Obj<typename topology_type::label_sequence>& elements = topology->heightStratum(patch, 0);
+        typedef typename ALE::New::Completion<topology_type, typename Mesh::sieve_type::point_type> completion;
+        const Obj<sieve_type>&                             sieve        = topology->getPatch(patch);
+        const Obj<typename topology_type::label_sequence>& elements     = topology->heightStratum(patch, 0);
+        Obj<sieve_type>                                    overlapSieve = new sieve_type(topology->comm(), topology->debug());
         int  numElements = elements->size();
         int *off         = new int[numElements+1];
         int  offset      = 0;
         int *adj;
 
+        completion::scatterSupports(sieve, overlapSieve, topology->getSendOverlap(), topology->getRecvOverlap(), topology);
+        if (numElements == 0) {
+          *offsets   = NULL;
+          *adjacency = NULL;
+          return;
+        }
         if (topology->depth(patch) == dim) {
           int e = 1;
 
@@ -65,7 +74,11 @@ namespace ALE {
 
             off[e] = off[e-1];
             for(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
-              if (sieve->support(*f_iter)->size() == 2) off[e]++;
+              if (sieve->support(*f_iter)->size() == 2) {
+                off[e]++;
+              } else if ((sieve->support(*f_iter)->size() == 1) && (overlapSieve->support(*f_iter)->size() == 1)) {
+                off[e]++;
+              }
             }
             e++;
           }
@@ -82,6 +95,13 @@ namespace ALE {
 
               for(typename sieve_type::traits::supportSequence::iterator n_iter = nBegin; n_iter != nEnd; ++n_iter) {
                 if (*n_iter != *e_iter) adj[offset++] = *n_iter;
+              }
+              const Obj<typename sieve_type::traits::supportSequence>& oNeighbors = overlapSieve->support(*f_iter);
+              typename sieve_type::traits::supportSequence::iterator   onBegin    = oNeighbors->begin();
+              typename sieve_type::traits::supportSequence::iterator   onEnd      = oNeighbors->end();
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = onBegin; n_iter != onEnd; ++n_iter) {
+                adj[offset++] = *n_iter;
               }
             }
           }
@@ -188,6 +208,7 @@ namespace ALE {
         const int        numCells      = cells->size();
         PartitionType   *subAssignment = new PartitionType[numCells];
 
+        // Need the join
         if (levels != 1) {
           throw ALE::Exception("Cannot calculate subordinate partition for any level separation other than 1");
         } else {
@@ -197,6 +218,10 @@ namespace ALE {
             const Obj<typename topology_type::sieve_type::supportSequence>& support = sieve->support(*c_iter);
 
             if (support->size() != 1) {
+              std::cout << "Indeterminate subordinate partition for face " << *c_iter << std::endl;
+              for(typename topology_type::sieve_type::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+                std::cout << "  cell " << *s_iter << std::endl;
+              }
               // Could relax this to choosing the first one
               throw ALE::Exception("Indeterminate subordinate partition");
             }
@@ -314,45 +339,78 @@ namespace ALE {
         #undef __FUNCT__
         #define __FUNCT__ "ParMetisPartitionSieve"
         static part_type *partitionSieve(const Obj<topology_type>& topology, const int dim) {
-          int    nvtxs;      // The number of vertices in full graph
-          int   *xadj;       // Start of edge list for each vertex
-          int   *adjncy;     // Edge lists for all vertices
-          int   *vwgt;       // Vertex weights
-          int   *adjwgt;     // Edge weights
-          int    wgtflag;    // Indicates which weights are present
-          int    numflag;    // Indicates initial offset (0 or 1)
-          int    nparts;     // The number of partitions
-          int    options[5]; // Options
+          int    nvtxs      = 0;    // The number of vertices in full graph
+          int   *vtxdist;           // Distribution of vertices across processes
+          int   *xadj;              // Start of edge list for each vertex
+          int   *adjncy;            // Edge lists for all vertices
+          int   *vwgt       = NULL; // Vertex weights
+          int   *adjwgt     = NULL; // Edge weights
+          int    wgtflag    = 0;    // Indicates which weights are present
+          int    numflag    = 0;    // Indicates initial offset (0 or 1)
+          int    ncon       = 1;    // The number of weights per vertex
+          int    nparts     = topology->commSize(); // The number of partitions
+          float *tpwgts;            // The fraction of vertex weights assigned to each partition
+          float *ubvec;             // The balance intolerance for vertex weights
+          int    options[5];        // Options
           // Outputs
-          int    edgeCut;    // The number of edges cut by the partition
-          int   *assignment; // The vertex partition
+          int    edgeCut;           // The number of edges cut by the partition
+          int   *assignment = NULL; // The vertex partition
           const typename topology_type::patch_type patch = 0;
 
-          if (topology->commRank() == 0) {
-            nvtxs = topology->heightStratum(patch, 0)->size();
-            vwgt       = NULL;
-            adjwgt     = NULL;
-            wgtflag    = 0;
-            numflag    = 0;
-            nparts     = topology->commSize();
-            options[0] = 0; // Use all defaults
-            assignment = new part_type[nvtxs];
-            if (topology->commSize() == 1) {
-              PetscMemzero(assignment, nvtxs * sizeof(part_type));
-            } else {
-              ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &xadj, &adjncy);
-              METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
-              delete [] xadj;
-              delete [] adjncy;
-            }
-          } else {
-            assignment = NULL;
+          options[0] = 0; // Use all defaults
+          vtxdist    = new int[nparts+1];
+          vtxdist[0] = 0;
+          tpwgts     = new float[ncon*nparts];
+          for(int p = 0; p < nparts; ++p) {
+            tpwgts[p] = 1.0/nparts;
           }
+          ubvec      = new float[ncon];
+          ubvec[0]   = 1.05;
+          if (topology->hasPatch(patch)) {
+            nvtxs      = topology->heightStratum(patch, 0)->size();
+            assignment = new part_type[nvtxs];
+          }
+          MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, topology->comm());
+          for(int p = 2; p <= nparts; ++p) {
+            vtxdist[p] += vtxdist[p-1];
+          }
+          if (topology->commSize() == 1) {
+            PetscMemzero(assignment, nvtxs * sizeof(part_type));
+          } else {
+            ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &xadj, &adjncy);
+
+            if (topology->debug() && nvtxs) {
+              for(int p = 0; p <= nvtxs; ++p) {
+                std::cout << "["<<topology->commRank()<<"]xadj["<<p<<"] = " << xadj[p] << std::endl;
+              }
+              for(int i = 0; i < xadj[nvtxs]; ++i) {
+                std::cout << "["<<topology->commRank()<<"]adjncy["<<i<<"] = " << adjncy[i] << std::endl;
+              }
+            }
+            if (vtxdist[1] == vtxdist[nparts]) {
+              if (topology->commRank() == 0) {
+                METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+                if (topology->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
+              }
+            } else {
+              MPI_Comm comm = topology->comm();
+
+              ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
+              if (topology->debug()) {std::cout << "ParMetis: edgecut is " << edgeCut << std::endl;}
+            }
+            if (xadj   != NULL) delete [] xadj;
+            if (adjncy != NULL) delete [] adjncy;
+          }
+          delete [] vtxdist;
+          delete [] tpwgts;
+          delete [] ubvec;
           return assignment;
         };
         #undef __FUNCT__
         #define __FUNCT__ "ParMetisPartitionSieveByFace"
         static part_type *partitionSieveByFace(const Obj<topology_type>& topology, const int dim) {
+          int   *assignment; // The vertex partition
+#ifdef PETSC_HAVE_HMETIS
           int    nvtxs;      // The number of vertices
           int    nhedges;    // The number of hyperedges
           int   *vwgts;      // The vertex weights
@@ -364,7 +422,6 @@ namespace ALE {
           int    options[9]; // Options
           // Outputs
           int    edgeCut;    // The number of edges cut by the partition
-          int   *assignment; // The vertex partition
           const typename topology_type::patch_type patch = 0;
           const Obj<ALE::Mesh::numbering_type>& fNumbering = ALE::New::NumberingFactory<topology_type>::singleton(topology->debug())->getNumbering(topology, patch, topology->depth()-1);
 
@@ -387,9 +444,7 @@ namespace ALE {
               PetscMemzero(assignment, nvtxs * sizeof(part_type));
             } else {
               ALE::New::Partitioner<topology_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges, &eptr, &eind);
-#ifdef PETSC_HAVE_HMETIS
               HMETIS_PartKway(nvtxs, nhedges, vwgts, eptr, eind, hewgts, nparts, ubfactor, options, assignment, &edgeCut);
-#endif
 
               delete [] eptr;
               delete [] eind;
@@ -397,6 +452,7 @@ namespace ALE {
           } else {
             assignment = NULL;
           }
+#endif
           return assignment;
         };
       };

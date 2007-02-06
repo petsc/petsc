@@ -62,9 +62,12 @@ void PETSC_STDCALL  meshcreatepcice_(MPI_Fint * comm, int *dim, CHAR coordFilena
   FREECHAR(adjFilename,aF);
   FREECHAR(bcFilename,bF);
 }
-void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, Mesh *parallelMesh, PetscErrorCode *ierr)
+void PETSC_STDCALL  meshdistribute_(Mesh serialMesh, CHAR partitioner PETSC_MIXED_LEN(lenP), Mesh *parallelMesh, PetscErrorCode *ierr PETSC_END_LEN(lenP))
 {
-  *ierr = MeshDistribute((Mesh) PetscToPointer(serialMesh),parallelMesh);
+  char *pF;
+  FIXCHAR(partitioner,lenP,pF);
+  *ierr = MeshDistribute((Mesh) PetscToPointer(serialMesh),pF,parallelMesh);
+  FREECHAR(partitioner,pF);
 }
 void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ierr)
 {

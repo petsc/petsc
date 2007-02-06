@@ -927,7 +927,7 @@ namespace ALE {
           const chart_type& chart = section->getPatch(patch);
 
           for(typename chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-            this->update(s_iter->first, *c_iter, section->restrict(s_iter->first, *c_iter));
+            this->updatePoint(s_iter->first, *c_iter, section->restrictPoint(s_iter->first, *c_iter));
           }
         }
       };
@@ -1081,7 +1081,7 @@ namespace ALE {
             }
           }
         } else {
-          throw ALE::Exception("Not yet implemented for interpolated sieves");
+          throw ALE::Exception("Update is not yet implemented for interpolated sieves");
         }
       };
       void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {

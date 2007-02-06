@@ -276,9 +276,9 @@ namespace ALE {
 
             sieveCompletion::scatterSieve(subTopology, sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, subAssignment);
             subTopologyNew->stratify();
-            delete [] subAssignment;
+            if (subAssignment != NULL) delete [] subAssignment;
           }
-          delete [] assignment;
+          if (assignment != NULL) delete [] assignment;
 #else
           throw ALE::Exception("Chaco is not installed. Reconfigure with the flag --download-chaco");
 #endif
@@ -288,7 +288,7 @@ namespace ALE {
           typedef typename Partitioner::part_type                         part_type;
 
           part_type *assignment = scatterTopology<Partitioner>(topology, dim, topologyNew, sendOverlap, recvOverlap);
-          delete [] assignment;
+          if (assignment != NULL) delete [] assignment;
 #else
           throw ALE::Exception("ParMetis is not installed. Reconfigure with the flag --download-parmetis");
 #endif
@@ -318,7 +318,7 @@ namespace ALE {
           typedef typename Partitioner::part_type                       part_type;
 
           part_type *assignment = scatterTopologyByFace<Partitioner>(topology, dim, topologyNew, sendOverlap, recvOverlap);
-          delete [] assignment;
+          if (assignment != NULL) delete [] assignment;
 #else
           throw ALE::Exception("Zoltan is not installed. Reconfigure with the flag --download-zoltan");
 #endif
@@ -328,7 +328,7 @@ namespace ALE {
           typedef typename Partitioner::part_type                         part_type;
 
           part_type *assignment = scatterTopologyByFace<Partitioner>(topology, dim, topologyNew, sendOverlap, recvOverlap);
-          delete [] assignment;
+          if (assignment != NULL) delete [] assignment;
 #else
           throw ALE::Exception("ParMetis is not installed. Reconfigure with the flag --download-parmetis");
 #endif
@@ -386,7 +386,7 @@ namespace ALE {
         sieveCompletion::scatterSieve(topology, sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, assignment);
         topologyNew->stratify();
         // 4) Cleanup
-        delete [] assignment;
+        if (assignment != NULL) delete [] assignment;
       };
       #undef __FUNCT__
       #define __FUNCT__ "distributeMesh"
@@ -399,7 +399,7 @@ namespace ALE {
         const int                       dim              = serialMesh->getDimension();
         PetscErrorCode                  ierr;
 
-        if (serialMesh->getDistributed()) return serialMesh;
+        //if (serialMesh->getDistributed()) return serialMesh;
         ALE_LOG_EVENT_BEGIN;
         // Why in the hell do I need this here????
         ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);

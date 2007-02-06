@@ -1376,7 +1376,8 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
   Not Collective
 
   Input Parameter:
-. serialMesh - The original Mesh object
++ serialMesh  - The original Mesh object
+- partitioner - The partitioning package, or NULL for the default
 
   Output Parameter:
 . parallelMesh - The distributed Mesh object
@@ -1386,7 +1387,7 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
 .keywords: mesh, elements
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshDistribute(Mesh serialMesh, Mesh *parallelMesh)
+PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
 {
   ALE::Obj<ALE::Mesh> oldMesh;
   PetscErrorCode      ierr;
@@ -1394,8 +1395,13 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, Mesh *parallelMesh)
   PetscFunctionBegin;
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(oldMesh);
-  ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  if (partitioner == NULL) {
+    ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(oldMesh);
+    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  } else {
+    ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(oldMesh, partitioner);
+    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
