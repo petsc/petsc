@@ -1716,7 +1716,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqDense(MPI_Comm comm,PetscInt m,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqDensePreallocation"
+#define __FUNCT__ "MatSeqDenseSetPreallocation"
 /*@C
    MatSeqDenseSetPreallocation - Sets the array used for storing the matrix elements
 
@@ -1751,7 +1751,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation(Mat B,PetscScalar 
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSeqDensePreallocation_SeqDense"
+#define __FUNCT__ "MatSeqDenseSetPreallocation_SeqDense"
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,PetscScalar *data)
 {
   Mat_SeqDense   *b;
