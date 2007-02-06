@@ -568,6 +568,74 @@ PetscErrorCode SectionRealZero(SectionReal section)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealSetFiberDimension"
+/*@C
+  SectionRealSetFiberDimension - Set the size of the vector space attached to the point
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+- size - The fiber dimension
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal section, PetscInt point, const PetscInt size)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->setFiberDimension(0, point, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealAllocate"
+/*@C
+  SectionRealAllocate - Allocate storage for this section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealClear"
+/*@C
+  SectionRealClear - Dellocate storage for this section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->clear();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetVertexSectionReal"
 /*@C
   MeshGetVertexSectionReal - Create a Section over the vertices with the specified fiber dimension
@@ -1024,6 +1092,74 @@ PetscErrorCode SectionIntComplete(SectionInt section)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionIntSetFiberDimension"
+/*@C
+  SectionIntSetFiberDimension - Set the size of the vector space attached to the point
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+- size - The fiber dimension
+
+  Level: advanced
+
+.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section, PetscInt point, const PetscInt size)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->setFiberDimension(0, point, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntAllocate"
+/*@C
+  SectionIntAllocate - Allocate storage for this section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionIntClear"
+/*@C
+  SectionIntClear - Dellocate storage for this section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionIntRestrict(), SectionIntCreate(), SectionIntView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->clear();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetVertexSectionInt"
 /*@C
   MeshGetVertexSectionInt - Create a Section over the vertices with the specified fiber dimension
@@ -1426,5 +1562,73 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairUpdate(SectionPair section, PetscInt
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
   PetscValidPointer(values,3);
   section->s->update(0, point, (ALE::pair<int, ALE::Mesh::split_value> *) values);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionPairSetFiberDimension"
+/*@C
+  SectionPairSetFiberDimension - Set the size of the vector space attached to the point
+
+  Not collective
+
+  Input Parameters:
++ section - the section object
+. point - the Sieve point
+- size - The fiber dimension
+
+  Level: advanced
+
+.seealso SectionPairRestrict(), SectionPairCreate(), SectionPairView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetFiberDimension(SectionPair section, PetscInt point, const PetscInt size)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->setFiberDimension(0, point, size);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionPairAllocate"
+/*@C
+  SectionPairAllocate - Allocate storage for this section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionPairRestrict(), SectionPairCreate(), SectionPairView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairAllocate(SectionPair section)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionPairClear"
+/*@C
+  SectionPairClear - Dellocate storage for this section
+
+  Not collective
+
+  Input Parameter:
+. section - the section object
+
+  Level: advanced
+
+.seealso SectionPairRestrict(), SectionPairCreate(), SectionPairView()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairClear(SectionPair section)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  section->s->clear();
   PetscFunctionReturn(0);
 }
