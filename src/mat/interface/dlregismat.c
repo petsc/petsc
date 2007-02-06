@@ -84,6 +84,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path)
   ierr = PetscLogEventRegister(&MAT_SetValues,                "MatSetValues",     MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetValues,                "MatGetValues",     MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetRow,                   "MatGetRow",        MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_GetRowIJ,                 "MatGetRowIJ",      MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetSubMatrices,           "MatGetSubMatrice", MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetColoring,              "MatGetColoring",   MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetOrdering,              "MatGetOrdering",   MAT_COOKIE);CHKERRQ(ierr);
