@@ -213,20 +213,46 @@ namespace ALE {
         updateSieve(recvSection, topology);
       };
       #undef __FUNCT__
+      #define __FUNCT__ "createPartitionOverlap"
+      static void createPartitionOverlap(const Obj<topology_type>& topology, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+        const Obj<send_overlap_type>& topSendOverlap = topology->getSendOverlap();
+        const Obj<recv_overlap_type>& topRecvOverlap = topology->getRecvOverlap();
+        const Obj<typename send_overlap_type::traits::baseSequence> base = topSendOverlap->base();
+        const Obj<typename recv_overlap_type::traits::capSequence>  cap  = topRecvOverlap->cap();
+
+        if (base->empty()) {
+          if (topology->commRank() == 0) {
+            for(int p = 1; p < topology->commSize(); p++) {
+              // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+              sendOverlap->addCone(p, p, p);
+            }
+          }
+        } else {
+          for(typename send_overlap_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+            const int& p = *b_iter;
+            // The arrow is from local partition point p (source) to remote partition point p (color) on rank p (target)
+            sendOverlap->addCone(p, p, p);
+          }
+        }
+        if (cap->empty()) {
+          if (topology->commRank() != 0) {
+            // The arrow is from local partition point rank (color) on rank 0 (source) to remote partition point rank (target)
+            recvOverlap->addCone(0, topology->commRank(), topology->commRank());
+          }
+        } else {
+          for(typename recv_overlap_type::traits::capSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
+            const int& p = *c_iter;
+            // The arrow is from local partition point rank (color) on rank p (source) to remote partition point rank (target)
+            recvOverlap->addCone(p, topology->commRank(), topology->commRank());
+          }
+        }
+      }
+      #undef __FUNCT__
       #define __FUNCT__ "createAssignment"
       template<typename Partitioner>
       static typename Partitioner::part_type *createAssignment(const Obj<topology_type>& topology, const int dim, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
-
         // 1) Form partition point overlap a priori
-        if (topology->commRank() == 0) {
-          for(int p = 1; p < topology->commSize(); p++) {
-            // The arrow is from local partition point p to remote partition point p on rank p
-            sendOverlap->addCone(p, p, p);
-          }
-        } else {
-          // The arrow is from remote partition point rank on rank 0 to local partition point rank
-          recvOverlap->addCone(0, topology->commRank(), topology->commRank());
-        }
+        createPartitionOverlap(topology, sendOverlap, recvOverlap);
         if (topology->debug()) {
           sendOverlap->view("Send overlap for partition");
           recvOverlap->view("Receive overlap for partition");

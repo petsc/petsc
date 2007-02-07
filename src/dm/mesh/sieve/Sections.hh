@@ -115,6 +115,12 @@ namespace ALE {
             txt << "viewing PartitionSizeSection '" << name << "'" << std::endl;
           }
         }
+        for(typename sizes_type::const_iterator s_iter = this->_sizes.begin(); s_iter != this->_sizes.end(); ++s_iter) {
+          const patch_type& patch = s_iter->first;
+          const value_type  size  = s_iter->second;
+
+          txt << "[" << this->commRank() << "]: Patch " << patch << " size " << size << std::endl;
+        }
         PetscSynchronizedPrintf(comm, txt.str().c_str());
         PetscSynchronizedFlush(comm);
       };
@@ -225,6 +231,15 @@ namespace ALE {
           if(rank == 0) {
             txt << "viewing PartitionSection '" << name << "'" << std::endl;
           }
+        }
+        for(typename points_type::const_iterator p_iter = this->_points.begin(); p_iter != this->_points.end(); ++p_iter) {
+          const patch_type& patch  = p_iter->first;
+          //const point_type *points = p_iter->second;
+
+          txt << "[" << this->commRank() << "]: Patch " << patch << std::endl;
+        }
+        if (this->_points.size() == 0) {
+          txt << "[" << this->commRank() << "]: empty" << std::endl;
         }
         PetscSynchronizedPrintf(comm, txt.str().c_str());
         PetscSynchronizedFlush(comm);

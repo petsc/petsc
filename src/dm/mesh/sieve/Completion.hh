@@ -89,6 +89,12 @@ namespace ALE {
         const Obj<topology_type::label_sequence>& cells = topology->heightStratum(0, 0);
         int e = 0;
 
+        if (topology->debug()) {
+          int e2 = 0;
+          for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
+            std::cout << "assignment["<<*e_iter<<"]" << assignment[e2++] << std::endl;
+          }
+        }
         for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
           if (assignment[e] == rank) {
             Obj<typename sieve_type::coneSet> current = new typename sieve_type::coneSet();
