@@ -271,9 +271,10 @@ namespace ALE {
             part_type *subAssignment = GenPartitioner::subordinatePartition(topology, 1, subTopology, assignment);
             const typename topology_type::patch_type patch      = 0;
             const Obj<sieve_type>&                   sieve      = subTopology->getPatch(patch);
-            const Obj<sieve_type>&                   sieveNew   = subTopologyNew->getPatch(patch);
+            const Obj<sieve_type>&                   sieveNew   = new Mesh::sieve_type(subTopology->comm(), subTopology->debug());
             const int                                numCells   = subTopology->heightStratum(patch, 0)->size();
 
+            subTopologyNew->setPatch(0, sieveNew);
             sieveCompletion::scatterSieve(subTopology, sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, subAssignment);
             subTopologyNew->stratify();
             if (subAssignment != NULL) delete [] subAssignment;

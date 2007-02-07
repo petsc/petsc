@@ -208,24 +208,29 @@ namespace ALE {
         const int        numCells      = cells->size();
         PartitionType   *subAssignment = new PartitionType[numCells];
 
-        // Need the join
         if (levels != 1) {
           throw ALE::Exception("Cannot calculate subordinate partition for any level separation other than 1");
         } else {
-          const Obj<typename topology_type::sieve_type>& sieve = topology->getPatch(patch);
+          const Obj<typename topology_type::sieve_type>&   sieve    = topology->getPatch(patch);
+          const Obj<typename topology_type::sieve_type>&   subSieve = subTopology->getPatch(patch);
+          Obj<typename topology_type::sieve_type::coneSet> tmpSet   = new typename topology_type::sieve_type::coneSet();
+          Obj<typename topology_type::sieve_type::coneSet> tmpSet2  = new typename topology_type::sieve_type::coneSet();
 
           for(typename topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-            const Obj<typename topology_type::sieve_type::supportSequence>& support = sieve->support(*c_iter);
+            const Obj<typename topology_type::sieve_type::coneSequence>& cone = subSieve->cone(*c_iter);
 
-            if (support->size() != 1) {
+            Obj<typename topology_type::sieve_type::supportSet> cell = sieve->nJoin1(cone);
+            if (cell->size() != 1) {
               std::cout << "Indeterminate subordinate partition for face " << *c_iter << std::endl;
-              for(typename topology_type::sieve_type::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+              for(typename topology_type::sieve_type::supportSet::iterator s_iter = cell->begin(); s_iter != cell->end(); ++s_iter) {
                 std::cout << "  cell " << *s_iter << std::endl;
               }
               // Could relax this to choosing the first one
               throw ALE::Exception("Indeterminate subordinate partition");
             }
-            subAssignment[sNumbering->getIndex(*c_iter)] = assignment[cNumbering->getIndex(*support->begin())];
+            subAssignment[sNumbering->getIndex(*c_iter)] = assignment[cNumbering->getIndex(*cell->begin())];
+            tmpSet->clear();
+            tmpSet2->clear();
           }
         }
         return subAssignment;

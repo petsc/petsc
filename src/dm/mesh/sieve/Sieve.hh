@@ -517,6 +517,9 @@ namespace ALE {
       template<class InputSequence> 
       Obj<supportSet> join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color);
 
+      template<class InputSequence> 
+      Obj<supportSet> nJoin1(const Obj<InputSequence>& chain);
+
       Obj<supportSet> nJoin(const Point_& p, const Point_& q, int n);
 
       Obj<supportSet> nJoin(const Point_& p, const Point_& q, int n, const Color_& color, bool useColor = true);
@@ -1094,6 +1097,34 @@ namespace ALE {
     template<class InputSequence> 
     Obj<typename Sieve<Point_,Marker_,Color_>::supportSet> Sieve<Point_,Marker_,Color_>::join(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, const Color_& color) {
       return this->nJoin(chain0, chain1, this->depth(), color);
+    };
+
+    // Warning: I think this can be much more efficient by eliminating copies
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::supportSet> Sieve<Point_,Marker_,Color_>::nJoin1(const Obj<InputSequence>& chain) {
+      Obj<supportSet> join = new supportSet(); 
+      std::set<point_type> intersectA;
+      std::set<point_type> intersectB;
+      int p = 0;
+
+      for(typename InputSequence::iterator p_iter = chain->begin(); p_iter != chain->end(); ++p_iter) {
+        const Obj<typename traits::supportSequence>& support = this->support(*p_iter);
+
+        join->insert(support->begin(), support->end());
+        if (p == 0) {
+          intersectB.insert(support->begin(), support->end());
+          p++;
+        } else {
+          std::set_intersection(intersectA.begin(), intersectA.end(), join->begin(), join->end(), std::insert_iterator<std::set<point_type> >(intersectB, intersectB.begin()));
+        }
+        intersectA.clear();
+        intersectA.insert(intersectB.begin(), intersectB.end());
+        intersectB.clear();
+        join->clear();
+      }
+      join->insert(intersectA.begin(), intersectA.end());
+      return join;
     };
     
     template <typename Point_, typename Marker_, typename Color_> 
