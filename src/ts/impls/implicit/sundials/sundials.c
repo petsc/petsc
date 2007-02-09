@@ -281,6 +281,9 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
+const char *TSSundialsTypes[] = {"Undefined","adams","bdf","TSSundialsType","SUNDIALS_",0};
+const char *TSSundialsTypes[] = {"modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
 PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
@@ -288,16 +291,15 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
   int            indx;
-  const char     *btype[] = {" ","adams","bdf"},*otype[] = {"modified","unmodified"};
   PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",btype,3,"bdf",&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsTypes,3,TSSundialsTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = TSSundialsSetType(ts,(TSSundialsType)indx);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",otype,2,"unmodified",&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,2,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx);CHKERRQ(ierr);
     }
