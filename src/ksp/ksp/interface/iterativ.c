@@ -369,7 +369,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (ksp->defaultconvergedmininitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
+  if (ksp->defaultconvergedmininitialrtol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot use KSPDefaultConvergedSetUIRNorm() and KSPDefaultConvergedSetUMIRNorm() together");
   ksp->defaultconvergedinitialrtol = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -509,7 +509,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
       ierr = PetscInfo3(ksp,"Linear solver has converged. Residual norm %G is less than absolute tolerance %G at iteration %D\n",rnorm,ksp->abstol,n);CHKERRQ(ierr);
       *reason = KSP_CONVERGED_ATOL;
     } else {
-      ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial right hand side norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
+      if (ksp->defaultconvergedinitialrtol) {
+        ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial residual norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
+      } else {
+        ierr = PetscInfo4(ksp,"Linear solver has converged. Residual norm %G is less than relative tolerance %G times initial right hand side norm %G at iteration %D\n",rnorm,ksp->rtol,ksp->rnorm0,n);CHKERRQ(ierr);
+      }
       *reason = KSP_CONVERGED_RTOL;
     }
   } else if (rnorm >= ksp->divtol*ksp->rnorm0) {

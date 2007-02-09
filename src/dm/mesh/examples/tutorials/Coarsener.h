@@ -109,7 +109,7 @@ PetscErrorCode IdentifyBoundary(Obj<ALE::Mesh>& mesh, int dim)
     while (e_iter != e_iter_end) {
       //topology->setValue(boundary, *e_iter, 0);
       //find out if the edge is not supported on both sides, if so, this is a boundary node
-      if (mesh->debug()) {printf("Edge %d supported by %d faces\n", *e_iter, topology->getPatch(patch)->support(*e_iter)->size());}
+      if (mesh->debug()) {printf("Edge %d supported by %d faces\n", *e_iter, (int)topology->getPatch(patch)->support(*e_iter)->size());}
       if (topology->getPatch(patch)->support(*e_iter)->size() < 2) {
         //topology->setValue(boundary, *e_iter, 1);
         ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence> endpoints = topology->getPatch(patch)->cone(*e_iter); //the adjacent elements
@@ -182,7 +182,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
   } else {
     //get the essential boundary nodes and add them to the set.
     const Obj<ALE::Mesh::topology_type::label_sequence>& essVertices = topology->getLabelStratum(originalPatch, "boundary", dim);
-    printf("- adding %d boundary nodes.\n", essVertices->size());
+    printf("- adding %d boundary nodes.\n", (int)essVertices->size());
     ALE::Mesh::topology_type::label_sequence::iterator v_iter     = essVertices->begin();
     ALE::Mesh::topology_type::label_sequence::iterator v_iter_end = essVertices->end();
     while (v_iter != v_iter_end) {
@@ -221,7 +221,7 @@ PetscErrorCode LevelCoarsen(Obj<ALE::Mesh>& mesh, int dim, ALE::Mesh::real_secti
     v_iter++;
   }
 
-  printf("- creating input to triangle: %d points\n", incPoints.size());
+  printf("- creating input to triangle: %d points\n", (int)incPoints.size());
 #ifdef PETSC_HAVE_TRIANGLE
   //At this point we will set up the triangle(tetgen) calls (with preservation of vertex order.  This is why I do not use the functions build in).
   triangulateio * input = new triangulateio;

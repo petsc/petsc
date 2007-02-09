@@ -34,6 +34,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistribute(Mesh, const char[], Mesh*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistributeByFace(Mesh, const char[], Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGenerate(Mesh, PetscTruth, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRefine(Mesh, double, PetscTruth, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUnify(Mesh, Mesh*);

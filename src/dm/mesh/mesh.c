@@ -1385,7 +1385,8 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
   Level: intermediate
 
 .keywords: mesh, elements
-.seealso: MeshCreate()
+
+.seealso: MeshCreate(), MeshDistributeByFace()
 @*/
 PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
 {
@@ -1400,6 +1401,44 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *p
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   } else {
     ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(oldMesh, partitioner);
+    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshDistributeByFace"
+/*@C
+  MeshDistribute - Distributes the mesh and any associated sections.
+
+  Not Collective
+
+  Input Parameter:
++ serialMesh  - The original Mesh object
+- partitioner - The partitioning package, or NULL for the default
+
+  Output Parameter:
+. parallelMesh - The distributed Mesh object
+
+  Level: intermediate
+
+.keywords: mesh, elements
+
+.seealso: MeshCreate(), MeshDistribute()
+@*/
+PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
+{
+  ALE::Obj<ALE::Mesh> oldMesh;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
+  ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
+  if (partitioner == NULL) {
+    ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMeshByFace(oldMesh);
+    ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
+  } else {
+    ALE::Obj<ALE::Mesh> newMesh = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMeshByFace(oldMesh, partitioner);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
