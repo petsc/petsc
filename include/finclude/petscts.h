@@ -29,12 +29,12 @@
 !  TSSundialsType
 !
       PetscEnum SUNDIALS_ADAMS,SUNDIALS_BDF
-      parameter (SUNDIALS_ADAMS=0,SUNDIALS_BDF=1)
+      parameter (SUNDIALS_ADAMS=1,SUNDIALS_BDF=2)
 !
 !  TSSundialsGramSchmidtType
 !
       PetscEnum SUNDIALS_MODIFIED_GS,SUNDIALS_CLASSICAL_GS
-      parameter (SUNDIALS_MODIFIED_GS=0,SUNDIALS_CLASSICAL_GS=1)
+      parameter (SUNDIALS_MODIFIED_GS=1,SUNDIALS_CLASSICAL_GS=2)
 #define SUNDIALS_UNMODIFIED_GS SUNDIALS_CLASSICAL_GS
 !
 !  Some PETSc fortran functions that the user might pass as arguments
