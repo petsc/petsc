@@ -1,10 +1,10 @@
 #define PETSCTS_DLL
 
 /*
-    Provides a PETSc interface to SUNDIALS. Alan Hindmarsh's parallel ODE
-    solver.
+    Provides a PETSc interface to SUNDIALS/CVODE solver.
     The interface to PVODE (old version of CVODE) was originally contributed 
     by Liyang Xu. It has been redone by Hong Zhang and Dinesh Kaushik.
+    Reference: sundials-2.3.0/examples/cvode/parallel/cvkryx_p.c
 */
 #include "sundials.h"  /*I "petscts.h" I*/
 
@@ -147,12 +147,7 @@ PetscErrorCode TSStep_Sundials_Nonlinear(TS ts,int *steps,double *time)
   void         *mem;
 
   PetscFunctionBegin;
-  /* 
-     Call CVodeCreate to create the solver memory:
-     CV_ADAMS   specifies the Adams Method
-     CV_FUNCTIONAL  specifies functional iteration  
-     A pointer to the integrator memory is returned and stored in cvode_mem.
-  */
+  /* Call CVodeCreate to create the solver memory */
   mem = CVodeCreate(cvode->cvode_type, CV_NEWTON); 
   if (!mem) SETERRQ(1,"CVodeCreate() fails");
   flag = CVodeSetFdata(mem,ts);
@@ -293,12 +288,12 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
   TS_Sundials    *cvode = (TS_Sundials*)ts->data;
   PetscErrorCode ierr;
   int            indx;
-  const char     *btype[] = {"bdf","adams"},*otype[] = {"modified","unmodified"};
+  const char     *btype[] = {" ","adams","bdf"},*otype[] = {"modified","unmodified"};
   PetscTruth     flag;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",btype,2,"bdf",&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",btype,3,"bdf",&indx,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = TSSundialsSetType(ts,(TSSundialsType)indx);CHKERRQ(ierr);
     }

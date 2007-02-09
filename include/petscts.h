@@ -187,7 +187,7 @@ EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSMonitorLGDestroy(PetscDrawLG);
 */
 #ifdef PETSC_HAVE_SUNDIALS
 #define SUNDIALS_UNMODIFIED_GS SUNDIALS_CLASSICAL_GS
-typedef enum { SUNDIALS_ADAMS,SUNDIALS_BDF } TSSundialsType;
+typedef enum { SUNDIALS_ADAMS=1,SUNDIALS_BDF=2} TSSundialsType;
 typedef enum { SUNDIALS_MODIFIED_GS = 0,SUNDIALS_CLASSICAL_GS = 1 } TSSundialsGramSchmidtType;
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsSetType(TS,TSSundialsType);
 EXTERN PetscErrorCode PETSCTS_DLLEXPORT  TSSundialsGetPC(TS,PC*);

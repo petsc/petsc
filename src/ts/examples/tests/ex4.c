@@ -22,8 +22,8 @@ extern PetscErrorCode Initial(Vec,void *);
 
 typedef struct 
 {
-  PetscInt 		m;	/* the number of mesh points in x-direction */
-  PetscInt 		n;      /* the number of mesh points in y-direction */
+  PetscInt 	m;	/* the number of mesh points in x-direction */
+  PetscInt 	n;      /* the number of mesh points in y-direction */
   PetscReal 	dx;     /* the grid space in x-direction */
   PetscReal     dy;     /* the grid space in y-direction */
   PetscReal     a;      /* the convection coefficient    */
@@ -45,12 +45,6 @@ PetscReal f_ini(PetscReal x,PetscReal y)
 }
 
 /* #undef PETSC_HAVE_SUNDIALS */
-
-#define linear_no_matrix       0
-#define linear_no_time         1
-#define linear                 2
-#define nonlinear_no_jacobian  3
-#define nonlinear              4
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -87,7 +81,6 @@ int main(int argc,char **argv)
   data.dx = 1.0/(data.m+1.0);
   data.dy = 1.0/(data.n+1.0);
   mn = (data.m)*(data.n);
-
   ierr = PetscOptionsGetInt(PETSC_NULL,"-time",&time_steps,PETSC_NULL);CHKERRQ(ierr);
     
   /* set initial conditions */
@@ -118,14 +111,8 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,global,FormFunction,&data);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,A,A,FormJacobian,&data);CHKERRQ(ierr);
 
-  /* set TSSundialsRHSFunction and TSSundialsRHSJacobian, so PETSc will pick up the 
-     RHS function from SNES and compute the Jacobian by FD */
-  /*
-  ierr = TSSetRHSFunction(ts,TSSundialsSetRHSFunction,snes);CHKERRQ(ierr);
-  ierr = TSSundialsSetRHSJacobian(ts,0.0,global,&A,&A,&A_structure,snes);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,TSSundialsSetRHSJacobian,snes);CHKERRQ(ierr);
-  */
-  
+  /* set RHSFunction and RHSJacobian, so PETSc will pick up the 
+     RHS function from SNES and compute the Jacobian by FD */  
   ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
   ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,&data);CHKERRQ(ierr);
   ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&data);CHKERRQ(ierr);
@@ -136,9 +123,6 @@ int main(int argc,char **argv)
 #else
   ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr); 
 #endif
-
-  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
-
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
@@ -149,9 +133,9 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = TSSundialsSetType(ts,SUNDIALS_BDF);CHKERRQ(ierr);
-  /* ierr = TSSundialsSetMethodFromOptions(ts);CHKERRQ(ierr); */
+  ierr = TSSundialsSetType(ts,SUNDIALS_ADAMS);CHKERRQ(ierr);
 #endif
+  ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
@@ -410,12 +394,9 @@ PetscErrorCode FormJacobian(SNES snes,Vec x,Mat *AA,Mat *BB,MatStructure *flag,v
       v[0] = one;
       ierr = MatSetValues(A,1,&row,1,idx,v,INSERT_VALUES);CHKERRQ(ierr);
     }
-  }  
-        
+  }          
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-
-
   *flag = SAME_NONZERO_PATTERN;
   return 0;
 } 
@@ -504,7 +485,6 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
-
   /* *flag = SAME_NONZERO_PATTERN; */
   *flag = DIFFERENT_NONZERO_PATTERN;
   return 0;
@@ -515,11 +495,9 @@ PetscErrorCode RHSJacobian(TS ts,PetscReal t,Vec x,Mat *AA,Mat *BB,MatStructure 
 PetscErrorCode RHSFunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ctx)
 {
   PetscErrorCode ierr;
-  SNES snes = PETSC_NULL;
+  SNES           snes = PETSC_NULL;
 
-  ierr = FormFunction(snes,globalin,globalout,ctx);
-CHKERRQ(ierr);
-
+  ierr = FormFunction(snes,globalin,globalout,ctx);CHKERRQ(ierr);
   return 0;
 }
 
