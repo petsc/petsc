@@ -281,8 +281,10 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   PetscFunctionReturn(0);
 }
 
-const char *TSSundialsTypes[] = {"Undefined","adams","bdf","TSSundialsType","SUNDIALS_",0};
-const char *TSSundialsTypes[] = {"modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
+/* type of CVODE linear multistep method */
+const char *TSSundialsLmmTypes[] = {"Undefined","adams","bdf","TSSundialsLmmType","SUNDIALS_",0};
+/* type of G-S orthogonalization used by CVODE linear solver */
+const char *TSSundialsGramSchmidtTypes[] = {"Undefined","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
@@ -295,11 +297,11 @@ PetscErrorCode TSSetFromOptions_Sundials_Nonlinear(TS ts)
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SUNDIALS ODE solver options");CHKERRQ(ierr);
-    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsTypes,3,TSSundialsTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_type","Scheme","TSSundialsSetType",TSSundialsLmmTypes,3,TSSundialsLmmTypes[cvode->cvode_type],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
-      ierr = TSSundialsSetType(ts,(TSSundialsType)indx);CHKERRQ(ierr);
+      ierr = TSSundialsSetType(ts,(TSSundialsLmmType)indx);CHKERRQ(ierr);
     }
-    ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,2,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ts_sundials_gramschmidt_type","Type of orthogonalization","TSSundialsSetGramSchmidtType",TSSundialsGramSchmidtTypes,3,TSSundialsGramSchmidtTypes[cvode->gtype],&indx,&flag);CHKERRQ(ierr);
     if (flag) {
       ierr = TSSundialsSetGramSchmidtType(ts,(TSSundialsGramSchmidtType)indx);CHKERRQ(ierr);
     }
@@ -357,7 +359,7 @@ PetscErrorCode TSView_Sundials(TS ts,PetscViewer viewer)
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "TSSundialsSetType_Sundials"
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType_Sundials(TS ts,TSSundialsType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType_Sundials(TS ts,TSSundialsLmmType type)
 {
   TS_Sundials *cvode = (TS_Sundials*)ts->data;
   
@@ -522,9 +524,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSundialsGetIterations(TS ts,int *nonlin,int *
           TSSundialsSetLinearTolerance(), TSSundialsSetTolerance(), TSSundialsGetPC(),
           TSSundialsSetExactFinalTime()
 @*/
-PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsType type)
+PetscErrorCode PETSCTS_DLLEXPORT TSSundialsSetType(TS ts,TSSundialsLmmType type)
 {
-  PetscErrorCode ierr,(*f)(TS,TSSundialsType);
+  PetscErrorCode ierr,(*f)(TS,TSSundialsLmmType);
   
   PetscFunctionBegin;
   ierr = PetscObjectQueryFunction((PetscObject)ts,"TSSundialsSetType_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -788,8 +790,8 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   ierr = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->pc);CHKERRQ(ierr);
   ts->data          = (void*)cvode;
-  cvode->cvode_type = CV_BDF;
-  cvode->gtype      = SUNDIALS_UNMODIFIED_GS;
+  cvode->cvode_type = SUNDIALS_BDF;
+  cvode->gtype      = SUNDIALS_CLASSICAL_GS;
   cvode->restart    = 5;
   cvode->linear_tol = .05;
 
