@@ -282,9 +282,9 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
 }
 
 /* type of CVODE linear multistep method */
-const char *TSSundialsLmmTypes[] = {"Undefined","adams","bdf","TSSundialsLmmType","SUNDIALS_",0};
+const char *TSSundialsLmmTypes[] = {"","adams","bdf","TSSundialsLmmType","SUNDIALS_",0};
 /* type of G-S orthogonalization used by CVODE linear solver */
-const char *TSSundialsGramSchmidtTypes[] = {"Undefined","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
+const char *TSSundialsGramSchmidtTypes[] = {"","modified","classical","TSSundialsGramSchmidtType","SUNDIALS_",0};
 
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetFromOptions_Sundials_Nonlinear"
