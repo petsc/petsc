@@ -436,12 +436,14 @@ namespace ALE {
             hewgts     = NULL;
             nparts     = topology->commSize();
             ubfactor   = 5;
-            options[0] = 0;  // Use all defaults
+            options[0] = 1;  // Use all defaults
             options[1] = 10; // Number of bisections tested
             options[2] = 1;  // Vertex grouping scheme
             options[3] = 1;  // Objective function
             options[4] = 1;  // V-cycle refinement
-            options[7] = -1; // Random seed
+            options[5] = 0;
+            options[6] = 0;
+            options[7] = 1; // Random seed
             options[8] = 24; // Debugging level
             assignment = new part_type[nvtxs];
 
@@ -458,6 +460,7 @@ namespace ALE {
             assignment = NULL;
           }
 #endif
+          if (assignment) {for (int i=0; i<nvtxs; i++) printf("[%d] %d\n",PetscGlobalRank,assignment[i]);}
           return assignment;
         };
       };
@@ -543,6 +546,7 @@ namespace ALE {
             delete [] eptr_Zoltan;
             delete [] eind_Zoltan;
           }
+          if (assignment) {for (int i=0; i<nvtxs_Zoltan; i++) printf("[%d] %d\n",PetscGlobalRank,assignment[i]);}
           return assignment;
         };
       };

@@ -23,7 +23,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
   PetscFunctionBegin;
   options->debug           = 0;
-  options->test            = 1;
+  options->test            = 0;
   options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
 

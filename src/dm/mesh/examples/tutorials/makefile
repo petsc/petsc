@@ -210,7 +210,7 @@ debugex4:
 	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 runex10:
-	-@${MPIRUN} -np 2 ./ex10 -test > ex10_1.tmp 2>&1; \
+	-@${MPIRUN} -np 2 ./ex10 -partitioner zoltan -test 1 > ex10_1.tmp 2>&1; \
     if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	else echo "Possible problem with ex10_1, diffs above"; fi; \
         ${RM} -f ex10_1.tmp

@@ -422,7 +422,6 @@ namespace ALE {
         const Obj<Mesh::topology_type>& tractionTopology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug());
         const Obj<Mesh::sieve_type>&    sieve            = new Mesh::sieve_type(serialMesh->comm(), serialMesh->debug());
         const int                       dim              = serialMesh->getDimension();
-        PetscErrorCode                  ierr;
 
         //if (serialMesh->getDistributed()) return serialMesh;
         ALE_LOG_EVENT_BEGIN;
@@ -501,7 +500,6 @@ namespace ALE {
         const Obj<Mesh::topology_type>& parallelTopology = new Mesh::topology_type(serialMesh->comm(), serialMesh->debug());
         const Obj<Mesh::sieve_type>&    sieve            = new Mesh::sieve_type(serialMesh->comm(), serialMesh->debug());
         const int                       dim              = serialMesh->getDimension();
-        PetscErrorCode                  ierr;
 
         if (serialMesh->getDistributed()) return serialMesh;
         ALE_LOG_EVENT_BEGIN;
