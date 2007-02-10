@@ -266,7 +266,8 @@ EXTERN_C_END
 
    Input Parameters:
 +  pc - the preconditioner context
--  nredundant - number of redundant preconditioner contexts
+-  nredundant - number of redundant preconditioner contexts; for example if you are using 64 MPI processes and
+                              use an nredundant of 4 there will be 4 parallel solves each on 16 = 64/4 processes.
 
    Level: advanced
 
@@ -436,12 +437,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantGetOperators(PC pc,Mat *mat,Mat *pm
      Options for the redundant preconditioners can be set with -redundant_pc_xxx
 
   Options Database:
-.  -pc_redundant_number_comm - number of sub communicators to use
+.  -pc_redundant_number <n> - number of redundant solves, for example if you are using 64 MPI processes and
+                              use an n of 4 there will be 4 parallel solves each on 16 = 64/4 processes.
 
    Level: intermediate
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PCRedundantSetScatter(),
-           PCRedundantGetPC(), PCRedundantGetOperators()
+           PCRedundantGetPC(), PCRedundantGetOperators(), PCRedundantSetNumber()
 M*/
 
 EXTERN_C_BEGIN
