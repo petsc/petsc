@@ -12,8 +12,6 @@
 #include <tetgen.h>
 #endif
 
-extern PetscErrorCode PetscCommCheckTags(MPI_Comm comm);
-
 namespace ALE {
 #ifdef PETSC_HAVE_TRIANGLE
   namespace Triangle {
@@ -68,7 +66,6 @@ namespace ALE {
 
         initInput(&in);
         initOutput(&out);
-        ierr = PetscCommCheckTags(boundary->comm());CHKERROR(ierr, "Bad tags");
         const Obj<Mesh::topology_type::label_sequence>&   vertices    = topology->depthStratum(patch, 0);
         const Obj<Mesh::topology_type::patch_label_type>& markers     = topology->getLabel(patch, "marker");
         const Obj<Mesh::real_section_type>&               coordinates = boundary->getRealSection("coordinates");
@@ -88,7 +85,6 @@ namespace ALE {
             in.pointmarkerlist[idx] = topology->getValue(markers, *v_iter);
           }
         }
-        ierr = PetscCommCheckTags(boundary->comm());CHKERROR(ierr, "Bad tags");
         const Obj<Mesh::topology_type::label_sequence>& edges      = topology->depthStratum(patch, 1);
         const Obj<Mesh::numbering_type>&                eNumbering = mesh->getFactory()->getLocalNumbering(boundary->getTopology(), patch, 1);
 
@@ -108,7 +104,6 @@ namespace ALE {
           }
         }
 
-        ierr = PetscCommCheckTags(boundary->comm());CHKERROR(ierr, "Bad tags");
         in.numberofholes = 0;
         if (in.numberofholes > 0) {
           ierr = PetscMalloc(in.numberofholes*dim * sizeof(int), &in.holelist);
@@ -126,7 +121,6 @@ namespace ALE {
         if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
         if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
         if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
-        ierr = PetscCommCheckTags(boundary->comm());CHKERROR(ierr, "Bad tags");
         const Obj<Mesh::topology_type>& newTopology = new Mesh::topology_type(mesh->comm(), mesh->debug());
         const Obj<Mesh::sieve_type>     newSieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
         int     numCorners  = 3;
@@ -143,7 +137,6 @@ namespace ALE {
         ALE::New::SieveBuilder<Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coords);
         const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
 
-        ierr = PetscCommCheckTags(boundary->comm());CHKERROR(ierr, "Bad tags");
         if (mesh->commRank() == 0) {
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
@@ -162,7 +155,6 @@ namespace ALE {
             }
           }
         }
-        ierr = PetscCommCheckTags(boundary->comm());CHKERROR(ierr, "Bad tags");
         finiOutput(&out);
         return mesh;
       };
@@ -182,7 +174,6 @@ namespace ALE {
 
         Generator::initInput(&in);
         Generator::initOutput(&out);
-        ierr = PetscCommCheckTags(serialMesh->comm());CHKERROR(ierr, "Bad tags");
         const Obj<Mesh::topology_type::label_sequence>&   vertices    = serialTopology->depthStratum(patch, 0);
         const Obj<Mesh::topology_type::patch_label_type>& markers     = serialTopology->getLabel(patch, "marker");
         const Obj<Mesh::real_section_type>&               coordinates = serialMesh->getRealSection("coordinates");
@@ -202,7 +193,6 @@ namespace ALE {
             in.pointmarkerlist[idx] = serialTopology->getValue(markers, *v_iter);
           }
         }
-        ierr = PetscCommCheckTags(serialMesh->comm());CHKERROR(ierr, "Bad tags");
         const Obj<Mesh::topology_type::label_sequence>& faces      = serialTopology->heightStratum(patch, 0);
         const Obj<Mesh::numbering_type>&                fNumbering = serialMesh->getFactory()->getLocalNumbering(serialTopology, patch, serialTopology->depth());
 
@@ -254,7 +244,6 @@ namespace ALE {
           }
         }
 
-        ierr = PetscCommCheckTags(serialMesh->comm());CHKERROR(ierr, "Bad tags");
         in.numberofholes = 0;
         if (in.numberofholes > 0) {
           ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
@@ -284,7 +273,6 @@ namespace ALE {
         ALE::New::SieveBuilder<Mesh::sieve_type>::buildCoordinates(refMesh->getRealSection("coordinates"), dim, coords);
         const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
 
-        ierr = PetscCommCheckTags(serialMesh->comm());CHKERROR(ierr, "Bad tags");
         if (refMesh->commRank() == 0) {
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
@@ -304,7 +292,6 @@ namespace ALE {
           }
         }
 
-        ierr = PetscCommCheckTags(serialMesh->comm());CHKERROR(ierr, "Bad tags");
         Generator::finiOutput(&out);
         return ALE::New::Distribution<Mesh::topology_type>::distributeMesh(refMesh);
       };

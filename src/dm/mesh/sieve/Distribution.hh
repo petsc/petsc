@@ -13,8 +13,6 @@
 #include <Completion.hh>
 #endif
 
-extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
-
 // Attempt to unify all of the distribution mechanisms:
 //   one to many  (distributeMesh)
 //   many to one  (unifyMesh)
@@ -428,8 +426,6 @@ namespace ALE {
 
         //if (serialMesh->getDistributed()) return serialMesh;
         ALE_LOG_EVENT_BEGIN;
-        // Why in the hell do I need this here????
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setPatch(0, sieve);
         parallelMesh->setTopology(parallelTopology);
         if (serialMesh->debug()) {
@@ -447,7 +443,6 @@ namespace ALE {
           scatterTopology(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
         }
         // This is necessary since we create types (like PartitionSection) on a subset of processors
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setDistSendOverlap(sendOverlap);
         parallelTopology->setDistRecvOverlap(recvOverlap);
 
@@ -472,7 +467,6 @@ namespace ALE {
             sieveCompletion::scatterCones(serialLabel, parallelLabel, sendOverlap, recvOverlap);
           }
         }
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
 
         // Distribute sections
         Obj<std::set<std::string> > sections = serialMesh->getRealSections();
@@ -494,7 +488,6 @@ namespace ALE {
         }
 
         // This is necessary since we create types (like PartitionSection) on a subset of processors
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelMesh->debug()) {parallelMesh->view("Parallel Mesh");}
         parallelMesh->setDistributed(true);
         ALE_LOG_EVENT_END;
@@ -512,8 +505,6 @@ namespace ALE {
 
         if (serialMesh->getDistributed()) return serialMesh;
         ALE_LOG_EVENT_BEGIN;
-        // Why in the hell do I need this here????
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setPatch(0, sieve);
         parallelMesh->setTopology(parallelTopology);
         if (serialMesh->debug()) {serialMesh->view("Serial topology");}
@@ -522,8 +513,6 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = new send_overlap_type(serialTopology->comm(), serialTopology->debug());
         Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(serialTopology->comm(), serialTopology->debug());
         scatterTopologyByFace(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         parallelTopology->setDistSendOverlap(sendOverlap);
         parallelTopology->setDistRecvOverlap(recvOverlap);
 
@@ -542,8 +531,6 @@ namespace ALE {
           parallelMesh->setPairSection(*name, distributeSection(serialMesh->getPairSection(*name), parallelMesh->getTopology(), sendOverlap, recvOverlap));
         }
 
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelMesh->debug()) {parallelMesh->view("Parallel Mesh");}
         parallelMesh->setDistributed(true);
         ALE_LOG_EVENT_END;
@@ -571,8 +558,6 @@ namespace ALE {
         updateSectionLocal(serialSection, parallelSection);
         sectionCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
         updateSectionRemote(recvOverlap, recvSection, parallelSection);
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
-        PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (parallelSection->debug()) {
           parallelSection->view("Parallel Section");
         }
@@ -631,7 +616,6 @@ namespace ALE {
 
         if (!parallelMesh->getDistributed()) return parallelMesh;
         ALE_LOG_EVENT_BEGIN;
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         serialTopology->setPatch(0, sieve);
         serialMesh->setTopology(serialTopology);
         if (parallelMesh->debug()) {
@@ -642,8 +626,6 @@ namespace ALE {
         Obj<send_overlap_type> sendOverlap = new send_overlap_type(serialTopology->comm(), serialTopology->debug());
         Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(serialTopology->comm(), serialTopology->debug());
         unifyTopology(parallelTopology, dim, serialTopology, sendOverlap, recvOverlap);
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         serialTopology->setDistSendOverlap(sendOverlap);
         serialTopology->setDistRecvOverlap(recvOverlap);
 
@@ -659,13 +641,10 @@ namespace ALE {
             sieveCompletion::scatterCones(parallelLabel, serialLabel, sendOverlap, recvOverlap);
           }
         }
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
 
         // Unify coordinates
         serialMesh->setRealSection("coordinates", distributeSection(parallelMesh->getRealSection("coordinates"), serialTopology, sendOverlap, recvOverlap));
 
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
         if (serialMesh->debug()) {serialMesh->view("Serial Mesh");}
         serialMesh->setDistributed(false);
         ALE_LOG_EVENT_END;

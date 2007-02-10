@@ -5,7 +5,6 @@
 #include <SectionCompletion.hh>
 #endif
 
-extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
 
 namespace ALE {
   namespace New {
@@ -324,8 +323,6 @@ namespace ALE {
           }
         }
 #endif
-        PetscErrorCode ierr;
-        ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD);
       };
       // Communicate (size,offset)s in the overlap
       void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const patch_type& patch, bool allowDuplicates = false) {

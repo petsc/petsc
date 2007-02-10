@@ -33,8 +33,8 @@ EXTERN_C_BEGIN
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
 
-    Note: this is declared extern "C" because it is passed to the system routine signal()
-          which is an extern "C" routine. 
+    Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+
 */
 PetscMPIInt PETSC_DLLEXPORT Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
@@ -54,8 +54,8 @@ EXTERN_C_BEGIN
    Private routine to delete internal storage when a communicator is freed.
   This is called by MPI, not by users.
 
-    Note: this is declared extern "C" because it is passed to the system routine signal()
-          which is an extern "C" routine. 
+    Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+
 */
 PetscMPIInt PETSC_DLLEXPORT Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
 {
@@ -113,7 +113,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectGetNewTag(PetscObject obj,PetscMPIInt 
     Collective on comm
 
     Input Parameter:
-.   comm - the PETSc communicator
+.   comm - the MPI communicator
 
     Output Parameter:
 .   tag - the new tag
@@ -154,108 +154,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
   }
 
   *tag = tagvalp[0]--;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCommSynchronizeTags" 
-/*@
-    PetscCommSynchronizeTags - It is possible for the private PETSc tags to get out of
-    synch between processes. This function rectifies this disparity.
-
-    Collective on comm
-
-    Input Parameter:
-.   comm - the PETSc communicator
-
-    Level: developer
-
-    Concepts: tag^getting
-    Concepts: message tag^getting
-    Concepts: MPI message tag^getting
-
-.seealso: PetscObjectCheckTags()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscCommSynchronizeTags(MPI_Comm comm)
-{
-  PetscMPIInt   *tagvalp = 0, tag;
-  PetscTruth     flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Attr_get(comm, Petsc_Tag_keyval, (void **) &tagvalp, (PetscMPIInt *) &flg);CHKERRQ(ierr);
-  if (!flg) {
-    MPI_Comm innerComm;
-    void    *ptr;
-
-    /* check if this communicator has a PETSc communicator imbedded in it */
-    ierr = MPI_Attr_get(comm, Petsc_InnerComm_keyval, &ptr, (PetscMPIInt*) &flg);CHKERRQ(ierr);
-    if (!flg) {
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
-    } else {
-      /* We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers */
-      ierr = PetscMemcpy(&innerComm, &ptr, sizeof(MPI_Comm));CHKERRQ(ierr);
-      ierr = MPI_Attr_get(innerComm, Petsc_Tag_keyval, (void **) &tagvalp, (PetscMPIInt *) &flg);CHKERRQ(ierr);
-      if (!flg) {
-        SETERRQ(PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tagvalp attribute set");
-      }
-    }
-  }
-  ierr = MPI_Allreduce(tagvalp, &tag, 1, MPI_INT, MPI_MIN, comm);CHKERRQ(ierr);
-  tagvalp[0] = tag;
-  ierr = PetscInfo2(0, "Reset tag for comm %ld to \n", (long) comm, tagvalp[0]);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscCommCheckTags" 
-/*@
-    PetscCommCheckTags - It is possible for the private PETSc tags to get out of
-    synch between processes. This function returns an error if the tags are invalid.
-
-    Collective on comm
-
-    Input Parameter:
-.   comm - the PETSc communicator
-
-    Level: developer
-
-    Concepts: tag^getting
-    Concepts: message tag^getting
-    Concepts: MPI message tag^getting
-
-.seealso: PetscObjectSynchronizeTags()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscCommCheckTags(MPI_Comm comm)
-{
-  PetscMPIInt   *tagvalp = 0, tag;
-  PetscTruth     flg;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = MPI_Attr_get(comm, Petsc_Tag_keyval, (void **) &tagvalp, (PetscMPIInt *) &flg);CHKERRQ(ierr);
-  if (!flg) {
-    MPI_Comm innerComm;
-    void    *ptr;
-
-    /* check if this communicator has a PETSc communicator imbedded in it */
-    ierr = MPI_Attr_get(comm, Petsc_InnerComm_keyval, &ptr, (PetscMPIInt*) &flg);CHKERRQ(ierr);
-    if (!flg) {
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Bad MPI communicator supplied; must be a PETSc communicator");
-    } else {
-      /* We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers */
-      ierr = PetscMemcpy(&innerComm, &ptr, sizeof(MPI_Comm));CHKERRQ(ierr);
-      ierr = MPI_Attr_get(innerComm, Petsc_Tag_keyval, (void **) &tagvalp, (PetscMPIInt *) &flg);CHKERRQ(ierr);
-      if (!flg) {
-        SETERRQ(PETSC_ERR_PLIB,"Inner PETSc communicator does not have its tagvalp attribute set");
-      }
-    }
-  }
-  tag = tagvalp[0];
-  ierr = MPI_Bcast(&tag, 1, MPI_INT, 0, comm);CHKERRQ(ierr);
-  if (tagvalp[0] != tag) {
-    SETERRQ2(PETSC_ERR_LIB, "Invalid tag %d should be %d", tagvalp[0], tag);
-  }
+#if defined(PETSC_USE_DEBUG)
+  /* 
+     Hanging here means that some processes have called PetscCommDuplicate() and others have not.
+     This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
+     ALL processes that share a communicator MUST shared objects created from that communicator.
+  */
+  ierr = MPI_Barrier(comm);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
@@ -290,9 +196,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
   PetscErrorCode ierr;
   PetscMPIInt    *tagvalp,*maxval;
   PetscTruth     flg;
-#if defined(PETSC_USE_DEBUG)
-  PetscMPIInt    tag;
-#endif
 
   PetscFunctionBegin;
   if (Petsc_Tag_keyval == MPI_KEYVAL_INVALID) {
@@ -345,10 +248,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
      This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
      ALL processes that share a communicator MUST shared objects created from that communicator.
   */
-  ierr = MPI_Allreduce(tagvalp,&tag,1,MPI_INT,MPI_BOR,comm_in);CHKERRQ(ierr);
-  if (tag != tagvalp[0]) {
-    SETERRQ(PETSC_ERR_ARG_CORRUPT,"Communicator was used on subset of processors.");
-  }
+  ierr = MPI_Barrier(comm_in);CHKERRQ(ierr);
 #endif
 
   if (tagvalp[0] < 1) {

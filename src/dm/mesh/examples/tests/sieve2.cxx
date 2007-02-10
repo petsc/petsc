@@ -5,7 +5,6 @@ static char help[] = "Sieve Distribution Tests.\n\n";
 #include "meshTest.hh"
 #include <Completion.hh>
 
-extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
 
 using ALE::Obj;
 typedef ALE::Test::OverlapTest::topology_type                     topology_type;
@@ -129,8 +128,6 @@ PetscErrorCode DistributionTest(const Obj<ALE::Mesh>& mesh, const Obj<ALE::Mesh>
   } else {
     ierr = ReceiveDistribution(mesh, meshNew);CHKERRQ(ierr);
   }
-  // This is necessary since we create types (like PartitionSection) on a subset of processors
-  ierr = PetscCommSynchronizeTags(PETSC_COMM_WORLD); CHKERRQ(ierr);
   sieve->view("Distributed sieve");
   meshNew->getSection("coordinates")->view("Coordinates");
   PetscFunctionReturn(0);

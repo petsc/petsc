@@ -5,8 +5,6 @@
 #include <Sections.hh>
 #endif
 
-extern PetscErrorCode PetscCommSynchronizeTags(MPI_Comm);
-
 namespace ALE {
   namespace New {
     template<typename Section_>
