@@ -30,11 +30,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommDestroy(PetscSubcomm psubcomm)
    Output Parameter:
 .  psubcomm - location to store the PetscSubcomm context
 
-   Options Database Keys:
 
    Notes:
    To avoid data scattering from subcomm back to original comm, we create subcommunicators 
-   by iteratively taking a processe into a subcommunicator. 
+   by iteratively taking a process into a subcommunicator. 
    Example: size=4, nsubcomm=(*psubcomm)->n=3
      comm=(*psubcomm)->parent:
       rank:     [0]  [1]  [2]  [3]
@@ -97,10 +96,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT PetscSubcommCreate(MPI_Comm comm,PetscInt nsub
     }
     duprank += subsize[i]; j++;
   }
+  ierr = PetscFree(subsize);CHKERRQ(ierr);
  
   /* create dupcomm with same size as comm, but its rank, duprank, maps subcomm's contiguously into dupcomm */   
   ierr = MPI_Comm_split(comm,0,duprank,&dupcomm);CHKERRQ(ierr);
-  ierr = PetscFree(subsize);CHKERRQ(ierr);
  
   ierr = PetscNew(struct _n_PetscSubcomm,&psubcomm_tmp);CHKERRQ(ierr);
   psubcomm_tmp->parent    = comm;

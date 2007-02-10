@@ -61,15 +61,13 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 {
   PC_Redundant   *red = (PC_Redundant*)pc->data;
   PetscErrorCode ierr;
-  PetscInt       mstart,mend,mlocal,m;
+  PetscInt       mstart,mend,mlocal,m,mlocal_sub,rstart_sub,rend_sub,mloc_sub;
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
-  MatStructure   str   = DIFFERENT_NONZERO_PATTERN;
+  MatStructure   str = DIFFERENT_NONZERO_PATTERN;
   MPI_Comm       comm = pc->comm,subcomm;
   Vec            vec;
-  PetscInt       mlocal_sub;
   PetscMPIInt    subsize,subrank;
-  PetscInt       rstart_sub,rend_sub,mloc_sub;
   const char     *prefix;
 
   PetscFunctionBegin;
@@ -87,7 +85,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = PCSetOptionsPrefix(red->pc,prefix);CHKERRQ(ierr);
     ierr = PCAppendOptionsPrefix(red->pc,"redundant_");CHKERRQ(ierr);
-    ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
 
     /* create working vectors xsub/ysub and xdup/ydup */
     ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
@@ -116,6 +113,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     if (!red->scatterin){
       IS       is1,is2;
       PetscInt *idx1,*idx2,i,j,k; 
+
       ierr = PetscMalloc(2*red->psubcomm->n*mlocal*sizeof(PetscInt),&idx1);CHKERRQ(ierr);
       idx2 = idx1 + red->psubcomm->n*mlocal;
       j = 0;
