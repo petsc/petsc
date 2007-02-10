@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        = ${SIEVE_FLAGS}
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
-EXAMPLESC       = ex1.c
+EXAMPLESC       = ex1.c ex10.cxx
 EXAMPLESF       = 
 MANSEC          = DA
 NP              = 1
@@ -40,6 +40,10 @@ ex6: ex6.o   chkopts
 ex7: ex7.o   chkopts
 	-${CLINKER} -o ex7 ex7.o  ${PETSC_DM_LIB}
 	${RM} -f ex7.o
+
+ex10: ex10.o   chkopts
+	-${CLINKER} -o ex10 ex10.o  ${PETSC_DM_LIB}
+	${RM} -f ex10.o
 
 ex_coarsen: ex_coarsen.o   chkopts
 	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}
@@ -205,8 +209,14 @@ testex2_3:
 debugex4:
 	-@${MPIRUN} -np ${NP} ./ex4 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
+runex10:
+	-@${MPIRUN} -np 2 ./ex10 -test > ex10_1.tmp 2>&1; \
+    if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
+	else echo "Possible problem with ex10_1, diffs above"; fi; \
+        ${RM} -f ex10_1.tmp
 
-TESTEXAMPLES_SIEVE 		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm ex2.PETSc testex2_1 testex2_2 testex2_3 ex2.rm
+
+TESTEXAMPLES_SIEVE 		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm ex2.PETSc testex2_1 testex2_2 testex2_3 ex2.rm ex10.PETSc runex10 ex10.rm
 TESTEXAMPLES_C  		  = 
 TESTEXAMPLES_C_X11  	  = 
 TESTEXAMPLES_FORTRAN	  = 
