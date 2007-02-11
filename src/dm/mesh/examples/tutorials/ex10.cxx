@@ -201,7 +201,6 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const int                                                 rank        = m->commRank();
   const ALE::Mesh::real_section_type::patch_type            patch       = 0;
-  const ALE::Obj<ALE::Mesh::real_section_type>&             coordinates = m->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::topology_type>&                 topology    = m->getTopology();
   const ALE::Obj<ALE::Mesh::sieve_type>&                    sieve       = topology->getPatch(patch);
     
@@ -211,12 +210,12 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
   for(ALE::Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Face %d\n", rank, *f_iter);CHKERRQ(ierr);
-    const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cells = sieve->cone(*f_iter);
-    const ALE::Mesh::sieve_type::traits::coneSequence::iterator  end  = cells->end();
+    const ALE::Obj<ALE::Mesh::sieve_type::traits::supportSequence>& cells = sieve->support(*f_iter);
+    const ALE::Mesh::sieve_type::traits::supportSequence::iterator  end   = cells->end();
 
     // Loop over cells (including ghosts) for the given face
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "       Cells ");CHKERRQ(ierr);
-    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    for(ALE::Mesh::sieve_type::traits::supportSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "       %d ", *c_iter);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
