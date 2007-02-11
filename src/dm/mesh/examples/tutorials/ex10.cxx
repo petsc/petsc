@@ -160,25 +160,23 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
   const ALE::Obj<ALE::Mesh::real_section_type>&             coordinates = m->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::topology_type>&                 topology    = m->getTopology();
   const ALE::Obj<ALE::Mesh::sieve_type>&                    sieve       = topology->getPatch(patch);
-  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells       = topology->heightStratum(patch, 0);
     
   // Loop over cells
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell (including ghosts), on each process\n");CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
   for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Cell %d\n", rank, *c_iter);CHKERRQ(ierr);
-
-    const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*c_iter);
-    const ALE::Mesh::sieve_type::traits::coneSequence::iterator  end  = cone->end();
+    const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& faces = sieve->cone(*c_iter);
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator  end  = faces->end();
 
     // Loop over faces owned by this process on the given cell    
-    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cone->begin(); f_iter != end; ++f_iter) {
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != end; ++f_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Face %d, with coordinates ", *f_iter);CHKERRQ(ierr);
       const ALE::Obj<ALE::Mesh::sieve_type::coneArray>& vertices = sieve->nCone(*f_iter, topology->depth(patch, *f_iter));
-      const ALE::Mesh::sieve_type::coneArray::iterator  vEnd     = vertices->end();
       
       // Loop over vertices of the given face
-      for(ALE::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+      for(ALE::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
 	const ALE::Mesh::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
 	
 	ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (%g,%g,%g)",*v_iter,array[0],array[1],array[2]);CHKERRQ(ierr);
