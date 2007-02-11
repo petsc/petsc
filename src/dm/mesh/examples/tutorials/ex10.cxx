@@ -1,15 +1,22 @@
-// This example will implement PFLOTRAN eventually
-static char help[] = "This example runs PFLOTRAN.\n\n";
+
+static char help[] = "This example demonstrates partitioning/distributed hexes by face.\n\n";
 
 #include <petscda.h>
 #include <petscmesh.h>
 
 #include <Distribution.hh>
 
+/*
+    * Each FACE is assigned to (owned by) a unique process. (Faces are NOT ghosted)
+    * Cells are ghosted and live on all processes that own any of its faces
+    * For the linear algebra, each cell is assigned to (owned by) a unique process
+      a VecScatter is created that maps values from the owned cells to the ghost cells
+
+*/
+ 
 typedef struct {
   PetscInt   debug;              // The debugging level
   PetscInt   test;               // The testing level
-  PetscTruth interpolate;        // Generate missing intermediate elements
   PetscReal  refinementLimit;    // The largest allowable cell volume
   char       baseFilename[2048]; // The base filename for mesh files
   char       partitioner[2048];  // The graph partitioner
@@ -24,13 +31,11 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->debug           = 0;
   options->test            = 0;
-  options->interpolate     = PETSC_TRUE;
   options->refinementLimit = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-test", "The testing level", "pflotran.cxx", options->test, &options->test, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate missing intermediate elements", "pflotran.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "pflotran.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscStrcpy(options->baseFilename, "data/ex10");CHKERRQ(ierr);
@@ -39,9 +44,6 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsString("-partitioner", "The graph partitioner", "pflotran.cxx", options->partitioner, options->partitioner, 2048, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
-  if (!options->interpolate) {
-    SETERRQ(PETSC_ERR_ARG_WRONG, "Cannot partition faces of a non-interpolated mesh");
-  }
   PetscFunctionReturn(0);
 }
 
@@ -109,7 +111,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   PetscTruth  view;
   PetscMPIInt size;
 
-  ierr = MeshCreatePCICE(comm, 3, coordFile.c_str(), adjFile.c_str(), options->interpolate, PETSC_NULL, 0, 0, &mesh);CHKERRQ(ierr);
+  ierr = MeshCreatePCICE(comm, 3, coordFile.c_str(), adjFile.c_str(), PETSC_TRUE, PETSC_NULL, 0, 0, &mesh);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) {
@@ -153,38 +155,33 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
   ALE::Obj<ALE::Mesh> m;
   
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const int                                      rank        = m->commRank();
-  const ALE::Mesh::real_section_type::patch_type patch       = 0;
-  const ALE::Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::topology_type>&      topology    = m->getTopology();
-  const ALE::Obj<ALE::Mesh::sieve_type>&         sieve       = topology->getPatch(patch);
-  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
-  const int dim = m->getDimension();
-  
-  // Loop over elements (quadrilaterals)
+  const int                                                 rank        = m->commRank();
+  const ALE::Mesh::real_section_type::patch_type            patch       = 0;
+  const ALE::Obj<ALE::Mesh::real_section_type>&             coordinates = m->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::topology_type>&                 topology    = m->getTopology();
+  const ALE::Obj<ALE::Mesh::sieve_type>&                    sieve       = topology->getPatch(patch);
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells       = topology->heightStratum(patch, 0);
+    
+  // Loop over cells
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell (including ghosts), on each process\n");CHKERRQ(ierr);
   for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Processing cell %d\n", rank, *c_iter);CHKERRQ(ierr);
-    if (!options->interpolate) continue;
+
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Cell %d\n", rank, *c_iter);CHKERRQ(ierr);
+
     const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*c_iter);
     const ALE::Mesh::sieve_type::traits::coneSequence::iterator  end  = cone->end();
-    
+
+    // Loop over faces owned by this process on the given cell    
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cone->begin(); f_iter != end; ++f_iter) {
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]  Processing face %d, with coordinates\n", rank, *f_iter);CHKERRQ(ierr);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Face %d, with coordinates ", *f_iter);CHKERRQ(ierr);
       const ALE::Obj<ALE::Mesh::sieve_type::coneArray>& vertices = sieve->nCone(*f_iter, topology->depth(patch, *f_iter));
       const ALE::Mesh::sieve_type::coneArray::iterator  vEnd     = vertices->end();
       
-      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "    ");CHKERRQ(ierr);
+      // Loop over vertices of the given face
       for(ALE::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
 	const ALE::Mesh::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
 	
-	ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "(");CHKERRQ(ierr);
-	for(int d = 0; d < dim; ++d) {
-	  if (d > 0) {
-	    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);
-	  }
-	  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", array[d]);CHKERRQ(ierr);
-	}
-	ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, ") ");CHKERRQ(ierr);
+	ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (%g,%g,%g)",*v_iter,array[0],array[1],array[2]);CHKERRQ(ierr);
       }
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
     }
