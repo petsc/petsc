@@ -274,10 +274,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
 
    Level: developer
            
+   Note: n is a PetscInt when it "really" should be a size_t
+
 .seealso: PetscOpenMPMerge()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
+PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **ptr)
 {
   PetscErrorCode ierr;
   PetscInt       command = 0;
@@ -286,7 +288,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,size_t n,void **ptr)
   if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here since size_t */
+  ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here since size_t */
   /* cannot use PetscNew() cause it requires struct argument */
   ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
   ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);

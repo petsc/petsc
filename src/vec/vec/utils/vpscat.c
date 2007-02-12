@@ -1381,7 +1381,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_M
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateLocal_PtoS"
-PetscErrorCode VecScatterCreateLocal_PtoS(int nsends,int sendSizes[],int sendProcs[],int sendIdx[],int nrecvs,int recvSizes[],int recvProcs[],int recvIdx[],PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,PetscInt sendSizes[],PetscInt sendProcs[],PetscInt sendIdx[],PetscInt nrecvs,PetscInt recvSizes[],PetscInt recvProcs[],PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from, *to;
   PetscInt       sendSize, recvSize;

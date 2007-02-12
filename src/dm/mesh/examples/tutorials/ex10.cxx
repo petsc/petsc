@@ -224,6 +224,72 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateGlobalVector"
+PetscErrorCode CreateGlobalVector(DM dm, Options *options,Vec *gvec)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  Mesh        mesh = (Mesh) dm;
+  SectionReal f;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  
+  ierr = MeshGetSectionReal(mesh, "default", &f);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
+    const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
+  const ALE::Obj<ALE::Discretization>&                      disc     = m->getDiscretization();
+  
+  disc->setNumDof(topology->depth(), 2);
+  m->setupField(s);
+  s->setDebug(options->debug);
+
+
+  MeshCreateGlobalScatter(mesh,f,0);
+  printf("by \n");
+
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", m->getRealSection("default")->getAtlas());
+
+  ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
+
+  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateLocalVector"
+PetscErrorCode CreateLocalVector(DM dm, Options *options,Vec *localVec)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  Mesh        mesh = (Mesh) dm;
+  SectionReal f;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  
+  ierr = MeshGetSectionReal(mesh, "u", &f);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
+    const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
+  const ALE::Obj<ALE::Discretization>&                      disc     = m->getDiscretization();
+  
+  disc->setNumDof(topology->depth(), 2);
+  m->setupField(s);
+  s->setDebug(options->debug);
+
+  ierr = VecCreateSeq(PETSC_COMM_SELF, s->size(0), localVec);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(f);CHKERRQ(ierr);
+
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateField"
 PetscErrorCode CreateField(DM dm, Options *options)
@@ -299,11 +365,21 @@ PetscErrorCode UpdateGhosts(DM dm, Options *options)
 PetscErrorCode RunTests(DM dm, Options *options)
 {
   PetscErrorCode ierr;
+  Vec            lv;
+  PetscScalar    *l;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
   if (options->test) {
     ierr = TraverseCells(dm, options);CHKERRQ(ierr);
     ierr = TraverseFaces(dm, options);CHKERRQ(ierr);
+    ierr = CreateGlobalVector(dm, options,&lv);CHKERRQ(ierr);
+    ierr = VecGetArray(lv,&l);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(lv,&n);CHKERRQ(ierr);
+    for (i=0; i<n; i++) l[i] = i;
+    ierr = VecRestoreArray(lv,&l);CHKERRQ(ierr);
+    ierr = VecView(lv,0);CHKERRQ(ierr);
+    ierr = VecDestroy(lv);CHKERRQ(ierr);
     ierr = CreateField(dm, options);CHKERRQ(ierr);
     ierr = UpdateGhosts(dm, options);CHKERRQ(ierr);
   }

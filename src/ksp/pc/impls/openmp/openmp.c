@@ -338,7 +338,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
   PetscFunctionBegin;
   ierr      = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"OpenMP preconditioner only works for sequential solves");
-  ierr      = PetscOpenMPNew(PETSC_COMM_LOCAL_WORLD,sizeof(PC_OpenMP),(void**)&red);CHKERRQ(ierr);
+  /* caste the struct length to a PetscInt for easier MPI calls */
+  ierr      = PetscOpenMPNew(PETSC_COMM_LOCAL_WORLD,(PetscInt)sizeof(PC_OpenMP),(void**)&red);CHKERRQ(ierr);
   red->comm = PETSC_COMM_LOCAL_WORLD;
   pc->data  = (void*) red;
 

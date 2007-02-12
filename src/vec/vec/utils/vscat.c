@@ -16,7 +16,7 @@ PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE = 0;
      Checks if any indices are less than zero and generates an error
 */
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterCheckIndicates_Private"
+#define __FUNCT__ "VecScatterCheckIndices_Private"
 static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,PetscInt *idx)
 {
   PetscInt i;
@@ -31,8 +31,7 @@ static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,Pe
 #endif
 
 /*
-      This is special scatter code for when the entire parallel vector is 
-   copied to each processor.
+      This is special scatter code for when the entire parallel vector is copied to each processor.
 
    This code was written by Cameron Cooper, Occidental College, Fall 1995,
    will working at ANL as a SERS student.
@@ -147,8 +146,7 @@ PetscErrorCode VecScatterBegin_MPI_ToAll(Vec x,Vec y,InsertMode addv,ScatterMode
 }
 
 /*
-      This is special scatter code for when the entire parallel vector is 
-   copied to processor 0.
+      This is special scatter code for when the entire parallel vector is  copied to processor 0.
 
 */
 #undef __FUNCT__  
