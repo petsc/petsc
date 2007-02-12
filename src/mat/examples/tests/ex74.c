@@ -14,7 +14,7 @@ int main(int argc,char **args)
   Mat                sA,sB,sC;         /* symmetric part of the matrices */ 
   PetscInt           n,mbs=16,bs=1,nz=3,prob=1,i,j,col[3],lf,block, row,Ii,J,n1,inc; 
   PetscReal          norm1,norm2,rnorm,tol=1.e-10;
-  PetscScalar        neg_one = -1.0,four=4.0,value[3],alpha=0.1;  
+  PetscScalar        neg_one = -1.0,four=4.0,value[3];  
   IS                 perm, iscol;
   PetscRandom        rdm;
   PetscTruth         doIcc=PETSC_TRUE,equal;
@@ -220,8 +220,11 @@ int main(int argc,char **args)
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetDiagonal(), ||s1-s2||=%G\n",norm1);CHKERRQ(ierr);
   }
 
-  ierr = MatScale(A,alpha);CHKERRQ(ierr);
-  ierr = MatScale(sB,alpha);CHKERRQ(ierr);
+  {
+    PetscScalar alpha=0.1;
+    ierr = MatScale(A,alpha);CHKERRQ(ierr);
+    ierr = MatScale(sB,alpha);CHKERRQ(ierr);
+  }
 #endif
 
   /* Test MatGetRowMax() */
