@@ -3224,18 +3224,20 @@ For eg: \trl{-mat_type superlu_dist} \trl{-ksp_type preonly} \trl{-pc_type lu}
 {\bf Package}    &{\bf Base Class}  & {\bf PCType} & {\bf MatType} & {\bf Runtime Options}\\
 \hline
 DSCPACK          & baij         & cholesky     &  MATDSCPACK         & \trl{-mat_type dscpack}\\
-MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
-                 & sbaij        & cholesky     &  MATSBAIJMUMPS      & \trl{-mat_type sbaijmumps}\\
-SPOOLES          & seqaij       & lu           &  MATSEQAIJSPOOLES   & \trl{-mat_type seqaijspooles}\\
-                 & mpiaij       & lu           &  MATMPIAIJSPOOLES   & \trl{-mat_type mpiaijspooles}\\
-                 & seqsbaij     & cholesky     &  MATSEQSBAIJSPOOLES & \trl{-mat_type seqsbaijspooles}\\
-                 & mpisbaij     & cholesky     &  MATMPISBAIJSPOOLES & \trl{-mat_type mpisbaijspooles}\\
-SUPERLU          & seqaij       & lu           &  MATSUPERLU         & \trl{-mat_type superlu} \\
-SUPERLU\_DIST    & aij          & lu           &  MATSUPERLU\_DIST   & \trl{-mat_type superlu_dist}\\
-UMFPACK          & seqaij       & lu           &  MATUMFPACK         & \trl{-mat_type umfpack}\\
 ESSL             & seqaij       & lu           &  MATESSL            & \trl{-mat_type essl}\\
 LUSOL            & seqaij       & lu           &  MATLUSOL           & \trl{-mat_type lusol}\\
 MATLAB           & seqaij       & lu           &  MATMATLAB          & \trl{-mat_type matlab}\\
+MUMPS            & aij          & lu           &  MATAIJMUMPS        & \trl{-mat_type aijmumps}\\
+                 & sbaij        & cholesky     &  MATSBAIJMUMPS      & \trl{-mat_type sbaijmumps}\\
+PLAPACK          & plapack      & lu           &  MATPLAPACK         & \trl{-mat_type plapack}\\
+                 & plapack      & cholesky     &  MATPLAPACK         & \trl{-mat_type plapack}\\
+SPOOLES          & aij          & lu           &  MATAIJSPOOLES      & \trl{-mat_type aijspooles}\\                
+                 & sbaij        & cholesky     &  MATSBAIJSPOOLES    & \trl{-mat_type sbaijspooles}\\
+SUPERLU          & seqaij       & lu           &  MATSUPERLU         & \trl{-mat_type superlu} \\
+SUPERLU\_DIST    & aij          & lu           &  MATSUPERLU\_DIST   & \trl{-mat_type superlu_dist}\\
+UMFPACK          & seqaij       & lu           &  MATUMFPACK         & \trl{-mat_type umfpack}\\
+
+
 \hline
 \end{tabular}
 \end{center}
