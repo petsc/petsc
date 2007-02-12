@@ -283,6 +283,26 @@ runex5_5:
 	   if (${DIFF} output/ex5_5.out ex5_5.tmp) then true; \
 	   else echo "Possible problem with ex5_5, diffs above"; fi; \
 	   ${RM} -f ex5_5.tmp
+runex5_plapack_1:
+	-@${MPIRUN} -np 1 ./ex5 -mat_type plapack -ksp_type preonly -pc_type lu -pc_factor_mat_ordering_type natural > ex5_plapack.tmp 2>&1; \
+	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
+	   else echo "Possible problem with ex5_plapack_1, diffs above"; fi; \
+	   ${RM} -f ex5_plapack.tmp
+runex5_plapack_2:
+	-@${MPIRUN} -np 3 ./ex5 -mat_type plapack -ksp_type preonly -pc_type lu > ex5_plapack.tmp 2>&1; \
+	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
+	   else echo "Possible problem with ex5_plapack_2, diffs above"; fi; \
+	   ${RM} -f ex5_plapack.tmp
+runex5_plapack_3:
+	-@${MPIRUN} -np 1 ./ex5 -mat_type plapack -ksp_type preonly -pc_type cholesky -pc_factor_mat_ordering_type natural > ex5_plapack.tmp 2>&1; \
+	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
+	   else echo "Possible problem with ex5_plapack_3, diffs above"; fi; \
+	   ${RM} -f ex5_plapack.tmp
+runex5_plapack_4:
+	-@${MPIRUN} -np 3 ./ex5 -mat_type plapack -ksp_type preonly -pc_type cholesky > ex5_plapack.tmp 2>&1; \
+	   if (${DIFF} output/ex5_plapack.out ex5_plapack.tmp) then true; \
+	   else echo "Possible problem with ex5_plapack_4, diffs above"; fi; \
+	   ${RM} -f ex5_plapack.tmp
 runex6f:
 	-@${MPIRUN} -np 1 ./ex6f -pc_type jacobi -mat_view -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex6f_1.tmp 2>&1; \
 	   if (${DIFF} output/ex6f_1.out ex6f_1.tmp) then true; \
@@ -687,5 +707,6 @@ TESTEXAMPLES_HYPRE	       = ex10.PETSc runex10_15 runex10_16 runex10_17 runex10_
 TESTEXAMPLES_LUSOL	       = ex10.PETSc runex10_13 ex10.rm
 TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_2 runex10_mumps_cholesky_1 \
                                  runex10_mumps_cholesky_2 runex10_mumps_redundant ex10.rm 
+TESTEXAMPLES_PLAPACK           = ex5.PETSc runex5_plapack_1 5_plapack_2 5_plapack_3 5_plapack_4 ex5.rm
 
 include ${PETSC_DIR}/bmake/common/test
