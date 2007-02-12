@@ -5,8 +5,8 @@
 
       Interface 
         Subroutine DAGetGlobalIndicesF90(v,n,array,ierr)
-          integer, pointer :: array(:)
-          integer  n
+          PetscInt, pointer :: array(:)
+          PetscInt  n
           PetscErrorCode ierr
           DA       v
         End Subroutine

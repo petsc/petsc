@@ -11,6 +11,7 @@ OBJSC    = da2.o da1.o da3.o daghost.o dacorn.o dagtol.o daltol.o \
            dadist.o daview.o dasub.o gr1.o gr2.o daload.o dagtona.o dainterp.o dapf.o dagetarray.o
 LIBBASE  = libpetscdm
 MANSEC   = DA
+DIRS     = f90-src
 LOCDIR   = src/dm/da/src/
 
 include ${PETSC_DIR}/bmake/common/base
