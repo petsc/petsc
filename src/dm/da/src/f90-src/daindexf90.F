@@ -14,7 +14,7 @@
       PetscErrorCode ierr
       DA       v
 
-      PetscInt, dimension(1), target :: v_local
+      PetscInt,dimension(1),target :: v_local
       PetscOffset offset
 
       call DAGetGlobalIndices(v,n,v_local,offset,ierr)
