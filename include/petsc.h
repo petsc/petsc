@@ -1125,7 +1125,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPSpawn(PetscMPIInt);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPRun(MPI_Comm,PetscErrorCode (*)(MPI_Comm,void *),void*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFree(MPI_Comm,void*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm,size_t,void**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm,PetscInt,void**);
 
 /*
      These are so that in extern C code we can caste function pointers to non-extern C
