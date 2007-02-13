@@ -3,9 +3,10 @@
            Solve the convection-diffusion equation:
            
              u_t+a*(u_x+u_y)=epsilon*(u_xx+u_yy)
-             u=0 at x=0, y=0
+             u=0   at x=0, y=0
              u_x=0 at x=1
              u_y=0 at y=1
+             u = exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0))) at t=0
         
        This program tests the routine of computing the Jacobian by the 
        finite difference method as well as PETSc with SUNDIALS.
@@ -36,14 +37,6 @@ extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode RHSFunction(TS,PetscReal,Vec,Vec,void*);
 extern PetscErrorCode RHSJacobian(TS,PetscReal,Vec,Mat*,Mat*,MatStructure *,void*);
 
-/* the initial function */
-PetscReal f_ini(PetscReal x,PetscReal y)
-{
-  PetscReal f;
-  f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
-  return f;
-}
-
 /* #undef PETSC_HAVE_SUNDIALS */
 
 #undef __FUNCT__
@@ -57,13 +50,13 @@ int main(int argc,char **argv)
   PetscReal      dt,ftime;
   TS             ts;
   PetscViewer	 viewfile;
-  MatStructure   A_structure;
-  Mat            A = 0;
-  TSProblemType  tsproblem = TS_NONLINEAR; /* Need to be TS_NONLINEAR */
-  SNES  	 snes;
+  MatStructure   J_structure;
+  Mat            J = 0;
+  //SNES  	 snes;
   Vec 		 x;
   Data		 data;
   PetscInt 	 mn;
+  PetscTruth     flg;
 #if defined(PETSC_HAVE_SUNDIALS)
   PC		 pc;
   PetscViewer    viewer;
@@ -73,7 +66,7 @@ int main(int argc,char **argv)
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
  
-  /* set Data */
+  /* set data */
   data.m = 9; 
   data.n = 9; 
   data.a = 1.0;
@@ -89,33 +82,19 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(global);CHKERRQ(ierr);
   ierr = Initial(global,&data);CHKERRQ(ierr);
   ierr = VecDuplicate(global,&x);CHKERRQ(ierr);
- 
-  /* make timestep context */
+
+  /* create timestep context */
   ierr = TSCreate(PETSC_COMM_WORLD,&ts);CHKERRQ(ierr);
-  ierr = TSSetProblemType(ts,tsproblem);CHKERRQ(ierr);
+  ierr = TSSetProblemType(ts,TS_NONLINEAR);CHKERRQ(ierr); /* Need to be TS_NONLINEAR for Sundials */
   ierr = TSMonitorSet(ts,Monitor,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr); 
 
-  dt = 0.1;
-
-  /*
-    The user provides the RHS and Jacobian
-  */
-  ierr = MatCreate(PETSC_COMM_WORLD,&A);CHKERRQ(ierr);
-  ierr = MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
-
-  /* Create SNES context  */
-  ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
-
-  /* setting the RHS function and the Jacobian's non-zero structutre */
-  ierr = SNESSetFunction(snes,global,FormFunction,&data);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,A,A,FormJacobian,&data);CHKERRQ(ierr);
-
-  /* set RHSFunction and RHSJacobian, so PETSc will pick up the 
-     RHS function from SNES and compute the Jacobian by FD */  
+  /* set user provided RHSFunction and RHSJacobian */  
   ierr = TSSetRHSFunction(ts,RHSFunction,&data);CHKERRQ(ierr);
-  ierr = RHSJacobian(ts,0.0,global,&A,&A,&A_structure,&data);CHKERRQ(ierr);
-  ierr = TSSetRHSJacobian(ts,A,A,RHSJacobian,&data);CHKERRQ(ierr);
+  ierr = MatCreate(PETSC_COMM_WORLD,&J);CHKERRQ(ierr);
+  ierr = MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,mn,mn);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(J);CHKERRQ(ierr);
+  ierr = RHSJacobian(ts,0.0,global,&J,&J,&J_structure,&data);CHKERRQ(ierr);
+  ierr = TSSetRHSJacobian(ts,J,J,RHSJacobian,&data);CHKERRQ(ierr);
 
   /* Use SUNDIALS */
 #if defined(PETSC_HAVE_SUNDIALS)
@@ -123,6 +102,7 @@ int main(int argc,char **argv)
 #else
   ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr); 
 #endif
+  dt   = 0.1;
   ierr = TSSetInitialTimeStep(ts,0.0,dt);CHKERRQ(ierr);
   ierr = TSSetDuration(ts,time_steps,1);CHKERRQ(ierr);
   ierr = TSSetSolution(ts,global);CHKERRQ(ierr);
@@ -133,18 +113,21 @@ int main(int argc,char **argv)
 #if defined(PETSC_HAVE_SUNDIALS)
   ierr = TSSundialsGetPC(ts,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCJACOBI);CHKERRQ(ierr);
-  ierr = TSSundialsSetType(ts,SUNDIALS_ADAMS);CHKERRQ(ierr);
+  //ierr = TSSundialsSetType(ts,SUNDIALS_ADAMS);CHKERRQ(ierr);
 #endif
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
   ierr = TSSetUp(ts);CHKERRQ(ierr);
   ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
 
-  ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr); 
-  ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
-  ierr = VecView(global,viewfile);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(viewfile);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-matlab_view",&flg);CHKERRQ(ierr);
+  if (flg){ /* print solution into a MATLAB file */
+    ierr = TSGetSolution(ts,&global);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD,"out.m",&viewfile);CHKERRQ(ierr); 
+    ierr = PetscViewerSetFormat(viewfile,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
+    ierr = VecView(global,viewfile);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(viewfile);CHKERRQ(ierr);
+  }
 
 #if defined(PETSC_HAVE_SUNDIALS)
   /* extracts the PC  from ts */
@@ -154,7 +137,7 @@ int main(int argc,char **argv)
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   ierr = PetscViewerStringOpen(PETSC_COMM_WORLD,pcinfo,120,&viewer);CHKERRQ(ierr);
   ierr = PCView(pc,viewer);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s Preconditioner,%s\n",
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"%d Procs,%s TSType, %s Preconditioner\n",
                      size,tsinfo,pcinfo);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
 #endif
@@ -163,13 +146,21 @@ int main(int argc,char **argv)
   ierr = TSDestroy(ts);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  if (A) {ierr= MatDestroy(A);CHKERRQ(ierr);}
-  ierr = SNESDestroy(snes);CHKERRQ(ierr);
+  if (J) {ierr= MatDestroy(J);CHKERRQ(ierr);}
+  //ierr = SNESDestroy(snes);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
 
 /* -------------------------------------------------------------------*/
+/* the initial function */
+PetscReal f_ini(PetscReal x,PetscReal y)
+{
+  PetscReal f;
+  f=exp(-20.0*(pow(x-0.5,2.0)+pow(y-0.5,2.0)));
+  return f;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "Initial"
 PetscErrorCode Initial(Vec global,void *ctx)
@@ -245,7 +236,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec global,void *ctx)
   return 0;
 }
 
-
+/* globalout = -a*(u_x+u_y) + epsilon*(u_xx+u_yy) */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
 PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
@@ -263,12 +254,12 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   VecScatter     scatter;
   Vec            tmp_in,tmp_out;
 
-  m = data->m;
-  n = data->n;
-  mn = m*n;
-  dx = data->dx;
-  dy = data->dy;
-  a = data->a;
+  m       = data->m;
+  n       = data->n;
+  mn      = m*n;
+  dx      = data->dx;
+  dy      = data->dy;
+  a       = data->a;
   epsilon = data->epsilon;
 
   xc = -2.0*epsilon*(1.0/(dx*dx)+1.0/(dy*dy));
@@ -294,9 +285,9 @@ PetscErrorCode FormFunction(SNES snes,Vec globalin,Vec globalout,void *ptr)
   ierr = VecScatterCreate(globalin,from,tmp_in,to,&scatter);CHKERRQ(ierr);
   ierr = VecScatterBegin(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(globalin,tmp_in,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
- ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
-  /*Extract income array */
+  /*Extract income array - include ghost points */
   ierr = VecGetArray(tmp_in,&inptr);CHKERRQ(ierr);
 
   /* Extract outcome array*/
