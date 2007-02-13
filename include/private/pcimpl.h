@@ -30,6 +30,7 @@ struct _PCOps {
 struct _p_PC {
   PETSCHEADER(struct _PCOps);
   PetscInt       setupcalled;
+  PetscInt       setfromoptionscalled;
   MatStructure   flag;
   Mat            mat,pmat;
   Vec            diagonalscaleright,diagonalscaleleft; /* used for time integration scaling */

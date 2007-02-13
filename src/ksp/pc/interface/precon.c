@@ -298,14 +298,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
 #endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
-  pc->bops->publish      = PCPublish_Petsc;
-  pc->mat                = 0;
-  pc->pmat               = 0;
-  pc->setupcalled        = 0;
-  pc->data               = 0;
-  pc->diagonalscale      = PETSC_FALSE;
-  pc->diagonalscaleleft  = 0;
-  pc->diagonalscaleright = 0;
+  pc->bops->publish        = PCPublish_Petsc;
+  pc->mat                  = 0;
+  pc->pmat                 = 0;
+  pc->setupcalled          = 0;
+  pc->setfromoptionscalled = 0;
+  pc->data                 = 0;
+  pc->diagonalscale        = PETSC_FALSE;
+  pc->diagonalscaleleft    = 0;
+  pc->diagonalscaleright   = 0;
 
   pc->ops->destroy             = 0;
   pc->ops->apply               = 0;

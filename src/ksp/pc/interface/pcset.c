@@ -209,5 +209,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
       ierr = (*pc->ops->setfromoptions)(pc);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
+  pc->setfromoptionscalled++;
   PetscFunctionReturn(0);
 }

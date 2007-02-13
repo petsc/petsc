@@ -33,7 +33,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: First PC (color=0) follows\n");CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
     ierr = PetscViewerGetSubcomm(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
     if (!color) { /* only view first redundant pc */
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
@@ -166,7 +166,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   } else {
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
-  ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
+  if (pc->setfromoptionscalled){
+    ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr); 
+  }
   ierr = PCSetUp(red->pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
