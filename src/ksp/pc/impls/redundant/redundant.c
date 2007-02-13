@@ -7,6 +7,7 @@
 #include "petscksp.h"
 
 typedef struct {
+  KSP          ksp;
   PC           pc;                   /* actual preconditioner used on each processor */
   Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of pc->comm */
   Vec          xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
@@ -33,11 +34,11 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    ierr = PetscViewerASCIIPrintf(viewer,"  Redundant solver preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
     ierr = PetscViewerGetSubcomm(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
     if (!color) { /* only view first redundant pc */
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
-      ierr = PCView(red->pc,subviewer);CHKERRQ(ierr);
+      ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSubcomm(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
@@ -45,7 +46,7 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
     if (!rank) {
-      ierr = PCView(red->pc,sviewer);CHKERRQ(ierr);
+      ierr = KSPView(red->ksp,sviewer);CHKERRQ(ierr);
     }
     ierr = PetscViewerRestoreSingleton(viewer,&sviewer);CHKERRQ(ierr);
   } else {
@@ -80,11 +81,20 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = red->psubcomm->comm;
-    ierr = PCCreate(subcomm,&red->pc);CHKERRQ(ierr);
-    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+    KSP    subksp;
+    PC     subpc;
+    ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(pc,subksp);CHKERRQ(ierr);
+    ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
+    ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
+    ierr = PCSetType(subpc,PCLU);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = PCSetOptionsPrefix(red->pc,prefix);CHKERRQ(ierr);
-    ierr = PCAppendOptionsPrefix(red->pc,"redundant_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(subksp,prefix);CHKERRQ(ierr);
+    ierr = KSPAppendOptionsPrefix(subksp,"redundant_");CHKERRQ(ierr);
+    ierr = PCSetOptionsPrefix(subpc,prefix);CHKERRQ(ierr);
+    ierr = PCAppendOptionsPrefix(subpc,"redundant_ksp_");CHKERRQ(ierr);
+    red->ksp = subksp;
+    red->pc  = subpc;
 
     /* create working vectors xsub/ysub and xdup/ydup */
     ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
@@ -167,9 +177,9 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
   if (pc->setfromoptionscalled){
-    ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr); 
+    ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr); 
   }
-  ierr = PCSetUp(red->pc);CHKERRQ(ierr);
+  ierr = KSPSetUp(red->ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -225,7 +235,7 @@ static PetscErrorCode PCDestroy_Redundant(PC pc)
     ierr = MatDestroy(red->pmats);CHKERRQ(ierr);
   }
   if (red->psubcomm) {ierr = PetscSubcommDestroy(red->psubcomm);CHKERRQ(ierr);}
-  if (red->pc) {ierr = PCDestroy(red->pc);CHKERRQ(ierr);}
+  if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
   ierr = PetscFree(red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
