@@ -230,9 +230,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPHandle(MPI_Comm comm)
     ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
     switch (command) {
     case 0: { 
-      size_t n;
-      void   *ptr;
-      ierr = MPI_Bcast(&n,1,MPI_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here */
+      PetscInt n;
+      void     *ptr;
+      ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr);
       /* cannot use PetscNew() cause it requires struct argument */
       ierr = PetscMalloc(n,&ptr);CHKERRQ(ierr);
       ierr = PetscMemzero(ptr,n);CHKERRQ(ierr);
@@ -288,7 +288,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPNew(MPI_Comm comm,PetscInt n,void **pt
   if (!used_PetscOpenMP) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not using OpenMP feature of PETSc");
 
   ierr = MPI_Bcast(&command,1,MPIU_INT,0,comm);CHKERRQ(ierr);
-  ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr); /* may be wrong size here since size_t */
+  ierr = MPI_Bcast(&n,1,MPIU_INT,0,comm);CHKERRQ(ierr); 
   /* cannot use PetscNew() cause it requires struct argument */
   ierr = PetscMalloc(n,ptr);CHKERRQ(ierr);
   ierr = PetscMemzero(*ptr,n);CHKERRQ(ierr);
