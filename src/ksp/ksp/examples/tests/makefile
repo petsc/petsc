@@ -119,6 +119,9 @@ ex27: ex27.o  chkopts
 ex28: ex28.o  chkopts
 	-${CLINKER} -o ex28 ex28.o  ${PETSC_KSP_LIB}
 	${RM} ex28.o
+ex29: ex29.o  chkopts
+	-${CLINKER} -o ex29 ex29.o  ${PETSC_KSP_LIB}
+	${RM} ex29.o
 #------------------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ./ex1 -pc_type jacobi -ksp_monitor_short -ksp_gmres_cgs_refinement_type refine_always > ex1_1.tmp 2>&1;	  \
