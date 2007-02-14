@@ -75,7 +75,10 @@ from %s
     # now find the dirname - and do a chmod
     try:
       output = config.base.Configure.executeShellCommand('cd '+root+'; tar -tf '+archive+' | head -n 1', log = self.log)
-      dirname = output[0].strip()
+      dirname = os.path.normpath(output[0].strip())
+      # some tarfiles list packagename/ but some list packagename/filename in the first entry - so handle both cases
+      apath,bpath=os.path.split(dirname)
+      if (apath != ''): dirname = apath
       config.base.Configure.executeShellCommand('cd '+root+'; chmod -R a+r '+dirname+';find  '+dirname + ' -type d -name "*" -exec chmod a+rx {} \;', log = self.log)
     except RuntimeError, e:
       raise RuntimeError('Error  changing permissions for '+archive+': '+str(e))
