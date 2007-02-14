@@ -414,7 +414,7 @@ namespace ALE {
         #undef __FUNCT__
         #define __FUNCT__ "ParMetisPartitionSieveByFace"
         static part_type *partitionSieveByFace(const Obj<topology_type>& topology, const int dim) {
-          int   *assignment; // The vertex partition
+          int   *assignment = NULL; // The vertex partition
 #ifdef PETSC_HAVE_HMETIS
           int    nvtxs;      // The number of vertices
           int    nhedges;    // The number of hyperedges
@@ -456,11 +456,11 @@ namespace ALE {
               delete [] eptr;
               delete [] eind;
             }
+            if (topology->debug()) {for (int i = 0; i<nvtxs; i++) printf("[%d] %d\n", PetscGlobalRank, assignment[i]);}
           } else {
             assignment = NULL;
           }
 #endif
-          if (assignment) {for (int i=0; i<nvtxs; i++) printf("[%d] %d\n",PetscGlobalRank,assignment[i]);}
           return assignment;
         };
       };

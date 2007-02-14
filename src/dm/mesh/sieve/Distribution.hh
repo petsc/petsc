@@ -610,7 +610,6 @@ namespace ALE {
         const Obj<Mesh::topology_type>& serialTopology   = new Mesh::topology_type(parallelMesh->comm(), parallelMesh->debug());
         const Obj<Mesh::sieve_type>&    sieve            = new Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
         const int                       dim              = parallelMesh->getDimension();
-        PetscErrorCode                  ierr;
 
         if (!parallelMesh->getDistributed()) return parallelMesh;
         ALE_LOG_EVENT_BEGIN;
