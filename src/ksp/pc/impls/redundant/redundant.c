@@ -82,19 +82,16 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = red->psubcomm->comm;
     KSP    subksp;
-    PC     subpc;
     ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,subksp);CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(subksp,&subpc);CHKERRQ(ierr);
-    ierr = PCSetType(subpc,PCLU);CHKERRQ(ierr);
+    ierr = KSPGetPC(subksp,&red->pc);CHKERRQ(ierr);
+    ierr = PCSetType(red->pc,PCLU);CHKERRQ(ierr);
+
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-    ierr = KSPSetOptionsPrefix(subksp,prefix);CHKERRQ(ierr);
-    ierr = KSPAppendOptionsPrefix(subksp,"redundant_");CHKERRQ(ierr);
-    ierr = PCSetOptionsPrefix(subpc,prefix);CHKERRQ(ierr);
-    ierr = PCAppendOptionsPrefix(subpc,"redundant_ksp_");CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(subksp,prefix);CHKERRQ(ierr); 
+    ierr = KSPAppendOptionsPrefix(subksp,"redundant_");CHKERRQ(ierr); 
     red->ksp = subksp;
-    red->pc  = subpc;
 
     /* create working vectors xsub/ysub and xdup/ydup */
     ierr = VecGetLocalSize(vec,&mlocal);CHKERRQ(ierr);  
