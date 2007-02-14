@@ -132,6 +132,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   ierr = VecSetType(PetscMLdata->y,VECSEQ);CHKERRQ(ierr);
     
   /* create ML discretization matrix at fine grid */
+  /* ML requires input of fine-grid matrix. It determines nlevels. */
   ierr = MatGetSize(Aloc,&m,&nlocal_allcols);CHKERRQ(ierr);
   ML_Create(&ml_object,pc_ml->MaxNlevels);
   ML_Init_Amatrix(ml_object,0,m,m,PetscMLdata);
