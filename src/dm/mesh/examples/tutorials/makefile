@@ -212,8 +212,8 @@ debugex4:
 runex10:
 	-@${MPIRUN} -np 2 ./ex10 -partitioner zoltan -test 1 > ex10_1.tmp 2>&1; \
     if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
-	else echo "Possible problem with ex10_1, diffs above"; fi; \
-        ${RM} -f ex10_1.tmp
+    else echo "Possible problem with ex10_1, diffs above"; fi; \
+    ${RM} -f ex10_1.tmp
 
 
 TESTEXAMPLES_SIEVE 		  = ex1.PETSc testex1_1 testex1_2 testex1_3 testex1_4 ex1.rm ex2.PETSc testex2_1 testex2_2 testex2_3 ex2.rm ex10.PETSc runex10 ex10.rm

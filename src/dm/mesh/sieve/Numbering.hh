@@ -169,6 +169,7 @@ namespace ALE {
       };
     public:
       const int debug() {return this->_debug;};
+      const int setDebug(const int debug) {return this->_debug = debug;};
     public:
       // Number all local points
       //   points in the overlap are only numbered by the owner with the lowest rank
@@ -231,6 +232,36 @@ namespace ALE {
         }
         order->setLocalSize(localSize);
       };
+      template<typename PointType, typename Atlas>
+      void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const patch_type& patch, const std::set<PointType>& points, const Obj<Atlas>& atlas) {
+        int localSize = 0;
+
+        order->setFiberDimension(patch, points, 1);
+        for(typename std::set<PointType>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+          oValue_type val;
+
+          if (sendOverlap->capContains(*l_iter)) {
+            const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
+            int minRank = sendOverlap->commSize();
+
+            for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
+              if (*p_iter < minRank) minRank = *p_iter;
+            }
+            if (minRank < sendOverlap->commRank()) {
+              val = this->_unknownOrder;
+            } else {
+              val.prefix = localSize;
+              val.index  = atlas->restrict(patch, *l_iter)[0].prefix;
+            }
+          } else {
+            val.prefix = localSize;
+            val.index  = atlas->restrict(patch, *l_iter)[0].prefix;
+          }
+          localSize += std::max(0, val.index);
+          order->updatePoint(patch, *l_iter, &val);
+        }
+        order->setLocalSize(localSize);
+      };
       // Calculate process offsets
       template<typename Numbering>
       void calculateOffsets(const Obj<Numbering>& numbering) {
@@ -251,6 +282,16 @@ namespace ALE {
         const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
 
         for(typename Sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+          if (numbering->isLocal(*l_iter)) {
+            numbering->updateAddPoint(patch, *l_iter, &val);
+          }
+        }
+      };
+      template<typename Numbering, typename PointType>
+      void updateOrder(const Obj<Numbering>& numbering, const patch_type& patch, const std::set<PointType>& points) {
+        const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
+
+        for(typename std::set<PointType>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
           if (numbering->isLocal(*l_iter)) {
             numbering->updateAddPoint(patch, *l_iter, &val);
           }
@@ -384,6 +425,13 @@ namespace ALE {
         this->updateOrder(order, patch, points);
         this->completeOrder(order, sendOverlap, recvOverlap, patch);
       };
+      template<typename PointType, typename Atlas>
+      void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const patch_type& patch, const std::set<PointType>& points, const Obj<Atlas>& atlas) {
+        this->constructLocalOrder(order, sendOverlap, patch, points, atlas);
+        this->calculateOffsets(order);
+        this->updateOrder(order, patch, points);
+        this->completeOrder(order, sendOverlap, recvOverlap, patch);
+      };
       // Construct the inverse map from numbers to points
       //   If we really need this, then we should consider using a label
       void constructInverseOrder(const Obj<numbering_type>& numbering) {
@@ -434,9 +482,8 @@ namespace ALE {
           Obj<send_overlap_type> sendOverlap = topology->getSendOverlap();
           Obj<recv_overlap_type> recvOverlap = topology->getRecvOverlap();
 
-          // FIX:
-          //this->constructOrder(order, sendOverlap, recvOverlap, patch, atlas->getPatch(patch), atlas);
-          this->constructOrder(order, sendOverlap, recvOverlap, patch, topology->depthStratum(patch, 0), atlas);
+          this->constructOrder(order, sendOverlap, recvOverlap, patch, atlas->getPatch(patch), atlas);
+          //this->constructOrder(order, sendOverlap, recvOverlap, patch, topology->depthStratum(patch, 0), atlas);
           if (this->_debug) {std::cout << "Creating new global order: patch " << patch << " name " << name << std::endl;}
           this->_orders[topology.ptr()][patch][name] = order;
         }

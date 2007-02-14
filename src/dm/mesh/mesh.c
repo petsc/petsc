@@ -609,6 +609,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal 
   const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&   atlas    = s->getAtlas();
   const ALE::Mesh::real_section_type::patch_type              patch    = 0;
   const ALE::Mesh::real_section_type::atlas_type::chart_type& chart    = atlas->getPatch(patch);
+  m->getFactory()->setDebug(m->debug());
   const ALE::Obj<ALE::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(topology, patch, name, atlas);
   int *localIndices, *globalIndices;
   int  localSize = s->size(patch);
@@ -631,6 +632,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal 
   }
   if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
   if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
+  if (m->debug()) {
+    globalOrder->view("Global Order");
+    for(int i = 0; i < localSize; ++i) {
+      printf("[%d] localIndex[%d]: %d globalIndex[%d]: %d\n", m->commRank(), i, localIndices[i], i, globalIndices[i]);
+    }
+  }
   ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, localIndices,  &localIS);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices, &globalIS);CHKERRQ(ierr);
   ierr = PetscFree(localIndices);CHKERRQ(ierr);

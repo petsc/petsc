@@ -240,25 +240,24 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options,Vec *gvec)
   ierr = MeshGetSectionReal(mesh, "default", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-    const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
-  const ALE::Obj<ALE::Discretization>&                      disc     = m->getDiscretization();
+  const ALE::Obj<ALE::Mesh::topology_type>& topology = m->getTopology();
+  const ALE::Obj<ALE::Discretization>&      disc     = m->getDiscretization();
   
   disc->setNumDof(topology->depth(), 2);
   m->setupField(s);
   s->setDebug(options->debug);
 
+  VecScatter scatter;
 
-  MeshCreateGlobalScatter(mesh,f,0);
-  printf("by \n");
+  ierr = MeshCreateGlobalScatter(mesh, f, &scatter);CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
   const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", m->getRealSection("default")->getAtlas());
 
   ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
-
   ierr = SectionRealDestroy(f);CHKERRQ(ierr);
-
   PetscFunctionReturn(0);
 }
 
@@ -277,8 +276,8 @@ PetscErrorCode CreateLocalVector(DM dm, Options *options,Vec *localVec)
   ierr = MeshGetSectionReal(mesh, "u", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-    const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
-  const ALE::Obj<ALE::Discretization>&                      disc     = m->getDiscretization();
+  const ALE::Obj<ALE::Mesh::topology_type>& topology = m->getTopology();
+  const ALE::Obj<ALE::Discretization>&      disc     = m->getDiscretization();
   
   disc->setNumDof(topology->depth(), 2);
   m->setupField(s);

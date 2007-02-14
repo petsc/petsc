@@ -947,7 +947,12 @@ namespace ALE {
       };
       template<typename Sequence>
       void setFiberDimension(const patch_type& patch, const Obj<Sequence>& points, int dim) {
-        for(typename topology_type::label_sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+          this->setFiberDimension(patch, *p_iter, dim);
+        }
+      };
+      void setFiberDimension(const patch_type& patch, const std::set<point_type>& points, int dim) {
+        for(typename std::set<point_type>::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           this->setFiberDimension(patch, *p_iter, dim);
         }
       };
