@@ -70,6 +70,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   Vec            vec;
   PetscMPIInt    subsize,subrank;
   const char     *prefix;
+  KSP            subksp;
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
@@ -81,7 +82,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = red->psubcomm->comm;
-    KSP    subksp;
     ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,subksp);CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
