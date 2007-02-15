@@ -888,7 +888,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   KSP                    ksp;
   Vec                    x,y;
   PC_BJacobi_Singleblock *bjac;
-  PC                     subpc;
   PetscTruth             wasSetup;
 
   PetscFunctionBegin;
@@ -900,7 +899,6 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     ierr = KSPCreate(PETSC_COMM_SELF,&ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,ksp);CHKERRQ(ierr);
     ierr = KSPSetType(ksp,KSPPREONLY);CHKERRQ(ierr);
-    ierr = KSPGetPC(ksp,&subpc);CHKERRQ(ierr);
     ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
     ierr = KSPSetOptionsPrefix(ksp,prefix);CHKERRQ(ierr);
     ierr = KSPAppendOptionsPrefix(ksp,"sub_");CHKERRQ(ierr);
@@ -942,7 +940,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
   }  else {
     ierr = KSPSetOperators(ksp,pmat,pmat,pc->flag);CHKERRQ(ierr);
   }
-  if (!wasSetup) {
+  if (!wasSetup && pc->setfromoptionscalled) {
     ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1206,18 +1204,9 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     } else {
       ierr = KSPSetOperators(jac->ksp[i],bjac->pmat[i],bjac->pmat[i],pc->flag);CHKERRQ(ierr);
     }
-    ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
+    if(pc->setfromoptionscalled){
+      ierr = KSPSetFromOptions(jac->ksp[i]);CHKERRQ(ierr);
+    }
   }
-
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-
-

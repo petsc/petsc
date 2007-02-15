@@ -167,11 +167,10 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     /*--------------------------------------------------------------------------*/
     ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);  
     ierr = MatGetRedundantMatrix(pc->pmat,red->psubcomm->n,red->psubcomm->comm,mlocal_sub,reuse,&red->pmats);CHKERRQ(ierr);
-   
     /* tell PC of the subcommunicator its operators */
-    ierr = PCSetOperators(red->pc,red->pmats,red->pmats,str);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
   } else {
-    ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
   if (pc->setfromoptionscalled){
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr); 
