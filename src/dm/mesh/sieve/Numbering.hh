@@ -381,7 +381,7 @@ namespace ALE {
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
           if (!order->hasPoint(patch, *r_iter)) {
             order->setFiberDimension(patch, *r_iter, 1);
-            order->update(patch, *r_iter, &this->_unknownOrder);
+            order->updatePoint(patch, *r_iter, &this->_unknownOrder);
           }
         }
         for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {

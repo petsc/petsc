@@ -6,16 +6,7 @@
 
 typedef struct _VecPackOps *VecPackOps;
 struct _VecPackOps {
-  PetscErrorCode (*view)(VecPack,PetscViewer);
-  PetscErrorCode (*createglobalvector)(VecPack,Vec*);
-  PetscErrorCode (*getcoloring)(VecPack,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(VecPack, MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(VecPack,VecPack,Mat*,Vec*);
-  PetscErrorCode (*refine)(VecPack,MPI_Comm,VecPack*);
-  PetscErrorCode (*getinjection)(VecPack,VecPack,VecScatter*);
-
-  PetscErrorCode (*forminitialguess)(VecPack,PetscErrorCode (*)(void),Vec,void*);
-  PetscErrorCode (*formfunction)(VecPack,PetscErrorCode (*)(void),Vec,void*);
+  DMOPS(VecPack)
 };
 
 /*

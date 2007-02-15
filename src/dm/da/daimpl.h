@@ -7,25 +7,30 @@
 
 #include "petscda.h"
 
-/*
-   The DM interface is shared by DA, VecPack, and any other object that may 
-  be used with the DMMG class. If you change this MAKE SURE you change
-  struct _DAOps and struct _VecPackOps!
+/*  
+    Operations shared by all DM implementations, including DA, VecPack and Mesh
 */
+#define DMOPS(type)	\
+  PetscErrorCode (*view)(type,PetscViewer); \
+  PetscErrorCode (*createglobalvector)(type,Vec*);\
+  PetscErrorCode (*createlocalvector)(type,Vec*);\
+\
+  PetscErrorCode (*getcoloring)(type,ISColoringType,ISColoring*);\
+  PetscErrorCode (*getmatrix)(type, MatType,Mat*);\
+  PetscErrorCode (*getinterpolation)(type,type,Mat*,Vec*);\
+  PetscErrorCode (*getinjection)(type,type,VecScatter*);\
+\
+  PetscErrorCode (*refine)(type,MPI_Comm,type*);\
+  PetscErrorCode (*coarsen)(type,MPI_Comm,type*);\
+  PetscErrorCode (*refinehierarchy)(type,PetscInt,type**);\
+  PetscErrorCode (*coarsenhierarchy)(type,PetscInt,type**);\
+\
+  PetscErrorCode (*forminitialguess)(type,PetscErrorCode (*)(void),Vec,void*);\
+  PetscErrorCode (*formfunction)(type,PetscErrorCode (*)(void),Vec,Vec);
+
 typedef struct _DMOps *DMOps;
 struct _DMOps {
-  PetscErrorCode (*view)(DM,PetscViewer);
-  PetscErrorCode (*createglobalvector)(DM,Vec*);
-  PetscErrorCode (*getcoloring)(DM,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(DM, MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(DM,DM,Mat*,Vec*);
-  PetscErrorCode (*getinjection)(DM,DM,VecScatter*);
-  PetscErrorCode (*refine)(DM,MPI_Comm,DM*);
-  PetscErrorCode (*coarsen)(DM,MPI_Comm,DM*);
-  PetscErrorCode (*refinehierarchy)(DM,PetscInt,DM**);
-  PetscErrorCode (*coarsenhierarchy)(DM,PetscInt,DM**);
-  PetscErrorCode (*forminitialguess)(DM,PetscErrorCode (*)(void),Vec,void*);
-  PetscErrorCode (*formfunction)(DM,Vec*);
+  DMOPS(DM)
 };
 
 struct _p_DM {
@@ -34,13 +39,7 @@ struct _p_DM {
 
 typedef struct _DAOps *DAOps;
 struct _DAOps {
-  PetscErrorCode (*view)(DA,PetscViewer);
-  PetscErrorCode (*createglobalvector)(DA,Vec*);
-  PetscErrorCode (*getcoloring)(DA,ISColoringType,ISColoring*);
-  PetscErrorCode (*getmatrix)(DA, MatType,Mat*);
-  PetscErrorCode (*getinterpolation)(DA,DA,Mat*,Vec*);
-  PetscErrorCode (*getinjection)(DA,DA,VecScatter*);
-  PetscErrorCode (*refine)(DA,MPI_Comm,DA*);
+  DMOPS(DA)
   PetscErrorCode (*getelements)(DA,PetscInt*,const PetscInt*[]);
   PetscErrorCode (*restoreelements)(DA,PetscInt*,const PetscInt*[]);
 };

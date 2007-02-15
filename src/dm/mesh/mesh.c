@@ -11,10 +11,10 @@ PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
 PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
             Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
-EXTERN PetscErrorCode MeshView_DM(Mesh, PetscViewer);
-EXTERN PetscErrorCode MeshRefine_DM(Mesh, MPI_Comm, Mesh *);
-EXTERN PetscErrorCode MeshCoarsenHierarchy_DM(Mesh, int, Mesh **);
-EXTERN PetscErrorCode MeshGetInterpolation_DM(DM, DM, Mat *, Vec *);
+EXTERN PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
+EXTERN PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
+EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh **);
+EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshFinalize"
@@ -159,7 +159,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode PETSCDM_DLLEXPORT MeshView_DM(Mesh mesh, PetscViewer viewer)
+PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
 {
   PetscErrorCode ierr;
 
@@ -413,16 +413,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 #endif
 
   ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
-  p->ops->view               = MeshView_DM;
+  p->ops->view               = MeshView_Mesh;
   p->ops->createglobalvector = MeshCreateGlobalVector;
   p->ops->getcoloring        = PETSC_NULL;
   p->ops->getmatrix          = MeshGetMatrix;
-  p->ops->getinterpolation   = MeshGetInterpolation_DM;
+  p->ops->getinterpolation   = MeshGetInterpolation_Mesh;
   p->ops->getinjection       = PETSC_NULL;
-  p->ops->refine             = MeshRefine_DM;
+  p->ops->refine             = MeshRefine_Mesh;
   p->ops->coarsen            = PETSC_NULL;
   p->ops->refinehierarchy    = PETSC_NULL;
-  p->ops->coarsenhierarchy   = MeshCoarsenHierarchy_DM;
+  p->ops->coarsenhierarchy   = MeshCoarsenHierarchy_Mesh;
 
   ierr = PetscObjectChangeTypeName((PetscObject) p, "sieve");CHKERRQ(ierr);
 
@@ -1517,8 +1517,8 @@ PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpol
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshRefine_DM"
-PetscErrorCode MeshRefine_DM(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
+#define __FUNCT__ "MeshRefine_Mesh"
+PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 {
   ALE::Obj<ALE::Mesh> oldMesh;
   double              refinementLimit;
@@ -1593,7 +1593,7 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode MeshCoarsenHierarchy_DM(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
+PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
 {
   PetscErrorCode ierr;
 
@@ -1603,11 +1603,11 @@ PetscErrorCode MeshCoarsenHierarchy_DM(Mesh mesh, int numLevels, Mesh **coarseHi
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshGetInterpolation_DM"
+#define __FUNCT__ "MeshGetInterpolation_Mesh"
 /*
   This method only handle P_1 discretizations at present.
 */
-PetscErrorCode MeshGetInterpolation_DM(DM dmFine, DM dmCoarse, Mat *interpolation, Vec *scaling)
+PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interpolation, Vec *scaling)
 {
   ALE::Obj<ALE::Mesh> coarse;
   ALE::Obj<ALE::Mesh> fine;

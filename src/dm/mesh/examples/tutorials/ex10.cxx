@@ -17,9 +17,11 @@ static char help[] = "This example demonstrates partitioning/distributed hexes b
 typedef struct {
   PetscInt   debug;              // The debugging level
   PetscInt   test;               // The testing level
-  PetscReal  refinementLimit;    // The largest allowable cell volume
   char       baseFilename[2048]; // The base filename for mesh files
   char       partitioner[2048];  // The graph partitioner
+
+  VecScatter scatter;            // maps from global (non-ghosted) to local (ghosted) 
+  Vec        local,global;       // template global and local vectors
 } Options;
 
 #undef __FUNCT__
@@ -31,12 +33,10 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->debug           = 0;
   options->test            = 0;
-  options->refinementLimit = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-test", "The testing level", "pflotran.cxx", options->test, &options->test, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "pflotran.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscStrcpy(options->baseFilename, "data/ex10");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "pflotran.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
@@ -227,7 +227,7 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateGlobalVector"
-PetscErrorCode CreateGlobalVector(DM dm, Options *options,Vec *gvec)
+PetscErrorCode CreateGlobalVector(DM dm, Options *options)
 {
   PetscErrorCode ierr;
 
@@ -254,36 +254,21 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options,Vec *gvec)
 
   const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", m->getRealSection("default")->getAtlas());
 
-  ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
-  ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
-  ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
+  ierr = VecCreate(m->comm(), &options->global);CHKERRQ(ierr);
+  ierr = VecSetSizes(options->global, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(options->global);CHKERRQ(ierr);
   ierr = SectionRealDestroy(f);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
 
-#undef __FUNCT__
-#define __FUNCT__ "CreateLocalVector"
-PetscErrorCode CreateLocalVector(DM dm, Options *options,Vec *localVec)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  Mesh        mesh = (Mesh) dm;
-  SectionReal f;
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> s;
   
   ierr = MeshGetSectionReal(mesh, "u", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::topology_type>& topology = m->getTopology();
-  const ALE::Obj<ALE::Discretization>&      disc     = m->getDiscretization();
   
   disc->setNumDof(topology->depth(), 2);
   m->setupField(s);
   s->setDebug(options->debug);
 
-  ierr = VecCreateSeq(PETSC_COMM_SELF, s->size(0), localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeq(PETSC_COMM_SELF, s->size(0), &options->local);CHKERRQ(ierr);
   ierr = SectionRealDestroy(f);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
@@ -364,7 +349,6 @@ PetscErrorCode UpdateGhosts(DM dm, Options *options)
 PetscErrorCode RunTests(DM dm, Options *options)
 {
   PetscErrorCode ierr;
-  Vec            lv;
   PetscScalar    *l;
   PetscInt       i,n;
 
@@ -372,13 +356,12 @@ PetscErrorCode RunTests(DM dm, Options *options)
   if (options->test) {
     ierr = TraverseCells(dm, options);CHKERRQ(ierr);
     ierr = TraverseFaces(dm, options);CHKERRQ(ierr);
-    ierr = CreateGlobalVector(dm, options,&lv);CHKERRQ(ierr);
-    ierr = VecGetArray(lv,&l);CHKERRQ(ierr);
-    ierr = VecGetLocalSize(lv,&n);CHKERRQ(ierr);
+    ierr = CreateGlobalVector(dm, options);CHKERRQ(ierr);
+    ierr = VecGetArray(options->local,&l);CHKERRQ(ierr);
+    ierr = VecGetLocalSize(options->local,&n);CHKERRQ(ierr);
     for (i=0; i<n; i++) l[i] = i;
-    ierr = VecRestoreArray(lv,&l);CHKERRQ(ierr);
-    ierr = VecView(lv,0);CHKERRQ(ierr);
-    ierr = VecDestroy(lv);CHKERRQ(ierr);
+    ierr = VecRestoreArray(options->local,&l);CHKERRQ(ierr);
+    ierr = VecView(options->local,0);CHKERRQ(ierr);
     ierr = CreateField(dm, options);CHKERRQ(ierr);
     ierr = UpdateGhosts(dm, options);CHKERRQ(ierr);
   }
