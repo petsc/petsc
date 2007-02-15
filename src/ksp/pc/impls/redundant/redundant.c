@@ -70,6 +70,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   Vec            vec;
   PetscMPIInt    subsize,subrank;
   const char     *prefix;
+  KSP            subksp;
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&vec,0);CHKERRQ(ierr);
@@ -81,7 +82,6 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
 
     /* create a new PC that processors in each subcomm have copy of */
     subcomm = red->psubcomm->comm;
-    KSP    subksp;
     ierr = KSPCreate(subcomm,&subksp);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(pc,subksp);CHKERRQ(ierr);
     ierr = KSPSetType(subksp,KSPPREONLY);CHKERRQ(ierr);
@@ -167,11 +167,10 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     /*--------------------------------------------------------------------------*/
     ierr = VecGetLocalSize(red->ysub,&mlocal_sub);CHKERRQ(ierr);  
     ierr = MatGetRedundantMatrix(pc->pmat,red->psubcomm->n,red->psubcomm->comm,mlocal_sub,reuse,&red->pmats);CHKERRQ(ierr);
-   
     /* tell PC of the subcommunicator its operators */
-    ierr = PCSetOperators(red->pc,red->pmats,red->pmats,str);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,red->pmats,red->pmats,str);CHKERRQ(ierr);
   } else {
-    ierr = PCSetOperators(red->pc,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
   if (pc->setfromoptionscalled){
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr); 

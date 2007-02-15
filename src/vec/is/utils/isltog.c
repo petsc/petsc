@@ -193,7 +193,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   if (IS_LTOGM_COOKIE == -1) {
-    ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS Local to global mapping");CHKERRQ(ierr);
+    ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS L to G Mapping");CHKERRQ(ierr);
   }
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
