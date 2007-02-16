@@ -17,7 +17,7 @@ PetscCookie PETSCVEC_DLLEXPORT VEC_SCATTER_COOKIE = 0;
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCheckIndices_Private"
-static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,PetscInt *idx)
+static PetscErrorCode VecScatterCheckIndices_Private(PetscInt nmax,PetscInt n,const PetscInt *idx)
 {
   PetscInt i;
 
@@ -721,9 +721,9 @@ PetscErrorCode VecScatterCopy_SStoSS(VecScatter in,VecScatter out)
   PetscFunctionReturn(0);
 }
 
-EXTERN PetscErrorCode VecScatterCreate_PtoS(PetscInt,PetscInt *,PetscInt,PetscInt *,Vec,Vec,PetscInt,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_PtoP(PetscInt,PetscInt *,PetscInt,PetscInt *,Vec,Vec,VecScatter);
-EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,PetscInt *,PetscInt,PetscInt *,Vec,Vec,PetscInt,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_PtoS(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_PtoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,VecScatter);
+EXTERN PetscErrorCode VecScatterCreate_StoP(PetscInt,const PetscInt *,PetscInt,const PetscInt *,Vec,Vec,PetscInt,VecScatter);
 
 /* =======================================================================*/
 #define VEC_SEQ_ID 0

@@ -1,6 +1,6 @@
 #define PETSCDM_DLL
  
-#include "src/dm/da/daimpl.h"     /*I      "petscda.h"     I*/
+#include "src/dm/dmimpl.h"     /*I      "petscda.h"     I*/
 
 /*
    Provides an interface for functionality needed by the DAMG routines.

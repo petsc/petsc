@@ -5,7 +5,7 @@
 
 #include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
-#include "src/dm/da/daimpl.h"
+#include "src/dm/dmimpl.h"
 
 typedef struct _MeshOps *MeshOps;
 struct _MeshOps {

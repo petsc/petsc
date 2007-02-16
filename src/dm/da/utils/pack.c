@@ -1,7 +1,7 @@
 #define PETSCDM_DLL
  
 #include "petscda.h"             /*I      "petscda.h"     I*/
-#include "src/dm/da/daimpl.h"    
+#include "src/dm/dmimpl.h"    
 #include "petscmat.h"    
 
 typedef struct _VecPackOps *VecPackOps;

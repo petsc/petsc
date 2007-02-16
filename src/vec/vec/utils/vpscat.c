@@ -1381,7 +1381,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_M
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateLocal_PtoS"
-PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,PetscInt sendSizes[],PetscInt sendProcs[],PetscInt sendIdx[],PetscInt nrecvs,PetscInt recvSizes[],PetscInt recvProcs[],PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from, *to;
   PetscInt       sendSize, recvSize;
@@ -1456,7 +1456,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,PetscInt sendSizes[],P
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate_PtoS"
-PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from,*to;
   PetscMPIInt            size,rank,imdex,tag,n;
@@ -1482,13 +1482,11 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
   /*  first count number of contributors to each processor */
   ierr = PetscMalloc2(2*size,PetscInt,&nprocs,nx,PetscInt,&owner);CHKERRQ(ierr);
   ierr = PetscMemzero(nprocs,2*size*sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscSortIntWithArray(nx,inidx,inidy);CHKERRQ(ierr);
-  if (nx > 0 && inidx[0] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Parallel index %D is negative",inidx[0]);
-  if (nx > 0 && inidx[nx-1] > lengthx) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Parallel index %D is longer than vector length",inidx[nx-1],lengthx);
   j      = 0;
   nsends = 0;
   for (i=0; i<nx; i++) {
     idx = inidx[i];
+    if (idx < owners[j]) j = 0;
     for (; j<size; j++) {
       if (idx < owners[j+1]) {
         if (!nprocs[2*j]++) nsends++;
@@ -1870,7 +1868,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate_StoP"
-PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
+PetscErrorCode VecScatterCreate_StoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,PetscInt bs,VecScatter ctx)
 {
   PetscErrorCode         ierr;
   MPI_Request            *waits;
@@ -1901,7 +1899,7 @@ PetscErrorCode VecScatterCreate_StoP(PetscInt nx,PetscInt *inidx,PetscInt ny,Pet
 /* ---------------------------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreate_PtoP"
-PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,PetscInt *inidx,PetscInt ny,PetscInt *inidy,Vec xin,Vec yin,VecScatter ctx)
+PetscErrorCode VecScatterCreate_PtoP(PetscInt nx,const PetscInt *inidx,PetscInt ny,const PetscInt *inidy,Vec xin,Vec yin,VecScatter ctx)
 {
   PetscErrorCode ierr;
   PetscMPIInt    size,rank,tag,imdex,n;

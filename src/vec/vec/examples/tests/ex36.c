@@ -50,8 +50,8 @@ int main(int argc,char **argv)
 
   /* Set the vectors */
   
-  values  = malloc(n * sizeof(PetscScalar));
-  indices = malloc(n * sizeof(PetscInt));
+  ierr = PetscMalloc(n*sizeof(PetscScalar),&values);CHKERRQ(ierr);
+  ierr = PetscMalloc(n * sizeof(PetscInt),&indices);CHKERRQ(ierr);
 
   for (i=istart; i<iend; i++) {
     values[i - istart]  = (rank + 1) * i * 2;
@@ -110,7 +110,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
 
-  free(values); free(indices);
+  ierr = PetscFree(values);CHKERRQ(ierr);
+  ierr = PetscFree(indices);CHKERRQ(ierr);
 
   return 0;
 }
