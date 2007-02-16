@@ -66,7 +66,7 @@ char  matrix_free_options[] = "-snes_mf_compute_normu no \
                                -dmmg_jacobian_mf_fd";
 
 /*
-    Currently only global coloring is supported with VecPack
+    Currently only global coloring is supported with DMComposite
 */
 char  matrix_based_options[] = "-dmmg_iscoloring_type global";
 
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   UserCtx        user;
   DA             da;
   DMMG           *dmmg;
-  VecPack        packer;
+  DMComposite        packer;
   PetscTruth     use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
   PetscInt       i;
 
@@ -100,10 +100,10 @@ int main(int argc,char **argv)
   ierr = PetscOptionsGetTruth(PETSC_NULL,"-use_monitor",&use_monitor,PETSC_IGNORE);CHKERRQ(ierr);
 
   /* Create a global vector that includes a single redundant array and two da arrays */
-  ierr = VecPackCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
-  ierr = VecPackAddArray(packer,0,1);CHKERRQ(ierr);
+  ierr = DMCompositeCreate(PETSC_COMM_WORLD,&packer);CHKERRQ(ierr);
+  ierr = DMCompositeAddArray(packer,0,1);CHKERRQ(ierr);
   ierr = DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,-5,2,1,PETSC_NULL,&da);CHKERRQ(ierr);
-  ierr = VecPackAddDA(packer,da);CHKERRQ(ierr);
+  ierr = DMCompositeAddDA(packer,da);CHKERRQ(ierr);
 
 
   /* create nonlinear multi-level solver */
@@ -124,7 +124,7 @@ int main(int argc,char **argv)
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
 
   ierr = DADestroy(da);CHKERRQ(ierr);
-  ierr = VecPackDestroy(packer);CHKERRQ(ierr);
+  ierr = DMCompositeDestroy(packer);CHKERRQ(ierr);
   if (use_monitor) {
     ierr = PetscViewerDestroy(user.u_lambda_viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(user.fu_lambda_viewer);CHKERRQ(ierr);
@@ -142,8 +142,8 @@ typedef struct {
 /*
       Evaluates FU = Gradiant(L(w,u,lambda))
 
-     This local function acts on the ghosted version of U (accessed via VecPackGetLocalVectors() and
-   VecPackScatter()) BUT the global, nonghosted version of FU (via VecPackGetAccess()).
+     This local function acts on the ghosted version of U (accessed via DMCompositeGetLocalVectors() and
+   DMCompositeScatter()) BUT the global, nonghosted version of FU (via DMCompositeGetAccess()).
 
 */
 PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
@@ -155,13 +155,13 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
   PetscScalar    d,h,*w,*fw;
   Vec            vu_lambda,vfu_lambda;
   DA             da;
-  VecPack        packer = (VecPack)dmmg->dm;
+  DMComposite        packer = (DMComposite)dmmg->dm;
 
   PetscFunctionBegin;
-  ierr = VecPackGetEntries(packer,&nredundant,&da);CHKERRQ(ierr);
-  ierr = VecPackGetLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackScatter(packer,U,w,vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(packer,&nredundant,&da);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(packer,U,w,vu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
 
   ierr = DAGetCorners(da,&xs,PETSC_NULL,PETSC_NULL,&xm,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
@@ -193,8 +193,8 @@ PetscErrorCode FormFunction(SNES snes,Vec U,Vec FU,void* dummy)
 
   ierr = DAVecRestoreArray(da,vu_lambda,&u_lambda);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da,vfu_lambda,&fu_lambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
-  ierr = VecPackRestoreAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(packer,&w,&vu_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,FU,&fw,&vfu_lambda);CHKERRQ(ierr);
   ierr = PetscLogFlops(13*N);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -212,7 +212,7 @@ PetscErrorCode u_solution(void *dummy,PetscInt n,PetscScalar *x,PetscScalar *u)
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode ExactSolution(VecPack packer,Vec U) 
+PetscErrorCode ExactSolution(DMComposite packer,Vec U) 
 {
   PF             pf;
   Vec            x,u_global;
@@ -222,7 +222,7 @@ PetscErrorCode ExactSolution(VecPack packer,Vec U)
   PetscInt       m;
 
   PetscFunctionBegin;
-  ierr = VecPackGetEntries(packer,&m,&da);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(packer,&m,&da);CHKERRQ(ierr);
 
   ierr = PFCreate(PETSC_COMM_WORLD,1,2,&pf);CHKERRQ(ierr);
   ierr = PFSetType(pf,PFQUICK,(void*)u_solution);CHKERRQ(ierr);
@@ -231,11 +231,11 @@ PetscErrorCode ExactSolution(VecPack packer,Vec U)
     ierr = DASetUniformCoordinates(da,0.0,1.0,0.0,1.0,0.0,1.0);CHKERRQ(ierr);
     ierr = DAGetCoordinates(da,&x);CHKERRQ(ierr);
   }
-  ierr = VecPackGetAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
   if (w) w[0] = .25;
   ierr = PFApplyVec(pf,x,u_global);CHKERRQ(ierr);
   ierr = PFDestroy(pf);CHKERRQ(ierr);
-  ierr = VecPackRestoreAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -248,32 +248,32 @@ PetscErrorCode Monitor(SNES snes,PetscInt its,PetscReal rnorm,void *dummy)
   PetscInt       m,N;
   PetscScalar    *w,*dw;
   Vec            u_lambda,U,F,Uexact;
-  VecPack        packer = (VecPack)dmmg->dm;
+  DMComposite        packer = (DMComposite)dmmg->dm;
   PetscReal      norm;
   DA             da;
 
   PetscFunctionBegin;
   ierr = SNESGetSolution(snes,&U);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->u_lambda_viewer); 
-  ierr = VecPackRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
 
   ierr = SNESGetFunction(snes,&F,0,0);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,F,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,F,&w,&u_lambda);CHKERRQ(ierr);
   /* ierr = VecView(u_lambda,user->fu_lambda_viewer); */
-  ierr = VecPackRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,U,&w,&u_lambda);CHKERRQ(ierr);
 
-  ierr = VecPackGetEntries(packer,&m,&da);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(packer,&m,&da);CHKERRQ(ierr);
   ierr = DAGetInfo(da,0,&N,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   ierr = VecDuplicate(U,&Uexact);CHKERRQ(ierr);
   ierr = ExactSolution(packer,Uexact);CHKERRQ(ierr);
   ierr = VecAXPY(Uexact,-1.0,U);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecStrideNorm(u_lambda,0,NORM_2,&norm);CHKERRQ(ierr);
   norm = norm/sqrt(N-1.);
   if (dw) ierr = PetscPrintf(dmmg->comm,"Norm of error %G Error at x = 0 %G\n",norm,PetscRealPart(dw[0]));CHKERRQ(ierr);
   ierr = VecView(u_lambda,user->fu_lambda_viewer);
-  ierr = VecPackRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(packer,Uexact,&dw,&u_lambda);CHKERRQ(ierr);
   ierr = VecDestroy(Uexact);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

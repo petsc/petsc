@@ -14,7 +14,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: multigrid, Newton-multigrid
 
-.seealso:  VecPackCreate(), DA, VecPack, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+.seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
            DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
 S*/
 typedef struct _n_DMMG* DMMG;
@@ -293,18 +293,18 @@ M*/
 
    Level: intermediate
 
-   Notes: Use only if the DMMG was created with a DA, not a VecPack
+   Notes: Use only if the DMMG was created with a DA, not a DMComposite
 
-.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetVecPack()
+.seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDMComposite()
 
 M*/
 #define DMMGGetDA(ctx)             (DA)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
-   DMMGGetVecPack - Gets the VecPack object on the finest level
+   DMMGGetDMComposite - Gets the DMComposite object on the finest level
 
    Synopsis:
-   VecPack DMMGGetVecPack(DMMG *dmmg)
+   DMComposite DMMGGetDMComposite(DMMG *dmmg)
 
    Not Collective
 
@@ -313,12 +313,12 @@ M*/
 
    Level: intermediate
 
-   Notes: Use only if the DMMG was created with a DA, not a VecPack
+   Notes: Use only if the DMMG was created with a DA, not a DMComposite
 
 .seealso: DMMGCreate(), DMMGSetUser(), DMMGGetJ(), KSPGetKSP(), DMMGGetDA()
 
 M*/
-#define DMMGGetVecPack(ctx)        (VecPack)((ctx)[(ctx)[0]->nlevels-1]->dm)
+#define DMMGGetDMComposite(ctx)        (DMComposite)((ctx)[(ctx)[0]->nlevels-1]->dm)
 
 /*MC
    DMMGGetUser - Returns the user context for a particular level

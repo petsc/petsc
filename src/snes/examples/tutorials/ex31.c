@@ -32,7 +32,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   DA             da;
-  VecPack        pack;
+  DMComposite        pack;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -41,19 +41,19 @@ int main(int argc,char **argv)
   PreLoadBegin(PETSC_TRUE,"SetUp");
 
     /*
-       Create the VecPack object to manage the three grids/physics. 
+       Create the DMComposite object to manage the three grids/physics. 
        We only support a 1d decomposition along the y direction (since one of the grids is 1d).
 
     */
-    ierr = VecPackCreate(comm,&pack);CHKERRQ(ierr);
+    ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
     ierr = DACreate1d(comm,DA_NONPERIODIC,-6,1,1,0,&da);CHKERRQ(ierr);
-    ierr = VecPackAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-6,-6,1,PETSC_DETERMINE,1,1,0,0,&da);CHKERRQ(ierr);
-    ierr = VecPackAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
     ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-6,-6,1,PETSC_DETERMINE,1,1,0,0,&da);CHKERRQ(ierr);
-    ierr = VecPackAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
    
     /*
@@ -61,7 +61,7 @@ int main(int argc,char **argv)
     */
     ierr = DMMGCreate(comm,2,0,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)pack);CHKERRQ(ierr);
-    ierr = VecPackDestroy(pack);CHKERRQ(ierr);
+    ierr = DMCompositeDestroy(pack);CHKERRQ(ierr);
     CHKMEMQ;
 
 

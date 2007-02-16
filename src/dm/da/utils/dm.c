@@ -4,10 +4,10 @@
 
 /*
    Provides an interface for functionality needed by the DAMG routines.
-   Currently this interface is supported by the DA and VecPack objects
+   Currently this interface is supported by the DA and DMComposite objects
   
    Note: this is actually no such thing as a DM object, rather it is 
-   the common set of functions shared by DA and VecPack.
+   the common set of functions shared by DA and DMComposite.
 
 */
 
@@ -65,7 +65,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector"
 /*@C
-    DMCreateGlobalVector - Creates a global vector from a DA or VecPack object
+    DMCreateGlobalVector - Creates a global vector from a DA or DMComposite object
 
     Collective on DM
 
@@ -92,7 +92,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation"
 /*@C
-    DMGetInterpolation - Gets interpolation matrix between two DA or VecPack objects
+    DMGetInterpolation - Gets interpolation matrix between two DA or DMComposite objects
 
     Collective on DM
 
@@ -121,7 +121,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInjection"
 /*@C
-    DMGetInjection - Gets injection matrix between two DA or VecPack objects
+    DMGetInjection - Gets injection matrix between two DA or DMComposite objects
 
     Collective on DM
 
@@ -149,7 +149,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInjection(DM dm1,DM dm2,VecScatter *ctx)
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetColoring"
 /*@C
-    DMGetColoring - Gets coloring and empty Jacobian for a DA or VecPack
+    DMGetColoring - Gets coloring and empty Jacobian for a DA or DMComposite
 
     Collective on DM
 
@@ -178,7 +178,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColo
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix"
 /*@C
-    DMGetMatrix - Gets empty Jacobian for a DA or VecPack
+    DMGetMatrix - Gets empty Jacobian for a DA or DMComposite
 
     Collective on DM
 

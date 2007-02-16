@@ -4,9 +4,9 @@
 #include "src/dm/dmimpl.h"    
 #include "petscmat.h"    
 
-typedef struct _VecPackOps *VecPackOps;
-struct _VecPackOps {
-  DMOPS(VecPack)
+typedef struct _DMCompositeOps *DMCompositeOps;
+struct _DMCompositeOps {
+  DMOPS(DMComposite)
 };
 
 /*
@@ -14,37 +14,37 @@ struct _VecPackOps {
    rstarts are meaningless (and set to the previous one) except on processor 0
 */
 
-typedef enum {VECPACK_ARRAY, VECPACK_DA, VECPACK_VECSCATTER} VecPackLinkType;
+typedef enum {DMCOMPOSITE_ARRAY, DMCOMPOSITE_DA, DMCOMPOSITE_VECSCATTER} DMCompositeLinkType;
 
-struct VecPackLink {
-  VecPackLinkType    type;
-  struct VecPackLink *next;
-  PetscInt           n,rstart;      /* rstart is relative to this processor */
+struct DMCompositeLink {
+  DMCompositeLinkType    type;
+  struct DMCompositeLink *next;
+  PetscInt               n,rstart;      /* rstart is relative to this processor */
 
-  /* only used for VECPACK_DA */
+  /* only used for DMCOMPOSITE_DA */
   PetscInt           *grstarts;     /* global row for first unknown of this DA on each process */
   DA                 da;
 
-  /* only used for VECPACK_ARRAY */
+  /* only used for DMCOMPOSITE_ARRAY */
   PetscInt           grstart;        /* global row for first array unknown */
   PetscMPIInt        rank;          /* process where array unknowns live */
 };
 
-struct _p_VecPack {
-  PETSCHEADER(struct _VecPackOps);
-  PetscInt           n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
-  PetscInt           nghost;         /* number of all local entries include DA ghost points and any shared redundant arrays */
-  Vec                globalvector;
-  PetscInt           nDA,nredundant; /* how many DA's and seperate redundant arrays used to build VecPack */
-  struct VecPackLink *next;
+struct _p_DMComposite {
+  PETSCHEADER(struct _DMCompositeOps);
+  PetscInt               n,N,rstart;     /* rstart is relative to all processors, n unknowns owned by this process, N is total unknowns */
+  PetscInt               nghost;         /* number of all local entries include DA ghost points and any shared redundant arrays */
+  Vec                    globalvector;
+  PetscInt               nDA,nredundant; /* how many DA's and seperate redundant arrays used to build DMComposite */
+  struct DMCompositeLink *next;
 };
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackFormInitialGuess_DADADA"
+#define __FUNCT__ "DMCompositeFormInitialGuess_DADADA"
 /*
     Maps from 
 */
-PetscErrorCode PETSCDM_DLLEXPORT VecPackFormInitialGuess_DADADA(VecPack pack,PetscErrorCode (*fun)(void),Vec X,void *ctx)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeFormInitialGuess_DADADA(DMComposite pack,PetscErrorCode (*fun)(void),Vec X,void *ctx)
 {
   PetscErrorCode ierr;
   PetscErrorCode (*f)(DALocalInfo*,void*,DALocalInfo*,void*,DALocalInfo*,void*) = 
@@ -55,11 +55,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackFormInitialGuess_DADADA(VecPack pack,Pet
   Vec         X1,X2,X3;
 
   PetscFunctionBegin;
-  ierr = VecPackGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(DA1,&da1);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(DA2,&da2);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(DA3,&da3);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DAVecGetArray(DA1,X1,&x1);CHKERRQ(ierr);
   ierr = DAVecGetArray(DA2,X2,&x2);CHKERRQ(ierr);
   ierr = DAVecGetArray(DA3,X3,&x3);CHKERRQ(ierr);
@@ -72,15 +72,15 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackFormInitialGuess_DADADA(VecPack pack,Pet
 
 #undef __FUNCT__
 #define __FUNCT__ "VecView_DADADA"
-PetscErrorCode VecView_DADADA(VecPack pack,Vec X,PetscViewer viewer)
+PetscErrorCode VecView_DADADA(DMComposite pack,Vec X,PetscViewer viewer)
 {
   PetscErrorCode ierr;
   DA             DA1,DA2,DA3;
   Vec            X1,X2,X3;
 
   PetscFunctionBegin;
-  ierr = VecPackGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
-  ierr = VecPackGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = VecView(X1,viewer);CHKERRQ(ierr);
   ierr = VecView(X2,viewer);CHKERRQ(ierr);
   ierr = VecView(X3,viewer);CHKERRQ(ierr);
@@ -88,9 +88,9 @@ PetscErrorCode VecView_DADADA(VecPack pack,Vec X,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackCreate"
+#define __FUNCT__ "DMCompositeCreate"
 /*@C
-    VecPackCreate - Creates a vector packer, used to generate "composite"
+    DMCompositeCreate - Creates a vector packer, used to generate "composite"
       vectors made up of several subvectors.
 
     Collective on MPI_Comm
@@ -103,15 +103,15 @@ PetscErrorCode VecView_DADADA(VecPack pack,Vec X,PetscViewer viewer)
 
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreateGlobalVector(), VecPackGetGlobalIndices(), VecPackGetAccess()
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreate(MPI_Comm comm,DMComposite *packer)
 {
   PetscErrorCode ierr;
-  VecPack        p;
+  DMComposite    p;
 
   PetscFunctionBegin;
   PetscValidPointer(packer,2);
@@ -120,7 +120,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_VecPack,struct _VecPackOps,DA_COOKIE,0,"VecPack",comm,VecPackDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_DMComposite,struct _DMCompositeOps,DA_COOKIE,0,"DMComposite",comm,DMCompositeDestroy,0);CHKERRQ(ierr);
   p->n            = 0;
   p->next         = PETSC_NULL;
   p->comm         = comm;
@@ -128,44 +128,44 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreate(MPI_Comm comm,VecPack *packer)
   p->nredundant   = 0;
   p->nDA          = 0;
 
-  p->ops->createglobalvector = VecPackCreateGlobalVector;
-  p->ops->refine             = VecPackRefine;
-  p->ops->getinterpolation   = VecPackGetInterpolation;
-  p->ops->getmatrix          = VecPackGetMatrix;
-  p->ops->getcoloring        = VecPackGetColoring;
+  p->ops->createglobalvector = DMCompositeCreateGlobalVector;
+  p->ops->refine             = DMCompositeRefine;
+  p->ops->getinterpolation   = DMCompositeGetInterpolation;
+  p->ops->getmatrix          = DMCompositeGetMatrix;
+  p->ops->getcoloring        = DMCompositeGetColoring;
 
-  p->ops->forminitialguess   = VecPackFormInitialGuess_DADADA;
+  p->ops->forminitialguess   = DMCompositeFormInitialGuess_DADADA;
   *packer = p;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackDestroy"
+#define __FUNCT__ "DMCompositeDestroy"
 /*@C
-    VecPackDestroy - Destroys a vector packer.
+    DMCompositeDestroy - Destroys a vector packer.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 .   packer - the packer object
 
     Level: advanced
 
-.seealso VecPackCreate(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreateGlobalVector(), VecPackGetGlobalIndices(), VecPackGetAccess()
+.seealso DMCompositeCreate(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreateGlobalVector(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackDestroy(VecPack packer)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeDestroy(DMComposite packer)
 {
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next,*prev;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next,*prev;
 
   PetscFunctionBegin;
   if (--packer->refct > 0) PetscFunctionReturn(0);
   while (next) {
     prev = next;
     next = next->next;
-    if (prev->type == VECPACK_DA) {
+    if (prev->type == DMCOMPOSITE_DA) {
       ierr = DADestroy(prev->da);CHKERRQ(ierr);
     }
     if (prev->grstarts) {
@@ -183,8 +183,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackDestroy(VecPack packer)
 /* --------------------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetAccess_Array"
-PetscErrorCode VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar **array)
+#define __FUNCT__ "DMCompositeGetAccess_Array"
+PetscErrorCode DMCompositeGetAccess_Array(DMComposite packer,struct DMCompositeLink *mine,Vec vec,PetscScalar **array)
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
@@ -205,8 +205,8 @@ PetscErrorCode VecPackGetAccess_Array(VecPack packer,struct VecPackLink *mine,Ve
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetAccess_DA"
-PetscErrorCode VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *global)
+#define __FUNCT__ "DMCompositeGetAccess_DA"
+PetscErrorCode DMCompositeGetAccess_DA(DMComposite packer,struct DMCompositeLink *mine,Vec vec,Vec *global)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -222,16 +222,16 @@ PetscErrorCode VecPackGetAccess_DA(VecPack packer,struct VecPackLink *mine,Vec v
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRestoreAccess_Array"
-PetscErrorCode VecPackRestoreAccess_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar **array)
+#define __FUNCT__ "DMCompositeRestoreAccess_Array"
+PetscErrorCode DMCompositeRestoreAccess_Array(DMComposite packer,struct DMCompositeLink *mine,Vec vec,PetscScalar **array)
 {
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRestoreAccess_DA"
-PetscErrorCode VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec *global)
+#define __FUNCT__ "DMCompositeRestoreAccess_DA"
+PetscErrorCode DMCompositeRestoreAccess_DA(DMComposite packer,struct DMCompositeLink *mine,Vec vec,Vec *global)
 {
   PetscErrorCode ierr;
 
@@ -244,8 +244,8 @@ PetscErrorCode VecPackRestoreAccess_DA(VecPack packer,struct VecPackLink *mine,V
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackScatter_Array"
-PetscErrorCode VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
+#define __FUNCT__ "DMCompositeScatter_Array"
+PetscErrorCode DMCompositeScatter_Array(DMComposite packer,struct DMCompositeLink *mine,Vec vec,PetscScalar *array)
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
@@ -263,8 +263,8 @@ PetscErrorCode VecPackScatter_Array(VecPack packer,struct VecPackLink *mine,Vec 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackScatter_DA"
-PetscErrorCode VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
+#define __FUNCT__ "DMCompositeScatter_DA"
+PetscErrorCode DMCompositeScatter_DA(DMComposite packer,struct DMCompositeLink *mine,Vec vec,Vec local)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -283,8 +283,8 @@ PetscErrorCode VecPackScatter_DA(VecPack packer,struct VecPackLink *mine,Vec vec
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGather_Array"
-PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec vec,PetscScalar *array)
+#define __FUNCT__ "DMCompositeGather_Array"
+PetscErrorCode DMCompositeGather_Array(DMComposite packer,struct DMCompositeLink *mine,Vec vec,PetscScalar *array)
 {
   PetscErrorCode ierr;
   PetscScalar    *varray;
@@ -294,7 +294,7 @@ PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec v
   ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
   if (rank == mine->rank) {
     ierr    = VecGetArray(vec,&varray);CHKERRQ(ierr);
-    if (varray+mine->rstart == array) SETERRQ(PETSC_ERR_ARG_WRONG,"You need not VecPackGather() into objects obtained via VecPackGetAccess()");
+    if (varray+mine->rstart == array) SETERRQ(PETSC_ERR_ARG_WRONG,"You need not DMCompositeGather() into objects obtained via DMCompositeGetAccess()");
     ierr    = PetscMemcpy(varray+mine->rstart,array,mine->n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr    = VecRestoreArray(vec,&varray);CHKERRQ(ierr);
   }
@@ -302,8 +302,8 @@ PetscErrorCode VecPackGather_Array(VecPack packer,struct VecPackLink *mine,Vec v
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGather_DA"
-PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,Vec local)
+#define __FUNCT__ "DMCompositeGather_DA"
+PetscErrorCode DMCompositeGather_DA(DMComposite packer,struct DMCompositeLink *mine,Vec vec,Vec local)
 {
   PetscErrorCode ierr;
   PetscScalar    *array;
@@ -325,12 +325,12 @@ PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,
 #include <stdarg.h>
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetAccess"
+#define __FUNCT__ "DMCompositeGetAccess"
 /*@C
-    VecPackGetAccess - Allows one to access the individual packed vectors in their global
+    DMCompositeGetAccess - Allows one to access the individual packed vectors in their global
        representation.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -339,33 +339,33 @@ PetscErrorCode VecPackGather_DA(VecPack packer,struct VecPackLink *mine,Vec vec,
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackScatter(),
-         VecPackRestoreAccess(), VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeScatter(),
+         DMCompositeRestoreAccess(), DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetAccess(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetAccess(DMComposite packer,Vec gvec,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with DMCompositeCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar **array;
       array = va_arg(Argp, PetscScalar**);
-      ierr  = VecPackGetAccess_Array(packer,next,gvec,array);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr  = DMCompositeGetAccess_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec *vec;
       vec  = va_arg(Argp, Vec*);
-      ierr = VecPackGetAccess_DA(packer,next,gvec,vec);CHKERRQ(ierr);
+      ierr = DMCompositeGetAccess_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -376,12 +376,12 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetAccess(VecPack packer,Vec gvec,...)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRestoreAccess"
+#define __FUNCT__ "DMCompositeRestoreAccess"
 /*@C
-    VecPackRestoreAccess - Allows one to access the individual packed vectors in their global
+    DMCompositeRestoreAccess - Allows one to access the individual packed vectors in their global
        representation.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -390,33 +390,33 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetAccess(VecPack packer,Vec gvec,...)
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackScatter(),
-         VecPackRestoreAccess()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeScatter(),
+         DMCompositeRestoreAccess()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreAccess(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreAccess(DMComposite packer,Vec gvec,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with DMCompositeCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar **array;
       array = va_arg(Argp, PetscScalar**);
-      ierr  = VecPackRestoreAccess_Array(packer,next,gvec,array);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr  = DMCompositeRestoreAccess_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec *vec;
       vec  = va_arg(Argp, Vec*);
-      ierr = VecPackRestoreAccess_DA(packer,next,gvec,vec);CHKERRQ(ierr);
+      ierr = DMCompositeRestoreAccess_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -427,11 +427,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreAccess(VecPack packer,Vec gvec,..
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackScatter"
+#define __FUNCT__ "DMCompositeScatter"
 /*@C
-    VecPackScatter - Scatters from a global packed vector into its individual local vectors
+    DMCompositeScatter - Scatters from a global packed vector into its individual local vectors
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -440,34 +440,34 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreAccess(VecPack packer,Vec gvec,..
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackScatter(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DMComposite packer,Vec gvec,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with DMCompositeCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
-      ierr = VecPackScatter_Array(packer,next,gvec,array);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr = DMCompositeScatter_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec vec;
       vec = va_arg(Argp, Vec);
       PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
-      ierr = VecPackScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
+      ierr = DMCompositeScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -478,11 +478,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackScatter(VecPack packer,Vec gvec,...)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGather"
+#define __FUNCT__ "DMCompositeGather"
 /*@C
-    VecPackGather - Gathers into a global packed vector from its individual local vectors
+    DMCompositeGather - Gathers into a global packed vector from its individual local vectors
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -491,34 +491,34 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackScatter(VecPack packer,Vec gvec,...)
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGather(VecPack packer,Vec gvec,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGather(DMComposite packer,Vec gvec,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
   if (!packer->globalvector) {
-    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ORDER,"Must first create global vector with DMCompositeCreateGlobalVector()");
   }
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,gvec);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar *array;
       array = va_arg(Argp, PetscScalar*);
-      ierr  = VecPackGather_Array(packer,next,gvec,array);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr  = DMCompositeGather_Array(packer,next,gvec,array);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec vec;
       vec = va_arg(Argp, Vec);
       PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
-      ierr = VecPackGather_DA(packer,next,gvec,vec);CHKERRQ(ierr);
+      ierr = DMCompositeGather_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -529,12 +529,12 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGather(VecPack packer,Vec gvec,...)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackAddArray"
+#define __FUNCT__ "DMCompositeAddArray"
 /*@C
-    VecPackAddArray - adds an "redundant" array to a VecPack. The array values will 
+    DMCompositeAddArray - adds an "redundant" array to a DMComposite. The array values will 
        be stored in part of the array on process orank.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -544,20 +544,20 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGather(VecPack packer,Vec gvec,...)
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeGather(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt orank,PetscInt n)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddArray(DMComposite packer,PetscMPIInt orank,PetscInt n)
 {
-  struct VecPackLink *mine,*next = packer->next;
-  PetscErrorCode     ierr;
-  PetscMPIInt        rank;
+  struct DMCompositeLink *mine,*next = packer->next;
+  PetscErrorCode         ierr;
+  PetscMPIInt            rank;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have called VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add an array once you have called DMCompositeCreateGlobalVector()");
   }
 #if defined(PETSC_USE_DEBUG)
   {
@@ -569,11 +569,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt oran
 
   ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
   /* create new link */
-  ierr                = PetscNew(struct VecPackLink,&mine);CHKERRQ(ierr);
+  ierr                = PetscNew(struct DMCompositeLink,&mine);CHKERRQ(ierr);
   mine->n             = n;
   mine->rank          = orank;
   mine->da            = PETSC_NULL;
-  mine->type          = VECPACK_ARRAY;
+  mine->type          = DMCOMPOSITE_ARRAY;
   mine->next          = PETSC_NULL;
   if (rank == mine->rank) packer->n += n;
 
@@ -589,11 +589,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt oran
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackAddDA"
+#define __FUNCT__ "DMCompositeAddDA"
 /*@C
-    VecPackAddDA - adds a DA vector to a VecPack
+    DMCompositeAddDA - adds a DA vector to a DMComposite
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 +    packer - the packer object
@@ -601,32 +601,32 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddArray(VecPack packer,PetscMPIInt oran
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackGather(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackScatter(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeGather(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeScatter(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackAddDA(VecPack packer,DA da)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDA(DMComposite packer,DA da)
 {
-  PetscErrorCode     ierr;
-  PetscInt           n;
-  struct VecPackLink *mine,*next = packer->next;
-  Vec                global;
+  PetscErrorCode         ierr;
+  PetscInt               n;
+  struct DMCompositeLink *mine,*next = packer->next;
+  Vec                    global;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
-    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DA once you have called VecPackCreateGlobalVector()");
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot add a DA once you have called DMCompositeCreateGlobalVector()");
   }
 
   /* create new link */
-  ierr = PetscNew(struct VecPackLink,&mine);CHKERRQ(ierr);
+  ierr = PetscNew(struct DMCompositeLink,&mine);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = VecGetLocalSize(global,&n);CHKERRQ(ierr);
   ierr = DARestoreGlobalVector(da,&global);CHKERRQ(ierr);
   mine->n      = n;
   mine->da     = da;  
-  mine->type   = VECPACK_DA;
+  mine->type   = DMCOMPOSITE_DA;
   mine->next   = PETSC_NULL;
   packer->n   += n;
 
@@ -642,12 +642,12 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddDA(VecPack packer,DA da)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackCreateGlobalVector"
+#define __FUNCT__ "DMCompositeCreateGlobalVector"
 /*@C
-    VecPackCreateGlobalVector - Creates a vector of the correct size to be gathered into 
+    DMCompositeCreateGlobalVector - Creates a vector of the correct size to be gathered into 
         by the packer.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 .    packer - the packer object
@@ -659,20 +659,20 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackAddDA(VecPack packer,DA da)
 
     Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
 
-           This also serves as a VecPackFinalize(), perhaps that should be made a seperate 
+           This also serves as a DMCompositeFinalize(), perhaps that should be made a seperate 
            function?
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackScatter(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeScatter(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *gvec)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateGlobalVector(DMComposite packer,Vec *gvec)
 {
-  PetscErrorCode     ierr;
-  PetscInt           nprev = 0;
-  PetscMPIInt        rank,size;
-  struct VecPackLink *next = packer->next;
+  PetscErrorCode         ierr;
+  PetscInt               nprev = 0;
+  PetscMPIInt            rank,size;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
   if (packer->globalvector) {
@@ -690,9 +690,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
     ierr = MPI_Comm_size(packer->comm,&size);CHKERRQ(ierr);
     while (next) {
       next->rstart = nprev; 
-      if ((rank == next->rank) || next->type != VECPACK_ARRAY) nprev += next->n;
+      if ((rank == next->rank) || next->type != DMCOMPOSITE_ARRAY) nprev += next->n;
       next->grstart = packer->rstart + next->rstart;
-      if (next->type == VECPACK_ARRAY) {
+      if (next->type == DMCOMPOSITE_ARRAY) {
         ierr = MPI_Bcast(&next->grstart,1,MPIU_INT,next->rank,packer->comm);CHKERRQ(ierr);
       } else {
         ierr = PetscMalloc(size*sizeof(PetscInt),&next->grstarts);CHKERRQ(ierr);
@@ -706,12 +706,12 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetGlobalIndices"
+#define __FUNCT__ "DMCompositeGetGlobalIndices"
 /*@C
-    VecPackGetGlobalIndices - Gets the global indices for all the entries in the packed
+    DMCompositeGetGlobalIndices - Gets the global indices for all the entries in the packed
       vectors.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 .    packer - the packer object
@@ -725,24 +725,24 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackCreateGlobalVector(VecPack packer,Vec *g
     Notes:
        The idx parameters should be freed by the calling routine with PetscFree()
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetGlobalIndices(DMComposite packer,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  PetscInt           i,**idx,n;
-  struct VecPackLink *next = packer->next;
-  Vec                global,dglobal;
-  PF                 pf;
-  PetscScalar        *array;
-  PetscMPIInt        rank;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  PetscInt               i,**idx,n;
+  struct DMCompositeLink *next = packer->next;
+  Vec                    global,dglobal;
+  PF                     pf;
+  PetscScalar            *array;
+  PetscMPIInt            rank;
 
   PetscFunctionBegin;
-  ierr = VecPackCreateGlobalVector(packer,&global);CHKERRQ(ierr);
+  ierr = DMCompositeCreateGlobalVector(packer,&global);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(packer->comm,&rank);CHKERRQ(ierr);
 
   /* put 0 to N-1 into the global vector */
@@ -756,7 +756,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
   while (next) {
     idx = va_arg(Argp, PetscInt**);
 
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       
       ierr = PetscMalloc(next->n*sizeof(PetscInt),idx);CHKERRQ(ierr);
       if (rank == next->rank) {
@@ -768,7 +768,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
       }
       ierr = MPI_Bcast(*idx,next->n,MPIU_INT,next->rank,packer->comm);CHKERRQ(ierr);
 
-    } else if (next->type == VECPACK_DA) {
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec local;
 
       ierr   = DACreateLocalVector(next->da,&local);CHKERRQ(ierr);
@@ -802,8 +802,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetGlobalIndices(VecPack packer,...)
 
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetLocalVectors_Array"
-PetscErrorCode VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *mine,PetscScalar **array)
+#define __FUNCT__ "DMCompositeGetLocalVectors_Array"
+PetscErrorCode DMCompositeGetLocalVectors_Array(DMComposite packer,struct DMCompositeLink *mine,PetscScalar **array)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -812,8 +812,8 @@ PetscErrorCode VecPackGetLocalVectors_Array(VecPack packer,struct VecPackLink *m
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetLocalVectors_DA"
-PetscErrorCode VecPackGetLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *local)
+#define __FUNCT__ "DMCompositeGetLocalVectors_DA"
+PetscErrorCode DMCompositeGetLocalVectors_DA(DMComposite packer,struct DMCompositeLink *mine,Vec *local)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -822,8 +822,8 @@ PetscErrorCode VecPackGetLocalVectors_DA(VecPack packer,struct VecPackLink *mine
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRestoreLocalVectors_Array"
-PetscErrorCode VecPackRestoreLocalVectors_Array(VecPack packer,struct VecPackLink *mine,PetscScalar **array)
+#define __FUNCT__ "DMCompositeRestoreLocalVectors_Array"
+PetscErrorCode DMCompositeRestoreLocalVectors_Array(DMComposite packer,struct DMCompositeLink *mine,PetscScalar **array)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -832,8 +832,8 @@ PetscErrorCode VecPackRestoreLocalVectors_Array(VecPack packer,struct VecPackLin
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRestoreLocalVectors_DA"
-PetscErrorCode VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *mine,Vec *local)
+#define __FUNCT__ "DMCompositeRestoreLocalVectors_DA"
+PetscErrorCode DMCompositeRestoreLocalVectors_DA(DMComposite packer,struct DMCompositeLink *mine,Vec *local)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -842,12 +842,12 @@ PetscErrorCode VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetLocalVectors"
+#define __FUNCT__ "DMCompositeGetLocalVectors"
 /*@C
-    VecPackGetLocalVectors - Gets local vectors and arrays for each part of a VecPack.'
+    DMCompositeGetLocalVectors - Gets local vectors and arrays for each part of a DMComposite.'
        Use VecPakcRestoreLocalVectors() to return them.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 .    packer - the packer object
@@ -857,30 +857,30 @@ PetscErrorCode VecPackRestoreLocalVectors_DA(VecPack packer,struct VecPackLink *
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(), 
-         VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(), 
+         DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetLocalVectors(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetLocalVectors(DMComposite packer,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,packer);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar **array;
       array = va_arg(Argp, PetscScalar**);
-      ierr = VecPackGetLocalVectors_Array(packer,next,array);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr = DMCompositeGetLocalVectors_Array(packer,next,array);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec *vec;
       vec = va_arg(Argp, Vec*);
-      ierr = VecPackGetLocalVectors_DA(packer,next,vec);CHKERRQ(ierr);
+      ierr = DMCompositeGetLocalVectors_DA(packer,next,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -891,12 +891,12 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetLocalVectors(VecPack packer,...)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRestoreLocalVectors"
+#define __FUNCT__ "DMCompositeRestoreLocalVectors"
 /*@C
-    VecPackRestoreLocalVectors - Restores local vectors and arrays for each part of a VecPack.'
+    DMCompositeRestoreLocalVectors - Restores local vectors and arrays for each part of a DMComposite.'
        Use VecPakcRestoreLocalVectors() to return them.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 .    packer - the packer object
@@ -906,30 +906,30 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetLocalVectors(VecPack packer,...)
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(), 
-         VecPackGetLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(), 
+         DMCompositeGetLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreLocalVectors(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRestoreLocalVectors(DMComposite packer,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
 
   /* loop over packed objects, handling one at at time */
   va_start(Argp,packer);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscScalar **array;
       array = va_arg(Argp, PetscScalar**);
-      ierr = VecPackRestoreLocalVectors_Array(packer,next,array);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr = DMCompositeRestoreLocalVectors_Array(packer,next,array);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       Vec *vec;
       vec = va_arg(Argp, Vec*);
-      ierr = VecPackRestoreLocalVectors_DA(packer,next,vec);CHKERRQ(ierr);
+      ierr = DMCompositeRestoreLocalVectors_DA(packer,next,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -941,8 +941,8 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackRestoreLocalVectors(VecPack packer,...)
 
 /* -------------------------------------------------------------------------------------*/
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetEntries_Array"
-PetscErrorCode VecPackGetEntries_Array(VecPack packer,struct VecPackLink *mine,PetscInt *n)
+#define __FUNCT__ "DMCompositeGetEntries_Array"
+PetscErrorCode DMCompositeGetEntries_Array(DMComposite packer,struct DMCompositeLink *mine,PetscInt *n)
 {
   PetscFunctionBegin;
   if (n) *n = mine->n;
@@ -950,8 +950,8 @@ PetscErrorCode VecPackGetEntries_Array(VecPack packer,struct VecPackLink *mine,P
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetEntries_DA"
-PetscErrorCode VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *da)
+#define __FUNCT__ "DMCompositeGetEntries_DA"
+PetscErrorCode DMCompositeGetEntries_DA(DMComposite packer,struct DMCompositeLink *mine,DA *da)
 {
   PetscFunctionBegin;
   if (da) *da = mine->da;
@@ -959,12 +959,12 @@ PetscErrorCode VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetEntries"
+#define __FUNCT__ "DMCompositeGetEntries"
 /*@C
-    VecPackGetEntries - Gets the DA, redundant size, etc for each entry in a VecPack.
-       Use VecPackRestoreEntries() to return them.
+    DMCompositeGetEntries - Gets the DA, redundant size, etc for each entry in a DMComposite.
+       Use DMCompositeRestoreEntries() to return them.
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameter:
 .    packer - the packer object
@@ -974,31 +974,30 @@ PetscErrorCode VecPackGetEntries_DA(VecPack packer,struct VecPackLink *mine,DA *
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(), 
-         VecPackRestoreLocalVectors(), VecPackGetLocalVectors(), VecPackRestoreEntries(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(), 
+         DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(), DMCompositeRestoreEntries(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetEntries(VecPack packer,...)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetEntries(DMComposite packer,...)
 {
-  va_list            Argp;
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
+  va_list                Argp;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
 
   PetscFunctionBegin;
-
   /* loop over packed objects, handling one at at time */
   va_start(Argp,packer);
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       PetscInt *n;
       n = va_arg(Argp, PetscInt*);
-      ierr = VecPackGetEntries_Array(packer,next,n);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+      ierr = DMCompositeGetEntries_Array(packer,next,n);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       DA *da;
       da = va_arg(Argp, DA*);
-      ierr = VecPackGetEntries_DA(packer,next,da);CHKERRQ(ierr);
+      ierr = DMCompositeGetEntries_DA(packer,next,da);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -1009,11 +1008,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetEntries(VecPack packer,...)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackRefine"
+#define __FUNCT__ "DMCompositeRefine"
 /*@C
-    VecPackRefine - Refines a VecPack by refining all of its DAs
+    DMCompositeRefine - Refines a DMComposite by refining all of its DAs
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameters:
 +    packer - the packer object
@@ -1024,27 +1023,27 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetEntries(VecPack packer,...)
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackRefine(VecPack packer,MPI_Comm comm,VecPack *fine)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeRefine(DMComposite packer,MPI_Comm comm,DMComposite *fine)
 {
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
-  DA                 da;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
+  DA                     da;
 
   PetscFunctionBegin;
-  ierr = VecPackCreate(comm,fine);CHKERRQ(ierr);
+  ierr = DMCompositeCreate(comm,fine);CHKERRQ(ierr);
 
   /* loop over packed objects, handling one at at time */
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
-      ierr = VecPackAddArray(*fine,next->rank,next->n);CHKERRQ(ierr);
-    } else if (next->type == VECPACK_DA) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
+      ierr = DMCompositeAddArray(*fine,next->rank,next->n);CHKERRQ(ierr);
+    } else if (next->type == DMCOMPOSITE_DA) {
       ierr = DARefine(next->da,comm,&da);CHKERRQ(ierr);
-      ierr = VecPackAddDA(*fine,da);CHKERRQ(ierr);
+      ierr = DMCompositeAddDA(*fine,da);CHKERRQ(ierr);
       ierr = PetscObjectDereference((PetscObject)da);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
@@ -1062,7 +1061,7 @@ struct MatPackLink {
 };
 
 struct MatPack {
-  VecPack            right,left;
+  DMComposite            right,left;
   struct MatPackLink *next;
 };
 
@@ -1070,14 +1069,14 @@ struct MatPack {
 #define __FUNCT__ "MatMultBoth_Shell_Pack"
 PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
 {
-  struct MatPack     *mpack;
-  struct VecPackLink *xnext,*ynext;
-  struct MatPackLink *anext;
-  PetscScalar        *xarray,*yarray;
-  PetscErrorCode     ierr;
-  PetscInt           i;
-  Vec                xglobal,yglobal;
-  PetscMPIInt        rank;
+  struct MatPack         *mpack;
+  struct DMCompositeLink *xnext,*ynext;
+  struct MatPackLink     *anext;
+  PetscScalar            *xarray,*yarray;
+  PetscErrorCode         ierr;
+  PetscInt               i;
+  Vec                    xglobal,yglobal;
+  PetscMPIInt            rank;
 
   PetscFunctionBegin;
   ierr = MatShellGetContext(A,(void**)&mpack);CHKERRQ(ierr);
@@ -1087,7 +1086,7 @@ PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
   anext = mpack->next;
 
   while (xnext) {
-    if (xnext->type == VECPACK_ARRAY) {
+    if (xnext->type == DMCOMPOSITE_ARRAY) {
       if (rank == xnext->rank) {
         ierr    = VecGetArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecGetArray(y,&yarray);CHKERRQ(ierr);
@@ -1101,7 +1100,7 @@ PetscErrorCode MatMultBoth_Shell_Pack(Mat A,Vec x,Vec y,PetscTruth add)
         ierr    = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
       }
-    } else if (xnext->type == VECPACK_DA) {
+    } else if (xnext->type == DMCOMPOSITE_DA) {
       ierr  = VecGetArray(x,&xarray);CHKERRQ(ierr);
       ierr  = VecGetArray(y,&yarray);CHKERRQ(ierr);
       ierr  = DAGetGlobalVector(xnext->da,&xglobal);CHKERRQ(ierr);
@@ -1154,13 +1153,13 @@ PetscErrorCode MatMult_Shell_Pack(Mat A,Vec x,Vec y)
 #define __FUNCT__ "MatMultTranspose_Shell_Pack"
 PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
 {
-  struct MatPack     *mpack;
-  struct VecPackLink *xnext,*ynext;
-  struct MatPackLink *anext;
-  PetscScalar        *xarray,*yarray;
-  PetscErrorCode     ierr;
-  Vec                xglobal,yglobal;
-  PetscMPIInt        rank;
+  struct MatPack         *mpack;
+  struct DMCompositeLink *xnext,*ynext;
+  struct MatPackLink     *anext;
+  PetscScalar            *xarray,*yarray;
+  PetscErrorCode         ierr;
+  Vec                    xglobal,yglobal;
+  PetscMPIInt            rank;
 
   PetscFunctionBegin;
   ierr  = MatShellGetContext(A,(void**)&mpack);CHKERRQ(ierr);
@@ -1170,7 +1169,7 @@ PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
   anext = mpack->next;
 
   while (xnext) {
-    if (xnext->type == VECPACK_ARRAY) {
+    if (xnext->type == DMCOMPOSITE_ARRAY) {
       if (rank == ynext->rank) {
         ierr    = VecGetArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecGetArray(y,&yarray);CHKERRQ(ierr);
@@ -1178,7 +1177,7 @@ PetscErrorCode MatMultTranspose_Shell_Pack(Mat A,Vec x,Vec y)
         ierr    = VecRestoreArray(x,&xarray);CHKERRQ(ierr);
         ierr    = VecRestoreArray(y,&yarray);CHKERRQ(ierr);
       }
-    } else if (xnext->type == VECPACK_DA) {
+    } else if (xnext->type == DMCOMPOSITE_DA) {
       ierr  = VecGetArray(x,&xarray);CHKERRQ(ierr);
       ierr  = VecGetArray(y,&yarray);CHKERRQ(ierr);
       ierr  = DAGetGlobalVector(xnext->da,&xglobal);CHKERRQ(ierr);
@@ -1226,11 +1225,11 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetInterpolation"
+#define __FUNCT__ "DMCompositeGetInterpolation"
 /*@C
-    VecPackGetInterpolation - GetInterpolations a VecPack by refining all of its DAs
+    DMCompositeGetInterpolation - GetInterpolations a DMComposite by refining all of its DAs
 
-    Collective on VecPack
+    Collective on DMComposite
 
     Input Parameters:
 +    coarse - coarse grid packer
@@ -1242,25 +1241,25 @@ PetscErrorCode MatDestroy_Shell_Pack(Mat A)
  
     Level: advanced
 
-.seealso VecPackDestroy(), VecPackAddArray(), VecPackAddDA(), VecPackCreateGlobalVector(),
-         VecPackGather(), VecPackCreate(), VecPackGetGlobalIndices(), VecPackGetAccess(),
-         VecPackGetLocalVectors(), VecPackRestoreLocalVectors()
+.seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
+         DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(),
+         DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack fine,Mat *A,Vec *v)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetInterpolation(DMComposite coarse,DMComposite fine,Mat *A,Vec *v)
 {
-  PetscErrorCode     ierr;
-  PetscInt           m,n,M,N;
-  struct VecPackLink *nextc  = coarse->next;
-  struct VecPackLink *nextf = fine->next;
-  struct MatPackLink *nextmat,*pnextmat = 0;
-  struct MatPack     *mpack;
-  Vec                gcoarse,gfine;
+  PetscErrorCode         ierr;
+  PetscInt               m,n,M,N;
+  struct DMCompositeLink *nextc  = coarse->next;
+  struct DMCompositeLink *nextf = fine->next;
+  struct MatPackLink     *nextmat,*pnextmat = 0;
+  struct MatPack         *mpack;
+  Vec                    gcoarse,gfine;
 
   PetscFunctionBegin;
   /* use global vectors only for determining matrix layout */
-  ierr = VecPackCreateGlobalVector(coarse,&gcoarse);CHKERRQ(ierr);
-  ierr = VecPackCreateGlobalVector(fine,&gfine);CHKERRQ(ierr);
+  ierr = DMCompositeCreateGlobalVector(coarse,&gcoarse);CHKERRQ(ierr);
+  ierr = DMCompositeCreateGlobalVector(fine,&gfine);CHKERRQ(ierr);
   ierr = VecGetLocalSize(gcoarse,&n);CHKERRQ(ierr);
   ierr = VecGetLocalSize(gfine,&m);CHKERRQ(ierr);
   ierr = VecGetSize(gcoarse,&N);CHKERRQ(ierr);
@@ -1282,11 +1281,11 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack 
 
   /* loop over packed objects, handling one at at time */
   while (nextc) {
-    if (nextc->type != nextf->type) SETERRQ(PETSC_ERR_ARG_INCOMP,"Two VecPack have different layout");
+    if (nextc->type != nextf->type) SETERRQ(PETSC_ERR_ARG_INCOMP,"Two DMComposite have different layout");
 
-    if (nextc->type == VECPACK_ARRAY) {
+    if (nextc->type == DMCOMPOSITE_ARRAY) {
       ;
-    } else if (nextc->type == VECPACK_DA) {
+    } else if (nextc->type == DMCOMPOSITE_DA) {
       ierr          = PetscNew(struct MatPackLink,&nextmat);CHKERRQ(ierr);
       nextmat->next = 0;
       if (pnextmat) {
@@ -1307,9 +1306,9 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetMatrix" 
+#define __FUNCT__ "DMCompositeGetMatrix" 
 /*@C
-    VecPackGetMatrix - Creates a matrix with the correct parallel layout and nonzero structure required for 
+    DMCompositeGetMatrix - Creates a matrix with the correct parallel layout and nonzero structure required for 
       computing the Jacobian on a function defined using the stencils set in the DA's and coupling in the array variables
 
     Collective on DA
@@ -1328,22 +1327,22 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetInterpolation(VecPack coarse,VecPack 
        do not need to do it yourself. 
 
 
-.seealso DAGetMatrix(), VecPackCreate()
+.seealso DAGetMatrix(), DMCompositeCreate()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatType mtype,Mat *J)
 {
-  PetscErrorCode     ierr;
-  struct VecPackLink *next = packer->next;
-  Vec                gvec;
-  PetscInt           m,*dnz,*onz,i,j,mA;
-  Mat                Atmp;
-  PetscMPIInt        rank;
-  PetscScalar        zero = 0.0;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next = packer->next;
+  Vec                    gvec;
+  PetscInt               m,*dnz,*onz,i,j,mA;
+  Mat                    Atmp;
+  PetscMPIInt            rank;
+  PetscScalar            zero = 0.0;
 
   PetscFunctionBegin;
   /* use global vector to determine layout needed for matrix */
-  ierr = VecPackCreateGlobalVector(packer,&gvec);CHKERRQ(ierr);
+  ierr = DMCompositeCreateGlobalVector(packer,&gvec);CHKERRQ(ierr);
   ierr = VecGetLocalSize(gvec,&m);CHKERRQ(ierr);
   ierr = VecDestroy(gvec);CHKERRQ(ierr);
 
@@ -1355,7 +1354,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
   ierr = MatPreallocateInitialize(packer->comm,m,m,dnz,onz);CHKERRQ(ierr);
   /* loop over packed objects, handling one at at time */
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       if (rank == next->rank) {  /* zero the entire row */
         for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
           for (i=0; i<packer->N; i++) {
@@ -1370,7 +1369,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
           }
 	}
       }
-    } else if (next->type == VECPACK_DA) {
+    } else if (next->type == DMCOMPOSITE_DA) {
       PetscInt       nc,rstart,*ccols,maxnc;
       const PetscInt *cols,*rstarts;
       PetscMPIInt    proc;
@@ -1410,7 +1409,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
 
   next = packer->next;
   while (next) {
-    if (next->type == VECPACK_ARRAY) {
+    if (next->type == DMCOMPOSITE_ARRAY) {
       if (rank == next->rank) {
         for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
           for (i=0; i<packer->N; i++) {
@@ -1423,7 +1422,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
           ierr = MatSetValues(*J,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
 	}
       }
-    } else if (next->type == VECPACK_DA) {
+    } else if (next->type == DMCOMPOSITE_DA) {
       PetscInt          nc,rstart,row,maxnc,*ccols;
       const PetscInt    *cols,*rstarts;
       const PetscScalar *values;
@@ -1463,15 +1462,15 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecPackGetColoring" 
+#define __FUNCT__ "DMCompositeGetColoring" 
 /*@
-    VecPackGetColoring - Gets the coloring required for computing the Jacobian via
-    finite differences on a function defined using a VecPack "grid"
+    DMCompositeGetColoring - Gets the coloring required for computing the Jacobian via
+    finite differences on a function defined using a DMComposite "grid"
 
     Collective on DA
 
     Input Parameter:
-+   vecpack - the VecPack object
++   dmcomposite - the DMComposite object
 -   ctype - IS_COLORING_GLOBAL or IS_COLORING_GHOSTED
 
     Output Parameters:
@@ -1489,7 +1488,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetMatrix(VecPack packer, MatType mtype,
 .seealso ISColoringView(), ISColoringGetIS(), MatFDColoringCreate(), ISColoringType, ISColoring, DAGetColoring()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT VecPackGetColoring(VecPack vecpack,ISColoringType ctype,ISColoring *coloring)
+PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetColoring(DMComposite dmcomposite,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode  ierr;
   PetscInt        n,i;
@@ -1499,14 +1498,14 @@ PetscErrorCode PETSCDM_DLLEXPORT VecPackGetColoring(VecPack vecpack,ISColoringTy
   if (ctype == IS_COLORING_GHOSTED) {
     SETERRQ(PETSC_ERR_SUP,"Lazy Barry");
   } else if (ctype == IS_COLORING_GLOBAL) {
-    n = vecpack->n;
+    n = dmcomposite->n;
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Unknown ISColoringType");
 
   ierr = PetscMalloc(n*sizeof(ISColoringValue),&colors);CHKERRQ(ierr); /* freed in ISColoringDestroy() */
   for (i=0; i<n; i++) {
-    colors[i] = (ISColoringValue)(vecpack->rstart + i);
+    colors[i] = (ISColoringValue)(dmcomposite->rstart + i);
   }
-  ierr = ISColoringCreate(vecpack->comm,vecpack->N,n,colors,coloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(dmcomposite->comm,dmcomposite->N,n,colors,coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

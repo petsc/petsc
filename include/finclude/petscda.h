@@ -10,7 +10,7 @@
 #define DAStencilType PetscEnum
 #define DADirection PetscEnum
 #define DMMG PetscFortranAddr
-#define VecPack PetscFortranAddr
+#define DMComposite PetscFortranAddr
 #define DM PetscFortranAddr
 
 #define DALocalInfo integer

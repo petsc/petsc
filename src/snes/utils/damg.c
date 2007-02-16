@@ -195,7 +195,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
 
     Input Parameter:
 +   dmmg - the context
--   dm - the DA or VecPack object
+-   dm - the DA or DMComposite object
 
     Options Database Keys:
 +   -dmmg_refine: Use the input problem as the coarse level and refine. Otherwise, use it as the fine level and coarsen.

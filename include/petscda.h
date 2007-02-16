@@ -15,7 +15,7 @@ PETSC_EXTERN_CXX_BEGIN
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM, VecPack
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DM, DMComposite
 S*/
 typedef struct _p_DA* DA;
 
@@ -403,8 +403,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  admf_DARestoreArray(DA,PetscTruth,void*
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
 /*S
-     VecPack - Abstract PETSc object that manages treating several distinct vectors as if they
-        were one.   The VecPack routines allow one to manage a nonlinear solver that works on a
+     DMComposite - Abstract PETSc object that manages treating several distinct vectors as if they
+        were one.   The DMComposite routines allow one to manage a nonlinear solver that works on a
         vector that consists of several distinct parts. This is mostly used for LNKS solvers, 
         that is design optimization problems that are written as a nonlinear system
 
@@ -412,28 +412,28 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DACreatePF(DA,PF*);
 
   Concepts: multi-component, LNKS solvers
 
-.seealso:  VecPackCreate(), VecPackDestroy(), DM
+.seealso:  DMCompositeCreate(), DMCompositeDestroy(), DM
 S*/
-typedef struct _p_VecPack* VecPack;
+typedef struct _p_DMComposite* DMComposite;
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreate(MPI_Comm,VecPack*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackDestroy(VecPack);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddArray(VecPack,PetscMPIInt,PetscInt);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddDA(VecPack,DA);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackAddVecScatter(VecPack,VecScatter);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackScatter(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGather(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetAccess(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRestoreAccess(VecPack,Vec,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetLocalVectors(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetEntries(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRestoreLocalVectors(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackCreateGlobalVector(VecPack,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetGlobalIndices(VecPack,...);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackRefine(VecPack,MPI_Comm,VecPack*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetInterpolation(VecPack,VecPack,Mat*,Vec*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetMatrix(VecPack,MatType,Mat*);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetColoring(VecPack,ISColoringType,ISColoring*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreate(MPI_Comm,DMComposite*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeDestroy(DMComposite);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddArray(DMComposite,PetscMPIInt,PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddDA(DMComposite,DA);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeAddVecScatter(DMComposite,VecScatter);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeScatter(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGather(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetAccess(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreAccess(DMComposite,Vec,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetLocalVectors(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetEntries(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRestoreLocalVectors(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeCreateGlobalVector(DMComposite,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetGlobalIndices(DMComposite,...);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeRefine(DMComposite,MPI_Comm,DMComposite*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetInterpolation(DMComposite,DMComposite,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetMatrix(DMComposite,MatType,Mat*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMCompositeGetColoring(DMComposite,ISColoringType,ISColoring*);
 
 /*S
      Slice - Abstract PETSc object that manages distributed field data for a simple unstructured matrix
@@ -442,7 +442,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  VecPackGetColoring(VecPack,ISColoringTy
 
   Concepts: distributed array
 
-.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), VecPackCreate(), VecPack
+.seealso:  DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), VecScatter, DACreate(), DMCompositeCreate(), DMComposite
 S*/
 typedef struct _p_Sliced* Sliced;
 
@@ -462,13 +462,13 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  SlicedSetGhosts(Sliced,PetscInt,PetscIn
 
   Concepts: grids, grid refinement
 
-   Notes: The DA object and the VecPack object are examples of DMs
+   Notes: The DA object and the DMComposite object are examples of DMs
 
           Though the DA objects require the petscsnes.h include files the DM library is
     NOT dependent on the SNES or KSP library. In fact, the KSP and SNES libraries depend on
     DM. (This is not great design, but not trivial to fix).
 
-.seealso:  VecPackCreate(), DA, VecPack
+.seealso:  DMCompositeCreate(), DA, DMComposite
 S*/
 typedef struct _p_DM* DM;
 
