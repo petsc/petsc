@@ -108,10 +108,10 @@ int main(int argc,char **argv)
   */
 
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  ierr = PetscFinalize();CHKERRQ(ierr);
-
   ierr = PetscFree(values);CHKERRQ(ierr);
   ierr = PetscFree(indices);CHKERRQ(ierr);
+
+  ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
 }
