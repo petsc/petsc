@@ -1238,6 +1238,18 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetStencil(Mat mat,PetscInt dim,const Petsc
    entries via MatSetValuesBlocked(), the overhead of matrix assembly is
    reduced.
 
+   Example:
+$   Suppose m=n=2 and block size(bs) = 2 The matrix is 
+$
+$   1  2  | 3  4
+$   5  6  | 7  8
+$   - - - | - - -
+$   9  10 | 11 12
+$   13 14 | 15 16
+$
+$   v[] should be passed in like
+$   v[] = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+
    Restrictions:
    MatSetValuesBlocked() is currently supported only for the BAIJ and SBAIJ formats
 

@@ -257,6 +257,9 @@ EXTERN_C_END
     Notes:
       This uses the iludt() code of Saad's SPARSKIT package
 
+      There are NO default values for the 3 parameters, you must set them with reasonable values for your
+      matrix. We don't know how to compute reasonable values.
+
 .keywords: PC, levels, reordering, factorization, incomplete, ILU
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseDropTolerance(PC pc,PetscReal dt,PetscReal dtcol,PetscInt maxrowcount)
