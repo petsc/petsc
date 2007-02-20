@@ -304,6 +304,12 @@ PetscErrorCode SNESDestroy_LS(SNES snes)
     ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
   }
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
+
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","",PETSC_NULL);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
@@ -1202,9 +1208,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_LS(SNES snes)
   neP->precheckstep     = PETSC_NULL;
   neP->precheck         = PETSC_NULL;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C","SNESLineSearchSet_LS",SNESLineSearchSet_LS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C","SNESLineSearchSetPostCheck_LS",SNESLineSearchSetPostCheck_LS);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C","SNESLineSearchSetPreCheck_LS",SNESLineSearchSetPreCheck_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSet_C",
+					   "SNESLineSearchSet_LS",
+					   SNESLineSearchSet_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPostCheck_C",
+					   "SNESLineSearchSetPostCheck_LS",
+					   SNESLineSearchSetPostCheck_LS);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)snes,"SNESLineSearchSetPreCheck_C",
+					   "SNESLineSearchSetPreCheck_LS",
+					   SNESLineSearchSetPreCheck_LS);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
