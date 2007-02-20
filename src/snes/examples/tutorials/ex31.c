@@ -23,9 +23,28 @@ static char help[] = "Model multi-physics solver\n\n";
             ---------------------          DA 1
                    nxv
 
+    Notes:
+     * The discretization approach used is to have ghost nodes OUTSIDE the physical domain
+      that are used to apply the stencil near the boundary; in order to implement this with
+      PETSc DAs we simply define the DAs to have periodic boundary conditions and use those
+      periodic ghost points to store the needed extra variables (which do not equations associated
+      with them). Note that these periodic ghost nodes have NOTHING to do with the ghost nodes
+      used for parallel computing.
+
 */
 
 #include "petscdmmg.h"
+
+typedef struct {                  
+  PetscScalar pri,ugi,ufi,agi,vgi,vfi;              /* initial conditions for fluid variables */
+  PetscScalar prin,ugin,ufin,agin,vgin,vfin;        /* inflow boundary conditions for fluid */
+  PetscScalar prout,ugout,ufout,agout,vgout;        /* outflow boundary conditions for fluid */
+
+  PetscScalar twi;
+
+  PetscScalar phii;
+  PetscScalar prei;
+} AppCtx;
 
 typedef struct {                 /* Fluid unknowns */
   PetscScalar prss;
@@ -53,8 +72,8 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   DA             da;
   DMComposite    pack;
-
-  PetscInt       nxv = 3, nyv = 3, nyfv = 3;  
+  AppCtx         app;
+  PetscInt       nxv = 6, nyv = 3, nyfv = 3;  
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -68,21 +87,50 @@ int main(int argc,char **argv)
 
     */
     ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
-    ierr = DACreate1d(comm,DA_NONPERIODIC,nxv,6,1,0,&da);CHKERRQ(ierr);
+
+    /* 6 fluid unknowns, 3 ghost points on each end for either periodicity or simply boundary conditions */
+    ierr = DACreate1d(comm,DA_XPERIODIC,nxv,6,3,0,&da);CHKERRQ(ierr);
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,nxv,nyv+2,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+
+    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,nxv,nyv+2,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
-    ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,nxv,nyfv+2,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+
+    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,nxv,nyfv+2,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
    
+    app.pri = 1.0135e+5;
+    app.ugi = 2.5065e+6;
+    app.ufi = 4.1894e+5;
+    app.agi = 1.00e-1;
+    app.vgi = 1.0e-1 ;
+    app.vfi = 1.0e-1;
+
+    app.prin = 1.0135e+5;
+    app.ugin = 2.5065e+6;
+    app.ufin = 4.1894e+5;
+    app.agin = 1.00e-1;
+    app.vgin = 1.0e-1 ;
+    app.vfin = 1.0e-1;
+
+    app.prout = 1.0135e+5;
+    app.ugout = 2.5065e+6;
+    app.ufout = 4.1894e+5;
+    app.agout = 3.0e-1;
+
+    app.twi = 373.15e+0;
+
+    app.phii = 1.0e+0;
+    app.prei = 1.0e-5;
+
     /*
        Create the solver object and attach the grid/physics info 
     */
-    ierr = DMMGCreate(comm,2,0,&dmmg);CHKERRQ(ierr);
+    ierr = DMMGCreate(comm,1,0,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)pack);CHKERRQ(ierr);
+    ierr = DMMGSetUser(dmmg,0,&app);CHKERRQ(ierr);
     ierr = DMCompositeDestroy(pack);CHKERRQ(ierr);
     CHKMEMQ;
 
@@ -120,26 +168,27 @@ int main(int argc,char **argv)
  */
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocalFluid"
-PetscErrorCode FormInitialGuessLocalFluid(DALocalInfo *info1,FluidField *f)
+PetscErrorCode FormInitialGuessLocalFluid(AppCtx *app,DALocalInfo *info,FluidField *f)
 {
   PetscInt       i;
-
   PetscFunctionBegin;
 
-  for (i=info1->xs; i<info1->xs+info1->xm; i++) {
-    f[i].prss = 22.3;
-    f[i].ergg = 12;
-    f[i].ergf = 11;;
-    f[i].alfg = 9;
-    f[i].velg = 12;
-    f[i].velf = 3;
+
+  for (i=info->xs; i<info->xs+info->xm; i++) {
+    f[i].prss = app->pri;
+    f[i].ergg = app->ugi;
+    f[i].ergf = app->ufi;
+    f[i].alfg = app->agi;
+    f[i].velg = app->vgi;
+    f[i].velf = app->vfi;
   }
+
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocalCladding"
-PetscErrorCode FormInitialGuessLocalCladding(DALocalInfo *info2,PetscScalar **T)
+PetscErrorCode FormInitialGuessLocalCladding(AppCtx *app,DALocalInfo *info2,PetscScalar **T)
 {
   PetscInt i,j;
 
@@ -147,7 +196,7 @@ PetscErrorCode FormInitialGuessLocalCladding(DALocalInfo *info2,PetscScalar **T)
 
   for (i=info2->xs; i<info2->xs+info2->xm; i++) {
     for (j=info2->ys;j<info2->ys+info2->ym; j++) {
-      T[j][i] = 0.0;
+      T[j][i] = app->twi;
     }
   }
   PetscFunctionReturn(0);
@@ -155,7 +204,7 @@ PetscErrorCode FormInitialGuessLocalCladding(DALocalInfo *info2,PetscScalar **T)
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocalFuel"
-PetscErrorCode FormInitialGuessLocalFuel(DALocalInfo *info2,FuelField **F)
+PetscErrorCode FormInitialGuessLocalFuel(AppCtx *app,DALocalInfo *info2,FuelField **F)
 {
   PetscInt i,j;
 
@@ -163,8 +212,8 @@ PetscErrorCode FormInitialGuessLocalFuel(DALocalInfo *info2,FuelField **F)
 
   for (i=info2->xs; i<info2->xs+info2->xm; i++) {
     for (j=info2->ys;j<info2->ys+info2->ym; j++) {
-      F[j][i].phii = 0.0;
-      F[j][i].prei = 0.0;
+      F[j][i].phii = app->phii;
+      F[j][i].prei = app->prei;
     }
   }
   PetscFunctionReturn(0);
@@ -176,13 +225,13 @@ PetscErrorCode FormInitialGuessLocalFuel(DALocalInfo *info2,FuelField **F)
 */
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalFluid"
-PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info1,FluidField *u,FluidField *f)
+PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info,FluidField *u,FluidField *f)
 {
   PetscInt       i;
 
   PetscFunctionBegin;
 
-  for (i=info1->xs; i<info1->xs+info1->xm; i++) {
+  for (i=info->xs; i<info->xs+info->xm; i++) {
     f[i].prss = u[i].prss;
     f[i].ergg = u[i].ergg;
     f[i].ergf = u[i].ergf;
@@ -195,14 +244,14 @@ PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info1,FluidField *u,FluidFiel
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalCladding"
-PetscErrorCode FormFunctionLocalCladding(DALocalInfo *info2,PetscScalar **T,PetscScalar **f)
+PetscErrorCode FormFunctionLocalCladding(DALocalInfo *info,PetscScalar **T,PetscScalar **f)
 {
   PetscInt i,j;
 
   PetscFunctionBegin;
 
-  for (i=info2->xs; i<info2->xs+info2->xm; i++) {
-    for (j=info2->ys;j<info2->ys+info2->ym; j++) {
+  for (i=info->xs; i<info->xs+info->xm; i++) {
+    for (j=info->ys;j<info->ys+info->ym; j++) {
       f[j][i] = T[j][i];
     }
   }
@@ -211,14 +260,14 @@ PetscErrorCode FormFunctionLocalCladding(DALocalInfo *info2,PetscScalar **T,Pets
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunctionLocalFuel"
-PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info2,FuelField **U,FuelField **F)
+PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info,FuelField **U,FuelField **F)
 {
   PetscInt i,j;
 
   PetscFunctionBegin;
 
-  for (i=info2->xs; i<info2->xs+info2->xm; i++) {
-    for (j=info2->ys;j<info2->ys+info2->ym; j++) {
+  for (i=info->xs; i<info->xs+info->xm; i++) {
+    for (j=info->ys;j<info->ys+info->ym; j++) {
       F[j][i].phii = U[j][i].phii;
       F[j][i].prei = U[j][i].prei;
     }
@@ -243,6 +292,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   FuelField      **x3;
   Vec            X1,X2,X3;
   PetscErrorCode ierr;
+  AppCtx         *app = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(dm,&da1,&da2,&da3);CHKERRQ(ierr);
@@ -259,9 +309,9 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   ierr = DAVecGetArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
 
   /* Evaluate local user provided function */
-  ierr = FormInitialGuessLocalFluid(&info1,x1);CHKERRQ(ierr);
-  ierr = FormInitialGuessLocalCladding(&info2,x2);CHKERRQ(ierr);
-  ierr = FormInitialGuessLocalFuel(&info3,x3);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocalFluid(app,&info1,x1);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocalCladding(app,&info2,x2);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocalFuel(app,&info3,x3);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
@@ -288,6 +338,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   FuelField      **x3,**f3;
   Vec            X1,X2,X3,F1,F2,F3;
   PetscErrorCode ierr;
+  PetscInt       i;
+  AppCtx         *app = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
   ierr = DMCompositeGetEntries(dm,&da1,&da2,&da3);CHKERRQ(ierr);
@@ -303,6 +355,33 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
   ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
   ierr = DAVecGetArray(da3,X3,(void**)&x3);CHKERRQ(ierr);
+
+   /*
+    Ghost points for periodicity are used to "force" inflow/outflow fluid boundary conditions 
+    Note that there is no periodicity; we define periodicity to "cheat" and have ghost spaces to store exterior to boundary values
+
+  */
+  if (info1.gxs == -3) {                   
+    for (i=-3; i<0; i++) {
+      x1[i].prss = app->prin;
+      x1[i].ergg = app->ugin;
+      x1[i].ergf = app->ufin;
+      x1[i].alfg = app->agin;
+      x1[i].velg = app->vgin;
+      x1[i].velf = app->vfin;
+    }
+  }
+
+  if (info1.gxs+info1.gxm == info1.mx+3) { 
+    for (i=info1.mx; i<info1.mx+3; i++) {
+      x1[i].prss = app->prout;
+      x1[i].ergg = app->ugout;
+      x1[i].ergf = app->ufout;
+      x1[i].alfg = app->agout;
+      x1[i].velg = app->vgi;
+      x1[i].velf = app->vfi;
+    }
+  }
 
   /* Access the three subvectors in F */
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
