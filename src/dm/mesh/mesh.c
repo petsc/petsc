@@ -609,7 +609,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal 
   const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&   atlas    = s->getAtlas();
   const ALE::Mesh::real_section_type::patch_type              patch    = 0;
   const ALE::Mesh::real_section_type::atlas_type::chart_type& chart    = atlas->getPatch(patch);
-  m->getFactory()->setDebug(m->debug());
   const ALE::Obj<ALE::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(topology, patch, name, atlas);
   int *localIndices, *globalIndices;
   int  localSize = s->size(patch);
