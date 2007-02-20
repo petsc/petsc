@@ -242,11 +242,8 @@ PetscErrorCode KSPDestroy_CG(KSP ksp)
     ierr = PetscFree(cg->e);CHKERRQ(ierr);
     ierr = PetscFree(cg->ee);CHKERRQ(ierr);
   }
-
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  
-  /* free the context variable */
-  ierr = PetscFree(cg);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -380,8 +377,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP ksp)
       KSPCGSetType() checks for this attached function and calls it if it finds
       it. (Sort of like a dynamic member function that can be added at run time
   */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C","KSPCGSetType_CG",
-                                     KSPCGSetType_CG);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPCGSetType_C",
+					   "KSPCGSetType_CG",
+					   KSPCGSetType_CG);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

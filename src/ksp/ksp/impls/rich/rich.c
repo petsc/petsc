@@ -180,6 +180,18 @@ PetscErrorCode KSPSetFromOptions_Richardson(KSP ksp)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_Richardson"
+PetscErrorCode KSPDestroy_Richardson(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C","",PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "KSPRichardsonSetScale_Richardson"
@@ -226,7 +238,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP ksp)
   richardsonP->scale               = 1.0;
   ksp->ops->setup                  = KSPSetUp_Richardson;
   ksp->ops->solve                  = KSPSolve_Richardson;
-  ksp->ops->destroy                = KSPDefaultDestroy;
+  ksp->ops->destroy                = KSPDestroy_Richardson;
   ksp->ops->buildsolution          = KSPDefaultBuildSolution;
   ksp->ops->buildresidual          = KSPDefaultBuildResidual;
   ksp->ops->view                   = KSPView_Richardson;

@@ -214,6 +214,18 @@ PetscErrorCode KSPView_Chebychev(KSP ksp,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "KSPDestroy_Chebychev"
+PetscErrorCode KSPDestroy_Chebychev(KSP ksp)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPChebychevSetEigenvalues_C","",PETSC_NULL);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /*MC
      KSPCHEBYCHEV - The preconditioned Chebychev iterative method
 
@@ -251,7 +263,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP ksp)
 
   ksp->ops->setup                = KSPSetUp_Chebychev;
   ksp->ops->solve                = KSPSolve_Chebychev;
-  ksp->ops->destroy              = KSPDefaultDestroy;
+  ksp->ops->destroy              = KSPDestroy_Chebychev;
   ksp->ops->buildsolution        = KSPDefaultBuildSolution;
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->setfromoptions       = KSPSetFromOptions_Chebychev;

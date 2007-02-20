@@ -391,14 +391,13 @@ PetscErrorCode KSPSetUp_QCG(KSP ksp)
 #define __FUNCT__ "KSPDestroy_QCG" 
 PetscErrorCode KSPDestroy_QCG(KSP ksp)
 {
-  KSP_QCG        *cgP = (KSP_QCG*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultFreeWork(ksp);CHKERRQ(ierr);
-  
-  /* Free the context variable */
-  ierr = PetscFree(cgP);CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetQuadratic_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGGetTrialStepNorm_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPQCGSetTrustRegionRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

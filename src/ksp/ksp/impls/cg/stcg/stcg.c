@@ -401,14 +401,13 @@ PetscErrorCode KSPSetUp_STCG(KSP ksp)
 #define __FUNCT__ "KSPDestroy_STCG"
 PetscErrorCode KSPDestroy_STCG(KSP ksp)
 {
-  KSP_STCG *cg = (KSP_STCG *)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultFreeWork(ksp); CHKERRQ(ierr);
-
-  /* Free the context variable */
-  ierr = PetscFree(cg); CHKERRQ(ierr);
+  ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
+  /* clear composed functions */
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
