@@ -93,11 +93,11 @@ int main(int argc,char **argv)
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,nxv,nyv+2,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,nxv,nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,nxv,nyfv+2,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,nxv,nyfv,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
    
@@ -338,7 +338,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   FuelField      **x3,**f3;
   Vec            X1,X2,X3,F1,F2,F3;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,j;
   AppCtx         *app = (AppCtx*)dmmg->user;
 
   PetscFunctionBegin;
@@ -358,10 +358,11 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
    /*
     Ghost points for periodicity are used to "force" inflow/outflow fluid boundary conditions 
-    Note that there is no periodicity; we define periodicity to "cheat" and have ghost spaces to store exterior to boundary values
+    Note that there is no periodicity; we define periodicity to "cheat" and have ghost spaces to store "exterior to boundary" values
 
   */
-  if (info1.gxs == -3) {                   
+  /* FLUID */
+  if (info1.gxs == -3) {                   /* 3 points at left end of line */
     for (i=-3; i<0; i++) {
       x1[i].prss = app->prin;
       x1[i].ergg = app->ugin;
@@ -371,8 +372,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
       x1[i].velf = app->vfin;
     }
   }
-
-  if (info1.gxs+info1.gxm == info1.mx+3) { 
+  if (info1.gxs+info1.gxm == info1.mx+3) { /* 3 points at right end of line */
     for (i=info1.mx; i<info1.mx+3; i++) {
       x1[i].prss = app->prout;
       x1[i].ergg = app->ugout;
@@ -380,6 +380,44 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
       x1[i].alfg = app->agout;
       x1[i].velg = app->vgi;
       x1[i].velf = app->vfi;
+    }
+  }
+
+  /* CLADDING */
+  if (info2.gxs == -1) {                                      /* left side of domain */
+    for (j=info2.gys;j<info2.gys+info2.gym; j++) {
+      x2[j][-1] = app->twi;
+    }
+  }
+  if (info2.gxs+info2.gxm == info2.mx+1) {                   /* right side of domain */
+    for (j=info2.gys;j<info2.gys+info2.gym; j++) {
+      x2[j][info2.mx] = app->twi;
+    }
+  }
+
+  /* FUEL */
+  if (info3.gxs == -1) {                                      /* left side of domain */
+    for (j=info3.gys;j<info3.gys+info3.gym; j++) {
+      x3[j][-1].phii = app->phii;
+      x3[j][-1].prei = app->prei;
+    }
+  }
+  if (info3.gxs+info3.gxm == info3.mx+1) {                   /* right side of domain */
+    for (j=info3.gys;j<info3.gys+info3.gym; j++) {
+      x3[j][info3.mx].phii = app->phii;
+      x3[j][info3.mx].prei = app->prei;
+    }
+  }
+  if (info3.gys == -1) {                                      /* bottom of domain */
+    for (i=info3.gxs;i<info3.gxs+info3.gxm; i++) {
+      x3[-1][i].phii = app->phii;
+      x3[-1][i].prei = app->prei;
+    }
+  }
+  if (info3.gys+info3.gym == info3.my+1) {                   /* top of domain */
+    for (i=info3.gxs;i<info3.gxs+info3.gxm; i++) {
+      x3[info3.my][i].phii = app->phii;
+      x3[info3.my][i].prei = app->prei;
     }
   }
 
