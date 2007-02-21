@@ -8,8 +8,9 @@
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
+#include <math.h>
 EXTERN_C_BEGIN
-#include <math.h> 
+#include "ml_config.h"
 #include "ml_include.h"
 EXTERN_C_END
 
