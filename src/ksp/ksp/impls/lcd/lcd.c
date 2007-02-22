@@ -37,9 +37,9 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
      so generate an error otherwise.
   */
   if (ksp->pc_side == PC_RIGHT) {
-    SETERRQ(2,"No right preconditioning for KSPCG");
+    SETERRQ(2,"No right preconditioning for KSPLCD");
   } else if (ksp->pc_side == PC_SYMMETRIC) {
-    SETERRQ(2,"No symmetric preconditioning for KSPCG");
+    SETERRQ(2,"No symmetric preconditioning for KSPLCD");
   }
 
   /* get work vectors needed by LCD */

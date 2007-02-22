@@ -1,3 +1,4 @@
+
 static char help[] ="Tests ML interface. Modified from ~src/ksp/ksp/examples/tests/ex19.c \n\
   -mx <xg>, where <xg> = number of grid points in the x-direction\n\
   -my <yg>, where <yg> = number of grid points in the y-direction\n\
@@ -44,10 +45,9 @@ extern int FormJacobian_Grid(GridCtx *,Mat *);
 int main(int argc,char **argv)
 {
   PetscErrorCode ierr;
-  PetscInt       its,n,Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,nlocal;
+  PetscInt       its,n,Nx=PETSC_DECIDE,Ny=PETSC_DECIDE,nlocal,i;
   PetscMPIInt    size;
   PC             pc; 
-  PetscScalar    one = 1.0;
   PetscInt       mx,my;
   Mat            A; 
   GridCtx        fine_ctx; 
@@ -79,20 +79,6 @@ int main(int argc,char **argv)
   ierr = MatCreateMPIAIJ(PETSC_COMM_WORLD,nlocal,nlocal,n,n,5,PETSC_NULL,3,PETSC_NULL,&A);CHKERRQ(ierr);
   ierr = FormJacobian_Grid(&fine_ctx,&A);CHKERRQ(ierr);
 
-  /* set values for rhs vector */
-  ierr = VecSet(fine_ctx.b,one);CHKERRQ(ierr);
-  {
-    PetscRandom rdm;
-    ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rdm);CHKERRQ(ierr);
-#if defined(PETSC_HAVE_DRAND48)
-  ierr = PetscRandomSetType(rdm,PETSCRAND48);CHKERRQ(ierr);
-#elif defined(PETSC_HAVE_RAND)
-  ierr = PetscRandomSetType(rdm,PETSCRAND);CHKERRQ(ierr);
-#endif
-    ierr = VecSetRandom(fine_ctx.b,rdm);CHKERRQ(ierr);
-    ierr = PetscRandomDestroy(rdm);CHKERRQ(ierr);
-  }
-
   /* create linear solver */
   ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
@@ -100,10 +86,22 @@ int main(int argc,char **argv)
 
   /* set options, then solve system */
   ierr = KSPSetFromOptions(ksp);CHKERRQ(ierr); /* calls PCSetFromOptions_MG/ML */
-  ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
-  ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
-  ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
+
+  for (i=0; i<3; i++){
+    if (i<2){ /* test DIFFERENT_NONZERO_PATTERN */
+      /* set values for rhs vector */
+      ierr = VecSet(fine_ctx.b,i+1.0);CHKERRQ(ierr);
+      /* modify A */
+      ierr = MatShift(A,1.0);CHKERRQ(ierr); 
+      ierr = MatScale(A,2.0);CHKERRQ(ierr); 
+      ierr = KSPSetOperators(ksp,A,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr); 
+    } else {  /* test SAME_NONZERO_PATTERN */
+      ierr = KSPSetOperators(ksp,A,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+    }
+    ierr = KSPSolve(ksp,fine_ctx.b,fine_ctx.x);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(ksp,&its);CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_WORLD,"Number of iterations = %D\n",its);CHKERRQ(ierr);
+  }
 
   /* free data structures */
   ierr = VecDestroy(fine_ctx.x);CHKERRQ(ierr);

@@ -8,9 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml_4.0.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/ml-5.0.tar.gz']
     self.functions = ['ML_Set_PrintLevel']
     self.includes  = ['ml_include.h']
+    self.liblist   = [['libml.a']]
     self.license   = 'http://software.sandia.gov/trilinos/downloads.html'
     return
 
@@ -87,7 +88,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild ML oldargs = '+oldargs+'\n new args ='+args+'\n')
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-epetra --disable-aztecoo --disable-ml-examples', timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-ml-epetra --disable-ml-aztecoo --disable-ml-examples --disable-tests', timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML

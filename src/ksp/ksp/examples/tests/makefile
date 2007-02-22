@@ -359,6 +359,16 @@ runex27:
 	if (${DIFF} output/ex27.out ex27.tmp) then true; \
 	   else echo "Possible problem with ex27, diffs above"; fi; \
 	   ${RM} -f ex27.tmp
+runex29:
+	-@${MPIRUN} -np 1 ./ex29 -ksp_monitor_short > ex29.tmp 2>&1; \
+	if (${DIFF} output/ex29.out ex29.tmp) then true; \
+	   else echo "Possible problem with ex29, diffs above"; fi; \
+	   ${RM} -f ex29.tmp
+runex29_2:
+	-@${MPIRUN} -np 3 ./ex29 -ksp_monitor_short > ex29_2.tmp 2>&1; \
+	if (${DIFF} output/ex29_2.out ex29_2.tmp) then true; \
+	   else echo "Possible problem with ex29_2, diffs above"; fi; \
+	   ${RM} -f ex29_2.tmp
 TESTEXAMPLES_C		       = ex1.PETSc ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm ex4.PETSc runex4 runex4_3 \
                                  runex4_5 ex4.rm ex7.PETSc ex7.rm ex19.PETSc runex19 runex19_2 ex19.rm \
                                  ex24.PETSc runex24 runex24_2 runex24_3 runex24_4 ex24.rm ex27.PETSc ex27.rm
