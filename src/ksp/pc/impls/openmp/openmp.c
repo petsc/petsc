@@ -8,7 +8,7 @@ typedef struct {
   PetscInt     setupcalled;        /* pc->setupcalled */  
   PetscInt     n;
   MPI_Comm     comm;                 /* local world used by this preconditioner */
-  PC           pc;                   /* actual preconditioner used across local world */
+  KSP          ksp;                  /* actual solver used across local world */
   Mat          mat;                  /* matrix in local world */
   Mat          gmat;                 /* matrix known only to process 0 in the local world */
   Vec          x,y,xdummy,ydummy;
@@ -34,7 +34,7 @@ static PetscErrorCode PCView_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);         /* this is bogus in general */
-  ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
+  ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -159,29 +159,28 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       /* receive numerical values */
       ierr = PetscMemzero(gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
-
-      /* set preallocation */
-      for (i=0; i<m; i++) {
-	dlens[i] -= olens[i];
-      }
-      ierr = MatSeqAIJSetPreallocation(mat,0,dlens);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(mat,0,dlens,0,olens);CHKERRQ(ierr);
-
-      for (i=0; i<m; i++) {
-	dlens[i] += olens[i];
-      }
-      cnt  = 0;
-      for (i=0; i<m; i++) {
-	row  = rstart + i;
-	ierr = MatSetValues(mat,1,&row,dlens[i],gmataj+cnt,gmataa+cnt,INSERT_VALUES);CHKERRQ(ierr);
-	cnt += dlens[i];
-      }
-      if (rank) {
-	ierr = PetscFree2(gmataa,gmataj);CHKERRQ(ierr);
-      }
-      ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
-      ierr = PetscFree(rowners);CHKERRQ(ierr);
     }
+    /* set preallocation */
+    for (i=0; i<m; i++) {
+      dlens[i] -= olens[i];
+    }
+    ierr = MatSeqAIJSetPreallocation(mat,0,dlens);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(mat,0,dlens,0,olens);CHKERRQ(ierr);
+    
+    for (i=0; i<m; i++) {
+      dlens[i] += olens[i];
+    }
+    cnt  = 0;
+    for (i=0; i<m; i++) {
+      row  = rstart + i;
+      ierr = MatSetValues(mat,1,&row,dlens[i],gmataj+cnt,gmataa+cnt,INSERT_VALUES);CHKERRQ(ierr);
+      cnt += dlens[i];
+    }
+    if (rank) {
+      ierr = PetscFree2(gmataa,gmataj);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
+    ierr = PetscFree(rowners);CHKERRQ(ierr);
   } else {
     if (!rank) {
       ;
@@ -191,6 +190,7 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  MatView(mat,0);
   CHKMEMQ;
   *inmat = mat;
   PetscFunctionReturn(0);
@@ -231,13 +231,12 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
 
   if (!red->setupcalled) {
     /* create the solver */
-    ierr = PCCreate(comm,&red->pc);CHKERRQ(ierr);
-    ierr = PCSetOptionsPrefix(red->pc,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
-    ierr = PCSetType(red->pc,PCKSP);CHKERRQ(ierr);
-    ierr = PCSetOperators(red->pc,red->mat,red->mat,red->flag);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
+    ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
+    ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   } else {
-    ierr = PCSetOperators(red->pc,red->mat,red->mat,red->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -271,7 +270,7 @@ static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
   ierr = VecScatterBegin(red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
 
-  ierr = PCApply(red->pc,red->x,red->y);CHKERRQ(ierr);
+  ierr = KSPSolve(red->ksp,red->x,red->y);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(red->y,red->ydummy,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->y,red->ydummy,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
@@ -304,6 +303,7 @@ static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
   if (red->scatter) {ierr = VecScatterDestroy(red->scatter);CHKERRQ(ierr);}
   if (red->x) {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
   if (red->y) {ierr = VecDestroy(red->y);CHKERRQ(ierr);}
+  if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) {
     if (red->xdummy) {ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);}
@@ -338,10 +338,10 @@ static PetscErrorCode PCSetFromOptions_OpenMP(PC pc)
 /*MC
      PCOPENMP - Runs a preconditioner for a single process matrix across several MPI processes
 
-$     This will usually be run with -pc_type openmp -ksp_type gmres -openmp_pc_type ksp then
-$     solver options are set with -openmp_ksp_ksp_... and -openmp_ksp_pc_... for example
-$     -openmp_ksp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_ksp_monitor or
-$     -openmp_ksp_pc_type hypre -openmp_ksp_pc_hypre_type boomeramg
+$     This will usually be run with -pc_type openmp -ksp_type preonly
+$     solver options are set with -openmp_ksp_... and -openmp_pc_... for example
+$     -openmp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_monitor or
+$     -openmp_pc_type hypre -openmp_pc_hypre_type boomeramg
 
        Always run with -ksp_view (or -snes_view) to see what solver is actually being used.
 
