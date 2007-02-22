@@ -42,7 +42,7 @@ EXTERN PetscErrorCode MatGetDiagonal_SeqSBAIJ(Mat,Vec);
 EXTERN PetscErrorCode MatDiagonalScale_SeqSBAIJ(Mat,Vec,Vec);
 EXTERN PetscErrorCode MatGetInfo_SeqSBAIJ(Mat,MatInfoType,MatInfo *);
 EXTERN PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat);
-EXTERN PetscErrorCode MatGetRowMax_SeqSBAIJ(Mat,Vec);
+EXTERN PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode MatGetInertia_SeqSBAIJ(Mat,PetscInt*,PetscInt*,PetscInt*);
 
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqSBAIJ_1_NaturalOrdering(Mat,MatFactorInfo*,Mat*);

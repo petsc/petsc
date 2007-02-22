@@ -2173,14 +2173,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConjugate_SeqAIJ(Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetRowMax_SeqAIJ"
-PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v)
+#define __FUNCT__ "MatGetRowMaxAbs_SeqAIJ"
+PetscErrorCode MatGetRowMaxAbs_SeqAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
   PetscInt       i,j,m = A->rmap.n,*ai,*aj,ncols,n;
   PetscReal      atmp;
-  PetscScalar    *x,zero = 0.0;
+  PetscScalar    *x;
   MatScalar      *aa;
 
   PetscFunctionBegin;
@@ -2189,16 +2189,107 @@ PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v)
   ai   = a->i;
   aj   = a->j;
 
-  ierr = VecSet(v,zero);CHKERRQ(ierr);
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
   for (i=0; i<m; i++) {
     ncols = ai[1] - ai[0]; ai++;
+    x[i] = 0.0; if (idx) idx[i] = 0;
     for (j=0; j<ncols; j++){
-      atmp = PetscAbsScalar(*aa); aa++;         
-      if (PetscAbsScalar(x[i]) < atmp) x[i] = atmp;
-      aj++;
+      atmp = PetscAbsScalar(*aa);         
+      if (PetscAbsScalar(x[i]) < atmp) {x[i] = atmp; if (idx) idx[i] = *aj;}
+      aa++; aj++;
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax_SeqAIJ"
+PetscErrorCode MatGetRowMax_SeqAIJ(Mat A,Vec v,PetscInt idx[])
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->rmap.n,*ai,*aj,ncols,n;
+  PetscScalar    *x;
+  MatScalar      *aa;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  aa   = a->a;
+  ai   = a->i;
+  aj   = a->j;
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  if (n != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    ncols = ai[1] - ai[0]; ai++;
+    if (ncols == A->cmap.n) { /* row is dense */
+      x[i] = *aa; if (idx) idx[i] = 0;
+    } else {  /* row is sparse so already KNOW maximum is 0.0 or higher */
+      x[i] = 0.0; 
+      if (idx) {   
+        idx[i] = 0; /* in case ncols is zero */
+        for (j=0;j<ncols;j++) { /* find first implicit 0.0 in the row */
+          if (aj[j] > j) {
+            idx[i] = j;
+            break;
+          }
+        }
+      }
+    }
+    for (j=0; j<ncols; j++){
+      if (PetscRealPart(x[i]) < PetscRealPart(*aa)) {x[i] = *aa; if (idx) idx[i] = *aj;}
+      aa++; aj++;
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMin_SeqAIJ"
+PetscErrorCode MatGetRowMin_SeqAIJ(Mat A,Vec v,PetscInt idx[])
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->rmap.n,*ai,*aj,ncols,n;
+  PetscScalar    *x;
+  MatScalar      *aa;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+  aa   = a->a;
+  ai   = a->i;
+  aj   = a->j;
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
+  if (n != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    ncols = ai[1] - ai[0]; ai++;
+    if (ncols == A->cmap.n) { /* row is dense */
+      x[i] = *aa; if (idx) idx[i] = 0;
+    } else {  /* row is sparse so already KNOW minimum is 0.0 or lower */
+      x[i] = 0.0;
+      if (idx) {   /* find first implicit 0.0 in the row */
+        idx[i] = 0; /* in case ncols is zero */
+        for (j=0;j<ncols;j++) {
+          if (aj[j] > j) {
+            idx[i] = j;
+            break;
+          }
+        }
+      }
+    }
+    for (j=0; j<ncols; j++){
+      if (PetscRealPart(x[i]) > PetscRealPart(*aa)) {x[i] = *aa; if (idx) idx[i] = *aj;}
+      aa++; aj++;
     }   
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -2251,7 +2342,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatIncreaseOverlap_SeqAIJ,
        MatGetValues_SeqAIJ,
        MatCopy_SeqAIJ,
-/*45*/ 0,
+/*45*/ MatGetRowMax_SeqAIJ,
        MatScale_SeqAIJ,
        0,
        MatDiagonalSet_SeqAIJ,
@@ -2276,7 +2367,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        0,
        0,
-/*70*/ MatGetRowMax_SeqAIJ,
+/*70*/ MatGetRowMaxAbs_SeqAIJ,
        0,
        MatSetColoring_SeqAIJ,
 #if defined(PETSC_HAVE_ADIC)
@@ -2320,7 +2411,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        MatImaginaryPart_SeqAIJ,
        0,
        0,
-/*110*/MatMatSolve_SeqAIJ
+/*110*/MatMatSolve_SeqAIJ,
+       0,
+       MatGetRowMin_SeqAIJ
 };
 
 EXTERN_C_BEGIN

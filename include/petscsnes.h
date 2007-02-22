@@ -172,14 +172,14 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const c
    Level: developer
 
    Notes:
-   MatSNESMFRegisterDynamic) may be called multiple times to add several user-defined solvers.
+   MatSNESMFRegisterDynamic() may be called multiple times to add several user-defined solvers.
 
    If dynamic libraries are used, then the fourth input argument (routine_create)
    is ignored.
 
    Sample usage:
 .vb
-   MatSNESMFRegisterDynamic"my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
+   MatSNESMFRegisterDynamic("my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
                "MyHCreate",MyHCreate);
 .ve
 

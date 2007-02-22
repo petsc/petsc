@@ -3254,17 +3254,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
    Output Parameter:
 .  v - the diagonal of the matrix
 
-   Notes:
-   For the SeqAIJ matrix format, this routine may also be called
-   on a LU factored matrix; in that case it routines the reciprocal of 
-   the diagonal entries in U. It returns the entries permuted by the 
-   row and column permutation used during the symbolic factorization.
+   Notes: The result of this call are the same as if one converted the matrix to dense format
+      and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
 
    Level: intermediate
 
    Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMax()
+.seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMaxAbs()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat mat,Vec v)
 {
@@ -3284,9 +3281,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat mat,Vec v)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetRowMax"
+#define __FUNCT__ "MatGetRowMin"
 /*@ 
-   MatGetRowMax - Gets the maximum value (in absolute value) of each
+   MatGetRowMin - Gets the minimum value (of the real part) of each
         row of the matrix
 
    Collective on Mat and Vec
@@ -3295,15 +3292,22 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat mat,Vec v)
 .  mat - the matrix
 
    Output Parameter:
-.  v - the vector for storing the maximums
++  v - the vector for storing the maximums
+-  idx - the indices of the column found for each row (optional)
 
    Level: intermediate
 
+   Notes: The result of this call are the same as if one converted the matrix to dense format
+      and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
+
+    This code is only implemented for a couple of matrix formats.
+
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix()
+.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(),
+          MatGetRowMax()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v)
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 {
   PetscErrorCode ierr;
 
@@ -3315,7 +3319,93 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v)
   if (!mat->ops->getrowmax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = (*mat->ops->getrowmax)(mat,v);CHKERRQ(ierr);
+  ierr = (*mat->ops->getrowmin)(mat,v,idx);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax"
+/*@ 
+   MatGetRowMax - Gets the maximum value (of the real part) of each
+        row of the matrix
+
+   Collective on Mat and Vec
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
++  v - the vector for storing the maximums
+-  idx - the indices of the column found for each row (optional)
+
+   Level: intermediate
+
+   Notes: The result of this call are the same as if one converted the matrix to dense format
+      and found the minimum value in each row (i.e. the implicit zeros are counted as zeros).
+
+    This code is only implemented for a couple of matrix formats.
+
+   Concepts: matrices^getting row maximums
+
+.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,2);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!mat->ops->getrowmax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = (*mat->ops->getrowmax)(mat,v,idx);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMaxAbs"
+/*@ 
+   MatGetRowMaxAbs - Gets the maximum value (in absolute value) of each
+        row of the matrix
+
+   Collective on Mat and Vec
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
++  v - the vector for storing the maximums
+-  idx - the indices of the column found for each row (optional)
+
+   Level: intermediate
+
+   Notes: if a row is completely empty or has only 0.0 values then the idx[] value for that
+    row is 0 (the first column).
+
+    This code is only implemented for a couple of matrix formats.
+
+   Concepts: matrices^getting row maximums
+
+.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,2);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (!mat->ops->getrowmax) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+
+  ierr = (*mat->ops->getrowmaxabs)(mat,v,idx);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

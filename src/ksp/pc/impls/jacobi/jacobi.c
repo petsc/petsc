@@ -144,7 +144,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 
   if (diag) {
     if (jac->userowmax) {
-      ierr = MatGetRowMax(pc->pmat,diag);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(pc->pmat,diag,PETSC_NULL);CHKERRQ(ierr);
     } else {
       ierr = MatGetDiagonal(pc->pmat,diag);CHKERRQ(ierr);
     }
@@ -166,7 +166,7 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
   }
   if (diagsqrt) {
     if (jac->userowmax) {
-      ierr = MatGetRowMax(pc->pmat,diagsqrt);CHKERRQ(ierr);
+      ierr = MatGetRowMaxAbs(pc->pmat,diagsqrt,PETSC_NULL);CHKERRQ(ierr);
     } else {
       ierr = MatGetDiagonal(pc->pmat,diagsqrt);CHKERRQ(ierr);
     }

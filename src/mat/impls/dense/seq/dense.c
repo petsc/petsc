@@ -1566,6 +1566,90 @@ PetscErrorCode MatMatMultTransposeNumeric_SeqDense_SeqDense(Mat A,Mat B,Mat C)
   BLASgemm_("T","N",&m,&n,&k,&_DOne,a->v,&a->lda,b->v,&b->lda,&_DZero,c->v,&c->lda);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMax_SeqDense"
+PetscErrorCode MatGetRowMax_SeqDense(Mat A,Vec v,PetscInt idx[])
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->rmap.n,n = A->cmap.n,p;
+  PetscScalar    *x;
+  MatScalar      *aa = a->v;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&p);CHKERRQ(ierr);
+  if (p != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    x[i] = aa[i]; if (idx) idx[i] = 0;
+    for (j=1; j<n; j++){
+      if (PetscRealPart(x[i]) < PetscRealPart(aa[i+m*j])) {x[i] = aa[i + m*j]; if (idx) idx[i] = j;}
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMaxAbs_SeqDense"
+PetscErrorCode MatGetRowMaxAbs_SeqDense(Mat A,Vec v,PetscInt idx[])
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->rmap.n,n = A->cmap.n,p;
+  PetscScalar    *x;
+  PetscReal      atmp;
+  MatScalar      *aa = a->v;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&p);CHKERRQ(ierr);
+  if (p != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    x[i] = PetscAbsScalar(aa[i]); if (idx) idx[i] = 0;
+    for (j=1; j<n; j++){
+      atmp = PetscAbsScalar(aa[i+m*j]);
+      if (PetscAbsScalar(x[i]) < atmp) {x[i] = atmp; if (idx) idx[i] = j;}
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMin_SeqDense"
+PetscErrorCode MatGetRowMin_SeqDense(Mat A,Vec v,PetscInt idx[])
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,j,m = A->rmap.n,n = A->cmap.n,p;
+  PetscScalar    *x;
+  MatScalar      *aa = a->v;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = VecGetLocalSize(v,&p);CHKERRQ(ierr);
+  if (p != A->rmap.n) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
+  for (i=0; i<m; i++) {
+    x[i] = aa[i]; if (idx) idx[i] = 0;
+    for (j=1; j<n; j++){
+      if (PetscRealPart(x[i]) > PetscRealPart(aa[i+m*j])) {x[i] = aa[i + m*j]; if (idx) idx[i] = j;}
+    }   
+  }
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetRow_SeqDense,
@@ -1612,7 +1696,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        MatGetValues_SeqDense,
        MatCopy_SeqDense,
-/*45*/ 0,
+/*45*/ MatGetRowMax_SeqDense,
        MatScale_SeqDense,
        0,
        0,
@@ -1637,7 +1721,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-/*70*/ 0,
+/*70*/ MatGetRowMaxAbs_SeqDense,
        0,
        0,
        0,
@@ -1671,7 +1755,16 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
        0,
        0,
-       MatSetSizes_SeqDense};
+       MatSetSizes_SeqDense,
+       0,
+       0,
+       0,
+       0,
+       0,
+/*110*/0,
+       0,
+       MatGetRowMin_SeqDense
+};
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSeqDense"

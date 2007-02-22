@@ -36,11 +36,11 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOCreateMappingIS(IS,IS,AO*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOView(AO,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT AORegister_Private(const char [], const char [], const char [], PetscErrorCode (*)(AO));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT AORegister(const char [], const char [], const char [], PetscErrorCode (*)(AO));
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define AORegister(a,b,c,d) AORegister_Private(a,b,c,0)
+#define AORegisterDynamic(a,b,c,d) AORegister(a,b,c,0)
 #else
-#define AORegister(a,b,c,d) AORegister_Private(a,b,c,d)
+#define AORegisterDynamic(a,b,c,d) AORegister(a,b,c,d)
 #endif
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplication(AO,PetscInt,PetscInt[]);

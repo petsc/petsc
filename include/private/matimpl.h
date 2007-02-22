@@ -70,7 +70,7 @@ struct _MatOps {
   PetscErrorCode (*getvalues)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscScalar []);
   PetscErrorCode (*copy)(Mat,Mat,MatStructure);
   /*45*/
-  PetscErrorCode (*dummy)(void);
+  PetscErrorCode (*getrowmax)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*scale)(Mat,PetscScalar);
   PetscErrorCode (*shift)(Mat,PetscScalar);
   PetscErrorCode (*diagonalset)(Mat,Vec,InsertMode);
@@ -100,7 +100,7 @@ struct _MatOps {
   PetscErrorCode (*setvalueslocal)(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*zerorowslocal)(Mat,PetscInt,const PetscInt[],PetscScalar);
   /*70*/
-  PetscErrorCode (*getrowmax)(Mat,Vec);
+  PetscErrorCode (*getrowmaxabs)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*convert)(Mat, MatType,MatReuse,Mat*);
   PetscErrorCode (*setcoloring)(Mat,ISColoring);
   PetscErrorCode (*setvaluesadic)(Mat,void*);
@@ -150,6 +150,7 @@ struct _MatOps {
   /*110*/
   PetscErrorCode (*matsolve)(Mat,Mat,Mat);
   PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
+  PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

@@ -1379,18 +1379,23 @@ PetscErrorCode MatZeroEntries_SeqSBAIJ(Mat A)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetRowMax_SeqSBAIJ"
-PetscErrorCode MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
+#define __FUNCT__ "MatGetRowMaxAbs_SeqSBAIJ"
+/* 
+   This code does not work since it only checks the upper triangular part of
+  the matrix. Hence it is not listed in the function table.
+*/
+PetscErrorCode MatGetRowMaxAbs_SeqSBAIJ(Mat A,Vec v,PetscInt idx[])
 {
-  Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
+  Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt i,j,n,row,col,bs,*ai,*aj,mbs;
-  PetscReal    atmp;
-  MatScalar    *aa;
-  PetscScalar  zero = 0.0,*x;
-  PetscInt          ncols,brow,bcol,krow,kcol; 
+  PetscInt       i,j,n,row,col,bs,*ai,*aj,mbs;
+  PetscReal      atmp;
+  MatScalar      *aa;
+  PetscScalar    *x;
+  PetscInt       ncols,brow,bcol,krow,kcol; 
 
   PetscFunctionBegin;
+  if (idx) SETERRQ(PETSC_ERR_SUP,"Send email to petsc-maint@mcs.anl.gov");
   if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
   bs   = A->rmap.bs;
   aa   = a->a;
@@ -1398,7 +1403,7 @@ PetscErrorCode MatGetRowMax_SeqSBAIJ(Mat A,Vec v)
   aj   = a->j;
   mbs = a->mbs;
 
-  ierr = VecSet(v,zero);CHKERRQ(ierr);
+  ierr = VecSet(v,0.0);CHKERRQ(ierr);
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");

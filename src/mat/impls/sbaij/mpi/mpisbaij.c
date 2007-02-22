@@ -17,7 +17,7 @@ EXTERN PetscErrorCode MatGetRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,Petsc
 EXTERN PetscErrorCode MatRestoreRow_SeqSBAIJ(Mat,PetscInt,PetscInt*,PetscInt**,PetscScalar**);
 EXTERN PetscErrorCode MatZeroRows_SeqSBAIJ(Mat,IS,PetscScalar*);
 EXTERN PetscErrorCode MatZeroRows_SeqBAIJ(Mat,IS,PetscScalar *);
-EXTERN PetscErrorCode MatGetRowMax_MPISBAIJ(Mat,Vec);
+EXTERN PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat,Vec,PetscInt[]);
 EXTERN PetscErrorCode MatRelax_MPISBAIJ(Mat,Vec,PetscReal,MatSORType,PetscReal,PetscInt,PetscInt,Vec);
 
 /*  UGLY, ugly, ugly
@@ -1538,7 +1538,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*70*/ MatGetRowMax_MPISBAIJ,
+/*70*/ MatGetRowMaxAbs_MPISBAIJ,
        0,
        0,
        0,
@@ -2407,8 +2407,8 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetRowMax_MPISBAIJ"
-PetscErrorCode MatGetRowMax_MPISBAIJ(Mat A,Vec v)
+#define __FUNCT__ "MatGetRowMaxAbs_MPISBAIJ"
+PetscErrorCode MatGetRowMaxAbs_MPISBAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   Mat_SeqBAIJ    *b = (Mat_SeqBAIJ*)(a->B)->data;
@@ -2423,7 +2423,8 @@ PetscErrorCode MatGetRowMax_MPISBAIJ(Mat A,Vec v)
   MPI_Status     stat;
 
   PetscFunctionBegin;
-  ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
+  if (idx) SETERRQ(PETSC_ERR_SUP,"Send email to petsc-maint@mcs.anl.gov");
+  ierr = MatGetRowMaxAbs(a->A,v,PETSC_NULL);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);  
 
   ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);

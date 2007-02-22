@@ -16,7 +16,7 @@ typedef struct {
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
   PetscInt  *range;      /* the offset of each processor */
-  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems */
+  PetscInt  bs;          /* number of elements in each block (generally for multi-component problems) Do NOT multiply above numbers by bs */
 } PetscMap;
 
 EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);

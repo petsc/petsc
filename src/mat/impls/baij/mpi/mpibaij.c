@@ -35,32 +35,36 @@ EXTERN PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat,PetscInt,cons
 #endif
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetRowMax_MPIBAIJ"
-PetscErrorCode MatGetRowMax_MPIBAIJ(Mat A,Vec v)
+#define __FUNCT__ "MatGetRowMaxAbs_MPIBAIJ"
+PetscErrorCode MatGetRowMaxAbs_MPIBAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i;
+  PetscInt       i,*idxb = 0;
   PetscScalar    *va,*vb;
   Vec            vtmp;
 
   PetscFunctionBegin;
   
-  ierr = MatGetRowMax(a->A,v);CHKERRQ(ierr); 
+  ierr = MatGetRowMaxAbs(a->A,v,idx);CHKERRQ(ierr); 
   ierr = VecGetArray(v,&va);CHKERRQ(ierr);
+  if (idx) {
+    for (i=0; i<A->cmap.n; i++) {if (va[i]) idx[i] += A->cmap.rstart;}
+  }
 
   ierr = VecCreateSeq(PETSC_COMM_SELF,A->rmap.n,&vtmp);CHKERRQ(ierr);
-  ierr = MatGetRowMax(a->B,vtmp);CHKERRQ(ierr);
+  if (idx) {ierr = PetscMalloc(A->rmap.n*sizeof(PetscInt),&idxb);CHKERRQ(ierr);}
+  ierr = MatGetRowMaxAbs(a->B,vtmp,idxb);CHKERRQ(ierr);
   ierr = VecGetArray(vtmp,&vb);CHKERRQ(ierr);
 
   for (i=0; i<A->rmap.n; i++){
-    if (PetscAbsScalar(va[i]) < PetscAbsScalar(vb[i])) va[i] = vb[i];
+    if (PetscAbsScalar(va[i]) < PetscAbsScalar(vb[i])) {va[i] = vb[i]; if (idx) idx[i] = A->cmap.bs*a->garray[idxb[i]/A->cmap.bs] + (idxb[i] % A->cmap.bs);}
   }
 
   ierr = VecRestoreArray(v,&va);CHKERRQ(ierr); 
   ierr = VecRestoreArray(vtmp,&vb);CHKERRQ(ierr); 
+  if (idxb) {ierr = PetscFree(idxb);CHKERRQ(ierr);}
   ierr = VecDestroy(vtmp);CHKERRQ(ierr);
-  
   PetscFunctionReturn(0);
 }
 
@@ -2026,7 +2030,7 @@ static struct _MatOps MatOps_Values = {
        0,
        0,
        0,
-/*70*/ MatGetRowMax_MPIBAIJ,
+/*70*/ MatGetRowMaxAbs_MPIBAIJ,
        0,
        0,
        0,

@@ -1866,8 +1866,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetColumnIndices(Mat mat,PetscInt *i
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetRowMax_SeqBAIJ"
-PetscErrorCode MatGetRowMax_SeqBAIJ(Mat A,Vec v)
+#define __FUNCT__ "MatGetRowMaxAbs_SeqBAIJ"
+PetscErrorCode MatGetRowMaxAbs_SeqBAIJ(Mat A,Vec v,PetscInt idx[])
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -1883,9 +1883,12 @@ PetscErrorCode MatGetRowMax_SeqBAIJ(Mat A,Vec v)
   aa   = a->a;
   ai   = a->i;
   aj   = a->j;
-  mbs = a->mbs;
+  mbs  = a->mbs;
 
   ierr = VecSet(v,zero);CHKERRQ(ierr);
+  if (idx) {
+    for (i=0; i<A->rmap.n;i++) idx[i] = 0;
+  }
   ierr = VecGetArray(v,&x);CHKERRQ(ierr);
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
   if (n != A->rmap.N) SETERRQ(PETSC_ERR_ARG_SIZ,"Nonconforming matrix and vector");
@@ -1893,16 +1896,15 @@ PetscErrorCode MatGetRowMax_SeqBAIJ(Mat A,Vec v)
     ncols = ai[1] - ai[0]; ai++;
     brow  = bs*i;
     for (j=0; j<ncols; j++){
-      /* bcol = bs*(*aj); */
       for (kcol=0; kcol<bs; kcol++){
         for (krow=0; krow<bs; krow++){         
-          atmp = PetscAbsScalar(*aa); aa++;         
+          atmp = PetscAbsScalar(*aa);aa++;
           row = brow + krow;    /* row index */
           /* printf("val[%d,%d]: %G\n",row,bcol+kcol,atmp); */
-          if (PetscAbsScalar(x[row]) < atmp) x[row] = atmp;
+          if (PetscAbsScalar(x[row]) < atmp) {x[row] = atmp; if (idx) idx[row] = bs*(*aj) + kcol;}
         }
       }
-      aj++;
+      aj++; 
     }   
   }
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
@@ -2096,7 +2098,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqBAIJ,
        0,
        0,
        0,
-/*70*/ MatGetRowMax_SeqBAIJ,
+/*70*/ MatGetRowMaxAbs_SeqBAIJ,
        MatConvert_Basic,
        0,
        0,

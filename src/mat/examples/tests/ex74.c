@@ -227,14 +227,14 @@ int main(int argc,char **args)
   }
 #endif
 
-  /* Test MatGetRowMax() */
-  ierr = MatGetRowMax(A,s1);CHKERRQ(ierr);
-  ierr = MatGetRowMax(sB,s2);CHKERRQ(ierr); 
+  /* Test MatGetRowMaxAbs() */
+  ierr = MatGetRowMaxAbs(A,s1,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatGetRowMaxAbs(sB,s2,PETSC_NULL);CHKERRQ(ierr); 
   ierr = VecNorm(s1,NORM_1,&norm1);CHKERRQ(ierr);
   ierr = VecNorm(s2,NORM_1,&norm2);CHKERRQ(ierr);
   norm1 -= norm2;
   if (norm1<-tol || norm1>tol) { 
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMax() \n");CHKERRQ(ierr);
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Error:MatGetRowMaxAbs() \n");CHKERRQ(ierr);
   } 
 
   /* Test MatMult() */
