@@ -204,6 +204,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscErrorCode ierr;
   PetscInt       m;
   MatReuse       scal;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&red->setupcalled,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -215,11 +216,18 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     ierr = VecCreateMPI(comm,PETSC_DECIDE,red->n,&red->y);CHKERRQ(ierr);
     ierr = VecScatterCreateToZero(red->x,&red->scatter,&red->xdummy);CHKERRQ(ierr);
     ierr = VecDuplicate(red->xdummy,&red->ydummy);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);
+      ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);
+    }
     scal = MAT_INITIAL_MATRIX;
   } else {
     if (red->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(red->mat);CHKERRQ(ierr);
       scal = MAT_INITIAL_MATRIX;
+      printf("[%d]greetings\n",PetscGlobalRank);
+      CHKMEMQ;
     } else {
       scal = MAT_REUSE_MATRIX;
     }
@@ -228,7 +236,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   /* copy matrix out onto processes */
   ierr = VecGetLocalSize(red->x,&m);CHKERRQ(ierr);
   ierr = MatDistribute_MPIAIJ(comm,red->gmat,m,scal,&red->mat);CHKERRQ(ierr);
-
+      CHKMEMQ;
   if (!red->setupcalled) {
     /* create the solver */
     ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
@@ -237,6 +245,8 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   } else {
     ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
+      printf("[%d]greetings\n",PetscGlobalRank);
+      CHKMEMQ;
   }
   PetscFunctionReturn(0);
 }
@@ -254,8 +264,6 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
   red->flag        = pc->flag;
   red->setupcalled = pc->setupcalled;
   ierr = PetscOpenMPRun(red->comm,PCSetUp_OpenMP_MP,red);CHKERRQ(ierr);
-  ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);
-  ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -304,6 +312,7 @@ static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
   if (red->x) {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
   if (red->y) {ierr = VecDestroy(red->y);CHKERRQ(ierr);}
   if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
+  if (red->mat) {ierr = MatDestroy(red->mat);CHKERRQ(ierr);}
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) {
     if (red->xdummy) {ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);}
