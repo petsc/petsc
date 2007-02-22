@@ -840,7 +840,8 @@ PetscErrorCode MatWrapML_MPIAIJ(ML_Operator *mlmat,Mat *newmat)
   nz_max++;
   ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
   aa = (PetscScalar*)(aj + nz_max);
-  ML_build_global_numbering(mlmat,&gordering);
+  /* create global row numbering for a ML_Operator */
+  ML_build_global_numbering(mlmat,&gordering,"rows"); 
   for (i=0; i<m; i++){
     row = gordering[i];
     k = 0;
