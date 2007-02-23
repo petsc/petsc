@@ -3,7 +3,7 @@
      Provides the functions for index sets (IS) defined by a list of integers.
    These are for blocks of data, each block is indicated with a single integer.
 */
-#include "src/vec/is/isimpl.h"               /*I  "petscis.h"     I*/
+#include "include/private/isimpl.h"               /*I  "petscis.h"     I*/
 #include "petscvec.h"
 
 typedef struct {

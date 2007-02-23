@@ -1,7 +1,7 @@
 
 ALL: lib
 
-SOURCEH	 = isimpl.h ../../../include/petscis.h
+SOURCEH	 = ../../../include/private/isimpl.h ../../../include/petscis.h
 OBJSC	 =
 OBJSF	 =
 LIBBASE	 = libpetscvec

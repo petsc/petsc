@@ -5,7 +5,7 @@
 /*
     Defines the data structure used for the general index set
 */
-#include "src/vec/is/isimpl.h"
+#include "include/private/isimpl.h"
 #include "petscsys.h"
 
 typedef struct {

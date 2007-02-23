@@ -3,7 +3,7 @@
 /*  
    Defines the abstract operations on index sets, i.e. the public interface. 
 */
-#include "src/vec/is/isimpl.h"      /*I "petscis.h" I*/
+#include "include/private/isimpl.h"      /*I "petscis.h" I*/
 
 /* Logging support */
 PetscCookie PETSCVEC_DLLEXPORT IS_COOKIE = 0;
