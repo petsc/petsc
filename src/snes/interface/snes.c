@@ -1473,14 +1473,32 @@ _    -snes_monitor_cancel - cancels all monitors that have
 
 .seealso: SNESMonitorDefault(), SNESMonitorCancel()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
+PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSet(SNES snes,PetscErrorCode (*monitor)(SNES,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
+  PetscInt i;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (snes->numbermonitors >= MAXSNESMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many monitors set");
   }
-  snes->monitor[snes->numbermonitors]           = func;
+  for (i=0; i<snes->numbermonitors;i++) {
+    if (monitor == snes->monitor[i] && monitordestroy == snes->monitordestroy[i] && mctx == snes->monitorcontext[i]) PetscFunctionReturn(0);
+
+    /* check if both default monitors that share common ASCII viewer */
+    if (monitor == snes->monitor[i] && monitor == SNESMonitorDefault) {
+      if (mctx && snes->monitorcontext[i]) {
+        PetscErrorCode          ierr;
+        PetscViewerASCIIMonitor viewer1 = (PetscViewerASCIIMonitor) mctx;
+        PetscViewerASCIIMonitor viewer2 = (PetscViewerASCIIMonitor) snes->monitorcontext[i];
+        if (viewer1->viewer == viewer2->viewer) {
+          ierr = (*monitordestroy)(mctx);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        }
+      }
+    }
+  }
+  snes->monitor[snes->numbermonitors]           = monitor;
   snes->monitordestroy[snes->numbermonitors]    = monitordestroy;
   snes->monitorcontext[snes->numbermonitors++]  = (void*)mctx;
   PetscFunctionReturn(0);
