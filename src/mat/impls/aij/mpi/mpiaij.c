@@ -1431,46 +1431,54 @@ PetscErrorCode MatNorm_MPIAIJ(Mat mat,NormType type,PetscReal *norm)
 PetscErrorCode MatTranspose_MPIAIJ(Mat A,Mat *matout)
 { 
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
-  Mat_SeqAIJ     *Aloc = (Mat_SeqAIJ*)a->A->data;
+  Mat_SeqAIJ     *Aloc=(Mat_SeqAIJ*)a->A->data,*Bloc=(Mat_SeqAIJ*)a->B->data;
   PetscErrorCode ierr;
-  PetscInt       M = A->rmap.N,N = A->cmap.N,m,*ai,*aj,row,*cols,i,*ct;
+  PetscInt       M = A->rmap.N,N = A->cmap.N,ma,na,mb,*ai,*aj,*bi,*bj,row,*cols,i,*d_nnz;
+  PetscInt       cstart=A->cmap.rstart,ncol;
   Mat            B;
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  if (!matout && M != N) {
-    SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+  if (!matout && M != N) SETERRQ(PETSC_ERR_ARG_SIZ,"Square matrix only for in-place");
+
+  /* compute d_nnz for preallocation; o_nnz is approximated by d_nnz to avoid communication */
+  ma = A->rmap.n; na = A->cmap.n; mb = a->B->rmap.n;
+  ai = Aloc->i; aj = Aloc->j; 
+  bi = Bloc->i; bj = Bloc->j; 
+  ierr = PetscMalloc((1+na+bi[mb])*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
+  cols = d_nnz + na + 1; /* work space to be used by B part */
+  ierr = PetscMemzero(d_nnz,(1+na)*sizeof(PetscInt));CHKERRQ(ierr);
+  for (i=0; i<ai[ma]; i++){
+    d_nnz[aj[i]] ++;  
+    aj[i] += cstart; /* global col index to be used by MatSetValues() */
   }
 
   ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->cmap.n,A->rmap.n,N,M);CHKERRQ(ierr);
   ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
-  ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(B,0,d_nnz,0,d_nnz);CHKERRQ(ierr);
 
-  /* copy over the A part */
-  Aloc = (Mat_SeqAIJ*)a->A->data;
-  m = a->A->rmap.n; ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
+  /* copy over the A part */ 
+  array = Aloc->a;
   row = A->rmap.rstart;
-  for (i=0; i<ai[m]; i++) {aj[i] += A->cmap.rstart ;}
-  for (i=0; i<m; i++) {
-    ierr = MatSetValues(B,ai[i+1]-ai[i],aj,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
-    row++; array += ai[i+1]-ai[i]; aj += ai[i+1]-ai[i];
+  for (i=0; i<ma; i++) {
+    ncol = ai[i+1]-ai[i];
+    ierr = MatSetValues(B,ncol,aj,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
+    row++; array += ncol; aj += ncol;
   } 
   aj = Aloc->j;
-  for (i=0; i<ai[m]; i++) {aj[i] -= A->cmap.rstart ;}
+  for (i=0; i<ai[ma]; i++) aj[i] -= cstart; /* resume local col index */
 
   /* copy over the B part */
-  Aloc = (Mat_SeqAIJ*)a->B->data;
-  m = a->B->rmap.n;  ai = Aloc->i; aj = Aloc->j; array = Aloc->a;
-  row  = A->rmap.rstart;
-  ierr = PetscMalloc((1+ai[m])*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-  ct   = cols;
-  for (i=0; i<ai[m]; i++) {cols[i] = a->garray[aj[i]];}
-  for (i=0; i<m; i++) {
-    ierr = MatSetValues(B,ai[i+1]-ai[i],cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
-    row++; array += ai[i+1]-ai[i]; cols += ai[i+1]-ai[i];
+  array = Bloc->a;
+  row = A->rmap.rstart; 
+  for (i=0; i<bi[mb]; i++) {cols[i] = a->garray[bj[i]];}
+  for (i=0; i<mb; i++) {
+    ncol = bi[i+1]-bi[i];
+    ierr = MatSetValues(B,ncol,cols,1,&row,array,INSERT_VALUES);CHKERRQ(ierr);
+    row++; array += ncol; cols += ncol;
   } 
-  ierr = PetscFree(ct);CHKERRQ(ierr);
+  ierr = PetscFree(d_nnz);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   if (matout) {

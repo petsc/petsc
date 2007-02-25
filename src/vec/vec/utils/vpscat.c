@@ -4,8 +4,8 @@
     Defines parallel vector scatters.
 */
 
-#include "src/vec/is/isimpl.h"
-#include "private/vecimpl.h"                     /*I "petscvec.h" I*/
+#include "include/private/isimpl.h"
+#include "include/private/vecimpl.h"         /*I "petscvec.h" I*/
 #include "src/vec/vec/impls/dvecimpl.h"
 #include "src/vec/vec/impls/mpi/pvecimpl.h"
 #include "petscsys.h"
