@@ -1650,6 +1650,23 @@ PetscErrorCode MatGetRowMin_SeqDense(Mat A,Vec v,PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetColumnVector_SeqDense"
+PetscErrorCode MatGetColumnVector_SeqDense(Mat A,Vec v,PetscInt col)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscErrorCode ierr;
+  PetscScalar    *x;
+
+  PetscFunctionBegin;
+  if (A->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");  
+
+  ierr = VecGetArray(v,&x);CHKERRQ(ierr);
+  ierr = PetscMemcpy(x,a->v+col*a->lda,A->rmap.n*sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        MatGetRow_SeqDense,
@@ -1763,7 +1780,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
 /*110*/0,
        0,
-       MatGetRowMin_SeqDense
+       MatGetRowMin_SeqDense,
+       MatGetColumnVector_SeqDense
 };
 
 #undef __FUNCT__  
