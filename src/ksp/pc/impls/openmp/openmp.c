@@ -78,14 +78,14 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
 {
   PetscMPIInt    rank,size;
-  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row;
+  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row,*ld;
   PetscErrorCode ierr;
   Mat            mat;
   Mat_SeqAIJ     *gmata;
   PetscMPIInt    tag;
   MPI_Status     status;
   PetscTruth     aij;
-  PetscScalar    *gmataa;
+  PetscScalar    *gmataa,*ao,*ad,*gmataarestore;
 
   PetscFunctionBegin;
   CHKMEMQ;
@@ -118,9 +118,12 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       }
       /* determine number diagonal and off-diagonal counts */
       ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
       jj = 0;
       for (i=0; i<m; i++) {
 	for (j=0; j<dlens[i]; j++) {
+          if (gmata->j[jj] < rstart) ld[i]++;
 	  if (gmata->j[jj] < rstart || gmata->j[jj] >= rend) olens[i]++;
 	  jj++;
 	}
@@ -129,13 +132,13 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       for (i=1; i<size; i++) {
 	nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
 	ierr = MPI_Send(&nz,1,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
-	ierr = MPI_Send(gmata->j + gmata->i[rowners[i]],gmata->i[rowners[i+1]]-gmata->i[rowners[i]],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+	ierr = MPI_Send(gmata->j + gmata->i[rowners[i]],nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
       }
 
       /* send numerical values to other processes */
       for (i=1; i<size; i++) {
         nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
-        ierr = MPI_Send(gmata->a + gmata->i[rowners[i]],gmata->i[rowners[i+1]]-gmata->i[rowners[i]],MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+        ierr = MPI_Send(gmata->a + gmata->i[rowners[i]],nz,MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
       }
       gmataa = gmata->a;
       gmataj = gmata->j;
@@ -149,9 +152,12 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       ierr = MPI_Recv(gmataj,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
       /* determine number diagonal and off-diagonal counts */
       ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
       jj = 0;
       for (i=0; i<m; i++) {
 	for (j=0; j<dlens[i]; j++) {
+          if (gmataj[jj] < rstart) ld[i]++;
 	  if (gmataj[jj] < rstart || gmataj[jj] >= rend) olens[i]++;
 	  jj++;
 	}
@@ -181,18 +187,53 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
     }
     ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
     ierr = PetscFree(rowners);CHKERRQ(ierr);
-  } else {
+    ((Mat_MPIAIJ*)(mat->data))->ld = ld;
+    *inmat = mat;
+  } else {   /* column indices are already set; only need to move over numerical values from process 0 */
+    Mat_SeqAIJ *Ad = (Mat_SeqAIJ*)((Mat_MPIAIJ*)((*inmat)->data))->A->data;
+    Mat_SeqAIJ *Ao = (Mat_SeqAIJ*)((Mat_MPIAIJ*)((*inmat)->data))->B->data;
+    mat   = *inmat;
+    ierr  = PetscObjectGetNewTag((PetscObject)mat,&tag);CHKERRQ(ierr);
     if (!rank) {
-      ;
+      /* send numerical values to other processes */
+      gmata = (Mat_SeqAIJ*) gmat->data;
+      ierr   = MatGetOwnershipRanges(mat,(const PetscInt**)&rowners);CHKERRQ(ierr);
+      gmataa = gmata->a; 
+      for (i=1; i<size; i++) {
+        nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+        ierr = MPI_Send(gmataa + gmata->i[rowners[i]],nz,MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+      }
+      nz   = gmata->i[rowners[1]]-gmata->i[rowners[0]];
     } else {
-      ;
+      /* receive numerical values from process 0*/
+      nz   = Ad->nz + Ao->nz;
+      ierr = PetscMalloc(nz*sizeof(PetscScalar),&gmataa);CHKERRQ(ierr); gmataarestore = gmataa;
+      ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
+    }
+    /* transfer numerical values into the diagonal A and off diagonal B parts of mat */
+    ld = ((Mat_MPIAIJ*)(mat->data))->ld;
+    ad = Ad->a;
+    ao = Ao->a;
+    if (mat->rmap.n) {
+      i  = 0;
+      nz = ld[i];                                   ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+      nz = Ad->i[i+1] - Ad->i[i];                   ierr = PetscMemcpy(ad,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ad += nz; gmataa += nz;
+    }
+    for (i=1; i<mat->rmap.n; i++) {
+      nz = Ao->i[i] - Ao->i[i-1] - ld[i-1] + ld[i]; ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+      nz = Ad->i[i+1] - Ad->i[i];                   ierr = PetscMemcpy(ad,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ad += nz; gmataa += nz;
+    }
+    i--;
+    if (mat->rmap.n) {
+      nz = Ao->i[i+1] - Ao->i[i] - ld[i];           ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+    }
+    if (rank) {
+      ierr = PetscFree(gmataarestore);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  MatView(mat,0);
   CHKMEMQ;
-  *inmat = mat;
   PetscFunctionReturn(0);
 }
 
@@ -226,7 +267,6 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     if (red->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(red->mat);CHKERRQ(ierr);
       scal = MAT_INITIAL_MATRIX;
-      printf("[%d]greetings\n",PetscGlobalRank);
       CHKMEMQ;
     } else {
       scal = MAT_REUSE_MATRIX;
@@ -245,7 +285,6 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   } else {
     ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
-      printf("[%d]greetings\n",PetscGlobalRank);
       CHKMEMQ;
   }
   PetscFunctionReturn(0);

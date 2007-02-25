@@ -25,7 +25,8 @@
 
 .keywords: distributed array, get, corners, nodes, local indices, coordinates
 
-.seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray()
+.seealso: DAGetGhostCorners(), DAGetCorners(), VecGetArray(), VecRestoreArray(), DAVecRestoreArray(), DAVecRestoreArrayDOF()
+          DAVecGetarrayDOF()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAVecGetArray(DA da,Vec vec,void *array)
 {

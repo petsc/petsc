@@ -38,30 +38,32 @@ typedef struct {
   PetscScalar   *rowvalues;        /* nonzero values in row */
   PetscTruth    getrowactive;      /* indicates MatGetRow(), not restored */
 
+  /* Used by MatDistribute_MPIAIJ() to allow reuse of previous matrix allocation  and nonzero pattern */
+  PetscInt      *ld;               /* number of entries per row left of diagona block */
 } Mat_MPIAIJ;
 
 typedef struct { /* used by MatMatMult_MPIAIJ_MPIAIJ and MatPtAP_MPIAIJ_MPIAIJ for reusing symbolic mat product */
-  PetscInt    *startsj;
-  PetscScalar *bufa;
-  IS          isrowa,isrowb,iscolb; 
-  Mat         *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
-  Mat         A_loc,B_seq;
-  Mat         B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
-  PetscInt    brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
-  PetscInt    *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
-  PetscInt    abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
-  MatReuse    reuse; 
+  PetscInt       *startsj;
+  PetscScalar    *bufa;
+  IS             isrowa,isrowb,iscolb; 
+  Mat            *aseq,*bseq,C_seq; /* A_seq=aseq[0], B_seq=bseq[0] */
+  Mat            A_loc,B_seq;
+  Mat            B_loc,B_oth;  /* partial B_seq -- intend to replace B_seq */
+  PetscInt       brstart; /* starting owned rows of B in matrix bseq[0]; brend = brstart+B->m */
+  PetscInt       *abi,*abj; /* symbolic i and j arrays of the local product A_loc*B_seq */
+  PetscInt       abnz_max;  /* max(abi[i+1] - abi[i]), max num of nnz in a row of A_loc*B_seq */
+  MatReuse       reuse; 
   PetscErrorCode (*MatDestroy)(Mat);
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_MatMatMultMPI;
 
 typedef struct { /* used by MatMerge_SeqsToMPI for reusing the merged matrix */
-  PetscMap     rowmap;
-  PetscInt     **buf_ri,**buf_rj;
-  PetscMPIInt  *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
-  PetscMPIInt  nsend,nrecv;  
-  PetscInt     *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
-  PetscInt     *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
+  PetscMap       rowmap;
+  PetscInt       **buf_ri,**buf_rj;
+  PetscMPIInt    *len_s,*len_r,*id_r; /* array of length of comm->size, store send/recv matrix values */
+  PetscMPIInt    nsend,nrecv;  
+  PetscInt       *bi,*bj; /* i and j array of the local portion of mpi C=P^T*A*P */
+  PetscInt       *owners_co,*coi,*coj; /* i and j array of (p->B)^T*A*P - used in the communication */
   PetscErrorCode (*MatDestroy)(Mat);
   PetscErrorCode (*MatDuplicate)(Mat,MatDuplicateOption,Mat*);
 } Mat_Merge_SeqsToMPI; 
