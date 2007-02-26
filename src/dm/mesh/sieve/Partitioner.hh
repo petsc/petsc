@@ -251,14 +251,16 @@ namespace ALE {
         #define __FUNCT__ "ChacoPartitionSieve"
         static part_type *partitionSieve(const Obj<topology_type>& topology, const int dim) {
           part_type *assignment = NULL; /* set number of each vtx (length n) */
+          int       *start;             /* start of edge list for each vertex */
+          int       *adjacency;         /* = adj -> j; edge list data  */
+          typename topology_type::patch_type patch = 0;
 
           ALE_LOG_EVENT_BEGIN;
+          ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &start, &adjacency);
           if (topology->commRank() == 0) {
             /* arguments for Chaco library */
             FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
             int nvtxs;                              /* number of vertices in full graph */
-            int *start;                             /* start of edge list for each vertex */
-            int *adjacency;                         /* = adj -> j; edge list data  */
             int *vwgts = NULL;                      /* weights for all vertices */
             float *ewgts = NULL;                    /* weights for all edges */
             float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
@@ -275,12 +277,10 @@ namespace ALE {
             int ndims = 1;                          /* number of eigenvectors (2^d sets) */
             double eigtol = 0.001;                  /* tolerance on eigenvectors */
             long seed = 123636512;                  /* for random graph mutations */
-            int patch = 0;
             PetscErrorCode ierr;
 
             nvtxs = topology->heightStratum(patch, 0)->size();
             mesh_dims[0] = topology->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
-            ALE::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &start, &adjacency);
             for(int e = 0; e < start[nvtxs]; e++) {
               adjacency[e]++;
             }
@@ -321,9 +321,9 @@ namespace ALE {
             }
             delete [] msgLog;
 #endif
-            delete [] adjacency;
-            delete [] start;
           }
+          if (adjacency) delete [] adjacency;
+          if (start)     delete [] start;
           ALE_LOG_EVENT_END;
           return assignment;
         };

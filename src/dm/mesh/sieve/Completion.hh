@@ -5,6 +5,9 @@
 #include <Sections.hh>
 #endif
 
+#include <iostream>
+#include <fstream>
+
 namespace ALE {
   namespace New {
     template<typename Section_>
@@ -88,9 +91,13 @@ namespace ALE {
         int e = 0;
 
         if (topology->debug()) {
+          std::ofstream f("part.dat");
           int e2 = 0;
+          f << sieve->commSize() << std::endl;
           for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-            std::cout << "assignment["<<*e_iter<<"]" << assignment[e2++] << std::endl;
+            std::cout << "assignment["<<*e_iter<<"]" << assignment[e2] << std::endl;
+            f << assignment[e2] << std::endl;
+            e2++;
           }
         }
         for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {

@@ -376,9 +376,9 @@ namespace ALE {
         this->checkLabel(name, patch);
         return this->_labels[name][patch];
       };
-      const Obj<label_sequence>& getLabelStratum(const patch_type& patch, const std::string& name, int label) {
+      const Obj<label_sequence>& getLabelStratum(const patch_type& patch, const std::string& name, int value) {
         this->checkLabel(name, patch);
-        return this->_labels[name][patch]->support(label);
+        return this->_labels[name][patch]->support(value);
       };
       const sheaf_type& getPatches() {
         return this->_sheaf;
@@ -2132,7 +2132,9 @@ namespace ALE {
           MPI_Attr_get(MPI_COMM_WORLD, MPI_TAG_UB, (void **) &maxval, &flg);
           tagvalp[0] = *maxval - 128; // hope that any still active tags were issued right at the beginning of the run
         }
-        //std::cout << "[" << this->commRank() << "]Got new tag " << tagvalp[0] << std::endl;
+        if (this->debug()) {
+          std::cout << "[" << this->commRank() << "]Got new tag " << tagvalp[0] << std::endl;
+        }
         return tagvalp[0]--;
       };
     public: // Accessors
