@@ -1209,10 +1209,28 @@ $     monitor (KSP ksp, int it, PetscReal rnorm, void *mctx)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSet(KSP ksp,PetscErrorCode (*monitor)(KSP,PetscInt,PetscReal,void*),void *mctx,PetscErrorCode (*monitordestroy)(void*))
 {
+  PetscInt i;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   if (ksp->numbermonitors >= MAXKSPMONITORS) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Too many KSP monitors set");
+  }
+  for (i=0; i<ksp->numbermonitors;i++) {
+    if (monitor == ksp->monitor[i] && monitordestroy == ksp->monitordestroy[i] && mctx == ksp->monitorcontext[i]) PetscFunctionReturn(0);
+
+    /* check if both default monitors that share common ASCII viewer */
+    if (monitor == ksp->monitor[i] && monitor == KSPMonitorDefault) {
+      if (mctx && ksp->monitorcontext[i]) {
+        PetscErrorCode          ierr;
+        PetscViewerASCIIMonitor viewer1 = (PetscViewerASCIIMonitor) mctx;
+        PetscViewerASCIIMonitor viewer2 = (PetscViewerASCIIMonitor) ksp->monitorcontext[i];
+        if (viewer1->viewer == viewer2->viewer) {
+          ierr = (*monitordestroy)(mctx);CHKERRQ(ierr);
+          PetscFunctionReturn(0);
+        }
+      }
+    }
   }
   ksp->monitor[ksp->numbermonitors]           = monitor;
   ksp->monitordestroy[ksp->numbermonitors]    = monitordestroy;

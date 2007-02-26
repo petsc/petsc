@@ -436,7 +436,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshDestroy"
-/*@C
+/*@
     MeshDestroy - Destroys a mesh.
 
     Collective on Mesh
@@ -447,7 +447,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
     Level: advanced
 
 .seealso MeshCreate(), MeshCreateGlobalVector(), MeshGetGlobalIndices()
-
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
 {

@@ -8,7 +8,7 @@ typedef struct {
   PetscInt     setupcalled;        /* pc->setupcalled */  
   PetscInt     n;
   MPI_Comm     comm;                 /* local world used by this preconditioner */
-  PC           pc;                   /* actual preconditioner used across local world */
+  KSP          ksp;                  /* actual solver used across local world */
   Mat          mat;                  /* matrix in local world */
   Mat          gmat;                 /* matrix known only to process 0 in the local world */
   Vec          x,y,xdummy,ydummy;
@@ -34,7 +34,7 @@ static PetscErrorCode PCView_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscFunctionBegin;
   ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);         /* this is bogus in general */
-  ierr = PCView(red->pc,viewer);CHKERRQ(ierr);
+  ierr = KSPView(red->ksp,viewer);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -78,14 +78,14 @@ static PetscErrorCode PCView_OpenMP(PC pc,PetscViewer viewer)
 static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,MatReuse reuse,Mat *inmat)
 {
   PetscMPIInt    rank,size;
-  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row;
+  PetscInt       *rowners,*dlens,*olens,i,rstart,rend,j,jj,nz,*gmataj,cnt,row,*ld;
   PetscErrorCode ierr;
   Mat            mat;
   Mat_SeqAIJ     *gmata;
   PetscMPIInt    tag;
   MPI_Status     status;
   PetscTruth     aij;
-  PetscScalar    *gmataa;
+  PetscScalar    *gmataa,*ao,*ad,*gmataarestore;
 
   PetscFunctionBegin;
   CHKMEMQ;
@@ -118,9 +118,12 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       }
       /* determine number diagonal and off-diagonal counts */
       ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
       jj = 0;
       for (i=0; i<m; i++) {
 	for (j=0; j<dlens[i]; j++) {
+          if (gmata->j[jj] < rstart) ld[i]++;
 	  if (gmata->j[jj] < rstart || gmata->j[jj] >= rend) olens[i]++;
 	  jj++;
 	}
@@ -129,13 +132,13 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       for (i=1; i<size; i++) {
 	nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
 	ierr = MPI_Send(&nz,1,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
-	ierr = MPI_Send(gmata->j + gmata->i[rowners[i]],gmata->i[rowners[i+1]]-gmata->i[rowners[i]],MPIU_INT,i,tag,comm);CHKERRQ(ierr);
+	ierr = MPI_Send(gmata->j + gmata->i[rowners[i]],nz,MPIU_INT,i,tag,comm);CHKERRQ(ierr);
       }
 
       /* send numerical values to other processes */
       for (i=1; i<size; i++) {
         nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
-        ierr = MPI_Send(gmata->a + gmata->i[rowners[i]],gmata->i[rowners[i+1]]-gmata->i[rowners[i]],MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+        ierr = MPI_Send(gmata->a + gmata->i[rowners[i]],nz,MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
       }
       gmataa = gmata->a;
       gmataj = gmata->j;
@@ -149,9 +152,12 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       ierr = MPI_Recv(gmataj,nz,MPIU_INT,0,tag,comm,&status);CHKERRQ(ierr);
       /* determine number diagonal and off-diagonal counts */
       ierr = PetscMemzero(olens,m*sizeof(PetscInt));CHKERRQ(ierr);
+      ierr = PetscMalloc(m*sizeof(PetscInt),&ld);CHKERRQ(ierr);
+      ierr = PetscMemzero(ld,m*sizeof(PetscInt));CHKERRQ(ierr);
       jj = 0;
       for (i=0; i<m; i++) {
 	for (j=0; j<dlens[i]; j++) {
+          if (gmataj[jj] < rstart) ld[i]++;
 	  if (gmataj[jj] < rstart || gmataj[jj] >= rend) olens[i]++;
 	  jj++;
 	}
@@ -159,40 +165,75 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
       /* receive numerical values */
       ierr = PetscMemzero(gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr);
       ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
-
-      /* set preallocation */
-      for (i=0; i<m; i++) {
-	dlens[i] -= olens[i];
-      }
-      ierr = MatSeqAIJSetPreallocation(mat,0,dlens);CHKERRQ(ierr);
-      ierr = MatMPIAIJSetPreallocation(mat,0,dlens,0,olens);CHKERRQ(ierr);
-
-      for (i=0; i<m; i++) {
-	dlens[i] += olens[i];
-      }
-      cnt  = 0;
-      for (i=0; i<m; i++) {
-	row  = rstart + i;
-	ierr = MatSetValues(mat,1,&row,dlens[i],gmataj+cnt,gmataa+cnt,INSERT_VALUES);CHKERRQ(ierr);
-	cnt += dlens[i];
-      }
-      if (rank) {
-	ierr = PetscFree2(gmataa,gmataj);CHKERRQ(ierr);
-      }
-      ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
-      ierr = PetscFree(rowners);CHKERRQ(ierr);
     }
-  } else {
+    /* set preallocation */
+    for (i=0; i<m; i++) {
+      dlens[i] -= olens[i];
+    }
+    ierr = MatSeqAIJSetPreallocation(mat,0,dlens);CHKERRQ(ierr);
+    ierr = MatMPIAIJSetPreallocation(mat,0,dlens,0,olens);CHKERRQ(ierr);
+    
+    for (i=0; i<m; i++) {
+      dlens[i] += olens[i];
+    }
+    cnt  = 0;
+    for (i=0; i<m; i++) {
+      row  = rstart + i;
+      ierr = MatSetValues(mat,1,&row,dlens[i],gmataj+cnt,gmataa+cnt,INSERT_VALUES);CHKERRQ(ierr);
+      cnt += dlens[i];
+    }
+    if (rank) {
+      ierr = PetscFree2(gmataa,gmataj);CHKERRQ(ierr);
+    }
+    ierr = PetscFree2(dlens,olens);CHKERRQ(ierr);
+    ierr = PetscFree(rowners);CHKERRQ(ierr);
+    ((Mat_MPIAIJ*)(mat->data))->ld = ld;
+    *inmat = mat;
+  } else {   /* column indices are already set; only need to move over numerical values from process 0 */
+    Mat_SeqAIJ *Ad = (Mat_SeqAIJ*)((Mat_MPIAIJ*)((*inmat)->data))->A->data;
+    Mat_SeqAIJ *Ao = (Mat_SeqAIJ*)((Mat_MPIAIJ*)((*inmat)->data))->B->data;
+    mat   = *inmat;
+    ierr  = PetscObjectGetNewTag((PetscObject)mat,&tag);CHKERRQ(ierr);
     if (!rank) {
-      ;
+      /* send numerical values to other processes */
+      gmata = (Mat_SeqAIJ*) gmat->data;
+      ierr   = MatGetOwnershipRanges(mat,(const PetscInt**)&rowners);CHKERRQ(ierr);
+      gmataa = gmata->a; 
+      for (i=1; i<size; i++) {
+        nz   = gmata->i[rowners[i+1]]-gmata->i[rowners[i]];
+        ierr = MPI_Send(gmataa + gmata->i[rowners[i]],nz,MPIU_SCALAR,i,tag,comm);CHKERRQ(ierr);
+      }
+      nz   = gmata->i[rowners[1]]-gmata->i[rowners[0]];
     } else {
-      ;
+      /* receive numerical values from process 0*/
+      nz   = Ad->nz + Ao->nz;
+      ierr = PetscMalloc(nz*sizeof(PetscScalar),&gmataa);CHKERRQ(ierr); gmataarestore = gmataa;
+      ierr = MPI_Recv(gmataa,nz,MPIU_SCALAR,0,tag,comm,&status);CHKERRQ(ierr);
+    }
+    /* transfer numerical values into the diagonal A and off diagonal B parts of mat */
+    ld = ((Mat_MPIAIJ*)(mat->data))->ld;
+    ad = Ad->a;
+    ao = Ao->a;
+    if (mat->rmap.n) {
+      i  = 0;
+      nz = ld[i];                                   ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+      nz = Ad->i[i+1] - Ad->i[i];                   ierr = PetscMemcpy(ad,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ad += nz; gmataa += nz;
+    }
+    for (i=1; i<mat->rmap.n; i++) {
+      nz = Ao->i[i] - Ao->i[i-1] - ld[i-1] + ld[i]; ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+      nz = Ad->i[i+1] - Ad->i[i];                   ierr = PetscMemcpy(ad,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ad += nz; gmataa += nz;
+    }
+    i--;
+    if (mat->rmap.n) {
+      nz = Ao->i[i+1] - Ao->i[i] - ld[i];           ierr = PetscMemcpy(ao,gmataa,nz*sizeof(PetscScalar));CHKERRQ(ierr); ao += nz; gmataa += nz;
+    }
+    if (rank) {
+      ierr = PetscFree(gmataarestore);CHKERRQ(ierr);
     }
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   CHKMEMQ;
-  *inmat = mat;
   PetscFunctionReturn(0);
 }
 
@@ -204,6 +245,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscErrorCode ierr;
   PetscInt       m;
   MatReuse       scal;
+  PetscMPIInt    rank;
 
   PetscFunctionBegin;
   ierr = MPI_Bcast(&red->setupcalled,1,MPIU_INT,0,comm);CHKERRQ(ierr);
@@ -215,11 +257,17 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     ierr = VecCreateMPI(comm,PETSC_DECIDE,red->n,&red->y);CHKERRQ(ierr);
     ierr = VecScatterCreateToZero(red->x,&red->scatter,&red->xdummy);CHKERRQ(ierr);
     ierr = VecDuplicate(red->xdummy,&red->ydummy);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
+    if (!rank) {
+      ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);
+      ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);
+    }
     scal = MAT_INITIAL_MATRIX;
   } else {
     if (red->flag == DIFFERENT_NONZERO_PATTERN) {
       ierr = MatDestroy(red->mat);CHKERRQ(ierr);
       scal = MAT_INITIAL_MATRIX;
+      CHKMEMQ;
     } else {
       scal = MAT_REUSE_MATRIX;
     }
@@ -228,16 +276,16 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   /* copy matrix out onto processes */
   ierr = VecGetLocalSize(red->x,&m);CHKERRQ(ierr);
   ierr = MatDistribute_MPIAIJ(comm,red->gmat,m,scal,&red->mat);CHKERRQ(ierr);
-
+      CHKMEMQ;
   if (!red->setupcalled) {
     /* create the solver */
-    ierr = PCCreate(comm,&red->pc);CHKERRQ(ierr);
-    ierr = PCSetOptionsPrefix(red->pc,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
-    ierr = PCSetType(red->pc,PCKSP);CHKERRQ(ierr);
-    ierr = PCSetOperators(red->pc,red->mat,red->mat,red->flag);CHKERRQ(ierr);
-    ierr = PCSetFromOptions(red->pc);CHKERRQ(ierr);
+    ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
+    ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
+    ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
+    ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   } else {
-    ierr = PCSetOperators(red->pc,red->mat,red->mat,red->flag);CHKERRQ(ierr);
+    ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
+      CHKMEMQ;
   }
   PetscFunctionReturn(0);
 }
@@ -255,8 +303,6 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
   red->flag        = pc->flag;
   red->setupcalled = pc->setupcalled;
   ierr = PetscOpenMPRun(red->comm,PCSetUp_OpenMP_MP,red);CHKERRQ(ierr);
-  ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);
-  ierr = VecDestroy(red->ydummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -271,7 +317,7 @@ static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
   ierr = VecScatterBegin(red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE,red->scatter);CHKERRQ(ierr);
 
-  ierr = PCApply(red->pc,red->x,red->y);CHKERRQ(ierr);
+  ierr = KSPSolve(red->ksp,red->x,red->y);CHKERRQ(ierr);
 
   ierr = VecScatterBegin(red->y,red->ydummy,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->y,red->ydummy,INSERT_VALUES,SCATTER_FORWARD,red->scatter);CHKERRQ(ierr);
@@ -304,6 +350,8 @@ static PetscErrorCode PCDestroy_OpenMP_MP(MPI_Comm comm,void *ctx)
   if (red->scatter) {ierr = VecScatterDestroy(red->scatter);CHKERRQ(ierr);}
   if (red->x) {ierr = VecDestroy(red->x);CHKERRQ(ierr);}
   if (red->y) {ierr = VecDestroy(red->y);CHKERRQ(ierr);}
+  if (red->ksp) {ierr = KSPDestroy(red->ksp);CHKERRQ(ierr);}
+  if (red->mat) {ierr = MatDestroy(red->mat);CHKERRQ(ierr);}
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (rank) {
     if (red->xdummy) {ierr = VecDestroy(red->xdummy);CHKERRQ(ierr);}
@@ -338,10 +386,10 @@ static PetscErrorCode PCSetFromOptions_OpenMP(PC pc)
 /*MC
      PCOPENMP - Runs a preconditioner for a single process matrix across several MPI processes
 
-$     This will usually be run with -pc_type openmp -ksp_type gmres -openmp_pc_type ksp then
-$     solver options are set with -openmp_ksp_ksp_... and -openmp_ksp_pc_... for example
-$     -openmp_ksp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_ksp_monitor or
-$     -openmp_ksp_pc_type hypre -openmp_ksp_pc_hypre_type boomeramg
+$     This will usually be run with -pc_type openmp -ksp_type preonly
+$     solver options are set with -openmp_ksp_... and -openmp_pc_... for example
+$     -openmp_ksp_type cg would use cg as the Krylov method or -openmp_ksp_monitor or
+$     -openmp_pc_type hypre -openmp_pc_hypre_type boomeramg
 
        Always run with -ksp_view (or -snes_view) to see what solver is actually being used.
 

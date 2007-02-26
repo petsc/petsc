@@ -723,6 +723,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   if (aij->lvec)   {ierr = VecDestroy(aij->lvec);CHKERRQ(ierr);}
   if (aij->Mvctx)  {ierr = VecScatterDestroy(aij->Mvctx);CHKERRQ(ierr);}
   ierr = PetscFree(aij->rowvalues);CHKERRQ(ierr);
+  ierr = PetscFree(aij->ld);CHKERRQ(ierr);
   ierr = PetscFree(aij);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
