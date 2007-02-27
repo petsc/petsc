@@ -25,6 +25,7 @@ typedef struct _p_IS* IS;
 */
 typedef enum {IS_GENERAL=0,IS_STRIDE=1,IS_BLOCK = 2} ISType;
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneral(MPI_Comm,PetscInt,const PetscInt[],IS *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralNC(MPI_Comm,PetscInt,const PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateGeneralWithArray(MPI_Comm,PetscInt,PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateBlock(MPI_Comm,PetscInt,PetscInt,const PetscInt[],IS *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT   ISCreateStride(MPI_Comm,PetscInt,PetscInt,PetscInt,IS *);
