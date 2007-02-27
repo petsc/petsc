@@ -53,7 +53,7 @@ PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
     Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
 
     Input Parameters:
-+  viewer - the PetscViewer (created with PetscViewerDrawOpen()
++  viewer - the PetscViewer (created with PetscViewerDrawOpen())
 -   windownumber - indicates which subwindow (usually 0)
 
     Ouput Parameter:
@@ -230,9 +230,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawSetInfo(PetscViewer v,const char d
   vdraw->h  = h;
   vdraw->w  = w;
   ierr      = PetscStrallocpy(display,&vdraw->display);CHKERRQ(ierr);
-  ierr      = PetscDrawCreate(v->comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
-  ierr      = PetscDrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);
-  ierr = PetscLogObjectParent(v,vdraw->draw[0]);CHKERRQ(ierr);
+  /*  ierr      = PetscDrawCreate(v->comm,display,title,x,y,w,h,&vdraw->draw[0]);CHKERRQ(ierr);
+      ierr      = PetscDrawSetFromOptions(vdraw->draw[0]);CHKERRQ(ierr);*/
   PetscFunctionReturn(0);
 }
 

@@ -42,10 +42,16 @@ typedef struct {
   PetscScalar prin,ugin,ufin,agin,vgin,vfin;        /* inflow boundary conditions for fluid */
   PetscScalar prout,ugout,ufout,agout,vgout;        /* outflow boundary conditions for fluid */
 
-  PetscScalar twi;
+  PetscScalar twi;                                  /* initial condition for tempature */
 
-  PetscScalar phii;
+  PetscScalar phii;                                 /* initial conditions for fuel */
   PetscScalar prei;
+
+  PetscInt    nxv,nyv,nyvf;
+
+  PetscViewer v1,v2,v3;
+
+  DMComposite pack;
 } AppCtx;
 
 typedef struct {                 /* Fluid unknowns */
@@ -64,7 +70,7 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode CompositeVecView(DMComposite,Vec);
+extern PetscErrorCode CompositeVecView(AppCtx*,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -74,9 +80,7 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   MPI_Comm       comm;
   DA             da;
-  DMComposite    pack;
   AppCtx         app;
-  PetscInt       nxv = 6, nyvf = 3, nyv = nyvf + 2;  
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -84,24 +88,41 @@ int main(int argc,char **argv)
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
 
+    app.nxv  = 6;
+    app.nyvf = 3;
+    app.nyv  = app.nyvf + 2;
+
+    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fluid",-1,-1,-1,-1,&app.v1);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Thermal",-1,-1,-1,-1,&app.v2);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fuel",-1,-1,-1,-1,&app.v3);CHKERRQ(ierr);
+
     /*
        Create the DMComposite object to manage the three grids/physics. 
        We use a 1d decomposition along the y direction (since one of the grids is 1d).
 
     */
-    ierr = DMCompositeCreate(comm,&pack);CHKERRQ(ierr);
+    ierr = DMCompositeCreate(comm,&app.pack);CHKERRQ(ierr);
 
     /* 6 fluid unknowns, 3 ghost points on each end for either periodicity or simply boundary conditions */
-    ierr = DACreate1d(comm,DA_XPERIODIC,nxv,6,3,0,&da);CHKERRQ(ierr);
-    ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DACreate1d(comm,DA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
+    ierr = DASetFieldName(da,0,"prss");CHKERRQ(ierr);
+    ierr = DASetFieldName(da,1,"ergg");CHKERRQ(ierr);
+    ierr = DASetFieldName(da,2,"ergf");CHKERRQ(ierr);
+    ierr = DASetFieldName(da,3,"alfg");CHKERRQ(ierr);
+    ierr = DASetFieldName(da,4,"velg");CHKERRQ(ierr);
+    ierr = DASetFieldName(da,5,"velf");CHKERRQ(ierr);
+    ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,nxv,nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
-    ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
+    ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,nxv,nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
-    ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DASetFieldName(da,0,"Phi");CHKERRQ(ierr);
+    ierr = DASetFieldName(da,1,"Pre");CHKERRQ(ierr);
+    ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
    
     app.pri = 1.0135e+5;
@@ -132,8 +153,7 @@ int main(int argc,char **argv)
        Create the solver object and attach the grid/physics info 
     */
     ierr = DMMGCreate(comm,1,0,&dmmg);CHKERRQ(ierr);
-    ierr = DMMGSetDM(dmmg,(DM)pack);CHKERRQ(ierr);
-    ierr = DMCompositeDestroy(pack);CHKERRQ(ierr);
+    ierr = DMMGSetDM(dmmg,(DM)app.pack);CHKERRQ(ierr);
     ierr = DMMGSetUser(dmmg,0,&app);CHKERRQ(ierr);
     ierr = DMMGSetISColoringType(dmmg,IS_COLORING_GLOBAL);CHKERRQ(ierr);
     CHKMEMQ;
@@ -152,7 +172,7 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
-    ierr = CompositeVecView(pack,DMMGGetx(dmmg));CHKERRQ(ierr);
+    ierr = CompositeVecView(&app,DMMGGetx(dmmg));CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
@@ -160,6 +180,7 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
    
+    ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
@@ -179,9 +200,8 @@ int main(int argc,char **argv)
 PetscErrorCode FormInitialGuessLocalFluid(AppCtx *app,DALocalInfo *info,FluidField *f)
 {
   PetscInt       i;
+
   PetscFunctionBegin;
-
-
   for (i=info->xs; i<info->xs+info->xm; i++) {
     f[i].prss = app->pri;
     f[i].ergg = app->ugi;
@@ -201,7 +221,6 @@ PetscErrorCode FormInitialGuessLocalThermal(AppCtx *app,DALocalInfo *info2,Petsc
   PetscInt i,j;
 
   PetscFunctionBegin;
-
   for (i=info2->xs; i<info2->xs+info2->xm; i++) {
     for (j=info2->ys;j<info2->ys+info2->ym; j++) {
       T[j][i] = app->twi;
@@ -217,7 +236,6 @@ PetscErrorCode FormInitialGuessLocalFuel(AppCtx *app,DALocalInfo *info2,FuelFiel
   PetscInt i,j;
 
   PetscFunctionBegin;
-
   for (i=info2->xs; i<info2->xs+info2->xm; i++) {
     for (j=info2->ys;j<info2->ys+info2->ym; j++) {
       F[j][i].phii = app->phii;
@@ -238,7 +256,6 @@ PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info,FluidField *u,FluidField
   PetscInt       i;
 
   PetscFunctionBegin;
-
   for (i=info->xs; i<info->xs+info->xm; i++) {
     f[i].prss = u[i].prss;
     f[i].ergg = u[i].ergg;
@@ -257,7 +274,6 @@ PetscErrorCode FormFunctionLocalThermal(DALocalInfo *info,PetscScalar **T,PetscS
   PetscInt i,j;
 
   PetscFunctionBegin;
-
   for (i=info->xs; i<info->xs+info->xm; i++) {
     for (j=info->ys;j<info->ys+info->ym; j++) {
       f[j][i] = T[j][i];
@@ -273,7 +289,6 @@ PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info,FuelField **U,FuelField *
   PetscInt i,j;
 
   PetscFunctionBegin;
-
   for (i=info->xs; i<info->xs+info->xm; i++) {
     for (j=info->ys;j<info->ys+info->ym; j++) {
       F[j][i].phii = U[j][i].phii;
@@ -327,7 +342,6 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   ierr = DMCompositeRestoreAccess(dm,X,&X1,&X2,&X3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
 
 #undef __FUNCT__
 #define __FUNCT__ "FormFunction"
@@ -456,21 +470,17 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
 #undef __FUNCT__
 #define __FUNCT__ "CompositeVecView"
-PetscErrorCode CompositeVecView(DMComposite pack,Vec X)
+PetscErrorCode CompositeVecView(AppCtx *app,Vec X)
 {
   PetscErrorCode ierr;
   DA             DA1,DA2,DA3;
   Vec            X1,X2,X3;
-  PetscViewer    v1,v2,v3;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fluid",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
-  ierr = VecView(X1,v1);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Thermal",-1,-1,-1,-1,&v2);CHKERRQ(ierr);
-  ierr = VecView(X2,v2);CHKERRQ(ierr);
-  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fuel",-1,-1,-1,-1,&v3);CHKERRQ(ierr);
-  ierr = VecView(X3,v3);CHKERRQ(ierr);
+  ierr = DMCompositeGetEntries(app->pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = VecView(X1,app->v1);CHKERRQ(ierr);
+  ierr = VecView(X2,app->v2);CHKERRQ(ierr);
+  ierr = VecView(X3,app->v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
