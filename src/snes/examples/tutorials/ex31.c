@@ -6,22 +6,24 @@ static char help[] = "Model multi-physics solver\n\n";
 
      There are three grids:
 
-             ---------------------
-            |                    |
-            |                    |         DA 3
-   nyfv+2   |                    |
-            |                    |
-            ---------------------
+            --------------------- DA1        
 
-             ---------------------
-            |                    |
-   nyv+2    |                    |         DA 2
-            |                    |
-            |                    |
-            ---------------------
+                    nyv  -->       --------------------- DA2
+                                   |                    | 
+                                   |                    | 
+                                   |                    |   
+                                   |                    | 
+                    nyvf-1 -->     |                    |         --------------------- DA3
+                                   |                    |        |                    |
+                                   |                    |        |                    |
+                                   |                    |        |                    |
+                                   |                    |        |                    |
+                         0 -->     ---------------------          ---------------------
 
-            ---------------------          DA 1
-                   nxv
+                   nxv                     nxv                          nxv
+
+            Fluid                     Thermal conduction              Fission (core)
+                                    (cladding and core)
 
     Notes:
      * The discretization approach used is to have ghost nodes OUTSIDE the physical domain
@@ -62,6 +64,7 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
+extern PetscErrorCode CompositeVecView(DMComposite,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -73,7 +76,7 @@ int main(int argc,char **argv)
   DA             da;
   DMComposite    pack;
   AppCtx         app;
-  PetscInt       nxv = 6, nyv = 3, nyfv = 3;  
+  PetscInt       nxv = 6, nyvf = 3, nyv = nyvf + 2;  
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -97,7 +100,7 @@ int main(int argc,char **argv)
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,nxv,nyfv,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,nxv,nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DMCompositeAddDA(pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
    
@@ -130,8 +133,9 @@ int main(int argc,char **argv)
     */
     ierr = DMMGCreate(comm,1,0,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)pack);CHKERRQ(ierr);
-    ierr = DMMGSetUser(dmmg,0,&app);CHKERRQ(ierr);
     ierr = DMCompositeDestroy(pack);CHKERRQ(ierr);
+    ierr = DMMGSetUser(dmmg,0,&app);CHKERRQ(ierr);
+    ierr = DMMGSetISColoringType(dmmg,IS_COLORING_GLOBAL);CHKERRQ(ierr);
     CHKMEMQ;
 
 
@@ -147,11 +151,15 @@ int main(int argc,char **argv)
   PreLoadStage("Solve");
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
+
+    ierr = CompositeVecView(pack,DMMGGetx(dmmg));CHKERRQ(ierr);
+
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+   
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
 
@@ -187,8 +195,8 @@ PetscErrorCode FormInitialGuessLocalFluid(AppCtx *app,DALocalInfo *info,FluidFie
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuessLocalCladding"
-PetscErrorCode FormInitialGuessLocalCladding(AppCtx *app,DALocalInfo *info2,PetscScalar **T)
+#define __FUNCT__ "FormInitialGuessLocalThermal"
+PetscErrorCode FormInitialGuessLocalThermal(AppCtx *app,DALocalInfo *info2,PetscScalar **T)
 {
   PetscInt i,j;
 
@@ -243,8 +251,8 @@ PetscErrorCode FormFunctionLocalFluid(DALocalInfo *info,FluidField *u,FluidField
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "FormFunctionLocalCladding"
-PetscErrorCode FormFunctionLocalCladding(DALocalInfo *info,PetscScalar **T,PetscScalar **f)
+#define __FUNCT__ "FormFunctionLocalThermal"
+PetscErrorCode FormFunctionLocalThermal(DALocalInfo *info,PetscScalar **T,PetscScalar **f)
 {
   PetscInt i,j;
 
@@ -279,7 +287,7 @@ PetscErrorCode FormFunctionLocalFuel(DALocalInfo *info,FuelField **U,FuelField *
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuess"
 /* 
-   FormInitialGuess  - Unwraps the global solution vector and passes its local peices into the user function
+   FormInitialGuess  - Unwraps the global solution vector and passes its local pieces into the user function
 
  */
 PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
@@ -310,7 +318,7 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
 
   /* Evaluate local user provided function */
   ierr = FormInitialGuessLocalFluid(app,&info1,x1);CHKERRQ(ierr);
-  ierr = FormInitialGuessLocalCladding(app,&info2,x2);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocalThermal(app,&info2,x2);CHKERRQ(ierr);
   ierr = FormInitialGuessLocalFuel(app,&info3,x3);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
@@ -383,7 +391,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
     }
   }
 
-  /* CLADDING */
+  /* Thermal */
   if (info2.gxs == -1) {                                      /* left side of domain */
     for (j=info2.gys;j<info2.gys+info2.gym; j++) {
       x2[j][-1] = app->twi;
@@ -431,7 +439,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 
   /* Evaluate local user provided function */
   ierr = FormFunctionLocalFluid(&info1,x1,f1);CHKERRQ(ierr);
-  ierr = FormFunctionLocalCladding(&info2,x2,f2);CHKERRQ(ierr);
+  ierr = FormFunctionLocalThermal(&info2,x2,f2);CHKERRQ(ierr);
   ierr = FormFunctionLocalFuel(&info3,x3,f3);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
@@ -443,5 +451,26 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
   ierr = DAVecRestoreArray(da3,F3,(void**)&f3);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CompositeVecView"
+PetscErrorCode CompositeVecView(DMComposite pack,Vec X)
+{
+  PetscErrorCode ierr;
+  DA             DA1,DA2,DA3;
+  Vec            X1,X2,X3;
+  PetscViewer    v1,v2,v3;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fluid",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
+  ierr = VecView(X1,v1);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Thermal",-1,-1,-1,-1,&v2);CHKERRQ(ierr);
+  ierr = VecView(X2,v2);CHKERRQ(ierr);
+  ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fuel",-1,-1,-1,-1,&v3);CHKERRQ(ierr);
+  ierr = VecView(X3,v3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
