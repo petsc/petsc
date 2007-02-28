@@ -70,7 +70,8 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode CompositeVecView(AppCtx*,Vec);
+extern PetscErrorCode MyVecView(AppCtx*,Vec);
+extern PetscErrorCode MyPCApply(void*,Vec,Vec);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -81,10 +82,12 @@ int main(int argc,char **argv)
   MPI_Comm       comm;
   DA             da;
   AppCtx         app;
+  PC             pc;
+  KSP            ksp;
+  PetscTruth     isshell;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
-
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
 
@@ -160,9 +163,16 @@ int main(int argc,char **argv)
 
 
     ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
-    CHKMEMQ;
     ierr = DMMGSetSNES(dmmg,FormFunction,0);CHKERRQ(ierr);
-    CHKMEMQ;
+
+    /* Supply custom shell preconditioner if requested */
+    ierr = SNESGetKSP(DMMGGetSNES(dmmg),&ksp);CHKERRQ(ierr);
+    ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
+    if (isshell) {
+      ierr = PCShellSetContext(pc,&app);CHKERRQ(ierr);
+      ierr = PCShellSetApply(pc,MyPCApply);CHKERRQ(ierr);
+    }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Solve the nonlinear system
@@ -172,14 +182,16 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
-    ierr = CompositeVecView(&app,DMMGGetx(dmmg));CHKERRQ(ierr);
+    ierr = MyVecView(&app,DMMGGetx(dmmg));CHKERRQ(ierr); 
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-   
+    ierr = PetscViewerDestroy(app.v1);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(app.v2);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(app.v3);CHKERRQ(ierr); 
     ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
@@ -468,9 +480,23 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
+/* 
+   Here is my custom preconditioner
+
+ */
+PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
+{
+  AppCtx         *app = (AppCtx*)ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = VecCopy(X,Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
-#define __FUNCT__ "CompositeVecView"
-PetscErrorCode CompositeVecView(AppCtx *app,Vec X)
+#define __FUNCT__ "MyVecView"
+PetscErrorCode MyVecView(AppCtx *app,Vec X)
 {
   PetscErrorCode ierr;
   DA             DA1,DA2,DA3;
@@ -482,5 +508,6 @@ PetscErrorCode CompositeVecView(AppCtx *app,Vec X)
   ierr = VecView(X1,app->v1);CHKERRQ(ierr);
   ierr = VecView(X2,app->v2);CHKERRQ(ierr);
   ierr = VecView(X3,app->v3);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
