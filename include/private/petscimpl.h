@@ -86,7 +86,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject);
 typedef PetscErrorCode (*PetscObjectFunction)(PetscObject); /* force cast in next macro to NEVER use extern "C" style */
 typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer); 
 
-/*
+/*@C
     PetscHeaderCreate - Creates a PETSc object
 
     Input Parameters:
@@ -101,7 +101,12 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
 
     Output Parameter:
 .   h - the newly created object
-*/ 
+
+    Level: developer
+
+.seealso: PetscHeaderDestroy(), PetscLogClassRegister()
+
+@*/ 
 #define PetscHeaderCreate(h,tp,pops,cook,t,class_name,com,des,vie) \
   (PetscNew(struct tp,&(h)) || \
    PetscNew(PetscOps,&((h)->bops)) || \
@@ -109,6 +114,16 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
    PetscLogObjectCreate(h))
 
+/*@C
+    PetscHeaderDestroy - Final step in destroying a PetscObject
+
+    Input Parameters:
+.   h - the header created with PetscHeaderCreate()
+
+    Level: developer
+
+.seealso: PetscHeaderCreate()
+@*/ 
 #define PetscHeaderDestroy(h) \
   (PetscLogObjectDestroy((PetscObject)(h)) || \
    PetscHeaderDestroy_Private((PetscObject)(h)) || \
@@ -307,7 +322,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectPublishBaseEnd(PetscObject);
 
    Level: developer
 
-   seealso: PetscObjectStateQuery, PetscObjectStateDecrease
+   seealso: PetscObjectStateQuery(), PetscObjectStateDecrease()
 
    Concepts: state
 
@@ -335,7 +350,7 @@ M*/
 
    Level: developer
 
-   seealso: PetscObjectStateQuery, PetscObjectStateIncrease
+   seealso: PetscObjectStateQuery(), PetscObjectStateIncrease()
 
    Concepts: state
 

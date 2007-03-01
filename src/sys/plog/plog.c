@@ -614,21 +614,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], int *stage)
 
   Input Parameter:
 + name   - The name associated with the event
-- cookie - The cookie associated to the class for this event
+- cookie - The cookie associated to the class for this event, obtain either with
+           PetscLogClassRegister() or use a predefined one such as KSP_COOKIE, SNES_COOKIE
             
   Output Parameter:
 . event - The event id for use with PetscLogEventBegin() and PetscLogEventEnd().
 
   Example of Usage:
 .vb
-      PetscCookie USER_COOKIE;
-      PetscLogClassRegister(&USER_COOKIE, "User class")
-      .
-      .
-      .
-      int USER_EVENT;
+      PetscEvent USER_EVENT;
+      PetscCookie cookie;
       int user_event_flops;
-      PetscLogEventRegister(&USER_EVENT,"User event name",USER_COOKIE);
+      PetscLogClassRegister(&cookie,"class name");
+      PetscLogEventRegister(&USER_EVENT,"User event name",cookie);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
          [code segment to monitor]
          PetscLogFlops(user_event_flops);
@@ -659,7 +657,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], int *stage)
 .keywords: log, event, register
 .seealso: PetscLogEventBegin(), PetscLogEventEnd(), PetscLogFlops(),
           PetscLogEventMPEActivate(), PetscLogEventMPEDeactivate(),
-          PetscLogEventActivate(), PetscLogEventDeactivate()
+          PetscLogEventActivate(), PetscLogEventDeactivate(), PetscLogClassRegister()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogEventRegister(PetscEvent *event, const char name[],PetscCookie cookie) 
 {
@@ -1019,7 +1017,7 @@ M*/
   Level: developer
 
 .keywords: log, class, register
-.seealso: ClassLogRegister()
+
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogClassRegister(PetscCookie *oclass, const char name[])
 {
@@ -1028,7 +1026,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogClassRegister(PetscCookie *oclass, const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *oclass = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = ClassRegLogRegister(stageLog->classLog, name, oclass);CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {

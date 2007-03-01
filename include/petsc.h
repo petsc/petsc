@@ -115,9 +115,11 @@ typedef int PetscErrorCode;
     PetscCookie - A unique id used to identify each PETSc object.
          (internal integer in the data structure used for error
          checking). These are all defined by an offset from the lowest
-         one, PETSC_SMALLEST_COOKIE.
+         one, PETSC_SMALLEST_COOKIE. 
 
     Level: advanced
+
+.seealso: PetscLogClassRegister(), PetscLogEventRegister(), PetscHeaderCreate()
 M*/
 typedef int PetscCookie;
 
@@ -126,7 +128,7 @@ typedef int PetscCookie;
 
     Level: intermediate
 
-.seealso: PetscLogEventRegister, PetscLogEventBegin PetscLogEventEnd
+.seealso: PetscLogEventRegister(), PetscLogEventBegin() PetscLogEventEnd()
 M*/
 typedef int PetscEvent;
 
@@ -149,7 +151,7 @@ typedef int PetscMPIInt;
 
     Level: intermediate
 
-.seealso: PetscOptionsGetEnum, PetscOptionsEnum, PetscBagRegisterEnum
+.seealso: PetscOptionsGetEnum(), PetscOptionsEnum(), PetscBagRegisterEnum()
 M*/
 typedef enum { ENUM_DUMMY } PetscEnum;
 
@@ -160,7 +162,7 @@ typedef enum { ENUM_DUMMY } PetscEnum;
 
    Level: intermediate
 
-.seealso: PetscScalar, VecSetSizes
+.seealso: PetscScalar
 M*/
 #if defined(PETSC_USE_64BIT_INDICES)
 typedef long long PetscInt;
@@ -288,7 +290,7 @@ extern const char *PetscTruths[];
 
     Note: Zero integer
 
-.seealso: PetscTruth
+.seealso: PetscTruth, PETSC_TRUE
 M*/
 
 /*MC
@@ -298,7 +300,7 @@ M*/
 
     Note: Nonzero integer
 
-.seealso: PetscTruth
+.seealso: PetscTruth, PETSC_FALSE
 M*/
 
 /*MC
@@ -308,7 +310,7 @@ M*/
 
     Note: Zero integer
 
-.seealso: PetscTruth
+.seealso: PetscTruth, PETSC_TRUE, PETSC_FALSE, PETSC_NO
 M*/
 #define PETSC_YES            PETSC_TRUE
 
@@ -319,7 +321,7 @@ M*/
 
     Note: Nonzero integer
 
-.seealso: PetscTruth
+.seealso: PetscTruth, PETSC_TRUE, PETSC_FALSE, PETSC_YES
 M*/
 #define PETSC_NO             PETSC_FALSE
 

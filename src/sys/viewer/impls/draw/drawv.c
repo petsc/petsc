@@ -75,7 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,int win
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  PetscValidPointer(draw,3);
+  if (draw) PetscValidPointer(draw,3);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (!isdraw) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
@@ -111,11 +111,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,int win
     if (vdraw->draw[0]) {
       ierr = PetscDrawGetTitle(vdraw->draw[0],&title);CHKERRQ(ierr);
     } else title = 0;
-    ierr = PetscDrawCreate(viewer->comm,vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,
-                     &vdraw->draw[windownumber]);CHKERRQ(ierr);
+    ierr = PetscDrawCreate(viewer->comm,vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
-  *draw = vdraw->draw[windownumber];
+  if (draw) *draw = vdraw->draw[windownumber];
   PetscFunctionReturn(0);
 }
 
@@ -157,10 +156,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,int w
   if (windownumber < 0) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
-  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No window with that number created yet");
-  }
 
+  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
+    ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
+  }
   if (!vdraw->drawlg[windownumber]) {
     ierr = PetscDrawLGCreate(vdraw->draw[windownumber],1,&vdraw->drawlg[windownumber]);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(viewer,vdraw->drawlg[windownumber]);CHKERRQ(ierr);
@@ -207,10 +206,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,int
   if (windownumber < 0) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
-  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No window with that number created yet");
-  }
 
+  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
+    ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
+  }
   if (!vdraw->drawaxis[windownumber]) {
     ierr = PetscDrawAxisCreate(vdraw->draw[windownumber],&vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber]);CHKERRQ(ierr);

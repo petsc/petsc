@@ -4,9 +4,9 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define tssetrhsfunction_                    TSSETRHSFUNCTION
 #define tssetmatrices_                       TSSETMATRICES
+#define tsgetmatrices_                       TSGETMATRICES
 #define tssetrhsjacobian_                    TSSETRHSJACOBIAN
 #define tsgetrhsjacobian_                    TSGETRHSJACOBIAN
-#define tsgetrhsmatrix_                      TSGETRHSMATRIX
 #define tsview_                              TSVIEW
 #define tsgetoptionsprefix_                  TSGETOPTIONSPREFIX
 #define tsmonitorset_                        TSMONITORSET
@@ -16,9 +16,9 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define tssetrhsfunction_                    tssetrhsfunction
 #define tssetmatrices_                       tssetmatrices
+#define tsgetmatrices_                       tsgetmatrices
 #define tssetrhsjacobian_                    tssetrhsjacobian
 #define tsgetrhsjacobian_                    tsgetrhsjacobian
-#define tsgetrhsmatrix_                      tsgetrhsmatrix
 #define tsview_                              tsview
 #define tsgetoptionsprefix_                  tsgetoptionsprefix
 #define tsmonitorset_                        tsmonitorset
@@ -74,24 +74,12 @@ static PetscErrorCode ourtsmonitor(TS ts,PetscInt i,PetscReal d,Vec v,void*ctx)
 
 EXTERN_C_BEGIN
 
-
 void PETSC_STDCALL tssetrhsfunction_(TS *ts,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Vec*,Vec*,void*,PetscErrorCode*),void*fP,PetscErrorCode *ierr)
 {
   ((PetscObject)*ts)->fortran_func_pointers[1] = (PetscVoidFunction)f;
   *ierr = TSSetRHSFunction(*ts,ourtsfunction,fP);
 }
-#ifdef MV
-void PETSC_STDCALL tssetrhsmatrix_(TS *ts,Mat *A,Mat *B,PetscErrorCode (PETSC_STDCALL *f)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
-                                                   void*,PetscInt *),void*fP,PetscErrorCode *ierr)
-{
-  if (FORTRANNULLFUNCTION(f)) {
-    *ierr = TSSetRHSMatrix(*ts,*A,*B,PETSC_NULL,fP);
-  } else {
-    ((PetscObject)*ts)->fortran_func_pointers[2] = (PetscVoidFunction)f;
-    *ierr = TSSetRHSMatrix(*ts,*A,*B,ourtsmatrix,fP);
-  }
-}
-#endif
+
 void PETSC_STDCALL tssetmatrices_(TS *ts,Mat *Arhs,PetscErrorCode (PETSC_STDCALL *frhs)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
                                                    void*,PetscInt *),
                                          Mat *Alhs,PetscErrorCode (PETSC_STDCALL *flhs)(TS*,PetscReal*,Mat*,Mat*,MatStructure*,
@@ -158,9 +146,9 @@ void PETSC_STDCALL tsgetrhsjacobian_(TS *ts,Mat *J,Mat *M,void **ctx,PetscErrorC
   *ierr = TSGetRHSJacobian(*ts,J,M,ctx);
 }
 
-void PETSC_STDCALL tsgetrhsmatrix_(TS *ts,Mat *J,Mat *M,void **ctx,PetscErrorCode *ierr)
+void PETSC_STDCALL tsgetmatrices_(TS *ts,Mat *Arhs,Mat *Alhs,void **ctx,PetscErrorCode *ierr)
 {
-  *ierr = TSGetRHSMatrix(*ts,J,M,ctx);
+  *ierr = TSGetMatrices(*ts,Arhs,Alhs,ctx);
 }
 
 void PETSC_STDCALL tsview_(TS *ts,PetscViewer *viewer, PetscErrorCode *ierr)
