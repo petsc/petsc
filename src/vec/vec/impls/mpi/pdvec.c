@@ -39,7 +39,7 @@ PetscErrorCode VecDestroy_MPI(Vec v)
 PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
 {
   PetscErrorCode    ierr;
-  PetscInt          i,work = xin->map.n,cnt,len;
+  PetscInt          i,work = xin->map.n,cnt,len,nLen;
   PetscMPIInt       j,n = 0,size,rank,tag = ((PetscObject)viewer)->tag;
   MPI_Status        status;
   PetscScalar       *values,*xarray;
@@ -138,7 +138,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
         outputState = 0;
       }
       ierr = PetscObjectGetName((PetscObject) xin, &name);CHKERRQ(ierr);
-      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
+      n = (PetscMPIInt) nLen;
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
@@ -214,7 +215,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_VTK_COORDS) {
       PetscInt bs, b;
 
-      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
+      n = (PetscMPIInt) nLen;
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "VTK can only handle 3D objects, but vector dimension is %d", bs);
@@ -254,7 +256,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_PCICE) {
       PetscInt bs, b, vertexCount = 1;
 
-      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
+      n = (PetscMPIInt) nLen;
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if ((bs < 1) || (bs > 3)) {
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PCICE can only handle up to 3D objects, but vector dimension is %d", bs);
@@ -291,7 +294,8 @@ PetscErrorCode VecView_MPI_ASCII(Vec xin,PetscViewer viewer)
     } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
       PetscInt bs, b, vertexCount = 1;
 
-      ierr = VecGetLocalSize(xin, &n);CHKERRQ(ierr);
+      ierr = VecGetLocalSize(xin, &nLen);CHKERRQ(ierr);
+      n = (PetscMPIInt) nLen;
       ierr = VecGetBlockSize(xin, &bs);CHKERRQ(ierr);
       if (bs != 3) {
         SETERRQ1(PETSC_ERR_ARG_WRONGSTATE, "PyLith can only handle 3D objects, but vector dimension is %d", bs);
