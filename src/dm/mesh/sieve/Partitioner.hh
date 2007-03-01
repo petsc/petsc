@@ -61,6 +61,7 @@ namespace ALE {
         if (numElements == 0) {
           *offsets   = NULL;
           *adjacency = NULL;
+          ALE_LOG_EVENT_END;
           return;
         }
         if (topology->depth(patch) == dim) {
