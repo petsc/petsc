@@ -48,7 +48,8 @@ struct _p_Sliced {
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(Sliced slice, MatType mtype,Mat *J)
 {
-  PetscErrorCode         ierr,*globals,rstart,i;
+  PetscErrorCode         ierr;
+  PetscInt               *globals,rstart,i;
   ISLocalToGlobalMapping lmap;
 
   PetscFunctionBegin;

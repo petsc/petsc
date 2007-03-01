@@ -455,7 +455,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
     }
   }
 
-  /* Access the three subvectors in F */
+  /* Access the three subvectors in F */                       /* these are not ghosted and directly access the
+     memory locations in F */
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of F */
