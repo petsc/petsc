@@ -382,9 +382,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
       ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",KSPConvergedReasons[ksp->reason]);CHKERRQ(ierr);
     }
   }
+  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
 
   /* diagonal scale solution if called for */
-  ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
   if (ksp->dscale) {
     ierr = VecPointwiseMult(ksp->vec_sol,ksp->vec_sol,ksp->diagonal);CHKERRQ(ierr);
     /* unscale right hand side and matrix */
