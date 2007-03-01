@@ -5,6 +5,8 @@
 
 namespace ALE {
   namespace PCICE {
+    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh);
+
     class Builder {
     public:
       typedef ALE::Sieve<int, int, int>                sieve_type;
@@ -18,7 +20,7 @@ namespace ALE {
       static void readCoordinates(MPI_Comm comm, const std::string& filename, const int dim, int& numVertices, double *coordinates[]);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase, const bool interpolate, const int debug);
-      static void readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename, const int numBdFaces, const int numBdVertices);
+      static void readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename);
       static void outputVerticesLocal(const Obj<Mesh>& mesh, int *numVertices, int *dim, double *coordinates[], bool columnMajor);
       static void outputElementsLocal(const Obj<Mesh>& mesh, int *numElements, int *numCorners, int *vertices[], bool columnMajor);
     };

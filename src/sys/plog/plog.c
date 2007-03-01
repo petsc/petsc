@@ -647,6 +647,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], int *stage)
   to create a logfile, "mpe.log", which can be visualized
   Upshot/Nupshot. 
 
+  The cookie is associated with each event so that classes of events
+  can be disabled simultaneously, such as all matrix events. The user
+  can either use an existing cookie, such as MAT_COOKIE, or create
+  their own as shown in the example.
+
   Level: intermediate
 
 .keywords: log, event, register

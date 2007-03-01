@@ -250,7 +250,7 @@ PetscErrorCode CharacteristicRegister(const char sname[],const char path[],const
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetVelocityInterpolation"
-PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, Vec v, Vec vOld, int numComponents, int components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, Vec v, Vec vOld, int numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
   c->velocityDA      = da;
@@ -265,7 +265,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, V
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetVelocityInterpolationLocal"
-PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA da, Vec v, Vec vOld, int numComponents, int components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA da, Vec v, Vec vOld, int numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
   c->velocityDA          = da;
@@ -280,7 +280,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA 
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetFieldInterpolation"
-PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec v, int numComponents, int components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec v, int numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
 #if 0
@@ -299,7 +299,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec 
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetFieldInterpolationLocal"
-PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da, Vec v, int numComponents, int components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da, Vec v, int numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
 #if 0
@@ -335,7 +335,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
   PassiveScalar *fieldValues;
   PetscMPIInt    rank;
   PetscInt       dim;
-  PetscInt       neighbors[9];
+  PetscMPIInt    neighbors[9];
   PetscInt       dof;
   PetscInt       gx, gy;
   PetscInt       n, ni, nj, is, ie, js, je, qs, comp;
