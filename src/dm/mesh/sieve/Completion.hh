@@ -91,7 +91,9 @@ namespace ALE {
         int e = 0;
 
         if (topology->debug()) {
-          std::ofstream f("part.dat");
+          ostringstream fname;
+          fname << "part." << sieve->commSize() << ".dat";
+          std::ofstream f(fname.str().c_str());
           int e2 = 0;
           f << sieve->commSize() << std::endl;
           for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
