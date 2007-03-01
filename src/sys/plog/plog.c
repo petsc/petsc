@@ -621,9 +621,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], int *stage)
 
   Example of Usage:
 .vb
+      PetscCookie USER_COOKIE;
+      PetscLogClassRegister(&USER_COOKIE, "User class")
+      .
+      .
+      .
       int USER_EVENT;
       int user_event_flops;
-      PetscLogEventRegister(&USER_EVENT,"User event name");
+      PetscLogEventRegister(&USER_EVENT,"User event name",USER_COOKIE);
       PetscLogEventBegin(USER_EVENT,0,0,0,0);
          [code segment to monitor]
          PetscLogFlops(user_event_flops);
@@ -643,6 +648,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetId(const char name[], int *stage)
   MPICH), the user can employ another command line option, -log_mpe,
   to create a logfile, "mpe.log", which can be visualized
   Upshot/Nupshot. 
+
+  The cookie is associated with each event so that classes of events
+  can be disabled simultaneously, such as all matrix events. The user
+  can either use an existing cookie, such as MAT_COOKIE, or create
+  their own as shown in the example.
 
   Level: intermediate
 
