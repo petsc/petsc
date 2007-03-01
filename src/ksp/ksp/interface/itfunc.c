@@ -296,7 +296,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
-  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg,inXisinB = PETSC_FALSE;
+  PetscTruth     flag1,flag2,viewed=PETSC_FALSE,flg,inXisinB=PETSC_FALSE;
   char           view[10];
   char           filename[PETSC_MAX_PATH_LEN];
   PetscViewer    viewer;
@@ -526,7 +526,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(t);CHKERRQ(ierr);
     ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
-
+  ksp->vec_rhs = PETSC_NULL;
+  ksp->vec_sol = PETSC_NULL;
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -561,19 +562,29 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
 {
   PetscErrorCode ierr;
-  PetscScalar    zero = 0.0;
+  PetscTruth     inXisinB=PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidHeaderSpecific(b,VEC_COOKIE,2);
   PetscValidHeaderSpecific(x,VEC_COOKIE,3);
-
+  if (x == b) {
+    ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
+    inXisinB = PETSC_TRUE;
+  }
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,zero);CHKERRQ(ierr);}
+  if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
   ksp->transpose_solve = PETSC_TRUE;
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
+  ksp->transpose_solve = PETSC_FALSE;
+  ksp->vec_rhs = PETSC_NULL;
+  ksp->vec_sol = PETSC_NULL;
+  if (inXisinB) {
+    ierr = VecCopy(x,b);CHKERRQ(ierr);
+    ierr = VecDestroy(x);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1054,6 +1065,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetRhs(KSP ksp,Vec *r)
 {   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(r,2);
   *r = ksp->vec_rhs; 
   PetscFunctionReturn(0);
 } 

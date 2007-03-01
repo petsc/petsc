@@ -962,7 +962,6 @@ PetscErrorCode DMCompositeGetEntries_DA(DMComposite packer,struct DMCompositeLin
 #define __FUNCT__ "DMCompositeGetEntries"
 /*@C
     DMCompositeGetEntries - Gets the DA, redundant size, etc for each entry in a DMComposite.
-       Use DMCompositeRestoreEntries() to return them.
 
     Collective on DMComposite
 
@@ -976,7 +975,7 @@ PetscErrorCode DMCompositeGetEntries_DA(DMComposite packer,struct DMCompositeLin
 
 .seealso DMCompositeDestroy(), DMCompositeAddArray(), DMCompositeAddDA(), DMCompositeCreateGlobalVector(),
          DMCompositeGather(), DMCompositeCreate(), DMCompositeGetGlobalIndices(), DMCompositeGetAccess(), 
-         DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(), DMCompositeRestoreEntries(),
+         DMCompositeRestoreLocalVectors(), DMCompositeGetLocalVectors(), 
          DMCompositeGetLocalVectors(), DMCompositeRestoreLocalVectors()
 
 @*/
@@ -1398,6 +1397,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
         ierr = MatRestoreRow(Atmp,rstart+i,&nc,&cols,PETSC_NULL);CHKERRQ(ierr);
       }
       ierr = PetscFree(ccols);CHKERRQ(ierr);
+      ierr = MatDestroy(Atmp);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
@@ -1451,6 +1451,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
         ierr = MatRestoreRow(Atmp,rstart+i,&nc,(const PetscInt **)&cols,&values);CHKERRQ(ierr);
       }
       ierr = PetscFree(ccols);CHKERRQ(ierr);
+      ierr = MatDestroy(Atmp);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }

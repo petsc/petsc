@@ -846,7 +846,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson(PC pc,PetscErrorCode
               own private data storage format.
 
    Level: advanced
-
+>
    Concepts: providing your own preconditioner
 
   Usage:

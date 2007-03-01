@@ -18,7 +18,7 @@
 
    The tagvalues to use are stored in a two element array.  The first element
    is the first free tag value.  The second is used to indicate how
-   many "copies" of the communicator there are used in destroying.
+   many references of the communicator there, when it equals zero the communicator may be freed.
 
   
 */
@@ -30,10 +30,11 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelTag" 
 /*
-   Private routine to delete internal storage when a communicator is freed.
-  This is called by MPI, not by users.
+   Private routine to delete internal tag storage when a communicator is freed.
 
-    Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+   This is called by MPI, not by users.
+
+   Note: this is declared extern "C" because it is passed to MPI_Keyval_create
 
 */
 PetscMPIInt PETSC_DLLEXPORT Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
@@ -51,10 +52,12 @@ EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "Petsc_DelComm" 
 /*
-   Private routine to delete internal storage when a communicator is freed.
+  This does not actually free anything, it simply marks when a reference count to an internal MPI_Comm reaches zero and the
+  the external MPI_Comm drops its reference to the internal MPI_Comm
+
   This is called by MPI, not by users.
 
-    Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+  Note: this is declared extern "C" because it is passed to MPI_Keyval_create
 
 */
 PetscMPIInt PETSC_DLLEXPORT Petsc_DelComm(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
@@ -146,7 +149,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 
   if (tagvalp[0] < 1) {
     ierr = PetscInfo1(0,"Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]);CHKERRQ(ierr);
-    ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
@@ -156,9 +159,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
   *tag = tagvalp[0]--;
 #if defined(PETSC_USE_DEBUG)
   /* 
-     Hanging here means that some processes have called PetscCommDuplicate() and others have not.
-     This likley means that a subset of processes in a MPI_Comm have attempted to create a PetscObject!
-     ALL processes that share a communicator MUST shared objects created from that communicator.
+     Hanging here means that some processes have called PetscCommGetNewTag() and others have not.
   */
   ierr = MPI_Barrier(comm);CHKERRQ(ierr);
 #endif
@@ -168,8 +169,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
 #undef __FUNCT__  
 #define __FUNCT__ "PetscCommDuplicate" 
 /*@C
-  PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc 
-                         communicator.
+  PetscCommDuplicate - Duplicates the communicator only if it is not already a PETSc communicator.
 
   Collective on MPI_Comm
 
@@ -184,6 +184,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommGetNewTag(MPI_Comm comm,PetscMPIInt *tag
   PETSc communicators are just regular MPI communicators that keep track of which 
   tags have been used to prevent tag conflict. If you pass a non-PETSc communicator into
   a PETSc creation routine it will attach a private communicator for use in the objects communications.
+  The internal MPI_Comm is used to perform all the MPI calls for PETSc, the outter MPI_Comm is a user
+  level MPI_Comm that may be performing communication for the user or other library and so IS NOT used by PETSc.
 
   Level: developer
 
@@ -205,12 +207,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
   }
   ierr = MPI_Attr_get(comm_in,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
 
-  if (!flg) {
+  if (!flg) {  /* this is NOT a PETSc comm */
     void *ptr;
     /* check if this communicator has a PETSc communicator imbedded in it */
     ierr = MPI_Attr_get(comm_in,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      /* This communicator is not yet known to this system, so we duplicate it and set its value */
+      /* This communicator is not yet known to this system, so we duplicate it and make an internal communicator */
       ierr       = MPI_Comm_dup(comm_in,comm_out);CHKERRQ(ierr);
       ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
       if (!flg) {
@@ -223,14 +225,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
       ierr = PetscInfo3(0,"Duplicating a communicator %ld %ld max tags = %d\n",(long)comm_in,(long)*comm_out,*maxval);CHKERRQ(ierr);
 
       /* save PETSc communicator inside user communicator, so we can get it next time */
+      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
       ierr = PetscMemcpy(&ptr,comm_out,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr = MPI_Attr_put(comm_in,Petsc_InnerComm_keyval,ptr);CHKERRQ(ierr);
+      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
       ierr = PetscMemcpy(&ptr,&comm_in,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr = MPI_Attr_put(*comm_out,Petsc_OuterComm_keyval,ptr);CHKERRQ(ierr);
     } else {
-      /*
-        We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers
-      */
+      /* pull out the inner MPI_Comm and hand it back to the caller */
+      /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
       ierr = PetscMemcpy(comm_out,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
       ierr = MPI_Attr_get(*comm_out,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
       if (!flg) {
@@ -253,7 +256,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDuplicate(MPI_Comm comm_in,MPI_Comm *com
 
   if (tagvalp[0] < 1) {
     ierr = PetscInfo1(0,"Out of tags for object, starting to recycle. Comm reference count %d\n",tagvalp[1]);CHKERRQ(ierr);
-    ierr       = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    ierr = MPI_Attr_get(MPI_COMM_WORLD,MPI_TAG_UB,(void**)&maxval,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
       SETERRQ(PETSC_ERR_LIB,"MPI error: MPI_Attr_get() is not returning a MPI_TAG_UB");
     }
@@ -298,31 +301,30 @@ PetscErrorCode PETSC_DLLEXPORT PetscCommDestroy(MPI_Comm *comm)
     ierr = MPI_Keyval_create(MPI_NULL_COPY_FN,Petsc_DelComm,&Petsc_OuterComm_keyval,(void*)0);CHKERRQ(ierr);
   }
   ierr = MPI_Attr_get(icomm,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-  if (!flg) {
+  if (!flg) { /* not a PETSc comm, check if it has an inner comm */
     ierr  = MPI_Attr_get(icomm,Petsc_InnerComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
-    /*
-        We use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers
-    */
-    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     if (!flg) {
-      PetscFunctionReturn(0);
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,"MPI_Comm does not have tagvalues nor does it have inner MPI_Comm");
     }
+    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
+    ierr = PetscMemcpy(&icomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
     ierr = MPI_Attr_get(icomm,Petsc_Tag_keyval,(void**)&tagvalp,(PetscMPIInt*)&flg);CHKERRQ(ierr);
     if (!flg) {
-      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Error freeing MPI_Comm, problem with corrupted memory");
+      SETERRQ(PETSC_ERR_ARG_CORRUPT,"Inner MPI_Comm does not have expected tagvalues, problem with corrupted memory");
     }
   }
   tagvalp[1]--;
   if (!tagvalp[1]) {
 
+    /* if MPI_Comm has outter comm then remove reference to inner MPI_Comm from outter MPI_Comm */
     ierr  = MPI_Attr_get(icomm,Petsc_OuterComm_keyval,&ptr,(PetscMPIInt*)&flg);CHKERRQ(ierr);
+    /*  Use PetscMemcpy() because casting from pointer to integer of different size is not allowed with some compilers  */
     ierr = PetscMemcpy(&ocomm,&ptr,sizeof(MPI_Comm));CHKERRQ(ierr);
-
     if (flg) {
       ierr = MPI_Attr_delete(ocomm,Petsc_InnerComm_keyval);CHKERRQ(ierr);
     }
 
-    ierr = PetscInfo1(0,"Deleting MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
+    ierr = PetscInfo1(0,"Deleting PETSc MPI_Comm %ld\n",(long)icomm);CHKERRQ(ierr);
     ierr = MPI_Comm_free(&icomm);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

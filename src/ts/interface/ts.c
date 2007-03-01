@@ -403,6 +403,41 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*f
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "TSGetMatrices"
+/*@C
+   TSGetMatrices - Returns the matrices Arhs and Alhs at the present timestep,
+   where Alhs(t) U_t = Arhs(t) U.
+
+   Not Collective, but parallel objects are returned if TS is parallel
+
+   Input Parameter:
+.  ts  - The TS context obtained from TSCreate()
+
+   Output Parameters:
++  Arhs - The right-hand side matrix
+.  Alhs - The left-hand side matrix
+-  ctx - User-defined context for matrix evaluation routine
+
+   Notes: You can pass in PETSC_NULL for any return argument you do not need.
+
+   Level: intermediate
+
+.seealso: TSSetMatrices(), TSGetTimeStep(), TSGetTime(), TSGetTimeStepNumber(), TSGetRHSJacobian()
+
+.keywords: TS, timestep, get, matrix
+
+@*/
+PetscErrorCode PETSCTS_DLLEXPORT TSGetMatrices(TS ts,Mat *Arhs,Mat *Alhs,void **ctx)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
+  if (Arhs) *Arhs = ts->Arhs;
+  if (Alhs) *Alhs = ts->Alhs;
+  if (ctx)  *ctx = ts->jacP;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "TSSetRHSJacobian"
 /*@C

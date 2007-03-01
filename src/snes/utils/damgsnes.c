@@ -568,15 +568,13 @@ PetscErrorCode DMMGSolveSNES(DMMG *dmmg,PetscInt level)
 PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*function)(SNES,Vec,Vec,void*),PetscErrorCode (*jacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*))
 {
   PetscErrorCode          ierr;
-  PetscInt                i,nlevels = dmmg[0]->nlevels,period = 1,isctype=0;
+  PetscInt                i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth              snesmonitor,mffdoperator,mffd,fdjacobian;
 #if defined(PETSC_HAVE_ADIC)
   PetscTruth              mfadoperator,mfad,adjacobian;
 #endif
   PetscViewerASCIIMonitor ascii;
   MPI_Comm                comm;
-  PetscMPIInt             size;
-  ISColoringType          ctype;
 
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
@@ -601,13 +599,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = PetscOptionsTruthGroupEnd("-dmmg_jacobian_mf_ad","Apply Jacobian via matrix free ADIC (automatic differentiation) even in computing preconditioner","DMMGSetSNES",&mfad);CHKERRQ(ierr);
     if (mfad) mfadoperator = PETSC_TRUE;
 #endif
-    ierr = MPI_Comm_size(dmmg[0]->comm,&size);CHKERRQ(ierr);
-    if (size == 1){
-      isctype = 0;
-    } else {
-      isctype = 1; 
-    }
-    ierr = PetscOptionsEList("-dmmg_iscoloring_type","Type of ISColoring","None",ISColoringTypes,2,ISColoringTypes[isctype],&isctype,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnum("-dmmg_iscoloring_type","Type of ISColoring","None",ISColoringTypes,(PetscEnum)dmmg[0]->isctype,(PetscEnum*)&dmmg[0]->isctype,PETSC_NULL);CHKERRQ(ierr);
         
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -677,11 +669,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   }
 
   if (jacobian == DMMGComputeJacobianWithFD) {
-    ISColoring iscoloring; 
-    ctype = (ISColoringType)isctype;
+    ISColoring iscoloring;
 
     for (i=0; i<nlevels; i++) {
-      ierr = DMGetColoring(dmmg[i]->dm,ctype,&iscoloring);CHKERRQ(ierr);
+      ierr = DMGetColoring(dmmg[i]->dm,dmmg[0]->isctype,&iscoloring);CHKERRQ(ierr);
       ierr = MatFDColoringCreate(dmmg[i]->B,iscoloring,&dmmg[i]->fdcoloring);CHKERRQ(ierr);
       ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
       if (function == DMMGFormFunction) function = DMMGFormFunctionFD;
@@ -1039,6 +1030,34 @@ PetscErrorCode DMMGSetInitialGuessLocal(DMMG *dmmg,PetscErrorCode (*localguess)(
   localfunc = localguess;  /* stash into ugly static for now */
 
   ierr = DMMGSetInitialGuess(dmmg,DMMGInitialGuess_Local);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetISColoringType"
+/*@C
+    DMMGSetISColoringType - type of coloring used to compute Jacobian via finite differencing
+
+    Collective on DMMG
+
+    Input Parameter:
++   dmmg - the context
+-   isctype - IS_COLORING_GHOSTED (default) or IS_COLORING_GLOBAL
+
+    Options Database:
+.   -dmmg_iscoloring_type <ghosted or global>
+
+    Notes: ghosted coloring requires using DMMGSetSNESLocal()
+
+    Level: intermediate
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(), DMMGSetSNESLocal()
+
+@*/
+PetscErrorCode DMMGSetISColoringType(DMMG *dmmg,ISColoringType isctype)
+{
+  PetscFunctionBegin;
+  dmmg[0]->isctype = isctype;
   PetscFunctionReturn(0);
 }
 
