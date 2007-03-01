@@ -1707,42 +1707,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetOptionsPrefix(TS ts,const char *prefix[])
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "TSGetRHSMatrix"
-/*@C
-   TSGetRHSMatrix - Returns the matrix A at the present timestep.
-
-   Not Collective, but parallel objects are returned if TS is parallel
-
-   Input Parameter:
-.  ts  - The TS context obtained from TSCreate()
-
-   Output Parameters:
-+  A   - The matrix A, where U_t = A(t) U
-.  M   - The preconditioner matrix, usually the same as A
--  ctx - User-defined context for matrix evaluation routine
-
-   Notes: You can pass in PETSC_NULL for any return argument you do not need.
-
-   Contributed by: Matthew Knepley
-
-   Level: intermediate
-
-.seealso: TSGetTimeStep(), TSGetTime(), TSGetTimeStepNumber(), TSGetRHSJacobian()
-
-.keywords: TS, timestep, get, matrix
-
-@*/
-PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
-{
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  if (A)   *A = ts->Arhs;
-  if (M)   *M = ts->B;
-  if (ctx) *ctx = ts->jacP;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "TSGetRHSJacobian"
 /*@C
    TSGetRHSJacobian - Returns the Jacobian J at the present timestep.
@@ -1759,11 +1723,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSMatrix(TS ts,Mat *A,Mat *M,void **ctx)
 
    Notes: You can pass in PETSC_NULL for any return argument you do not need.
 
-   Contributed by: Matthew Knepley
-
    Level: intermediate
 
-.seealso: TSGetTimeStep(), TSGetRHSMatrix(), TSGetTime(), TSGetTimeStepNumber()
+.seealso: TSGetTimeStep(), TSGetMatrices(), TSGetTime(), TSGetTimeStepNumber()
 
 .keywords: TS, timestep, get, matrix, Jacobian
 @*/
@@ -1772,7 +1734,9 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = TSGetRHSMatrix(ts,J,M,ctx);CHKERRQ(ierr);
+  if (J) *J = ts->Arhs;
+  if (M) *M = ts->B;
+  if (ctx) *ctx = ts->jacP;
   PetscFunctionReturn(0);
 }
 
