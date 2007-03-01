@@ -1,5 +1,34 @@
 #include "src/dm/mesh/meshpcice.h"   /*I      "petscmesh.h"   I*/
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCICERenumberBoundary"
+/*@
+  PCICERenumberBoundary - Change global element names into offsets
+
+  Collective on Mesh
+
+  Input Parameters:
+. mesh - the mesh
+
+  Level: advanced
+
+  .seealso: MeshCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh mesh)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  try {
+    ALE::PCICE::fuseBoundary(m);
+  } catch(ALE::Exception e) {
+    SETERRQ(100, e.msg().c_str());
+  }
+  PetscFunctionReturn(0);
+}
+
 namespace ALE {
   namespace PCICE {
     //
@@ -128,7 +157,7 @@ namespace ALE {
     //   BCFUNC[NBCF,NV]: ALL
     //   IBNDFS[NBN,2]:   STILL NEED 4-5
     //     BNNV[NBN,2]
-    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename, const int numBdFaces, const int numBdVertices) {
+    void Builder::readBoundary(const Obj<Mesh>& mesh, const std::string& bcFilename) {
       const Mesh::topology_type::patch_type patch = 0;
       PetscViewer    viewer;
       FILE          *f;
@@ -152,7 +181,8 @@ namespace ALE {
       ierr = PetscViewerFileSetName(viewer, bcFilename.c_str());
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       // Create IBC section
-      int *tmpIBC = new int[numBdFaces*4];
+      int  numBdFaces = atoi(strtok(fgets(buf, 2048, f), " "));
+      int *tmpIBC     = new int[numBdFaces*4];
       std::map<int,std::set<int> > elem2Idx;
       std::map<int,int> bfReorder;
       for(int bf = 0; bf < numBdFaces; bf++) {
@@ -236,8 +266,9 @@ namespace ALE {
       }
       mesh->distributeBCValues();
       // Create IBNDFS section
-      const int numElements = mesh->getTopology()->heightStratum(patch, 0)->size();
-      int      *tmpIBNDFS   = new int[numBdVertices*3];
+      int       numBdVertices = atoi(strtok(fgets(buf, 2048, f), " "));
+      const int numElements   = mesh->getTopology()->heightStratum(patch, 0)->size();
+      int      *tmpIBNDFS     = new int[numBdVertices*3];
 
       for(int bv = 0; bv < numBdVertices; bv++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
@@ -249,7 +280,7 @@ namespace ALE {
         tmpIBNDFS[bv*3+1] = atoi(x);
         x = strtok(NULL, " ");
         tmpIBNDFS[bv*3+2] = atoi(x);
-        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0]-1+numElements, 5);
+        ibndfs->setFiberDimension(patch, tmpIBNDFS[bv*3+0]-1+numElements, 6);
       }
       ibndfs->allocate();
       for(int bv = 0; bv < numBdVertices; bv++) {
@@ -620,6 +651,120 @@ namespace ALE {
       }
       ierr = MPI_Type_free(&newtype);CHKERRQ(ierr);
       PetscFunctionReturn(0);
+    };
+
+    //   This class reconstructs the local pieces of the boundary that distributed PCICE needs.
+    // The boundary along with the boundary conditions is encoded in a collection of sections
+    // over the PCICE mesh.  These sections contain a description of the boundary topology 
+    // using elements' global names.  This is unacceptable for PCICE, since it interprets 
+    // elements of the connectivity data arrays as local offsets into (some other of) these arrays.
+    //   This subroutine performs the renumbering based on the local numbering on the distributed
+    // mesh.  Essentially, we replace each global element id by its local number.
+    //
+    // Note: Any vertex or element number from PCICE is 1-based, but in Sieve we are 0-based. Thus
+    //       we add and subtract 1 during conversion. Also, Sieve vertices are numbered after cells.
+    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh) {
+      mesh->setDebug(11);
+      mesh->getFactory()->setDebug(11);
+      // Extract PCICE boundary sections
+      ALE::Obj<ALE::Mesh::int_section_type> IBCsec    = mesh->getIntSection("IBC");
+      ALE::Obj<ALE::Mesh::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");
+      ALE::Obj<ALE::Mesh::int_section_type> IBCNUMsec = mesh->getIntSection("IBCNUM");
+      // The default patch that will be used to traverse all the sections
+      ALE::Obj<ALE::Mesh::topology_type>    topology  = mesh->getTopology();
+      ALE::Mesh::patch_type                 patch     = 0;
+
+      // Look at the sections, if debugging
+      if (mesh->debug()) {
+        IBCsec->view("IBCsec", mesh->comm());
+        IBNDFSsec->view("IBNDFSsec", mesh->comm());
+      }
+
+      // Extract the local numberings
+      ALE::Obj<ALE::Mesh::numbering_type> vertexNum  = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
+      ALE::Obj<ALE::Mesh::numbering_type> elementNum = mesh->getFactory()->getLocalNumbering(topology, patch, topology->depth());
+      const int numElements = mesh->getFactory()->getNumbering(topology, patch, topology->depth())->getGlobalSize();
+      std::map<int,int> bfMap;
+      // Declare points to the extracted numbering data
+      const ALE::Mesh::numbering_type::value_type *vNum, *eNum;
+
+      // Create map from serial bdFace numbers to local bdFace numbers
+      {
+        const ALE::Mesh::int_section_type::chart_type     chart = IBCNUMsec->getPatch(patch);
+        ALE::Mesh::int_section_type::chart_type::iterator begin = chart.begin();
+        ALE::Mesh::int_section_type::chart_type::iterator end   = chart.end();
+        int num = 0;
+
+        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          const int  fiberDim  = IBCNUMsec->getFiberDimension(patch, *p_iter);
+          const int *globalNum = IBCNUMsec->restrict(patch, *p_iter);
+
+          for(int n = 0; n < fiberDim; ++n) {
+            bfMap[globalNum[n]] = ++num;
+          }
+        }
+      }
+      // Renumber vertex section IBC
+      {
+        const ALE::Mesh::int_section_type::chart_type     IBCchart = IBCsec->getPatch(patch);
+        ALE::Mesh::int_section_type::chart_type::iterator begin    = IBCchart.begin();
+        ALE::Mesh::int_section_type::chart_type::iterator end      = IBCchart.end();
+        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          ALE::Mesh::point_type p = *p_iter;
+          const ALE::Mesh::int_section_type::value_type *ibc_in = IBCsec->restrictPoint(patch, p);
+          int fiberDimension = IBCsec->getFiberDimension(patch,p);
+          ALE::Mesh::int_section_type::value_type ibc_out[8];
+          // k controls the update of edge connectivity for each containing element;
+          // if fiberDimension is 4, only one boundary face is connected to the element, and that edge's data
+          // are contained in entries 0 - 3 of the section over the element p;
+          // if fiberDimension is 8, two boundary faces are connected to the element, so the second edge's data
+          // are contained in entries 4 - 7
+          for(int k = 0; k < fiberDimension/4; k++) {
+            // Extract IBC entry 1 (entry kk*4) for edge kk connected to element p.
+            // This is the entry that needs renumbering for renumbering (2,3 & 4 are invariant under distribution), 
+            // see IBC's description.
+            // Here we assume that elementNum's domain contains all boundary elements found in IBC, 
+            // so we can restrict to the extracted entry.
+            eNum = elementNum->restrictPoint(patch, (ALE::Mesh::numbering_type::point_type) ibc_in[k*4]-1);
+            ibc_out[k*4+0] = eNum[0]+1;
+            // Copy the other entries right over
+            ibc_out[k*4+1] = ibc_in[k*4+1];
+            ibc_out[k*4+2] = ibc_in[k*4+2];
+            ibc_out[k*4+3] = ibc_in[k*4+3];
+          }
+          // Update IBC
+          IBCsec->updatePoint(patch,p,ibc_out);
+        }
+      }
+      {
+        // Renumber vertex section IBNDFS
+        const ALE::Mesh::int_section_type::chart_type     IBNDFSchart = IBNDFSsec->getPatch(patch);
+        ALE::Mesh::int_section_type::chart_type::iterator begin       = IBNDFSchart.begin();
+        ALE::Mesh::int_section_type::chart_type::iterator end         = IBNDFSchart.end();
+        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          ALE::Mesh::point_type p = *p_iter;
+          const ALE::Mesh::int_section_type::value_type *ibndfs_in = IBNDFSsec->restrictPoint(patch, p);
+          // Here we assume the fiber dimension is 5
+          ALE::Mesh::int_section_type::value_type ibndfs_out[5];
+          // Renumber entries 1,2 & 3 (4 & 5 are invariant under distribution), see IBNDFS's description
+          // Here we assume that vertexNum's domain contains all boundary verticies found in IBNDFS, so we can restrict to the first extracted entry
+          vNum= vertexNum->restrictPoint(patch, (ALE::Mesh::numbering_type::point_type)ibndfs_in[0]-1+numElements);
+          ibndfs_out[0] = vNum[0]+1;
+          // Map serial bdFace numbers to local bdFace numbers
+          ibndfs_out[1] = bfMap[ibndfs_in[1]];
+          ibndfs_out[2] = bfMap[ibndfs_in[2]];
+          // Copy the other entries right over
+          ibndfs_out[3] = ibndfs_in[3];
+          ibndfs_out[4] = ibndfs_in[4];
+          // Update IBNDFS
+          IBNDFSsec->updatePoint(patch,p,ibndfs_out);
+        }
+      }
+      if (mesh->debug()) {
+        IBCsec->view("Renumbered IBCsec", mesh->comm());
+        IBNDFSsec->view("Renumbered IBNDFSsec", mesh->comm());
+      }
+      // It's not clear whether IBFCON needs to be renumbered (what does it mean that its entries are not "GLOBAL NODE NUMBER(s)" -- see IBFCON's descriptions
     };
   };
 };

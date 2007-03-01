@@ -1247,7 +1247,7 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 .keywords: mesh, PCICE
 .seealso: MeshCreate()
 @*/
-PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscTruth interpolate, const char bcFilename[], const int numBdFaces, const int numBdVertices, Mesh *mesh)
+PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscTruth interpolate, const char bcFilename[], Mesh *mesh)
 {
   ALE::Obj<ALE::Mesh> m;
   PetscInt            debug = 0;
@@ -1263,7 +1263,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
     SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
   }
   if (bcFilename) {
-    ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename), numBdFaces, numBdVertices);
+    ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename));
   }
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
