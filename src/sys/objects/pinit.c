@@ -44,14 +44,7 @@ PetscTruth PetscPreLoadingOn   = PETSC_FALSE;
 
 PetscErrorCode PETSC_DLLEXPORT PetscCookieRegister(PetscCookie *cookie)
 {
-  if (*cookie == PETSC_DECIDE || *cookie == PETSC_NULL) {
-    *cookie = ++PETSC_LARGEST_COOKIE;
-  } else if (*cookie > 0) {
-    /* Need to check here for montonicity and insert if necessary */
-    return 0;
-  } else {
-    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE, "Invalid suggested cookie %d", (int)*cookie);
-  }
+  *cookie = ++PETSC_LARGEST_COOKIE;
   return 0;
 }
 

@@ -1026,7 +1026,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogClassRegister(PetscCookie *oclass, const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  *oclass = PETSC_DECIDE;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = ClassRegLogRegister(stageLog->classLog, name, oclass);CHKERRQ(ierr);
   for(stage = 0; stage < stageLog->numStages; stage++) {

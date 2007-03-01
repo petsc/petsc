@@ -209,16 +209,15 @@ PetscErrorCode ClassPerfLogEnsureSize(ClassPerfLog classLog, int size)
 #define __FUNCT__ "ClassRegLogRegister"
 /*@C
   ClassRegLogRegister - Registers a class for logging operations in an application code.
-  A prefered cookie is given on input, and the actual cookie is returned on output. If
-  the user has no preference, PETSC_DECIDE will cause the cookie to be automatically
-  assigned, and unique in this ClassLog.
 
   Not Collective
 
   Input Parameters:
 + classLog - The ClassLog
-. cname    - The name associated with the class
-- cookie   - The prefered cookie (or PETSC_DECIDE), and the actual cookie on output
+- cname    - The name associated with the class
+
+  Output Parameter:
+.  cookie   - The cookie
 
   Level: developer
 
