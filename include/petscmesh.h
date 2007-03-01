@@ -46,7 +46,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleMatrix(Mat, PetscInt, PetscScala
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrix(const ALE::Obj<ALE::Mesh::topology_type>&, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>&, const ALE::Obj<ALE::Mesh::order_type>&, Mat);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT updateOperator(Mat, const ALE::Obj<ALE::Mesh::real_section_type>&, const ALE::Obj<ALE::Mesh::order_type>&, const ALE::Mesh::point_type&, PetscScalar [], InsertMode);
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], PetscTruth, const char[], const int, const int, Mesh *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePCICE(MPI_Comm, const int, const char[], const char[], PetscTruth, const char[], Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCoordinates(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscReal *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetElements(Mesh, PetscTruth, PetscInt *, PetscInt *, PetscInt *[]);
 
@@ -56,6 +56,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetArray(Mesh, const char [], Pet
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscInt *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCFUNCGetArray(Mesh, PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePCICERestart(Mesh, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh);
 
 /*S
   SectionReal - Abstract PETSc object that manages distributed field data over a topology (Sieve).
