@@ -206,10 +206,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,int
   if (windownumber < 0) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
-  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No window with that number created yet");
-  }
 
+  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
+    ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
+  }
   if (!vdraw->drawaxis[windownumber]) {
     ierr = PetscDrawAxisCreate(vdraw->draw[windownumber],&vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
