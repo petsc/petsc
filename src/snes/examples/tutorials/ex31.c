@@ -49,8 +49,6 @@ typedef struct {
 
   PetscInt    nxv,nyv,nyvf;
 
-  PetscViewer v1;
-
   DMComposite pack;
 } AppCtx;
 
@@ -84,6 +82,7 @@ int main(int argc,char **argv)
   PC             pc;
   KSP            ksp;
   PetscTruth     isshell;
+  PetscViewer    v1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   comm = PETSC_COMM_WORLD;
@@ -94,7 +93,7 @@ int main(int argc,char **argv)
     app.nyvf = 3;
     app.nyv  = app.nyvf + 2;
 
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"",-1,-1,-1,-1,&app.v1);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
 
     /*
        Create the DMComposite object to manage the three grids/physics. 
@@ -179,14 +178,14 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
-    ierr = VecView(DMMGGetx(dmmg),app.v1);CHKERRQ(ierr);
+    ierr = VecView(DMMGGetx(dmmg),v1);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    ierr = PetscViewerDestroy(app.v1);CHKERRQ(ierr);
+    ierr = PetscViewerDestroy(v1);CHKERRQ(ierr);
     ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
@@ -376,7 +375,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
 
-  /* Get local vectors to hold ghosted parts of X */
+  /* Get local vectors to hold ghosted parts of X; then fill in the ghosted vectors from the unghosted global vector X */
   ierr = DMCompositeGetLocalVectors(dm,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DMCompositeScatter(dm,X,X1,X2,X3);CHKERRQ(ierr);
 
@@ -450,8 +449,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
     }
   }
 
-  /* Access the three subvectors in F */                       /* these are not ghosted and directly access the
-     memory locations in F */
+  /* Access the three subvectors in F: these are not ghosted and directly access the memory locations in F */
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of F */
