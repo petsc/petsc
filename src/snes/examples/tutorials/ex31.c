@@ -70,7 +70,6 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode MyVecView(AppCtx*,Vec);
 extern PetscErrorCode MyPCApply(void*,Vec,Vec);
 
 #undef __FUNCT__
@@ -180,7 +179,7 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
-    ierr = MyVecView(&app,DMMGGetx(dmmg));CHKERRQ(ierr); 
+    ierr = VecView(DMMGGetx(dmmg),app.v1);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
@@ -491,22 +490,3 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "MyVecView"
-PetscErrorCode MyVecView(AppCtx *app,Vec X)
-{
-  PetscErrorCode ierr;
-  DA             DA1,DA2,DA3;
-  Vec            X1,X2,X3;
-
-  PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(app->pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
-  ierr = VecView(X1,app->v1);CHKERRQ(ierr);
-  ierr = PetscViewerDrawBaseAdd(app->v1,6);CHKERRQ(ierr);
-  ierr = VecView(X2,app->v1);CHKERRQ(ierr);
-  ierr = PetscViewerDrawBaseAdd(app->v1,1);CHKERRQ(ierr);
-  ierr = VecView(X3,app->v1);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}

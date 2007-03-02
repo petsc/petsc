@@ -70,23 +70,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeFormInitialGuess_DADADA(DMComposite 
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "VecView_DADADA"
-PetscErrorCode VecView_DADADA(DMComposite pack,Vec X,PetscViewer viewer)
-{
-  PetscErrorCode ierr;
-  DA             DA1,DA2,DA3;
-  Vec            X1,X2,X3;
-
-  PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
-  ierr = VecView(X1,viewer);CHKERRQ(ierr);
-  ierr = VecView(X2,viewer);CHKERRQ(ierr);
-  ierr = VecView(X3,viewer);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeCreate"
 /*@C
@@ -641,6 +624,56 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeAddDA(DMComposite packer,DA da)
   PetscFunctionReturn(0);
 }
 
+extern PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI(Vec,PetscViewer);
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_DMComposite"
+PetscErrorCode PETSCDM_DLLEXPORT VecView_DMComposite(Vec gvec,PetscViewer viewer)
+{
+  DMComposite            packer;
+  PetscErrorCode         ierr;
+  struct DMCompositeLink *next;
+  PetscTruth             isdraw;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject)gvec,"DMComposite",(PetscObject*)&packer);CHKERRQ(ierr);
+  if (!packer) SETERRQ(PETSC_ERR_ARG_WRONG,"Vector not generated from a DMComposite");
+  next = packer->next;
+
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) {
+    /* do I really want to call this? */
+    ierr = VecView_MPI(gvec,viewer);CHKERRQ(ierr);
+  } else {
+    PetscInt cnt = 0;
+
+    /* loop over packed objects, handling one at at time */
+    while (next) {
+      if (next->type == DMCOMPOSITE_ARRAY) {
+	PetscScalar *array;
+	ierr  = DMCompositeGetAccess_Array(packer,next,gvec,&array);CHKERRQ(ierr);
+
+	/*skip it for now */
+      } else if (next->type == DMCOMPOSITE_DA) {
+	Vec      vec;
+        PetscInt bs;
+
+	ierr = DMCompositeGetAccess_DA(packer,next,gvec,&vec);CHKERRQ(ierr);
+	ierr = VecView(vec,viewer);CHKERRQ(ierr);
+        ierr = VecGetBlockSize(vec,&bs);CHKERRQ(ierr);
+        ierr = PetscViewerDrawBaseAdd(viewer,bs);CHKERRQ(ierr);
+        cnt += bs;
+      } else {
+	SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
+      }
+      next = next->next;
+    }
+    ierr = PetscViewerDrawBaseAdd(viewer,-cnt);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "DMCompositeCreateGlobalVector"
 /*@C
@@ -700,7 +733,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeCreateGlobalVector(DMComposite packe
       }
       next = next->next;
     }
-    ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DADADA);CHKERRQ(ierr);
+    ierr = PetscObjectCompose((PetscObject)*gvec,"DMComposite",(PetscObject)packer);CHKERRQ(ierr);
+    ierr = VecSetOperation(*gvec,VECOP_VIEW,(void(*)(void))VecView_DMComposite);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
