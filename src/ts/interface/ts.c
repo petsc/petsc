@@ -1731,8 +1731,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetOptionsPrefix(TS ts,const char *prefix[])
 @*/
 PetscErrorCode PETSCTS_DLLEXPORT TSGetRHSJacobian(TS ts,Mat *J,Mat *M,void **ctx)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (J) *J = ts->Arhs;
   if (M) *M = ts->B;
