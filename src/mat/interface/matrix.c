@@ -149,7 +149,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
 
    Concepts: matrices^row access
 
-.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubmatrices(), MatGetDiagonal()
+.seealso: MatRestoreRow(), MatSetValues(), MatGetValues(), MatGetSubMatrices(), MatGetDiagonal()
 @*/
 
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRow(Mat mat,PetscInt row,PetscInt *ncols,const PetscInt *cols[],const PetscScalar *vals[])
@@ -1322,7 +1322,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
 
    Concepts: matrices^accessing values
 
-.seealso: MatGetRow(), MatGetSubmatrices(), MatSetValues()
+.seealso: MatGetRow(), MatGetSubMatrices(), MatSetValues()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetValues(Mat mat,PetscInt m,const PetscInt idxm[],PetscInt n,const PetscInt idxn[],PetscScalar v[])
 {
@@ -3261,7 +3261,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
 
    Concepts: matrices^accessing diagonals
 
-.seealso: MatGetRow(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMaxAbs()
+.seealso: MatGetRow(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat mat,Vec v)
 {
@@ -3304,7 +3304,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetDiagonal(Mat mat,Vec v)
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(),
+.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(),
           MatGetRowMax()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
@@ -3348,7 +3348,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMin(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMaxAbs(), MatGetRowMin()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 {
@@ -3391,7 +3391,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMax(Mat mat,Vec v,PetscInt idx[])
 
    Concepts: matrices^getting row maximums
 
-.seealso: MatGetDiagonal(), MatGetSubmatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 {
