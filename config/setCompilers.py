@@ -426,6 +426,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
     
     if self.framework.argDB.has_key('with-cxx'):
+      if self.framework.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
       if self.isWindows(self.framework.argDB['with-cxx']):
         yield 'win32fe '+self.framework.argDB['with-cxx']
       else:
