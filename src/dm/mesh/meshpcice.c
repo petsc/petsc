@@ -164,13 +164,12 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
-      const Obj<Mesh::int_section_type>& ibc    = mesh->getIntSection("IBC");
-      const Obj<Mesh::int_section_type>& ibndfs = mesh->getIntSection("IBNDFS");
-      const Obj<Mesh::int_section_type>& ibcnum = mesh->getIntSection("IBCNUM");
-      const Obj<Mesh::real_section_type>&    bl     = mesh->getRealSection("BL");
-      const Obj<Mesh::real_section_type>&    bnvec  = mesh->getRealSection("BNVEC");
-      const Obj<Mesh::real_section_type>&    bnnv   = mesh->getRealSection("BNNV");
-      const Obj<Mesh::real_section_type>&    bcvec  = mesh->getRealSection("BCVEC");
+      const Obj<Mesh::int_section_type>&  ibc    = mesh->getIntSection("IBC");
+      const Obj<Mesh::int_section_type>&  ibndfs = mesh->getIntSection("IBNDFS");
+      const Obj<Mesh::int_section_type>&  ibcnum = mesh->getIntSection("IBCNUM");
+      const Obj<Mesh::real_section_type>& bl     = mesh->getRealSection("BL");
+      const Obj<Mesh::real_section_type>& bnvec  = mesh->getRealSection("BNVEC");
+      const Obj<Mesh::real_section_type>& bnnv   = mesh->getRealSection("BNNV");
       if (mesh->commRank() != 0) {
         mesh->distributeBCValues();
         return;
@@ -203,14 +202,12 @@ namespace ALE {
         ibcnum->addFiberDimension(patch, elem, 1);
         bl->addFiberDimension(patch, elem, 1);
         bnvec->addFiberDimension(patch, elem, 2);
-        bcvec->addFiberDimension(patch, elem, 4);
         elem2Idx[elem].insert(bf);
       }
       ibc->allocate();
       ibcnum->allocate();
       bl->allocate();
       bnvec->allocate();
-      bcvec->allocate();
       const Mesh::int_section_type::chart_type& chart = ibc->getPatch(patch);
       int num = 1;
 
