@@ -135,6 +135,9 @@ ex30: ex30.o chkopts
 ex31: ex31.o chkopts
 	-${CLINKER} -o ex31 ex31.o ${PETSC_SNES_LIB}
 	${RM} ex31.o
+ex32: ex32.o chkopts
+	-${CLINKER} -o ex32 ex32.o ${PETSC_SNES_LIB}
+	${RM} ex32.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIRUN} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \
