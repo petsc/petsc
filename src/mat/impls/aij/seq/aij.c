@@ -901,7 +901,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
   PetscScalar    *x,*y,*aa;
   PetscErrorCode ierr;
   PetscInt       m=A->rmap.n,*aj,*ii;
-  PetscInt       n,i,j,*ridx=PETSC_NULL;
+  PetscInt       n,i,j,nonzerorow=0,*ridx=PETSC_NULL;
   PetscScalar    sum;
   PetscTruth     usecprow=a->compressedrow.use;
 #if !defined(PETSC_USE_FORTRAN_KERNEL_MULTAIJ)
@@ -927,6 +927,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       aj  = a->j + ii[i];
       aa  = a->a + ii[i];
       sum = 0.0;
+      nonzerorow += (n>0);
       for (j=0; j<n; j++) sum += (*aa++)*x[*aj++]; 
       y[*ridx++] = sum;
     }
@@ -938,6 +939,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
       jrow = ii[i];
       n    = ii[i+1] - jrow;
       sum  = 0.0;
+      nonzerorow += (n>0);
       for (j=0; j<n; j++) {
         sum += aa[jrow]*x[aj[jrow]]; jrow++;
       }
@@ -945,7 +947,7 @@ PetscErrorCode MatMult_SeqAIJ(Mat A,Vec xx,Vec yy)
     }
 #endif
   }
-  ierr = PetscLogFlops(2*a->nz - m);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
