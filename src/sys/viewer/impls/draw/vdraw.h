@@ -7,7 +7,8 @@
 
 #include "src/sys/viewer/viewerimpl.h"
 typedef struct {
-  int            draw_max;
+  PetscInt       draw_max;
+  PetscInt       draw_base;
   PetscDraw      *draw;
   PetscDrawLG    *drawlg;
   PetscDrawAxis  *drawaxis;

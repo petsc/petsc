@@ -49,7 +49,7 @@ typedef struct {
 
   PetscInt    nxv,nyv,nyvf;
 
-  PetscViewer v1,v2,v3;
+  PetscViewer v1;
 
   DMComposite pack;
 } AppCtx;
@@ -95,9 +95,7 @@ int main(int argc,char **argv)
     app.nyvf = 3;
     app.nyv  = app.nyvf + 2;
 
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fluid",-1,-1,-1,-1,&app.v1);CHKERRQ(ierr);
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Thermal",-1,-1,-1,-1,&app.v2);CHKERRQ(ierr);
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fuel",-1,-1,-1,-1,&app.v3);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"",-1,-1,-1,-1,&app.v1);CHKERRQ(ierr);
 
     /*
        Create the DMComposite object to manage the three grids/physics. 
@@ -190,8 +188,6 @@ int main(int argc,char **argv)
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
     ierr = PetscViewerDestroy(app.v1);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(app.v2);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(app.v3);CHKERRQ(ierr); 
     ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
@@ -507,8 +503,10 @@ PetscErrorCode MyVecView(AppCtx *app,Vec X)
   ierr = DMCompositeGetEntries(app->pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
   ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = VecView(X1,app->v1);CHKERRQ(ierr);
-  ierr = VecView(X2,app->v2);CHKERRQ(ierr);
-  ierr = VecView(X3,app->v3);CHKERRQ(ierr);
+  ierr = PetscViewerDrawBaseAdd(app->v1,6);CHKERRQ(ierr);
+  ierr = VecView(X2,app->v1);CHKERRQ(ierr);
+  ierr = PetscViewerDrawBaseAdd(app->v1,1);CHKERRQ(ierr);
+  ierr = VecView(X3,app->v1);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

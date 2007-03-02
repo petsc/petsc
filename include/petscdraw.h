@@ -328,9 +328,11 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawHGIntegerBins(PetscDrawHG, PetscT
 /*
     PetscViewer routines that allow you to access underlying PetscDraw objects
 */
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer,int,PetscDraw*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer,int,PetscDrawLG*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer,int,PetscDrawAxis*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer,PetscInt,PetscDraw*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer,PetscInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer,PetscInt);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer,PetscInt,PetscDrawLG*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer,PetscInt,PetscDrawAxis*);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawUtilitySetCmapHue(unsigned char *,unsigned char *,unsigned char *,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawUtilitySetGamma(PetscReal);
