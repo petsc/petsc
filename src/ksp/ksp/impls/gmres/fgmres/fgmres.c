@@ -852,8 +852,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
      but there is no left preconditioning in the FGMRES
   */
   ierr = PetscInfo(ksp,"WARNING! Setting PC_SIDE for FGMRES to right!\n");CHKERRQ(ierr);
-  ksp->pc_side                = PC_RIGHT;
-
+  ksp->pc_side  = PC_RIGHT;
+  ksp->normtype = KSP_UNPRECONDITIONED_NORM;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
