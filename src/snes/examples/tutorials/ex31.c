@@ -49,7 +49,11 @@ typedef struct {
 
   PetscInt    nxv,nyv,nyvf;
 
+  MPI_Comm    comm;
+
   DMComposite pack;
+
+  DMMG        *fdmmg;
 } AppCtx;
 
 typedef struct {                 /* Fluid unknowns */
@@ -69,6 +73,7 @@ typedef struct {                 /* Fuel unknowns */
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
 extern PetscErrorCode MyPCApply(void*,Vec,Vec);
+extern PetscErrorCode MyPCSetUp(void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -76,7 +81,6 @@ int main(int argc,char **argv)
 {
   DMMG           *dmmg;               /* multilevel grid structure */
   PetscErrorCode ierr;
-  MPI_Comm       comm;
   DA             da;
   AppCtx         app;
   PC             pc;
@@ -85,25 +89,25 @@ int main(int argc,char **argv)
   PetscViewer    v1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  comm = PETSC_COMM_WORLD;
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
 
+    app.comm = PETSC_COMM_WORLD;
     app.nxv  = 6;
     app.nyvf = 3;
     app.nyv  = app.nyvf + 2;
 
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(app.comm,PETSC_NULL,"",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
 
     /*
        Create the DMComposite object to manage the three grids/physics. 
        We use a 1d decomposition along the y direction (since one of the grids is 1d).
 
     */
-    ierr = DMCompositeCreate(comm,&app.pack);CHKERRQ(ierr);
+    ierr = DMCompositeCreate(app.comm,&app.pack);CHKERRQ(ierr);
 
     /* 6 fluid unknowns, 3 ghost points on each end for either periodicity or simply boundary conditions */
-    ierr = DACreate1d(comm,DA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
+    ierr = DACreate1d(app.comm,DA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"prss");CHKERRQ(ierr);
     ierr = DASetFieldName(da,1,"ergg");CHKERRQ(ierr);
     ierr = DASetFieldName(da,2,"ergf");CHKERRQ(ierr);
@@ -113,12 +117,12 @@ int main(int argc,char **argv)
     ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(app.comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
     ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(app.comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Phi");CHKERRQ(ierr);
     ierr = DASetFieldName(da,1,"Pre");CHKERRQ(ierr);
     ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
@@ -151,7 +155,7 @@ int main(int argc,char **argv)
     /*
        Create the solver object and attach the grid/physics info 
     */
-    ierr = DMMGCreate(comm,1,0,&dmmg);CHKERRQ(ierr);
+    ierr = DMMGCreate(app.comm,1,0,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)app.pack);CHKERRQ(ierr);
     ierr = DMMGSetUser(dmmg,0,&app);CHKERRQ(ierr);
     ierr = DMMGSetISColoringType(dmmg,IS_COLORING_GLOBAL);CHKERRQ(ierr);
@@ -167,6 +171,7 @@ int main(int argc,char **argv)
     ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {
       ierr = PCShellSetContext(pc,&app);CHKERRQ(ierr);
+      ierr = PCShellSetSetUp(pc,MyPCSetUp);CHKERRQ(ierr);
       ierr = PCShellSetApply(pc,MyPCApply);CHKERRQ(ierr);
     }
 
@@ -475,6 +480,24 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
 }
 
 /* 
+   Setup for the custom preconditioner
+
+ */
+PetscErrorCode MyPCSetUp(void* ctx)
+{
+  AppCtx         *app = (AppCtx*)ctx;
+  PetscErrorCode ierr;
+  DA             da;
+
+  PetscFunctionBegin;
+  /* create the linear solver for the Neutron diffusion */
+  /*  ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
+  ierr = DACreate2d(app->comm,DA_NONPERIODIC,DA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); */
+  PetscFunctionReturn(0);
+}
+
+/* 
    Here is my custom preconditioner
 
  */
@@ -488,3 +511,12 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MyPCDestroy(void* ctx)
+{
+  AppCtx         *app = (AppCtx*)ctx;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /*  ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);*/
+  PetscFunctionReturn(0);
+}

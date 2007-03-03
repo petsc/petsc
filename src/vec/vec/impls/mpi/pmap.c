@@ -214,7 +214,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetSize(PetscMap *map,PetscInt n)
 PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetSize(PetscMap *map,PetscInt *n)
 {
   PetscFunctionBegin;
-  *n = map->n;
+  *n = map->N;
   PetscFunctionReturn(0);
 }
 

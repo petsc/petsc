@@ -186,7 +186,7 @@ PetscErrorCode PetscObjectGetComm_Petsc(PetscObject obj,MPI_Comm *comm)
 PetscErrorCode PetscObjectCompose_Petsc(PetscObject obj,const char name[],PetscObject ptr)
 {
   PetscErrorCode ierr;
-  char *tname;
+  char           *tname;
 
   PetscFunctionBegin;
   if (ptr) {
