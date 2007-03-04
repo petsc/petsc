@@ -874,6 +874,10 @@ class Configure(config.base.Configure):
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
+    # IBM with 64 bit pointers 
+    yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
+    yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
+    yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')
     yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
     yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),'true')
     return
