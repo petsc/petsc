@@ -853,7 +853,7 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       self.compilers.CPPFLAGS = oldFlags
       self.logClear()
       print '=================================================================================\r'
-      print '    Since your compute nodes require use of a batch system or mpirun you must:   \r'
+      print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
       print ' 1) Submit ./conftest to 1 processor of your batch system or system you are      \r'
       print '    cross-compiling for; this will generate the file reconfigure                 \r'
       print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
