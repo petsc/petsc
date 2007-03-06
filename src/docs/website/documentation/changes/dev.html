@@ -342,7 +342,8 @@ is called before the Map is ever used and then PetscMapSetUp() which is called
 after the blocksize and local or global size is set and determines the ranges
 etc.</li>
 <li> Changed the use of mpirun throughout the source to mpiexec; this includes
-petscmpirun -> petscmpiexec </li>
+petscmpirun -> petscmpiexec. Of course, PETSc will still work fine with 
+MPI implementations that use mpirun. </li>
 
 
 
