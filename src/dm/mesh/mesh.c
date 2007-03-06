@@ -308,6 +308,7 @@ template<typename Atlas>
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& atlas, MatType mtype, Mat *J)
 {
   Obj<ALE::Mesh> m;
+  PetscTruth     isShell;
   PetscErrorCode ierr;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", atlas);
@@ -319,8 +320,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& a
   ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);
-  if (PetscStrcmp(mtype, MATSHELL)) {
+  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
+  if (isShell) {
     //ierr = MatShellSetOperation();
   } else {
     //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
