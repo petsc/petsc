@@ -7,7 +7,7 @@
 PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 {
   PetscErrorCode   ierr;
-  int              i;
+  PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -21,9 +21,7 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
   }
 
   ierr = PetscFree(vdraw->display);CHKERRQ(ierr);
-  ierr = PetscFree(vdraw->drawaxis);CHKERRQ(ierr);
-  ierr = PetscFree(vdraw->drawlg);CHKERRQ(ierr);
-  ierr = PetscFree(vdraw->draw);CHKERRQ(ierr);
+  ierr = PetscFree3(vdraw->draw,vdraw->drawlg,vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscFree(vdraw);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -33,7 +31,7 @@ PetscErrorCode PetscViewerDestroy_Draw(PetscViewer v)
 PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 {
   PetscErrorCode   ierr;
-  int              i;
+  PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)v->data;
 
   PetscFunctionBegin;
@@ -66,7 +64,7 @@ PetscErrorCode PetscViewerFlush_Draw(PetscViewer v)
 
 .seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,int windownumber,PetscDraw *draw)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,PetscInt  windownumber,PetscDraw *draw)
 {
   PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
   PetscErrorCode   ierr;
@@ -83,28 +81,25 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,int win
   if (windownumber < 0) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
+  windownumber += vdraw->draw_base;
   if (windownumber >= vdraw->draw_max) {
      /* allocate twice as many slots as needed */
-     int           draw_max = vdraw->draw_max;
+     PetscInt      draw_max = vdraw->draw_max;
      PetscDraw     *tdraw = vdraw->draw;
      PetscDrawLG   *drawlg = vdraw->drawlg;
      PetscDrawAxis *drawaxis = vdraw->drawaxis;
 
      vdraw->draw_max = 2*windownumber;
-     ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDraw),&vdraw->draw);CHKERRQ(ierr);
+     ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
      ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
-     ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDrawLG),&vdraw->drawlg);CHKERRQ(ierr);
      ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
-     ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDrawAxis),&vdraw->drawaxis);CHKERRQ(ierr);
      ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
 
      ierr = PetscMemcpy(vdraw->draw,tdraw,draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
      ierr = PetscMemcpy(vdraw->drawlg,drawlg,draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
      ierr = PetscMemcpy(vdraw->drawaxis,drawaxis,draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
 
-     ierr = PetscFree(tdraw);CHKERRQ(ierr);
-     ierr = PetscFree(drawlg);CHKERRQ(ierr);
-     ierr = PetscFree(drawaxis);CHKERRQ(ierr);
+     ierr = PetscFree3(tdraw,drawlg,drawaxis);CHKERRQ(ierr);
   }
 
   if (!vdraw->draw[windownumber]) {
@@ -115,6 +110,80 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,int win
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
   if (draw) *draw = vdraw->draw[windownumber];
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawBaseAdd" 
+/*@C
+    PetscViewerDrawBaseAdd - add to the base integer that is added to the windownumber passed to PetscViewerDrawGetDraw()
+
+    Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
+
+    Input Parameters:
++  viewer - the PetscViewer (created with PetscViewerDrawOpen())
+-   windownumber - how much to add to the base
+
+    Level: developer
+
+   Concepts: drawing^accessing PetscDraw context from PetscViewer
+   Concepts: graphics
+
+.seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseSet()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseAdd(PetscViewer viewer,PetscInt  windownumber)
+{
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
+  PetscErrorCode   ierr;
+  PetscTruth       isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  }
+  if (windownumber + vdraw->draw_base < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %D cannot be negative",windownumber+vdraw->draw_base);
+  }
+  vdraw->draw_base += windownumber;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscViewerDrawBaseSet" 
+/*@C
+    PetscViewerDrawBaseSet - sets the base integer that is added to the windownumber passed to PetscViewerDrawGetDraw()
+
+    Not collective (but PetscDraw returned will be parallel object if PetscViewer is)
+
+    Input Parameters:
++  viewer - the PetscViewer (created with PetscViewerDrawOpen())
+-   windownumber - value to set the base
+
+    Level: developer
+
+   Concepts: drawing^accessing PetscDraw context from PetscViewer
+   Concepts: graphics
+
+.seealso: PetscViewerDrawGetLG(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen(), PetscViewerDrawGetDraw(), PetscViewerDrawBaseAdd()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawBaseSet(PetscViewer viewer,PetscInt  windownumber)
+{
+  PetscViewer_Draw *vdraw = (PetscViewer_Draw*)viewer->data;
+  PetscErrorCode   ierr;
+  PetscTruth       isdraw;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
+  if (!isdraw) {
+    SETERRQ(PETSC_ERR_ARG_WRONG,"Must be draw type PetscViewer");
+  }
+  if (windownumber < 0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Resulting base %D cannot be negative",windownumber);
+  }
+  vdraw->draw_base = windownumber;
   PetscFunctionReturn(0);
 }
 
@@ -140,7 +209,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,int win
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetAxis(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,int windownumber,PetscDrawLG *drawlg)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,PetscInt  windownumber,PetscDrawLG *drawlg)
 {
   PetscErrorCode   ierr;
   PetscTruth       isdraw;
@@ -157,14 +226,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,int w
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
 
-  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
+  if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
     ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
   }
-  if (!vdraw->drawlg[windownumber]) {
-    ierr = PetscDrawLGCreate(vdraw->draw[windownumber],1,&vdraw->drawlg[windownumber]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(viewer,vdraw->drawlg[windownumber]);CHKERRQ(ierr);
+  if (!vdraw->drawlg[windownumber+vdraw->draw_base]) {
+    ierr = PetscDrawLGCreate(vdraw->draw[windownumber+vdraw->draw_base],1,&vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(viewer,vdraw->drawlg[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
   }
-  *drawlg = vdraw->drawlg[windownumber];
+  *drawlg = vdraw->drawlg[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
 }
 
@@ -190,7 +259,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawLG(PetscViewer viewer,int w
 
 .seealso: PetscViewerDrawGetDraw(), PetscViewerDrawGetLG(), PetscViewerDrawOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,int windownumber,PetscDrawAxis *drawaxis)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,PetscInt  windownumber,PetscDrawAxis *drawaxis)
 {
   PetscErrorCode   ierr;
   PetscTruth       isdraw;
@@ -207,14 +276,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDrawAxis(PetscViewer viewer,int
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Window number cannot be negative");
   }
 
-  if (windownumber >= vdraw->draw_max || !vdraw->draw[windownumber]) {
+  if (windownumber+vdraw->draw_base >= vdraw->draw_max || !vdraw->draw[windownumber+vdraw->draw_base]) {
     ierr = PetscViewerDrawGetDraw(viewer,windownumber,PETSC_NULL);CHKERRQ(ierr);
   }
-  if (!vdraw->drawaxis[windownumber]) {
-    ierr = PetscDrawAxisCreate(vdraw->draw[windownumber],&vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
-    ierr = PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber]);CHKERRQ(ierr);
+  if (!vdraw->drawaxis[windownumber+vdraw->draw_base]) {
+    ierr = PetscDrawAxisCreate(vdraw->draw[windownumber+vdraw->draw_base],&vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(viewer,vdraw->drawaxis[windownumber+vdraw->draw_base]);CHKERRQ(ierr);
   }
-  *drawaxis = vdraw->drawaxis[windownumber];
+  *drawaxis = vdraw->drawaxis[windownumber+vdraw->draw_base];
   PetscFunctionReturn(0);
 }
 
@@ -301,7 +370,7 @@ PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *svie
 {
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
-  int              i;
+  PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -331,7 +400,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
 {
   PetscErrorCode   ierr;
   PetscMPIInt      rank;
-  int              i;
+  PetscInt         i;
   PetscViewer_Draw *vdraw = (PetscViewer_Draw *)viewer->data,*vsdraw;
 
   PetscFunctionBegin;
@@ -346,9 +415,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
          ierr = PetscDrawRestoreSingleton(vdraw->draw[i],&vsdraw->draw[i]);CHKERRQ(ierr);
       }
     }
-    ierr = PetscFree(vsdraw->drawaxis);CHKERRQ(ierr);
-    ierr = PetscFree(vsdraw->drawlg);CHKERRQ(ierr);
-    ierr = PetscFree(vsdraw->draw);CHKERRQ(ierr);
+    ierr = PetscFree3(vsdraw->draw,vsdraw->drawlg,vsdraw->drawaxis);CHKERRQ(ierr);
     ierr = PetscFree((*sviewer)->data);CHKERRQ(ierr);
     ierr = PetscHeaderDestroy(*sviewer);CHKERRQ(ierr);
   }
@@ -361,7 +428,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerCreate_Draw" 
 PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Draw(PetscViewer viewer)
 {
-  int              i;
+  PetscInt         i;
   PetscErrorCode   ierr;
   PetscViewer_Draw *vdraw;
 
@@ -376,12 +443,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Draw(PetscViewer viewer)
   viewer->format                = PETSC_VIEWER_NOFORMAT;
 
   /* these are created on the fly if requested */
-  vdraw->draw_max = 5;
-  ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDraw),&vdraw->draw);CHKERRQ(ierr);
+  vdraw->draw_max  = 5;
+  vdraw->draw_base = 0;
+  ierr = PetscMalloc3(vdraw->draw_max,PetscDraw,&vdraw->draw,vdraw->draw_max,PetscDrawLG,&vdraw->drawlg,vdraw->draw_max,PetscDrawAxis,&vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->draw,vdraw->draw_max*sizeof(PetscDraw));CHKERRQ(ierr);
-  ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDrawLG),&vdraw->drawlg);CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->drawlg,vdraw->draw_max*sizeof(PetscDrawLG));CHKERRQ(ierr);
-  ierr = PetscMalloc(vdraw->draw_max*sizeof(PetscDrawAxis),&vdraw->drawaxis);CHKERRQ(ierr);
   ierr = PetscMemzero(vdraw->drawaxis,vdraw->draw_max*sizeof(PetscDrawAxis));CHKERRQ(ierr);
   for (i=0; i<vdraw->draw_max; i++) {
     vdraw->draw[i]     = 0; 
@@ -411,7 +477,7 @@ EXTERN_C_END
 PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawClear(PetscViewer viewer)
 {
   PetscErrorCode   ierr;
-  int              i;
+  PetscInt         i;
   PetscTruth       isdraw;
   PetscViewer_Draw *vdraw;
 
@@ -431,7 +497,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawClear(PetscViewer viewer)
     The variable Petsc_Viewer_Draw_keyval is used to indicate an MPI attribute that
   is attached to a communicator, in this case the attribute is a PetscViewer.
 */
-static int Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
+static PetscMPIInt Petsc_Viewer_Draw_keyval = MPI_KEYVAL_INVALID;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_DRAW_" 
@@ -456,7 +522,7 @@ $       XXXView(XXX object,PETSC_VIEWER_DRAW_(comm));
 PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_DRAW_(MPI_Comm comm)
 {
   PetscErrorCode ierr;
-  int            flag;
+  PetscMPIInt    flag;
   PetscViewer    viewer;
 
   PetscFunctionBegin;

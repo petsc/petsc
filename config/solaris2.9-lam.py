@@ -3,7 +3,7 @@
 configure_options = [
   '--with-f90-interface=solaris',
   '--with-mpi-dir=/home/petsc/soft/solaris-9-lam/lam-6.5.8',
-  '--with-mpirun=/sandbox/petsc/petsc-dev/bin/mpirun.lam'
+  '--with-mpiexec=/sandbox/petsc/petsc-dev/bin/mpiexec.lam'
   ]
 
 if __name__ == '__main__':

@@ -163,7 +163,7 @@ programbase=`basename $programname`
 #
 # Create the PBS script
 #
-    cat >./.mpirun$$ <<EOF
+    cat >./.mpiexec$$ <<EOF
 #! /bin/bash
 #PBS -S /bin/sh
 #PBS -l nodes=${np}${myrinetattribute}
@@ -194,17 +194,17 @@ if [ $showoutput = "yes" ] ; then
 fi
 
 if [ $usemyrinet = "yes" ] ; then
-  MPIRUN="/soft/apps/packages/mpich-gm-1.2.4..8a-gm-1.5.2.1-gcc/bin/mpirun"
+  MPIEXEC="/soft/apps/packages/mpich-gm-1.2.4..8a-gm-1.5.2.1-gcc/bin/mpirun"
 else
-  MPIRUN="/soft/apps/packages/mpich-1.2.4-gcc/bin/mpirun"
+  MPIEXEC="/soft/apps/packages/mpich-1.2.4-gcc/bin/mpirun"
 fi
 
-MPIRUN_CMD="\$MPIRUN -np $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
+MPIEXEC_CMD="\$MPIEXEC -np $np -machinefile \$PBS_NODEFILE $programbase -display $DISPLAY $newprogargs"
 
 if [ $shared = "yes" ]; then
-  rsh \$masternode "cd $rundir; \$MPIRUN_CMD"
+  rsh \$masternode "cd $rundir; \$MPIEXEC_CMD"
 else
-  \$MPIRUN_CMD
+  \$MPIEXEC_CMD
 fi
   
 cat \$PBS_NODEFILE | /my/bin/pdsh -w - "cd $rundir ; rm -rf $programbase urlget  urlget.py $shortinfiles ; rm -rf PI*" > /dev/null 2>&1
@@ -230,8 +230,8 @@ if [ $shared = "yes" ] ; then
   export masternode=`tail -1 ./.pbsnodefile.$$`
   export PBS_NODEFILE=.pbsnodefile.$$
   cp  ./.pbsnodefile.$$ $rundir
-  chmod u+x ./.mpirun$$
-  ./.mpirun$$
+  chmod u+x ./.mpiexec$$
+  ./.mpiexec$$
 #
 #  Run directly on the frontend
 #
@@ -242,13 +242,13 @@ elif [ $local = "yes" ] ; then
   echo "localhost" >> ./.pbsnodefile.$$
   PBS_NODEFILE=`pwd`/.pbsnodefile.$$
   export PBS_NODEFILE
-  chmod u+x ./.mpirun$$
-  ./.mpirun$$
+  chmod u+x ./.mpiexec$$
+  ./.mpiexec$$
 else 
 #
 #  submit to batch system
 #
-  pbs_job_id=`qsub ./.mpirun$$`
+  pbs_job_id=`qsub ./.mpiexec$$`
   pbs_job_num=`expr $pbs_job_id : '\([0-9]*\).*'`
 #
 #
@@ -320,18 +320,18 @@ else
 #
 #  Move the output to the stdout/err of the process running this script
 #
-  if [ -s .mpirun$$.o$pbs_job_num ] ; then
+  if [ -s .mpiexec$$.o$pbs_job_num ] ; then
     if [ -n "$stdoutfile" ] ; then
-      cat .mpirun$$.o$pbs_job_num > $stdoutfile
+      cat .mpiexec$$.o$pbs_job_num > $stdoutfile
     else
-      cat .mpirun$$.o$pbs_job_num 
+      cat .mpiexec$$.o$pbs_job_num 
     fi
   fi
-  if [ -s .mpirun$$.e$pbs_job_num ] ; then
+  if [ -s .mpiexec$$.e$pbs_job_num ] ; then
     if [ -n "$stderrfile" ] ; then
-        cat .mpirun$$.e$pbs_job_num >$stderrfile
+        cat .mpiexec$$.e$pbs_job_num >$stderrfile
     else
-        cat .mpirun$$.e$pbs_job_num >&2
+        cat .mpiexec$$.e$pbs_job_num >&2
     fi
   fi
 
@@ -363,10 +363,10 @@ if [ $local = "no" ] ; then
 fi
 
 #
-#  Remove all files mpirun.chiba has created
+#  Remove all files mpiexec.chiba has created
 #
 if [ $keeptmp != "yes" ] ; then
-  rm -rf .mpirun$$* 
+  rm -rf .mpiexec$$* 
   rm -f .pbsnodefile*
   rm -rf $rundir
 fi

@@ -1168,9 +1168,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char sname[])
 
   Notes:
   By default the summary is printed to stdout.
-  More extensive examination of the log information can be done with 
-  PetscLogDump(), which is activated by the option -log or -log_all, in 
-  combination with petsc/bin/petscview.
 
   Level: beginner
    

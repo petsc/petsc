@@ -36,15 +36,15 @@ ex6: ex6.o  chkopts
 
 #------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1
+	-@${MPIEXEC} -np 1 ./ex1
 runex2:
-	-@${MPIRUN} -np 1 ./ex2
+	-@${MPIEXEC} -np 1 ./ex2
 runex3:
-	-@${MPIRUN} -np 1 ./ex3
+	-@${MPIEXEC} -np 1 ./ex3
 runex4:
-	-@${MPIRUN} -np 1 ./ex4
+	-@${MPIEXEC} -np 1 ./ex4
 runex4_2:
-	-@${MPIRUN} -np 2 ./ex4
+	-@${MPIEXEC} -np 2 ./ex4
 
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = 

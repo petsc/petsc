@@ -41,5 +41,5 @@ foreach i (${nPETSC_DIR}/maint/confignightly/*)
 
   echo "RSYNC =rsync -R" >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
   echo "SSH =ssh" >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
-  echo 'MPIRUN =${PETSC_DIR}/bin/mpirun.sshrsync' >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
+  echo 'MPIEXEC =${PETSC_DIR}/bin/mpiexec.sshrsync' >> ${nPETSC_DIR}/bmake/remote-${CONF}/petscconf
 end

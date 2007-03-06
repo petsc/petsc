@@ -20,13 +20,13 @@ ex2: ex2.o chkopts
 
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 
+	-@${MPIEXEC} -np 1 ./ex1 
 
 runex1_2:
-	-@${MPIRUN}  -np 2 ./ex1
+	-@${MPIEXEC}  -np 2 ./ex1
 
 runex2:
-	-@${MPIRUN} -np 2 ./ex2
+	-@${MPIEXEC} -np 2 ./ex2
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 ex1.rm
 TESTEXAMPLES_C_X11	       =

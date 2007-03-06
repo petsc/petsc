@@ -269,7 +269,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   merge->rowmap.n = pn;
   merge->rowmap.N = PETSC_DECIDE;
   merge->rowmap.bs = 1;
-  ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&merge->rowmap);CHKERRQ(ierr);
   owners = merge->rowmap.range;
 
   /* determine the number of messages to send, their lengths */

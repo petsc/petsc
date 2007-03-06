@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex2 [-help] [all PETSc options] */ 
+/* Program usage:  mpiexec -np <procs> ex2 [-help] [all PETSc options] */ 
 
 static char help[] = "Tests MatCreateLRC()\n\n";
 

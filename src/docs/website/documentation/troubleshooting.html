@@ -336,7 +336,7 @@ the nodes are IDENTICAL to those on the compiler server. </p>
     </font>using
 Fortran While using VecGetArray(), MatGetArray(), ISGetArray() <br>
 
-/usr/local/mpi/bin/mpirun.ch_p4: 17545 Breakpoint then program stops
+/usr/local/mpi/bin/mpiexec.ch_p4: 17545 Breakpoint then program stops
     <p><font color="#ff0000"><strong>Problem:</strong></font>
 You
 have compiled some of your code with the option to check for
@@ -429,9 +429,9 @@ please let use know so we can add it to PETSc. </p>
 rs6000 machines, the program encounters a segmentation fault
 when initializing MPI. <br>
 
-[light] mpirun ex1 <br>
+[light] mpiexec ex1 <br>
 
-/light_home2/lmcinnes/mpich/lib/rs6000/ch_p4/mpirun: 23817 Memory fault
+/light_home2/lmcinnes/mpich/lib/rs6000/ch_p4/mpiexec: 23817 Memory fault
     <br>
 
 See, e.g., the following debugger session:<br>
@@ -713,7 +713,7 @@ while running program<br>
 
     <br>
 
-&gt; mpirun ex1<br>
+&gt; mpiexec ex1<br>
 
 p0_27137: p4_error: semget failed for setnum=%d: 0<br>
 
@@ -722,7 +722,7 @@ p0_27137: p4_error: semget failed for setnum=%d: 0<br>
     <strong><font color="#ff0000">Problem:</font></strong>
 Inproperly installed or configured MPICH. Often this results
 from compiling the socket based version of MPICH, with device ch_p4 but
-using the mpirun associated with the shared memory version or
+using the mpiexec associated with the shared memory version or
 the other way around.<br>
 
     <br>
@@ -731,7 +731,7 @@ the other way around.<br>
     </font>First,
 make sure that you can run plain old MPI programs (those
 without PETSC). Make sure you are using the correct version of
-mpirun for the installed version of MPICH or reinstall MPICH<br>
+mpiexec for the installed version of MPICH or reinstall MPICH<br>
 
 .<br>
 

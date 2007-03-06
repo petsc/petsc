@@ -39,7 +39,7 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild Chaco, make.inc != '+installDir+'/make.inc\n')
       try:
         self.logPrintBox('Compiling chaco; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+chacoDir+';CHACO_INSTALL_DIR='+installDir+';export CHACO_INSTALL_DIR; cd code; make clean; make; cd '+installDir+'; mkdir '+self.libdir+'; ar cr '+self.libdir+'/libchaco.a `find ../code -name "*.o"`; cd '+self.libdir+'; ar d libchaco.a main.o', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+chacoDir+';CHACO_INSTALL_DIR='+installDir+';export CHACO_INSTALL_DIR; cd code; make clean; make; cd '+installDir+'; mkdir '+self.libdir+'; '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.a `find ../code -name "*.o"`; cd '+self.libdir+'; ar d libchaco.a main.o', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
       if not os.path.isfile(os.path.join(installDir,self.libdir,'libchaco.a')):

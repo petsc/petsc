@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#  mpirun for use with the PETSC_ARCH remote
+#  mpiexec for use with the PETSC_ARCH remote
 #
 ssh=`grep SSH ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
 rsync=`grep RSYNC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf | cut -f2 -d=`
@@ -17,7 +17,7 @@ if [ ${inputdatafiles}DUMMY != DUMMY ]; then
   $rsync $inputdatafiles $workmachine:$workspace
 fi
 
-$ssh $workmachine "cd $workspace ; setenv PETSC_DIR $workpetscdir ; setenv PETSC_ARCH $workpetscarch; ${workpetscdir}/bin/petscmpirun $progname"
+$ssh $workmachine "cd $workspace ; setenv PETSC_DIR $workpetscdir ; setenv PETSC_ARCH $workpetscarch; ${workpetscdir}/bin/petscmpiexec $progname"
 
 if [ ${outputdatafiles}DUMMY != DUMMY ]; then
   for i in $outputdatafiles; do

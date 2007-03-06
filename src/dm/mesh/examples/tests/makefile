@@ -86,9 +86,9 @@ xsifter0: xsifter0.o chkopts
 	${RM} -f xsifter0.o
 NP = 1
 runxsifter0:
-	-@${MPIRUN} -np ${NP} ./xsifter0 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./xsifter0 ${EXTRA_ARGS}
 debugxsifter0:
-	-@${MPIRUN} -np ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 EXTRA_FLAGS = "-DALE_XSIFTER_TYPE=XSifter1A"
@@ -97,9 +97,9 @@ xsifter1: xsifter1.o chkopts
 	${RM} -f xsifter1.o
 NP = 1
 runxsifter1:
-	-@${MPIRUN} -np ${NP} ./xsifter1 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS}
 debugxsifter1:
-	-@${MPIRUN} -np ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 EXTRA_FLAGS = "-DALE_XSIFTER_TYPE=XSifter1A"
@@ -108,109 +108,109 @@ xsifter2: xsifter2.o chkopts
 	${RM} -f xsifter2.o
 NP = 1
 runxsifter2:
-	-@${MPIRUN} -np ${NP} ./xsifter2 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./xsifter2 ${EXTRA_ARGS}
 debugxsifter2:
-	-@${MPIRUN} -np ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsifter2:
-	-@${MPIRUN} -np ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------
 runex00:
-	-@${MPIRUN} -np ${NP} ./ex00 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex00 -log_summary ${EXTRA_ARGS}
 
 debugex00:
-	-@${MPIRUN} -np ${NP} ./ex00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex00:
 	-@valgrind --tool=memcheck ./ex00 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex01:
-	-@${MPIRUN} -np ${NP} ./ex01 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex01 -log_summary ${EXTRA_ARGS}
 
 debugex01:
-	-@${MPIRUN} -np ${NP} ./ex01 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex01 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex01:
 	-@valgrind --tool=memcheck ./ex01 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex02:
-	-@${MPIRUN} -np ${NP} ./ex02 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex02 -log_summary ${EXTRA_ARGS}
 
 debugex02:
-	-@${MPIRUN} -np ${NP} ./ex02 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex02 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex02:
 	-@valgrind --tool=memcheck ./ex02 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex03:
-	-@${MPIRUN} -np ${NP} ./ex03 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex03 ${EXTRA_ARGS}
 
 debugex03:
-	-@${MPIRUN} -np ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex03 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 valex03:
 	-@valgrind --tool=memcheck ./ex03 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex04:
-	-@${MPIRUN} -np ${NP} ./ex04 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex04 ${EXTRA_ARGS}
 
 debugex04:
-	-@${MPIRUN} -np ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./ex04 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex04:
 	-@valgrind --tool=memcheck ./ex04 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex05:
-	-@${MPIRUN} -np ${NP} ./ex05 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex05 ${EXTRA_ARGS}
 
 debugex05:
-	-@${MPIRUN} -np ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./ex05 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex05:
 	-@valgrind --tool=memcheck ./ex05 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex06:
-	-@${MPIRUN} -np ${NP} ./ex06 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex06 ${EXTRA_ARGS}
 
 debugex06:
-	-@${MPIRUN} -np ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./ex06 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex06:
 	-@valgrind --tool=memcheck ./ex06 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex07:
-	-@${MPIRUN} -np ${NP} ./ex07 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex07 ${EXTRA_ARGS}
 
 debugex07:
-	-@${MPIRUN} -np ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./ex07 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex07:
 	-@valgrind --tool=memcheck ./ex07 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex08:
-	-@${MPIRUN} -np ${NP} ./ex08 ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex08 ${EXTRA_ARGS}
 
 debugex08:
-	-@${MPIRUN} -np ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
+	-@${MPIEXEC} -np ${NP} ./ex08 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY} 
 
 valex08:
 	-@valgrind --tool=memcheck ./ex08 ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
+	-@${MPIEXEC} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS}
 
 debugex1:
-	-@${MPIRUN} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+	-@${MPIEXEC} -np ${NP} ./ex1 -log_summary ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
 
 valex1:
 	-@valgrind --tool=memcheck ./ex1 ${EXTRA_ARGS}

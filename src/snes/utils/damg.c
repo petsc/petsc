@@ -101,6 +101,34 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG *dmmg,MatType mtype)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMMGSetPrefix"
+/*@C
+    DMMGSetPrefix - Sets the prefix used for the solvers inside a DMMG
+
+    Collective on MPI_Comm 
+
+    Input Parameters:
++    dmmg - the DMMG object created with DMMGCreate()
+-    prefix - the prefix string
+
+    Level: intermediate
+
+.seealso DMMGDestroy(), DMMGSetUser(), DMMGGetUser(), DMMGCreate(), DMMGSetNullSpace()
+
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG *dmmg,const char* prefix)
+{
+  PetscInt       i;
+  PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+  for (i=0; i<dmmg[0]->nlevels; i++) {
+    ierr = PetscStrallocpy(prefix,&dmmg[i]->prefix);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMMGSetUseGalerkinCoarse"
 /*@C
     DMMGSetUseGalerkinCoarse - Courses the DMMG to use R*A_f*R^T to form
@@ -167,6 +195,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->R) {ierr = MatDestroy(dmmg[i]->R);CHKERRQ(ierr);}
   }
   for (i=0; i<nlevels; i++) {
+    ierr = PetscStrfree(dmmg[i]->prefix);CHKERRQ(ierr);
     if (dmmg[i]->dm)      {ierr = DMDestroy(dmmg[i]->dm);CHKERRQ(ierr);}
     if (dmmg[i]->x)       {ierr = VecDestroy(dmmg[i]->x);CHKERRQ(ierr);}
     if (dmmg[i]->b)       {ierr = VecDestroy(dmmg[i]->b);CHKERRQ(ierr);}
@@ -507,7 +536,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     if (!dmmg[nlevels-1]->J) {
       dmmg[nlevels-1]->J = dmmg[nlevels-1]->B;
     }
-    ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    if (func) {
+      ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
+    }
     for (i=nlevels-2; i>-1; i--) {
       if (dmmg[i]->galerkin) {
         ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
@@ -530,6 +561,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
       }
 
       ierr = KSPCreate(dmmg[i]->comm,&dmmg[i]->ksp);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(dmmg[i]->ksp,dmmg[i]->prefix);CHKERRQ(ierr);
       ierr = DMMGSetUpLevel(dmmg,dmmg[i]->ksp,i+1);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(dmmg[i]->ksp);CHKERRQ(ierr);
       dmmg[i]->solve = DMMGSolveKSP;
@@ -540,7 +572,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   /* evalute matrix on each level */
   for (i=0; i<nlevels; i++) {
     if (!dmmg[i]->galerkin) {
-      ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
+      if (func) {
+	ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
+      }
     }
   }
 

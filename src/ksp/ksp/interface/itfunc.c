@@ -311,8 +311,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
     inXisinB = PETSC_TRUE;
   }
+  ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
+  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
+
   ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
@@ -336,11 +341,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     }
   }
 
+  ksp->transpose_solve = PETSC_FALSE;
+  
   /* KSPSetUp() scales the matrix if needed */
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   ierr = KSPSetUpOnBlocks(ksp);CHKERRQ(ierr);
-
-  ksp->transpose_solve = PETSC_FALSE;
 
   /* diagonal scale RHS if called for */
   if (ksp->dscale) {
@@ -526,8 +531,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecDestroy(t);CHKERRQ(ierr);
     ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
-  ksp->vec_rhs = PETSC_NULL;
-  ksp->vec_sol = PETSC_NULL;
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -572,15 +575,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolveTranspose(KSP ksp,Vec b,Vec x)
     ierr     = VecDuplicate(b,&x);CHKERRQ(ierr);
     inXisinB = PETSC_TRUE;
   }
+  ierr = PetscObjectReference((PetscObject)b);CHKERRQ(ierr);
+  ierr = PetscObjectReference((PetscObject)x);CHKERRQ(ierr);
+  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
+  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
+  ksp->transpose_solve = PETSC_TRUE;
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
   if (ksp->guess_zero) { ierr = VecSet(ksp->vec_sol,0.0);CHKERRQ(ierr);}
-  ksp->transpose_solve = PETSC_TRUE;
   ierr = (*ksp->ops->solve)(ksp);CHKERRQ(ierr);
-  ksp->transpose_solve = PETSC_FALSE;
-  ksp->vec_rhs = PETSC_NULL;
-  ksp->vec_sol = PETSC_NULL;
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
     ierr = VecDestroy(x);CHKERRQ(ierr);
@@ -621,6 +625,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   ierr = PetscFree(ksp->res_hist_alloc);CHKERRQ(ierr);
   ierr = KSPMonitorCancel(ksp);CHKERRQ(ierr);
   ierr = PCDestroy(ksp->pc);CHKERRQ(ierr);
+  if (ksp->vec_rhs) {ierr = VecDestroy(ksp->vec_rhs);CHKERRQ(ierr);}
+  if (ksp->vec_sol) {ierr = VecDestroy(ksp->vec_sol);CHKERRQ(ierr);}
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}

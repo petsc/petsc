@@ -435,7 +435,7 @@ PetscErrorCode VecCreate_Sieve_Private(Vec v, ALE::Mesh::field_type *field)
   v->petscnative = PETSC_FALSE;
 
   if (v->map.bs == -1) v->map.bs = 1;
-  ierr = PetscMapInitialize(v->comm, &v->map);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&v->map);CHKERRQ(ierr);
   v->stash.insertmode = NOT_SET_VALUES;
                                                         
   ierr = PetscObjectChangeTypeName((PetscObject) v, VECSIEVE);CHKERRQ(ierr);

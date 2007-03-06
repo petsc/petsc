@@ -3264,7 +3264,7 @@ In \ref{tab_externaloptions}, the base class aij refers to the fact
 that inheritance is based on MATSEQAIJ when constructed with a single
 process communicator, and from MATMPIAIJ otherwise.  The same holds
 for baij and sbaij.  For codes that are intended to be run as both a
-single process or with multiple processes, depending on the mpirun
+single process or with multiple processes, depending on the mpiexec
 command, it is recommended that both sets of preallocation routines
 are called for these communicator morphing types.  The call for the
 incorrect type will simply be ignored without any harm or message.
@@ -5314,7 +5314,7 @@ is presented.
 \begin{figure}[tb]
 {\tiny
 \begin{verbatim}
-mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
+mpiexec ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 Number of iterations =  19
@@ -5390,7 +5390,7 @@ the average message length, and the number of global reductions.
 \begin{figure}[tb]
 {\tiny
 \begin{verbatim}
-mpirun ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
+mpiexec ex21 -f0 medium -f1 arco6 -ksp_gmres_classicalgramschmidt -log_summary -mat_mpibaij \
             -matload_block_size 3 -pc_type bjacobi -options_left
 
 ---------------------------------------------- PETSc Performance Summary: ----------------------------------------------
@@ -6004,7 +6004,7 @@ program.
 %\section{Machine-Specific Optimizations}
 %
 %\begin{itemize}
-%\item On the IBM SP, using the mpirun option \trl{-nopoll} may
+%\item On the IBM SP, using the mpiexec option \trl{-nopoll} may
 %      improve the performance of some PETSc programs.
 %\end{itemize}
 %
@@ -6084,7 +6084,7 @@ mechanism to enable such customization.  To print a list of
 available options for a given program, simply specify the option 
 \trl{-help} (or \trl{-h}) at runtime, e.g., \findex{-help} \findex{-h}
 \begin{tabbing}
-    mpirun -np 1 ./ex1 -help
+    mpiexec -np 1 ./ex1 -help
 \end{tabbing}
 
 Note that all runtime options correspond to particular PETSc routines
@@ -6487,7 +6487,7 @@ following contents:
 (Of course, workstation1, etc. can be the same machine.) Then, one can
 execute the command
 \begin{tabbing}
-   mpirun -p4pg \trl{<}procgroup\_filemame\trl{>} old -compare \trl{<}tolerance\trl{>} [options]
+   mpiexec -p4pg \trl{<}procgroup\_filemame\trl{>} old -compare \trl{<}tolerance\trl{>} [options]
 \end{tabbing}
 Note that the same runtime options must be used for the two programs.
 The first time an inner product or norm detects an inconsistency larger
@@ -6959,13 +6959,13 @@ controls the generation of several example programs.
         ${RM} ex4.o
 
    runex1:
-        -@${MPIRUN} ex1
+        -@${MPIEXEC} ex1
    runex2:
-        -@${MPIRUN} -np 2 ./ex2 -mat_seqdense -options_left
+        -@${MPIEXEC} -np 2 ./ex2 -mat_seqdense -options_left
    runex3:
-        -@${MPIRUN} ex3 -v -log_summary
+        -@${MPIEXEC} ex3 -v -log_summary
    runex4:
-        -@${MPIRUN} -np 4 ./ex4 -trdump
+        -@${MPIEXEC} -np 4 ./ex4 -trdump
 
    RUNEXAMPLES_1 = runex1 runex2
    RUNEXAMPLES_2 = runex4

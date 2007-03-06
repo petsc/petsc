@@ -66,7 +66,7 @@ class Configure(PETSc.package.Package):
     elif self.compilers.fortranMangling == 'capitalize':
       g.write('CDEFS   = -DUPPPER\n')
 
-    g.write('AR      = ar vr\n')
+    g.write('AR      = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB  = '+self.setCompilers.RANLIB+'\n') 
     g.write('SCALAP  = '+self.libraries.toString(self.scalapack.lib)+' '+self.libraries.toString(self.blacs.lib)+'\n')
     g.write('INCPAR  = '+self.headers.toString(self.mpi.include)+'\n')

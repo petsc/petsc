@@ -49,9 +49,13 @@ typedef struct {
 
   PetscInt    nxv,nyv,nyvf;
 
-  PetscViewer v1,v2,v3;
+  MPI_Comm    comm;
 
   DMComposite pack;
+
+  DMMG        *fdmmg;                              /* used by PCShell to solve diffusion problem */
+  Vec         dx,dy;
+  Vec         c; 
 } AppCtx;
 
 typedef struct {                 /* Fluid unknowns */
@@ -70,8 +74,9 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode MyVecView(AppCtx*,Vec);
+extern PetscErrorCode MyPCSetUp(void*);
 extern PetscErrorCode MyPCApply(void*,Vec,Vec);
+extern PetscErrorCode MyPCDestroy(void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -79,35 +84,33 @@ int main(int argc,char **argv)
 {
   DMMG           *dmmg;               /* multilevel grid structure */
   PetscErrorCode ierr;
-  MPI_Comm       comm;
   DA             da;
   AppCtx         app;
   PC             pc;
   KSP            ksp;
   PetscTruth     isshell;
+  PetscViewer    v1;
 
   PetscInitialize(&argc,&argv,(char *)0,help);
-  comm = PETSC_COMM_WORLD;
 
   PreLoadBegin(PETSC_TRUE,"SetUp");
 
+    app.comm = PETSC_COMM_WORLD;
     app.nxv  = 6;
     app.nyvf = 3;
     app.nyv  = app.nyvf + 2;
 
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fluid",-1,-1,-1,-1,&app.v1);CHKERRQ(ierr);
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Thermal",-1,-1,-1,-1,&app.v2);CHKERRQ(ierr);
-    ierr = PetscViewerDrawOpen(PETSC_COMM_WORLD,PETSC_NULL,"Fuel",-1,-1,-1,-1,&app.v3);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(app.comm,PETSC_NULL,"",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
 
     /*
        Create the DMComposite object to manage the three grids/physics. 
        We use a 1d decomposition along the y direction (since one of the grids is 1d).
 
     */
-    ierr = DMCompositeCreate(comm,&app.pack);CHKERRQ(ierr);
+    ierr = DMCompositeCreate(app.comm,&app.pack);CHKERRQ(ierr);
 
     /* 6 fluid unknowns, 3 ghost points on each end for either periodicity or simply boundary conditions */
-    ierr = DACreate1d(comm,DA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
+    ierr = DACreate1d(app.comm,DA_XPERIODIC,app.nxv,6,3,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"prss");CHKERRQ(ierr);
     ierr = DASetFieldName(da,1,"ergg");CHKERRQ(ierr);
     ierr = DASetFieldName(da,2,"ergf");CHKERRQ(ierr);
@@ -117,12 +120,12 @@ int main(int argc,char **argv)
     ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(app.comm,DA_YPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyv,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Tempature");CHKERRQ(ierr);
     ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
     ierr = DADestroy(da);CHKERRQ(ierr);
 
-    ierr = DACreate2d(comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
+    ierr = DACreate2d(app.comm,DA_XYPERIODIC,DA_STENCIL_STAR,app.nxv,app.nyvf,PETSC_DETERMINE,1,2,1,0,0,&da);CHKERRQ(ierr);
     ierr = DASetFieldName(da,0,"Phi");CHKERRQ(ierr);
     ierr = DASetFieldName(da,1,"Pre");CHKERRQ(ierr);
     ierr = DMCompositeAddDA(app.pack,da);CHKERRQ(ierr);
@@ -155,7 +158,7 @@ int main(int argc,char **argv)
     /*
        Create the solver object and attach the grid/physics info 
     */
-    ierr = DMMGCreate(comm,1,0,&dmmg);CHKERRQ(ierr);
+    ierr = DMMGCreate(app.comm,1,0,&dmmg);CHKERRQ(ierr);
     ierr = DMMGSetDM(dmmg,(DM)app.pack);CHKERRQ(ierr);
     ierr = DMMGSetUser(dmmg,0,&app);CHKERRQ(ierr);
     ierr = DMMGSetISColoringType(dmmg,IS_COLORING_GLOBAL);CHKERRQ(ierr);
@@ -171,7 +174,9 @@ int main(int argc,char **argv)
     ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&isshell);CHKERRQ(ierr);
     if (isshell) {
       ierr = PCShellSetContext(pc,&app);CHKERRQ(ierr);
+      ierr = PCShellSetSetUp(pc,MyPCSetUp);CHKERRQ(ierr);
       ierr = PCShellSetApply(pc,MyPCApply);CHKERRQ(ierr);
+      ierr = PCShellSetDestroy(pc,MyPCDestroy);CHKERRQ(ierr);
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,16 +187,14 @@ int main(int argc,char **argv)
     ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
 
 
-    ierr = MyVecView(&app,DMMGGetx(dmmg));CHKERRQ(ierr); 
+    ierr = VecView(DMMGGetx(dmmg),v1);CHKERRQ(ierr);
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
        Free work space.  All PETSc objects should be destroyed when they
        are no longer needed.
        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-    ierr = PetscViewerDestroy(app.v1);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(app.v2);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(app.v3);CHKERRQ(ierr); 
+    ierr = PetscViewerDestroy(v1);CHKERRQ(ierr);
     ierr = DMCompositeDestroy(app.pack);CHKERRQ(ierr);
     ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
   PreLoadEnd();
@@ -381,7 +384,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
   ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
 
-  /* Get local vectors to hold ghosted parts of X */
+  /* Get local vectors to hold ghosted parts of X; then fill in the ghosted vectors from the unghosted global vector X */
   ierr = DMCompositeGetLocalVectors(dm,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DMCompositeScatter(dm,X,X1,X2,X3);CHKERRQ(ierr);
 
@@ -455,8 +458,7 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
     }
   }
 
-  /* Access the three subvectors in F */                       /* these are not ghosted and directly access the
-     memory locations in F */
+  /* Access the three subvectors in F: these are not ghosted and directly access the memory locations in F */
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2,&F3);CHKERRQ(ierr);
 
   /* Access the arrays inside the subvectors of F */
@@ -481,6 +483,47 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MyFormMatrix"
+PetscErrorCode MyFormMatrix(DMMG fdmmg,Mat A,Mat B)
+{
+  AppCtx         *app = (AppCtx*)fdmmg->user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShift(A,1.0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MyPCSetUp"
+/* 
+   Setup for the custom preconditioner
+
+ */
+PetscErrorCode MyPCSetUp(void* ctx)
+{
+  AppCtx         *app = (AppCtx*)ctx;
+  PetscErrorCode ierr;
+  DA             da;
+
+  PetscFunctionBegin;
+  /* create the linear solver for the Neutron diffusion */
+  ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
+  ierr = DMMGSetPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
+  ierr = DMMGSetUser(app->fdmmg,0,app);CHKERRQ(ierr);
+  ierr = DACreate2d(app->comm,DA_NONPERIODIC,DA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
+  ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); 
+  ierr = DMMGSetKSP(app->fdmmg,PETSC_NULL,MyFormMatrix);CHKERRQ(ierr);
+  app->dx = DMMGGetRHS(app->fdmmg);
+  app->dy = DMMGGetx(app->fdmmg);
+  ierr = VecDuplicate(app->dy,&app->c);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MyPCApply"
 /* 
    Here is my custom preconditioner
 
@@ -489,26 +532,71 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
 {
   AppCtx         *app = (AppCtx*)ctx;
   PetscErrorCode ierr;
+  Vec            x1,x2,x3,y3,y1,y2,f,t;
+  DALocalInfo    info1,info2,info3;
+  DA             da1,da2,da3;
+  PetscInt       i,j;
+  FluidField     *u,*ff;
 
   PetscFunctionBegin;
+  /* obtain information about the three meshes */
+  ierr = DMCompositeGetEntries(app->pack,&da1,&da2,&da3);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+
+  /* get ghosted version of fluid and thermal conduction, global for phi and C */
+  ierr = DMCompositeGetAccess(app->pack,X,&x1,&x2,&x3);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(app->pack,&f,&t,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da1,x1,INSERT_VALUES,f);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da1,x1,INSERT_VALUES,f);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da2,x2,INSERT_VALUES,t);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da2,x2,INSERT_VALUES,t);CHKERRQ(ierr);
+
+  /* get global version of result vector */
+  ierr = DMCompositeGetAccess(app->pack,Y,&y1,&y2,&y3);CHKERRQ(ierr);
+
+  /* pull out the phi and C values */
+  ierr = VecStrideGather(x3,0,app->dx,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecStrideGather(x3,1,app->c,INSERT_VALUES);CHKERRQ(ierr);
+
+  /* update C via formula 38; put back into return vector */
+  ierr = VecAXPY(app->c,0.0,app->dx);CHKERRQ(ierr);
+  ierr = VecScale(app->c,1.0);CHKERRQ(ierr);
+  ierr = VecStrideScatter(app->c,1,y3,INSERT_VALUES);CHKERRQ(ierr);
+
+  /* form the right hand side of the phi equation; solve system; put back into return vector */
+  ierr = VecAXPBY(app->dx,0.0,1.0,app->c);CHKERRQ(ierr);
+  ierr = DMMGSolve(app->fdmmg);CHKERRQ(ierr);
+  ierr = VecStrideScatter(app->dy,0,y3,INSERT_VALUES);CHKERRQ(ierr);
+
+
+  for (i=info1.xs; i<info1.xs+info1.xm; i++) {
+    ff[i].prss = u[i].prss;
+    ff[i].ergg = u[i].ergg;
+    ff[i].ergf = u[i].ergf;
+    ff[i].alfg = u[i].alfg;
+    ff[i].velg = u[i].velg;
+    ff[i].velf = u[i].velf;
+  }
+
+  ierr = DMCompositeRestoreLocalVectors(app->pack,&f,&t,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,X,&x1,&x2,&x3);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,Y,&y1,&y2,&y3);CHKERRQ(ierr);
+
   ierr = VecCopy(X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "MyVecView"
-PetscErrorCode MyVecView(AppCtx *app,Vec X)
+#define __FUNCT__ "MyPCDestroy"
+PetscErrorCode MyPCDestroy(void* ctx)
 {
+  AppCtx         *app = (AppCtx*)ctx;
   PetscErrorCode ierr;
-  DA             DA1,DA2,DA3;
-  Vec            X1,X2,X3;
 
   PetscFunctionBegin;
-  ierr = DMCompositeGetEntries(app->pack,&DA1,&DA2,&DA3);CHKERRQ(ierr);
-  ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
-  ierr = VecView(X1,app->v1);CHKERRQ(ierr);
-  ierr = VecView(X2,app->v2);CHKERRQ(ierr);
-  ierr = VecView(X3,app->v3);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);
+  ierr = VecDestroy(app->c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

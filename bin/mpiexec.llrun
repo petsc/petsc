@@ -1,8 +1,8 @@
 #!/usr/local/bin/bash
 #
-# This script is for systems that use llrun instead of mpirun
+# This script is for systems that use llrun instead of mpiexec
 #
-# Usage: bin/mpirun.llrun [-np n] programname programoptions
+# Usage: bin/mpiexec.llrun [-np n] programname programoptions
 #
 two=$2
 if [ $1 = "-np" ]; then

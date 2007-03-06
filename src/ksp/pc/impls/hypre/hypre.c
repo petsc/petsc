@@ -263,32 +263,31 @@ static PetscErrorCode PCSetFromOptions_HYPRE_Euclid(PC pc)
   PC_HYPRE       *jac = (PC_HYPRE*)pc->data;
   PetscErrorCode ierr;
   PetscTruth     flag;
-  char           *args[2];
+  char           *args[8],levels[16];
+  PetscInt       cnt = 0;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("HYPRE Euclid Options");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_hypre_euclid_levels","Number of levels of fill ILU(k)","None",jac->levels,&jac->levels,&flag);CHKERRQ(ierr);
   if (flag) {
-    char levels[16];
     if (jac->levels < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %d must be nonegative",jac->levels);
     sprintf(levels,"%d",jac->levels);
-    args[0] = (char*)"-level"; args[1] = levels;
-    ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+    args[cnt++] = (char*)"-level"; args[cnt++] = levels;
   } 
   ierr = PetscOptionsTruth("-pc_hypre_euclid_bj","Use block Jacobi ILU(k)","None",jac->bjilu,&jac->bjilu,PETSC_NULL);CHKERRQ(ierr);
   if (jac->bjilu) {
-    args[0] =(char*) "-bj"; args[1] = (char*)"1";
-    ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+    args[cnt++] =(char*) "-bj"; args[cnt++] = (char*)"1";
   } 
     
   ierr = PetscOptionsTruth("-pc_hypre_euclid_print_statistics","Print statistics","None",jac->printstatistics,&jac->printstatistics,PETSC_NULL);CHKERRQ(ierr);
   if (jac->printstatistics) {
-    args[0] = (char*)"-eu_stats"; args[1] = (char*)"1";
-    ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
-    args[0] = (char*)"-eu_mem"; args[1] = (char*)"1";
-    ierr = HYPRE_EuclidSetParams(jac->hsolver,2,args);CHKERRQ(ierr);
+    args[cnt++] = (char*)"-eu_stats"; args[cnt++] = (char*)"1";
+    args[cnt++] = (char*)"-eu_mem"; args[cnt++] = (char*)"1";
   }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  if (cnt) {
+    ierr = HYPRE_EuclidSetParams(jac->hsolver,cnt,args);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

@@ -39,20 +39,20 @@ ex5: ex5.o chkopts
 
 #-------------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1  ./ex1 
+	-@${MPIEXEC} -np 1  ./ex1 
 
 runex1f:
-	-@${MPIRUN} -np 1  ./ex1f 
+	-@${MPIEXEC} -np 1  ./ex1f 
 
 
 runex2:
-	-@${MPIRUN} -np 1  ./ex2 
+	-@${MPIEXEC} -np 1  ./ex2 
 
 runex2f:
-	-@${MPIRUN} -np 1  ./ex2f 
+	-@${MPIEXEC} -np 1  ./ex2f 
 
 runex5:
-	-@${MPIRUN} -np 3  ./ex5 
+	-@${MPIEXEC} -np 3  ./ex5 
 
 TESTEXAMPLES_C		    = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex5.PETSc runex5 ex5.rm 
 TESTEXAMPLES_C_X11	    = 

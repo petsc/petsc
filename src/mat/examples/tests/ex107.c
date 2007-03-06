@@ -1,7 +1,7 @@
 static char help[] = "Tests PLAPACK interface.\n\n";
 
 /* Usage:
-     mpirun -np 4 ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
+     mpiexec -np 4 ex107 -M 50 -mat_plapack_nprows 2 -mat_plapack_npcols 2 -mat_plapack_nb 1 
  */
 
 #include "petscmat.h"

@@ -1,4 +1,4 @@
-/* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex5 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear PDE in 2d.\n\
 We solve the Bratu equation in a 2D rectangular\n\
