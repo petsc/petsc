@@ -319,10 +319,13 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& a
   ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
-  //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);
-
-  ierr = preallocateOperator(m->getTopology(), atlas, order, *J);CHKERRQ(ierr);
+  if (PetscStrcmp(mtype, MATSHELL)) {
+    //ierr = MatShellSetOperation();
+  } else {
+    //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
+    ierr = preallocateOperator(m->getTopology(), atlas, order, *J);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 } 
 
@@ -760,6 +763,43 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
     }
   }
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetMaximumDegree"
+/*@
+  MeshGetMaximumDegree - Return the maximum degree of any mesh vertex
+
+  Collective on mesh
+
+  Input Parameter:
+. mesh - The Mesh
+
+  Output Parameter:
+. maxDegree - The maximum number of edges at any vertex
+
+   Level: beginner
+
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshGetMaximumDegree(Mesh mesh, PetscInt *maxDegree)
+{
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Mesh::patch_type                               patch    = 0;
+  const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
+  const ALE::Obj<ALE::Mesh::sieve_type>&                    sieve    = topology->getPatch(patch);
+  PetscInt                                                  maxDeg   = -1;
+
+  for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    maxDeg = PetscMax(maxDeg, (PetscInt) sieve->support(*v_iter)->size());
+  }
+  *maxDegree = maxDeg;
   PetscFunctionReturn(0);
 }
 
@@ -2006,84 +2046,6 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
   *array       = (PetscScalar *) section->restrict(patch);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "BCSectionGetArray"
-/*@C
-  BCSectionGetArray - Returns the array underlying the BCSection.
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-- name - The section name
-
-  Output Parameters:
-+ numElements - The number of mesh element with values
-. fiberDim - The number of values per element
-- array - The array
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
-{
-  ALE::Obj<ALE::Mesh> m;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::int_section_type>&       section = m->getIntSection(std::string(name));
-  const ALE::Mesh::int_section_type::patch_type patch   = 0;
-  if (!section->hasPatch(patch)) {
-    *numElements = 0;
-    *fiberDim    = 0;
-    *array       = NULL;
-    PetscFunctionReturn(0);
-  }
-  const ALE::Mesh::int_section_type::chart_type& chart = section->getPatch(patch);
-  int fiberDimMin = section->getFiberDimension(patch, *chart.begin());
-  int numElem     = 0;
-
-  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const int fiberDim = section->getFiberDimension(patch, *c_iter);
-
-    if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
-  }
-  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const int fiberDim = section->getFiberDimension(patch, *c_iter);
-
-    numElem += fiberDim/fiberDimMin;
-  }
-  *numElements = numElem;
-  *fiberDim    = fiberDimMin;
-  *array       = (PetscInt *) section->restrict(patch);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "BCFUNCGetArray"
-PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
-{
-  ALE::Obj<ALE::Mesh> m;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ALE::Mesh::bc_values_type& bcValues = m->getBCValues();
-  *numElements = bcValues.size();
-  *fiberDim    = 4;
-  *array       = new PetscScalar[(*numElements)*(*fiberDim)];
-  for(int bcf = 1; bcf <= (int) bcValues.size(); ++bcf) {
-    (*array)[(bcf-1)*4+0] = bcValues[bcf].rho;
-    (*array)[(bcf-1)*4+1] = bcValues[bcf].u;
-    (*array)[(bcf-1)*4+2] = bcValues[bcf].v;
-    (*array)[(bcf-1)*4+3] = bcValues[bcf].p;
-  }
   PetscFunctionReturn(0);
 }
 
