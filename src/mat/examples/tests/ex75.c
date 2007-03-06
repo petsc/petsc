@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex75 [-help] [all PETSc options] */ 
+/* Program usage:  mpiexec -np <procs> ex75 [-help] [all PETSc options] */ 
 
 static char help[] = "Tests the vatious routines in MatMPISBAIJ format.\n";
 

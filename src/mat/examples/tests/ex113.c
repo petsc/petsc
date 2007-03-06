@@ -2,7 +2,7 @@
 static char help[] = "Tests sequential and parallel MatMatMult() and MatAXPY(...,SUBSET_NONZERO_PATTERN) \n\
 Input arguments are:\n\
   -f <input_file>  : file to load\n\n";
-/* e.g., mpirun -np 3 ./ex113 -f <file> */
+/* e.g., mpiexec -np 3 ./ex113 -f <file> */
 
 #include "petscmat.h"
 

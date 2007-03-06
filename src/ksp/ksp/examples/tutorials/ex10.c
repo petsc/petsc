@@ -18,7 +18,7 @@ users manual for a discussion of preloading.  Input parameters include\n\
         -ksp_type preonly -pc_type lu -mat_type aijspooles/superlu/superlu_dist/aijmumps \n\
         -ksp_type preonly -pc_type cholesky -mat_type sbaijspooles/dscpack/sbaijmumps \n\
         -f0 <A> -fB <B> -mat_type sbaijmumps -ksp_type preonly -pc_type cholesky -test_inertia -mat_sigma <sigma> \n\
-   mpirun -np <np> ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
+   mpiexec -np <np> ex10 -f0 <datafile> -ksp_type cg -pc_type asm -pc_asm_type basic -sub_pc_type icc -mat_type sbaij
  \n\n";
 */
 /*T

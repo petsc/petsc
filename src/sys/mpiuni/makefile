@@ -9,7 +9,7 @@ SOURCEF	 =
 SOURCEH	 = ../../../include/mpiuni/mpi.h ../../../include/mpiuni/mpif.h
 OBJSC	 = mpi.o
 OBJSF	 =
-SCRIPTS  = ../../../../bin/mpirun.uni
+SCRIPTS  = ../../../../bin/mpiexec.uni
 LIBBASE	 = libmpiuni
 LOCDIR   = src/sys/mpiuni/
 

@@ -2,7 +2,7 @@
 static char help[] = "Tests converting a matrix to another format with MatConvert().\n\n";
 
 #include "petscmat.h"
-/* Usage: mpirun -np <np> ex55 -display <0 or 1> */
+/* Usage: mpiexec -np <np> ex55 -display <0 or 1> */
 
 #undef __FUNCT__
 #define __FUNCT__ "main"

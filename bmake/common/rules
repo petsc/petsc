@@ -215,8 +215,8 @@ getmpilinklibs:
 getmpiincludedirs:
 	-@echo  ${MPI_INCLUDE}
 
-getmpirun:
-	-@echo  ${MPIRUN}
+getmpiexec:
+	-@echo  ${MPIEXEC}
 
 # --------------------------------------------------------------------
 #

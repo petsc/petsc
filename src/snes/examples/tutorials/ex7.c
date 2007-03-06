@@ -1,4 +1,4 @@
-/* Program usage:  mpirun -np <procs> ex7 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex7 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear PDE in 2d.\n\
 We solve the Stokes equation in a 2D rectangular\n\

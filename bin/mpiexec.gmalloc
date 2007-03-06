@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#  mpirun.uni for Apple's Guard Malloc; used to find incorrect memory 
+#  mpiexec.uni for Apple's Guard Malloc; used to find incorrect memory 
 #  accesses
 #
 if [ $1 !=  "-np" ]; then

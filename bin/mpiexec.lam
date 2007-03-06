@@ -1,0 +1,28 @@
+#!/bin/sh
+#set -x
+
+#
+# This program is a wrapper over lam's mpiexec. It converts
+# the mpich's mpiexec formated command to lam's format.
+# and invokes lam's mpiexec with it.
+#
+
+if [ $1 !=  "-np" ]; then
+echo "Error in  mpiexec command"
+exit 1
+fi
+shift
+np=$1
+shift
+progname=$1
+shift
+options=$*
+#
+# Please modify the following path to point to the correct location of LAM's mpiexec
+#
+lam_path=/home/petsc/soft/solaris-9-lam/lam-6.5.8/bin
+#
+# Now execute the mpiexec comman
+#
+$lam_path/mpiexec -w -c $np -s n0 $progname -- $options
+$lam_path/lamclean

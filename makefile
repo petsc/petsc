@@ -79,7 +79,7 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using libraries: ${PETSC_LIB}"
 	-@echo "------------------------------------------"
-	-@echo "Using mpirun: ${MPIRUN}"
+	-@echo "Using mpiexec: ${MPIEXEC}"
 	-@echo "=========================================="
 #
 #

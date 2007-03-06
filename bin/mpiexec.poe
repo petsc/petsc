@@ -1,7 +1,7 @@
 #!/usr/local/bin/bash
 #
 # This script is for IBM SP machines running POE that do not 
-# have mpirun installed. 
+# have mpiexec installed. 
 #
 # Usage: bin/mpirun.poe [-np n] programname programoptions
 #

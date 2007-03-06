@@ -42,7 +42,7 @@ T*/
          setenv MPC_NUM_THREADS nt <- set number of threads processor 0 should 
                                       use to evaluate user provided function
 
-       Note: The number of MPI processes (set with the mpirun option -np) can 
+       Note: The number of MPI processes (set with the mpiexec option -np) can 
        be set completely independently from the number of threads process 0 
        uses to evaluate the function (though usually one would make them the same).
 */

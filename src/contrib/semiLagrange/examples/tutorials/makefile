@@ -30,19 +30,19 @@ ex4: ex4.o  chkopts
 	${RM} ex4.o
 #--------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1 > ex1.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./ex1 > ex1.tmp 2>&1;   \
 	   if (${DIFF} output/ex1.out ex1.tmp) then true; \
 	   else echo "Possible problem with ex1, diffs above"; fi; \
 	   ${RM} -f ex1.tmp
 
 runex2:
-	-@${MPIRUN} -np 1 ./ex2 > ex2.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./ex2 > ex2.tmp 2>&1;   \
 	   if (${DIFF} output/ex2.out ex2.tmp) then true; \
 	   else echo "Possible problem with ex2, diffs above"; fi; \
 	   ${RM} -f ex2.tmp
 
 runex4:
-	-@${MPIRUN} -np 1 ./ex4 > ex4.tmp 2>&1;   \
+	-@${MPIEXEC} -np 1 ./ex4 > ex4.tmp 2>&1;   \
 	   if (${DIFF} output/ex4.out ex4.tmp) then true; \
 	   else echo "Possible problem with ex4, diffs above"; fi; \
 	   ${RM} -f ex4.tmp

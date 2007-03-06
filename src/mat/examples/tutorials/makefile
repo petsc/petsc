@@ -31,10 +31,10 @@ ex6: ex6.o  chkopts
 	${RM} ex6.o
 
 runex1: 
-	-@${MPIRUN} -np 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
+	-@${MPIEXEC} -np 1 ./ex1 -f0 ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 runex5: 
-	-@${MPIRUN} -np 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
+	-@${MPIEXEC} -np 2 ./ex5 -f ${DATAFILESPATH}/matrices/medium -viewer_binary_skip_info
 
 #-------------------------------------------------------------
 TESTEXAMPLES_C		    = ex4.PETSc ex4.rm ex5.PETSc ex5.rm

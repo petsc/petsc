@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <procs> ex5 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <procs> ex5 [-help] [all PETSc options] */
 
 static char help[] = "Nonlinear, time-dependent PDE in 2d.\n";
 

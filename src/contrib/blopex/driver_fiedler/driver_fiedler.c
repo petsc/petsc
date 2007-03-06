@@ -1,7 +1,7 @@
 /* This code was developed by Merico Argentati, Andrew Knyazev, Ilya Lashuk and Evgueni Ovtchinnikov */
 
 static char help[] = "'Fiedler' test driver for 'abstract lobpcg' in PETSC\n\
-Usage: mpirun -np <procs> driver_fiedler [-help] [all PETSc options]\n\
+Usage: mpiexec -np <procs> driver_fiedler [-help] [all PETSc options]\n\
 Special options:\n\
 -matrix <filename>      (mandatory) specify file with 'stiffness' matrix \
 (in petsc format)\n\
@@ -14,7 +14,7 @@ Special options:\n\
 -output_file <string>  Filename to write calculated eigenvectors.\n\
 -shift <real number>   Apply shift to 'stiffness' matrix\n\
 Example:\n\
-mpirun -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
+mpiexec -np 2 ./driver_fiedler -matrix my_matrix.bin -n_eigs 3 -tol 1e-6 -itr 20\n";
 
 #include "petscksp.h"
 #include <assert.h>

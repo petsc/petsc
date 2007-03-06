@@ -5,7 +5,7 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 #include "petscsys.h"
 
 /* Usage: 
-   mpirun -np <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_summary
+   mpiexec -np <np> ./ex1 -n <num_of_random_numbers> -random_type <type> -log_summary
                          -view_randomvalues <view_rank> 
                          -random_view ascii -random_view_file <filename>
 */

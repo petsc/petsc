@@ -14,7 +14,7 @@ ex3: ex3.o   chkopts
 	${RM} -f ex3.o
 
 runex3:
-	-@${MPIRUN} -np 1 ./ex3
+	-@${MPIEXEC} -np 1 ./ex3
 
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_C_X11_MPIUNI = ex3.PETSc runex3 ex3.rm

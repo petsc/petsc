@@ -33,7 +33,7 @@
     discarded before checking the database. For example, PETSC_VIEWER_SOCKET_PORT would 
     be given as -viewer_socket_port 9000
 
-    If comm does not contain the 0th process in the MPIRUN it is likely on
+    If comm does not contain the 0th process in the MPIEXEC it is likely on
     many systems that the environmental variable will not be set unless you
     put it in a universal location like a .chsrc file
 

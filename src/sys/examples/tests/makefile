@@ -72,23 +72,23 @@ ex18: ex18.o chkopts
 	${RM} -f ex18.o
 #----------------------------------------------------------------------------
 runex1:
-	-@${MPIRUN} -np 1 ./ex1
+	-@${MPIEXEC} -np 1 ./ex1
 	-@echo "This is a contrived error to test error handling."
 
 runex1f:
-	-@${MPIRUN} -np 1 ./ex1f
+	-@${MPIEXEC} -np 1 ./ex1f
 	-@echo "This is a contrived error to test error handling."
 
 runex2:
-	-@${MPIRUN} -np 1 ./ex2
+	-@${MPIEXEC} -np 1 ./ex2
 	-@echo "This is a contrived error to test error handling."
 
 runex3:
-	-@${MPIRUN} -np 1 ./ex3 -fp_trap
+	-@${MPIEXEC} -np 1 ./ex3 -fp_trap
 	-@echo "This is a contrived error to test error handling of floating point exceptions."
 
 runex10:
-	-@${MPIRUN} -np 1 ./ex10 > ex10_1.tmp 2>&1;\
+	-@${MPIEXEC} -np 1 ./ex10 > ex10_1.tmp 2>&1;\
 	   if (${DIFF} output/ex10_1.out ex10_1.tmp) then true; \
 	   else echo "Error in PetscMemmove."; fi; \
 	   ${RM} -f ex10_1.tmp ex10_1.tmp

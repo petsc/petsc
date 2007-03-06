@@ -1,5 +1,5 @@
 
-/* Program usage:  mpirun -np <np> ./ex28 [-help] [all PETSc options] */
+/* Program usage:  mpiexec -np <np> ./ex28 [-help] [all PETSc options] */
 
 static char help[] = "Test procedural KSPSetFromOptions() or at runtime.\n\n";
 

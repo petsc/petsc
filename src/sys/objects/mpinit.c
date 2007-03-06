@@ -37,8 +37,8 @@ $    -openmp_merge_size <n> results in N total processes, N/n used by the applic
 $                            (used by PETSc)
 $                           You MUST launch MPI so that n MPI processes are created for each hardware node.
 $
-$    petscmpirun -np 2 ./ex1 -openmp_spawn_size 3 gives 2 application nodes (and 4 PETSc worker nodes)
-$    petscmpirun -np 6 ./ex1 -openmp_merge_size 3 gives the SAME 2 application nodes and 4 PETSc worker nodes
+$    petscmpiexec -np 2 ./ex1 -openmp_spawn_size 3 gives 2 application nodes (and 4 PETSc worker nodes)
+$    petscmpiexec -np 6 ./ex1 -openmp_merge_size 3 gives the SAME 2 application nodes and 4 PETSc worker nodes
 $       This is what would use if each of the computers hardware nodes had 3 CPUs.
 $
 $      These are intended to be used in conjunction with USER OpenMP code. The user will have 1 process per
@@ -115,8 +115,8 @@ $    -openmp_merge_size <n> results in N total processes, N/n used by the applic
 $                            (used by PETSc)
 $                           You MUST launch MPI so that n MPI processes are created for each hardware node.
 $
-$    petscmpirun -np 2 ./ex1 -openmp_spawn_size 3 gives 2 application nodes (and 4 PETSc worker nodes)
-$    petscmpirun -np 6 ./ex1 -openmp_merge_size 3 gives the SAME 2 application nodes and 4 PETSc worker nodes
+$    petscmpiexec -np 2 ./ex1 -openmp_spawn_size 3 gives 2 application nodes (and 4 PETSc worker nodes)
+$    petscmpiexec -np 6 ./ex1 -openmp_merge_size 3 gives the SAME 2 application nodes and 4 PETSc worker nodes
 $       This is what would use if each of the computers hardware nodes had 3 CPUs.
 $
 $      These are intended to be used in conjunction with USER OpenMP code. The user will have 1 process per
