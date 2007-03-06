@@ -42,11 +42,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
   v->bops->publish  = PETSC_NULL /* VecPublish_Petsc */;
   v->type_name      = PETSC_NULL;
 
-  v->map.range    = PETSC_NULL;
-  v->data         = PETSC_NULL;
-  v->map.n        = -1;
-  v->map.N        = -1;
-  v->map.bs       = -1;
+  ierr            = PetscMapInitialize(comm,&v->map);CHKERRQ(ierr);
   v->mapping      = PETSC_NULL;
   v->bmapping     = PETSC_NULL;
   v->array_gotten = PETSC_FALSE;

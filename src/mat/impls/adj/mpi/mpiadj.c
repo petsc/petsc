@@ -467,7 +467,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   B->mapping          = 0;
   B->assembled        = PETSC_FALSE;
   
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
   if (B->cmap.n < 0) B->cmap.n = B->cmap.N;
   if (B->cmap.N < 0) B->cmap.N = B->cmap.n;
 

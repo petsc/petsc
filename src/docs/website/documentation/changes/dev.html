@@ -337,6 +337,10 @@ into PetscInitialize().</li>
         <li>When a filename is passed into PetscInitialize() ~/.petscrc
 and .petscrc are checked ALSO (they used to be skipped when a filename
 was passed in) unless -skip_petscrc is passed in the input file</li>
+        <li>PetscMapInitialize() has been split into PetscMapInitialize() that
+is called before the Map is ever used and then PetscMapSetUp() which is called
+after the blocksize and local or global size is set and determines the ranges
+etc.
 
 
 

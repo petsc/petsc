@@ -867,8 +867,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBDiagSetPreallocation_MPIBDiag(Mat B,Pet
 
   B->rmap.bs = B->cmap.bs = bs;
 
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
   if ((B->cmap.N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad column number");
   if ((B->rmap.N%bs)) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid block size - bad local row number");

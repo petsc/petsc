@@ -558,8 +558,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBDiagSetPreallocation_SeqBDiag(Mat B,Pet
   }
 
   B->rmap.bs = B->cmap.bs = bs;
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
   if ((B->cmap.n%bs) || (B->rmap.N%bs)) SETERRQ(PETSC_ERR_ARG_SIZ,"Invalid block size");
   if (!nd) nda = nd + 1;

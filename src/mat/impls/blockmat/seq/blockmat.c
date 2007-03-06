@@ -989,8 +989,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
 
   A->data = (void*)b;
 
-  ierr = PetscMapInitialize(A->comm,&A->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(A->comm,&A->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
 
   A->assembled     = PETSC_TRUE;
   A->preallocated  = PETSC_FALSE;

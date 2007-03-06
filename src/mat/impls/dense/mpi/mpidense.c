@@ -1140,8 +1140,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   ierr = MPI_Comm_size(mat->comm,&a->size);CHKERRQ(ierr);
 
   mat->rmap.bs = mat->cmap.bs = 1;
-  ierr = PetscMapInitialize(mat->comm,&mat->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(mat->comm,&mat->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&mat->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&mat->cmap);CHKERRQ(ierr);
   a->nvec = mat->cmap.n;
 
   /* build cache for off array entries formed */

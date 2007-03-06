@@ -373,8 +373,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec v,PetscScalar *scales)
 {
   PetscErrorCode ierr;
-  PetscInt         i,j,n,bs;
-  PetscScalar *x;
+  PetscInt       i,j,n,bs;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -431,10 +431,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScaleAll(Vec v,PetscScalar *scales)
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt         i,j,n,bs;
-  PetscScalar *x;
-  PetscReal   tnorm[128];
-  MPI_Comm    comm;
+  PetscInt       i,j,n,bs;
+  PetscScalar    *x;
+  PetscReal      tnorm[128];
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -527,10 +527,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideNormAll(Vec v,NormType ntype,PetscRea
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt         i,j,n,bs;
-  PetscScalar *x;
-  PetscReal   max[128],tmp;
-  MPI_Comm    comm;
+  PetscInt       i,j,n,bs;
+  PetscScalar    *x;
+  PetscReal      max[128],tmp;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -607,10 +607,10 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMaxAll(Vec v,PetscInt *idex,PetscReal
 PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMinAll(Vec v,PetscInt *idex,PetscReal *nrm)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n,bs,j;
-  PetscScalar *x;
-  PetscReal   min[128],tmp;
-  MPI_Comm    comm;
+  PetscInt       i,n,bs,j;
+  PetscScalar    *x;
+  PetscReal      min[128],tmp;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -1108,8 +1108,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec v)
 PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n;
-  PetscScalar *x,lsum = 0.0;
+  PetscInt       i,n;
+  PetscScalar    *x,lsum = 0.0;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
@@ -1147,8 +1147,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
 PetscErrorCode PETSCVEC_DLLEXPORT VecShift(Vec v,PetscScalar shift)
 {
   PetscErrorCode ierr;
-  PetscInt i,n;
-  PetscScalar *x;
+  PetscInt       i,n;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);

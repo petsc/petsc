@@ -2357,8 +2357,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation_MPIAIJ(Mat B,PetscIn
   if (o_nz < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"o_nz cannot be less than 0: value %D",o_nz);
 
   B->rmap.bs = B->cmap.bs = 1;
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
   if (d_nnz) {
     for (i=0; i<B->rmap.n; i++) {
       if (d_nnz[i] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"d_nnz cannot be less than 0: local row %D value %D",i,d_nnz[i]);
@@ -2791,8 +2791,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   if (Ii[0]) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Ii[0] must be 0 it is %D",Ii[0]);
 
   B->rmap.bs = B->cmap.bs = 1;
-  ierr = PetscMapInitialize(B->comm,&B->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(B->comm,&B->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
   m      = B->rmap.n;
   cstart = B->cmap.rstart;
   cend   = B->cmap.rend;
@@ -3686,7 +3686,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
   merge->rowmap.n = m;
   merge->rowmap.N = M;
   merge->rowmap.bs = 1;
-  ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&merge->rowmap);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
   
@@ -4587,8 +4587,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithSplitArrays(MPI_Comm comm,P
   (*mat)->preallocated = PETSC_TRUE;
 
   (*mat)->rmap.bs = (*mat)->cmap.bs = 1;
-  ierr = PetscMapInitialize((*mat)->comm,&(*mat)->rmap);CHKERRQ(ierr);
-  ierr = PetscMapInitialize((*mat)->comm,&(*mat)->cmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&(*mat)->rmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&(*mat)->cmap);CHKERRQ(ierr);
 
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,n,i,j,a,&maij->A);CHKERRQ(ierr);
   ierr = MatCreateSeqAIJWithArrays(PETSC_COMM_SELF,m,(*mat)->cmap.N,oi,oj,oa,&maij->B);CHKERRQ(ierr);

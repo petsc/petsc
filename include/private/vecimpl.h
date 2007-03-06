@@ -13,6 +13,7 @@
 PETSC_EXTERN_CXX_BEGIN
 
 typedef struct {
+  MPI_Comm  comm;
   PetscInt  n,N;         /* local, global vector size */
   PetscInt  rstart,rend; /* local start, local end + 1 */
   PetscInt  *range;      /* the offset of each processor */
@@ -20,6 +21,8 @@ typedef struct {
 } PetscMap;
 
 EXTERN PetscErrorCode PetscMapInitialize(MPI_Comm,PetscMap*);
+EXTERN PetscErrorCode PetscMapSetUp(PetscMap*);
+EXTERN PetscErrorCode PetscMapDestroy(PetscMap*);
 EXTERN PetscErrorCode PetscMapCopy(MPI_Comm,PetscMap*,PetscMap*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapSetLocalSize(PetscMap*,PetscInt);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscMapGetLocalSize(PetscMap*,PetscInt *);

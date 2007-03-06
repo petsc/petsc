@@ -53,7 +53,9 @@ typedef struct {
 
   DMComposite pack;
 
-  DMMG        *fdmmg;
+  DMMG        *fdmmg;                              /* used by PCShell to solve diffusion problem */
+  Vec         dx,dy;
+  Vec         c; 
 } AppCtx;
 
 typedef struct {                 /* Fluid unknowns */
@@ -72,8 +74,9 @@ typedef struct {                 /* Fuel unknowns */
 
 extern PetscErrorCode FormInitialGuess(DMMG,Vec);
 extern PetscErrorCode FormFunction(SNES,Vec,Vec,void*);
-extern PetscErrorCode MyPCApply(void*,Vec,Vec);
 extern PetscErrorCode MyPCSetUp(void*);
+extern PetscErrorCode MyPCApply(void*,Vec,Vec);
+extern PetscErrorCode MyPCDestroy(void*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -173,6 +176,7 @@ int main(int argc,char **argv)
       ierr = PCShellSetContext(pc,&app);CHKERRQ(ierr);
       ierr = PCShellSetSetUp(pc,MyPCSetUp);CHKERRQ(ierr);
       ierr = PCShellSetApply(pc,MyPCApply);CHKERRQ(ierr);
+      ierr = PCShellSetDestroy(pc,MyPCDestroy);CHKERRQ(ierr);
     }
 
     /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -479,6 +483,20 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ctx)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MyFormMatrix"
+PetscErrorCode MyFormMatrix(DMMG fdmmg,Mat A,Mat B)
+{
+  AppCtx         *app = (AppCtx*)fdmmg->user;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatShift(A,1.0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MyPCSetUp"
 /* 
    Setup for the custom preconditioner
 
@@ -491,12 +509,21 @@ PetscErrorCode MyPCSetUp(void* ctx)
 
   PetscFunctionBegin;
   /* create the linear solver for the Neutron diffusion */
-  /*  ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
+  ierr = DMMGCreate(app->comm,1,0,&app->fdmmg);CHKERRQ(ierr);
+  ierr = DMMGSetPrefix(app->fdmmg,"phi_");CHKERRQ(ierr);
+  ierr = DMMGSetUser(app->fdmmg,0,app);CHKERRQ(ierr);
   ierr = DACreate2d(app->comm,DA_NONPERIODIC,DA_STENCIL_STAR,app->nxv,app->nyvf,PETSC_DETERMINE,1,1,1,0,0,&da);CHKERRQ(ierr);
-  ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); */
+  ierr = DMMGSetDM(app->fdmmg,(DM)da);CHKERRQ(ierr); 
+  ierr = DMMGSetKSP(app->fdmmg,PETSC_NULL,MyFormMatrix);CHKERRQ(ierr);
+  app->dx = DMMGGetRHS(app->fdmmg);
+  app->dy = DMMGGetx(app->fdmmg);
+  ierr = VecDuplicate(app->dy,&app->c);CHKERRQ(ierr);
+  ierr = DADestroy(da);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MyPCApply"
 /* 
    Here is my custom preconditioner
 
@@ -505,18 +532,71 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
 {
   AppCtx         *app = (AppCtx*)ctx;
   PetscErrorCode ierr;
+  Vec            x1,x2,x3,y3,y1,y2,f,t;
+  DALocalInfo    info1,info2,info3;
+  DA             da1,da2,da3;
+  PetscInt       i,j;
+  FluidField     *u,*ff;
 
   PetscFunctionBegin;
+  /* obtain information about the three meshes */
+  ierr = DMCompositeGetEntries(app->pack,&da1,&da2,&da3);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
+
+  /* get ghosted version of fluid and thermal conduction, global for phi and C */
+  ierr = DMCompositeGetAccess(app->pack,X,&x1,&x2,&x3);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(app->pack,&f,&t,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da1,x1,INSERT_VALUES,f);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da1,x1,INSERT_VALUES,f);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da2,x2,INSERT_VALUES,t);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da2,x2,INSERT_VALUES,t);CHKERRQ(ierr);
+
+  /* get global version of result vector */
+  ierr = DMCompositeGetAccess(app->pack,Y,&y1,&y2,&y3);CHKERRQ(ierr);
+
+  /* pull out the phi and C values */
+  ierr = VecStrideGather(x3,0,app->dx,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecStrideGather(x3,1,app->c,INSERT_VALUES);CHKERRQ(ierr);
+
+  /* update C via formula 38; put back into return vector */
+  ierr = VecAXPY(app->c,0.0,app->dx);CHKERRQ(ierr);
+  ierr = VecScale(app->c,1.0);CHKERRQ(ierr);
+  ierr = VecStrideScatter(app->c,1,y3,INSERT_VALUES);CHKERRQ(ierr);
+
+  /* form the right hand side of the phi equation; solve system; put back into return vector */
+  ierr = VecAXPBY(app->dx,0.0,1.0,app->c);CHKERRQ(ierr);
+  ierr = DMMGSolve(app->fdmmg);CHKERRQ(ierr);
+  ierr = VecStrideScatter(app->dy,0,y3,INSERT_VALUES);CHKERRQ(ierr);
+
+
+  for (i=info1.xs; i<info1.xs+info1.xm; i++) {
+    ff[i].prss = u[i].prss;
+    ff[i].ergg = u[i].ergg;
+    ff[i].ergf = u[i].ergf;
+    ff[i].alfg = u[i].alfg;
+    ff[i].velg = u[i].velg;
+    ff[i].velf = u[i].velf;
+  }
+
+  ierr = DMCompositeRestoreLocalVectors(app->pack,&f,&t,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,X,&x1,&x2,&x3);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,Y,&y1,&y2,&y3);CHKERRQ(ierr);
+
   ierr = VecCopy(X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "MyPCDestroy"
 PetscErrorCode MyPCDestroy(void* ctx)
 {
   AppCtx         *app = (AppCtx*)ctx;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /*  ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);*/
+  ierr = DMMGDestroy(app->fdmmg);CHKERRQ(ierr);
+  ierr = VecDestroy(app->c);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

@@ -171,10 +171,11 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DMComposite packer)
 
   PetscFunctionBegin;
   if (packer->setup) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Packer has already been setup");
+  ierr = PetscMapInitialize(packer->comm,&map);CHKERRQ(ierr);
   ierr = PetscMapSetLocalSize(&map,packer->n);CHKERRQ(ierr);
   ierr = PetscMapSetSize(&map,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = PetscMapSetBlockSize(&map,1);CHKERRQ(ierr);
-  ierr = PetscMapInitialize(packer->comm,&map);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&map);CHKERRQ(ierr);
   ierr = PetscMapGetSize(&map,&packer->N);CHKERRQ(ierr);
   ierr = PetscMapGetLocalRange(&map,&packer->rstart,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(map.range);CHKERRQ(ierr);
@@ -850,7 +851,9 @@ PetscErrorCode DMCompositeGetLocalVectors_Array(DMComposite packer,struct DMComp
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscMalloc(mine->n*sizeof(PetscScalar),array);CHKERRQ(ierr);
+  if (array) {
+    ierr = PetscMalloc(mine->n*sizeof(PetscScalar),array);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -860,7 +863,9 @@ PetscErrorCode DMCompositeGetLocalVectors_DA(DMComposite packer,struct DMComposi
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DAGetLocalVector(mine->da,local);CHKERRQ(ierr);
+  if (local) {
+    ierr = DAGetLocalVector(mine->da,local);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -870,7 +875,9 @@ PetscErrorCode DMCompositeRestoreLocalVectors_Array(DMComposite packer,struct DM
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = PetscFree(*array);CHKERRQ(ierr);
+  if (array) {
+    ierr = PetscFree(*array);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -880,7 +887,9 @@ PetscErrorCode DMCompositeRestoreLocalVectors_DA(DMComposite packer,struct DMCom
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = DARestoreLocalVector(mine->da,local);CHKERRQ(ierr);
+  if (local) {
+    ierr = DARestoreLocalVector(mine->da,local);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
