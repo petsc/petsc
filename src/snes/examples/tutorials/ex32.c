@@ -79,25 +79,30 @@ typedef struct {
   PetscScalar temp;
 } Field2;
 
-extern PetscErrorCode FormInitialGuess(DMMG,Vec);
-extern PetscErrorCode FormInitialGuess1(DMMG,Vec);
-extern PetscErrorCode FormInitialGuess2(DMMG,Vec);
+extern PetscErrorCode FormInitialGuessLocal(DMMG,Vec);
+extern PetscErrorCode FormInitialGuessLocal1(DMMG,Vec);
+extern PetscErrorCode FormInitialGuessLocal2(DMMG,Vec);
+extern PetscErrorCode FormInitialGuessLocalComp(DMMG,Vec);
+
 extern PetscErrorCode FormFunctionLocal(DALocalInfo*,Field**,Field**,void*);
 extern PetscErrorCode FormFunctionLocal1(DALocalInfo*,Field1**,Field1**,void*);
 extern PetscErrorCode FormFunctionLocal2(DALocalInfo*,Field2**,Field2**,void*);
+extern PetscErrorCode FormFunctionLocalComp(SNES,Vec,Vec,void*);
 
 typedef struct {
   PassiveReal  lidvelocity,prandtl,grashof;  /* physical parameters */
   PetscTruth   draw_contours;                /* flag - 1 indicates drawing contours */
   DMMG         *dmmg;                        /* passing solu_true into sub-models */
+  DMMG         *dmmg1,*dmmg2;                /* passing objects of sub-physics into the composite physics */
   Vec          solu_local;
+  DMComposite  pack;
 } AppCtx;
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  DMMG           *dmmg,*dmmg1,*dmmg2; /* multilevel grid structure */
+  DMMG           *dmmg,*dmmg1,*dmmg2,*dmmg_comp; /* multilevel grid structure */
   AppCtx         user;                /* user-defined work context */
   PetscInt       mx,my,its,dof,nlevels=1; 
   PetscErrorCode ierr;
@@ -149,7 +154,7 @@ int main(int argc,char **argv)
   ierr = DMMGSetSNESLocal(dmmg,FormFunctionLocal,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"lid velocity = %G, prandtl # = %G, grashof # = %G\n",
 		       user.lidvelocity,user.prandtl,user.grashof);CHKERRQ(ierr);
-  ierr = DMMGSetInitialGuess(dmmg,FormInitialGuess);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg,FormInitialGuessLocal);CHKERRQ(ierr);
 
   /* Solve the nonlinear system */
   ierr = DMMGSolve(dmmg);CHKERRQ(ierr); 
@@ -182,7 +187,7 @@ int main(int argc,char **argv)
   ierr = DACreateLocalVector(da,&solu_local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalBegin(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
   ierr = DAGlobalToLocalEnd(da,solu_true,INSERT_VALUES,solu_local);CHKERRQ(ierr);
-  user.dmmg = dmmg;
+  user.dmmg  = dmmg;
   user.solu_local = solu_local;
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -196,17 +201,19 @@ int main(int argc,char **argv)
   dof  = 3;
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg1,(DM)da);CHKERRQ(ierr);
+  ierr = DASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(da,1,"y-velocity");CHKERRQ(ierr);
+  ierr = DASetFieldName(da,2,"Omega");CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
   ierr = DMMGSetSNESLocal(dmmg1,FormFunctionLocal1,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
-  ierr = DMMGSetInitialGuess(dmmg1,FormInitialGuess1);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg1,FormInitialGuessLocal1);CHKERRQ(ierr);
 
   ierr = DMMGSolve(dmmg1);CHKERRQ(ierr); 
   snes = DMMGGetSNES(dmmg1);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Physics 1, Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
-  
-  ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
+   
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Setup Physics 2: 
         - Lap(T) + PR*Div([U*T,V*T]) = 0        
@@ -216,23 +223,51 @@ int main(int argc,char **argv)
   dof  = 1;
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg2,(DM)da);CHKERRQ(ierr);
+  ierr = DASetFieldName(da,0,"temperature");CHKERRQ(ierr);
   ierr = DADestroy(da);CHKERRQ(ierr);
 
   ierr = DMMGSetSNESLocal(dmmg2,FormFunctionLocal2,0,ad_FormFunctionLocal,admf_FormFunctionLocal);CHKERRQ(ierr);
-  ierr = DMMGSetInitialGuess(dmmg2,FormInitialGuess2);CHKERRQ(ierr);
+  ierr = DMMGSetInitialGuess(dmmg2,FormInitialGuessLocal2);CHKERRQ(ierr);
 
   ierr = DMMGSolve(dmmg2);CHKERRQ(ierr); 
   snes = DMMGGetSNES(dmmg2);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Physics 2, Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
-  
-  ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);
+
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    Create the DMComposite object to manage the two grids/physics. 
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = DMCompositeCreate(comm,&user.pack);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = DMCompositeAddDA(user.pack,DMMGGetDA(dmmg1));CHKERRQ(ierr);
+  ierr = DMCompositeAddDA(user.pack,DMMGGetDA(dmmg2));CHKERRQ(ierr);
+  CHKMEMQ;
+
+  /* Create the solver object and attach the grid/physics info */
+  ierr = DMMGCreate(comm,nlevels,&user,&dmmg_comp);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = DMMGSetDM(dmmg_comp,(DM)user.pack);CHKERRQ(ierr);
+  CHKMEMQ;
+  ierr = DMMGSetISColoringType(dmmg_comp,IS_COLORING_GLOBAL);CHKERRQ(ierr);
+  CHKMEMQ;
+
+  user.dmmg1 = dmmg1;
+  user.dmmg2 = dmmg2;
+  ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessLocalComp);CHKERRQ(ierr);
+  ierr = DMMGSetSNES(dmmg_comp,FormFunctionLocalComp,0);CHKERRQ(ierr);
+
+  /* Solve the nonlinear system */
+  ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = VecDestroy(solu_local);CHKERRQ(ierr);
+  ierr = DMCompositeDestroy(user.pack);CHKERRQ(ierr);
   ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg1);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg2);CHKERRQ(ierr);
+  ierr = DMMGDestroy(dmmg_comp);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
@@ -241,18 +276,18 @@ int main(int argc,char **argv)
 
 
 #undef __FUNCT__
-#define __FUNCT__ "FormInitialGuess"
+#define __FUNCT__ "FormInitialGuessLocal"
 /* 
-   FormInitialGuess - Forms initial approximation.
+   FormInitialGuessLocal - Forms initial approximation for this process
 
    Input Parameters:
-   user - user-defined application context
-   X    - vector
+     user - user-defined application context
+     X    - vector (DA local vector)
 
    Output Parameter:
-   X - vector
+     X - vector with the local values set
  */
-PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
+PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
   DA             da = (DA)dmmg->dm;
@@ -301,8 +336,8 @@ PetscErrorCode FormInitialGuess(DMMG dmmg,Vec X)
   return 0;
 }
 
-/* Form initial guess for Model 1 */
-PetscErrorCode FormInitialGuess1(DMMG dmmg,Vec X)
+/* Form initial guess for Physic 1 */
+PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
   DA             da = (DA)dmmg->dm;
@@ -325,8 +360,8 @@ PetscErrorCode FormInitialGuess1(DMMG dmmg,Vec X)
   return 0;
 }
  
-/* Form initial guess for Model 2 */
-PetscErrorCode FormInitialGuess2(DMMG dmmg,Vec X)
+/* Form initial guess for Physic 2 */
+PetscErrorCode FormInitialGuessLocal2(DMMG dmmg,Vec X)
 {
   AppCtx         *user = (AppCtx*)dmmg->user;
   DA             da = (DA)dmmg->dm;
@@ -351,13 +386,52 @@ PetscErrorCode FormInitialGuess2(DMMG dmmg,Vec X)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuessLocalComp"
 /* 
-   Form function:
+   FormInitialGuessLocalComp - 
+              Forms the initial guess for the composite model
+              Unwraps the global solution vector and passes its local pieces into the user functions
+ */
+PetscErrorCode FormInitialGuessLocalComp(DMMG dmmg,Vec X)
+{
+  PetscErrorCode ierr;
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  DMMG           *dmmg1 = user->dmmg1,*dmmg2=user->dmmg2;
+  DMComposite    dm = (DMComposite)dmmg->dm;
+  Vec            X1,X2;
+
+  PetscFunctionBegin;
+  /* Access the subvectors in X */
+  ierr = DMCompositeGetAccess(dm,X,&X1,&X2);CHKERRQ(ierr);
+
+  /* Evaluate local user provided function */
+  ierr = FormInitialGuessLocal1(*dmmg1,X1);CHKERRQ(ierr);
+  ierr = FormInitialGuessLocal2(*dmmg2,X2);CHKERRQ(ierr);
+
+  ierr = DMCompositeRestoreAccess(dm,X,&X1,&X2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal"
+/* 
+   FormFunctionLocal - Function evaluation for this process
+
+   Input Parameters:
+     info - DALocalInfo context
+     x    - (DA local) vector array including ghost points
+     f    - (DA local) vector array to be evaluated 
+     ptr  - user-defined application context
+
+   Output Parameter:
+     f - array holds local function values 
+     
      f.u     = - Lap(U) - Grad_y(Omega)
      f.v     = - Lap(V) + Grad_x(Omega)
      f.omega = - Lap(Omega) + Div([U*Omega,V*Omega]) - GR*Grad_x(T)
      f.temp  = - Lap(T) + PR*Div([U*T,V*T])
- */
+*/
 PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
@@ -719,3 +793,54 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *
   ierr = DAVecRestoreArray(da,solu_local,&solu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 
+
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocalComp"
+/* 
+   FormFunctionLocalComp  - Unwraps the input vector and passes its local ghosted pieces into the user function
+*/
+PetscErrorCode FormFunctionLocalComp(SNES snes,Vec X,Vec F,void *ctx)
+{
+  PetscErrorCode ierr;
+  DMMG           dmmg = (DMMG)ctx;
+  AppCtx         *user = (AppCtx*)dmmg->user;
+  DMComposite    dm = (DMComposite)dmmg->dm;
+  DALocalInfo    info1,info2;
+  DA             da1,da2;
+  Field1         **x1,**f1;
+  Field2         **x2,**f2;
+  Vec            X1,X2,F1,F2;
+
+  PetscFunctionBegin;
+  ierr = DMCompositeGetEntries(dm,&da1,&da2);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da1,&info1);CHKERRQ(ierr);
+  ierr = DAGetLocalInfo(da2,&info2);CHKERRQ(ierr);
+
+  /* Get local vectors to hold ghosted parts of X */
+  ierr = DMCompositeGetLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(dm,X,X1,X2);CHKERRQ(ierr);
+
+  /* Access the arrays inside the subvectors of X */
+  ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+
+  /* Access the subvectors in F. 
+     These are not ghosted and directly access the memory locations in F */
+  ierr = DMCompositeGetAccess(dm,F,&F1,&F2);CHKERRQ(ierr);
+
+  /* Access the arrays inside the subvectors of F */
+  ierr = DAVecGetArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
+
+  /* Evaluate local user provided function */
+  ierr = FormFunctionLocal1(&info1,x1,f1,(void**)user);CHKERRQ(ierr);
+  ierr = FormFunctionLocal2(&info2,x2,f2,(void**)user);CHKERRQ(ierr);
+
+  ierr = DAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(dm,F,&F1,&F2);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
