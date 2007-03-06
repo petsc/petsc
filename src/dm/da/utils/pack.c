@@ -160,7 +160,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeDestroy(DMComposite packer)
 }
 
 /* --------------------------------------------------------------------------------------*/
-
+#undef __FUNCT__  
+#define __FUNCT__ "DMCompositeSetUp"
 PetscErrorCode PETSCDM_DLLEXPORT DMCompositeSetUp(DMComposite packer)
 {
   PetscErrorCode         ierr;
