@@ -302,6 +302,98 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "Mesh_Laplacian_2D_MF"
+PetscErrorCode Mesh_Laplacian_2D_MF(Mat A, Vec x, Vec y)
+{
+  Mesh                mesh;
+  ALE::Obj<ALE::Mesh> m;
+  SectionReal         X, Y;
+  Vec                 localVec;
+  VecScatter          scatter;
+  PetscQuadrature    *q;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A, (void **) &q);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+
+  ierr = MeshGetSectionReal(mesh, "default", &Y);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(Y, &X);CHKERRQ(ierr);
+  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  ierr = MeshCreateLocalVector(mesh, X, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+
+  const ALE::Mesh::real_section_type::patch_type patch       = 0;
+  const ALE::Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::topology_type>&      topology    = m->getTopology();
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
+  const int     numQuadPoints = q->numQuadPoints;
+  const int     numBasisFuncs = q->numBasisFuncs;
+  const double *quadWeights   = q->quadWeights;
+  const double *basisDer      = q->basisDer;
+  const int     corners       = m->getTopology()->getPatch(patch)->nCone(*cells->begin(), topology->depth())->size();
+  const int     dim           = m->getDimension();
+  double       *t_der, *b_der, *v0, *J, *invJ, detJ;
+  PetscScalar  *elemMat, *elemVec;
+
+  ierr = PetscMalloc2(corners,PetscScalar,&elemVec,corners*corners,PetscScalar,&elemMat);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over elements
+  ierr = SectionRealZero(Y);CHKERRQ(ierr);
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    ierr = PetscMemzero(elemMat, corners*corners * sizeof(PetscScalar));CHKERRQ(ierr);
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    // Loop over quadrature points
+    for(int q = 0; q < numQuadPoints; ++q) {
+      // Loop over trial functions
+      for(int f = 0; f < numBasisFuncs; ++f) {
+        for(int d = 0; d < dim; ++d) {
+          t_der[d] = 0.0;
+          for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+        }
+        // Loop over basis functions
+        for(int g = 0; g < numBasisFuncs; ++g) {
+          for(int d = 0; d < dim; ++d) {
+            b_der[d] = 0.0;
+            for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+          }
+          PetscScalar product = 0.0;
+          for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+          elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
+        }
+      }
+    }
+    PetscScalar *ev;
+
+    ierr = SectionRealRestrict(X, *c_iter, &ev);CHKERRQ(ierr);
+    // Do local matvec
+    for(int f = 0; f < numBasisFuncs; ++f) {
+      elemVec[f] = 0.0;
+      for(int g = 0; g < numBasisFuncs; ++g) {
+        elemVec[f] += elemMat[f*numBasisFuncs+g]*ev[g];
+      }
+    }
+    ierr = SectionRealUpdateAdd(Y, *c_iter, elemVec);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
+  ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
+  ierr = SectionRealComplete(Y);CHKERRQ(ierr);
+
+  ierr = MeshCreateLocalVector(mesh, Y, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(localVec, y, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(localVec, y, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(X);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Atlas>
@@ -323,7 +415,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& a
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
   if (isShell) {
-    //ierr = MatShellSetOperation();
+    PetscQuadrature *q;
+
+    ierr = MatShellSetOperation(*J, MATOP_MULT, (void(*)(void)) Mesh_Laplacian_2D_MF);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscQuadrature), &q);CHKERRQ(ierr);
+    ierr = MatShellSetContext(*J, (void *) q);CHKERRQ(ierr);
   } else {
     //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
     ierr = preallocateOperator(m->getTopology(), atlas, order, *J);CHKERRQ(ierr);
