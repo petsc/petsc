@@ -189,5 +189,10 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElements(Mesh, SectionReal, P
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVerticesLocal(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElementsLocal(Mesh, SectionReal, PetscViewer);
 
+typedef struct {
+  int           numQuadPoints, numBasisFuncs;
+  const double *quadPoints, *quadWeights, *basis, *basisDer;
+} PetscQuadrature;
+
 PETSC_EXTERN_CXX_END
 #endif
