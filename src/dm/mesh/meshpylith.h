@@ -31,6 +31,7 @@ namespace ALE {
       static Obj<Mesh> readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase, const bool interpolate, const int debug);
       static Obj<pair_section_type> createSplit(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase);
       static Obj<real_section_type> createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase);
+      static void createCohesiveElements(const Obj<Mesh>& mesh, const std::set<int>& faultVertices);
     };
 
     class Viewer {
