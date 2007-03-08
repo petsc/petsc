@@ -448,28 +448,30 @@ namespace ALE {
       }
       return traction;
     };
-    void Builder::createCohesiveElements(const Obj<Mesh>& mesh, const std::set<int>& faultVertices) {
-      typedef std::vector<Mesh::sieve_type::point_type> PointArray;
+    void Builder::createCohesiveElements(const Obj<Mesh>& mesh, const std::set<Mesh::point_type>& faultVertices) {
+      typedef std::vector<Mesh::point_type> PointArray;
       const Mesh::real_section_type::patch_type patch      = 0;
       const Obj<Mesh::sieve_type>               sieve      = mesh->getTopology()->getPatch(patch);
       const Obj<Mesh::topology_type>            fault      = new Mesh::topology_type(sieve->comm(), sieve->debug());
       const Obj<Mesh::sieve_type>               faultSieve = new Mesh::sieve_type(sieve->comm(), sieve->debug());
-      const std::set<int>::const_iterator       fvBegin    = faultVertices.begin();
-      const std::set<int>::const_iterator       fvEnd      = faultVertices.end();
+      const std::set<Mesh::point_type>::const_iterator fvBegin = faultVertices.begin();
+      const std::set<Mesh::point_type>::const_iterator fvEnd   = faultVertices.end();
       // There should be logic here to determine this
       const unsigned int                        faceSize   = 3;
       int                                       f          = 0;
+      int                                       debug      = mesh->debug();
       Obj<PointArray>                           face       = new PointArray();
-      std::set<int>                             faultCells;
+      std::set<Mesh::point_type>                faultCells;
 
-      mesh->view("Original Mesh");
       // Create a sieve which captures the fault
       for(std::set<int>::const_iterator fv_iter = fvBegin; fv_iter != fvEnd; ++fv_iter) {
         const Obj<Mesh::sieve_type::traits::supportSequence>&     cells  = sieve->support(*fv_iter);
         const Mesh::sieve_type::traits::supportSequence::iterator cBegin = cells->begin();
         const Mesh::sieve_type::traits::supportSequence::iterator cEnd   = cells->end();
-        
+
+        if (debug) {std::cout << "Checking fault vertex " << *fv_iter << std::endl;}
         for(ALE::Mesh::sieve_type::traits::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
+          if (debug) {std::cout << "  Checking cell " << *c_iter << std::endl;}
           if (faultCells.find(*c_iter) != faultCells.end()) continue;
           const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone   = sieve->cone(*c_iter);
           const Mesh::sieve_type::traits::coneSequence::iterator  vBegin = cone->begin();
@@ -478,62 +480,72 @@ namespace ALE {
           face->clear();
           for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
             if (faultVertices.find(*v_iter) != fvEnd) {
+              if (debug) {std::cout << "    contains fault vertex " << *v_iter << std::endl;}
               face->insert(face->end(), *v_iter);
             }
           }
           if (face->size() > faceSize) throw ALE::Exception("Invalid fault mesh: Too many vertices of an element on the fault");
           if (face->size() == faceSize) {
+            if (debug) {std::cout << "  Contains a face on the fault" << std::endl;}
             const Obj<sieve_type::supportSet> preFace = faultSieve->nJoin1(face);
 
             if (preFace->size() > 1) {
               throw ALE::Exception("Invalid fault sieve: Multiple faces from vertex set");
+            } else if (preFace->size() == 1) {
+              faultSieve->addArrow(*preFace->begin(), *c_iter);
             } else if (preFace->size() == 0) {
+              if (debug) {std::cout << "  Adding face " << f << std::endl;}
               int color = 0;
               for(PointArray::const_iterator f_iter = face->begin(); f_iter != face->end(); ++f_iter) {
+                if (debug) {std::cout << "    vertex " << *f_iter << std::endl;}
                 faultSieve->addArrow(*f_iter, f, color++);
               }
               faultSieve->addArrow(f, *c_iter);
-              faultCells.insert(*c_iter);
               f++;
             }
+            faultCells.insert(*c_iter);
           }
         }
       }
       fault->setPatch(patch, faultSieve);
       fault->stratify();
       faultCells.clear();
-      fault->view("Fault sieve");
+      if (debug) {fault->view("Fault sieve");}
       // Add new shadow vertices
       const Obj<Mesh::topology_type::label_sequence>& fVertices = fault->depthStratum(patch, 0);
-      const Obj<Mesh::topology_type::label_sequence>& vertices  = sieve->depthStratum(patch, 0);
+      const Obj<Mesh::topology_type::label_sequence>& vertices  = mesh->getTopology()->depthStratum(patch, 0);
       Mesh::topology_type::point_type                 newVertex = *vertices->begin() + vertices->size();
       std::map<int,int>                               vertexRenumber;
 
       for(Mesh::topology_type::label_sequence::iterator v_iter = fVertices->begin(); v_iter != fVertices->end(); ++v_iter) {
+        if (debug) {std::cout << "Duplicating " << *v_iter << " to " << vertexRenumber[*v_iter] << std::endl;}
         vertexRenumber[*v_iter] = newVertex++;
-        std::cout << "Duplicating " << *v_iter << " to " << vertexRenumber[*v_iter] << std::endl;
       }
       // Split the mesh along the fault sieve and create cohesive elements
       const Obj<Mesh::topology_type::label_sequence>& faces     = fault->depthStratum(patch, 1);
       PointArray                                      newVertices;
 
       for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+        if (debug) {std::cout << "Considering fault face " << *f_iter << std::endl;}
         const Obj<Mesh::sieve_type::traits::supportSequence>& cells = faultSieve->support(*f_iter);
         Mesh::topology_type::point_type                       cell  = std::max(*cells->begin(), *(++cells->begin()));
         const Obj<Mesh::sieve_type::traits::coneSequence>&    cone  = sieve->cone(cell);
 
+        if (debug) {std::cout << "  Replacing cell " << cell << std::endl;}
         newVertices.clear();
         for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
           if (vertexRenumber.find(*v_iter) != vertexRenumber.end()) {
+            if (debug) {std::cout << "    vertex " << vertexRenumber[*v_iter] << std::endl;}
             newVertices.insert(newVertices.end(), vertexRenumber[*v_iter]);
           } else {
+            if (debug) {std::cout << "    vertex " << *v_iter << std::endl;}
             newVertices.insert(newVertices.end(), *v_iter);
           }
         }
         sieve->clearCone(cell);
         int color = 0;
         for(PointArray::const_iterator v_iter = newVertices.begin(); v_iter != newVertices.end(); ++v_iter) {
-          faultSieve->addArrow(*v_iter, cell, color++);
+          sieve->addArrow(*v_iter, cell, color++);
         }
       }
       // Fix coordinates
@@ -547,7 +559,6 @@ namespace ALE {
       for(Mesh::topology_type::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
         coordinates->updatePoint(patch, vertexRenumber[*v_iter], coordinates->restrictPoint(patch, *v_iter));
       }
-      mesh->view("Mesh with cohesive elements");
     };
     //
     // Viewer methods
