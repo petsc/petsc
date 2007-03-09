@@ -31,6 +31,10 @@ extern void PetscRmPointer(void*);
 #define meshdistribute_         MESHDISTRIBUTE
 #define meshview_               MESHVIEW
 #define meshgetvertexsectionreal_   MESHGETVERTEXSECTIONREAL
+#define vertexsectionrealcreate_ VERTEXSECTIONREALCREATE
+#define vertexsectionintcreate_  VERTEXSECTIONINTCREATE
+#define cellsectionrealcreate_   CELLSECTIONREALCREATE
+#define bcsectionrealcreate_     BCSECTIONREALCREATE
 #define restrictvector_         RESTRICTVECTOR
 #define assemblevectorcomplete_ ASSEMBLEVECTORCOMPLETE
 #define assemblevector_         ASSEMBLEVECTOR
@@ -41,6 +45,10 @@ extern void PetscRmPointer(void*);
 #define meshdistribute_         meshdistribute
 #define meshview_               meshview
 #define meshgetvertexsectionreal_   meshgetvertexsectionreal
+#define vertexsectionrealcreate_ vertexsectionrealcreate
+#define vertexsectionintcreate_  vertexsectionintcreate
+#define cellsectionrealcreate_   cellsectionrealcreate
+#define bcsectionrealcreate_     bcsectionrealcreate
 #define restrictvector_         restrictvector
 #define assemblevectorcomplete_ assemblevectorcomplete
 #define assemblevector_         assemblevector
@@ -75,6 +83,43 @@ void PETSC_STDCALL  meshview_(Mesh mesh, PetscViewer viewer, PetscErrorCode *ier
 }
 void PETSC_STDCALL  meshgetvertexsectionreal_(Mesh mesh, PetscInt *fiberDim, SectionReal *section, int *ierr){
   *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, section);
+}
+void PETSC_STDCALL  vertexsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionReal section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetVertexSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, &section);
+  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshSetSectionReal((Mesh) PetscToPointer(mesh), section);
+  *ierr = SectionRealDestroy(section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  vertexsectionintcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionInt section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetVertexSectionInt((Mesh) PetscToPointer(mesh), *fiberDim, &section);
+  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshSetSectionInt((Mesh) PetscToPointer(mesh), section);
+  *ierr = SectionIntDestroy(section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  cellsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionReal section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = MeshGetCellSectionReal((Mesh) PetscToPointer(mesh), *fiberDim, &section);
+  *ierr = PetscObjectSetName((PetscObject) section, pN);
+  *ierr = MeshSetSectionReal((Mesh) PetscToPointer(mesh), section);
+  *ierr = SectionRealDestroy(section);
+  FREECHAR(name,pN);
+}
+void PETSC_STDCALL  bcsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
+  SectionReal section;
+  char *pN;
+  FIXCHAR(name,lenN,pN);
+  *ierr = BCSectionRealCreate((Mesh) PetscToPointer(mesh),pN, *fiberDim);
+  FREECHAR(name,pN);
 }
 void PETSC_STDCALL  restrictvector_(Vec g,Vec l,InsertMode *mode, int *__ierr ){
 *__ierr = restrictVector(

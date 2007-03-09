@@ -62,6 +62,24 @@
       End Interface
 
       Interface 
+        Subroutine BCSectionGetArray1DF90(m,name,array,ierr)
+          CHARACTER*80 name
+          integer, pointer :: array(:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface
+
+      Interface 
+        Subroutine BCSectionRealGetArrayF90(m,name,array,ierr)
+          CHARACTER*80 name
+          PetscReal, pointer :: array(:,:)
+          PetscErrorCode ierr
+          Mesh m
+        End Subroutine
+      End Interface
+
+      Interface 
         Subroutine BCFUNCGetArrayF90(m,array,ierr)
           PetscReal, pointer :: array(:,:)
           PetscErrorCode ierr

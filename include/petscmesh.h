@@ -38,6 +38,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDistributeByFace(Mesh, const char[],
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGenerate(Mesh, PetscTruth, Mesh *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRefine(Mesh, double, PetscTruth, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshUnify(Mesh, Mesh*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMaximumDegree(Mesh, PetscInt *);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT restrictVector(Vec, Vec, InsertMode);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT assembleVectorComplete(Vec, Vec, InsertMode);
@@ -54,6 +55,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreatePyLith(MPI_Comm, const int, co
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscInt *[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionRealCreate(Mesh, const char [], PetscInt);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionRealGetArray(Mesh, const char [], PetscInt *, PetscInt *, PetscReal *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCFUNCGetArray(Mesh, PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePCICERestart(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh);
@@ -185,6 +188,11 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVertices(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElements(Mesh, SectionReal, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithVerticesLocal(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePyLithElementsLocal(Mesh, SectionReal, PetscViewer);
+
+typedef struct {
+  int           numQuadPoints, numBasisFuncs;
+  const double *quadPoints, *quadWeights, *basis, *basisDer;
+} PetscQuadrature;
 
 PETSC_EXTERN_CXX_END
 #endif

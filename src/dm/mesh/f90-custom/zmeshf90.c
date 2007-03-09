@@ -10,6 +10,8 @@
 #define sectiongetarrayf90_        SECTIONGETARRAYF90
 #define sectiongetarray1df90_      SECTIONGETARRAY1DF90
 #define bcsectiongetarrayf90_      BCSECTIONGETARRAYF90
+#define bcsectiongetarray1df90_    BCSECTIONGETARRAY1DF90
+#define bcsectionrealgetarrayf90_  BCSECTIONREALGETARRAYF90
 #define bcfuncgetarrayf90_         BCFUNCGETARRAYF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define meshgetcoordinatesf90_     meshgetcoordinatesf90
@@ -19,6 +21,8 @@
 #define sectiongetarrayf90_        sectiongetarrayf90
 #define sectiongetarray1df90_      sectiongetarray1df90
 #define bcsectiongetarrayf90_      bcsectiongetarrayf90
+#define bcsectiongetarray1df90_    bcsectiongetarray1df90
+#define bcsectionrealgetarrayf90_  bcsectionrealgetarrayf90
 #define bcfuncgetarrayf90_         bcfuncgetarrayf90
 #endif
 
@@ -80,6 +84,26 @@ void PETSC_STDCALL bcsectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(le
   FIXCHAR(name,len,nF);
   *ierr = BCSectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
   *ierr = F90Array2dCreate(a,PETSC_INT,1,d,1,n,ptr);
+  FREECHAR(name,nF);
+}
+void PETSC_STDCALL bcsectiongetarray1df90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array1d *ptr,int *ierr PETSC_END_LEN(len))
+{
+  PetscInt *a;
+  PetscInt  n, d;
+  char     *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = BCSectionGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
+  *ierr = F90Array1dCreate(a,PETSC_INT,1,n*d,ptr);
+  FREECHAR(name,nF);
+}
+void PETSC_STDCALL bcsectionrealgetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len))
+{
+  PetscReal *a;
+  PetscInt   n, d;
+  char      *nF;
+  FIXCHAR(name,len,nF);
+  *ierr = BCSectionRealGetArray(*mesh,nF,&n,&d,&a); if (*ierr) return;
+  *ierr = F90Array2dCreate(a,PETSC_SCALAR,1,d,1,n,ptr);
   FREECHAR(name,nF);
 }
 void PETSC_STDCALL bcfuncgetarrayf90_(Mesh *mesh,F90Array2d *ptr,int *ierr)

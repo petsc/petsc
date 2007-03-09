@@ -302,12 +302,105 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "Mesh_Laplacian_2D_MF"
+PetscErrorCode Mesh_Laplacian_2D_MF(Mat A, Vec x, Vec y)
+{
+  Mesh                mesh;
+  ALE::Obj<ALE::Mesh> m;
+  SectionReal         X, Y;
+  Vec                 localVec;
+  VecScatter          scatter;
+  PetscQuadrature    *q;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
+  ierr = MatShellGetContext(A, (void **) &q);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+
+  ierr = MeshGetSectionReal(mesh, "default", &Y);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(Y, &X);CHKERRQ(ierr);
+  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  ierr = MeshCreateLocalVector(mesh, X, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(x, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(x, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+
+  const ALE::Mesh::real_section_type::patch_type patch       = 0;
+  const ALE::Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::topology_type>&      topology    = m->getTopology();
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
+  const int     numQuadPoints = q->numQuadPoints;
+  const int     numBasisFuncs = q->numBasisFuncs;
+  const double *quadWeights   = q->quadWeights;
+  const double *basisDer      = q->basisDer;
+  const int     corners       = m->getTopology()->getPatch(patch)->nCone(*cells->begin(), topology->depth())->size();
+  const int     dim           = m->getDimension();
+  double       *t_der, *b_der, *v0, *J, *invJ, detJ;
+  PetscScalar  *elemMat, *elemVec;
+
+  ierr = PetscMalloc2(corners,PetscScalar,&elemVec,corners*corners,PetscScalar,&elemMat);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dim,double,&t_der,dim,double,&b_der,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
+  // Loop over elements
+  ierr = SectionRealZero(Y);CHKERRQ(ierr);
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    ierr = PetscMemzero(elemMat, corners*corners * sizeof(PetscScalar));CHKERRQ(ierr);
+    m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
+    // Loop over quadrature points
+    for(int q = 0; q < numQuadPoints; ++q) {
+      // Loop over trial functions
+      for(int f = 0; f < numBasisFuncs; ++f) {
+        for(int d = 0; d < dim; ++d) {
+          t_der[d] = 0.0;
+          for(int e = 0; e < dim; ++e) t_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+f)*dim+e];
+        }
+        // Loop over basis functions
+        for(int g = 0; g < numBasisFuncs; ++g) {
+          for(int d = 0; d < dim; ++d) {
+            b_der[d] = 0.0;
+            for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+          }
+          PetscScalar product = 0.0;
+          for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
+          elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
+        }
+      }
+    }
+    PetscScalar *ev;
+
+    ierr = SectionRealRestrict(X, *c_iter, &ev);CHKERRQ(ierr);
+    // Do local matvec
+    for(int f = 0; f < numBasisFuncs; ++f) {
+      elemVec[f] = 0.0;
+      for(int g = 0; g < numBasisFuncs; ++g) {
+        elemVec[f] += elemMat[f*numBasisFuncs+g]*ev[g];
+      }
+    }
+    ierr = SectionRealUpdateAdd(Y, *c_iter, elemVec);CHKERRQ(ierr);
+  }
+  ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
+  ierr = PetscFree5(t_der,b_der,v0,J,invJ);CHKERRQ(ierr);
+  ierr = SectionRealComplete(Y);CHKERRQ(ierr);
+
+  ierr = MeshCreateLocalVector(mesh, Y, &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(localVec, y, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(localVec, y, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(X);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Atlas>
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& atlas, MatType mtype, Mat *J)
 {
   Obj<ALE::Mesh> m;
+  PetscTruth     isShell;
   PetscErrorCode ierr;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m->getTopology(), 0, "default", atlas);
@@ -319,10 +412,18 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& a
   ierr = MatSetSizes(*J, localSize, localSize, globalSize, globalSize);CHKERRQ(ierr);
   ierr = MatSetType(*J, mtype);CHKERRQ(ierr);
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
-  //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
-  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);
+  ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
+  if (isShell) {
+    PetscQuadrature *q;
 
-  ierr = preallocateOperator(m->getTopology(), atlas, order, *J);CHKERRQ(ierr);
+    ierr = MatShellSetOperation(*J, MATOP_MULT, (void(*)(void)) Mesh_Laplacian_2D_MF);CHKERRQ(ierr);
+    ierr = PetscMalloc(sizeof(PetscQuadrature), &q);CHKERRQ(ierr);
+    ierr = MatShellSetContext(*J, (void *) q);CHKERRQ(ierr);
+  } else {
+    //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
+    ierr = preallocateOperator(m->getTopology(), atlas, order, *J);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 } 
 
@@ -760,6 +861,43 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
     }
   }
   ierr = PetscFree3(v0, J, invJ);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshGetMaximumDegree"
+/*@
+  MeshGetMaximumDegree - Return the maximum degree of any mesh vertex
+
+  Collective on mesh
+
+  Input Parameter:
+. mesh - The Mesh
+
+  Output Parameter:
+. maxDegree - The maximum number of edges at any vertex
+
+   Level: beginner
+
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshGetMaximumDegree(Mesh mesh, PetscInt *maxDegree)
+{
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Mesh::patch_type                               patch    = 0;
+  const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& vertices = topology->depthStratum(patch, 0);
+  const ALE::Obj<ALE::Mesh::sieve_type>&                    sieve    = topology->getPatch(patch);
+  PetscInt                                                  maxDeg   = -1;
+
+  for(ALE::Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    maxDeg = PetscMax(maxDeg, (PetscInt) sieve->support(*v_iter)->size());
+  }
+  *maxDegree = maxDeg;
   PetscFunctionReturn(0);
 }
 
@@ -2006,84 +2144,6 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   *numElements = numElem;
   *fiberDim    = fiberDimMin;
   *array       = (PetscScalar *) section->restrict(patch);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "BCSectionGetArray"
-/*@C
-  BCSectionGetArray - Returns the array underlying the BCSection.
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-- name - The section name
-
-  Output Parameters:
-+ numElements - The number of mesh element with values
-. fiberDim - The number of values per element
-- array - The array
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
-{
-  ALE::Obj<ALE::Mesh> m;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::int_section_type>&       section = m->getIntSection(std::string(name));
-  const ALE::Mesh::int_section_type::patch_type patch   = 0;
-  if (!section->hasPatch(patch)) {
-    *numElements = 0;
-    *fiberDim    = 0;
-    *array       = NULL;
-    PetscFunctionReturn(0);
-  }
-  const ALE::Mesh::int_section_type::chart_type& chart = section->getPatch(patch);
-  int fiberDimMin = section->getFiberDimension(patch, *chart.begin());
-  int numElem     = 0;
-
-  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const int fiberDim = section->getFiberDimension(patch, *c_iter);
-
-    if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
-  }
-  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const int fiberDim = section->getFiberDimension(patch, *c_iter);
-
-    numElem += fiberDim/fiberDimMin;
-  }
-  *numElements = numElem;
-  *fiberDim    = fiberDimMin;
-  *array       = (PetscInt *) section->restrict(patch);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "BCFUNCGetArray"
-PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
-{
-  ALE::Obj<ALE::Mesh> m;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ALE::Mesh::bc_values_type& bcValues = m->getBCValues();
-  *numElements = bcValues.size();
-  *fiberDim    = 4;
-  *array       = new PetscScalar[(*numElements)*(*fiberDim)];
-  for(int bcf = 1; bcf <= (int) bcValues.size(); ++bcf) {
-    (*array)[(bcf-1)*4+0] = bcValues[bcf].rho;
-    (*array)[(bcf-1)*4+1] = bcValues[bcf].u;
-    (*array)[(bcf-1)*4+2] = bcValues[bcf].v;
-    (*array)[(bcf-1)*4+3] = bcValues[bcf].p;
-  }
   PetscFunctionReturn(0);
 }
 

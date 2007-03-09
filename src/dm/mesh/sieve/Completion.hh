@@ -91,15 +91,21 @@ namespace ALE {
         int e = 0;
 
         if (topology->debug()) {
+          int e2 = 0;
+          for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
+            std::cout << "assignment["<<*e_iter<<"]" << assignment[e2++] << std::endl;
+          }
+        }
+        PetscTruth flg;
+        PetscOptionsHasName(PETSC_NULL, "-output_partition", &flg);
+        if (flg) {
           ostringstream fname;
           fname << "part." << sieve->commSize() << ".dat";
           std::ofstream f(fname.str().c_str());
           int e2 = 0;
           f << sieve->commSize() << std::endl;
           for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-            std::cout << "assignment["<<*e_iter<<"]" << assignment[e2] << std::endl;
-            f << assignment[e2] << std::endl;
-            e2++;
+            f << assignment[e2++] << std::endl;
           }
         }
         for(topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {

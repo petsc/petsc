@@ -29,6 +29,176 @@ PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh mesh)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "BCSectionGetArray"
+/*@C
+  BCSectionGetArray - Returns the array underlying the BCSection.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+- name - The section name
+
+  Output Parameters:
++ numElements - The number of mesh element with values
+. fiberDim - The number of values per element
+- array - The array
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::int_section_type>&  section = m->getIntSection(std::string(name));
+  const ALE::Mesh::int_section_type::patch_type patch   = 0;
+  if (!section->hasPatch(patch)) {
+    *numElements = 0;
+    *fiberDim    = 0;
+    *array       = NULL;
+    PetscFunctionReturn(0);
+  }
+  const ALE::Mesh::int_section_type::chart_type& chart = section->getPatch(patch);
+  int fiberDimMin = section->getFiberDimension(patch, *chart.begin());
+  int numElem     = 0;
+
+  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const int fiberDim = section->getFiberDimension(patch, *c_iter);
+
+    if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
+  }
+  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const int fiberDim = section->getFiberDimension(patch, *c_iter);
+
+    numElem += fiberDim/fiberDimMin;
+  }
+  *numElements = numElem;
+  *fiberDim    = fiberDimMin;
+  *array       = (PetscInt *) section->restrict(patch);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "BCSectionRealCreate"
+/*@C
+  BCSectionRealCreate - Creates a BCSection.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+. name - The section name
+- fiberDim - The number of values per element
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode BCSectionRealCreate(Mesh mesh, const char name[], PetscInt fiberDim)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type>&  section = m->getRealSection(std::string(name));
+  const ALE::Obj<ALE::Mesh::int_section_type>&   ibc     = m->getIntSection("IBC");
+  const ALE::Mesh::topology_type::patch_type     patch   = 0;
+  const ALE::Mesh::int_section_type::chart_type& chart   = ibc->getPatch(patch);
+
+  for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+    section->setFiberDimension(patch, *p_iter, ibc->getFiberDimension(patch, *p_iter));
+  }
+  section->allocate();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "BCSectionRealGetArray"
+/*@C
+  BCSectionRealGetArray - Returns the array underlying the BCSection.
+
+  Not Collective
+
+  Input Parameters:
++ mesh - The Mesh object
+- name - The section name
+
+  Output Parameters:
++ numElements - The number of mesh element with values
+. fiberDim - The number of values per element
+- array - The array
+
+  Level: intermediate
+
+.keywords: mesh, elements
+.seealso: MeshCreate()
+@*/
+PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscReal *array[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type>&  section = m->getRealSection(std::string(name));
+  const ALE::Mesh::real_section_type::patch_type patch   = 0;
+  if (!section->hasPatch(patch)) {
+    *numElements = 0;
+    *fiberDim    = 0;
+    *array       = NULL;
+    PetscFunctionReturn(0);
+  }
+  const ALE::Mesh::real_section_type::chart_type& chart = section->getPatch(patch);
+  int fiberDimMin = section->getFiberDimension(patch, *chart.begin());
+  int numElem     = 0;
+
+  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const int fiberDim = section->getFiberDimension(patch, *c_iter);
+
+    if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
+  }
+  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+    const int fiberDim = section->getFiberDimension(patch, *c_iter);
+
+    numElem += fiberDim/fiberDimMin;
+  }
+  *numElements = numElem;
+  *fiberDim    = fiberDimMin;
+  *array       = (PetscReal *) section->restrict(patch);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "BCFUNCGetArray"
+PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ALE::Mesh::bc_values_type& bcValues = m->getBCValues();
+  *numElements = bcValues.size();
+  *fiberDim    = 4;
+  *array       = new PetscScalar[(*numElements)*(*fiberDim)];
+  for(int bcf = 1; bcf <= (int) bcValues.size(); ++bcf) {
+    (*array)[(bcf-1)*4+0] = bcValues[bcf].rho;
+    (*array)[(bcf-1)*4+1] = bcValues[bcf].u;
+    (*array)[(bcf-1)*4+2] = bcValues[bcf].v;
+    (*array)[(bcf-1)*4+3] = bcValues[bcf].p;
+  }
+  PetscFunctionReturn(0);
+}
+
 namespace ALE {
   namespace PCICE {
     //
@@ -164,13 +334,13 @@ namespace ALE {
       char           buf[2048];
       PetscErrorCode ierr;
 
-      const Obj<Mesh::int_section_type>& ibc    = mesh->getIntSection("IBC");
-      const Obj<Mesh::int_section_type>& ibndfs = mesh->getIntSection("IBNDFS");
-      const Obj<Mesh::int_section_type>& ibcnum = mesh->getIntSection("IBCNUM");
-      const Obj<Mesh::real_section_type>&    bl     = mesh->getRealSection("BL");
-      const Obj<Mesh::real_section_type>&    bnvec  = mesh->getRealSection("BNVEC");
-      const Obj<Mesh::real_section_type>&    bnnv   = mesh->getRealSection("BNNV");
-      const Obj<Mesh::real_section_type>&    bcvec  = mesh->getRealSection("BCVEC");
+      const Obj<Mesh::int_section_type>&  ibc    = mesh->getIntSection("IBC");
+      const Obj<Mesh::int_section_type>&  ibndfs = mesh->getIntSection("IBNDFS");
+      const Obj<Mesh::int_section_type>&  ibcnum = mesh->getIntSection("IBCNUM");
+      const Obj<Mesh::int_section_type>&  ibfcon = mesh->getIntSection("IBFCON");
+      const Obj<Mesh::real_section_type>& bl     = mesh->getRealSection("BL");
+      const Obj<Mesh::real_section_type>& bnvec  = mesh->getRealSection("BNVEC");
+      const Obj<Mesh::real_section_type>& bnnv   = mesh->getRealSection("BNNV");
       if (mesh->commRank() != 0) {
         mesh->distributeBCValues();
         return;
@@ -201,16 +371,16 @@ namespace ALE {
 
         ibc->addFiberDimension(patch, elem, 4);
         ibcnum->addFiberDimension(patch, elem, 1);
+        ibfcon->addFiberDimension(patch, elem, 2);
         bl->addFiberDimension(patch, elem, 1);
         bnvec->addFiberDimension(patch, elem, 2);
-        bcvec->addFiberDimension(patch, elem, 4);
         elem2Idx[elem].insert(bf);
       }
       ibc->allocate();
       ibcnum->allocate();
+      ibfcon->allocate();
       bl->allocate();
       bnvec->allocate();
-      bcvec->allocate();
       const Mesh::int_section_type::chart_type& chart = ibc->getPatch(patch);
       int num = 1;
 
@@ -664,8 +834,6 @@ namespace ALE {
     // Note: Any vertex or element number from PCICE is 1-based, but in Sieve we are 0-based. Thus
     //       we add and subtract 1 during conversion. Also, Sieve vertices are numbered after cells.
     void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh) {
-      mesh->setDebug(11);
-      mesh->getFactory()->setDebug(11);
       // Extract PCICE boundary sections
       ALE::Obj<ALE::Mesh::int_section_type> IBCsec    = mesh->getIntSection("IBC");
       ALE::Obj<ALE::Mesh::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");
