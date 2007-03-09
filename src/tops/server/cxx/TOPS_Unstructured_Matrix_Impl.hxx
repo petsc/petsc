@@ -2,7 +2,7 @@
 // File:          TOPS_Unstructured_Matrix_Impl.hxx
 // Symbol:        TOPS.Unstructured.Matrix-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.Unstructured.Matrix
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -36,6 +36,9 @@
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix._includes)
+#if defined(HAVE_LONG_LONG)
+#undef HAVE_LONG_LONG
+#endif
 #include "TOPS.hxx"
 #include "petscmat.h"
 // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix._includes)
