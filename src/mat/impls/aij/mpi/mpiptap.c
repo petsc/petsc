@@ -266,6 +266,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   /*----------------------------------------------*/
   /* determine row ownership */
   ierr = PetscNew(Mat_Merge_SeqsToMPI,&merge);CHKERRQ(ierr);
+  ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr);
   merge->rowmap.n = pn;
   merge->rowmap.N = PETSC_DECIDE;
   merge->rowmap.bs = 1;
