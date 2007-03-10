@@ -1439,7 +1439,20 @@ namespace ALE {
             this->orderPoint(atlas, sieve, patch, *c_iter, offset, bcOffset);
           }
           if (dim > 0) {
-            if (!postponeGhosts || !this->getTopology()->getSendOverlap()->capContains(point)) {
+            bool number = true;
+
+            // Maybe use template specialization here
+            if (postponeGhosts && this->getTopology()->getSendOverlap()->capContains(point)) {
+              const Obj<typename topology_type::send_overlap_type::supportSequence>& ranks = this->getTopology()->getSendOverlap()->support(point);
+
+              for(typename topology_type::send_overlap_type::supportSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+                if (this->commRank() > *r_iter) {
+                  number = false;
+                  break;
+                }
+              }
+            }
+            if (number) {
               if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
               idx.index = offset;
               atlas->updatePoint(patch, point, &idx);
