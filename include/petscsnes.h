@@ -217,7 +217,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTolerances(SNES,PetscReal,Petsc
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES,PetscReal);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES,PetscScalar*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES,PetscReal*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberUnsuccessfulSteps(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaximumUnsuccessfulSteps(SNES,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaximumUnsuccessfulSteps(SNES,PetscInt*);
@@ -227,8 +227,11 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES,Pet
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES,PetscInt*);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberLinearIterations(SNES,PetscInt*);
+
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetUseEW(SNES,PetscTruth);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetUseEW(SNES,PetscTruth*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES,PetscInt,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetConvergenceTestEW(SNES);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetParametersEW(SNES,PetscInt*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*);
 
 /*
      Reuse the default KSP monitor routines for SNES

@@ -2,7 +2,7 @@
 // File:          Ex4_System_Impl.cxx
 // Symbol:        Ex4.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex4.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -40,9 +40,9 @@
 // DO-NOT-DELETE splicer.end(Ex4.System._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-Ex4::System_impl::System_impl() : StubBase(reinterpret_cast< 
-  void*>(::Ex4::System::_wrapObj(reinterpret_cast< void*>(this))),false) ,
-  _wrapped(true){ 
+Ex4::System_impl::System_impl() : StubBase(reinterpret_cast< void*>(
+  ::Ex4::System::_wrapObj(reinterpret_cast< void*>(this))),false) , _wrapped(
+  true){ 
   // DO-NOT-DELETE splicer.begin(Ex4.System._ctor2)
   // Insert-Code-Here {Ex4.System._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(Ex4.System._ctor2)

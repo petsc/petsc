@@ -2,7 +2,7 @@
 // File:          Ex4_System_Impl.hxx
 // Symbol:        Ex4.System-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for Ex4.System
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -94,8 +94,8 @@ namespace Ex4 {
     // sidl constructor (required)
     // Note: alternate Skel constructor doesn't call addref()
     // (fixes bug #275)
-    System_impl( struct Ex4_System__object * s ) : StubBase(s,true),
-      _wrapped(false) { _ctor(); }
+    System_impl( struct Ex4_System__object * s ) : StubBase(s,true), _wrapped(
+      false) { _ctor(); }
 
     // user defined construction
     void _ctor();

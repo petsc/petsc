@@ -6,7 +6,7 @@ LOCDIR      = src/tops/
 
 include makefile.rules
 
-libfast: clients server-cxx
+libfast: clients server-cxx server-c
 
 
 

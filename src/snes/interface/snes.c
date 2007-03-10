@@ -227,7 +227,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
       snes->printreason = PETSC_TRUE;
     }
 
-    ierr = PetscOptionsTruth("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetParametersEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-snes_ksp_ew","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsInt("-snes_ksp_ew_version","Version 1, 2 or 3","SNES_KSP_SetParametersEW",kctx->version,&kctx->version,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNES_KSP_SetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
@@ -408,7 +409,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES snes,PetscInt* it
 
 .seealso: SNESGetFunction(), SNESGetIterationNumber(), SNESGetNumberLinearIterations()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscScalar *fnorm)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscReal *fnorm)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -780,8 +781,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   kctx->rtol_last   = 0;
   kctx->rtol_max    = .9;
   kctx->gamma       = 1.0;
-  kctx->alpha2      = .5*(1.0 + sqrt(5.0));
-  kctx->alpha       = kctx->alpha2;
+  kctx->alpha       = .5*(1.0 + sqrt(5.0));
+  kctx->alpha2      = kctx->alpha;
   kctx->threshold   = .1;
   kctx->lresid_last = 0;
   kctx->norm_last   = 0;
@@ -1150,7 +1151,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES,Vec,
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
 {
   PetscErrorCode ierr;
-  PetscTruth     flg, iseqtr;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -1216,17 +1217,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
 
-  /* Set the KSP stopping criterion to use the Eisenstat-Walker method */
-  ierr = PetscTypeCompare((PetscObject)snes,SNESTR,&iseqtr);CHKERRQ(ierr);
-  if (snes->ksp_ewconv && !iseqtr) {
-    KSP ksp;
-    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(ksp,SNES_KSP_EW_Converged_Private,snes);CHKERRQ(ierr);
-  }
-  
   if (!snes->type_name) {
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
+  
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
@@ -2294,5 +2288,289 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES snes)
   }
   ierr = VecDestroy(uh);CHKERRQ(ierr);
   ierr = VecDestroy(fh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_SetUseEW"
+/*@
+   SNES_KSP_SetUseEW - Sets SNES use Eisenstat-Walker method for
+   computing relative tolerance for linear solvers within an inexact
+   Newton method.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - SNES context
+-  flag - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+   Currently, the default is to use a constant relative tolerance for 
+   the inner linear solvers.  Alternatively, one can use the 
+   Eisenstat-Walker method, where the relative convergence tolerance 
+   is reset at each Newton iteration according progress of the nonlinear 
+   solver. 
+
+   Level: advanced
+
+   Reference:
+   S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an 
+   inexact Newton method", SISC 17 (1), pp.16-32, 1996.
+
+.keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
+
+.seealso: SNES_KSP_GetUseEW(), SNES_KSP_GetParametersEW(), SNES_KSP_SetParametersEW()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetUseEW(SNES snes,PetscTruth flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  snes->ksp_ewconv = flag;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_GetUseEW"
+/*@
+   SNES_KSP_GetUseEW - Gets if SNES is using Eisenstat-Walker method
+   for computing relative tolerance for linear solvers within an
+   inexact Newton method.
+
+   Not Collective
+
+   Input Parameter:
+.  snes - SNES context
+
+   Output Parameter:
+.  flag - PETSC_TRUE or PETSC_FALSE
+
+   Notes:
+   Currently, the default is to use a constant relative tolerance for 
+   the inner linear solvers.  Alternatively, one can use the 
+   Eisenstat-Walker method, where the relative convergence tolerance 
+   is reset at each Newton iteration according progress of the nonlinear 
+   solver. 
+
+   Level: advanced
+
+   Reference:
+   S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an 
+   inexact Newton method", SISC 17 (1), pp.16-32, 1996.
+
+.keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
+
+.seealso: SNES_KSP_SetUseEW(), SNES_KSP_GetParametersEW(), SNES_KSP_SetParametersEW()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetUseEW(SNES snes, PetscTruth *flag)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(flag,2);
+  *flag = snes->ksp_ewconv;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_SetParametersEW"
+/*@
+   SNES_KSP_SetParametersEW - Sets parameters for Eisenstat-Walker
+   convergence criteria for the linear solvers within an inexact
+   Newton method.
+
+   Collective on SNES
+ 
+   Input Parameters:
++    snes - SNES context
+.    version - version 1, 2 (default is 2) or 3
+.    rtol_0 - initial relative tolerance (0 <= rtol_0 < 1)
+.    rtol_max - maximum relative tolerance (0 <= rtol_max < 1)
+.    gamma - multiplicative factor for version 2 rtol computation
+             (0 <= gamma2 <= 1)
+.    alpha - power for version 2 rtol computation (1 < alpha <= 2)
+.    alpha2 - power for safeguard
+-    threshold - threshold for imposing safeguard (0 < threshold < 1)
+
+   Note:
+   Version 3 was contributed by Luis Chacon, June 2006.
+
+   Use PETSC_DEFAULT to retain the default for any of the parameters.
+
+   Level: advanced
+
+   Reference:
+   S. C. Eisenstat and H. F. Walker, "Choosing the forcing terms in an 
+   inexact Newton method", Utah State University Math. Stat. Dept. Res. 
+   Report 6/94/75, June, 1994, to appear in SIAM J. Sci. Comput. 
+
+.keywords: SNES, KSP, Eisenstat, Walker, set, parameters
+
+.seealso: SNES_KSP_SetUseEW(), SNES_KSP_GetUseEW(), SNES_KSP_GetParametersEW()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,
+							    PetscReal gamma,PetscReal alpha,PetscReal alpha2,PetscReal threshold)
+{
+  SNES_KSP_EW_ConvCtx *kctx;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
+
+  if (version != PETSC_DEFAULT)   kctx->version   = version;
+  if (rtol_0 != PETSC_DEFAULT)    kctx->rtol_0    = rtol_0;
+  if (rtol_max != PETSC_DEFAULT)  kctx->rtol_max  = rtol_max;
+  if (gamma != PETSC_DEFAULT)     kctx->gamma     = gamma;
+  if (alpha != PETSC_DEFAULT)     kctx->alpha     = alpha;
+  if (alpha2 != PETSC_DEFAULT)    kctx->alpha2    = alpha2;
+  if (threshold != PETSC_DEFAULT) kctx->threshold = threshold;
+  
+  if (kctx->version < 1 || kctx->version > 3) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 and 3 are supported: %D",kctx->version);
+  }
+  if (kctx->rtol_0 < 0.0 || kctx->rtol_0 >= 1.0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_0 < 1.0: %G",kctx->rtol_0);
+  }
+  if (kctx->rtol_max < 0.0 || kctx->rtol_max >= 1.0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= rtol_max (%G) < 1.0\n",kctx->rtol_max);
+  }
+  if (kctx->gamma < 0.0 || kctx->gamma > 1.0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 <= gamma (%G) <= 1.0\n",kctx->gamma);
+  }
+  if (kctx->alpha <= 1.0 || kctx->alpha > 2.0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"1.0 < alpha (%G) <= 2.0\n",kctx->alpha);
+  }
+  if (kctx->threshold <= 0.0 || kctx->threshold >= 1.0) {
+    SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"0.0 < threshold (%G) < 1.0\n",kctx->threshold);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_GetParametersEW"
+/*@
+   SNES_KSP_GetParametersEW - Gets parameters for Eisenstat-Walker
+   convergence criteria for the linear solvers within an inexact
+   Newton method.
+
+   Not Collective
+ 
+   Input Parameters:
+     snes - SNES context
+
+   Output Parameters:
++    version - version 1, 2 (default is 2) or 3
+.    rtol_0 - initial relative tolerance (0 <= rtol_0 < 1)
+.    rtol_max - maximum relative tolerance (0 <= rtol_max < 1)
+.    gamma - multiplicative factor for version 2 rtol computation
+             (0 <= gamma2 <= 1)
+.    alpha - power for version 2 rtol computation (1 < alpha <= 2)
+.    alpha2 - power for safeguard
+-    threshold - threshold for imposing safeguard (0 < threshold < 1)
+
+   Level: advanced
+
+.keywords: SNES, KSP, Eisenstat, Walker, get, parameters
+
+.seealso: SNES_KSP_SetUseEW(), SNES_KSP_GetUseEW(), SNES_KSP_SetParametersEW()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetParametersEW(SNES snes,PetscInt *version,PetscReal *rtol_0,PetscReal *rtol_max,
+							    PetscReal *gamma,PetscReal *alpha,PetscReal *alpha2,PetscReal *threshold)
+{
+  SNES_KSP_EW_ConvCtx *kctx;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
+  if(version)   *version   = kctx->version;
+  if(rtol_0)    *rtol_0    = kctx->rtol_0;
+  if(rtol_max)  *rtol_max  = kctx->rtol_max;
+  if(gamma)     *gamma     = kctx->gamma;
+  if(alpha)     *alpha     = kctx->alpha;
+  if(alpha2)    *alpha2    = kctx->alpha2;
+  if(threshold) *threshold = kctx->threshold;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_EW_PreSolve"
+static PetscErrorCode SNES_KSP_EW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
+{
+  PetscErrorCode       ierr;
+  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+  PetscReal            rtol=PETSC_DEFAULT,stol;
+
+  PetscFunctionBegin;
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
+  if (!snes->iter) { /* first time in, so use the original user rtol */
+    rtol = kctx->rtol_0;
+  } else {
+    if (kctx->version == 1) {
+      rtol = (snes->norm - kctx->lresid_last)/kctx->norm_last;
+      if (rtol < 0.0) rtol = -rtol;
+      stol = pow(kctx->rtol_last,kctx->alpha2);
+      if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
+    } else if (kctx->version == 2) {
+      rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
+      stol = kctx->gamma * pow(kctx->rtol_last,kctx->alpha);
+      if (stol > kctx->threshold) rtol = PetscMax(rtol,stol);
+    } else if (kctx->version == 3) {/* contributed by Luis Chacon, June 2006. */
+      rtol = kctx->gamma * pow(snes->norm/kctx->norm_last,kctx->alpha);
+      /* safeguard: avoid sharp decrease of rtol */
+      stol = kctx->gamma*pow(kctx->rtol_last,kctx->alpha);
+      stol = PetscMax(rtol,stol);
+      rtol = PetscMin(kctx->rtol_0,stol);
+      /* safeguard: avoid oversolving */
+      stol = kctx->gamma*(snes->ttol)/snes->norm;
+      stol = PetscMax(rtol,stol);
+      rtol = PetscMin(kctx->rtol_0,stol);
+    } else SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Only versions 1, 2 or 3 are supported: %D",kctx->version);
+  }
+  /* safeguard: avoid rtol greater than one */
+  rtol = PetscMin(rtol,kctx->rtol_max);
+  ierr = KSPSetTolerances(ksp,rtol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);CHKERRQ(ierr);
+  ierr = PetscInfo3(snes,"iter %D, Eisenstat-Walker (version %D) KSP rtol=%G\n",snes->iter,kctx->version,rtol);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSP_EW_PostSolve"
+static PetscErrorCode SNES_KSP_EW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
+{
+  PetscErrorCode      ierr;
+  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+  PCSide              pcside;
+  Vec                 lres;
+
+  PetscFunctionBegin;
+  if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
+  ierr = KSPGetTolerances(ksp,&kctx->rtol_last,0,0,0);CHKERRQ(ierr);
+  ierr = SNESGetFunctionNorm(snes,&kctx->norm_last);CHKERRQ(ierr);
+  if (kctx->version == 1) {
+    ierr = KSPGetPreconditionerSide(ksp,&pcside);CHKERRQ(ierr);
+    if (pcside == PC_RIGHT) { /* XXX Should we also test KSP_UNPRECONDITIONED_NORM ? */
+      /* KSP residual is true linear residual */
+      ierr = KSPGetResidualNorm(ksp,&kctx->lresid_last);CHKERRQ(ierr);
+    } else {
+      /* KSP residual is preconditioned residual */
+      /* compute true linear residual norm */
+      ierr = VecDuplicate(b,&lres);CHKERRQ(ierr);
+      ierr = MatMult(snes->jacobian,x,lres);CHKERRQ(ierr);
+      ierr = VecAYPX(lres,-1.0,b);CHKERRQ(ierr);
+      ierr = VecNorm(lres,NORM_2,&kctx->lresid_last);CHKERRQ(ierr);
+      ierr = VecDestroy(lres);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_KSPSolve"
+PetscErrorCode SNES_KSPSolve(SNES snes, KSP ksp, Vec b, Vec x)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  if (snes->ksp_ewconv) { ierr = SNES_KSP_EW_PreSolve(snes,ksp,b,x);CHKERRQ(ierr);  }
+  ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
+  if (snes->ksp_ewconv) { ierr = SNES_KSP_EW_PostSolve(snes,ksp,b,x);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }

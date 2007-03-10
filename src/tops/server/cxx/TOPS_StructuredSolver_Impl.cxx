@@ -2,7 +2,7 @@
 // File:          TOPS_StructuredSolver_Impl.cxx
 // Symbol:        TOPS.StructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.StructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -239,10 +239,9 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-TOPS::StructuredSolver_impl::StructuredSolver_impl() : 
-  StubBase(reinterpret_cast< 
-  void*>(::TOPS::StructuredSolver::_wrapObj(reinterpret_cast< void*>(this))),
-  false) , _wrapped(true){ 
+TOPS::StructuredSolver_impl::StructuredSolver_impl() : StubBase(
+  reinterpret_cast< void*>(::TOPS::StructuredSolver::_wrapObj(reinterpret_cast< 
+  void*>(this))),false) , _wrapped(true){ 
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver._ctor2)
   // Insert-Code-Here {TOPS.StructuredSolver._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver._ctor2)

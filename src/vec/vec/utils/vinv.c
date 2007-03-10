@@ -1247,8 +1247,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecPermute(Vec x, IS row, PetscTruth inv)
    Collective on Vec
 
    Input Parameters:
-+  vec1 - the first matrix
--  vec2 - the second matrix
++  vec1 - the first vector
+-  vec2 - the second vector
 
    Output Parameter:
 .  flg - PETSC_TRUE if the vectors are equal; PETSC_FALSE otherwise.
