@@ -415,8 +415,8 @@ namespace ALE {
         #undef __FUNCT__
         #define __FUNCT__ "ParMetisPartitionSieveByFace"
         static part_type *partitionSieveByFace(const Obj<topology_type>& topology, const int dim) {
-          int   *assignment = NULL; // The vertex partition
 #ifdef PETSC_HAVE_HMETIS
+          int   *assignment = NULL; // The vertex partition
           int    nvtxs;      // The number of vertices
           int    nhedges;    // The number of hyperedges
           int   *vwgts;      // The vertex weights
@@ -461,8 +461,10 @@ namespace ALE {
           } else {
             assignment = NULL;
           }
-#endif
           return assignment;
+#else
+          throw ALE::Exception("hmetis partitioner is not available.");
+#endif
         };
       };
     };

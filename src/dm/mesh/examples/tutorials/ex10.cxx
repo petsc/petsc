@@ -17,6 +17,7 @@ static char help[] = "This example demonstrates partitioning/distributed hexes b
 typedef struct {
   PetscInt   debug;              // The debugging level
   PetscInt   test;               // The testing level
+  PetscTruth postponeGhosts;     // Number ghost variables last
   char       baseFilename[2048]; // The base filename for mesh files
   char       partitioner[2048];  // The graph partitioner
 
@@ -31,12 +32,14 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug           = 0;
-  options->test            = 0;
+  options->debug          = 0;
+  options->test           = 0;
+  options->postponeGhosts = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-test", "The testing level", "pflotran.cxx", options->test, &options->test, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-postpone_ghosts", "Number ghost variables last", "pflotran.cxx", options->postponeGhosts, &options->postponeGhosts, PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscStrcpy(options->baseFilename, "data/ex10");CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "pflotran.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
@@ -111,7 +114,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   PetscTruth  view;
   PetscMPIInt size;
 
-  ierr = MeshCreatePCICE(comm, 3, coordFile.c_str(), adjFile.c_str(), PETSC_TRUE, PETSC_NULL, 0, 0, &mesh);CHKERRQ(ierr);
+  ierr = MeshCreatePCICE(comm, 3, coordFile.c_str(), adjFile.c_str(), PETSC_TRUE, PETSC_NULL, &mesh);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) {
@@ -295,7 +298,7 @@ PetscErrorCode CreateField(DM dm, Options *options)
   const ALE::Obj<ALE::Discretization>&                      disc     = m->getDiscretization();
   
   disc->setNumDof(topology->depth(), 1);
-  m->setupField(s);
+  m->setupField(s, options->postponeGhosts);
   s->setDebug(options->debug);
   // Loop over elements (quadrilaterals)
   for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {

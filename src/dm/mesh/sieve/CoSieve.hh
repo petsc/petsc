@@ -1423,7 +1423,7 @@ namespace ALE {
         return this->_indexArray;
       };
     public: // Allocation
-      void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset, int& bcOffset) {
+      void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset, int& bcOffset, const bool postponeGhosts = false) {
         const Obj<typename sieve_type::coneSequence>& cone = sieve->cone(point);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
         index_type                                    idx  = atlas->restrictPoint(patch, point)[0];
@@ -1439,10 +1439,14 @@ namespace ALE {
             this->orderPoint(atlas, sieve, patch, *c_iter, offset, bcOffset);
           }
           if (dim > 0) {
-            if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
-            idx.index = offset;
-            atlas->updatePoint(patch, point, &idx);
-            offset += dim;
+            if (!postponeGhosts || !this->getTopology()->getSendOverlap()->capContains(point)) {
+              if (this->_debug > 1) {std::cout << "  Ordering point " << point << " at " << offset << std::endl;}
+              idx.index = offset;
+              atlas->updatePoint(patch, point, &idx);
+              offset += dim;
+            } else {
+              if (this->_debug > 1) {std::cout << "  Ignoring ghost point " << point << std::endl;}
+            }
           } else if (dim < 0) {
             if (this->_debug > 1) {std::cout << "  Ordering boundary point " << point << " at " << bcOffset << std::endl;}
             idx.index = bcOffset;
@@ -1451,12 +1455,12 @@ namespace ALE {
           }
         }
       }
-      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset, int& bcOffset) {
+      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset, int& bcOffset, const bool postponeGhosts = false) {
         const typename atlas_type::chart_type& chart = atlas->getPatch(patch);
 
         for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
           if (this->_debug > 1) {std::cout << "Ordering closure of point " << *p_iter << std::endl;}
-          this->orderPoint(atlas, this->getTopology()->getPatch(patch), patch, *p_iter, offset, bcOffset);
+          this->orderPoint(atlas, this->getTopology()->getPatch(patch), patch, *p_iter, offset, bcOffset, postponeGhosts);
         }
         for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
           index_type idx = atlas->restrictPoint(patch, *p_iter)[0];
@@ -1469,7 +1473,7 @@ namespace ALE {
           }
         }
       };
-      void orderPatches(const Obj<atlas_type>& atlas) {
+      void orderPatches(const Obj<atlas_type>& atlas, const bool postponeGhosts = false) {
         const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
@@ -1477,11 +1481,11 @@ namespace ALE {
           int offset = 0, bcOffset = -2;
 
           if (!atlas->hasPatch(p_iter->first)) continue;
-          this->orderPatch(atlas, p_iter->first, offset, bcOffset);
+          this->orderPatch(atlas, p_iter->first, offset, bcOffset, postponeGhosts);
         }
       };
-      void orderPatches() {
-        this->orderPatches(this->_atlas);
+      void orderPatches(const bool postponeGhosts = false) {
+        this->orderPatches(this->_atlas, postponeGhosts);
       };
       void allocateStorage() {
         const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
@@ -1492,8 +1496,31 @@ namespace ALE {
           PetscMemzero(this->_arrays[p_iter->first], this->sizeWithBC(p_iter->first) * sizeof(value_type));
         }
       };
-      void allocate() {
-        this->orderPatches();
+      void allocate(const bool postponeGhosts = false) {
+        bool doGhosts;
+
+        if (postponeGhosts && !this->getTopology()->getSendOverlap().isNull()) {
+          doGhosts = true;
+        }
+        this->orderPatches(doGhosts);
+        if (doGhosts) {
+          const typename topology_type::sheaf_type& patches = this->getTopology()->getPatches();
+
+          for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+            if (this->_debug > 1) {std::cout << "Ordering patch " << p_iter->first << " for ghosts" << std::endl;}
+            const typename atlas_type::chart_type& points = this->_atlas->getPatch(p_iter->first);
+            int offset = 0, bcOffset = -2;
+
+            for(typename atlas_type::chart_type::iterator point = points.begin(); point != points.end(); ++point) {
+              const index_type& idx = this->_atlas->restrictPoint(p_iter->first, *point)[0];
+
+              offset = std::max(offset, idx.index + std::abs(idx.prefix));
+            }
+            if (!this->_atlas->hasPatch(p_iter->first)) continue;
+            this->orderPatch(this->_atlas, p_iter->first, offset, bcOffset);
+            if (offset != this->sizeWithBC(p_iter->first)) throw ALE::Exception("Inconsistent array sizes in section");
+          }
+        }
         this->allocateStorage();
       };
       void addPoint(const patch_type& patch, const point_type& point, const int dim) {

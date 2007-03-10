@@ -372,7 +372,7 @@ namespace ALE {
       return this->_boundaries;
     };
   public: // Discretization
-    void setupField(const Obj<real_section_type>& s) {
+    void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
       const std::string& name  = this->_boundaryCondition->getLabelName();
       const patch_type   patch = 0;
 
@@ -386,7 +386,7 @@ namespace ALE {
           s->setFiberDimension(patch, *e_iter, -this->_discretization->getNumDof(this->_topology->depth(patch, *e_iter)));
         }
       }
-      s->allocate();
+      s->allocate(postponeGhosts);
       if (!name.empty()) {
         const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
         const Obj<topology_type::label_sequence>& boundary    = this->_topology->getLabelStratum(patch, name, 1);
