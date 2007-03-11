@@ -61,6 +61,9 @@ ex_interpolate_1: ex_interpolate_1.o   chkopts
 	-${CLINKER} -o ex_interpolate_1 ex_interpolate_1.o  ${PETSC_DM_LIB}
 	${RM} -f ex_interpolate_1.o
 
+subduction: subduction.o chkopts
+	-${CLINKER} -o subduction subduction.o  ${PETSC_DM_LIB}
+	${RM} -f subduction.o
 
 #-----------------------------------------------------------------
 runex1:
