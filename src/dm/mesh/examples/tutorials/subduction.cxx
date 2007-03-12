@@ -30,6 +30,8 @@ static char help[] =
 #include <Distribution.hh>
 
 typedef enum {SLAB_LID, SLAB, BOTTOM, RIGHT, RIGHT_LID, TOP, LID} BCType;
+
+typedef enum {MANTLE_MAT, LID_MAT} MaterialType;
  
 typedef struct {
   PetscInt   debug;             // The debugging level
@@ -319,6 +321,7 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 
   PetscFunctionBegin;
   ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *partition, "partition");CHKERRQ(ierr);
   ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
   const ALE::Mesh::int_section_type::patch_type             patch    = 0;
   const ALE::Obj<ALE::Mesh::topology_type>&                 topology = section->getTopology();
@@ -333,11 +336,57 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateMaterialField"
+// Creates a field whose value is the material on each element
+PetscErrorCode CreateMaterialField(Mesh mesh, Options *options, SectionInt *material)
+{
+  ALE::Obj<ALE::Mesh> m;
+  SectionReal    coordinates;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetCellSectionInt(mesh, 1, material);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) *material, "material");CHKERRQ(ierr);
+  ierr = MeshGetSectionReal(mesh, "coordinates", &coordinates);CHKERRQ(ierr);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const ALE::Mesh::int_section_type::patch_type             patch    = 0;
+  const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
+  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
+  const ALE::Mesh::topology_type::label_sequence::iterator  end      = cells->end();
+  const int dim     = m->getDimension();
+  const int corners = topology->getPatch(patch)->nCone(*cells->begin(), topology->depth())->size();
+  double   *centroid = new double[dim];
+
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    double *coords;
+    int     mat;
+
+    ierr = SectionRealRestrict(coordinates, *c_iter, &coords);CHKERRQ(ierr);
+    for(int d = 0; d < dim; ++d) {
+      centroid[d] = 0.0;
+      for(int c = 0; c < corners; ++c) {
+        centroid[d] += coords[c*dim+d];
+      }
+      centroid[d] /= corners;
+    }
+    if (centroid[1] >= -options->lidDepth) {
+      mat = LID_MAT;
+    } else {
+      mat = MANTLE_MAT;
+    }
+    ierr = SectionIntUpdate(*material, *c_iter, &mat);CHKERRQ(ierr);
+  }
+  delete [] centroid;
+  ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "ViewMesh"
-PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
+PetscErrorCode ViewMesh(Mesh mesh, const char filename[], Options *options)
 {
   MPI_Comm       comm;
-  SectionInt     partition;
+  SectionInt     partition, material;
   PetscViewer    viewer;
   PetscErrorCode ierr;
 
@@ -349,10 +398,13 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
+  ierr = CreateMaterialField(mesh, options, &material);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
   ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
+  ierr = SectionIntView(material, viewer);CHKERRQ(ierr);
   ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
   ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(material);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -363,11 +415,8 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 {
   Mesh           mesh, meshBoundary;
-  std::string    baseFilename("data/ex10");
-  std::string    coordFile = baseFilename+".nodes";
-  std::string    adjFile   = baseFilename+".lcon";
-  PetscTruth     view;
   PetscMPIInt    size;
+  PetscTruth     view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -395,8 +444,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     m->view("Mesh");
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-  if (view) {ierr = ViewMesh(mesh, "subduction.vtk");CHKERRQ(ierr);}
   *dm = (DM) mesh;
   PetscFunctionReturn(0);
 }
@@ -405,9 +452,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 #define __FUNCT__ "DestroyMesh"
 PetscErrorCode DestroyMesh(DM dm, Options *options)
 {
+  PetscTruth     view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
+  if (view) {ierr = ViewMesh((Mesh) dm, "subduction.vtk", options);CHKERRQ(ierr);}
   ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

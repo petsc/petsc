@@ -180,16 +180,34 @@ class VTKViewer {
     numElements = cNumbering->getGlobalSize();
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
-      for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        //const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
-        const Obj<ALE::Mesh::sieve_type::coneArray>& cone = sieve->nCone(*e_iter, depth);
+      if ((mesh->getDimension() == 2) && (corners == 3) && (topology->depth() == 2)) {
+        for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          const Obj<ALE::Mesh::sieve_type::coneArray>& cone = sieve->nCone(*e_iter, depth);
 
-        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-        //for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-        for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-          ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter));CHKERRQ(ierr);
+          if (mesh->orientation(patch, *e_iter) < 0) {
+            ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin();
+            ALE::Mesh::point_type                      tmp    = *c_iter;
+            *cone->begin() = *(++c_iter);
+            *c_iter        = tmp;
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+          for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter));CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
-        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      } else {
+        for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          //const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
+          const Obj<ALE::Mesh::sieve_type::coneArray>& cone = sieve->nCone(*e_iter, depth);
+
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+          //for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter));CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
       }
       for(int p = 1; p < mesh->commSize(); p++) {
         int        numLocalElements;
