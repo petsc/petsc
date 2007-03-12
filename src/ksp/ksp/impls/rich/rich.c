@@ -56,12 +56,12 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   /* if user has provided fast Richardson code use that */
   ierr = PCApplyRichardsonExists(ksp->pc,&exists);CHKERRQ(ierr);
   if (exists && !ksp->numbermonitors && !ksp->transpose_solve) {
-    ksp->normtype = KSP_NO_NORM;
+    ksp->normtype = KSP_NORM_NO;
     ierr = PCApplyRichardson(ksp->pc,b,x,r,ksp->rtol,ksp->abstol,ksp->divtol,maxit);CHKERRQ(ierr);
-    if (ksp->normtype != KSP_NO_NORM) {
+    if (ksp->normtype != KSP_NORM_NO) {
       ierr = KSP_MatMult(ksp,Amat,x,r);CHKERRQ(ierr);
       ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
-      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->pc_side == PC_RIGHT) {
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
       } else {
         ierr = PetscExceptionTry1((KSP_PCApply(ksp,r,z)),PETSC_ERR_SUP);
@@ -69,7 +69,7 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
           ksp->reason = KSP_CONVERGED_ITS;
           PetscFunctionReturn(0);
         }
-        if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+        if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
           ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'B'*Br     */
         } else {
           ierr = VecDot(r,z,&dt);CHKERRQ(ierr); 
@@ -96,20 +96,20 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     ksp->its++;
     ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
 
-    if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- r'*r     */
       KSPMonitor(ksp,i,rnorm);
     }
 
     ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);    /*   z <- B r          */
 
-    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr); /*   rnorm <- z'*z     */
       KSPMonitor(ksp,i,rnorm);
     }
 
     ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
-    if (ksp->normtype != KSP_NO_NORM) {
+    if (ksp->normtype != KSP_NORM_NO) {
       ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
       ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
@@ -124,8 +124,8 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
   }
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
-    if (ksp->normtype != KSP_NO_NORM) {
-      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM){
+    if (ksp->normtype != KSP_NORM_NO) {
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED){
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
       } else {
         ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);   /*   z <- B r          */

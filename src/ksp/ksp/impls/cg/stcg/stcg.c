@@ -195,13 +195,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   /* As far as we know, the preconditioner is positive definite.  Compute   */
   /* the appropriate residual depending on what the user has set.           */
-  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |z| */
   }
-  else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+  else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |r| */
   }
-  else if (ksp->normtype == KSP_NATURAL_NORM) {
+  else if (ksp->normtype == KSP_NORM_NATURAL) {
     norm_r = sqrt(rz);					/* norm_r = |r|_B */
   }
   else {
@@ -326,13 +326,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* As far as we know, the matrix and preconditioner are positive        */
     /* definite.  Compute the appropriate residual depending on what the    */
     /* user has set.                                                        */
-    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |z| */
     }
-    else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+    else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |r| */
     }
-    else if (ksp->normtype == KSP_NATURAL_NORM) {
+    else if (ksp->normtype == KSP_NORM_NATURAL) {
       norm_r = sqrt(rz);				/* norm_r = |r|_B */
     }
     else {

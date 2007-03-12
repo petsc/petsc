@@ -105,16 +105,16 @@ PetscFList KSPList = 0;
    Input Parameter:
 +  ksp - Krylov solver context
 -  normtype - one of 
-$   KSP_NO_NORM - skips computing the norm, this should only be used if you are using
+$   KSP_NORM_NO - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
 $                 You must also call KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);
 $                 supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
-$   KSP_PRECONDITIONED_NORM - the default for left preconditioned solves, uses the l2 norm
+$   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
-$   KSP_UNPRECONDITIONED_NORM - uses the l2 norm of the true b - Ax residual, supported only by
+$   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
 $                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide) 
 $                 preconditioning..
-$   KSP_NATURAL_NORM - supported  by cg, cr, and cgs 
+$   KSP_NORM_NATURAL - supported  by cg, cr, and cgs 
 
 
    Options Database Key:
@@ -136,7 +136,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
-  if (normtype == KSP_NO_NORM) {
+  if (normtype == KSP_NORM_NO) {
     ierr = PetscInfo(ksp,"Warning seting KSPNormType to skip computing the norm\n\
   make sure you set the KSP convergence test to KSPSkipConvergence\n");CHKERRQ(ierr);
   }
@@ -394,7 +394,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->abstol          = 1.e-50;
   ksp->divtol        = 1.e4;
 
-  ksp->normtype            = KSP_PRECONDITIONED_NORM;
+  ksp->normtype            = KSP_NORM_PRECONDITIONED;
   ksp->rnorm               = 0.0;
   ksp->its                 = 0;
   ksp->guess_zero          = PETSC_TRUE;

@@ -622,10 +622,10 @@ EXTERN_C_END
 
    Input Parameter:
 .  pc - the preconditioner context
-.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE
+.  type - PC_COMPOSITE_ADDITIVE (default), PC_COMPOSITE_MULTIPLICATIVE, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE
 
    Options Database Key:
-.  -pc_fieldsplit_type <type: one of multiplicative, additive, special> - Sets fieldsplit preconditioner type
+.  -pc_fieldsplit_type <type: one of multiplicative, additive, symmetric_multiplicative, special> - Sets fieldsplit preconditioner type
 
    Level: Developer
 

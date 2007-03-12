@@ -57,11 +57,11 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
     PetscFunctionReturn(0);
   }
     
-  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(RT,NORM_2,&dp);CHKERRQ(ierr);        /*   dp <- RT'*RT       */
-  } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+  } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);         /*   dp <- R'*R         */
-  } else if (ksp->normtype == KSP_NATURAL_NORM) {
+  } else if (ksp->normtype == KSP_NORM_NATURAL) {
     dp = sqrt(PetscAbsScalar(btop));                    /* dp = sqrt(R,AR)      */
   }
   ksp->its = 0;
@@ -96,13 +96,13 @@ static PetscErrorCode  KSPSolve_CR(KSP ksp)
       break;
     }
 
-    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNorm(RT,NORM_2,&dp);CHKERRQ(ierr);      /*   dp <- || RT ||      */
-    } else if (ksp->normtype == KSP_NATURAL_NORM) {
+    } else if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = sqrt(PetscAbsScalar(btop));                  /* dp = sqrt(R,AR)       */
-    } else if (ksp->normtype == KSP_NO_NORM) {
+    } else if (ksp->normtype == KSP_NORM_NO) {
       dp = 0.0; 
-    } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+    } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
       ierr = VecAXPY(R,-ai,AP);CHKERRQ(ierr);           /*   R   <- R - ai*AP    */
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);       /*   dp <- R'*R          */
     } else {

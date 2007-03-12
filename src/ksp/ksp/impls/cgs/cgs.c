@@ -51,7 +51,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
 
   /* Test for nothing to do */
   ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-  if (ksp->normtype == KSP_NATURAL_NORM) {
+  if (ksp->normtype == KSP_NORM_NATURAL) {
     dp *= dp;
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -70,7 +70,7 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
      Since most initial conditions result in a mostly 0 residual,
      we change all the 0 values in the vector RP to the maximum.
   */
-  if (ksp->normtype == KSP_NATURAL_NORM) {
+  if (ksp->normtype == KSP_NORM_NATURAL) {
      PetscReal   vr0max;
      PetscScalar *tmp_RP=0;
      PetscInt    numnp=0, *max_pos=0;
@@ -101,9 +101,9 @@ static PetscErrorCode  KSPSolve_CGS(KSP ksp)
     ierr = KSP_PCApplyBAorAB(ksp,T,AUQ,U);CHKERRQ(ierr);
     ierr = VecAXPY(R,-a,AUQ);CHKERRQ(ierr);       /* r <- r - a K (u + q) */
     ierr = VecDot(R,RP,&rho);CHKERRQ(ierr);         /* rho <- (r,rp)        */
-    if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+    if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-    } else if (ksp->normtype == KSP_NATURAL_NORM) {
+    } else if (ksp->normtype == KSP_NORM_NATURAL) {
       dp = PetscAbsScalar(rho);
     }
 

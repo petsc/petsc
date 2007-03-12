@@ -41,7 +41,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
  ierr = KSPInitialResidual(ksp,X,V,T,R,B);CHKERRQ(ierr);
 
   /* Test for nothing to do */
-  if (ksp->normtype != KSP_NO_NORM) {
+  if (ksp->normtype != KSP_NORM_NO) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
   }
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -101,7 +101,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     ierr  = VecAXPY(X,alpha,P);CHKERRQ(ierr);     /*   x <- x + a p       */
     ierr  = VecAXPY(X,omega,S);CHKERRQ(ierr);     /*   x <- x + w s       */
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
-    if (ksp->normtype != KSP_NO_NORM) {
+    if (ksp->normtype != KSP_NORM_NO) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 

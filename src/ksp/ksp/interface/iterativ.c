@@ -321,7 +321,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
 .  reason - always KSP_CONVERGED_ITERATING
 
    Notes:
-   This is used as the convergence test with the option KSPSetNormType(ksp,KSP_NO_NORM),
+   This is used as the convergence test with the option KSPSetNormType(ksp,KSP_NORM_NO),
    since norms of the residual are not computed. Convergence is then declared 
    after a fixed number of iterations have been used. Useful when one is 
    using CG or Bi-CG-stab as a smoother.
@@ -343,7 +343,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 #define __FUNCT__ "KSPDefaultConvergedSetUIRNorm"
 /*@C
    KSPDefaultConvergedSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
-      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_UNPRECONDIITONED_NORM)
+      instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
 
    Collective on KSP
@@ -378,7 +378,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 #define __FUNCT__ "KSPDefaultConvergedSetUMIRNorm"
 /*@C
    KSPDefaultConvergedSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
-      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_UNPRECONDIITONED_NORM)
+      In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.
 
    Collective on KSP
@@ -467,17 +467,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
     /* if user gives initial guess need to compute norm of b */
     if (!ksp->guess_zero && !ksp->defaultconvergedinitialrtol) {
       PetscReal      snorm;
-      if (ksp->normtype == KSP_UNPRECONDITIONED_NORM || ksp->pc_side == PC_RIGHT) {
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED || ksp->pc_side == PC_RIGHT) {
         ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of RHS\n");CHKERRQ(ierr);
         ierr = VecNorm(ksp->vec_rhs,NORM_2,&snorm);CHKERRQ(ierr);        /*     <- b'*b */
       } else {
         Vec z;
         ierr = VecDuplicate(ksp->vec_rhs,&z);CHKERRQ(ierr);
         ierr = KSP_PCApply(ksp,ksp->vec_rhs,z);CHKERRQ(ierr);
-        if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+        if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing 2-norm of preconditioned RHS\n");CHKERRQ(ierr);
           ierr = VecNorm(z,NORM_2,&snorm);CHKERRQ(ierr);                 /*    dp <- b'*B'*B*b */
-        } else if (ksp->normtype == KSP_NATURAL_NORM) {
+        } else if (ksp->normtype == KSP_NORM_NATURAL) {
           PetscScalar norm;
           ierr = PetscInfo(ksp,"user has provided nonzero initial guess, computing natural norm of RHS\n");CHKERRQ(ierr);
           ierr  = VecDot(ksp->vec_rhs,z,&norm);
