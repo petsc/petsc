@@ -756,6 +756,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->linear_its        = 0;
   snes->numbermonitors    = 0;
   snes->data              = 0;
+  snes->ops->converged    = 0;
   snes->ops->view         = 0;
   snes->setupcalled       = PETSC_FALSE;
   snes->ksp_ewconv        = PETSC_FALSE;
@@ -1567,7 +1568,7 @@ $     PetscErrorCode func (SNES snes,PetscInt it,PetscReal xnorm,PetscReal gnorm
 
 .keywords: SNES, nonlinear, set, convergence, test
 
-.seealso: SNESConverged_LS(), SNESConverged_TR()
+.seealso: SNESDefaultConverged(), SNESSkipConverged(), SNESConverged_LS(), SNESConverged_TR()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetConvergenceTest(SNES snes,PetscErrorCode (*func)(SNES,PetscInt,PetscReal,PetscReal,PetscReal,SNESConvergedReason*,void*),void *cctx)
 {
@@ -1851,13 +1852,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
     }
   }
   snes->vec_sol = snes->vec_sol_always = x;
-  if (!snes->setupcalled) {
-    ierr = SNESSetUp(snes);CHKERRQ(ierr);
-  }
+
+  ierr = SNESSetUp(snes);CHKERRQ(ierr);
+
   if (snes->conv_hist_reset) snes->conv_hist_len = 0;
-  ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
 
+  ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+  
   ierr = PetscExceptionTry1((*(snes)->ops->solve)(snes),PETSC_ERR_ARG_DOMAIN);
   if (PetscExceptionValue(ierr)) {
     /* this means that a caller above me has also tryed this exception so I don't handle it here, pass it up */
@@ -1868,8 +1870,14 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
     ierr = 0;
   } 
   CHKERRQ(ierr);
-
+  if (!snes->reason) {
+    SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
+  }
+  if (!snes->ops->converged && snes->reason == SNES_DIVERGED_MAX_IT) {
+    snes->reason = SNES_CONVERGED_ITS;
+  }
   ierr = PetscLogEventEnd(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
+  
   ierr = PetscOptionsGetString(snes->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
     ierr = PetscViewerASCIIOpen(snes->comm,filename,&viewer);CHKERRQ(ierr);

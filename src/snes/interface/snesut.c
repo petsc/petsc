@@ -287,9 +287,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES snes,PetscInt it
 }
 /* ---------------------------------------------------------------- */
 #undef __FUNCT__  
-#define __FUNCT__ "SNESConverged_LS"
+#define __FUNCT__ "SNESDefaultConverged"
 /*@C 
-   SNESConverged_LS - Monitors the convergence of the solvers for
+   SNESDefaultConverged - Convergence test of the solvers for
    systems of nonlinear equations (default).
 
    Collective on SNES
@@ -325,11 +325,14 @@ $  SNES_CONVERGED_ITERATING       - (otherwise),
 
 .seealso: SNESSetConvergenceTest()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(reason,6);
+  
   *reason = SNES_CONVERGED_ITERATING;
 
   if (!it) {
@@ -358,3 +361,51 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscInt it,PetscR
   }
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNESSkipConverged"
+/*@C 
+   SNESSkipConverged - Convergence test for SNES that NEVER returns as
+   converged, UNLESS the maximum number of iteration have been reached.
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  it - the iteration (0 indicates before any Newton steps)
+.  xnorm - 2-norm of current iterate
+.  pnorm - 2-norm of current step 
+.  fnorm - 2-norm of function at current iterate
+-  dummy - unused context
+
+   Output Parameter:
+.   reason  - SNES_CONVERGED_ITERATING or SNES_DIVERGED_FNORM_NAN
+
+   Notes:
+   Convergence is then declared after a fixed number of iterations have been used.
+                    
+   Level: advanced
+
+.keywords: SNES, nonlinear, skip, converged, convergence
+
+.seealso: SNESSetConvergenceTest()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSkipConverged(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidPointer(reason,6);
+
+  *reason = SNES_CONVERGED_ITERATING;
+
+  if (fnorm != fnorm) {
+    ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
+    *reason = SNES_DIVERGED_FNORM_NAN;
+  } else if(it == snes->max_its) {
+    *reason = SNES_CONVERGED_ITS;
+  }
+  PetscFunctionReturn(0);
+}
+

@@ -163,7 +163,12 @@ PetscErrorCode SNESSolve_LS(SNES snes)
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
-  ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+
+  /* set parameter for default relative tolerance convergence test */
+  snes->ttol = fnorm*snes->rtol;
+  if (snes->ops->converged) {
+    ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  }
   if (snes->reason) PetscFunctionReturn(0);
 
   for (i=0; i<maxits; i++) {
@@ -185,6 +190,8 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       }
     }
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
+    snes->linear_its += lits;
+    ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
 
     if (neP->precheckstep) {
       PetscTruth changed_y = PETSC_FALSE;
@@ -195,15 +202,12 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
 
-    /* should check what happened to the linear solve? */
-    snes->linear_its += lits;
-    ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
-
     /* Compute a (scaled) negative update in the line search routine: 
          Y <- X - lambda*Y 
        and evaluate G = function(Y) (depends on the line search). 
     */
     ierr = VecCopy(Y,snes->vec_sol_update_always);CHKERRQ(ierr);
+    ynorm = 1; gnorm = fnorm;
     ierr = (*neP->LineSearch)(snes,neP->lsP,X,F,G,Y,W,fnorm,&ynorm,&gnorm,&lssucceed);CHKERRQ(ierr);
     ierr = PetscInfo4(snes,"fnorm=%18.16e, gnorm=%18.16e, ynorm=%18.16e, lssucceed=%d\n",fnorm,gnorm,ynorm,(int)lssucceed);CHKERRQ(ierr);
     TMP = F; F = G; snes->vec_func_always = F; G = TMP;
@@ -220,7 +224,6 @@ PetscErrorCode SNESSolve_LS(SNES snes)
 
     if (!lssucceed) {
       PetscTruth ismin;
-
       if (++snes->numFailures >= snes->maxFailures) {
         snes->reason = SNES_DIVERGED_LS_FAILURE;
         ierr = SNESLSCheckLocalMin_Private(snes->jacobian,F,W,fnorm,&ismin);CHKERRQ(ierr);
@@ -233,9 +236,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     if (snes->ops->converged) {
       ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
       ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
-      if (snes->reason) {
-        break;
-      }
+      if (snes->reason) break;
     }
   }
   if (X != snes->vec_sol) {
@@ -1155,6 +1156,56 @@ static PetscErrorCode SNESSetFromOptions_LS(SNES snes)
       }
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+/* -------------------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "SNESConverged_LS"
+/*@C 
+   SNESConverged_LS - Monitors the convergence of the line search
+   method SNESLS for solving systems of nonlinear equations (default).
+
+   Collective on SNES
+
+   Input Parameters:
++  snes - the SNES context
+.  it - the iteration (0 indicates before any Newton steps)
+.  xnorm - 2-norm of current iterate
+.  pnorm - 2-norm of current step 
+.  fnorm - 2-norm of function at current iterate
+-  dummy - unused context
+
+   Output Parameter:
+.   reason  - one of
+$  SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
+$  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
+$  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
+$  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
+$  SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
+$  SNES_CONVERGED_ITERATING       - (otherwise),
+
+   where
++    maxf - maximum number of function evaluations,
+            set with SNESSetTolerances()
+.    nfct - number of function evaluations,
+.    abstol - absolute function norm tolerance,
+            set with SNESSetTolerances()
+-    rtol - relative function norm tolerance, set with SNESSetTolerances()
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, default, converged, convergence
+
+.seealso: SNESSetConvergenceTest()
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_LS(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidType(snes,1);
+  PetscValidPointer(reason,6);
+  ierr = SNESDefaultConverged(snes,it,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */

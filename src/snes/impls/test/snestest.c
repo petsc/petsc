@@ -110,8 +110,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   snes->ops->setup	     = 0;
   snes->ops->solve	     = SNESSolve_Test;
   snes->ops->destroy	     = SNESDestroy_Test;
-  snes->ops->converged	     = SNESConverged_LS;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
+  snes->ops->converged	     = 0;
 
   ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(snes,sizeof(SNES_Test));CHKERRQ(ierr);
