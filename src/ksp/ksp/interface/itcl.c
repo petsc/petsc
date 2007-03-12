@@ -241,21 +241,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 
     ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,4,"preconditioned",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      switch (indx) {
-      case 0:
-        ierr = KSPSetNormType(ksp,KSP_NO_NORM);CHKERRQ(ierr);
+      if (indx == (PetscInt)KSP_NORM_NO) {
         ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
-        break;
-      case 1:
-        ierr = KSPSetNormType(ksp,KSP_PRECONDITIONED_NORM);CHKERRQ(ierr);
-        break;
-      case 2:
-        ierr = KSPSetNormType(ksp,KSP_UNPRECONDITIONED_NORM);CHKERRQ(ierr);
-        break;
-      case 3:
-        ierr = KSPSetNormType(ksp,KSP_NATURAL_NORM);CHKERRQ(ierr);
-        break;
       }
+      ierr = KSPSetNormType(ksp,(KSPNormType)indx);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsName("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",&flg);CHKERRQ(ierr);

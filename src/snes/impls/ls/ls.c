@@ -707,9 +707,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESLineSearchCubic(SNES snes,void *lsctx,Vec
 .  ynorm - 2-norm of search length
 -  flag - PETSC_TRUE if line search succeeds; PETSC_FALSE on failure.
 
-   Options Database Key:
-.  -snes_ls quadratic - Activates SNESLineSearchQuadratic()
-
+   Options Database Keys:
++  -snes_ls quadratic - Activates SNESLineSearchQuadratic()
+.   -snes_ls_alpha <alpha> - Sets alpha
+.   -snes_ls_maxstep <max> - Sets maxstep
+-   -snes_ls_steptol <steptol> - Sets steptol, this is the minimum step size that the line search code
+                   will accept; min p[i]/x[i] < steptol. The -snes_stol <stol> is the minimum step length
+                   the default convergence test will use and is based on 2-norm(p) < stol*2-norm(x)
    Notes:
    Use SNESLineSearchSet() to set this routine within the SNESLS method.  
 

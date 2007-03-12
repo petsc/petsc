@@ -3683,10 +3683,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm comm,Mat s
 
   /* determine row ownership */
   /*---------------------------------------------------------*/
+  ierr = PetscMapInitialize(comm,&merge->rowmap);CHKERRQ(ierr); 
   merge->rowmap.n = m;
   merge->rowmap.N = M;
   merge->rowmap.bs = 1;
-  ierr = PetscMapSetUp(&merge->rowmap);CHKERRQ(ierr);
+  ierr = PetscMapSetUp(&merge->rowmap);CHKERRQ(ierr); 
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&len_si);CHKERRQ(ierr);
   ierr = PetscMalloc(size*sizeof(PetscMPIInt),&merge->len_s);CHKERRQ(ierr);
   
