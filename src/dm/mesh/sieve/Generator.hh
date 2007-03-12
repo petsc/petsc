@@ -140,7 +140,7 @@ namespace ALE {
         if (mesh->commRank() == 0) {
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              topology->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+              newTopology->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
             }
           }
           if (interpolate) {
@@ -148,9 +148,9 @@ namespace ALE {
               if (out.edgemarkerlist[e]) {
                 const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
                 const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
-                const Obj<Mesh::sieve_type::supportSet> edge = sieve->nJoin(vertexA, vertexB, 1);
+                const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
 
-                topology->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+                newTopology->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
               }
             }
           }
@@ -201,22 +201,41 @@ namespace ALE {
         in.trianglearealist  = (double *) maxVolumes;
         if (in.numberoftriangles > 0) {
           ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
-          for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-            const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*f_iter);
-            const int                                          idx  = fNumbering->getIndex(*f_iter);
-            int                                                v    = 0;
+          if (serialTopology->depth() == 1) {
+            for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+              const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*f_iter);
+              const int                                          idx  = fNumbering->getIndex(*f_iter);
+              int                                                v    = 0;
 
-            for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-              in.trianglelist[idx*in.numberofcorners + v++] = vNumbering->getIndex(*c_iter);
+              for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                in.trianglelist[idx*in.numberofcorners + v++] = vNumbering->getIndex(*c_iter);
+              }
             }
+          } else if (serialTopology->depth() == 2) {
+            for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+              const Obj<Mesh::sieve_type::coneArray>& cone = serialSieve->nCone(*f_iter, 2);
+              const int                               idx  = fNumbering->getIndex(*f_iter);
+              int                                     v    = 0;
+
+              for(Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                in.trianglelist[idx*in.numberofcorners + v++] = vNumbering->getIndex(*c_iter);
+              }
+              if (serialMesh->orientation(patch, *f_iter) < 0) {
+                int tmp = in.trianglelist[idx*in.numberofcorners+1];
+                in.trianglelist[idx*in.numberofcorners+1] = in.trianglelist[idx*in.numberofcorners+2];
+                in.trianglelist[idx*in.numberofcorners+2] = tmp;
+              }
+            }
+          } else {
+            throw ALE::Exception("Invalid sieve: Cannot gives sieves of arbitrary depth to Triangle");
           }
         }
         if (serialTopology->depth() == 2) {
-          const Obj<Mesh::topology_type::label_sequence>& edges    = serialTopology->depthStratum(patch, 1);
-          const Obj<Mesh::topology_type::label_sequence>& boundary = markers->support(1);
+          const Obj<Mesh::topology_type::label_sequence>&                 edges    = serialTopology->depthStratum(patch, 1);
+          const Obj<Mesh::topology_type::patch_label_type::baseSequence>& boundary = markers->base();
 
           in.numberofsegments = 0;
-          for(Mesh::topology_type::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
+          for(Mesh::topology_type::patch_label_type::baseSequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
             for(Mesh::topology_type::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
               if (*b_iter == *e_iter) {
                 in.numberofsegments++;
@@ -228,7 +247,7 @@ namespace ALE {
 
             ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
             ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
-            for(Mesh::topology_type::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
+            for(Mesh::topology_type::patch_label_type::baseSequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
               for(Mesh::topology_type::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
                 if (*b_iter == *e_iter) {
                   const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*e_iter);

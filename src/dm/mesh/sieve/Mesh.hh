@@ -332,6 +332,33 @@ namespace ALE {
         throw ALE::Exception("No point location for mesh dimension");
       }
     };
+    // Only works in 2D
+    int orientation(const patch_type& patch, const point_type& cell) {
+      const Obj<real_section_type>&     coordinates = this->getRealSection("coordinates");
+      const Obj<topology_type>&         topology    = this->getTopology();
+      const Obj<sieve_type>&            sieve       = topology->getPatch(patch);
+      const Obj<sieve_type::coneArray>& cone        = sieve->nCone(cell, topology->depth());
+      sieve_type::coneArray::iterator   cBegin      = cone->begin();
+      real_section_type::value_type     root[2];
+      real_section_type::value_type     vA[2];
+      real_section_type::value_type     vB[2];
+
+      const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *cBegin);
+      root[0] = coords[0];
+      root[1] = coords[1];
+      ++cBegin;
+      coords = coordinates->restrictPoint(patch, *cBegin);
+      vA[0] = coords[0] - root[0];
+      vA[1] = coords[1] - root[1];
+      ++cBegin;
+      coords = coordinates->restrictPoint(patch, *cBegin);
+      vB[0] = coords[0] - root[0];
+      vB[1] = coords[1] - root[1];
+      double det = vA[0]*vB[1] - vA[1]*vB[0];
+      if (det > 0.0) return  1;
+      if (det < 0.0) return -1;
+      return 0;
+    };
   public: // BC values for PCICE
     const bc_value_type& getBCValue(const int bcFunc) {
       return this->_bcValues[bcFunc];
@@ -372,7 +399,7 @@ namespace ALE {
       return this->_boundaries;
     };
   public: // Discretization
-    void setupField(const Obj<real_section_type>& s) {
+    void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
       const std::string& name  = this->_boundaryCondition->getLabelName();
       const patch_type   patch = 0;
 
@@ -386,7 +413,7 @@ namespace ALE {
           s->setFiberDimension(patch, *e_iter, -this->_discretization->getNumDof(this->_topology->depth(patch, *e_iter)));
         }
       }
-      s->allocate();
+      s->allocate(postponeGhosts);
       if (!name.empty()) {
         const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
         const Obj<topology_type::label_sequence>& boundary    = this->_topology->getLabelStratum(patch, name, 1);

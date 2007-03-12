@@ -94,8 +94,11 @@ typedef struct {
   PetscTruth   draw_contours;                /* flag - 1 indicates drawing contours */
   DMMG         *dmmg;                        /* passing solu_true into sub-models */
   DMMG         *dmmg1,*dmmg2;                /* passing objects of sub-physics into the composite physics */
-  Vec          solu_local;
+  Vec          solu_local,solu_local1,solu_local2;
   DMComposite  pack;
+  PetscTruth   COMPOSITE_MODEL;
+  Field1       **x1;
+  Field2       **x2;
 } AppCtx;
 
 #undef __FUNCT__
@@ -175,10 +178,11 @@ int main(int argc,char **argv)
     PetscInt i,j,mx,xs,ys,xm,ym;
     ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
     ierr = DAVecGetArray(da,solu_true,&x);CHKERRQ(ierr);
-    printf("Temperature: \n");
+  
+    printf("U,V,Omega,Temp: \n");
     for (j=ys; j<ys+ym; j++) {
       for (i=xs; i<xs+xm; i++) {
-        printf("x[%d][%d].temp = %g\n",j,i,x[j][i].temp );
+        printf("x[%d,%d] = %g, %g, %g, %g\n",j,i,x[j][i].u,x[j][i].v,x[j][i].omega,x[j][i].temp );
       }
     }
     ierr = DAVecRestoreArray(da,solu_true,&x);CHKERRQ(ierr);
@@ -199,6 +203,7 @@ int main(int argc,char **argv)
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg1);CHKERRQ(ierr);
   dof  = 3;
+  user.COMPOSITE_MODEL = PETSC_FALSE;
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg1,(DM)da);CHKERRQ(ierr);
   ierr = DASetFieldName(da,0,"x-velocity");CHKERRQ(ierr);
@@ -213,7 +218,22 @@ int main(int argc,char **argv)
   snes = DMMGGetSNES(dmmg1);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Physics 1, Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
-   
+  
+  if (View_Solu){ /* View individial componets of the solution */
+    Field1    **x;
+    PetscInt i,j,mx,xs,ys,xm,ym;
+    Vec solu_true = DMMGGetx(dmmg1);
+    DA  da=DMMGGetDA(dmmg1);
+    ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,solu_true,&x);CHKERRQ(ierr);
+    printf("Physics 1, U,V,Omega: \n");
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        printf("x[%d,%d] = %g, %g, %g\n",j,i,x[j][i].u,x[j][i].v,x[j][i].omega);
+      }
+    }
+    ierr = DAVecRestoreArray(da,solu_true,&x);CHKERRQ(ierr);
+   }
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Setup Physics 2: 
         - Lap(T) + PR*Div([U*T,V*T]) = 0        
@@ -221,6 +241,7 @@ int main(int argc,char **argv)
         - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg2);CHKERRQ(ierr);
   dof  = 1;
+  user.COMPOSITE_MODEL = PETSC_FALSE;
   ierr = DACreate2d(comm,DA_NONPERIODIC,DA_STENCIL_STAR,-4,-4,PETSC_DECIDE,PETSC_DECIDE,dof,1,0,0,&da);CHKERRQ(ierr);
   ierr = DMMGSetDM(dmmg2,(DM)da);CHKERRQ(ierr);
   ierr = DASetFieldName(da,0,"temperature");CHKERRQ(ierr);
@@ -233,31 +254,69 @@ int main(int argc,char **argv)
   snes = DMMGGetSNES(dmmg2);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm,"Physics 2, Number of Newton iterations = %D\n\n", its);CHKERRQ(ierr);
+  if (View_Solu){ /* View individial componets of the solution */
+    Field2    **x;
+    PetscInt i,j,mx,xs,ys,xm,ym;
+    Vec solu_true = DMMGGetx(dmmg2);
+    DA  da=DMMGGetDA(dmmg2);
+    ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da,solu_true,&x);CHKERRQ(ierr);
+    printf("Physics 2, Temperature: \n");
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        printf("x[%d,%d] = %g\n",j,i,x[j][i].temp );
+      }
+    }
+    ierr = DAVecRestoreArray(da,solu_true,&x);CHKERRQ(ierr);
+   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Create the DMComposite object to manage the two grids/physics. 
     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
   ierr = DMCompositeCreate(comm,&user.pack);CHKERRQ(ierr);
-  CHKMEMQ;
   ierr = DMCompositeAddDA(user.pack,DMMGGetDA(dmmg1));CHKERRQ(ierr);
   ierr = DMCompositeAddDA(user.pack,DMMGGetDA(dmmg2));CHKERRQ(ierr);
-  CHKMEMQ;
 
   /* Create the solver object and attach the grid/physics info */
   ierr = DMMGCreate(comm,nlevels,&user,&dmmg_comp);CHKERRQ(ierr);
-  CHKMEMQ;
   ierr = DMMGSetDM(dmmg_comp,(DM)user.pack);CHKERRQ(ierr);
   CHKMEMQ;
   ierr = DMMGSetISColoringType(dmmg_comp,IS_COLORING_GLOBAL);CHKERRQ(ierr);
-  CHKMEMQ;
 
   user.dmmg1 = dmmg1;
   user.dmmg2 = dmmg2;
+  user.COMPOSITE_MODEL = PETSC_TRUE;
   ierr = DMMGSetInitialGuess(dmmg_comp,FormInitialGuessLocalComp);CHKERRQ(ierr);
   ierr = DMMGSetSNES(dmmg_comp,FormFunctionLocalComp,0);CHKERRQ(ierr);
 
   /* Solve the nonlinear system */
   ierr = DMMGSolve(dmmg_comp);CHKERRQ(ierr); 
+
+  if (View_Solu){ /* View the solution of composite model */
+    Field    **x;
+    PetscInt i,j,mx,xs,ys,xm,ym;
+    DA       da1,da2,da=DMMGGetDA(dmmg);
+    Vec      X1,X2,solu_true = DMMGGetx(dmmg_comp);
+    Field1   **x1,**f1;
+    Field2   **x2,**f2;
+    DMComposite    dm = (DMComposite)(*dmmg_comp)->dm;
+
+    ierr = DAGetCorners(da,&xs,&ys,PETSC_NULL,&xm,&ym,PETSC_NULL);CHKERRQ(ierr);   
+    ierr = DMCompositeGetEntries(dm,&da1,&da2);CHKERRQ(ierr);
+    ierr = DMCompositeGetLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+    ierr = DAVecGetArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+
+    printf("Composite physics, U,V,Omega,Temp: \n");
+    for (j=ys; j<ys+ym; j++) {
+      for (i=xs; i<xs+xm; i++) {
+        printf("x[%d,%d] = %g, %g, %g, %g\n",j,i,x1[j][i].u,x1[j][i].v,x1[j][i].omega,x2[j][i].temp );
+      }
+    }
+    ierr = DAVecRestoreArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
+    ierr = DAVecRestoreArray(da2,X2,(void**)&x2);CHKERRQ(ierr);
+    ierr = DMCompositeRestoreLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
+   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Free spaces 
@@ -273,7 +332,6 @@ int main(int argc,char **argv)
 }
 
 /* ------------------------------------------------------------------- */
-
 
 #undef __FUNCT__
 #define __FUNCT__ "FormInitialGuessLocal"
@@ -297,7 +355,6 @@ PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
   Field          **x;
 
   grashof = user->grashof;
-
   ierr = DAGetInfo(da,0,&mx,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
   dx  = 1.0/(mx-1);
 
@@ -336,6 +393,8 @@ PetscErrorCode FormInitialGuessLocal(DMMG dmmg,Vec X)
   return 0;
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuessLocal1"
 /* Form initial guess for Physic 1 */
 PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
 {
@@ -359,7 +418,9 @@ PetscErrorCode FormInitialGuessLocal1(DMMG dmmg,Vec X)
   ierr = DAVecRestoreArray(da,X,&x);CHKERRQ(ierr);
   return 0;
 }
- 
+
+#undef __FUNCT__
+#define __FUNCT__ "FormInitialGuessLocal2"
 /* Form initial guess for Physic 2 */
 PetscErrorCode FormInitialGuessLocal2(DMMG dmmg,Vec X)
 {
@@ -516,13 +577,10 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
     }
   }
 
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   /* Compute over the interior points */
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       /* convective coefficients for upwinding */
-      //if (rank==1){printf("x[%d][%d].u=%g\n",j,i,x[j][i].u);}
       vx = x[j][i].u; avx = PetscAbsScalar(vx);
       vxp = .5*(vx+avx); vxm = .5*(vx-avx);
       vy = x[j][i].v; avy = PetscAbsScalar(vy);
@@ -564,6 +622,8 @@ PetscErrorCode FormFunctionLocal(DALocalInfo *info,Field **x,Field **f,void *ptr
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal1"
 /* 
     Form function for Physics 1: 
       same as FormFunctionLocal() except without f.temp and x.temp.
@@ -573,16 +633,19 @@ PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field1 **f,void *
  {
   AppCtx         *user = (AppCtx*)ptr;
   DA             da=DMMGGetDA(user->dmmg);
-  Vec            solu_true = DMMGGetx(user->dmmg); /* provide true Temperature from user input data */
   PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   Field          **solu;
+  Field2         **solu2=user->x2;
   Vec            solu_local=user->solu_local;
 
   PetscFunctionBegin;
+  if (!user->COMPOSITE_MODEL){
+    ierr = DAVecGetArray(da,solu_local,(Field **)&solu);CHKERRQ(ierr);
+  }
   grashof = user->grashof;  
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
@@ -642,18 +705,9 @@ PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field1 **f,void *
   }
 
   /* Compute over the interior points */
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  ierr = DAVecGetArray(da,solu_local,(Field **)&solu);CHKERRQ(ierr);
   for (j=yints; j<yinte; j++) {
-    for (i=xints; i<xinte; i++) {
-#ifdef TMP
-      if (rank==1) {
-        printf("solu[%d][%d].temp=",j,i);
-        printf( " %g\n",solu[j][i].temp);
-      }
-#endif
-	/* convective coefficients for upwinding */
+    for (i=xints; i<xinte; i++) {      
+      /* convective coefficients for upwinding */
 	vx = x[j][i].u; avx = PetscAbsScalar(vx);
         vxp = .5*(vx+avx); vxm = .5*(vx-avx);
 	vy = x[j][i].v; avy = PetscAbsScalar(vy);
@@ -677,36 +731,47 @@ PetscErrorCode FormFunctionLocal1(DALocalInfo *info,Field1 **x,Field1 **f,void *
         uyy        = (2.0*u - x[j-1][i].omega - x[j+1][i].omega)*hxdhy;   
 	f[j][i].omega = uxx + uyy 
 			+ (vxp*(u - x[j][i-1].omega) + vxm*(x[j][i+1].omega - u)) * hy 
-			+ (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u)) * hx
-                        - .5 * grashof * (solu[j][i+1].temp - solu[j][i-1].temp) * hy;
-        /* input data! bug on mpirun -np 2 ./ex32 -snes_monitor -nlevels 2 */
+          + (vyp*(u - x[j-1][i].omega) + vym*(x[j+1][i].omega - u)) * hx;
+        if (user->COMPOSITE_MODEL){
+          f[j][i].omega += - .5 * grashof * (solu2[j][i+1].temp - solu2[j][i-1].temp) * hy;
+        } else {
+          f[j][i].omega += - .5 * grashof * (solu[j][i+1].temp - solu[j][i-1].temp) * hy;
+        }
     }
   }
-  ierr = DAVecRestoreArray(da,solu_local,&solu);CHKERRQ(ierr);
+  if (!user->COMPOSITE_MODEL){
+    ierr = DAVecRestoreArray(da,solu_local,&solu);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__
+#define __FUNCT__ "FormFunctionLocal2"
 /* 
     Form function for Physics 2: 
       same as FormFunctionLocal() but only has f.temp and x.temp.
-      the input x.u and x.v come from the solu_true 
+      the input x.u and x.v come from solu_true 
 */
 PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *ptr)
  {
   AppCtx         *user = (AppCtx*)ptr;
   DA             da=DMMGGetDA(user->dmmg);
-  Vec            solu_true = DMMGGetx(user->dmmg); /* provide true Temperature from user input data */
-  Vec            solu_local;
+  Vec            solu_true=DMMGGetx(user->dmmg); /* provide true Temperature from user input data */
+  Vec            solu_local=user->solu_local;;
   PetscErrorCode ierr;
   PetscInt       xints,xinte,yints,yinte,i,j;
   PetscReal      hx,hy,dhx,dhy,hxdhy,hydhx;
   PetscReal      grashof,prandtl,lid;
   PetscScalar    u,uxx,uyy,vx,vy,avx,avy,vxp,vxm,vyp,vym;
   Field          **solu;
+  Field1         **solu1=user->x1;
   DALocalInfo    info0;
 
   PetscFunctionBegin;
-  ierr = DAGetLocalInfo(da,&info0);
+  if (!user->COMPOSITE_MODEL){
+    ierr = DAVecGetArray(da,solu_local,(Field **)&solu);CHKERRQ(ierr);
+  }
+  ierr = DAGetLocalInfo(da,&info0); /* for debugging */
   grashof = user->grashof;  
   prandtl = user->prandtl;
   lid     = user->lidvelocity;
@@ -733,7 +798,7 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *
     yinte = yinte - 1;
     /* top edge */
     for (i=info->xs; i<info->xs+info->xm; i++) {
-      f[j][i].temp  = x[j][i].temp;
+      f[j][i].temp  = x[j][i].temp-x[j-1][i].temp;
     }
   }
 
@@ -757,26 +822,17 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *
     }
   }
 
-  PetscMPIInt rank;
-  ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  solu_local = user->solu_local;
-
   /* Compute over the interior points */
-  ierr = DAVecGetArray(da,solu_local,(Field **)&solu);CHKERRQ(ierr);  
-  
   for (j=yints; j<yinte; j++) {
     for (i=xints; i<xinte; i++) {
       /* convective coefficients for upwinding */
-#ifdef TMP
-      if (rank==1) {printf("solu[%d][%d].u=\n",j,i);}
-      if (rank==1 && i==1 && j==2){
-        printf("solu[%d][%d].u=%g\n",j,i,solu[j][i].u);
+      if (user->COMPOSITE_MODEL){
+        vx = solu1[j][i].u; vy = solu1[j][i].v; 
+      } else {
+        vx = solu[j][i].u; vy = solu[j][i].v; 
       }
-#endif
-      vx = solu[j][i].u; // bug!
       avx = PetscAbsScalar(vx); 
       vxp = .5*(vx+avx); vxm = .5*(vx-avx);
-      vy = solu[j][i].v; 
       avy = PetscAbsScalar(vy); 
       vyp = .5*(vy+avy); 
       vym = .5*(vy-avy);
@@ -790,7 +846,9 @@ PetscErrorCode FormFunctionLocal2(DALocalInfo *info,Field2 **x,Field2 **f,void *
 		      + (vyp*(u - x[j-1][i].temp) + vym*(x[j+1][i].temp - u)) * hx);
     }
   }
-  ierr = DAVecRestoreArray(da,solu_local,&solu);CHKERRQ(ierr);
+  if (!user->COMPOSITE_MODEL){
+    ierr = DAVecRestoreArray(da,solu_local,&solu);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 } 
 
@@ -818,7 +876,7 @@ PetscErrorCode FormFunctionLocalComp(SNES snes,Vec X,Vec F,void *ctx)
 
   /* Get local vectors to hold ghosted parts of X */
   ierr = DMCompositeGetLocalVectors(dm,&X1,&X2);CHKERRQ(ierr);
-  ierr = DMCompositeScatter(dm,X,X1,X2);CHKERRQ(ierr);
+  ierr = DMCompositeScatter(dm,X,X1,X2);CHKERRQ(ierr); 
 
   /* Access the arrays inside the subvectors of X */
   ierr = DAVecGetArray(da1,X1,(void**)&x1);CHKERRQ(ierr);
@@ -828,12 +886,14 @@ PetscErrorCode FormFunctionLocalComp(SNES snes,Vec X,Vec F,void *ctx)
      These are not ghosted and directly access the memory locations in F */
   ierr = DMCompositeGetAccess(dm,F,&F1,&F2);CHKERRQ(ierr);
 
-  /* Access the arrays inside the subvectors of F */
+  /* Access the arrays inside the subvectors of F */  
   ierr = DAVecGetArray(da1,F1,(void**)&f1);CHKERRQ(ierr);
   ierr = DAVecGetArray(da2,F2,(void**)&f2);CHKERRQ(ierr);
 
-  /* Evaluate local user provided function */
+  /* Evaluate local user provided function */    
+  user->x2 = x2; /* used by FormFunctionLocal1() */
   ierr = FormFunctionLocal1(&info1,x1,f1,(void**)user);CHKERRQ(ierr);
+  user->x1 = x1; /* used by FormFunctionLocal2() */
   ierr = FormFunctionLocal2(&info2,x2,f2,(void**)user);CHKERRQ(ierr);
 
   ierr = DAVecRestoreArray(da1,F1,(void**)&f1);CHKERRQ(ierr);

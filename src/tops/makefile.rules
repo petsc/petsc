@@ -5,23 +5,27 @@ include ${PETSC_DIR}/bmake/common/test
 # number of languages for which clients are generated; the 
 # normal setting is all languages supported by Babel
 #LANGUAGES = $(CCASPEC_BABEL_LANGUAGES)
-LANGUAGES = cxx
+LANGUAGES = cxx c
+
 
 CCASPEC_VARS = $(shell ${CCASPEC_CONFIG} --var CCASPEC_MAKEINCL)
 include ${CCASPEC_VARS}
 
 CFLAGS = ${BABEL_INCLUDE} 
 
-SIDLFILES = ${PETSC_DIR}/src/tops/tops.sidl ${SIDL}
+TOPSSIDL = ${PETSC_DIR}/src/tops/tops.sidl
+SIDLFILES = ${TOPSSIDL} ${SIDL}
+OTHERSIDL = ${PETSC_DIR}/src/tops/topsc.sidl
+ALLSIDLFILES = ${SIDLFILES} ${OTHERSIDL}
 
 parse-check:
-	${BABEL} -R${CCA_REPO} --parse-check ${SIDLFILES}
+	${BABEL} -R${CCA_REPO} --parse-check ${SIDLFILES} ${PETSC_DIR}/src/tops/topsc.sidl
 
 #-------------------------------------------------------------------------------
 # Client targets
 
 MYPREFIX = $(shell pwd)
-SIDL_PACKAGES = $(basename $(notdir ${SIDLFILES} ) )
+SIDL_PACKAGES = $(basename $(notdir ${ALLSIDLFILES} ) )
 SIDL_PACKAGES_TARGETS = $(addprefix ., $(SIDL_PACKAGES))
 LIBTOOL=$(CCASPEC_BABEL_BABEL_LIBTOOL)
 
@@ -30,15 +34,15 @@ XML_REP = -R$(CCASPEC_BABEL_XML_REPOSITORY)
 clients: $(SIDL_PACKAGES_TARGETS)
 
 $(SIDL_PACKAGES_TARGETS): 
-	@for LANGUAGE in $(LANGUAGES); do \
-		echo -e "\n### Building $$LANGUAGE client library for $(@:.%=%)."; \
+	@-for LANGUAGE in $(LANGUAGES); do \
+		echo -e "  ### Building $$LANGUAGE client library for $(@:.%=%)."; \
 		if [ ! -d client ] ; then mkdir client; fi; \
 		if [ $$LANGUAGE == python ] ; then \
-			$(BABEL) -c $$LANGUAGE $(XML_REP) $(SIDLFILES) -o client/python; \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) $(ALLSIDLFILES) -o client/python; \
 		elif [ $$LANGUAGE == java ] ; then \
-			$(BABEL) -c $$LANGUAGE $(XML_REP) $(SIDLFILES) -o client/java; \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) $(ALLSIDLFILES) -o client/java; \
 		else \
-			$(BABEL) -c $$LANGUAGE $(XML_REP) -l $(SIDLFILES) -o client; \
+			$(BABEL) -c $$LANGUAGE $(XML_REP) -l $(ALLSIDLFILES) -o client; \
 		fi; \
 		$(SH) ./utils/generateClientMakefile.sh ${CCAFE_CONFIG} topsclient client ${PETSC_DIR} $$LANGUAGE;  \
 		$(MAKE) -C client/$$LANGUAGE .lib ; \
@@ -57,29 +61,42 @@ client-debug:
 
 #-------------------------------------------------------------------------------
 # Server build
+VPATH = ..:../glue
+CXXSRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${OTHERCXXFILES}
+CRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${IORSRCS} ${OTHERCFILES}
+CXXOBJS = ${CXXSRCS:.cxx=.o} ${IORSRCS:.c=.o}
+COBJS = ${CSRCS:.c=.o}
+
+%.o : %.cxx
+	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+		-I${PETSC_DIR}/include/tops \
+		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
+      		-I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
+		$<
+
+%.o : %.c
+	-@${CC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+		-I${PETSC_DIR}/include/tops \
+		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
+      		-I$(CCASPEC_BABEL_includedir)/c -I$(CCASPEC_pkgincludedir)/c \
+		$<
 
 server-cxx:  server/cxx/obj/makefile 
 	-@cd server/cxx/obj; make TLIBNAME=${TLIBNAME} libserver-cxx.${SOSUFFIX}
 
 server/cxx/obj/makefile: ${SIDLFILES}
 	-@if [ ! -d "server/cxx/obj" ]; then mkdir -p server/cxx/obj; fi
-	-@if [ -d "server/cxx/SCCS" ]; then ${BK} edit -q server/cxx/*_Impl.cxx server/cxx/*_Impl.hxx; fi
-	-${BABEL} -R ${CCA_REPO} --hide-glue \
+	-@${BABEL} -R ${CCA_REPO} --hide-glue \
 		${SIDLEXCLUDE} --server=cxx --output-directory=./server/cxx ${SIDLFILES}
 	@-${RM} ${REMOVEFILES} server/cxx/obj/makefile
 	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/cxx/obj/makefile; fi
-	@-if [ ! -f "../babel.make" ]; then echo "include ../babel.make" >> server/cxx/obj/makefile; fi
+	@-if [ -f "server/cxx/babel.make" ] ; then echo "include ../babel.make" >> server/cxx/obj/makefile; fi
+	@-if [ -f "server/cxx/glue/babel.make" ] ; then echo "include ../glue/babel.make" >> server/cxx/obj/makefile; fi
+	@-if [ -f "server/cxx/extra.make" ] ; then echo "include ../extra.make" >> server/cxx/obj/makefile; fi
 	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/cxx/obj/makefile
 
-libserver-cxx.${SOSUFFIX}: 
-	@-${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
-	    -I${PETSC_DIR}/include/tops \
-			$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
-      -I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
-	    ../*.cxx ../glue/*.cxx
-	@-${CC} -c ${HAVE_CCA} ${CC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} \
-			-I${PETSC_DIR}/include/tops -I../glue ../glue/*.c
-	@-$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
+libserver-cxx.${SOSUFFIX} : ${CXXOBJS}
+	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in StructuredSolver UnstructuredSolver ; do \
 	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
@@ -87,6 +104,31 @@ libserver-cxx.${SOSUFFIX}:
 	   sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	       $$i.cca.in >  ${PETSC_LIB_DIR}/cca/$$i.cca; rm $$i.cca.in; \
 	done;
+
+server-c: server/c/obj/makefile
+	-@cd server/c/obj; make TLIBNAME=libtopsc libserver-c.${SOSUFFIX}
+
+server/c/obj/makefile: ${OTHERSIDL}
+	-@if [ ! -d "server/c/obj" ]; then mkdir -p server/c/obj; fi
+	-@${BABEL} -R ${CCA_REPO} -I${TOPSSIDL} --hide-glue \
+		${SIDLEXCLUDE} --server=c --output-directory=./server/c ${OTHERSIDL}
+	@-${RM} ${REMOVEFILES} server/c/obj/makefile
+	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/c/obj/makefile; fi
+	@-if [ -f "server/c/babel.make" ] ; then echo "include ../babel.make" >> server/c/obj/makefile; fi
+	@-if [ -f "server/c/glue/babel.make" ] ; then echo "include ../glue/babel.make" >> server/c/obj/makefile; fi
+	@-if [ -f "server/c/extra.make" ] ; then echo "include ../extra.make" >> server/c/obj/makefile; fi
+	@-echo "include ${PETSC_DIR}/src/tops/makefile.rules" >> server/c/obj/makefile
+
+libserver-c.${SOSUFFIX}: ${COBJS}
+	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
+	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
+	-@for i in CStructuredSolver CUnstructuredSolver ; do \
+	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
+		TOPS.$$i c dynamic global now TOPS.$$i > $$i.cca.in; \
+	   sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
+	       $$i.cca.in >  ${PETSC_LIB_DIR}/cca/$$i.cca; rm $$i.cca.in; \
+	done;
+
 #-------------------------------------------------------------------------------
 
 cca: 
@@ -122,7 +164,7 @@ test-cca: cca
 	  else echo "*** ${EXNAME}: Component test failed (see `pwd`/${EXNAME}_rc.log)."; fi; \
         else \
 	  cd run; \
-          mpirun -np 2 ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc `pwd`/${EXNAME}_rc > `pwd`/${EXNAME}_rc.log  2>&1 ; \
+          ${MPIEXEC} -np 2 ${CCAFE_HOME}/bin/ccafe-batch --ccafe-rc `pwd`/${EXNAME}_rc -on_error_attach_debugger > `pwd`/${EXNAME}_rc.log  2>&1 ; \
 	  if [ "`egrep \"(1 .+norm)\" ${EXNAME}_rc.log | wc -l`" -ge "1" ]; then \
 	    echo "=== ${EXNAME}: Component test succeeded (see `pwd`/${EXNAME}_rc.log)."; \
 	  else echo "*** ${EXNAME}: Component test failed (see `pwd`/${EXNAME}_rc.log)."; fi; \
@@ -143,7 +185,7 @@ kill-gui:
 examples: clients
 	-@for dir in `ls -d examples/cxx/ex*`; do \
 	  echo -e "\n### Building and testing in $$dir"; \
-	  make -C $$dir server-cxx test-cca; \
+	  make -C $$dir server-cxx server-c test-cca; \
 	done
 
 clean-cca: client-clean
@@ -154,4 +196,4 @@ clean-cca: client-clean
 
 
 
-.PHONY: examples
+.PHONY: examples 

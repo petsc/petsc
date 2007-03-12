@@ -2,7 +2,7 @@
 // File:          TOPS_UnstructuredSolver_Impl.hxx
 // Symbol:        TOPS.UnstructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.UnstructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -54,6 +54,9 @@
 
 
 // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._includes)
+#if defined(HAVE_LONG_LONG)
+#undef HAVE_LONG_LONG
+#endif
 #include "TOPS.hxx"
 #include "petscdmmg.h"
 #include "gov_cca_ports_ParameterPortFactory.hxx"

@@ -11,28 +11,20 @@
 PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
 {
   SNES                snes = (SNES) ctx;
-  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
   SNES_TR             *neP = (SNES_TR*)snes->data;
   Vec                 x;
   PetscReal           nrm;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  if (snes->ksp_ewconv) {
-    if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Eisenstat-Walker convergence context not created");
-    if (!n) {ierr = SNES_KSP_EW_ComputeRelativeTolerance_Private(snes,ksp);CHKERRQ(ierr);}
-    kctx->lresid_last = rnorm;
-  }
   ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
   if (*reason) {
-    ierr = PetscInfo2(snes,"regular convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
+    ierr = PetscInfo2(snes,"default convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
   }
-
   /* Determine norm of solution */
   ierr = KSPBuildSolution(ksp,0,&x);CHKERRQ(ierr);
   ierr = VecNorm(x,NORM_2,&nrm);CHKERRQ(ierr);
   if (nrm >= neP->delta) {
-    ierr = PetscInfo2(snes,"KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
     ierr = PetscInfo2(snes,"Ending linear iteration early, delta=%G, length=%G\n",neP->delta,nrm);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
@@ -107,7 +99,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = KSPSolve(snes->ksp,F,Ytmp);CHKERRQ(ierr);
+    ierr = SNES_KSPSolve(snes,ksp,F,Ytmp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);

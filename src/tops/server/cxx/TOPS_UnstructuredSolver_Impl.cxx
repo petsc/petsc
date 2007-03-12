@@ -2,7 +2,7 @@
 // File:          TOPS_UnstructuredSolver_Impl.cxx
 // Symbol:        TOPS.UnstructuredSolver-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.UnstructuredSolver
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -129,10 +129,9 @@ static PetscErrorCode FormRightHandSide(DMMG dmmg,Vec f)
 // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._includes)
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
-TOPS::UnstructuredSolver_impl::UnstructuredSolver_impl() : 
-  StubBase(reinterpret_cast< 
-  void*>(::TOPS::UnstructuredSolver::_wrapObj(reinterpret_cast< void*>(this))),
-  false) , _wrapped(true){ 
+TOPS::UnstructuredSolver_impl::UnstructuredSolver_impl() : StubBase(
+  reinterpret_cast< void*>(::TOPS::UnstructuredSolver::_wrapObj(
+  reinterpret_cast< void*>(this))),false) , _wrapped(true){ 
   // DO-NOT-DELETE splicer.begin(TOPS.UnstructuredSolver._ctor2)
   // Insert-Code-Here {TOPS.UnstructuredSolver._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(TOPS.UnstructuredSolver._ctor2)

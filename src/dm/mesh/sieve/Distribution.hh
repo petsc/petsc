@@ -264,15 +264,7 @@ namespace ALE {
       static typename Partitioner::part_type *createAssignmentByFace(const Obj<topology_type>& topology, const int dim, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
 
         // 1) Form partition point overlap a priori
-        if (topology->commRank() == 0) {
-          for(int p = 1; p < topology->commSize(); p++) {
-            // The arrow is from local partition point p to remote partition point p on rank p
-            sendOverlap->addCone(p, p, p);
-          }
-        } else {
-          // The arrow is from remote partition point rank on rank 0 to local partition point rank
-          recvOverlap->addCone(0, topology->commRank(), topology->commRank());
-        }
+        createPartitionOverlap(topology, sendOverlap, recvOverlap);
         if (topology->debug()) {
           sendOverlap->view("Send overlap for partition");
           recvOverlap->view("Receive overlap for partition");

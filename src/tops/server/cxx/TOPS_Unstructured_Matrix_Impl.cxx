@@ -2,7 +2,7 @@
 // File:          TOPS_Unstructured_Matrix_Impl.cxx
 // Symbol:        TOPS.Unstructured.Matrix-v0.0.0
 // Symbol Type:   class
-// Babel Version: 1.0.0
+// Babel Version: 1.0.4
 // Description:   Server-side implementation for TOPS.Unstructured.Matrix
 // 
 // WARNING: Automatically generated; only changes within splicers preserved
@@ -28,8 +28,8 @@
 
 // speical constructor, used for data wrapping(required).  Do not put code here unless you really know what you're doing!
 TOPS::Unstructured::Matrix_impl::Matrix_impl() : StubBase(reinterpret_cast< 
-  void*>(::TOPS::Unstructured::Matrix::_wrapObj(reinterpret_cast< 
-  void*>(this))),false) , _wrapped(true){ 
+  void*>(::TOPS::Unstructured::Matrix::_wrapObj(reinterpret_cast< void*>(
+  this))),false) , _wrapped(true){ 
   // DO-NOT-DELETE splicer.begin(TOPS.Unstructured.Matrix._ctor2)
   // Insert-Code-Here {TOPS.Unstructured.Matrix._ctor2} (ctor2)
   // DO-NOT-DELETE splicer.end(TOPS.Unstructured.Matrix._ctor2)
