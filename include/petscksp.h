@@ -284,10 +284,10 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPLSQRGetStandardErrorVec(KSP,Vec*);
 .seealso: KSPSolve(), KSPGetConvergedReason(), KSPSetNormType(),
           KSPSetConvergenceTest()
 E*/
-typedef enum {KSP_NO_NORM = 0,KSP_PRECONDITIONED_NORM = 1,KSP_UNPRECONDITIONED_NORM = 2,KSP_NATURAL_NORM = 3} KSPNormType;
+typedef enum {KSP_NORM_NO = 0,KSP_NORM_PRECONDITIONED = 1,KSP_NORM_UNPRECONDITIONED = 2,KSP_NORM_NATURAL = 3} KSPNormType;
 extern const char *KSPNormTypes[];
 /*MC
-    KSP_NO_NORM - Do not compute a norm during the Krylov process. This will 
+    KSP_NORM_NO - Do not compute a norm during the Krylov process. This will 
           possibly save some computation but means the convergence test cannot
           be based on a norm of a residual etc.
 
@@ -295,34 +295,34 @@ extern const char *KSPNormTypes[];
 
     Note: Some Krylov methods need to compute a residual norm and then this option is ignored
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL
 M*/
 
 /*MC
-    KSP_PRECONDITIONED_NORM - Compute the norm of the preconditioned residual and pass that to the 
+    KSP_NORM_PRECONDITIONED - Compute the norm of the preconditioned residual and pass that to the 
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_UNPRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_UNPRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
-    KSP_UNPRECONDITIONED_NORM - Compute the norm of the true residual (b - A*x) and pass that to the 
+    KSP_NORM_UNPRECONDITIONED - Compute the norm of the true residual (b - A*x) and pass that to the 
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_NATURAL_NORM, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_NATURAL, KSPSetConvergenceTest()
 M*/
 
 /*MC
-    KSP_NATURAL_NORM - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
+    KSP_NORM_NATURAL - Compute the 'natural norm' of residual sqrt((b - A*x)*B*(b - A*x)) and pass that to the 
        convergence test routine.
 
    Level: advanced
 
-.seealso: KSPNormType, KSPSetNormType(), KSP_NO_NORM, KSP_PRECONDITIONED_NORM, KSP_UNPRECONDITIONED_NORM, KSPSetConvergenceTest()
+.seealso: KSPNormType, KSPSetNormType(), KSP_NORM_NO, KSP_NORM_PRECONDITIONED, KSP_NORM_UNPRECONDITIONED, KSPSetConvergenceTest()
 M*/
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP,KSPNormType);

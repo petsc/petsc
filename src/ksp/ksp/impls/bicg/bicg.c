@@ -61,7 +61,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
   ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
   ierr = VecConjugate(Rl);CHKERRQ(ierr);
   ierr = VecConjugate(Zl);CHKERRQ(ierr);
-  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Zr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- z'*z       */
   } else {
     ierr = VecNorm(Rr,NORM_2,&dp);CHKERRQ(ierr);  /*    dp <- r'*r       */
@@ -104,7 +104,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      ierr = VecAXPY(Rr,ma,Zr);CHKERRQ(ierr)
      ma = PetscConj(ma);
      ierr = VecAXPY(Rl,ma,Zl);CHKERRQ(ierr);
-     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
        ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /*     z <- Br         */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);
@@ -122,7 +122,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
      KSPMonitor(ksp,i+1,dp);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
-     if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+     if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
        ierr = KSP_PCApply(ksp,Rr,Zr);CHKERRQ(ierr);  /* z <- Br  */
        ierr = VecConjugate(Rl);CHKERRQ(ierr);
        ierr = KSP_PCApplyTranspose(ksp,Rl,Zl);CHKERRQ(ierr);

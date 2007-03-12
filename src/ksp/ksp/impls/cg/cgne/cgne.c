@@ -121,11 +121,11 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
   }
 
   ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);
-  if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+  if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
     ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- z'*z       */
-  } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+  } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr); /*    dp <- r'*r       */
-  } else if (ksp->normtype == KSP_NATURAL_NORM) {
+  } else if (ksp->normtype == KSP_NORM_NATURAL) {
     dp = sqrt(PetscAbsScalar(beta));
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
@@ -172,7 +172,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
      ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
-     if (ksp->normtype == KSP_PRECONDITIONED_NORM) {
+     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
        ierr = KSP_PCApply(ksp,R,T);CHKERRQ(ierr);
        if (transpose_pc) {
 	 ierr = KSP_PCApplyTranspose(ksp,T,Z);CHKERRQ(ierr);
@@ -180,9 +180,9 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 	 ierr = KSP_PCApply(ksp,T,Z);CHKERRQ(ierr);
        }
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
-     } else if (ksp->normtype == KSP_UNPRECONDITIONED_NORM) {
+     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
-     } else if (ksp->normtype == KSP_NATURAL_NORM) {
+     } else if (ksp->normtype == KSP_NORM_NATURAL) {
        dp = sqrt(PetscAbsScalar(beta));
      } else {
        dp = 0.0;
@@ -192,7 +192,7 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
      KSPMonitor(ksp,i+1,dp);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
-     if (ksp->normtype != KSP_PRECONDITIONED_NORM) {
+     if (ksp->normtype != KSP_NORM_PRECONDITIONED) {
        ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr); /* z <- Br  */
      }
      i++;

@@ -33,6 +33,14 @@ static char help[] = "Model multi-physics solver\n\n";
       with them). Note that these periodic ghost nodes have NOTHING to do with the ghost nodes
       used for parallel computing.
 
+   This can be run in two modes:
+
+        -snes_mf -pc_type shell * for matrix free with "physics based" preconditioning or
+        -snes_mf *                for matrix free with an explicit matrix based preconditioner where the explicit
+                                  matrix is computed via finite differences igoring the coupling between the models or
+  	         * for "approximate Newton" where the Jacobian is not used but rather the approximate Jacobian as
+                   computed in the alternative above.
+
 */
 
 #include "petscdmmg.h"
@@ -99,6 +107,11 @@ int main(int argc,char **argv)
     app.nxv  = 6;
     app.nyvf = 3;
     app.nyv  = app.nyvf + 2;
+    ierr = PetscOptionsBegin(app.comm,PETSC_NULL,"Options for Grid Sizes",PETSC_NULL);
+      ierr = PetscOptionsInt("-nxv","Grid spacing in X direction",PETSC_NULL,app.nxv,&app.nxv,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-nyvf","Grid spacing in Y direction of Fuel",PETSC_NULL,app.nyvf,&app.nyvf,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsInt("-nyv","Total Grid spacing in Y direction of",PETSC_NULL,app.nyv,&app.nyv,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEnd();
 
     ierr = PetscViewerDrawOpen(app.comm,PETSC_NULL,"",-1,-1,-1,-1,&v1);CHKERRQ(ierr);
 
@@ -527,16 +540,21 @@ PetscErrorCode MyPCSetUp(void* ctx)
 /* 
    Here is my custom preconditioner
 
+    Capital vectors: X, X1 are global vectors
+    Small vectors: x, x1 are local ghosted vectors
+    Prefixed a: ax1, aY1 are arrays that access the vector values (either local (ax1) or global aY1)
+
  */
 PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
 {
   AppCtx         *app = (AppCtx*)ctx;
   PetscErrorCode ierr;
-  Vec            x1,x2,x3,y3,y1,y2,f,t;
+  Vec            X1,X2,X3,x1,x2,Y1,Y2,Y3;
   DALocalInfo    info1,info2,info3;
   DA             da1,da2,da3;
   PetscInt       i,j;
-  FluidField     *u,*ff;
+  FluidField     *ax1,*aY1;
+  PetscScalar    **ax2,**aY2;
 
   PetscFunctionBegin;
   /* obtain information about the three meshes */
@@ -546,43 +564,61 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
   ierr = DAGetLocalInfo(da3,&info3);CHKERRQ(ierr);
 
   /* get ghosted version of fluid and thermal conduction, global for phi and C */
-  ierr = DMCompositeGetAccess(app->pack,X,&x1,&x2,&x3);CHKERRQ(ierr);
-  ierr = DMCompositeGetLocalVectors(app->pack,&f,&t,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da1,x1,INSERT_VALUES,f);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da1,x1,INSERT_VALUES,f);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalBegin(da2,x2,INSERT_VALUES,t);CHKERRQ(ierr);
-  ierr = DAGlobalToLocalEnd(da2,x2,INSERT_VALUES,t);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DMCompositeGetLocalVectors(app->pack,&x1,&x2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da1,X1,INSERT_VALUES,x1);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalBegin(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
+  ierr = DAGlobalToLocalEnd(da2,X2,INSERT_VALUES,x2);CHKERRQ(ierr);
 
   /* get global version of result vector */
-  ierr = DMCompositeGetAccess(app->pack,Y,&y1,&y2,&y3);CHKERRQ(ierr);
+  ierr = DMCompositeGetAccess(app->pack,Y,&Y1,&Y2,&Y3);CHKERRQ(ierr);
 
   /* pull out the phi and C values */
-  ierr = VecStrideGather(x3,0,app->dx,INSERT_VALUES);CHKERRQ(ierr);
-  ierr = VecStrideGather(x3,1,app->c,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecStrideGather(X3,0,app->dx,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecStrideGather(X3,1,app->c,INSERT_VALUES);CHKERRQ(ierr);
 
   /* update C via formula 38; put back into return vector */
   ierr = VecAXPY(app->c,0.0,app->dx);CHKERRQ(ierr);
   ierr = VecScale(app->c,1.0);CHKERRQ(ierr);
-  ierr = VecStrideScatter(app->c,1,y3,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecStrideScatter(app->c,1,Y3,INSERT_VALUES);CHKERRQ(ierr);
 
   /* form the right hand side of the phi equation; solve system; put back into return vector */
   ierr = VecAXPBY(app->dx,0.0,1.0,app->c);CHKERRQ(ierr);
   ierr = DMMGSolve(app->fdmmg);CHKERRQ(ierr);
-  ierr = VecStrideScatter(app->dy,0,y3,INSERT_VALUES);CHKERRQ(ierr);
+  ierr = VecStrideScatter(app->dy,0,Y3,INSERT_VALUES);CHKERRQ(ierr);
 
+  /* access the ghosted x1 and x2 as arrays */
+  ierr = DAVecGetArray(da1,x1,&ax1);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da2,x2,&ax2);CHKERRQ(ierr);
+
+  /* access global y1 and y2 as arrays */
+  ierr = DAVecGetArray(da1,Y1,&aY1);CHKERRQ(ierr);
+  ierr = DAVecGetArray(da2,Y2,&aY2);CHKERRQ(ierr);
 
   for (i=info1.xs; i<info1.xs+info1.xm; i++) {
-    ff[i].prss = u[i].prss;
-    ff[i].ergg = u[i].ergg;
-    ff[i].ergf = u[i].ergf;
-    ff[i].alfg = u[i].alfg;
-    ff[i].velg = u[i].velg;
-    ff[i].velf = u[i].velf;
+    aY1[i].prss = ax1[i].prss;
+    aY1[i].ergg = ax1[i].ergg;
+    aY1[i].ergf = ax1[i].ergf;
+    aY1[i].alfg = ax1[i].alfg;
+    aY1[i].velg = ax1[i].velg;
+    aY1[i].velf = ax1[i].velf;
   }
 
-  ierr = DMCompositeRestoreLocalVectors(app->pack,&f,&t,PETSC_NULL);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(app->pack,X,&x1,&x2,&x3);CHKERRQ(ierr);
-  ierr = DMCompositeRestoreAccess(app->pack,Y,&y1,&y2,&y3);CHKERRQ(ierr);
+  for (j=info2.ys; j<info2.ys+info2.ym; j++) {
+    for (i=info2.xs; i<info2.xs+info2.xm; i++) {
+      aY2[j][i] = ax2[j][i];
+    }
+  }
+
+  ierr = DAVecRestoreArray(da1,x1,&ax1);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da2,x2,&ax2);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da1,Y1,&aY1);CHKERRQ(ierr);
+  ierr = DAVecRestoreArray(da2,Y2,&aY2);CHKERRQ(ierr);
+
+  ierr = DMCompositeRestoreLocalVectors(app->pack,&x1,&x2,PETSC_NULL);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
+  ierr = DMCompositeRestoreAccess(app->pack,Y,&Y1,&Y2,&Y3);CHKERRQ(ierr);
 
   ierr = VecCopy(X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
