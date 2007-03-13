@@ -149,11 +149,12 @@ namespace ALE {
     // numSplit is the number of split node entries (lines in the file)
     // splitInd[] is an array of numSplit pairs, <element, vertex>
     // splitValues[] is an array of numSplit*dim displacements
-    void Builder::readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], double *splitValues[]) {
+    void Builder::readSplit(MPI_Comm comm, const std::string& filename, const int dim, const bool useZeroBase, int& numSplit, int *splitInd[], int *loadHistory[], double *splitValues[]) {
       PetscViewer    viewer;
       FILE          *f;
       PetscInt       maxSplit = 1024, splitCount = 0;
       PetscInt      *splitId;
+      PetscInt      *loadHist;
       PetscScalar   *splitVal;
       char           buf[2048];
       PetscInt       c;
@@ -178,20 +179,23 @@ namespace ALE {
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       /* Ignore comments */
       ignoreComments(buf, 2048, f);
-      ierr = PetscMalloc2(maxSplit*2,PetscInt,&splitId,maxSplit*dim,PetscScalar,&splitVal);
+      ierr = PetscMalloc3(maxSplit*2,PetscInt,&splitId,maxSplit,PetscInt,&loadHist,maxSplit*dim,PetscScalar,&splitVal);
       do {
         const char *s = strtok(buf, " ");
 
         if (splitCount == maxSplit) {
           PetscInt    *sitmp;
+          PetscInt    *lhtmp;
           PetscScalar *svtmp;
 
           sitmp = splitId;
+          lhtmp = loadHist;
           svtmp = splitVal;
-          ierr = PetscMalloc2(maxSplit*2*2,PetscInt,&splitId,maxSplit*dim*2,PetscScalar,&splitVal);
+          ierr = PetscMalloc3(maxSplit*2*2,PetscInt,&splitId,maxSplit*2,PetscInt,&loadHist,maxSplit*dim*2,PetscScalar,&splitVal);
           ierr = PetscMemcpy(splitId,  sitmp, maxSplit*2   * sizeof(PetscInt));
+          ierr = PetscMemcpy(loadHist, lhtmp, maxSplit     * sizeof(PetscInt));
           ierr = PetscMemcpy(splitVal, svtmp, maxSplit*dim * sizeof(PetscScalar));
-          ierr = PetscFree2(sitmp,svtmp);
+          ierr = PetscFree3(sitmp,lhtmp,svtmp);
           maxSplit *= 2;
         }
         /* Get element number */
@@ -205,6 +209,7 @@ namespace ALE {
         splitId[splitCount*2+1] = node;
         s = strtok(NULL, " ");
         /* Ignore load history number */
+        loadHist[splitCount] = atoi(s);
         s = strtok(NULL, " ");
         /* Get split values */
         for(c = 0; c < dim; c++) {
@@ -216,24 +221,29 @@ namespace ALE {
       ierr = PetscViewerDestroy(viewer);
       numSplit     = splitCount;
       *splitInd    = splitId;
+      *loadHistory = loadHist;
       *splitValues = splitVal;
     };
-    void Builder::buildSplit(const Obj<pair_section_type>& splitField, int numCells, int numSplit, int splitInd[], double splitVals[]) {
+    void Builder::buildSplit(const Obj<pair_section_type>& splitField, const Obj<int_section_type>& loadField, int numCells, int numSplit, int splitInd[], int loadHistory[], double splitVals[]) {
       const pair_section_type::patch_type                     patch = 0;
       pair_section_type::value_type                          *values;
+      int_section_type::value_type                           *history;
       std::map<pair_section_type::point_type, std::set<int> > elem2index;
       int                                                     numValues = 0;
 
       splitField->setName("split");
       for(int e = 0; e < numSplit; e++) {
         splitField->addFiberDimension(patch, splitInd[e*2+0], 1);
+        loadField->addFiberDimension(patch, splitInd[e*2+0], 1);
         elem2index[splitInd[e*2+0]].insert(e);
       }
       splitField->allocate();
+      loadField->allocate();
       for(std::map<pair_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         numValues = std::max(numValues, (int) e_iter->second.size());
       }
-      values = new pair_section_type::value_type[numValues];
+      values  = new pair_section_type::value_type[numValues];
+      history = new int_section_type::value_type[numValues];
       for(std::map<pair_section_type::point_type, std::set<int> >::const_iterator e_iter = elem2index.begin(); e_iter != elem2index.end(); ++e_iter) {
         const pair_section_type::point_type& e = e_iter->first;
         int                                  k = 0;
@@ -246,8 +256,10 @@ namespace ALE {
           values[k].second.x = splitVals[i*3+0];
           values[k].second.y = splitVals[i*3+1];
           values[k].second.z = splitVals[i*3+2];
+          history[k]         = loadHistory[i];
         }
         splitField->update(patch, e, values);
+        loadField->update(patch, e, history);
       }
       delete [] values;
     };
@@ -336,6 +348,12 @@ namespace ALE {
         if (!useZeroBase) v3 -= 1;
         tractionVerts[tractionCount*vertsPerFace+2] = v3;
         s = strtok(NULL, " ");
+        if (vertsPerFace > 3) {
+          int v4 = atoi(s);
+          if (!useZeroBase) v4 -= 1;
+          tractionVerts[tractionCount*vertsPerFace+3] = v4;
+          s = strtok(NULL, " ");
+        }
         /* Get traction values */
         for(c = 0; c < dim; c++) {
           tractionVals[tractionCount*dim+c] = atof(s);
@@ -344,9 +362,9 @@ namespace ALE {
         tractionCount++;
       } while(fgets(buf, 2048, f) != NULL);
       ierr = PetscViewerDestroy(viewer);
-      numTractions     = tractionCount;
-      *tractionVertices    = tractionVerts;
-      *tractionValues = tractionVals;
+      numTractions      = tractionCount;
+      *tractionVertices = tractionVerts;
+      *tractionValues   = tractionVals;
     };
     void Builder::buildTractions(const Obj<real_section_type>& tractionField, const Obj<topology_type>& boundaryTopology, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]) {
       const real_section_type::patch_type                  patch = 0;
@@ -415,15 +433,16 @@ namespace ALE {
       MPI_Comm comm     = mesh->comm();
       int      dim      = mesh->getDimension();
       int      numCells = mesh->getTopology()->heightStratum(0, 0)->size();
-      int     *splitInd;
+      int     *splitInd, *loadHistory;
       double  *splitValues;
       int      numSplit = 0, hasSplit;
 
-      ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &splitValues);
+      ALE::PyLith::Builder::readSplit(comm, basename+".split", dim, useZeroBase, numSplit, &splitInd, &loadHistory, &splitValues);
       MPI_Allreduce(&numSplit, &hasSplit, 1, MPI_INT, MPI_MAX, comm);
       if (hasSplit) {
         split = new pair_section_type(mesh->getTopology());
-        buildSplit(split, numCells, numSplit, splitInd, splitValues);
+        Obj<int_section_type> loadField = mesh->getIntSection("loadHistory");
+        buildSplit(split, loadField, numCells, numSplit, splitInd, loadHistory, splitValues);
       }
       return split;
     };
