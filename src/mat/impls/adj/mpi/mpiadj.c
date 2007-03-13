@@ -467,9 +467,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   B->mapping          = 0;
   B->assembled        = PETSC_FALSE;
   
+  ierr = PetscMapSetBlockSize(&B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
-  if (B->cmap.n < 0) B->cmap.n = B->cmap.N;
-  if (B->cmap.N < 0) B->cmap.N = B->cmap.n;
+  if (B->cmap.n  < 0) B->cmap.n = B->cmap.N;
+  if (B->cmap.N  < 0) B->cmap.N = B->cmap.n;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMPIAdjSetPreallocation_C",
                                     "MatMPIAdjSetPreallocation_MPIAdj",
