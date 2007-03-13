@@ -49,7 +49,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
   PetscScalar         cnorm;
   KSP                 ksp;
-  SNESConvergedReason reason;
+  SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
   PetscTruth          conv,breakout = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -63,7 +63,6 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->iter = 0;
   ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-  ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);         /* xnorm = || X || */  
 
   ierr = SNESComputeFunction(snes,X,F);CHKERRQ(ierr);          /* F(X) */
   ierr = VecNorm(F,NORM_2,&fnorm);CHKERRQ(ierr);             /* fnorm <- || F || */
@@ -74,16 +73,20 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   neP->delta = delta;
   SNESLogConvHistory(snes,fnorm,0);
   SNESMonitor(snes,0,fnorm);
-  ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-
- if (fnorm < snes->abstol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
+  
+  /* XXX Sould we use snes->ops->converged like in SNESLS ?*/
+  if (fnorm < snes->abstol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
+  if (snes->ops->converged) {
+    ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);         /* xnorm = || X || */
+  }
 
   /* Set the stopping criteria to use the More' trick. */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
   if (!conv) {
+    ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void*)snes);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Using Krylov convergence test SNES_TR_KSPConverged_Private\n");CHKERRQ(ierr);
   }
@@ -99,8 +102,8 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
 
     /* Solve J Y = F, where J is Jacobian matrix */
-    ierr = SNES_KSPSolve(snes,ksp,F,Ytmp);CHKERRQ(ierr);
-    ierr = KSPGetIterationNumber(ksp,&lits);CHKERRQ(ierr);
+    ierr = SNES_KSPSolve(snes,snes->ksp,F,Ytmp);CHKERRQ(ierr);
+    ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
     ierr = PetscInfo2(snes,"iter=%D, linear solve iterations=%D\n",snes->iter,lits);CHKERRQ(ierr);
     ierr = VecNorm(Ytmp,NORM_2,&nrm);CHKERRQ(ierr);
@@ -141,7 +144,9 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
-      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (snes->ops->converged) {
+	ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      }
       if (reason) {
         /* We're not progressing, so return with the current iterate */
         SNESMonitor(snes,i+1,fnorm);
@@ -158,16 +163,15 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
       TMP = F; F = G; snes->vec_func_always = F; G = TMP;
       TMP = X; X = Y; snes->vec_sol_always  = X; Y = TMP;
-      ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);		/* xnorm = || X || */
       SNESLogConvHistory(snes,fnorm,lits);
       SNESMonitor(snes,i+1,fnorm);
-
       /* Test for convergence */
       neP->itflag = PETSC_TRUE;
-      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
-      if (reason) {
-        break;
-      } 
+      if (snes->ops->converged) {
+	ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
+	ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      }
+      if (reason) break;
     } else {
       break;
     }
@@ -308,10 +312,14 @@ $  SNES_CONVERGED_ITERATING       - (otherwise)
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
 {
-  SNES_TR *neP = (SNES_TR *)snes->data;
+  SNES_TR        *neP;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidType(snes,1);
+  PetscValidPointer(reason,6);
+  neP = (SNES_TR *)snes->data;
   if (fnorm != fnorm) {
     ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FNORM_NAN;
@@ -319,7 +327,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscInt it,PetscR
     ierr = PetscInfo3(snes,"Converged due to trust region param %G<%G*%G\n",neP->delta,xnorm,snes->deltatol);CHKERRQ(ierr);
     *reason = SNES_CONVERGED_TR_DELTA;
   } else if (neP->itflag) {
-    ierr = SNESConverged_LS(snes,it,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
+    ierr = SNESDefaultConverged(snes,it,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
   } else if (snes->nfuncs >= snes->max_funcs) {
     ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
     *reason = SNES_DIVERGED_FUNCTION_COUNT;
