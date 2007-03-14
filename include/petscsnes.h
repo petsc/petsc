@@ -216,17 +216,17 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES,PetscInt,
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTolerances(SNES,PetscReal,PetscReal,PetscReal,PetscInt,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetTolerances(SNES,PetscReal*,PetscReal*,PetscReal*,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetTrustRegionTolerance(SNES,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES,PetscReal*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberUnsuccessfulSteps(SNES,PetscInt*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaximumUnsuccessfulSteps(SNES,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaximumUnsuccessfulSteps(SNES,PetscInt*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES,PetscInt*);
 
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES,PetscInt*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES,PetscInt*);
+
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES,PetscInt*);
-
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberLinearIterations(SNES,PetscInt*);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetUseEW(SNES,PetscTruth);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetUseEW(SNES,PetscTruth*);

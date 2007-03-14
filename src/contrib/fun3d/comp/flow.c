@@ -585,7 +585,7 @@ int Update(SNES snes, void *ctx)
 
   ierr = SNESSolve(snes,PETSC_NULL,grid->qnode); CHKERRQ(ierr);
   ierr = SNESGetIterationNumber(snes,&its);CHKERRQ(ierr);
-  ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails); CHKERRQ(ierr);
+  ierr = SNESGetNonlinearStepFailures(snes, &nfails); CHKERRQ(ierr);
   nfailsCum += nfails; nfails = 0;
   if (nfailsCum >= 2) 
     SETERRQ(1,"Unable to find a Newton Step");
