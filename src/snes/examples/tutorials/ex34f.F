@@ -2,10 +2,28 @@
       program ex34f
 #include "include/finclude/petscall.h90"
 
-      Interface 
-        Subroutine DMCompositeGetEntries(dm, d1,d2,d3,d4,d5)
+      Interface DMCompositeGetEntries
+        Subroutine DMCompositeGetEntries1(dm, d1,ierr)
           DM  dm
-          DM, optional:: d1,d2,d3,d4,d5
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine DMCompositeGetEntries2(dm, d1,d2,ierr)
+          DM  dm
+          DM d1,d2
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine DMCompositeGetEntries3(dm, d1,d2,d3,ierr)
+          DM  dm
+          DM d1,d2,d3
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine DMCompositeGetEntries4(dm, d1,d2,d3,d4,ierr)
+          DM  dm
+          DM d1,d2,d3,d4
+          PetscErrorCode ierr
         End Subroutine
       End Interface
 
@@ -15,25 +33,16 @@
       Vec             v
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call DMCompositeGetEntries(da,v,v,v,v,v)
+      call DMCompositeGetEntries(da,v,v,v,ierr)
       call PetscFinalize()
 
       end
 
-      Subroutine DMCompositeGetEntries(dm, d1,d2,d3,d4,d5)
+      Subroutine cDMCompositeGetEntries_3(dm, d1,d2,d3,ierr)
 #include "include/finclude/petscall.h90"
       DM dm
-      DM, optional:: d1,d2,d3,d4,d5
+      DM d1,d2,d3
+      PetscErrorCode ierr
 
-      if (present(d5)) then
-        call DMCompositeGetEntries5(dm,d1,d2,d3,d4,d5)
-      else if (present(d4)) then
-        print*, 4
-      else if (present(d3)) then
-      else if (present(d2)) then
-      else if (present(d1)) then
-      endif
-
-      print*,"hello"
       return 
       end

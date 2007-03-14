@@ -2,8 +2,6 @@
 #include "petscsnes.h"
 
 #ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
-#define snesdefaultconverged_            snesdefaultconverged__
-#define snesskipconverged_               snesskipconverged__
 #define snesconverged_tr_                snesconverged_tr__
 #define snesconverged_ls_                snesconverged_ls__
 #endif
