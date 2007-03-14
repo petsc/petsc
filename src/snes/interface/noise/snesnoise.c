@@ -304,7 +304,7 @@ PetscErrorCode MyMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
   PetscInt       lin_its;
 
   PetscFunctionBegin;
-  ierr = SNESGetNumberLinearIterations(snes,&lin_its);CHKERRQ(ierr);
+  ierr = SNESGetLinearSolveIterations(snes,&lin_its);CHKERRQ(ierr);
   lin_its_total += lin_its;
   ierr = PetscPrintf(snes->comm, "iter = %D, SNES Function norm = %G, lin_its = %D, total_lin_its = %D\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
 

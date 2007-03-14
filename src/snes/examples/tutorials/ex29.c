@@ -702,8 +702,8 @@ PetscErrorCode Update(DMMG *dmmg)
     if (ts_monitor)
     {
       ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-      ierr = SNESGetNumberLinearIterations(snes, &lits);CHKERRQ(ierr);
-      ierr = SNESGetNumberUnsuccessfulSteps(snes, &nfails);CHKERRQ(ierr);
+      ierr = SNESGetLinearSolveIterations(snes, &lits);CHKERRQ(ierr);
+      ierr = SNESGetNonlinearStepFailures(snes, &nfails);CHKERRQ(ierr);
       ierr = SNESGetFunctionNorm(snes, &tsCtx->fnorm);CHKERRQ(ierr);
 
       nfailsCum += nfails;

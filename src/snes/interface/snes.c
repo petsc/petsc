@@ -378,7 +378,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetApplicationContext(SNES snes,void **us
 
 .keywords: SNES, nonlinear, get, iteration, number, 
 
-.seealso:   SNESGetFunctionNorm(), SNESGetNumberLinearIterations()
+.seealso:   SNESGetFunctionNorm(), SNESGetLinearSolveIterations()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES snes,PetscInt* iter)
 {
@@ -407,7 +407,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES snes,PetscInt* it
 
 .keywords: SNES, nonlinear, get, function, norm
 
-.seealso: SNESGetFunction(), SNESGetIterationNumber(), SNESGetNumberLinearIterations()
+.seealso: SNESGetFunction(), SNESGetIterationNumber(), SNESGetLinearSolveIterations()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscReal *fnorm)
 {
@@ -419,9 +419,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscReal *fnor
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESGetNumberUnsuccessfulSteps"
+#define __FUNCT__ "SNESGetNonlinearStepFailures"
 /*@
-   SNESGetNumberUnsuccessfulSteps - Gets the number of unsuccessful steps
+   SNESGetNonlinearStepFailures - Gets the number of unsuccessful steps
    attempted by the nonlinear solver.
 
    Not Collective
@@ -439,7 +439,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscReal *fnor
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberUnsuccessfulSteps(SNES snes,PetscInt* nfails)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES snes,PetscInt* nfails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -449,9 +449,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberUnsuccessfulSteps(SNES snes,Pets
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESSetMaximumUnsuccessfulSteps"
+#define __FUNCT__ "SNESSetMaxNonlinearStepFailures"
 /*@
-   SNESSetMaximumUnsuccessfulSteps - Sets the maximum number of unsuccessful steps
+   SNESSetMaxNonlinearStepFailures - Sets the maximum number of unsuccessful steps
    attempted by the nonlinear solver before it gives up.
 
    Not Collective
@@ -464,7 +464,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberUnsuccessfulSteps(SNES snes,Pets
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaximumUnsuccessfulSteps(SNES snes, PetscInt maxFails)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -473,9 +473,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaximumUnsuccessfulSteps(SNES snes, Pe
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESGetMaximumUnsuccessfulSteps"
+#define __FUNCT__ "SNESGetMaxNonlinearStepFailures"
 /*@
-   SNESGetMaximumUnsuccessfulSteps - Gets the maximum number of unsuccessful steps
+   SNESGetMaxNonlinearStepFailures - Gets the maximum number of unsuccessful steps
    attempted by the nonlinear solver before it gives up.
 
    Not Collective
@@ -490,7 +490,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaximumUnsuccessfulSteps(SNES snes, Pe
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaximumUnsuccessfulSteps(SNES snes, PetscInt *maxFails)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -589,9 +589,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, Pets
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNESGetNumberLinearIterations"
+#define __FUNCT__ "SNESGetLinearSolveIterations"
 /*@
-   SNESGetNumberLinearIterations - Gets the total number of linear iterations
+   SNESGetLinearSolveIterations - Gets the total number of linear iterations
    used by the nonlinear solver.
 
    Not Collective
@@ -611,7 +611,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, Pets
 
 .seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberLinearIterations(SNES snes,PetscInt* lits)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES snes,PetscInt* lits)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
