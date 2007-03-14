@@ -3411,6 +3411,57 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowMaxAbs(Mat mat,Vec v,PetscInt idx[])
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatGetRowSum"
+/*@ 
+   MatGetRowSum - Gets the sum of each row of the matrix
+
+   Collective on Mat and Vec
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameter:
+.  v - the vector for storing the maximums
+
+   Level: intermediate
+
+   Notes: This code is slow since it is not currently specialized for different formats
+
+   Concepts: matrices^getting row sums
+
+.seealso: MatGetDiagonal(), MatGetSubMatrices(), MatGetSubmatrix(), MatGetRowMax(), MatGetRowMin()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
+{
+  PetscInt       start, end, row;
+  PetscScalar   *array;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  PetscValidHeaderSpecific(v,VEC_COOKIE,2);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat, &start, &end);CHKERRQ(ierr);
+  ierr = VecGetArray(v, &array);CHKERRQ(ierr);
+  for(row = start; row < end; ++row) {
+    PetscInt           ncols, col;
+    const PetscInt    *cols;
+    const PetscScalar *vals;
+
+    array[row - start] = 0.0;
+    ierr = MatGetRow(mat, row, &ncols, &cols, &vals);CHKERRQ(ierr);
+    for(col = 0; col < ncols; col++) {
+      array[row - start] += vals[col];
+    }
+  }
+  ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
+  ierr = PetscObjectStateIncrease((PetscObject) v);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatTranspose"
 /*@C
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
