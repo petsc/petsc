@@ -236,6 +236,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
 
   A->data = (void*)b;
 
+  ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
 

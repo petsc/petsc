@@ -1510,7 +1510,7 @@ PetscErrorCode SNESConverged_Interactive(SNES snes, PetscInt it,PetscReal xnorm,
       PetscPrintf(PETSC_COMM_WORLD,"USER SIGNAL: activating ksp singular value monitor. \n");
     }
   }
-  PetscFunctionReturn(SNESConverged_LS(snes, it,xnorm, pnorm, fnorm, reason, ctx));
+  PetscFunctionReturn(SNESDefaultConverged(snes,it,xnorm,pnorm,fnorm,reason,ctx));
 }
 
 /* ------------------------------------------------------------------- */

@@ -428,6 +428,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   
+  ierr = PetscMapSetBlockSize(&B->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&B->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 

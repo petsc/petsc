@@ -2,6 +2,8 @@
 #include "petscsnes.h"
 
 #ifdef PETSC_HAVE_FORTRAN_UNDERSCORE_UNDERSCORE
+#define snesdefaultconverged_            snesdefaultconverged__
+#define snesskipconverged_               snesskipconverged__
 #define snesconverged_tr_                snesconverged_tr__
 #define snesconverged_ls_                snesconverged_ls__
 #endif
@@ -19,6 +21,8 @@
 #define snessetfunction_                 SNESSETFUNCTION
 #define snesgetfunction_                 SNESGETFUNCTION
 #define snessetconvergencetest_          SNESSETCONVERGENCETEST
+#define snesdefaultconverged_            SNESDEFAULTCONVERGED
+#define snesskipconverged_               SNESSKIPCONVERGED
 #define snesconverged_tr_                SNESCONVERGED_TR
 #define snesconverged_ls_                SNESCONVERGED_LS
 #define snesview_                        SNESVIEW
@@ -45,6 +49,8 @@
 #define snessetfunction_                 snessetfunction
 #define snesgetfunction_                 snesgetfunction
 #define snessetconvergencetest_          snessetconvergencetest
+#define snesdefaultconverged_            snesdefaultconverged
+#define snesskipconverged_               snesskipconverged
 #define snesconverged_tr_                snesconverged_tr
 #define snesconverged_ls_                snesconverged_ls
 #define snesview_                        snesview
@@ -226,6 +232,18 @@ void PETSC_STDCALL snesgetfunction_(SNES *snes,Vec *r,void *func,void **ctx,Pets
 }
 /*----------------------------------------------------------------------*/
 
+void snesdefaultconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
+                                       void *ct,PetscErrorCode *ierr)
+{
+  *ierr = SNESDefaultConverged(*snes,*it,*a,*b,*c,r,ct);
+}
+
+void snesskipconverged_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
+                                       void *ct,PetscErrorCode *ierr)
+{
+  *ierr = SNESSkipConverged(*snes,*it,*a,*b,*c,r,ct);
+}
+
 void snesconverged_tr_(SNES *snes,PetscInt *it,PetscReal *a,PetscReal *b,PetscReal *c,SNESConvergedReason *r,
                                        void *ct,PetscErrorCode *ierr)
 {
@@ -244,7 +262,12 @@ void PETSC_STDCALL snessetconvergencetest_(SNES *snes,
        void *cctx,PetscErrorCode *ierr)
 {
   CHKFORTRANNULLOBJECT(cctx);
-  if ((PetscVoidFunction)func == (PetscVoidFunction)snesconverged_ls_){
+
+  if ((PetscVoidFunction)func == (PetscVoidFunction)snesdefaultconverged_){
+    *ierr = SNESSetConvergenceTest(*snes,SNESDefaultConverged,0);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesskipconverged_){
+    *ierr = SNESSetConvergenceTest(*snes,SNESSkipConverged,0);
+  } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesconverged_ls_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_LS,0);
   } else if ((PetscVoidFunction)func == (PetscVoidFunction)snesconverged_tr_){
     *ierr = SNESSetConvergenceTest(*snes,SNESConverged_TR,0);

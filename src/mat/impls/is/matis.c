@@ -534,6 +534,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat A)
   A->ops->getdiagonal             = MatGetDiagonal_IS;
   A->ops->setoption               = MatSetOption_IS;
 
+  ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
 

@@ -1618,6 +1618,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   ierr = MPI_Comm_size(comm,&a->size);CHKERRQ(ierr);
 
 
+  ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
+  ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&A->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&A->cmap);CHKERRQ(ierr);
   m    = A->rmap.n;
