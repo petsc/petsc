@@ -364,7 +364,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   PC_MG                   **mg = (PC_MG**)pc->data;
   PetscErrorCode          ierr;
   PetscInt                i,n = mg[0]->levels;
-  PC                      cpc;
+  PC                      cpc,mpc;
   PetscTruth              preonly,lu,redundant,cholesky,monitor = PETSC_FALSE,dump,opsset;
   PetscViewerASCIIMonitor ascii;
   PetscViewer             viewer = PETSC_NULL;
@@ -380,7 +380,8 @@ static PetscErrorCode PCSetUp_MG(PC pc)
   /* Is this what we always want? What if user wants to keep old one? */
   ierr = KSPGetOperatorsSet(mg[n-1]->smoothd,PETSC_NULL,&opsset);CHKERRQ(ierr);
   ierr = KSPGetPC(mg[0]->smoothd,&cpc);CHKERRQ(ierr);
-  if (!opsset || cpc->setupcalled == 2) {
+  ierr = KSPGetPC(mg[n-1]->smoothd,&mpc);CHKERRQ(ierr);
+  if (!opsset || ((cpc->setupcalled == 1) && (mpc->setupcalled == 2))) {
     ierr = PetscInfo(pc,"Using outer operators to define finest grid operator \n  because PCMGGetSmoother(pc,nlevels-1,&ksp);KSPSetOperators(ksp,...); was not called.\n");CHKERRQ(ierr);
     ierr = KSPSetOperators(mg[n-1]->smoothd,pc->mat,pc->pmat,pc->flag);CHKERRQ(ierr);
   }
