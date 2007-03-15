@@ -63,10 +63,13 @@ int main(int argc,char **argv)
     }
   }
 
-  ierr = PetscPrintf(MPI_COMM_SELF, "%d: Setting values...\n", rank);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Setting values...\n", rank); CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
-    ierr = PetscPrintf(MPI_COMM_SELF, "%d: idx[%d] == %d; val[%d] == %f\n", rank, i, indices[i], i, values[i]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, 
+				   "%d: idx[%d] == %d; val[%d] == %f\n", 
+				   rank, i, indices[i], i, values[i]);CHKERRQ(ierr);
   }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   ierr = VecSetValues(x, m, indices, values, INSERT_VALUES);CHKERRQ(ierr);
 
@@ -91,17 +94,20 @@ int main(int argc,char **argv)
     }
   }
 
-  ierr = PetscPrintf(MPI_COMM_WORLD, "%d: Fetching these values from vector...\n", rank);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetching these values from vector...\n", rank);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
-	  ierr = PetscPrintf(MPI_COMM_WORLD, "%d: idx[%d] == %d\n", rank, i, indices[i]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%d] == %d\n", rank, i, indices[i]);CHKERRQ(ierr);
   }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
-  ierr = VecGetValues(x, m, indices, values); CHKERRQ(ierr);
+  ierr = VecGetValues(x, m, indices, values);CHKERRQ(ierr);
 
-  ierr = PetscPrintf(MPI_COMM_WORLD, "%d: Fetched values:\n", rank);
+  ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank);CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
-    printf("%d: idx[%d] == %d; val[%d] == %f\n", rank, i, indices[i], i, values[i]);
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%d] == %d; val[%d] == %f\n", 
+				   rank, i, indices[i], i, values[i]);CHKERRQ(ierr);
   }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
   /* 
      Free work space.
