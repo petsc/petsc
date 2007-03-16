@@ -226,12 +226,12 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
   } else {
 
     if (DAXPeriodic(wrap) && (m % col)){ 
-      SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X is divisible\n\
-                 by 2*stencil_width + 1\n");
+      SETERRQ2(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in X (%d) is divisible\n\
+                 by 2*stencil_width + 1 (%d)\n", m, col);
     }
     if (DAYPeriodic(wrap) && (n % col)){ 
-      SETERRQ(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y is divisible\n\
-                 by 2*stencil_width + 1\n");
+      SETERRQ2(PETSC_ERR_SUP,"For coloring efficiency ensure number of grid points in Y (%d) is divisible\n\
+                 by 2*stencil_width + 1 (%d)\n", n, col);
     }
     if (ctype == IS_COLORING_GLOBAL) {
       if (!da->localcoloring) {

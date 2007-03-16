@@ -115,7 +115,6 @@ void PETSC_STDCALL  cellsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(
   FREECHAR(name,pN);
 }
 void PETSC_STDCALL  bcsectionrealcreate_(Mesh mesh, CHAR name PETSC_MIXED_LEN(lenN), PetscInt *fiberDim, int *ierr PETSC_END_LEN(lenN)){
-  SectionReal section;
   char *pN;
   FIXCHAR(name,lenN,pN);
   *ierr = BCSectionRealCreate((Mesh) PetscToPointer(mesh),pN, *fiberDim);
