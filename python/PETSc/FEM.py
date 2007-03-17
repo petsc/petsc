@@ -5,7 +5,8 @@ import script
 
 class QuadratureGenerator(script.Script):
   def __init__(self):
-    script.Script.__init__(self)
+    import RDict
+    script.Script.__init__(self, argDB = RDict.RDict())
     import os
     self.baseDir = os.getcwd()
     return
@@ -16,7 +17,8 @@ class QuadratureGenerator(script.Script):
     petscDir = os.getenv('PETSC_DIR')
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'FIAT-0.2.5a'))
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'ffc-0.2.3'))
-    sys.path.append(os.path.join(petscDir, 'externalpackages', 'Generator'))
+    # This is necessary since Python has a 'Compiler' package now
+    sys.path.insert(0, os.path.join(petscDir, 'externalpackages', 'Generator'))
     return
 
   def setup(self):
