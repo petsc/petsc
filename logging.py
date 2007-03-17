@@ -100,7 +100,7 @@ class Logger(args.ArgumentProcessor):
       if not self.argDB is None and 'log' in self.argDB:
         logName    = self.argDB['log']
       else:
-        logName    = 'build.log'
+        logName    = 'default.log'
     self.logName   = logName
     self.logExists = os.path.exists(self.logName)
     return self.logExists

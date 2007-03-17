@@ -9,25 +9,12 @@ class Hooks(ihooks.Hooks):
     import sys
 
     ihooks.Hooks.__init__(self)
-    self.argDB = RDict.RDict(parentDirectory = os.path.dirname(os.path.abspath(sys.modules['RDict'].__file__)))
-    # Handle recursive import from argDB
-    self.lookingForProjects = 0
-    self.projects           = []
     return
-
-  def getProjects(self):
-    # The call to argDB can cause a recursive import from pickle, so we must protect it
-    if not self.lookingForProjects:
-      self.lookingForProjects = 1
-      if self.argDB.has_key('installedprojects'):
-        self.projects = reduce(lambda l, proj: l+proj.getPath('Python'), self.argDB['installedprojects'], [])
-      self.lookingForProjects = 0
-    return self.projects
 
   # sys interface replacement
   def default_path(self):
     import sys
-    return sys.path+self.getProjects()
+    return sys.path
 
 class Loader(ihooks.FancyModuleLoader):
   def find_module(self, name, path = None):

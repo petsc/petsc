@@ -202,12 +202,10 @@ class CompilerOptions(config.base.Configure):
           flags.append('-O3')
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
-        if bopt == '':
-          flags.append('-MT')
-        elif bopt == 'g':
-          flags.append('-Z7')
+        if bopt == 'g':
+          flags.append('-MT', '-Z7')
         elif bopt == 'O':
-          flags.extend(['-O3', '-QxW'])
+          flags.extend(['-MT', '-O3', '-QxW'])
       # Compaq Visual FORTRAN
       elif compiler.find('win32fe f90') >= 0 or compiler.find('win32fe df') >= 0:
         if bopt == '':
