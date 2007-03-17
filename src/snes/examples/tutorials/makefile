@@ -409,12 +409,12 @@ runex21:
 	   else echo "Possible problem with ex21_1, diffs above"; fi; \
 	   ${RM} -f ex21_1.tmp
 runex22:
-	-@${MPIEXEC} -np 1 ./ex22 -da_grid_x 10 -nox > ex22_1.tmp 2>&1; \
+	-@${MPIEXEC} -np 1 ./ex22 -da_grid_x 10 > ex22_1.tmp 2>&1; \
 	   if (${DIFF} output/ex22_1.out ex22_1.tmp) then true; \
 	   else echo "Possible problem with ex22_1, diffs above"; fi; \
 	   ${RM} -f ex22_1.tmp
 runex23:
-	-@${MPIEXEC} -np 2 ./ex23 -dmmg_snes_monitor -nox -dmmg_jacobian_mf_fd -snes_mf_type wp -snes_mf_compute_normu no > ex23_1.tmp 2>&1; \
+	-@${MPIEXEC} -np 2 ./ex23 -dmmg_snes_monitor -dmmg_jacobian_mf_fd -snes_mf_type wp -snes_mf_compute_normu no > ex23_1.tmp 2>&1; \
 	   if (${DIFF} output/ex23_1.out ex23_1.tmp) then true; \
 	   else echo "Possible problem with ex23_1, diffs above"; fi; \
 	   ${RM} -f ex23_1.tmp
