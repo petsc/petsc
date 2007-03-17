@@ -147,7 +147,7 @@ class Configure(config.base.Configure):
   isCompaqF90 = staticmethod(isCompaqF90)
 
   def isSUN(compiler):
-    '''Returns true if the compiler is a SUN compiler'''
+    '''Returns true if the compiler is a Sun compiler'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
       output = output + error
@@ -159,6 +159,20 @@ class Configure(config.base.Configure):
       pass
     return 0
   isSUN = staticmethod(isSUN)
+
+  def isIBM(compiler):
+    '''Returns true if the compiler is a IBM compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
+      output = output + error
+      #
+      # Do not know what to look for for IBM compilers
+      #
+      return 0
+    except RuntimeError:
+      pass
+    return 0
+  isIBM = staticmethod(isIBM)
 
   def isIntel(compiler):
     '''Returns true if the compiler is a Intel compiler'''
@@ -354,7 +368,7 @@ class Configure(config.base.Configure):
   def checkCCompiler(self):
     '''Locate a functional C compiler'''
     if 'with-cc' in self.framework.argDB and self.framework.argDB['with-cc'] == '0':
-      raise RuntimeError('A functional C compiler is necessary for configure')
+      raise RuntimeError('A functional C compiler is necessary for configure, cannot use --with-cc=0')
     for compiler in self.generateCCompilerGuesses():
       try:
         if self.getExecutable(compiler, resultName = 'CC'):
@@ -368,13 +382,21 @@ class Configure(config.base.Configure):
               except RuntimeError, e:
                 self.logPrint('GNU 64-bit C compilation not working: '+str(e))
               self.popLanguage()
-            elif self.vendor == 'solaris':
+            elif self.vendor == 'solaris' or Configure.isSun(self.C):
               self.pushLanguage('C')
               try:
                 self.addCompilerFlag('-xarch=v9')
                 self.use64BitPointers = 1
               except RuntimeError, e:
                 self.logPrint('Solaris 64-bit C compilation not working: '+str(e))
+              self.popLanguage()
+            elif self.vendor == 'ibm' or Configure.isIBM(self.C):
+              self.pushLanguage('C')
+              try:
+                self.addCompilerFlag('-q64')
+                self.use64BitPointers = 1
+              except RuntimeError, e:
+                self.logPrint('IBM 64-bit C compilation not working: '+str(e))
               self.popLanguage()
           break
       except RuntimeError, e:
@@ -426,6 +448,7 @@ class Configure(config.base.Configure):
       raise RuntimeError('Keyword --with-CC is WRONG, use --with-cxx')
     
     if self.framework.argDB.has_key('with-cxx'):
+      if self.framework.argDB['with-cxx'] == 'gcc': raise RuntimeError('Cannot use C compiler gcc as the C++ compiler passed in with --with-cxx')
       if self.isWindows(self.framework.argDB['with-cxx']):
         yield 'win32fe '+self.framework.argDB['with-cxx']
       else:
@@ -524,12 +547,19 @@ class Configure(config.base.Configure):
                 except RuntimeError, e:
                   self.logPrint('GNU 64-bit C++ compilation not working: '+str(e))
                 self.popLanguage()
-              elif self.vendor == 'solaris':
+              elif self.vendor == 'solaris' or Configure.isSun(self.CC):
                 self.pushLanguage('C++')
                 try:
                   self.addCompilerFlag('-xarch=v9')
                 except RuntimeError, e:
                   self.logPrint('Solaris 64-bit C++ compilation not working: '+str(e))
+                self.popLanguage()
+              elif self.vendor == 'ibm' or Configure.isIBM(self.CC):
+                self.pushLanguage('C++')
+                try:
+                  self.addCompilerFlag('-q64')
+                except RuntimeError, e:
+                  self.logPrint('IBM 64-bit C++ compilation not working: '+str(e))
                 self.popLanguage()
             break
         except RuntimeError, e:
@@ -681,12 +711,19 @@ class Configure(config.base.Configure):
               except RuntimeError, e:
                 self.logPrint('GNU 64-bit Fortran compilation not working: '+str(e))
               self.popLanguage()
-            elif self.vendor == 'solaris':
+            elif self.vendor == 'solaris' or Configure.isSun(self.FC):
               self.pushLanguage('FC')
               try:
                 self.addCompilerFlag('-xarch=v9')
               except RuntimeError, e:
                 self.logPrint('Solaris 64-bit Fortran compilation not working: '+str(e))
+              self.popLanguage()
+            elif self.vendor == 'ibm'  or Configure.isIBM(self.FC):
+              self.pushLanguage('FC')
+              try:
+                self.addCompilerFlag('-q64')
+              except RuntimeError, e:
+                self.logPrint('IBM 64-bit Fortran compilation not working: '+str(e))
               self.popLanguage()
           break
       except RuntimeError, e:
@@ -873,6 +910,10 @@ class Configure(config.base.Configure):
     yield ('ar',self.getArchiverFlags('ar'),'ranlib -c')
     yield ('ar',self.getArchiverFlags('ar'),'ranlib')
     yield ('ar',self.getArchiverFlags('ar'),'true')
+    # IBM with 64 bit pointers 
+    yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib -c')
+    yield ('ar','-X64 '+self.getArchiverFlags('ar'),'ranlib')
+    yield ('ar','-X64 '+self.getArchiverFlags('ar'),'true')
     yield ('win32fe tlib',self.getArchiverFlags('win32fe tlib'),'true')
     yield ('win32fe lib',self.getArchiverFlags('win32fe lib'),'true')
     return

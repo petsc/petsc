@@ -10,7 +10,7 @@ class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
     self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
-    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.5p2.tar.gz']
+    self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.5p3.tar.gz']
     self.download         = ['redefine']
     self.functions        = ['MPI_Init', 'MPI_Comm_create']
     self.includes         = ['mpi.h']
@@ -53,7 +53,7 @@ class Configure(config.package.Package):
     import nargs
     help.addArgument('MPI', '-download-lam=<no,yes,ifneeded,filename>',    nargs.ArgDownload(None, 0, 'Download and install LAM/MPI'))
     help.addArgument('MPI', '-download-mpich=<no,yes,ifneeded,filename>',  nargs.ArgDownload(None, 0, 'Download and install MPICH-2'))
-    help.addArgument('MPI', '-with-mpirun=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
+    help.addArgument('MPI', '-with-mpiexec=<prog>',                nargs.Arg(None, None, 'The utility used to launch MPI jobs'))
     help.addArgument('MPI', '-with-mpi-compilers=<bool>',         nargs.ArgBool(None, 1, 'Try to use the MPI compilers, e.g. mpicc'))
     help.addArgument('MPI', '-with-mpi-shared=<bool>',            nargs.ArgBool(None, None, 'Try to use shared MPI libraries'))
     help.addArgument('MPI', '-download-mpich-machines=[machine1,machine2...]',  nargs.Arg(None, ['localhost','localhost'], 'Machines for MPI to use'))
@@ -119,9 +119,9 @@ class Configure(config.package.Package):
 
   def checkSharedLibrary(self):
     '''Check that the libraries for MPI are shared libraries'''
-    self.executeTest(self.configureMPIRUN)
+    self.executeTest(self.configureMPIEXEC)
     try:
-      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'with-mpi-shared', executor = self.mpirun)
+      self.shared = self.libraries.checkShared('#include <mpi.h>\n','MPI_Init','MPI_Initialized','MPI_Finalize',checkLink = self.checkPackageLink,libraries = self.lib, defaultArg = 'with-mpi-shared', executor = self.mpiexec)
     except RuntimeError, e:
       if self.framework.argDB['with-shared']:
         raise RuntimeError('Shared libraries cannot be built using MPI provided.\nEither rebuild with --with-shared=0 or rebuild MPI with shared library support')
@@ -129,17 +129,17 @@ class Configure(config.package.Package):
       self.shared = 0
     return
 
-  def configureMPIRUN(self):
-    '''Checking for mpirun'''
-    if 'with-mpirun' in self.framework.argDB:
-      self.framework.argDB['with-mpirun'] = os.path.expanduser(self.framework.argDB['with-mpirun'])
-      if not self.getExecutable(self.framework.argDB['with-mpirun'], resultName = 'mpirun'):
-        raise RuntimeError('Invalid mpirun specified: '+str(self.framework.argDB['with-mpirun']))
+  def configureMPIEXEC(self):
+    '''Checking for mpiexec'''
+    if 'with-mpiexec' in self.framework.argDB:
+      self.framework.argDB['with-mpiexec'] = os.path.expanduser(self.framework.argDB['with-mpiexec'])
+      if not self.getExecutable(self.framework.argDB['with-mpiexec'], resultName = 'mpiexec'):
+        raise RuntimeError('Invalid mpiexec specified: '+str(self.framework.argDB['with-mpiexec']))
       return
     if self.isPOE:
-      self.mpirun = os.path.abspath(os.path.join('bin', 'mpirun.poe'))
+      self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
       return
-    mpiruns = ['mpiexec -np 1', 'mpirun -np 1', 'mprun -np 1', 'mpiexec', 'mpirun', 'mprun']
+    mpiexecs = ['mpiexec -np 1', 'mpirun -np 1', 'mprun -np 1', 'mpiexec', 'mpirun', 'mprun']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
       path.append(os.path.join(os.path.abspath(self.framework.argDB['with-mpi-dir']), 'bin'))
@@ -155,9 +155,9 @@ class Configure(config.package.Package):
     if os.path.basename(self.getCompiler()) == 'mpicc' and os.path.dirname(self.getCompiler()):
       path.append(os.path.dirname(self.getCompiler()))
     self.popLanguage()
-    if not self.getExecutable(mpiruns, path = path, useDefaultPath = 1, resultName = 'mpirun',setMakeMacro=0):
-      raise RuntimeError('Could not locate MPIRUN - please specify --with-mpirun option')
-    self.addMakeMacro('MPIRUN',self.mpirun.replace(' -np 1','').replace(' ', '\\ '))
+    if not self.getExecutable(mpiexecs, path = path, useDefaultPath = 1, resultName = 'mpiexec',setMakeMacro=0):
+      raise RuntimeError('Could not locate MPIEXEC - please specify --with-mpiexec option')
+    self.addMakeMacro('MPIEXEC',self.mpiexec.replace(' -np 1','').replace(' ', '\\ '))
     return
         
   def configureConversion(self):
@@ -197,8 +197,8 @@ class Configure(config.package.Package):
     self.addDefine('HAVE_MPIUNI', 1)
     self.include = [os.path.abspath(os.path.join('include', 'mpiuni'))]
     self.lib = [os.path.abspath(os.path.join('lib', self.arch, 'libmpiuni'))]
-    self.mpirun = '${PETSC_DIR}/bin/mpirun.uni'
-    self.addMakeMacro('MPIRUN','${PETSC_DIR}/bin/mpirun.uni')
+    self.mpiexec = '${PETSC_DIR}/bin/mpiexec.uni'
+    self.addMakeMacro('MPIEXEC','${PETSC_DIR}/bin/mpiexec.uni')
     self.addDefine('HAVE_MPI_COMM_F2C', 1)
     self.addDefine('HAVE_MPI_COMM_C2F', 1)
     self.addDefine('HAVE_MPI_FINT', 1)
@@ -444,11 +444,11 @@ class Configure(config.package.Package):
           self.logPrint('No HOME env var, so could not check for or create .mpd.conf')
 
         # start up MPICH's demon
-        self.framework.logPrint('Starting up MPICH mpd demon needed for mpirun')
+        self.framework.logPrint('Starting up MPICH mpd demon needed for mpiexec')
         try:
           output = self.executeShellCommand('cd '+installDir+'; bin/mpdboot',timeout=25)
           self.framework.logPrint('Output from trying to run mpdboot:'+str(output))
-          self.framework.logPrint('Started up MPICH mpd demon needed for mpirun')
+          self.framework.logPrint('Started up MPICH mpd demon needed for mpiexec')
         except RuntimeError, e:
           self.framework.logPrint('Error trying to run mpdboot:'+str(e))
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
