@@ -15,10 +15,9 @@ class QuadratureGenerator(script.Script):
     import sys, os
 
     petscDir = os.getenv('PETSC_DIR')
-    sys.path.append(os.path.join(petscDir, 'externalpackages', 'FIAT-0.2.5a'))
+    sys.path.append(os.path.join(petscDir, 'externalpackages', 'fiat-dev'))
     sys.path.append(os.path.join(petscDir, 'externalpackages', 'ffc-0.2.3'))
-    # This is necessary since Python has a 'Compiler' package now
-    sys.path.insert(0, os.path.join(petscDir, 'externalpackages', 'Generator'))
+    sys.path.append(os.path.join(petscDir, 'externalpackages', 'Generator'))
     return
 
   def setup(self):
@@ -282,7 +281,7 @@ class QuadratureGenerator(script.Script):
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
   def getQuadratureFile(self, filename, decls):
-    from Compiler import CodePurpose
+    from GenericCompiler import CodePurpose
     from Cxx import Include
     from Cxx import Header
     import os
@@ -300,7 +299,7 @@ class QuadratureGenerator(script.Script):
     return header
 
   def getElementSource(self, elements):
-    from Compiler import CompilerException
+    from GenericCompiler import CompilerException
 
     self.logPrint('Generating element module')
     try:
@@ -320,7 +319,7 @@ class QuadratureGenerator(script.Script):
     return defns
 
   def outputElementSource(self, defns, filename = ''):
-    from Compiler import CodePurpose
+    from GenericCompiler import CodePurpose
     import CxxVisitor
 
     # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
@@ -339,12 +338,13 @@ class QuadratureGenerator(script.Script):
         print e
     return
 
-  def run(self):
+  def run(self, elements, filename = ''):
     self.setup()
-    import FIAT.shapes
-    order = 1
-    self.logPrint('Making a P'+str(order)+' element')
-    self.outputElementSource(self.getElementSource([(self.shape, self.order)]))
+    if elements is None:
+      import FIAT.shapes
+      order = 1
+      self.logPrint('Making a P'+str(order)+' element')
+    self.outputElementSource(self.getElementSource([(self.shape, self.order)]), filename)
     return
 
 if __name__ == '__main__':
