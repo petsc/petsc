@@ -25,9 +25,9 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
     ierr = PetscViewerASCIISynchronizedPrintf(viewer,"X range of indices: %D %D\n",da->xs,da->xe);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else if (isdraw) {
-    PetscDraw       draw;
+    PetscDraw  draw;
     double     ymin = -1,ymax = 1,xmin = -1,xmax = da->M,x;
-    PetscInt        base;
+    PetscInt   base;
     char       node[10];
     PetscTruth isnull;
 
