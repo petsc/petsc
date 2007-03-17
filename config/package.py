@@ -249,6 +249,7 @@ class Package(config.base.Configure):
     Dir = None
     for d in os.listdir(packages):
       if d.startswith(self.downloadname) and os.path.isdir(os.path.join(packages, d)) and not self.matchExcludeDir(d):
+        self.framework.logPrint('Found a copy of '+self.PACKAGE+' in '+str(d))
         Dir = d
         break
     if Dir is None:
