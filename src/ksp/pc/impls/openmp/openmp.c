@@ -238,6 +238,18 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PCApply_OpenMP_1"
+static PetscErrorCode PCApply_OpenMP_1(PC pc,Vec x,Vec y)
+{
+  PC_OpenMP      *red = (PC_OpenMP*)pc->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPSolve(red->ksp,x,y);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PCSetUp_OpenMP_MP"
 static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
 {
@@ -276,7 +288,6 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   /* copy matrix out onto processes */
   ierr = VecGetLocalSize(red->x,&m);CHKERRQ(ierr);
   ierr = MatDistribute_MPIAIJ(comm,red->gmat,m,scal,&red->mat);CHKERRQ(ierr);
-      CHKMEMQ;
   if (!red->setupcalled) {
     /* create the solver */
     ierr = KSPCreate(comm,&red->ksp);CHKERRQ(ierr);
@@ -285,7 +296,6 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
     ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
   } else {
     ierr = KSPSetOperators(red->ksp,red->mat,red->mat,red->flag);CHKERRQ(ierr);
-      CHKMEMQ;
   }
   PetscFunctionReturn(0);
 }
@@ -296,13 +306,30 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
 {
   PC_OpenMP      *red = (PC_OpenMP*)pc->data;
   PetscErrorCode ierr;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   red->gmat        = pc->mat;
-  ierr             = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr); 
   red->flag        = pc->flag;
   red->setupcalled = pc->setupcalled;
-  ierr = PetscOpenMPRun(red->comm,PCSetUp_OpenMP_MP,red);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_size(red->comm,&size);CHKERRQ(ierr);
+  if (size == 1) {  /* special case where copy of matrix is not needed */
+    if (!red->setupcalled) {
+      /* create the solver */
+      ierr = KSPCreate(pc->comm,&red->ksp);CHKERRQ(ierr);
+      ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
+      ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
+      ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
+    } else {
+      ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
+    }
+    pc->ops->apply = PCApply_OpenMP_1;
+    PetscFunctionReturn(0);
+  } else {
+    ierr = MatGetSize(pc->mat,&red->n,PETSC_IGNORE);CHKERRQ(ierr); 
+    ierr = PetscOpenMPRun(red->comm,PCSetUp_OpenMP_MP,red);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

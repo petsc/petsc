@@ -1458,6 +1458,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
     }
     next = next->next;
   }
+  PetscIntView(m,dnz,0);
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
