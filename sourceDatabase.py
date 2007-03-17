@@ -24,7 +24,7 @@
         regular expression.
 
 '''
-import logging
+import logger
 
 import cPickle
 import errno
@@ -33,14 +33,14 @@ import os
 import re
 import time
 
-class SourceDB (dict, logging.Logger):
+class SourceDB (dict, logger.Logger):
   '''A SourceDB is a dictionary of file data used during the build process.'''
   includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
   isLoading = 0
 
   def __init__(self, root, filename = None):
     dict.__init__(self)
-    logging.Logger.__init__(self)
+    logger.Logger.__init__(self)
     self.root       = root
     self.filename   = filename
     if self.filename is None:
@@ -60,7 +60,7 @@ class SourceDB (dict, logging.Logger):
     return output
 
   def __setstate__(self, d):
-    logging.Logger.__setstate__(self, d)
+    logger.Logger.__setstate__(self, d)
     # We have to prevent recursive calls to this when the pickled database is loaded in load()
     #   This is to ensure that fresh copies of the database are obtained after unpickling
     if not SourceDB.isLoading:
@@ -272,9 +272,9 @@ class SourceDB (dict, logging.Logger):
       self.logPrint('Could not save source database in '+filename, 1, 'sourceDB')
     return
 
-class DependencyAnalyzer (logging.Logger):
+class DependencyAnalyzer (logger.Logger):
   def __init__(self, sourceDB):
-    logging.Logger.__init__(self)
+    logger.Logger.__init__(self)
     self.sourceDB  = sourceDB
     self.includeRE = re.compile(r'^#include (<|")(?P<includeFile>.+)\1')
     return

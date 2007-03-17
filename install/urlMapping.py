@@ -1,14 +1,14 @@
 import user
-import logging
+import logger
 
 import os
 import urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh'])
 
-class UrlMapping(logging.Logger):
+class UrlMapping(logger.Logger):
   def __init__(self, clArgs = None, argDB = None, stamp = None):
-    logging.Logger.__init__(self, clArgs, argDB)
+    logger.Logger.__init__(self, clArgs, argDB)
     self.stamp   = stamp
     self.urlMaps = []
     self.setupUrlMapping()
@@ -71,9 +71,9 @@ class UrlMapping(logging.Logger):
       root = os.path.join('backup', root)
     return os.path.abspath(root)
 
-class UrlMappingNew(logging.Logger):
+class UrlMappingNew(logger.Logger):
   def __init__(self, clArgs = None, argDB = None):
-    logging.Logger.__init__(self, clArgs, argDB)
+    logger.Logger.__init__(self, clArgs, argDB)
     self.urlMaps = []
     self.setup()
     return
@@ -89,7 +89,7 @@ class UrlMappingNew(logging.Logger):
     return
 
   def setup(self):
-    logging.Logger.setup(self)
+    logger.Logger.setup(self)
     self.setupUrlMapping(self.urlMaps)
     return
 

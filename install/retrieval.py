@@ -1,4 +1,4 @@
-import logging
+import logger
 
 import os
 import urllib
@@ -6,9 +6,9 @@ import urlparse
 # Fix parsing for nonstandard schemes
 urlparse.uses_netloc.extend(['bk', 'ssh'])
 
-class Retriever(logging.Logger):
+class Retriever(logger.Logger):
   def __init__(self, sourceControl, clArgs = None, argDB = None):
-    logging.Logger.__init__(self, clArgs, argDB)
+    logger.Logger.__init__(self, clArgs, argDB)
     self.sourceControl = sourceControl
     self.stamp = None
     return

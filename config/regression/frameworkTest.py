@@ -24,7 +24,7 @@ class FrameworkTest (unittest.TestCase):
     return
 
   def tearDown(self):
-    import logging
+    import logger
 
     self.framework.argDB.clear()
     files = [self.framework.header]
@@ -33,9 +33,9 @@ class FrameworkTest (unittest.TestCase):
     for f in files:
       if os.path.exists(f):
         os.remove(f)
-    if not logging.Logger.defaultLog is None:
-      logging.Logger.defaultLog.close()
-      logging.Logger.defaultLog = None
+    if not logger.Logger.defaultLog is None:
+      logger.Logger.defaultLog.close()
+      logger.Logger.defaultLog = None
     self.framework = None
     return
 

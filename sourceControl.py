@@ -1,7 +1,7 @@
-import logging
+import logger
 import script
 
-class VersionControl(logging.Logger):
+class VersionControl(logger.Logger):
   def getNewFiles(self, files):
     '''Return all the files not currently under version control'''
     return files

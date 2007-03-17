@@ -10,12 +10,12 @@ if useThreads is None:
 else:
   useThreads = int(useThreads)
 
-import logging
+import logger
 
-class Script(logging.Logger):
+class Script(logger.Logger):
   def __init__(self, clArgs = None, argDB = None):
     self.checkPython()
-    logging.Logger.__init__(self, clArgs, argDB)
+    logger.Logger.__init__(self, clArgs, argDB)
     self.shell = '/bin/sh'
     self.showHelp = 1
     return
@@ -34,7 +34,7 @@ class Script(logging.Logger):
     '''This method now also creates the help and action logs'''
     import help
 
-    argDB = logging.Logger.setupArguments(self, argDB)
+    argDB = logger.Logger.setupArguments(self, argDB)
 
     self.help = help.Help(argDB)
     self.help.title = 'Script Help'
@@ -57,7 +57,7 @@ class Script(logging.Logger):
     ''' This method checks to see whether help was requested'''
     if hasattr(self, '_setup'):
       return
-    logging.Logger.setup(self)
+    logger.Logger.setup(self)
     self._setup = 1
     if self.hasHelpFlag():
       self.help.output()
@@ -182,7 +182,7 @@ class Script(logging.Logger):
       return output
 
     if log is None:
-      log = logging.Logger.defaultLog
+      log = logger.Logger.defaultLog
     if log:
       log.write('sh: '+command+'\n')
     if useThreads:

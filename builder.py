@@ -1,4 +1,4 @@
-import logging
+import logger
 import script
 
 try:
@@ -12,10 +12,10 @@ class CompileError(RuntimeError):
 class LinkError(RuntimeError):
   pass
 
-class DependencyChecker(logging.Logger):
+class DependencyChecker(logger.Logger):
   '''This class is a template for checking dependencies between sources and targets, and among sources'''
   def __init__(self, sourceDB, clArgs = None, argDB = None):
-    logging.Logger.__init__(self, clArgs, argDB)
+    logger.Logger.__init__(self, clArgs, argDB)
     self.sourceDB = sourceDB
     return
 
@@ -120,12 +120,12 @@ class TimeDependencyChecker(DependencyChecker):
     self.logPrint('Updated '+str(source)+' in source database')
     return
 
-class Builder(logging.Logger):
+class Builder(logger.Logger):
   def __init__(self, framework, sourceDB = None):
     import sourceControl
     import sourceDatabase
 
-    logging.Logger.__init__(self, argDB = framework.argDB)
+    logger.Logger.__init__(self, argDB = framework.argDB)
     self.framework         = framework
     self.language          = []
     self.configurations    = {}
@@ -152,7 +152,7 @@ class Builder(logging.Logger):
   libraries = property(getLibraries, doc = 'The config.libraries configure object')
 
   def setup(self):
-    logging.Logger.setup(self)
+    logger.Logger.setup(self)
     self.getLanguageProcessor().setup()
     self.shouldCompile.setup()
     self.shouldLink.setup()

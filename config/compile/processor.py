@@ -1,10 +1,10 @@
 import args
-import logging
+import logger
 
-class Processor(logging.Logger):
+class Processor(logger.Logger):
   '''This class is intended to provide a basis for language operations, such as compiling and linking. Each operation will have a Processor.'''
   def __init__(self, argDB, name, flagsName, sourceExtension, targetExtension):
-    logging.Logger.__init__(self, None, argDB)
+    logger.Logger.__init__(self, None, argDB)
     self.language        = 'C'
     self.name            = name
     if isinstance(flagsName, list):

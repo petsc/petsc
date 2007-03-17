@@ -1,11 +1,11 @@
 '''This module is meant to provide support for information and help systems based upon RDict.'''
-import logging
+import logger
 
-class Info(logging.Logger):
+class Info(logger.Logger):
   '''This basic class provides information independent of RDict'''
   def __init__(self, argDB = None):
     '''Creates a dictionary "sections" whose keys are section names, and values are a tuple of (ordinal, nameList)'''
-    logging.Logger.__init__(self, None, argDB)
+    logger.Logger.__init__(self, None, argDB)
     self.sections = {}
     return
 
