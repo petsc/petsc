@@ -251,7 +251,11 @@ getmpiexec:
 	dvips -o $*.ps $<
 # Need to define PYTHON
 .fiat.h:
-	python $< $*.h
+	if [ "${ELEMENT}" != "" ]; then \
+	  python $< $*.h --element_family=${ELEMENT}; \
+	else \
+	  python $< $*.h; \
+	fi
 
 .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
