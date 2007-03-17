@@ -3120,16 +3120,28 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscI
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
 
-   The parallel matrix is partitioned such that the first m0 rows belong to 
-   process 0, the next m1 rows belong to process 1, the next m2 rows belong 
-   to process 2 etc.. where m0,m1,m2... are the input parameter 'm'.
+   The parallel matrix is partitioned across processors such that the
+   first m0 rows belong to process 0, the next m1 rows belong to
+   process 1, the next m2 rows belong to process 2 etc.. where
+   m0,m1,m2,.. are the input parameter 'm'. i.e each processor stores
+   values corresponding to [m x N] submatrix.
 
-   The DIAGONAL portion of the local submatrix of a processor can be defined 
-   as the submatrix which is obtained by extraction the part corresponding 
-   to the rows r1-r2 and columns r1-r2 of the global matrix, where r1 is the 
-   first row that belongs to the processor, and r2 is the last row belonging 
-   to the this processor. This is a square mxm matrix. The remaining portion 
-   of the local submatrix (mxN) constitute the OFF-DIAGONAL portion.
+   The columns are logically partitioned with the n0 columns belonging
+   to 0th partition, the next n1 columns belonging to the next
+   partition etc.. where n0,n1,n2... are the the input parameter 'n'.
+
+   The DIAGONAL portion of the local submatrix on any given processor
+   is the submatrix corresponding to the rows and columns m,n
+   corresponding to the given processor. i.e diagonal matrix on
+   process 0 is [m0 x n0], diagonal matrix on process 1 is [m1 x n1]
+   etc. The remaining portion of the local submatrix [m x (N-n)]
+   constitute the OFF-DIAGONAL portion. The example below better
+   illustrates this concept.
+
+   For a square global matrix we define each processor's diagonal portion 
+   to be its local rows and the corresponding columns (a square submatrix);  
+   each processor's off-diagonal portion encompasses the remainder of the
+   local matrix (a rectangular submatrix). 
 
    If o_nnz, d_nnz are specified, then o_nz, and d_nz are ignored.
 
