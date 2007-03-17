@@ -3,11 +3,15 @@
 /* 
    Provides an interface to the LLNL package hypre
 */
+
+/* Must use hypre 2.0.0 or more recent. */
+
 #include "private/pcimpl.h"          /*I "petscpc.h" I*/
 EXTERN_C_BEGIN
 #include "HYPRE.h"
-#include "IJ_mv.h"
-#include "parcsr_ls.h"
+#include "HYPRE_parcsr_ls.h"
+#include "_hypre_parcsr_mv.h"
+#include "_hypre_IJ_mv.h"
 EXTERN_C_END
 
 EXTERN PetscErrorCode MatHYPRE_IJMatrixCreate(Mat,HYPRE_IJMatrix*);
@@ -58,15 +62,19 @@ typedef struct {
   int                maxlevels;
   double             strongthreshold;
   double             maxrowsum;
-  int                gridsweeps[4];
+  int                gridsweeps[3];
   int                coarsentype;
   int                measuretype;
-  int                relaxtype[4];
+  int                relaxtype[3];
   double             relaxweight;
   double             outerrelaxweight;
   int                relaxorder;
   double             truncfactor;
   PetscTruth         applyrichardson;
+  int                pmax;
+  int                interptype;
+  int                agg_nl;
+  int                agg_num_paths;
 
 } PC_HYPRE;
 
@@ -164,10 +172,19 @@ static PetscErrorCode PCApply_HYPRE(PC pc,Vec b,Vec x)
   ierr = HYPRE_IJVectorGetObject(jac->b,(void**)&jbv);CHKERRQ(ierr);
   ierr = HYPRE_IJVectorGetObject(jac->x,(void**)&jxv);CHKERRQ(ierr);
   hierr = (*jac->solve)(jac->hsolver,hmat,jbv,jxv);
-  /* error code of 1 in BoomerAMG merely means convergence not achieved */
-  if (hierr && (hierr != 1 || jac->solve != HYPRE_BoomerAMGSolve)) SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
-  if (hierr) hypre__global_error = 0;
+
+  /*if (hierr && (hierr != HYPRE_ERROR_CONV || jac->solve != HYPRE_BoomerAMGSolve))SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
+   */
+ /* error code of HYPRE_ERROR_CONV means convergence not achieved - if
+    the tolerance is set to 0.0 (the default), a convergence error will
+    not occur (so we may not want to overide the conv. error here?*/
+ if (hierr && hierr != HYPRE_ERROR_CONV)
+  {
+     SETERRQ1(PETSC_ERR_LIB,"Error in HYPRE solver, error code %d",hierr);
+  }
+ if (hierr) hypre__global_error = 0;
   
+
   HYPREReplacePointer(jac->b,sbv,bv);
   HYPREReplacePointer(jac->x,sxv,xv);
   ierr = VecRestoreArray(x,&xv);CHKERRQ(ierr);
@@ -349,10 +366,12 @@ static PetscErrorCode PCApplyTranspose_HYPRE_BoomerAMG(PC pc,Vec b,Vec x)
 }
 
 static const char *HYPREBoomerAMGCycleType[]   = {"","V","W"};
-static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout"};
-static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};
-static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","SOR/Jacobi","backward-SOR/Jacobi","","symmetric-SOR/Jacobi","","","Gaussian-elimination"};
-
+static const char *HYPREBoomerAMGCoarsenType[] = {"CLJP","Ruge-Stueben","","modifiedRuge-Stueben","","","Falgout", "", "PMIS", "", "HMIS"};                                 
+static const char *HYPREBoomerAMGMeasureType[] = {"local","global"};                                                                                                        
+static const char *HYPREBoomerAMGRelaxType[]   = {"Jacobi","sequential-Gauss-Seidel","","SOR/Jacobi","backward-SOR/Jacobi","","symmetric-SOR/Jacobi",
+                                                  "","","Gaussian-elimination"};                                                                                            
+static const char *HYPREBoomerAMGInterpType[]  = {"classical", "", "", "direct", "multipass", "multipass-wts", "ext+i",
+                                                  "ext+i-cc", "standard", "standard-wts", "", "", "FF", "FF1"};                                                             
 #undef __FUNCT__  
 #define __FUNCT__ "PCSetFromOptions_HYPRE_BoomerAMG"
 static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
@@ -380,17 +399,39 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     if (jac->maxiter < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of iterations %d must be at least one",jac->maxiter);
     ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance PER hypre call","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_tol","Convergence tolerance PER hypre call (0.0 = use a fixed number of iterations)","None",jac->tol,&jac->tol,&flg);CHKERRQ(ierr);
   if (flg) {
-    if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %G must be great than or equal zero",jac->tol);
+    if (jac->tol < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance %G must be greater than or equal to zero",jac->tol);
     ierr = HYPRE_BoomerAMGSetTol(jac->hsolver,jac->tol);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_truncfactor","Truncation factor","None",jac->truncfactor,&jac->truncfactor,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsScalar("-pc_hypre_boomeramg_truncfactor","Truncation factor for interpolation (0=no truncation)","None",jac->truncfactor,&jac->truncfactor,&flg);CHKERRQ(ierr);
   if (flg) {
     if (jac->truncfactor < 0.0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Truncation factor %G must be great than or equal zero",jac->truncfactor);
     ierr = HYPRE_BoomerAMGSetTruncFactor(jac->hsolver,jac->truncfactor);CHKERRQ(ierr);
   }
+
+ ierr = PetscOptionsInt("-pc_hypre_boomeramg_P_max","Max elements per row for interpolation operator ( 0=unlimited )","None",jac->pmax,&jac->pmax,&flg);CHKERRQ(ierr);
+  if (flg) {
+    if (jac->pmax < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"P_max %G must be greater than or equal to zero",jac->pmax);
+    ierr = HYPRE_BoomerAMGSetPMaxElmts(jac->hsolver,jac->pmax);CHKERRQ(ierr);
+  }
+
+ ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_nl","Number of levels of aggressive coarsening","None",jac->agg_nl,&jac->agg_nl,&flg);CHKERRQ(ierr);
+  if (flg) {
+     if (jac->agg_nl < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of levels %G must be greater than or equal to zero",jac->agg_nl);
+
+     ierr = HYPRE_BoomerAMGSetAggNumLevels(jac->hsolver,jac->agg_nl);CHKERRQ(ierr);
+  }
+
+
+ ierr = PetscOptionsInt("-pc_hypre_boomeramg_agg_num_paths","Number of paths for aggressive coarsening","None",jac->agg_num_paths,&jac->agg_num_paths,&flg);CHKERRQ(ierr);
+  if (flg) {
+     if (jac->agg_num_paths < 1) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Number of paths %G must be greater than or equal to 1",jac->agg_num_paths);
+
+     ierr = HYPRE_BoomerAMGSetNumPaths(jac->hsolver,jac->agg_num_paths);CHKERRQ(ierr);
+  }
+
 
   ierr = PetscOptionsScalar("-pc_hypre_boomeramg_strong_threshold","Threshold for being strongly connected","None",jac->strongthreshold,&jac->strongthreshold,&flg);CHKERRQ(ierr);
   if (flg) {
@@ -405,60 +446,54 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
   } 
 
   /* Grid sweeps */
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all","Number of sweeps for all grid levels (fine, up, and down)","None",jac->gridsweeps[0],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_all","Number of sweeps for the up and down grid levels","None",jac->gridsweeps[0],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = HYPRE_BoomerAMGSetNumSweeps(jac->hsolver,indx);CHKERRQ(ierr);
     /* modify the jac structure so we can view the updated options with PC_View */ 
     jac->gridsweeps[0] = indx;
-    jac->gridsweeps[1] = jac->gridsweeps[2] = jac->gridsweeps[0];
-    jac->gridsweeps[3] = 1;  /*The coarse level is not affected by this function - hypre code sets to 1*/
+    jac->gridsweeps[1] = indx;
+    /*defaults coarse to 1 */
+    jac->gridsweeps[2] = 1;
   } 
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_fine","Number of sweeps for the fine level","None",jac->gridsweeps[0],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {
-    ierr = HYPRE_BoomerAMGSetCycleNumSweeps(jac->hsolver,indx, 0);CHKERRQ(ierr);
-    jac->gridsweeps[0] = indx;
-  }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_down","Number of sweeps for the down cycles","None",jac->gridsweeps[2],&indx,&flg);CHKERRQ(ierr);
+
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_down","Number of sweeps for the down cycles","None",jac->gridsweeps[0], &indx ,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = HYPRE_BoomerAMGSetCycleNumSweeps(jac->hsolver,indx, 1);CHKERRQ(ierr);
-    jac->gridsweeps[1] = indx;
+    jac->gridsweeps[0] = indx;
   }
   ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_up","Number of sweeps for the up cycles","None",jac->gridsweeps[1],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = HYPRE_BoomerAMGSetCycleNumSweeps(jac->hsolver,indx, 2);CHKERRQ(ierr);
-    jac->gridsweeps[2] = indx;
+    jac->gridsweeps[1] = indx;
   }
-  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_coarse","Number of sweeps for the coarse level","None",jac->gridsweeps[3],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsInt("-pc_hypre_boomeramg_grid_sweeps_coarse","Number of sweeps for the coarse level","None",jac->gridsweeps[2],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = HYPRE_BoomerAMGSetCycleNumSweeps(jac->hsolver,indx, 3);CHKERRQ(ierr);
-    jac->gridsweeps[3] = indx;
+    jac->gridsweeps[2] = indx;
   }
 
   /* Relax type */
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for fine, up, and down cycles (coarse level set to gaussian elimination)","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_all","Relax type for the up and down cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    jac->relaxtype[0] = jac->relaxtype[1] = jac->relaxtype[2] = indx;
-    jac->relaxtype[3] = 9; /* hypre code sets coarse grid to 9 (G.E.)*/
+    jac->relaxtype[0] = jac->relaxtype[1]  = indx;
     ierr = HYPRE_BoomerAMGSetRelaxType(jac->hsolver, indx);CHKERRQ(ierr); 
+    /* by default, coarse type set to 9 */
+    jac->relaxtype[2] = 9;
+    
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_fine","Relax type on fine grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->relaxtype[0] = indx;
-    ierr = HYPRE_BoomerAMGSetCycleRelaxType(jac->hsolver, indx, 0);CHKERRQ(ierr); 
-  }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_down","Relax type for the down cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&indx,&flg);CHKERRQ(ierr);
-  if (flg) {
-    jac->relaxtype[1] = indx;
     ierr = HYPRE_BoomerAMGSetCycleRelaxType(jac->hsolver, indx, 1);CHKERRQ(ierr); 
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[3],&indx,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_up","Relax type for the up cycles","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    jac->relaxtype[2] = indx;
+    jac->relaxtype[1] = indx;
     ierr = HYPRE_BoomerAMGSetCycleRelaxType(jac->hsolver, indx, 2);CHKERRQ(ierr); 
   }
   ierr = PetscOptionsEList("-pc_hypre_boomeramg_relax_type_coarse","Relax type on coarse grid","None",HYPREBoomerAMGRelaxType,10,HYPREBoomerAMGRelaxType[9],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
-    jac->relaxtype[3] = indx;
+    jac->relaxtype[2] = indx;
     ierr = HYPRE_BoomerAMGSetCycleRelaxType(jac->hsolver, indx, 3);CHKERRQ(ierr); 
   }
 
@@ -513,11 +548,22 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     jac->measuretype = indx;
     ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr); 
   }
-  ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,7,HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
+  /* update list length 3/07 */
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_coarsen_type","Coarsen type","None",HYPREBoomerAMGCoarsenType,11,HYPREBoomerAMGCoarsenType[6],&indx,&flg);CHKERRQ(ierr);
   if (flg) {
     jac->coarsentype = indx;
     ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr); 
   }
+ 
+  /* new 3/07 */
+  ierr = PetscOptionsEList("-pc_hypre_boomeramg_interp_type","Interpolation type","None",HYPREBoomerAMGInterpType,14,HYPREBoomerAMGInterpType[0],&indx,&flg);CHKERRQ(ierr);
+  if (flg) {
+    jac->interptype = indx;
+    ierr = HYPRE_BoomerAMGSetInterpType(jac->hsolver,jac->interptype);CHKERRQ(ierr); 
+  }
+
+
+
   ierr = PetscOptionsName("-pc_hypre_boomeramg_print_statistics","Print statistics","None",&flg);CHKERRQ(ierr);
   if (flg) {
     int level=3;
@@ -566,17 +612,20 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum number of iterations PER hypre call %d\n",jac->maxiter);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Convergence tolerance PER hypre call %G\n",jac->tol);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Threshold for strong coupling %G\n",jac->strongthreshold);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Interpolation truncation factor %G\n",jac->truncfactor);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Interpolation: max elements per row %d\n",jac->pmax);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Number of levels of aggressive coarsening %d\n",jac->agg_nl);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Number of paths for aggressive coarsening %d\n",jac->agg_num_paths);CHKERRQ(ierr);
+ 
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Maximum row sums %G\n",jac->maxrowsum);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps on fine grid %d\n",jac->gridsweeps[0]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps down         %d\n",jac->gridsweeps[1]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps up           %d\n",jac->gridsweeps[2]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps on coarse    %d\n",jac->gridsweeps[3]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps down         %d\n",jac->gridsweeps[0]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps up           %d\n",jac->gridsweeps[1]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Sweeps on coarse    %d\n",jac->gridsweeps[2]);CHKERRQ(ierr);
 
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax on fine grid  %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[0]]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax down          %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[1]]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax up            %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[2]]);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax on coarse     %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[3]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax down          %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[0]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax up            %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[1]]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax on coarse     %s\n",HYPREBoomerAMGRelaxType[jac->relaxtype[2]]);CHKERRQ(ierr);
 
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Relax weight  (all)      %G\n",jac->relaxweight);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Outer relax weight (all) %G\n",jac->outerrelaxweight);CHKERRQ(ierr); 
@@ -588,6 +637,8 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Measure type        %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Interpolation type  %s\n",HYPREBoomerAMGInterpType[jac->interptype]);CHKERRQ(ierr);
+
   }
   PetscFunctionReturn(0);
 }
@@ -777,18 +828,26 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->cycletype        = 1;
     jac->maxlevels        = 25;
     jac->maxiter          = 1;  
-    jac->tol              = 1.e-7;
+    jac->tol              = 0.0; /* tolerance of zero indicates use as preconditioner (suppresses
+                                    convergence errors) */
     jac->truncfactor      = 0.0;
     jac->strongthreshold  = .25;
     jac->maxrowsum        = .9;
     jac->coarsentype      = 6;
     jac->measuretype      = 0;
-    jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = jac->gridsweeps[3]  = 1;
-    jac->relaxtype[0]     = jac->relaxtype[1]  = jac->relaxtype[2]  = 3;
-    jac->relaxtype[3]     = 9;
+    jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = 1;
+    jac->relaxtype[0]     = jac->relaxtype[1] = 6; /* Now defaults to SYMMETRIC since
+                                                       in PETSc we are using a a PC - most likely
+                                                       with CG */
+    jac->relaxtype[2]     = 9; /*G.E. */
     jac->relaxweight      = 1.0;
     jac->outerrelaxweight = 1.0;
     jac->relaxorder       = 1;
+    jac->interptype       = 0;
+    jac->agg_nl           = 0;
+    jac->pmax             = 0;
+    jac->truncfactor      = 0.0;
+    jac->agg_num_paths    = 1;
     ierr = HYPRE_BoomerAMGSetCycleType(jac->hsolver,jac->cycletype);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
@@ -799,6 +858,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     ierr = HYPRE_BoomerAMGSetCoarsenType(jac->hsolver,jac->coarsentype);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetMeasureType(jac->hsolver,jac->measuretype);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetRelaxOrder(jac->hsolver, jac->relaxorder);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetInterpType(jac->hsolver,jac->interptype);CHKERRQ(ierr); 
+    ierr = HYPRE_BoomerAMGSetAggNumLevels(jac->hsolver,jac->agg_nl);
+    ierr = HYPRE_BoomerAMGSetPMaxElmts(jac->hsolver,jac->pmax);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetNumPaths(jac->hsolver,jac->agg_num_paths);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetRelaxType(jac->hsolver, jac->relaxtype[0]);  /*defaults coarse to 9*/
+    ierr = HYPRE_BoomerAMGSetNumSweeps(jac->hsolver, jac->gridsweeps[0]); /*defaults coarse to 1 */
+
+   
+
+
     PetscFunctionReturn(0);
   }
   ierr = PetscStrfree(jac->hypre_type);CHKERRQ(ierr);
@@ -919,12 +988,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
           or with PetscOptionsSetValue(), there are no functions to set them)
 
           The options -pc_hypre_boomeramg_max_iter and -pc_hypre_boomeramg_rtol refer to the number of iterations
-          (V-cycles) that boomeramg does EACH time it is called. So for example, if it is set to 2 then 
-          2-V-cycles are being used to define the preconditioner. -ksp_max_iter and -ksp_rtol STILL determine
-          the total number of iterations and tolerance for the Krylov solver. For example, if 
-          -pc_hypre_boomeramg_max_iter is 2 and -ksp_max_it is 10 then AT MOST twenty V-cycles of boomeramg
-          will be called.
+          (V-cycles) and tolerance that boomeramg does EACH time it is called. So for example, if 
+          -pc_hypre_boomeramg_max_iter is set to 2 then 2-V-cycles are being used to define the preconditioner 
+          (-pc_hypre_boomeramg_rtol should be set to 0.0 - the default - to strictly use a fixed number of 
+          iterations per hypre call). -ksp_max_iter and -ksp_rtol STILL determine the total number of iterations 
+          and tolerance for the Krylov solver. For example, if -pc_hypre_boomeramg_max_iter is 2 and -ksp_max_it is 10 
+          then AT MOST twenty V-cycles of boomeramg will be called.
 
+           Note that the option -pc_hypre_boomeramg_relax_type_all defaults to symmetric relaxation 
+           (symmetric-SOR/Jacobi), which is required for Krylov solvers like CG that expect symmetry.  
+           Otherwise, you may want to use -pc_hypre_boomeramg_relax_type_all SOR/Jacobi.
           If you wish to use BoomerAMG WITHOUT a Krylov method use -ksp_type richardson NOT -ksp_type preonly
           and use -ksp_max_it to control the number of V-cycles.
           (see the PETSc FAQ.html at the PETSc website under the Documentation tab).

@@ -6,7 +6,7 @@
 #include "private/vecimpl.h"          /*I "petscvec.h" I*/
 EXTERN_C_BEGIN
 #include "HYPRE.h"
-#include "IJ_mv.h"
+#include "HYPRE_parcsr_ls.h"
 EXTERN_C_END
 
 #undef __FUNCT__
