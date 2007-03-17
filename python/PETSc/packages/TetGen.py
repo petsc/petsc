@@ -137,12 +137,12 @@ class Configure(PETSc.package.Package):
     self.logPrintBox('Configuring and compiling TetGen; this may take several minutes')
     try:
       import cPickle
-      import logging
+      import logger
       # Split Graphs into its own repository
       oldDir = os.getcwd()
       os.chdir(tetgenDir)
-      oldLog = logging.Logger.defaultLog
-      logging.Logger.defaultLog = file(os.path.join(tetgenDir, 'build.log'), 'w')
+      oldLog = logger.Logger.defaultLog
+      logger.Logger.defaultLog = file(os.path.join(tetgenDir, 'build.log'), 'w')
       mod  = self.getModule(tetgenDir, 'make')
       make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)),module = mod)
       make.prefix = installDir
@@ -150,7 +150,7 @@ class Configure(PETSc.package.Package):
       make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
       del sys.modules['make']
-      logging.Logger.defaultLog = oldLog
+      logger.Logger.defaultLog = oldLog
       os.chdir(oldDir)
     except RuntimeError, e:
       raise RuntimeError('Error running configure on TetGen: '+str(e))

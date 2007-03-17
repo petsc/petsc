@@ -222,7 +222,8 @@ typedef struct {
   PetscReal *yr;
   PetscDraw draw;
 } PetscDrawViewPorts;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw,int,PetscDrawViewPorts**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreate(PetscDraw,PetscInt,PetscDrawViewPorts**);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsCreateRect(PetscDraw,PetscInt,PetscInt,PetscDrawViewPorts**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsDestroy(PetscDrawViewPorts*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawViewPortsSet(PetscDrawViewPorts*,int);
 

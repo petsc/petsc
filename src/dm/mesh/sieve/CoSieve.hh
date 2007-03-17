@@ -1510,7 +1510,7 @@ namespace ALE {
         }
       };
       void allocate(const bool postponeGhosts = false) {
-        bool doGhosts;
+        bool doGhosts = false;
 
         if (postponeGhosts && !this->getTopology()->getSendOverlap().isNull()) {
           doGhosts = true;

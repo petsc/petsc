@@ -8,9 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-1.11.1b.tar.gz']
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hypre-2.0.0.tar.gz']
     self.functions = ['HYPRE_IJMatrixCreate']
     self.includes  = ['HYPRE.h']
+    self.liblist   = [['libHYPRE.a']]
     self.license   = 'http://www.llnl.gov/CASC/hypre/download/hyprebeta_cur_agree.html'
     return
 
@@ -23,31 +24,11 @@ class Configure(PETSc.package.Package):
 
   def generateLibList(self,dir):
     '''Normally the one in package.py is used, but hypre requires the extra C++ library'''
-    libs = ['DistributedMatrix',
-            'DistributedMatrixPilutSolver',
-            'Euclid',
-            'IJ_mv',
-            'LSI',
-            'MatrixMatrix',
-            'ParaSails',
-            'krylov',
-            'parcsr_ls',
-            'parcsr_mv',
-            'seq_mv',
-            'sstruct_ls',
-            'sstruct_mv',
-            'struct_ls',
-            'struct_mv'
-            ]
-    alllibs = []
-    for l in libs:
-      alllibs.append('libHYPRE_'+l+'.a')
-    # Now specify -L hypre-lib-path only to the first library
-    alllibs[0] = os.path.join(dir,alllibs[0])
+    alllibs = PETSc.package.Package.generateLibList(self,dir)
     import config.setCompilers
     if self.languages.clanguage == 'C':
-      alllibs.extend(self.compilers.cxxlibs)
-    return [alllibs]
+      alllibs[0].extend(self.compilers.cxxlibs)
+    return alllibs
         
   def Install(self):
     hypreDir = self.getDir()
@@ -84,11 +65,19 @@ class Configure(PETSc.package.Package):
       libs.append(ll[3:-2])
     libs = ' '.join(libs)
     args.append('--with-MPI-libs="'+libs+'"')
-    args.append('--without-babel')
-    args.append('--without-mli')    
-    args.append('--without-FEI')
+
+    # tell hypre configure not to look for blas/lapack [and not use hypre-internal blas]
+    args.append('--with-blas-libs=')
+    args.append('--with-blas-lib-dir=')
+    args.append('--with-lapack-libs=')
+    args.append('--with-lapack-lib-dir=')
     args.append('--with-blas=yes')
     args.append('--with-lapack=yes')
+    
+    args.append('--without-babel')
+    args.append('--without-mli')
+    args.append('--without-fei')
+    args.append('--without-superlu')
     args = ' '.join(args)
 
     try:
