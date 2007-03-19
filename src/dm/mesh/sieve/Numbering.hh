@@ -251,11 +251,11 @@ namespace ALE {
               val = this->_unknownOrder;
             } else {
               val.prefix = localSize;
-              val.index  = atlas->restrict(patch, *l_iter)[0].prefix;
+              val.index  = atlas->restrictPoint(patch, *l_iter)[0].prefix;
             }
           } else {
             val.prefix = localSize;
-            val.index  = atlas->restrict(patch, *l_iter)[0].prefix;
+            val.index  = atlas->restrictPoint(patch, *l_iter)[0].prefix;
           }
           localSize += std::max(0, val.index);
           order->updatePoint(patch, *l_iter, &val);

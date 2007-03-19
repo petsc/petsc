@@ -1914,7 +1914,7 @@ namespace ALE {
 
           for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
             const point_type& point = *p_iter;
-            const index_type& idx   = this->_atlas->restrict(patch, point)[0];
+            const index_type& idx   = this->_atlas->restrictPoint(patch, point)[0];
 
             if (idx.prefix != 0) {
               txt << "[" << this->commRank() << "]:   " << point << " dim " << idx.prefix << " offset " << idx.index << "  ";

@@ -25,11 +25,9 @@ class QuadratureGenerator(script.Script):
     self.setupPaths()
     import Cxx, CxxHelper
     self.Cxx = CxxHelper.Cxx()
+    if len(self.debugSections) == 0:
+      self.debugSections = ['screen']
     return
-
-  def createElement(self, shape, k):
-    import FIAT.Lagrange
-    return FIAT.Lagrange.Lagrange(shape, k)
 
   def createQuadrature(self, shape, degree):
     import FIAT.quadrature
@@ -57,7 +55,7 @@ class QuadratureGenerator(script.Script):
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
 
-    self.logPrint('Generating quadrature structures for degree '+str(degree))
+    self.logPrint('Generating quadrature structures for degree '+str(degree), debugSection = 'codegen')
     ext = '_'+str(num)
     numPoints = Define()
     numPoints.identifier = 'NUM_QUADRATURE_POINTS'+ext
@@ -73,6 +71,7 @@ class QuadratureGenerator(script.Script):
     import FIAT.shapes
     import Numeric
 
+    self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
     points = quadrature.get_points()
     basis = element.function_space()
     dim = FIAT.shapes.dimension(basis.base.shape)
@@ -125,6 +124,54 @@ class QuadratureGenerator(script.Script):
                                  self.Cxx.getParameter('basis', self.Cxx.getTypeMap()['double pointer pointer']),
                                  self.Cxx.getParameter('basisDer', self.Cxx.getTypeMap()['double pointer pointer'])],
                                 [], stmts)
+    return self.Cxx.getFunctionHeader(funcName)+[func]
+
+  def getSectionSetup(self, n, element):
+    from Cxx import CompoundStatement
+    funcName = 'CreateProblem_gen_'+str(n)
+    meshVar  = self.Cxx.getVar('mesh')
+    secVar   = self.Cxx.getVar('section')
+    optVar   = self.Cxx.getVar('options')
+    decls = []
+    decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
+    decls.append(self.Cxx.getDeclaration(secVar, self.Cxx.getType('SectionReal')))
+    decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<ALE::Mesh>'), isForward=1))
+    decls.append(self.Cxx.getDeclaration('s', self.Cxx.getType('ALE::Obj<ALE::Mesh::real_section_type>'), isForward=1))
+    decls.append(self.Cxx.getDeclaration('ierr', self.Cxx.getType('PetscErrorCode')))
+    stmts = []
+    stmts.append(self.Cxx.getExpStmt(self.Cxx.getVar('PetscFunctionBegin')))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshGetMesh', [meshVar, 'm'])))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealCreate',
+                                                                 [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
+                                                                  self.Cxx.getAddress(secVar)])))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealSetTopology',
+                                                                 [secVar,
+                                                                  self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'getTopology'))])))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealGetSection', [secVar, 's'])))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('PetscObjectSetName', [self.Cxx.castToType(secVar, self.Cxx.getType('PetscObject')),
+                                                                                        self.Cxx.getString('default')])))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshSetSectionReal', [meshVar, secVar])))
+    cmpd = CompoundStatement()
+    cmpd.declarations = [
+      self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::Discretization>&', isConst=1),
+                              self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'getDiscretization'))),
+      self.Cxx.getDeclaration('b', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
+                              self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'getBoundaryCondition')))]
+    for d, ids in element.Udual.entity_ids.items():
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setNumDof'), [d, len(ids[0])])))
+    trueBranch = CompoundStatement()
+    trueBranch.children = [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])),
+                           self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getStructRef(optVar, 'exactFunc')]))]
+    cmpd.children.append(self.Cxx.getIf(self.Cxx.getEquality(self.Cxx.getStructRef(optVar, 'bcType'), 'DIRICHLET'), [trueBranch]))
+    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'setDebug'), [self.Cxx.getStructRef(optVar, 'debug')])))
+    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setupField'), ['s'])))
+    stmts.append(cmpd)
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealDestroy', [secVar])))
+    stmts.append(self.Cxx.getReturn(isPetsc = 1))
+    func = self.Cxx.getFunction(funcName, self.Cxx.getType('PetscErrorCode'),
+                                [self.Cxx.getParameter('dm', self.Cxx.getType('DM')),
+                                 self.Cxx.getParameter(optVar, self.Cxx.getType('Options', 1))],
+                                decls, stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
   def getRealCoordinates(self, dimVar, v0Var, JVar, coordsVar):
@@ -301,16 +348,18 @@ class QuadratureGenerator(script.Script):
   def getElementSource(self, elements):
     from GenericCompiler import CompilerException
 
-    self.logPrint('Generating element module')
+    self.logPrint('Generating element module', debugSection = 'codegen')
     try:
       defns = []
-      for n, (shape, k) in enumerate(elements):
-        for quadrature in [self.createQuadrature(shape, 2*k+1)]:
-          defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
-        for element, quadrature in [(self.createElement(shape, k), self.createQuadrature(shape, 2*k+1))]:
-          #name = element.family+str(element.n)
-          name = ''
-          defns.extend(self.getBasisStructs(name, element, quadrature, n))
+      for n, element in enumerate(elements):
+        #name      = element.family+str(element.n)
+        name       = ''
+        shape      = element.shape
+        order      = element.order
+        quadrature = self.createQuadrature(shape, 2*order+1)
+        defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
+        defns.extend(self.getBasisStructs(name, element, quadrature, n))
+        defns.extend(self.getSectionSetup(n, element))
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())
     except CompilerException, e:
@@ -325,7 +374,7 @@ class QuadratureGenerator(script.Script):
     # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
     source = {'Cxx': [self.getQuadratureFile(filename, defns)]}
     outputs = {'Cxx': CxxVisitor.Output()}
-    self.logPrint('Writing element source')
+    self.logPrint('Writing element source', debugSection = 'codegen')
     for language,output in outputs.items():
       output.setRoot(CodePurpose.STUB, self.baseDir)
       output.setRoot(CodePurpose.IOR, self.baseDir)
@@ -333,18 +382,18 @@ class QuadratureGenerator(script.Script):
       try:
         map(lambda tree: tree.accept(output), source[language])
         for f in output.getFiles():
-          self.logPrint('Created '+str(language)+' file '+str(f))
+          self.logPrint('Created '+str(language)+' file '+str(f), debugSection = 'codegen')
       except RuntimeError, e:
         print e
     return
 
   def run(self, elements, filename = ''):
-    self.setup()
     if elements is None:
       import FIAT.shapes
-      order = 1
-      self.logPrint('Making a P'+str(order)+' element')
-    self.outputElementSource(self.getElementSource([(self.shape, self.order)]), filename)
+      import FIAT.Lagrange
+      elements =[FIAT.Lagrange.Lagrange(FIAT.shapes.TRIANGLE, 1)]
+      self.logPrint('Making a P'+str(order)+' element on a triangle')
+    self.outputElementSource(self.getElementSource(elements), filename)
     return
 
 if __name__ == '__main__':

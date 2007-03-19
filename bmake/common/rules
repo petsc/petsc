@@ -251,7 +251,19 @@ getmpiexec:
 	dvips -o $*.ps $<
 # Need to define PYTHON
 .fiat.h:
-	python $< $*.h
+	@if [ "${ELEMENT}" != "" ]; then \
+	  if [ "${ORDER}" != "" ]; then \
+	    python $< $*.h --element_family=${ELEMENT} --element_order=${ORDER}; \
+	  else \
+	    python $< $*.h --element_family=${ELEMENT}; \
+	  fi; \
+	else \
+	  if [ "${ORDER}" != "" ]; then \
+	    python $< $*.h --element_order=${ORDER}; \
+	  else \
+	    python $< $*.h; \
+	  fi; \
+	fi
 
 .c.o .cpp.o .cxx.o .cc.o .C.o .ad.o: 
 	@if [ "${PETSCPORTABLE}" != "" ]; then \
