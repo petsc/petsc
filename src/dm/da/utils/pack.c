@@ -1409,19 +1409,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
   /* loop over packed objects, handling one at at time */
   while (next) {
     if (next->type == DMCOMPOSITE_ARRAY) {
-      if (rank == next->rank) {  /* zero the entire row */
+      if (rank == next->rank) {  /* zero the "little" block */
         for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
-          for (i=0; i<packer->N; i++) {
+          for (i=packer->rstart+next->rstart; i<packer->rstart+next->rstart+next->n; i++) {
             ierr = MatPreallocateSet(j,1,&i,dnz,onz);CHKERRQ(ierr);
           }
         }
-      }
-      for (j=next->grstart; j<next->grstart+next->n; j++) {
-        for (i=packer->rstart; i<packer->rstart+m; i++) { /* zero the entire local column */
-          if (j != i) { /* don't count diagonal twice */
-	    ierr = MatPreallocateSet(i,1,&j,dnz,onz);CHKERRQ(ierr);
-          }
-	}
       }
     } else if (next->type == DMCOMPOSITE_DA) {
       PetscInt       nc,rstart,*ccols,maxnc;
@@ -1458,7 +1451,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
     }
     next = next->next;
   }
-  PetscIntView(m,dnz,0);
   ierr = MatMPIAIJSetPreallocation(*J,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(*J,0,dnz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
@@ -1468,15 +1460,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeGetMatrix(DMComposite packer, MatTyp
     if (next->type == DMCOMPOSITE_ARRAY) {
       if (rank == next->rank) {
         for (j=packer->rstart+next->rstart; j<packer->rstart+next->rstart+next->n; j++) {
-          for (i=0; i<packer->N; i++) {
+          for (i=packer->rstart+next->rstart; i<packer->rstart+next->rstart+next->n; i++) {
             ierr = MatSetValues(*J,1,&j,1,&i,&zero,INSERT_VALUES);CHKERRQ(ierr);
           }
         }
-      }
-      for (j=next->grstart; j<next->grstart+next->n; j++) {
-        for (i=packer->rstart; i<packer->rstart+m; i++) {
-          ierr = MatSetValues(*J,1,&i,1,&j,&zero,INSERT_VALUES);CHKERRQ(ierr);
-	}
       }
     } else if (next->type == DMCOMPOSITE_DA) {
       PetscInt          nc,rstart,row,maxnc,*ccols;
