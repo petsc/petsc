@@ -163,8 +163,8 @@ class QuadratureGenerator(script.Script):
     trueBranch.children = [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])),
                            self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getStructRef(optVar, 'exactFunc')]))]
     cmpd.children.append(self.Cxx.getIf(self.Cxx.getEquality(self.Cxx.getStructRef(optVar, 'bcType'), 'DIRICHLET'), [trueBranch]))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setupField'), ['s'])))
     cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'setDebug'), [self.Cxx.getStructRef(optVar, 'debug')])))
+    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setupField'), ['s'])))
     stmts.append(cmpd)
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealDestroy', [secVar])))
     stmts.append(self.Cxx.getReturn(isPetsc = 1))

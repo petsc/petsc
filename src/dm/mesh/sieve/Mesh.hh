@@ -422,7 +422,7 @@ namespace ALE {
           const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *e_iter);
           const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
 
-          s->updateBC(patch, *e_iter, &value);
+          s->updatePointBC(patch, *e_iter, &value);
         }
       }
     };
