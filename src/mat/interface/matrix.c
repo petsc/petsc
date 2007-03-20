@@ -6480,6 +6480,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat mat,Vec *right,Vec *left)
   }
   if (right) {ierr = VecSetBlockSize(*right,mat->rmap.bs);CHKERRQ(ierr);}
   if (left) {ierr = VecSetBlockSize(*left,mat->rmap.bs);CHKERRQ(ierr);}
+  if (mat->mapping) {
+    if (right) {ierr = VecSetLocalToGlobalMapping(*right,mat->mapping);CHKERRQ(ierr);}
+    if (left) {ierr = VecSetLocalToGlobalMapping(*left,mat->mapping);CHKERRQ(ierr);}
+  }
+  if (mat->bmapping) {
+    if (right) {ierr = VecSetLocalToGlobalMappingBlock(*right,mat->bmapping);CHKERRQ(ierr);}
+    if (left) {ierr = VecSetLocalToGlobalMappingBlock(*left,mat->bmapping);CHKERRQ(ierr);}
+  }
   PetscFunctionReturn(0);
 }
 

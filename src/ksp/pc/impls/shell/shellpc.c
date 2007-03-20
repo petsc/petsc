@@ -80,12 +80,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetContext(PC pc,void **ctx)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetContext(PC pc,void *ctx)
 {
-  PC_Shell      *shell = (PC_Shell*)pc->data;
+  PC_Shell      *shell;
   PetscErrorCode ierr;
   PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  shell = (PC_Shell*)pc->data;
   ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
   if (flg) {
     shell->ctx = ctx;
@@ -102,11 +103,12 @@ static PetscErrorCode PCSetUp_Shell(PC pc)
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
-  if (shell->setup) {
-    CHKMEMQ;
-    ierr  = (*shell->setup)(shell->ctx);CHKERRQ(ierr);
-    CHKMEMQ;
-  }
+  if (!shell->setup) SETERRQ(PETSC_ERR_USER,"No setup() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function setup()");
+  CHKMEMQ;
+  ierr  = (*shell->setup)(shell->ctx);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -120,7 +122,7 @@ static PetscErrorCode PCApply_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->apply) SETERRQ(PETSC_ERR_USER,"No apply() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function");
+  PetscStackPush("PCSHELL user function apply()");
   CHKMEMQ;
   ierr  = (*shell->apply)(shell->ctx,x,y);CHKERRQ(ierr);
   CHKMEMQ;
@@ -138,7 +140,7 @@ static PetscErrorCode PCApplyBA_Shell(PC pc,PCSide side,Vec x,Vec y,Vec w)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->applyBA) SETERRQ(PETSC_ERR_USER,"No applyBA() routine provided to Shell PC");
-  PetscStackPush("PCSHELL user function BA");
+  PetscStackPush("PCSHELL user function applyBA()");
   CHKMEMQ;
   ierr  = (*shell->applyBA)(shell->ctx,side,x,y,w);CHKERRQ(ierr);
   CHKMEMQ;
@@ -156,7 +158,11 @@ static PetscErrorCode PCPreSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->presolve) SETERRQ(PETSC_ERR_USER,"No presolve() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function presolve()");
+  CHKMEMQ;
   ierr  = (*shell->presolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -170,7 +176,11 @@ static PetscErrorCode PCPostSolve_Shell(PC pc,KSP ksp,Vec b,Vec x)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->postsolve) SETERRQ(PETSC_ERR_USER,"No postsolve() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function postsolve()");
+  CHKMEMQ;
   ierr  = (*shell->postsolve)(shell->ctx,ksp,b,x);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -184,7 +194,11 @@ static PetscErrorCode PCApplyTranspose_Shell(PC pc,Vec x,Vec y)
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
   if (!shell->applytranspose) SETERRQ(PETSC_ERR_USER,"No applytranspose() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function applytranspose()");
+  CHKMEMQ;
   ierr  = (*shell->applytranspose)(shell->ctx,x,y);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +211,12 @@ static PetscErrorCode PCApplyRichardson_Shell(PC pc,Vec x,Vec y,Vec w,PetscReal 
 
   PetscFunctionBegin;
   shell = (PC_Shell*)pc->data;
+  if (!shell->applyrich) SETERRQ(PETSC_ERR_USER,"No applyrichardson() routine provided to Shell PC");
+  PetscStackPush("PCSHELL user function applyrichardson()");
+  CHKMEMQ;
   ierr  = (*shell->applyrich)(shell->ctx,x,y,w,rtol,abstol,dtol,it);CHKERRQ(ierr);
+  CHKMEMQ;
+  PetscStackPop;
   PetscFunctionReturn(0);
 }
 
@@ -264,6 +283,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetSetUp_Shell(PC pc, PetscErrorCode (*
   PetscFunctionBegin;
   shell        = (PC_Shell*)pc->data;
   shell->setup = setup;
+  if (setup) pc->ops->setup = PCSetUp_Shell;
+  else       pc->ops->setup = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -285,15 +306,15 @@ EXTERN_C_END
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PCShellSetApplyBA_Shell"
-PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*apply)(void*,PCSide,Vec,Vec,Vec))
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyBA_Shell(PC pc,PetscErrorCode (*applyBA)(void*,PCSide,Vec,Vec,Vec))
 {
   PC_Shell *shell;
 
   PetscFunctionBegin;
   shell          = (PC_Shell*)pc->data;
-  if (apply) pc->ops->applyBA  = PCApplyBA_Shell;
-  else       pc->ops->applyBA  = 0;
-  shell->applyBA = apply;
+  shell->applyBA = applyBA;
+  if (applyBA) pc->ops->applyBA  = PCApplyBA_Shell;
+  else         pc->ops->applyBA  = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -306,13 +327,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPreSolve_Shell(PC pc,PetscErrorCode 
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  shell             = (PC_Shell*)pc->data;
-  shell->presolve   = presolve;
-  if (presolve) {
-    pc->ops->presolve = PCPreSolve_Shell;
-  } else {
-    pc->ops->presolve = 0;
-  }
+  shell           = (PC_Shell*)pc->data;
+  shell->presolve = presolve;
+  if (presolve) pc->ops->presolve = PCPreSolve_Shell;
+  else          pc->ops->presolve = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -325,13 +343,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetPostSolve_Shell(PC pc,PetscErrorCode
   PC_Shell *shell;
 
   PetscFunctionBegin;
-  shell           = (PC_Shell*)pc->data;
+  shell            = (PC_Shell*)pc->data;
   shell->postsolve = postsolve;
-  if (postsolve) {
-    pc->ops->postsolve = PCPostSolve_Shell;
-  } else {
-    pc->ops->postsolve = 0;
-  }
+  if (postsolve) pc->ops->postsolve = PCPostSolve_Shell;
+  else           pc->ops->postsolve = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -360,6 +375,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyTranspose_Shell(PC pc,PetscErro
   PetscFunctionBegin;
   shell                 = (PC_Shell*)pc->data;
   shell->applytranspose = applytranspose;
+  if (applytranspose) pc->ops->applytranspose = PCApplyTranspose_Shell;
+  else                pc->ops->applytranspose = 0;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "PCShellSetApplyRichardson_Shell"
+PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*applyrich)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt))
+{
+  PC_Shell *shell;
+
+  PetscFunctionBegin;
+  shell            = (PC_Shell*)pc->data;
+  shell->applyrich = applyrich;
+  if (applyrich) pc->ops->applyrichardson  = PCApplyRichardson_Shell;
+  else           pc->ops->applyrichardson  = 0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -390,21 +423,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCShellGetName_Shell(PC pc,char *name[])
   PetscFunctionBegin;
   shell  = (PC_Shell*)pc->data;
   *name  = shell->name;
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PCShellSetApplyRichardson_Shell"
-PetscErrorCode PETSCKSP_DLLEXPORT PCShellSetApplyRichardson_Shell(PC pc,PetscErrorCode (*apply)(void*,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt))
-{
-  PC_Shell *shell;
-
-  PetscFunctionBegin;
-  shell                     = (PC_Shell*)pc->data;
-  pc->ops->applyrichardson  = PCApplyRichardson_Shell;
-  shell->applyrich          = apply;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -854,11 +872,12 @@ $             PetscErrorCode (*mult)(void*,Vec,Vec);
 $             PetscErrorCode (*setup)(void*);
 $             PCCreate(comm,&pc);
 $             PCSetType(pc,PCSHELL);
-$             PCShellSetApply(pc,mult);
-$             PCShellSetApplyBA(pc,mult);      (optional)
-$             PCShellSetApplyTranspose(pc,mult); (optional)
+$             PCShellSetApply(pc,apply);
+$             PCShellSetApplyBA(pc,apply); (optional)
+$             PCShellSetApplyTranspose(pc,apply); (optional)
 $             PCShellSetContext(pc,ctx)
-$             PCShellSetSetUp(pc,setup);       (optional)
+$             PCShellSetSetUp(pc,setup); (optional)
+$             PCShellSetDestroy(pc,destroy); (optional)
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            MATSHELL, PCShellSetSetUp(), PCShellSetApply(), PCShellSetView(), 
@@ -875,20 +894,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   PC_Shell       *shell;
 
   PetscFunctionBegin;
-  pc->ops->destroy    = PCDestroy_Shell;
   ierr                = PetscNew(PC_Shell,&shell);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(pc,sizeof(PC_Shell));CHKERRQ(ierr);
   pc->data         = (void*)shell;
   pc->name         = 0;
 
-  pc->ops->apply           = PCApply_Shell;
+  pc->ops->destroy         = PCDestroy_Shell;
   pc->ops->view            = PCView_Shell;
-  pc->ops->applytranspose  = PCApplyTranspose_Shell;
+  pc->ops->apply           = PCApply_Shell;
+  pc->ops->applytranspose  = 0;
   pc->ops->applyrichardson = 0;
-  pc->ops->setup           = PCSetUp_Shell;
+  pc->ops->setup           = 0;
   pc->ops->presolve        = 0;
   pc->ops->postsolve       = 0;
-  pc->ops->view            = PCView_Shell;
 
   shell->apply          = 0;
   shell->applytranspose = 0;
