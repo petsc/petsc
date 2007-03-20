@@ -245,77 +245,151 @@ namespace ALE {
         typedef value_type&             reference;
       protected:
         int               _dim;
-        value_type        _value;
-        int               _pos;
         const int        *_sizes;
-        const value_type *_indices;
-        const int        *_code;
+        int               _pos;
+        int              *_code;
+        value_type        _value;
+        value_type *_indices;
+      protected:
+        void nextCodeOdd(int a[], const int n, const int size) {
+          for(int d = size-2; d >= 0; --d) a[d+1] = a[d];
+          if (n == (n/2)*2) {
+            a[0] = 1;
+          } else {
+            a[0] = 0;
+          }
+        };
+        void nextCodeEven(int a[], const int n, const int size) {
+          this->nextCodeOdd(a, n, size);
+          a[0] ^= 1;
+          for(int d = 1; d < size; ++d) a[d] ^= 0;
+        };
+        void getGrayCode(const int n, const int size, int code[]) {
+          if (n == 1 << size) {
+            code[0] = -1;
+          } else if (n == 0) {
+            for(int d = 0; d < size; ++d) code[d] = 0;
+          } else if (n == 1) {
+            code[0] = 1;
+            for(int d = 1; d < size; ++d) code[d] = 0;
+          } else if (n == (n/2)*2) {
+            // Might have to shift pointer
+            this->getGrayCode(n/2, size, code);
+            this->nextCodeEven(code, n/2, size);
+          } else {
+            // Might have to shift pointer
+            this->getGrayCode((n-1)/2, size, code);
+            this->nextCodeOdd(code, (n-1)/2, size);
+          }
+        };
+        inline value_type getValue(const value_type *indices, const int *code) {
+          std::cout << "Building value" << std::endl << "  pos:" << this->_pos << std::endl << "  code:";
+          for(int d = 0; d < this->_dim; ++d) std::cout << " " << code[d];
+          std::cout << std::endl << "  indices:";
+          for(int d = 0; d < this->_dim; ++d) std::cout << " " << indices[d];
+          std::cout << std::endl;
+          if (code[0] < 0) {
+            std::cout << "  value " << -1 << std::endl;
+            return -1;
+          }
+          value_type value = indices[this->_dim-1];
+          if (!code[this->_dim-1]) value--;
+          std::cout << "  value " << value << std::endl;
+          for(int d = this->_dim-2; d >= 0; --d) {
+            value = value*this->_sizes[d] + indices[d];
+            if (!code[d]) value--;
+            std::cout << "  value " << value << std::endl;
+          }
+          std::cout << "  final value " << value << std::endl;
+          return value;
+        };
+        bool validIndex(const int indices[], const int code[]) {
+          for(int d = 0; d < this->_dim; ++d) {
+            if ((code[d])  && (indices[d] >= this->_sizes[d])) return false;
+            if ((!code[d]) && (indices[d] < 1)) return false;
+          }
+          return true;
+        }
+        void init() {
+          this->_code = new int[this->_dim];
+          this->getGrayCode(this->_pos, this->_dim, this->_code);
+          while((this->_code[0] >= 0) && !this->validIndex(this->_indices, this->_code)) {
+            this->getGrayCode(++this->_pos, this->_dim, this->_code);
+          } 
+          this->_value = this->getValue(this->_indices, this->_code);
+        };
       public:
-        iterator(const int dim, const int sizes[], const value_type indices[], const int pos) : _dim(dim), _sizes(sizes), _indices(indices), _pos(pos) {
-          this->_code = new int[dim];
+        iterator(const int dim, const int sizes[], const value_type indices[], const int pos) : _dim(dim), _sizes(sizes), _pos(pos) {
+          this->_indices = new int[this->_dim];
+          for(int d = 0; d < this->_dim; ++d) this->_indices[d] = indices[d];
+          this->init();
+        };
+        iterator(const iterator& iter) : _dim(iter._dim), _sizes(iter._sizes), _pos(iter._pos) {
+          this->_indices = new int[this->_dim];
+          for(int d = 0; d < this->_dim; ++d) this->_indices[d] = iter._indices[d];
+          this->init();
         };
         virtual ~iterator() {
           delete [] this->_code;
-        };
-      protected:
-        void getGrayCode(const int n, const int size, const int code[]) {
+          delete [] this->_indices;
         };
       public:
         virtual bool              operator==(const iterator& iter) const {return this->_pos == iter._pos;};
         virtual bool              operator!=(const iterator& iter) const {return this->_pos != iter._pos;};
         virtual const value_type  operator*() const {return this->_value;};
-        virtual iterator          operator++() {
-          this->getGrayCode(++this->_pos, this->_dim, this->_code);
-          this->_value = this->_indices[this->_dim-1];
-          if (this->_code[this->_dim-1]) this->_value++;
-          for(int d = this->_dim-2; d >= 0; --d) {
-            this->_value *= (this->_sizes[d]+1) + this->_indices[d];
-            if (this->_code[d]) this->_value++;
-          }
+        virtual iterator&         operator++() {
+          // Must check here that 0 <= indices[d] < sizes[d]
+          do {
+            this->getGrayCode(++this->_pos, this->_dim, this->_code);
+          } while((this->_code[0] >= 0) && !this->validIndex(this->_indices, this->_code));
+          this->_value = this->getValue(this->_indices, this->_code);
           return *this;
         };
         virtual iterator          operator++(int n) {
           iterator tmp(*this);
-          this->_pos += n;
-          this->getGrayCode(this->_pos, this->_dim, this->_code);
-          this->_value = this->_indices[this->_dim-1];
-          if (this->_code[this->_dim-1]) this->_value++;
-          for(int d = this->_dim-2; d >= 0; --d) {
-            this->_value *= (this->_sizes[d]+1) + this->_indices[d];
-            if (this->_code[d]) this->_value++;
-          }
+          do {
+            this->getGrayCode(++this->_pos, this->_dim, this->_code);
+          } while((this->_code[0] >= 0) && !this->validIndex(this->_indices, this->_code));
+          this->_value = this->getValue(this->_indices, this->_code);
           return tmp;
         };
       };
     protected:
       int         _dim;
-      int        *_sizes;
+      const int  *_sizes;
+      int         _numCells;
       point_type  _vertex;
       int        *_indices;
     public:
-      SupportSequence(const int dim, const int sizes[], const point_type& vertex) : _dim(dim), _sizes(sizes), _vertex(vertex) {
+      SupportSequence(const int dim, const int sizes[], const int numCells, const point_type& vertex) : _dim(dim), _sizes(sizes), _numCells(numCells), _vertex(vertex) {
         this->_indices = new point_type[dim];
+        this->getIndices(this->_vertex, this->_indices);
       };
       virtual ~SupportSequence() {
         delete [] this->_indices;
       };
     protected:
       void getIndices(const point_type& vertex, const int indices[]) {
-        point_type v       = vertex;
+        point_type v       = vertex - this->_numCells;
         int        divisor = 1;
 
         for(int d = 0; d < this->_dim-1; ++d) {
           divisor *= this->_sizes[d]+1;
         }
-        for(int d = this->_dim-1; d >= 0; ++d) {
+        std::cout << "  Got indices for vertex " << vertex << ":";
+        for(int d = this->_dim-1; d >= 0; --d) {
           this->_indices[d] = v/divisor;
           v -= divisor*this->_indices[d];
           if (d > 0) divisor /= this->_sizes[d-1]+1;
         }
+        for(int d = 0; d < this->_dim; ++d) {
+          std::cout << " " << this->_indices[d];
+        }
+        std::cout << std::endl;
       };
     public:
-      virtual iterator begin() {return iterator(this->_dim, this->_cell, 0);};
-      virtual iterator end()   {return iterator(this->_dim, this->_cell, 1 << this->_dim);};
+      virtual iterator begin() {return iterator(this->_dim, this->_sizes, this->_indices, 0);};
+      virtual iterator end()   {return iterator(this->_dim, this->_sizes, this->_indices, 1 << this->_dim);};
     };
   }
 
@@ -372,6 +446,14 @@ namespace ALE {
       Obj<coneSequence> cone = new coneSequence(this->_dim, this->_sizes, this->_numCells, p);
       return cone;
     };
+    Obj<supportSequence> support(const point_type& p) {
+      if ((p < this->_numCells) || (p >= this->_numCells+this->_numVertices)) {
+        Obj<supportSequence> support = new supportSequence(0, this->_sizes, this->_numCells, 0);
+        return support;
+      }
+      Obj<supportSequence> support = new supportSequence(this->_dim, this->_sizes, this->_numCells, p);
+      return support;
+    };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
         ostringstream txt;
@@ -392,16 +474,14 @@ namespace ALE {
       if(cap->empty()) {
         txt << "[" << this->commRank() << "]: empty" << std::endl; 
       }
-#if 0
-      for(typename capSequence::iterator capi = cap->begin(); capi != cap->end(); capi++) {
-        const Obj<supportSequence>& supp = this->support(*capi);
+      for(typename capSequence::iterator capi = cap->begin(); capi != cap->end(); ++capi) {
+        const Obj<supportSequence>&              supp    = this->support(*capi);
         const typename supportSequence::iterator suppEnd = supp->end();
 
-        for(typename supportSequence::iterator suppi = supp->begin(); suppi != suppEnd; suppi++) {
+        for(typename supportSequence::iterator suppi = supp->begin(); suppi != suppEnd; ++suppi) {
           txt << "[" << this->commRank() << "]: " << *capi << "---->" << *suppi << std::endl;
         }
       }
-#endif
       PetscSynchronizedPrintf(this->comm(), txt.str().c_str());
       PetscSynchronizedFlush(this->comm());
       //
@@ -413,7 +493,7 @@ namespace ALE {
         txt1 << "[" << this->commRank() << "]: empty" << std::endl; 
       }
       for(typename baseSequence::iterator basei = base->begin(); basei != base->end(); ++basei) {
-        const Obj<coneSequence>               cone    = this->cone(*basei);
+        const Obj<coneSequence>&              cone    = this->cone(*basei);
         const typename coneSequence::iterator coneEnd = cone->end();
 
         for(typename coneSequence::iterator conei = cone->begin(); conei != coneEnd; ++conei) {
