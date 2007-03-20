@@ -313,6 +313,7 @@ namespace ALE {
         this->_recvOverlap    = new recv_overlap_type(this->comm(), this->debug());
         this->_modifiedPoints = new point_set_type();
       };
+      virtual ~Topology() {};
     public: // Verifiers
       void checkPatch(const patch_type& patch) {
         if (this->_sheaf.find(patch) == this->_sheaf.end()) {
@@ -402,7 +403,7 @@ namespace ALE {
       void setDistSendOverlap(const Obj<send_overlap_type>& overlap) {this->_distSendOverlap = overlap;};
       const Obj<recv_overlap_type>& getDistRecvOverlap() const {return this->_distRecvOverlap;};
       void setDistRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_distRecvOverlap = overlap;};
-    public:
+    public: // Stratification
       template<class InputPoints>
       void computeHeight(const Obj<patch_label_type>& height, const Obj<sieve_type>& sieve, const Obj<InputPoints>& points, int& maxHeight) {
         this->_modifiedPoints->clear();
