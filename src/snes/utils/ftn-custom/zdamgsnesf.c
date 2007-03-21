@@ -15,8 +15,8 @@ EXTERN_C_BEGIN
 static PetscErrorCode ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
 {
   PetscErrorCode ierr = 0;
-  DMMG *dmmg = (DMMG*)ctx;
-  (*(PetscErrorCode (PETSC_STDCALL *)(SNES*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)(*dmmg)->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
+  DMMG dmmg = (DMMG)ctx;
+  (*(PetscErrorCode (PETSC_STDCALL *)(SNES*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)(dmmg)->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
   return ierr;
 }
 

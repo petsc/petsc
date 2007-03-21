@@ -12,7 +12,7 @@ MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
                    ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c
-EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F ex34f.F
+EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F mex34f.F ex34f.F
 EXAMPLESCH	 = 
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
@@ -141,9 +141,9 @@ ex32: ex32.o chkopts
 ex33f: ex33f.o  chkopts
 	-${FLINKER} -o ex33f ex33f.o ${PETSC_SNES_LIB}
 	${RM} ex33f.o
-ex34f: ex34f.o  chkopts
+ex34f:  mex34f.o ex34f.o  chkopts
 	-${FLINKER} -o ex34f ex34f.o ${PETSC_SNES_LIB}
-	${RM} ex34f.o
+	${RM} ex34f.o mex34f.mod mex34f.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \

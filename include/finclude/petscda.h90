@@ -12,6 +12,81 @@
         End Subroutine
       End Interface
 
+
+      type DALocalInfof90
+        PetscInt ::       dim,dof,sw
+        PetscInt ::       mx,my,mz
+        PetscInt ::       xs,ys,zs
+        PetscInt ::       xm,ym,zm
+        PetscInt ::       gxs,gys,gzs
+        PetscInt ::       gxm,gym,gzm
+        DAPeriodicType :: pt
+        DAStencilType  :: st
+        DA ::             da
+      end type DALocalInfof90
+
+
+      Interface DMCompositeGetEntries
+        Subroutine DMCompositeGetEntries1(dm, d1,ierr)
+          DM  dm
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine DMCompositeGetEntries2(dm, d1,d2,ierr)
+          DM  dm
+          DM d1,d2
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine DMCompositeGetEntries3(dm, d1,d2,d3,ierr)
+          DM  dm
+          DM d1,d2,d3
+          PetscErrorCode ierr
+        End Subroutine
+
+        Subroutine DMCompositeGetEntries4(dm, d1,d2,d3,d4,ierr)
+          DM  dm
+          DM d1,d2,d3,d4
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeGetAccess
+        Subroutine DMCompositeGetAccessvpvp(dm, v,d1,d2,d3,d4,ierr)
+          DM  dm
+          Vec v,d1,d3
+          double precision,pointer :: d2(:),d4(:)          
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeRestoreAccess
+        Subroutine DMCompositeRestoreAccessvpvp(dm, v,d1,d2,d3,d4,ierr)
+          DM  dm
+          Vec v,d1,d3
+          double precision,pointer :: d2(:),d4(:)          
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DAVecGetArrayF90
+        Subroutine DAVecGetArrayF901(Da, v,d1,ierr)
+          DA  da
+          Vec v
+          double precision,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DAVecGetArrayF90
+
+      Interface DAVecRestoreArrayF90
+        Subroutine DAVecRestoreArrayF901(da, v,d1,ierr)
+          DA  da
+          Vec v
+          double precision,pointer :: d1(:)
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface DAVecRestoreArrayF90
+
 !
 !     End of DA Fortran 90 include file for the PETSc package
 !
