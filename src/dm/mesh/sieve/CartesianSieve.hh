@@ -677,8 +677,9 @@ namespace ALE {
       for(int d = 0; d < dim; ++d) totalPartitions *= partitions[d];
       if (size != totalPartitions) throw ALE::Exception("Invalid partitioning");
       // Determine local sizes
-      int *numLocalCells    = new int[dim];
-      int *numLocalVertices = new int[dim];
+      int *numLocalCells       = new int[dim];
+      int *numNeighborVertices = new int[dim];
+      int *numLocalVertices    = new int[dim];
 
       for(int d = 0; d < dim; ++d) {
         numLocalCells[d]    = numCells[d]/partitions[d] + (rank < numCells[d]%partitions[d]);
@@ -699,20 +700,30 @@ namespace ALE {
       const Obj<topology_type::recv_overlap_type>& recvOverlap = topology->getRecvOverlap();
       int *indices  = new int[dim];
       int *code     = new int[dim];
+      int *zeroCode = new int[dim];
       int *vIndices = new int[dim];
+      int numNeighborCells;
 
       ALE::CartesianSieveDef::getIndices(dim, partitions, rank, indices);
+      for(int e = 0; e < dim; ++e) zeroCode[e] = 0;
       for(int d = 0; d < dim; ++d) {
         if (indices[d] > 0) {
           for(int e = 0; e < dim; ++e) code[e] = 1;
           code[d] = 0;
           int neighborRank = ALE::CartesianSieveDef::getValue(dim, partitions, indices, code, false);
+          numNeighborCells = 1;
+          for(int e = 0; e < dim; ++e) {
+            numNeighborCells      *= (numCells[e]/partitions[e] + (neighborRank < numCells[e]%partitions[e]));
+            numNeighborVertices[e] = (numCells[e]/partitions[e] + (neighborRank < numCells[e]%partitions[e]))+1;
+          }
 
           // Add the whole d-1 face on the left edge of dimension d
           for(int v = sieve->getNumCells(); v < sieve->getNumCells()+sieve->getNumVertices(); ++v) {
-            ALE::CartesianSieveDef::getIndices(dim, numLocalVertices, v, vIndices);
-            int neighborV = 0;
+            ALE::CartesianSieveDef::getIndices(dim, numLocalVertices, v - sieve->getNumCells(), vIndices);
             if (vIndices[d] == 0) {
+              vIndices[d]   = numNeighborVertices[d]-1;
+              int neighborV = ALE::CartesianSieveDef::getValue(dim, numNeighborVertices, vIndices, zeroCode) + numNeighborCells;
+
               sendOverlap->addCone(v, neighborRank, neighborV);
               recvOverlap->addCone(neighborRank, v, neighborV);
             }
@@ -722,23 +733,37 @@ namespace ALE {
           for(int e = 0; e < dim; ++e) code[e] = 0;
           code[d] = 1;
           int neighborRank = ALE::CartesianSieveDef::getValue(dim, partitions, indices, code);
+          numNeighborCells = 1;
+          for(int e = 0; e < dim; ++e) {
+            numNeighborCells      *= (numCells[e]/partitions[e] + (neighborRank < numCells[e]%partitions[e]));
+            numNeighborVertices[e] = (numCells[e]/partitions[e] + (neighborRank < numCells[e]%partitions[e]))+1;
+          }
 
           // Add the whole d-1 face on the right edge of dimension d
           for(int v = sieve->getNumCells(); v < sieve->getNumCells()+sieve->getNumVertices(); ++v) {
-            ALE::CartesianSieveDef::getIndices(dim, numLocalVertices, v, vIndices);
-            int neighborV = 0;
+            ALE::CartesianSieveDef::getIndices(dim, numLocalVertices, v - sieve->getNumCells(), vIndices);
             if (vIndices[d] == numLocalVertices[d]-1) {
+              vIndices[d]   = 0;
+              int neighborV = ALE::CartesianSieveDef::getValue(dim, numNeighborVertices, vIndices, zeroCode) + numNeighborCells;
+
               sendOverlap->addCone(v, neighborRank, neighborV);
               recvOverlap->addCone(neighborRank, v, neighborV);
             }
           }
         }
       }
+      if (debug) {
+        sendOverlap->view("Send Overlap");
+        recvOverlap->view("Receive Overlap");
+      }
       delete [] numLocalVertices;
+      delete [] numNeighborVertices;
       delete [] indices;
       delete [] code;
+      delete [] zeroCode;
       delete [] vIndices;
       // Create coordinates
+      return topology;
     };
   };
 }
