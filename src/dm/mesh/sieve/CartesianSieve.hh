@@ -178,6 +178,7 @@ namespace ALE {
       protected:
         int               _dim;
         const int        *_sizes;
+        const int        *_cellSizes;
         int               _numCells;
         int               _pos;
         int              *_code;
@@ -186,16 +187,23 @@ namespace ALE {
       protected:
         void init() {
           this->_code = new int[this->_dim];
-          ALE::CartesianSieveDef::getGrayCode(this->_pos, this->_dim, this->_code);
-          this->_value = ALE::CartesianSieveDef::getValue(this->_dim, this->_sizes, this->_indices, this->_code) + this->_numCells;
+          if (this->_pos == -2) {
+            this->_value = this->_indices[0];
+            ++this->_pos;
+          } else if (this->_pos == -1) {
+            this->_value = ALE::CartesianSieveDef::getValue(this->_dim, this->_cellSizes, this->_indices, this->_code);
+          } else {
+            ALE::CartesianSieveDef::getGrayCode(this->_pos, this->_dim, this->_code);
+            this->_value = ALE::CartesianSieveDef::getValue(this->_dim, this->_sizes, this->_indices, this->_code) + this->_numCells;
+          }
         };
       public:
-        iterator(const int dim, const int sizes[], const int numCells, const value_type indices[], const int pos) : _dim(dim), _sizes(sizes), _numCells(numCells), _pos(pos) {
+        iterator(const int dim, const int sizes[], const int cellSizes[], const int numCells, const value_type indices[], const int pos, const bool addSelf = false) : _dim(dim), _sizes(sizes), _cellSizes(cellSizes), _numCells(numCells), _pos(pos) {
           this->_indices = new int[this->_dim];
           for(int d = 0; d < this->_dim; ++d) this->_indices[d] = indices[d];
           this->init();
         };
-        iterator(const iterator& iter) : _dim(iter._dim), _sizes(iter._sizes), _numCells(iter._numCells), _pos(iter._pos) {
+        iterator(const iterator& iter) : _dim(iter._dim), _sizes(iter._sizes), _cellSizes(iter._cellSizes), _numCells(iter._numCells), _pos(iter._pos) {
           this->_indices = new int[this->_dim];
           for(int d = 0; d < this->_dim; ++d) this->_indices[d] = iter._indices[d];
           this->init();
@@ -227,8 +235,9 @@ namespace ALE {
       int         _numCells;
       point_type  _cell;
       int        *_indices;
+      bool        _addSelf;
     public:
-      ConeSequence(const int dim, const int sizes[], const int numCells, const point_type& cell) : _dim(dim), _sizes(sizes), _numCells(numCells), _cell(cell) {
+      ConeSequence(const int dim, const int sizes[], const int numCells, const point_type& cell, const bool addSelf = false) : _dim(dim), _sizes(sizes), _numCells(numCells), _cell(cell), _addSelf(addSelf) {
         this->_vertexSizes = new int[dim];
         this->_indices     = new point_type[dim];
         //this->getIndices(this->_cell, this->_indices);
@@ -259,8 +268,27 @@ namespace ALE {
         //std::cout << std::endl;
       };
     public:
-      virtual iterator begin() {return iterator(this->_dim, this->_vertexSizes, this->_numCells, this->_indices, 0);};
-      virtual iterator end()   {return iterator(this->_dim, this->_vertexSizes, this->_numCells, this->_indices, 1 << this->_dim);};
+      virtual iterator begin() {
+        int start = 0;
+
+        if (this->_addSelf) {
+          if (this->_cell >= this->_numCells) {
+            start = -2;
+            this->_indices[0] = this->_cell;
+          } else {
+            start = -1;
+          }
+        }
+        return iterator(this->_dim, this->_vertexSizes, this->_sizes, this->_numCells, this->_indices, start);
+      };
+      virtual iterator end() {
+        int end = 1 << this->_dim;
+
+        if (!this->_dim || (this->_cell >= this->_numCells)) {
+          end = 0;
+        }
+        return iterator(this->_dim, this->_vertexSizes, this->_sizes, this->_numCells, this->_indices, end);
+      };
     };
     template <typename PointType_>
     class SupportSequence {
@@ -373,7 +401,7 @@ namespace ALE {
       };
     public:
       virtual iterator begin() {return iterator(this->_dim, this->_sizes, this->_indices, 0);};
-      virtual iterator end()   {return iterator(this->_dim, this->_sizes, this->_indices, 1 << this->_dim);};
+      virtual iterator end()   {return iterator(this->_dim, this->_sizes, this->_indices, this->_dim ? 1 << this->_dim: 0);};
     };
   }
   // We can do meets of two cells as empty if they do not intersect, and a k-dimensional face (with 2^k vertices)
@@ -394,10 +422,13 @@ namespace ALE {
   class CartesianSieve : public ALE::ParallelObject {
   public:
     typedef Point_ point_type;
-    typedef CartesianSieveDef::PointSequence<point_type> baseSequence;
-    typedef CartesianSieveDef::PointSequence<point_type> capSequence;
-    typedef CartesianSieveDef::ConeSequence<point_type>  coneSequence;
-    typedef CartesianSieveDef::SupportSequence<point_type>  supportSequence;
+    typedef CartesianSieveDef::PointSequence<point_type>   baseSequence;
+    typedef CartesianSieveDef::PointSequence<point_type>   capSequence;
+    typedef CartesianSieveDef::ConeSequence<point_type>    coneSequence;
+    typedef CartesianSieveDef::SupportSequence<point_type> supportSequence;
+    // Backward compatibility
+    typedef coneSequence coneArray;
+    typedef coneSequence coneSet;
   protected:
     int  _dim;
     int *_sizes;
@@ -423,12 +454,14 @@ namespace ALE {
     int getNumCells() const {return this->_numCells;};
     int getNumVertices() const {return this->_numVertices;};
   public:
+    // WARNING: Creating a lot of objects here
     Obj<baseSequence> base() {
-      Obj<baseSequence>base = new baseSequence(0, this->_numCells);
+      Obj<baseSequence> base = new baseSequence(0, this->_numCells);
       return base;
     };
+    // WARNING: Creating a lot of objects here
     Obj<capSequence> cap() {
-       Obj<capSequence> cap = capSequence(this->_numCells, this->_numCells+this->_numVertices);
+       Obj<capSequence> cap = new capSequence(this->_numCells, this->_numCells+this->_numVertices);
        return cap;
     };
     // WARNING: Creating a lot of objects here
@@ -440,6 +473,7 @@ namespace ALE {
       Obj<coneSequence> cone = new coneSequence(this->_dim, this->_sizes, this->_numCells, p);
       return cone;
     };
+    // WARNING: Creating a lot of objects here
     Obj<supportSequence> support(const point_type& p) {
       if ((p < this->_numCells) || (p >= this->_numCells+this->_numVertices)) {
         Obj<supportSequence> support = new supportSequence(0, this->_sizes, this->_numCells, 0);
@@ -447,6 +481,25 @@ namespace ALE {
       }
       Obj<supportSequence> support = new supportSequence(this->_dim, this->_sizes, this->_numCells, p);
       return support;
+    };
+    // WARNING: Creating a lot of objects here
+    Obj<coneSequence> closure(const point_type& p) {
+      Obj<coneSequence> cone = new coneSequence(this->_dim, this->_sizes, this->_numCells, p, true);
+      return cone;
+    };
+    // WARNING: Creating a lot of objects here
+    Obj<supportSequence> star(const point_type& p) {return this->support(p);};
+    // WARNING: Creating a lot of objects here
+    Obj<coneSequence> nCone(const point_type& p, const int n) {
+      if (n == 0) return this->cone(-1);
+      if (n != 1) throw ALE::Exception("Invalid height for nCone");
+      return this->cone(p);
+    };
+    // WARNING: Creating a lot of objects here
+    Obj<supportSequence> nSupport(const point_type& p, const int n) {
+      if (n == 0) return this->support(-1);
+      if (n != 1) throw ALE::Exception("Invalid depth for nSupport");
+      return this->support(p);
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
@@ -620,7 +673,8 @@ namespace ALE {
       if ((point >= numCells) && (point < numCells+numVertices)) return 1;
       return -1;
     };
-    const Obj<label_sequence>& heightStratum(const patch_type& patch, int height) {
+    // WARNING: Creating a lot of objects here
+    const Obj<label_sequence> heightStratum(const patch_type& patch, int height) {
       if (height == 0) return this->_sheaf[patch]->base();
       if (height == 1) return this->_sheaf[patch]->cap();
       throw ALE::Exception("Invalid height stratum");
@@ -637,11 +691,20 @@ namespace ALE {
       if ((point >= numCells) && (point < numCells+numVertices)) return 0;
       return -1;
     };
-    const Obj<label_sequence>& depthStratum(const patch_type& patch, int depth) {
+    // WARNING: Creating a lot of objects here
+    const Obj<label_sequence> depthStratum(const patch_type& patch, int depth) {
       if (depth == 0) return this->_sheaf[patch]->cap();
       if (depth == 1) return this->_sheaf[patch]->base();
       throw ALE::Exception("Invalid depth stratum");
     };
+    const Obj<label_sequence> getLabelStratum(const patch_type& patch, const std::string& name, int value) {
+      if (name == "height") {
+        return this->heightStratum(patch, value);
+      } else if (name == "depth") {
+        return this->depthStratum(patch, value);
+      }
+      throw ALE::Exception("Invalid label name");
+    }
   public: // Viewers
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       if (comm == MPI_COMM_NULL) {
@@ -661,11 +724,88 @@ namespace ALE {
         PetscPrintf(comm, "  maximum height %d maximum depth %d\n", this->height(s_iter->first), this->depth(s_iter->first));
       }
     };
+  public:
+    void constructOverlap(const patch_type& patch) {};
+  };
+
+  class CartesianMesh : public Bundle<CartesianTopology<int> > {
+  public:
+    typedef int                              point_type;
+    typedef CartesianTopology<int>           topology_type;
+    typedef topology_type::sieve_type        sieve_type;
+    typedef topology_type::patch_type        patch_type;
+    typedef topology_type::send_overlap_type send_overlap_type;
+    typedef topology_type::recv_overlap_type recv_overlap_type;
+  protected:
+    int                    _dim;
+    // Discretization
+    Obj<Discretization>    _discretization;
+    Obj<BoundaryCondition> _boundaryCondition;
+  public:
+    CartesianMesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<CartesianTopology<int> >(comm, debug), _dim(dim) {
+      this->_discretization    = new Discretization(comm, debug);
+      this->_boundaryCondition = new BoundaryCondition(comm, debug);
+    };
+    CartesianMesh(const Obj<topology_type>& topology, int dim) : Bundle<CartesianTopology<int> >(topology), _dim(dim) {
+      this->_discretization    = new Discretization(topology->comm(), topology->debug());
+      this->_boundaryCondition = new BoundaryCondition(topology->comm(), topology->debug());
+    };
+    virtual ~CartesianMesh() {};
+  public: // Accessors
+    int getDimension() {return this->_dim;};
+    const Obj<Discretization>&    getDiscretization() {return this->_discretization;};
+    void setDiscretization(const Obj<Discretization>& discretization) {this->_discretization = discretization;};
+    const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
+    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
+  public: // Discretization
+    void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
+      const std::string& name  = this->_boundaryCondition->getLabelName();
+      const patch_type   patch = 0;
+
+      for(int d = 0; d <= this->getTopology()->depth(); ++d) {
+        s->setFiberDimensionByDepth(patch, d, this->_discretization->getNumDof(d));
+      }
+      if (!name.empty()) {
+#if 0
+        const Obj<topology_type::label_sequence>& boundary = this->_topology->getLabelStratum(patch, name, 1);
+
+        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          s->setFiberDimension(patch, *e_iter, -this->_discretization->getNumDof(this->_topology->depth(patch, *e_iter)));
+        }
+#endif
+      }
+      s->allocate(postponeGhosts);
+      if (!name.empty()) {
+#if 0
+        const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
+        const Obj<topology_type::label_sequence>& boundary    = this->_topology->getLabelStratum(patch, name, 1);
+
+        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *e_iter);
+          const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
+
+          s->updatePointBC(patch, *e_iter, &value);
+        }
+#endif
+      }
+    };
+  public: // Viewers
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+      }
+      if (name == "") {
+        PetscPrintf(comm, "viewing a CartesianMesh\n");
+      } else {
+        PetscPrintf(comm, "viewing CartesianMesh '%s'\n", name.c_str());
+      }
+      this->getTopology()->view("");
+    };
   };
 
   class CartesianMeshBuilder {
   public:
-    static Obj<CartesianTopology<int> > createCartesianMesh(const MPI_Comm comm, const int dim, const int numCells[], const int partitions[], const int debug = 0) {
+    static Obj<CartesianMesh> createCartesianMesh(const MPI_Comm comm, const int dim, const int numCells[], const int partitions[], const int debug = 0) {
       PetscErrorCode ierr;
       // Steal PETSc code that calculates partitions
       //   We could conceivably allow multiple patches per partition
@@ -685,19 +825,19 @@ namespace ALE {
         numLocalCells[d]    = numCells[d]/partitions[d] + (rank < numCells[d]%partitions[d]);
         numLocalVertices[d] = numLocalCells[d]+1;
       }
-      // Create topology
-      typedef CartesianTopology<int> topology_type;
-      const Obj<topology_type>             topology = new topology_type(comm, debug);
-      const Obj<topology_type::sieve_type> sieve    = new topology_type::sieve_type(comm, dim, numLocalCells, debug);
-      const topology_type::patch_type      patch    = 0;
+      // Create mesh
+      const Obj<CartesianMesh>                mesh     = new CartesianMesh(comm, dim, debug);
+      const Obj<CartesianMesh::topology_type> topology = mesh->getTopology();
+      const Obj<CartesianMesh::sieve_type>    sieve    = new CartesianMesh::sieve_type(comm, dim, numLocalCells, debug);
+      const CartesianMesh::patch_type         patch    = 0;
 
       topology->setPatch(patch, sieve);
       topology->stratify();
       delete [] numLocalCells;
       // Create overlaps
       //   We overlap anyone within 1 index of us for the entire boundary
-      const Obj<topology_type::send_overlap_type>& sendOverlap = topology->getSendOverlap();
-      const Obj<topology_type::recv_overlap_type>& recvOverlap = topology->getRecvOverlap();
+      const Obj<CartesianMesh::send_overlap_type>& sendOverlap = topology->getSendOverlap();
+      const Obj<CartesianMesh::recv_overlap_type>& recvOverlap = topology->getRecvOverlap();
       int *indices  = new int[dim];
       int *code     = new int[dim];
       int *zeroCode = new int[dim];
@@ -763,7 +903,7 @@ namespace ALE {
       delete [] zeroCode;
       delete [] vIndices;
       // Create coordinates
-      return topology;
+      return mesh;
     };
   };
 }

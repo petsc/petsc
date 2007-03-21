@@ -2,8 +2,10 @@ static char help[] = "Creates and outputs a structured mesh.\n\n";
 
 #include "petscmesh.h"
 #include <CartesianSieve.hh>
+#include <Distribution.hh>
 
 using ALE::Obj;
+typedef ALE::CartesianMesh MeshType;
 
 typedef struct {
   int       debug;      // The debugging level
@@ -40,7 +42,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
+PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Obj<MeshType>& mesh)
 {
   PetscErrorCode ierr;
 
@@ -48,11 +50,117 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
-  Obj<ALE::CartesianTopology<int> > t = ALE::CartesianMeshBuilder::createCartesianMesh(comm, options->dim, options->numCells, options->partitions, options->debug);
-  t->view("");
-  //ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  mesh = ALE::CartesianMeshBuilder::createCartesianMesh(comm, options->dim, options->numCells, options->partitions, options->debug);
+  mesh->view("Mesh");
   ALE::LogStagePop(stage);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "TraverseCells"
+PetscErrorCode TraverseCells(const Obj<MeshType>& m, Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  const int                                 rank        = m->commRank();
+  const MeshType::patch_type                patch       = 0;
+  //const Obj<MeshType::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<MeshType::topology_type>&       topology    = m->getTopology();
+  const Obj<MeshType::sieve_type>&          sieve       = topology->getPatch(patch);
+    
+  // Loop over cells
+  ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell, on each process\n");CHKERRQ(ierr);
+  const Obj<MeshType::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
+  for(MeshType::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Cell %d\n", rank, *c_iter);CHKERRQ(ierr);
+    const Obj<MeshType::sieve_type::coneSequence>&     vertices = sieve->cone(*c_iter);
+    const MeshType::sieve_type::coneSequence::iterator end      = vertices->end();
+
+    for(MeshType::sieve_type::coneSequence::iterator v_iter = vertices->begin(); v_iter != end; ++v_iter) {
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      vertex %d, with coordinates ", *v_iter);CHKERRQ(ierr);
+#if 0
+      const MeshType::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
+
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (", *v_iter);CHKERRQ(ierr);
+      for(int d = 0; d < m->getDimension(); ++d) {
+        if (d > 0) {ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, ", ");CHKERRQ(ierr);}
+        ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%g", array[d]);CHKERRQ(ierr);
+      }
+#endif
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, ")\n");CHKERRQ(ierr);
+    }
+  }
+  ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateField"
+PetscErrorCode CreateField(const Obj<MeshType>& m, Options *options)
+{
+  PetscFunctionBegin;
+  const MeshType::patch_type                          patch    = 0;
+  const Obj<MeshType::real_section_type>&             s        = m->getRealSection("u");
+  const Obj<MeshType::topology_type>&                 topology = m->getTopology();
+  const Obj<MeshType::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
+  const Obj<ALE::Discretization>&                     disc     = m->getDiscretization();
+  
+  disc->setNumDof(topology->depth(), 1);
+  s->setDebug(options->debug);
+  m->setupField(s);
+  for(MeshType::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    const double value = (double) *c_iter;
+
+    s->updatePoint(patch, *c_iter, &value);
+  }
+  s->view("");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "UpdateGhosts"
+PetscErrorCode UpdateGhosts(const Obj<MeshType>& m, Options *options)
+{
+  PetscFunctionBegin;
+  const MeshType::patch_type                          patch    = 0;
+  const Obj<MeshType::real_section_type>&             s        = m->getRealSection("v");
+  const Obj<MeshType::topology_type>&                 topology = m->getTopology();
+  const Obj<MeshType::sieve_type>&                    sieve    = topology->getPatch(patch);
+  const Obj<MeshType::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
+  const Obj<ALE::Discretization>&                     disc     = m->getDiscretization();
+
+  
+  disc->setNumDof(0, 1);
+  disc->setNumDof(1, 0);
+  s->setDebug(options->debug);
+  m->setupField(s);
+  s->zero(patch);
+  for(MeshType::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    const Obj<MeshType::sieve_type::coneSequence>&     vertices = sieve->cone(*c_iter);
+    const MeshType::sieve_type::coneSequence::iterator end      = vertices->end();
+    const MeshType::real_section_type::value_type      value    = 1.0;
+    
+    for(MeshType::sieve_type::coneSequence::iterator v_iter = vertices->begin(); v_iter != end; ++v_iter) {
+      s->updateAdd(patch, *v_iter, &value);
+    }
+  }
+  s->view("Uncompleted section");
+  ALE::New::Distribution<MeshType::topology_type>::completeSection(s);
+  s->view("Completed section");
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "RunTests"
+PetscErrorCode RunTests(const Obj<MeshType>& mesh, Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = TraverseCells(mesh, options);CHKERRQ(ierr);
+  ierr = CreateField(mesh, options);CHKERRQ(ierr);
+  ierr = UpdateGhosts(mesh, options);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -68,11 +176,11 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
   comm = PETSC_COMM_WORLD;
   try {
-    Mesh mesh;
+    Obj<MeshType> mesh;
 
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
-    ierr = CreateMesh(comm, &options, &mesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
+    ierr = CreateMesh(comm, &options, mesh);CHKERRQ(ierr);
+    ierr = RunTests(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

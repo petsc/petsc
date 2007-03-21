@@ -587,9 +587,9 @@ namespace ALE {
           const typename recv_overlap_type::traits::coneSequence::iterator end         = recvPatches->end();
 
           for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != end; ++p_iter) {
-            if (recvSection->getFiberDimension(*p_iter, *r_iter)) {
+            if (recvSection->getFiberDimension(*p_iter, p_iter.color())) {
               if (debug) {std::cout << "["<<section->commRank()<<"]Completed point " << *r_iter << std::endl;}
-              section->updateAddPoint(patch, *r_iter, recvSection->restrictPoint(*p_iter, *r_iter));
+              section->updateAddPoint(patch, *r_iter, recvSection->restrictPoint(*p_iter, p_iter.color()));
             }
           }
         }
