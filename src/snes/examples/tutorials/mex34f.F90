@@ -1,12 +1,19 @@
-
+!
       module mex34f
-
 #include "include/finclude/petscall.h90"
+
+!   Data structure used to contain information about the problem
+!   You can add physical values etc here
+
       type appctx
         MPI_Comm :: comm = MPI_COMM_WORLD
         integer :: nxc = 5    ! number of grid points in channel
         integer :: np = 2,nc = 3  ! number of unknowns in pool and channel
       end type appctx
+
+!    The names of the fields in the pool and in the channel
+!    These are accessed via  variablename%p0, variablename%p1
+!    change these to names appropriate for your physics
 
       type poolfield
         double precision :: p0,p1   ! unknowns in pool
@@ -18,6 +25,13 @@
 
       end module mex34f
 
+!
+!   These are interface definitions that allow PETSc routines to be
+!   called with "nice" names from Fortran90.
+!
+!   You should not need to change these, someday I hope to be able
+!   to no longer require them
+!
 #define USERMODULE mex34f
 #define USERFIELD1 channelfield
 #define USERFIELD2 poolfield
@@ -76,9 +90,39 @@
       Interface DMCompositeRestoreAccess
         Subroutine DMCompositeRestoreAccess4(dm, v,d1,d2,d3,d4,ierr)
           use USERMODULE
-          DM  dm
+          DMComposite  dm
           Vec v,d1,d3
           type(poolfield),pointer :: d2,d4
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeGetLocalVectors
+        Subroutine DMCompositeGetLocalVectors4(dm, d1,p1,d2,p2,ierr)
+          use USERMODULE
+          DMComposite  dm
+          type(poolfield),pointer :: p1,p2
+          Vec d1,d2
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeRestoreLocalVectors
+        Subroutine DMCompositeRestoreLocalVectors4(dm, d1,p1,d2,p2,ierr)
+          use USERMODULE
+          DMComposite  dm
+          type(poolfield),pointer :: p1,p2
+          Vec d1,d2
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface
+
+      Interface DMCompositeScatter
+        Subroutine DMCompositeScatter4(dm, v,d1,d2,d3,d4,ierr)
+          use USERMODULE
+          DM  dm
+          Vec v,d1,d3
+          type(poolfield) d2,d4
           PetscErrorCode ierr
         End Subroutine
       End Interface
