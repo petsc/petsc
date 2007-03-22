@@ -8,7 +8,7 @@
 #include "mpif.h"
 #endif
 
-#include "include/finclude/petscdef.h"
+#include "finclude/petscdef.h"
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 ! ------------------------------------------------------------------------

@@ -358,8 +358,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  if (!pc->ops->apply) SETERRQ(PETSC_ERR_SUP,"PC does not have apply");
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
@@ -483,8 +483,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
+  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,"PC does not have apply transpose");
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP," ");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -740,7 +740,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,Pets
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidHeaderSpecific(w,VEC_COOKIE,4);
-  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP," ");
+  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"PC does not have apply richardson");
 
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
@@ -790,7 +790,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
     ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
 
-  ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
 
   if (!pc->type_name) {
@@ -798,6 +797,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
 
+  ierr = PetscLogEventBegin(PC_SetUp,pc,0,0,0);CHKERRQ(ierr);
   if (pc->ops->setup) {
     ierr = (*pc->ops->setup)(pc);CHKERRQ(ierr);
   }
@@ -1394,7 +1394,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC pc,KSP ksp)
   if (pc->ops->postsolve) {
     ierr =  (*pc->ops->postsolve)(pc,ksp,rhs,x);CHKERRQ(ierr);
   }
-
   /*
       Scale the system and have the matrices use the scaled form
     only if the two matrices are actually the same (and hence

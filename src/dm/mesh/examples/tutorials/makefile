@@ -45,6 +45,10 @@ ex10: ex10.o   chkopts
 	-${CLINKER} -o ex10 ex10.o  ${PETSC_DM_LIB}
 	${RM} -f ex10.o
 
+ex11: ex11.o   chkopts
+	-${CLINKER} -o ex11 ex11.o  ${PETSC_DM_LIB}
+	${RM} -f ex11.o
+
 ex_coarsen: ex_coarsen.o   chkopts
 	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}
 	${RM} -f ex_coarsen.o
