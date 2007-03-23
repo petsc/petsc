@@ -384,14 +384,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
-  *inksp             = ksp;
   ksp->bops->publish = KSPPublish_Petsc;
 
   ksp->type          = -1;
   ksp->max_it        = 10000;
   ksp->pc_side       = PC_LEFT;
   ksp->rtol          = 1.e-5;
-  ksp->abstol          = 1.e-50;
+  ksp->abstol        = 1.e-50;
   ksp->divtol        = 1.e4;
 
   ksp->normtype            = KSP_NORM_PRECONDITIONED;
@@ -405,31 +404,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_max        = 0;
   ksp->res_hist_reset      = PETSC_TRUE;
   ksp->numbermonitors      = 0;
+
   ksp->converged           = KSPDefaultConverged;
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
 
-  ksp->ops->setfromoptions = 0;
-
   ksp->vec_sol         = 0;
   ksp->vec_rhs         = 0;
   ksp->pc              = 0;
-
-  ksp->ops->solve      = 0;
-  ksp->ops->setup      = 0;
-  ksp->ops->destroy    = 0;
-
   ksp->data            = 0;
   ksp->nwork           = 0;
   ksp->work            = 0;
-
   ksp->cnvP            = 0;
-
   ksp->reason          = KSP_CONVERGED_ITERATING;
-
   ksp->setupcalled     = 0;
+
   ierr = PetscPublishAll(ksp);CHKERRQ(ierr);
   ierr = PCCreate(comm,&ksp->pc);CHKERRQ(ierr);
+  *inksp = ksp;
   PetscFunctionReturn(0);
 }
  
@@ -482,16 +474,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
 
   ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
-
-  if (ksp->data) {
-    /* destroy the old private KSP context */
-    ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr);
-    ksp->data = 0;
-  }
   /* Get the function pointers for the iterative method requested */
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr =  PetscFListFind(ksp->comm,KSPList,type,(void (**)(void)) &r);CHKERRQ(ierr);
-  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown KSP type given: %s",type);
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
+  /* Destroy the previous private KSP context */
+  if (ksp->ops->destroy) { ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr); }
+  /* Reinitialize function pointers in KSPOps structure */
+  ierr = PetscMemzero(ksp->ops,sizeof(struct _KSPOps));CHKERRQ(ierr);
+  ksp->ops->buildsolution = KSPDefaultBuildSolution;
+  ksp->ops->buildresidual = KSPDefaultBuildResidual;
+  /* Call the KSPCreate_XXX routine for this particular Krylov solver */
   ksp->setupcalled = 0;
   ierr = (*r)(ksp);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ksp,type);CHKERRQ(ierr);
