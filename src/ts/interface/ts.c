@@ -1616,10 +1616,14 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetOptionsPrefix(TS ts,const char prefix[])
   ierr = PetscObjectSetOptionsPrefix((PetscObject)ts,prefix);CHKERRQ(ierr);
   switch(ts->problem_type) {
     case TS_NONLINEAR:
-      ierr = SNESSetOptionsPrefix(ts->snes,prefix);CHKERRQ(ierr);
+      if (ts->snes) {
+        ierr = SNESSetOptionsPrefix(ts->snes,prefix);CHKERRQ(ierr);
+      }
       break;
     case TS_LINEAR:
-      ierr = KSPSetOptionsPrefix(ts->ksp,prefix);CHKERRQ(ierr);
+      if (ts->ksp) {
+        ierr = KSPSetOptionsPrefix(ts->ksp,prefix);CHKERRQ(ierr);
+      }
       break;
   }
   PetscFunctionReturn(0);
