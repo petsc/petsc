@@ -299,6 +299,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
   pc->bops->publish        = PCPublish_Petsc;
+
   pc->mat                  = 0;
   pc->pmat                 = 0;
   pc->setupcalled          = 0;
@@ -308,22 +309,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
   pc->diagonalscaleleft    = 0;
   pc->diagonalscaleright   = 0;
 
-  pc->ops->destroy             = 0;
-  pc->ops->apply               = 0;
-  pc->ops->applytranspose      = 0;
-  pc->ops->applyBA             = 0;
-  pc->ops->applyBAtranspose    = 0;
-  pc->ops->applyrichardson     = 0;
-  pc->ops->view                = 0;
-  pc->ops->getfactoredmatrix   = 0;
-  pc->ops->applysymmetricright = 0;
-  pc->ops->applysymmetricleft  = 0;
-  pc->ops->setuponblocks       = 0;
-
   pc->modifysubmatrices   = 0;
   pc->modifysubmatricesP  = 0;
-  *newpc                  = pc;
   ierr = PetscPublishAll(pc);CHKERRQ(ierr);
+  *newpc = pc;
   PetscFunctionReturn(0);
 
 }

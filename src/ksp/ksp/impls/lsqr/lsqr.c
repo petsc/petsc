@@ -199,7 +199,7 @@ PetscErrorCode KSPDestroy_LSQR(KSP ksp)
   if (lsqr->se_flg && lsqr->se){
     ierr = VecDestroy(lsqr->se);CHKERRQ(ierr);
   }
-  ierr = PetscFree(lsqr);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

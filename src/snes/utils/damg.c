@@ -430,7 +430,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   PetscErrorCode          ierr;
   PetscInt                i;
   PC                      pc;
-  PetscTruth              ismg,monitor,ismf,isshell,ismffd;
+  PetscTruth              ismg,monitor,monitor_short,ismf,isshell,ismffd;
   KSP                     lksp; /* solver internal to the multigrid preconditioner */
   MPI_Comm                *comms,comm;
   PetscViewerASCIIMonitor ascii;
@@ -439,10 +439,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
   if (!dmmg) SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor",&monitor);CHKERRQ(ierr);
-  if (monitor) {
+  ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_ksp_monitor_short",&monitor_short);CHKERRQ(ierr);
+  if (monitor || monitor_short) {
     ierr = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
     ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",1+dmmg[0]->nlevels-nlevels,&ascii);CHKERRQ(ierr);
-    ierr = KSPMonitorSet(ksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    if (monitor) {
+      ierr = KSPMonitorSet(ksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    } else {
+      ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+    }
   }
 
   /* use fgmres on outer iteration by default */
@@ -468,11 +473,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
       if (i > 0) {
         ierr = PCMGSetR(pc,i,dmmg[i]->r);CHKERRQ(ierr); 
       }
-      if (monitor) {
+      if (monitor || monitor_short) {
         ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
         ierr = PetscObjectGetComm((PetscObject)lksp,&comm);CHKERRQ(ierr);
         ierr = PetscViewerASCIIMonitorCreate(comm,"stdout",1+dmmg[0]->nlevels-i,&ascii);CHKERRQ(ierr);
-        ierr = KSPMonitorSet(lksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+	if (monitor) {
+	  ierr = KSPMonitorSet(lksp,KSPMonitorDefault,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+	} else {
+	  ierr = KSPMonitorSet(lksp,KSPMonitorDefaultShort,ascii,(PetscErrorCode(*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
+	}
       }
       /* If using a matrix free multiply and did not provide an explicit matrix to build
          the preconditioner then must use no preconditioner 

@@ -289,12 +289,11 @@ PetscErrorCode KSPDestroy_GMRES_Internal(KSP ksp)
 #define __FUNCT__ "KSPDestroy_GMRES" 
 PetscErrorCode KSPDestroy_GMRES(KSP ksp)
 {
-  KSP_GMRES      *gmres = (KSP_GMRES*)ksp->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = KSPDestroy_GMRES_Internal(ksp);CHKERRQ(ierr);
-  ierr = PetscFree(gmres);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetOrthogonalization_C","",PETSC_NULL);CHKERRQ(ierr);
