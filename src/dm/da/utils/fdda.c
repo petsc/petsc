@@ -150,7 +150,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetBlockFills(DA da,PetscInt *dfill,PetscInt 
 PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColoring *coloring)
 {
   PetscErrorCode ierr;
-  PetscInt       dim;
+  PetscInt       dim,m,n,p;
+  DAPeriodicType wrap;
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   /*
@@ -174,8 +177,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetColoring(DA da,ISColoringType ctype,ISColo
          nc - number of components per grid point 
          col - number of colors needed in one direction for single component problem
   
-  */
-  ierr = DAGetInfo(da,&dim,0,0,0,0,0,0,0,0,0,0);CHKERRQ(ierr);
+  */  
+  ierr = DAGetInfo(da,&dim,0,0,0,&m,&n,&p,0,0,&wrap,0);CHKERRQ(ierr);
+
+  ierr = PetscObjectGetComm((PetscObject)da,&comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (ctype == IS_COLORING_GHOSTED){
+    if (size == 1) {
+      ctype = IS_COLORING_GLOBAL;
+    } else if (dim > 1){
+      if ((m==1 && DAXPeriodic(wrap)) || (n==1 && DAYPeriodic(wrap)) || (p==1 && DAZPeriodic(wrap))){
+        SETERRQ(PETSC_ERR_SUP,"IS_COLORING_GHOSTED cannot be used for periodic boundary condition having both ends of the domain  on the same process");
+      }
+    }
+  }
+
 
   /*
      We do not provide a getcoloring function in the DA operations because 
@@ -262,6 +278,8 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	}
         ncolors = nc + nc*(col - 1 + col*(col-1));
 	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
+        //PetscIntView(ncolors,(PetscInt *)colors,0);
+
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }
       *coloring = da->ghostedcoloring;
