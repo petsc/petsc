@@ -67,14 +67,14 @@ namespace ALE {
       typedef Value_                                                                      value_type;
       typedef Topology_                                                                   mesh_topology_type;
       typedef typename mesh_topology_type::sieve_type                                     sieve_type;
-      typedef typename ALE::New::DiscreteSieve<point_type>                                dsieve_type;
-      typedef typename ALE::New::Topology<int, dsieve_type>                               topology_type;
+      typedef typename ALE::DiscreteSieve<point_type>                                     dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type>                                    topology_type;
       typedef typename ALE::Sifter<int, point_type, point_type>                           send_overlap_type;
       typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, int>     send_sizer_type;
       typedef typename ALE::Sifter<point_type, int, point_type>                           recv_overlap_type;
       typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int>     recv_sizer_type;
-      typedef typename ALE::New::ConstantSection<topology_type, int>                      constant_sizer;
-      typedef typename ALE::New::ConstantSection<topology_type, value_type>               constant_section;
+      typedef typename ALE::New::OldConstantSection<topology_type, int>                   constant_sizer;
+      typedef typename ALE::New::OldConstantSection<topology_type, value_type>            constant_section;
       typedef typename ALE::New::ConeSizeSection<topology_type, mesh_topology_type, sieve_type> cone_size_section;
       typedef typename ALE::New::ConeSection<topology_type, sieve_type>                   cone_section;
       typedef typename ALE::New::SectionCompletion<mesh_topology_type,value_type>         completion;

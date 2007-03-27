@@ -126,8 +126,8 @@ namespace ALE {
       typedef Topology_                                                           topology_type;
       typedef Value_                                                              value_type;
       typedef typename topology_type::point_type                                  point_type;
-      typedef typename ALE::New::DiscreteSieve<point_type>                        dsieve_type;
-      typedef typename ALE::New::Topology<int, dsieve_type>                       dtopology_type;
+      typedef typename ALE::DiscreteSieve<point_type>                             dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type>                            dtopology_type;
       typedef typename topology_type::patch_type                                  patch_type;
       typedef typename topology_type::send_overlap_type                           send_overlap_type;
       typedef typename topology_type::recv_overlap_type                           recv_overlap_type;
@@ -302,7 +302,7 @@ namespace ALE {
         typedef dtopology_type topo_type;
         typedef typename ALE::New::OverlapValues<send_overlap_type, topo_type, value_type> send_section_type;
         typedef typename ALE::New::OverlapValues<recv_overlap_type, topo_type, value_type> recv_section_type;
-        typedef typename ALE::New::ConstantSection<topology_type, int> constant_sizer;
+        typedef typename ALE::New::OldConstantSection<topology_type, int> constant_sizer;
         const Obj<send_section_type> sendSection = new send_section_type(numbering->comm(), this->debug());
         const Obj<recv_section_type> recvSection = new recv_section_type(numbering->comm(), sendSection->getTag(), this->debug());
         //const Obj<constant_sizer>    sizer       = new constant_sizer(numbering->comm(), 1, this->debug());
@@ -370,7 +370,7 @@ namespace ALE {
         typedef dtopology_type topo_type;
         typedef typename ALE::New::OverlapValues<send_overlap_type, topo_type, oValue_type> send_section_type;
         typedef typename ALE::New::OverlapValues<recv_overlap_type, topo_type, oValue_type> recv_section_type;
-        typedef typename ALE::New::ConstantSection<topology_type, int> constant_sizer;
+        typedef typename ALE::New::OldConstantSection<topology_type, int> constant_sizer;
         const Obj<send_section_type> sendSection = new send_section_type(order->comm(), this->debug());
         const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
         const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());

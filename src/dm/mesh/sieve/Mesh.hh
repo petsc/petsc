@@ -5,20 +5,30 @@
 #include <Numbering.hh>
 #endif
 
+#ifndef  included_ALE_Field_hh
+#include <Field.hh>
+#endif
+
 namespace ALE {
   template<typename Topology_>
   class Bundle : public ALE::ParallelObject {
   public:
     typedef Topology_                                      topology_type;
+    typedef typename topology_type::patch_type             patch_type;
     typedef typename topology_type::point_type             point_type;
+    typedef typename topology_type::sieve_type             sieve_type;
+    typedef typename sieve_type::coneArray                 coneArray;
     typedef ALE::New::Section<topology_type, double>       real_section_type;
     typedef ALE::New::Section<topology_type, int>          int_section_type;
+    typedef MinimalArrow<point_type, point_type>           arrow_type;
+    typedef ALE::Field::UniformSection<arrow_type, int>    arrow_section_type;
     typedef struct {double x, y, z;}                       split_value;
     typedef ALE::pair<point_type, split_value>             pair_type;
     typedef ALE::New::Section<topology_type, pair_type>    pair_section_type;
     typedef std::map<std::string, Obj<real_section_type> > real_sections_type;
     typedef std::map<std::string, Obj<int_section_type> >  int_sections_type;
     typedef std::map<std::string, Obj<pair_section_type> > pair_sections_type;
+    typedef std::map<std::string, Obj<arrow_section_type> > arrow_sections_type;
     typedef typename topology_type::send_overlap_type      send_overlap_type;
     typedef typename topology_type::recv_overlap_type      recv_overlap_type;
     typedef typename ALE::New::SectionCompletion<topology_type, point_type>::topology_type      comp_topology_type;
@@ -30,6 +40,7 @@ namespace ALE {
     real_sections_type _realSections;
     int_sections_type  _intSections;
     pair_sections_type _pairSections;
+    arrow_sections_type _arrowSections;
   public:
     Bundle(MPI_Comm comm, int debug = 0) : ALE::ParallelObject(comm, debug), _distributed(false) {
       this->_topology = new topology_type(comm, debug);
@@ -110,11 +121,193 @@ namespace ALE {
       }
       return names;
     };
-  public:
-    // Printing
+    bool hasArrowSection(const std::string& name) {
+      return this->_arrowSections.find(name) != this->_arrowSections.end();
+    };
+    const Obj<arrow_section_type>& getArrowSection(const std::string& name) {
+      if (this->_arrowSections.find(name) == this->_arrowSections.end()) {
+        Obj<arrow_section_type> section = new arrow_section_type(this->comm(), this->debug());
+
+        if (this->_debug) {std::cout << "Creating new arrow section: " << name << std::endl;}
+        this->_arrowSections[name] = section;
+      }
+      return this->_arrowSections[name];
+    };
+    void setArrowSection(const std::string& name, const Obj<arrow_section_type>& section) {
+      this->_arrowSections[name] = section;
+    };
+    Obj<std::set<std::string> > getArrowSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(typename arrow_sections_type::const_iterator s_iter = this->_arrowSections.begin(); s_iter != this->_arrowSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+  public: // Printing
     friend std::ostream& operator<<(std::ostream& os, const split_value& s) {
       os << "(" << s.x << ", "<< s.y << ", "<< s.z << ")";
       return os;
+    };
+  public: // Adapter
+    const Obj<sieve_type>& getSieve() {return this->_topology->getPatch(0);};
+    int height() {return 2;};
+    int depth() {return 2;};
+  public: // Traversal
+    template<typename Section_>
+    int size(const Obj<Section_>& section, const point_type& p) {
+      const typename Section_::chart_type&  chart   = section->getAtlas()->getChart();
+      const Obj<coneArray>                  closure = ALE::Closure::closure(this, p);
+      typename coneArray::iterator          end     = closure->end();
+      int                                   size    = 0;
+
+      for(typename coneArray::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
+        if (chart.count(*c_iter)) {
+          size += section->getFiberDimension(*c_iter);
+        }
+      }
+      return size;
+    };
+    // Return the values for the closure of this point
+    //   use a smart pointer?
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
+      const typename Section_::chart_type&  chart  = this->getAtlas()->getChart();
+      const typename Section_::values_type& array  = section->restrict();
+      const int                             size   = this->size(p);
+      typename Section_::value_type        *values = section->getRawArray(size);
+      int                                   j      = -1;
+
+      // We could actually ask for the height of the individual point
+      if (this->height() < 2) {
+        // Avoids only the copy of closure()
+        const int& dim = section->getAtlas()->restrictPoint(p)[0];
+
+        if (chart.count(p)) {
+          for(int i = 0; i < dim; ++i) {
+            values[++j] = array[p].v[i];
+          }
+        }
+        // Need only the cone
+        const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+        typename sieve_type::coneSequence::iterator   end  = cone->end();
+
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+          if (chart.count(*p_iter)) {
+            const int& dim = section->getAtlas()->restrictPoint(*p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              values[++j] = array[*p_iter].v[i];
+            }
+          }
+        }
+      } else {
+        const Obj<coneArray>         closure = ALE::Closure::closure(this, p);
+        typename coneArray::iterator end     = closure->end();
+
+        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          if (chart.count(*p_iter)) {
+            const int& dim = section->getAtlas()->restrictPoint(*p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              values[++j] = array[*p_iter].v[i];
+            }
+          }
+        }
+      }
+      if (j != size-1) {
+        ostringstream txt;
+
+        txt << "Invalid restrict to point " << p << std::endl;
+        txt << "  j " << j << " should be " << (size-1) << std::endl;
+        std::cout << txt.str();
+        throw ALE::Exception(txt.str().c_str());
+      }
+      return values;
+    };
+    template<typename Section_>
+    void update(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      const typename Section_::chart_type&  chart  = this->getAtlas()->getChart();
+      const typename Section_::values_type& array  = section->restrict();
+      int                                   j     = -1;
+
+      if (this->height() < 2) {
+        // Only avoids the copy of closure()
+        const int& dim = section->getAtlas()->restrict(p)[0];
+
+        if (chart.count(p)) {
+          for(int i = 0; i < dim; ++i) {
+            array[p].v[i] = v[++j];
+          }
+        }
+        // Should be closure()
+        const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if (chart.count(*p_iter)) {
+            const int& dim = section->getAtlas()->restrict(*p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              array[*p_iter].v[i] = v[++j];
+            }
+          }
+        }
+      } else {
+        const Obj<coneArray>         closure = ALE::Closure::closure(this, p);
+        typename coneArray::iterator end     = closure->end();
+
+        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          if (chart.count(*p_iter)) {
+            const int& dim = section->getAtlas()->restrictPoint(*p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              array[*p_iter].v[i] = v[++j];
+            }
+          }
+        }
+      }
+    };
+    template<typename Section_>
+    void updateAdd(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      const typename Section_::chart_type&  chart  = this->getAtlas()->getChart();
+      const typename Section_::values_type& array  = section->restrict();
+      int                                   j     = -1;
+
+      if (this->height() < 2) {
+        // Only avoids the copy of closure()
+        const int& dim = section->_atlas->restrict(p)[0];
+
+        if (chart.count(p)) {
+          for(int i = 0; i < dim; ++i) {
+            array[p].v[i] += v[++j];
+          }
+        }
+        // Should be closure()
+        const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          if (chart.count(*p_iter)) {
+            const int& dim = section->getAtlas()->restrict(*p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              array[*p_iter].v[i] += v[++j];
+            }
+          }
+        }
+      } else {
+        const Obj<coneArray>         closure = ALE::Closure::closure(this, p);
+        typename coneArray::iterator end     = closure->end();
+
+        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          if (chart.count(*p_iter)) {
+            const int& dim = section->getAtlas()->restrictPoint(*p_iter)[0];
+
+            for(int i = 0; i < dim; ++i) {
+              array[*p_iter].v[i] += v[++j];
+            }
+          }
+        }
+      }
     };
   };
 
@@ -151,11 +344,11 @@ namespace ALE {
     double evaluate(const double coords[]) {return this->_func(coords);};
   };
 
-  class Mesh : public Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > > {
+  class Mesh : public Bundle<ALE::Topology<int, ALE::Sieve<int,int,int> > > {
   public:
     typedef int                                       point_type;
     typedef ALE::Sieve<point_type,int,int>            sieve_type;
-    typedef ALE::New::Topology<int, sieve_type>       topology_type;
+    typedef ALE::Topology<int, sieve_type>            topology_type;
     typedef topology_type::patch_type                 patch_type;
     typedef Bundle<topology_type>                     base_type;
     typedef ALE::New::NumberingFactory<topology_type> NumberingFactory;
@@ -182,13 +375,13 @@ namespace ALE {
     Obj<Discretization>    _discretization;
     Obj<BoundaryCondition> _boundaryCondition;
   public:
-    Mesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > >(comm, debug), _dim(dim) {
+    Mesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<ALE::Topology<int, ALE::Sieve<int,int,int> > >(comm, debug), _dim(dim) {
       this->_factory = NumberingFactory::singleton(debug);
       this->_boundaries = NULL;
       this->_discretization = new Discretization(comm, debug);
       this->_boundaryCondition = new BoundaryCondition(comm, debug);
     };
-    Mesh(const Obj<topology_type>& topology, int dim) : Bundle<ALE::New::Topology<int, ALE::Sieve<int,int,int> > >(topology), _dim(dim) {
+    Mesh(const Obj<topology_type>& topology, int dim) : Bundle<ALE::Topology<int, ALE::Sieve<int,int,int> > >(topology), _dim(dim) {
       this->_factory = NumberingFactory::singleton(topology->debug());
       this->_boundaries = NULL;
     };
@@ -201,11 +394,11 @@ namespace ALE {
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
   public: // Mesh geometry
-    static void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const patch_type patch  = 0;
-      const double    *coords = coordinates->restrict(patch, e);
-      const int        dim    = 2;
-      double           invDet;
+#if 0
+    void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrict(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -332,6 +525,7 @@ namespace ALE {
         throw ALE::Exception("No point location for mesh dimension");
       }
     };
+#endif
     // Only works in 2D
     int orientation(const patch_type& patch, const point_type& cell) {
       const Obj<real_section_type>&     coordinates = this->getRealSection("coordinates");
@@ -561,7 +755,7 @@ namespace ALE {
           coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
         }
       }
-      ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
+      ALE::New::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
       return mesh;
     }
     #undef __FUNCT__
@@ -692,7 +886,7 @@ namespace ALE {
       coords[7*2+1] = upper[1];
       coords[7*2+2] = lower[2];
 #endif
-      ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
+      ALE::New::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
       return mesh;
     }
   };

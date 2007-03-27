@@ -368,7 +368,7 @@ namespace ALE {
       static void unifyTopology(const Obj<topology_type>& topology, const int dim, const Obj<topology_type>& topologyNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
         typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, int> send_sizer_type;
         typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int> recv_sizer_type;
-        typedef typename ALE::New::ConstantSection<topology_type, int>                  constant_sizer;
+        typedef typename ALE::New::OldConstantSection<topology_type, int>               constant_sizer;
         typedef int part_type;
         const Obj<sieve_type>& sieve         = topology->getPatch(0);
         const Obj<sieve_type>& sieveNew      = topologyNew->getPatch(0);

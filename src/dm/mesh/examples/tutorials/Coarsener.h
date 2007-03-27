@@ -380,7 +380,7 @@ PetscErrorCode TriangleToMesh(Obj<ALE::Mesh> mesh, triangulateio * src, ALE::Mes
   const Obj<ALE::Mesh::topology_type>& topology = mesh->getTopology();
 
   //make the sieve and the topology actually count for something
-  ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
+  ALE::New::SieveBuilder<ALE::Mesh>::buildTopology(sieve, 2, src->numberoftriangles, src->trianglelist, src->numberofpoints, false, 3);
   sieve->stratify();
   topology->setPatch(patch, sieve);
   // Actually we probably only want to stratify at the end, so that we do not recalculate a lot

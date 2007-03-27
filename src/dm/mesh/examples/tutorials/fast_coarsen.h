@@ -545,10 +545,10 @@ namespace ALE { namespace Coarsener {
     PetscMemcpy(v_coords, coords->restrict(0, node), dim * sizeof(double));
     double p_coords[dim*(dim+1)]; //stores the points of the triangle
     //initial step: get the area of the triangle/tet using the parallelogram rule
-    Obj<ALE::Mesh::sieve_type::coneSet> closure = topology->getPatch(cPatch)->closure(triangle);
+    Obj<ALE::Mesh::coneArray> closure = ALE::Closure::closure(mesh, triangle);
     //if (closure->size() < 6) printf("ERROR! ERROR!\n");
-    ALE::Mesh::sieve_type::coneSet::iterator c_iter = closure->begin();
-    ALE::Mesh::sieve_type::coneSet::iterator c_iter_end = closure->end();
+    ALE::Mesh::sieve_type::coneArray::iterator c_iter = closure->begin();
+    ALE::Mesh::sieve_type::coneArray::iterator c_iter_end = closure->end();
     int index = 0;
         //printf("%d: (%f, %f)\n", node, v_coords[0], v_coords[1]);
     while (c_iter != c_iter_end) {
@@ -628,9 +628,9 @@ namespace ALE { namespace Coarsener {
      angle[1] = 0.0;
     while (f_iter != f_iter_end) {
       //printf("Computing the angles for face %d\n", *f_iter);
-      Obj<ALE::Mesh::sieve_type::coneSet> points = topology->getPatch(patch)->closure(*f_iter);
-      ALE::Mesh::sieve_type::coneSet::iterator p_iter = points->begin();
-      ALE::Mesh::sieve_type::coneSet::iterator p_iter_end = points->end();
+      Obj<ALE::Mesh::coneArray> points = ALE::Closure::closure(mesh, *f_iter);
+      ALE::Mesh::coneArray::iterator p_iter = points->begin();
+      ALE::Mesh::coneArray::iterator p_iter_end = points->end();
       double point_coords[dim*3];
       int index = 0;
       while (p_iter != p_iter_end) {

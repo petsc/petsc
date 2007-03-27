@@ -372,7 +372,7 @@ namespace ALE {
       // Make boundary topology
       Obj<sieve_type> boundarySieve = new sieve_type(tractionField->comm(), tractionField->debug());
 
-      ALE::New::SieveBuilder<sieve_type>::buildTopology(boundarySieve, 2, numTractions, tractionVertices, 0, false, vertsPerFace, numCells);
+      ALE::New::SieveBuilder<Mesh>::buildTopology(boundarySieve, 2, numTractions, tractionVertices, 0, false, vertsPerFace, numCells);
       boundaryTopology->setPatch(patch, boundarySieve);
       boundaryTopology->stratify();
       // Make traction field
@@ -414,12 +414,12 @@ namespace ALE {
 
       ALE::PyLith::Builder::readConnectivity(comm, basename+".connect", numCorners, useZeroBase, numCells, &cells, &materials);
       ALE::PyLith::Builder::readCoordinates(comm, basename+".coord", dim, numVertices, &coordinates);
-      ALE::New::SieveBuilder<sieve_type>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+      ALE::New::SieveBuilder<Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
       sieve->stratify();
       topology->setPatch(0, sieve);
       topology->stratify();
       mesh->setTopology(topology);
-      ALE::New::SieveBuilder<sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coordinates);
+      ALE::New::SieveBuilder<Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coordinates);
       Obj<int_section_type> material = mesh->getIntSection("material");
       buildMaterials(material, materials);
       Obj<ALE::Mesh::pair_section_type> split = createSplit(mesh, basename, useZeroBase);

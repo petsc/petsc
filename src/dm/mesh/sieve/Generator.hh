@@ -129,12 +129,12 @@ namespace ALE {
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
 
-        ALE::New::SieveBuilder<Mesh::sieve_type>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+        ALE::New::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, mesh->getArrowSection("orientation"));
         newSieve->stratify();
         newTopology->setPatch(patch, newSieve);
         newTopology->stratify();
         mesh->setTopology(newTopology);
-        ALE::New::SieveBuilder<Mesh::sieve_type>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coords);
+        ALE::New::SieveBuilder<Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coords);
         const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
 
         if (mesh->commRank() == 0) {
@@ -284,12 +284,12 @@ namespace ALE {
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
 
-        ALE::New::SieveBuilder<Mesh::sieve_type>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+        ALE::New::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, refMesh->getArrowSection("orientation"));
         newSieve->stratify();
         newTopology->setPatch(patch, newSieve);
         newTopology->stratify();
         refMesh->setTopology(newTopology);
-        ALE::New::SieveBuilder<Mesh::sieve_type>::buildCoordinates(refMesh->getRealSection("coordinates"), dim, coords);
+        ALE::New::SieveBuilder<Mesh>::buildCoordinates(refMesh->getRealSection("coordinates"), dim, coords);
         const Obj<Mesh::topology_type::patch_label_type>& newMarkers = newTopology->createLabel(patch, "marker");
 
         if (refMesh->commRank() == 0) {
