@@ -408,7 +408,7 @@ PetscErrorCode KSPDestroy_FGMRES(KSP ksp)
   if (fgmres->modifydestroy) {
     ierr = (*fgmres->modifydestroy)(fgmres->modifyctx);CHKERRQ(ierr);
   }
-  ierr = PetscFree(fgmres);CHKERRQ(ierr);
+  ierr = PetscFree(ksp->data);CHKERRQ(ierr);
 
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGMRESSetPreAllocateVectors_C","",PETSC_NULL);CHKERRQ(ierr);

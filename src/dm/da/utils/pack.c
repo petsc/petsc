@@ -449,6 +449,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DMComposite packer,Vec gvec,
   va_list                Argp;
   PetscErrorCode         ierr;
   struct DMCompositeLink *next;
+  PetscInt               cnt = 3;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(packer,DA_COOKIE,1);
@@ -468,11 +469,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCompositeScatter(DMComposite packer,Vec gvec,
     } else if (next->type == DMCOMPOSITE_DA) {
       Vec vec;
       vec = va_arg(Argp, Vec);
-      PetscValidHeaderSpecific(vec,VEC_COOKIE,3);
+      PetscValidHeaderSpecific(vec,VEC_COOKIE,cnt);
       ierr = DMCompositeScatter_DA(packer,next,gvec,vec);CHKERRQ(ierr);
     } else {
       SETERRQ(PETSC_ERR_SUP,"Cannot handle that object type yet");
     }
+    cnt++;
     next = next->next;
   }
   va_end(Argp);

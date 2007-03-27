@@ -13,6 +13,10 @@
 #define dmcompositeaddda_            DMCOMPOSITEADDDA
 #define dmcompositeaddarray_         DMCOMPOSITEADDARRAY
 #define dmcompositedestroy_          DMCOMPOSITEDESTROY
+#define dmcompositegetlocalvectors2_ DMCOMPOSITEGETLOCALVECTORS2
+#define dmcompositerestorelocalvectors2_ DMCOMPOSITERESTORELOCALVECTORS2
+#define dmcompositegetaccess4_           DMCOMPOSITEGETACCESS4
+#define dmcompositescatter4_             DMCOMPOSITESCATTER4
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetmatrix_                 dagetmatrix
 #define dmcompositegetentries1_      dmcompositegetentries1
@@ -24,6 +28,10 @@
 #define dmcompositeaddda_            dmcompositeaddda
 #define dmcompositedestroy_          dmcompositedestroy
 #define dmcompositeaddarray_         dmcompositeaddarray
+#define dmcompositegetlocalvectors2_ dmcompositegetlocalvectors2
+#define dmcompositerestorelocalvectors2_ dmcompositerestorelocalvectors2
+#define dmcompositegetaccess4_           dmcompositegetaccess4
+#define dmcompositescatter4_             dmcompositescatter4
 #endif
 
 EXTERN_C_BEGIN
@@ -78,5 +86,58 @@ void PETSC_STDCALL dmcompositeaddarray_(DMComposite *dm,PetscInt *r,PetscInt *n,
 {
   *ierr = DMCompositeAddArray(*dm,*r,*n);
 }
+EXTERN_C_END
+
+#if defined(PETSC_HAVE_F90_C)
+#include "src/sys/f90/f90impl.h"
+
+EXTERN_C_BEGIN
+void PETSC_STDCALL dmcompositegetaccess4_(DMComposite *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+{
+  Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
+  *ierr = DMCompositeGetAccess(*dm,*v,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
+}
+
+void PETSC_STDCALL dmcompositescatter4_(DMComposite *dm,Vec *v,void *v1,void *p1,void *v2,void *p2,PetscErrorCode *ierr)
+{
+  Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
+  *ierr = DMCompositeScatter(*dm,*v,*vv1,(PetscScalar*)p1,*vv2,(PetscScalar*)p2);
+}
+
+void PETSC_STDCALL dmcompositerestoreaccess4_(DMComposite *dm,Vec *v,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+{
+  *ierr = DMCompositeRestoreAccess(*dm,*v,(Vec*)v1,0,(Vec*)v2,0);
+}
+
+void PETSC_STDCALL dmcompositegetaccessvpvp_(DMComposite *dm,Vec *v,Vec *v1,F90Array1d *p1,Vec *v2,F90Array1d *p2,PetscErrorCode *ierr)
+{
+  PetscScalar *pp1,*pp2;
+  PetscInt    np1,np2;
+  *ierr = DMCompositeGetEntries(*dm,0,&np1,0,&np2);
+  *ierr = DMCompositeGetAccess(*dm,*v,v1,&pp1,v2,&pp2);
+  *ierr = F90Array1dCreate(pp1,PETSC_SCALAR,0,np1-1,p1);
+  *ierr = F90Array1dCreate(pp2,PETSC_SCALAR,0,np2-1,p2);
+}
+
+void PETSC_STDCALL dmcompositerestoreaccessvpvp_(DMComposite *dm,Vec *v,Vec *v1,F90Array1d *p1,Vec *v2,F90Array1d *p2,PetscErrorCode *ierr)
+{
+  *ierr = DMCompositeRestoreAccess(*dm,*v,v1,0,v2,0);
+  *ierr = F90Array1dDestroy(p1);
+  *ierr = F90Array1dDestroy(p2);
+}
+
+void PETSC_STDCALL dmcompositegetlocalvectors4_(DMComposite *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+{
+  Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
+  *ierr = DMCompositeGetLocalVectors(*dm,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
+}
+
+void PETSC_STDCALL dmcompositerestorelocalvectors4_(DMComposite *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
+{
+  Vec *vv1 = (Vec*)v1,*vv2 = (Vec*)v2;
+  *ierr = DMCompositeRestoreLocalVectors(*dm,vv1,(PetscScalar*)p1,vv2,(PetscScalar*)p2);
+}
 
 EXTERN_C_END
+
+#endif

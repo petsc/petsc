@@ -396,7 +396,7 @@ getmpiexec:
           echo "See http://www.mcs.anl.gov/petsc/petsc-2/documentation/troubleshooting.html";\
 	  cat trashz ; fi; ${RM} trashz
 
-.F.PETSc:
+.F.PETSc .F90.PETSc:
 	-@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  $* > trashz 2>&1
 	-@grep -v EXTERNAL trashz | grep -v Wall | \
           grep -v "Unused external reference" | \

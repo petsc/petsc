@@ -249,8 +249,8 @@ M*/
 
       DAGetCoordinates(da,&vcoors); 
       DAGetCoordinateDA(da,&cda);
-      DAVecGetArray(dac,vcoors,&coors);
-      DAGetCorners(dac,&mstart,&nstart,0,&m,&n,0)
+      DAVecGetArray(cda,vcoors,&coors);
+      DAGetCorners(cda,&mstart,&nstart,0,&m,&n,0)
       for (i=mstart; i<mstart+m; i++) {
         for (j=nstart; j<nstart+n; j++) {
           x = coors[j][i].x;
@@ -276,8 +276,8 @@ typedef struct {PetscScalar x,y;} DACoor2d;
 
       DAGetCoordinates(da,&vcoors); 
       DAGetCoordinateDA(da,&cda);
-      DAVecGetArray(dac,vcoors,&coors);
-      DAGetCorners(dac,&mstart,&nstart,&pstart,&m,&n,&p)
+      DAVecGetArray(cda,vcoors,&coors);
+      DAGetCorners(cda,&mstart,&nstart,&pstart,&m,&n,&p)
       for (i=mstart; i<mstart+m; i++) {
         for (j=nstart; j<nstart+n; j++) {
           for (k=pstart; k<pstart+p; k++) {

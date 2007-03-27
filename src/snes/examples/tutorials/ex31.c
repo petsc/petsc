@@ -620,7 +620,6 @@ PetscErrorCode MyPCApply(void* ctx,Vec X,Vec Y)
   ierr = DMCompositeRestoreAccess(app->pack,X,&X1,&X2,&X3);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(app->pack,Y,&Y1,&Y2,&Y3);CHKERRQ(ierr);
 
-  ierr = VecCopy(X,Y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

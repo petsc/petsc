@@ -4,6 +4,8 @@
 
 #include "petscsnes.h"
 
+typedef struct _SNESOps *SNESOps;
+
 struct _SNESOps {
   PetscErrorCode (*computefunction)(SNES,Vec,Vec,void*); 
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*);

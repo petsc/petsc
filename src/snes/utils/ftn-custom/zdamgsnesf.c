@@ -15,12 +15,12 @@ EXTERN_C_BEGIN
 static PetscErrorCode ourrhs(SNES snes,Vec vec,Vec vec2,void*ctx)
 {
   PetscErrorCode ierr = 0;
-  DMMG *dmmg = (DMMG*)ctx;
-  (*(PetscErrorCode (PETSC_STDCALL *)(SNES*,Vec*,Vec*,PetscErrorCode*))(((PetscObject)(*dmmg)->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ierr);
+  DMMG dmmg = (DMMG)ctx;
+  (*(PetscErrorCode (PETSC_STDCALL *)(SNES*,Vec*,Vec*,void *,PetscErrorCode*))(((PetscObject)(dmmg)->dm)->fortran_func_pointers[0]))(&snes,&vec,&vec2,&ctx,&ierr);
   return ierr;
 }
 
-void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(SNES*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
+void PETSC_STDCALL dmmgsetsnes_(DMMG **dmmg,PetscErrorCode (PETSC_STDCALL *rhs)(SNES*,Vec*,Vec*,void*,PetscErrorCode*),PetscErrorCode (PETSC_STDCALL *mat)(DMMG*,Mat*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   PetscInt i;
   *ierr = DMMGSetSNES(*dmmg,ourrhs,PETSC_NULL); if (*ierr) return;

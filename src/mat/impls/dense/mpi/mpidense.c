@@ -1605,6 +1605,7 @@ PetscErrorCode MatEqual_MPIDense(Mat A,Mat B,PetscTruth *flag)
   a = matA->A; 
   b = matB->A;
   ierr = MatEqual(a,b,&flg);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flg,flag,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

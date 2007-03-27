@@ -1,7 +1,7 @@
 !
 !  Single Fortran include file for all of PETSc
 !
-      implicit none
+
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscdraw.h"
 #include "include/finclude/petscviewer.h"
