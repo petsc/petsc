@@ -316,7 +316,7 @@ namespace ALE {
 
           for(typename recv_section_type::chart_type::iterator r_iter = points.begin(); r_iter != points.end(); ++r_iter) {
             const typename recv_section_type::point_type& point  = *r_iter;
-            const typename recv_section_type::value_type *values = recvSection->restrict(rPatch, point);
+            const typename recv_section_type::value_type *values = recvSection->restrictPoint(rPatch, point);
 
             if (recvSection->getFiberDimension(rPatch, point) == 0) continue;
             if (values[0] >= 0) {

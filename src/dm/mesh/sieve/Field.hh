@@ -380,6 +380,7 @@ namespace Field {
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     const Obj<atlas_type>& getNewAtlas() {return this->_atlasNew;};
     void setNewAtlas(const Obj<atlas_type>& atlas) {this->_atlasNew = atlas;};
+    const chart_type& getChart() {return this->_atlas->getChart();};
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
@@ -568,17 +569,66 @@ namespace Field {
       PetscSynchronizedFlush(comm);
     };
   };
-  template<typename Sieve_, typename Value_ = int>
+  template<typename Point_, typename Value_ = int>
+  class Numbering : public UniformSection<Point_, Value_> {
+  public:
+    typedef UniformSection<Point_, Value_> base_type;
+    typedef typename base_type::point_type point_type;
+    typedef typename base_type::value_type value_type;
+    typedef typename base_type::atlas_type atlas_type;
+  protected:
+    int                       _localSize;
+    int                      *_offsets;
+    std::map<int, point_type> _invOrder;
+  public:
+    Numbering(MPI_Comm comm, const int debug = 0) : UniformSection<Point_, Value_>(comm, debug), _localSize(0) {
+      this->_offsets    = new int[this->commSize()+1];
+      this->_offsets[0] = 0;
+    };
+    virtual ~Numbering() {
+      delete [] this->_offsets;
+    };
+  public: // Sizes
+    int        getLocalSize() const {return this->_localSize;};
+    void       setLocalSize(const int size) {this->_localSize = size;};
+    int        getGlobalSize() const {return this->_offsets[this->commSize()];};
+    int        getGlobalOffset(const int p) const {return this->_offsets[p];};
+    const int *getGlobalOffsets() const {return this->_offsets;};
+    void       setGlobalOffsets(const int offsets[]) {
+      for(int p = 0; p <= this->commSize(); ++p) {
+        this->_offsets[p] = offsets[p];
+      }
+    };
+  public: // Indices
+    virtual int getIndex(const point_type& point) {
+      const value_type& idx = this->restrictPoint(point)[0];
+      if (idx >= 0) {
+        return idx;
+      }
+      return -(idx+1);
+    };
+    virtual void setIndex(const point_type& point, const int index) {this->updatePoint(point, &index);};
+    virtual bool isLocal(const point_type& point) {return this->restrictPoint(point)[0] >= 0;};
+    virtual bool isRemote(const point_type& point) {return this->restrictPoint(point)[0] < 0;};
+    point_type getPoint(const int& index) {return this->_invOrder[index];};
+    void setPoint(const int& index, const point_type& point) {this->_invOrder[index] = point;};
+  };
+  template<typename Bundle_, typename Value_ = int>
   class NumberingFactory : ALE::ParallelObject {
   public:
-    typedef Sieve_                                          sieve_type;
+    typedef Bundle_                                         bundle_type;
+    typedef typename bundle_type::sieve_type                sieve_type;
     typedef typename sieve_type::point_type                 point_type;
     typedef Value_                                          value_type;
+    typedef Numbering<point_type, value_type>               numbering_type;
+    typedef std::map<bundle_type*, std::map<int, Obj<numbering_type> > > numberings_type;
     typedef typename ALE::Sifter<int,point_type,point_type> send_overlap_type;
     typedef typename ALE::Sifter<point_type,int,point_type> recv_overlap_type;
   protected:
+    numberings_type  _localNumberings;
+    const value_type _unknownNumber;
   protected:
-    NumberingFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug) {};
+    NumberingFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), _unknownNumber(-1) {};
   public:
     ~NumberingFactory() {};
   public:
@@ -665,6 +715,56 @@ namespace Field {
         }
       }
     };
+  public: // Numbering
+    // Number all local points
+    //   points in the overlap are only numbered by the owner with the lowest rank
+    template<typename Sequence_>
+    void constructLocalNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<Sequence_>& points) {
+      int localSize = 0;
+
+      numbering->setFiberDimension(points, 1);
+      for(typename Sequence_::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+        value_type val;
+
+        if (sendOverlap->capContains(*l_iter)) {
+          const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
+          int minRank = sendOverlap->commSize();
+
+          for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
+            if (*p_iter < minRank) minRank = *p_iter;
+          }
+          if (minRank < sendOverlap->commRank()) {
+            val = this->_unknownNumber;
+          } else {
+            val = localSize++;
+          }
+        } else {
+          val = localSize++;
+        }
+        numbering->updatePoint(*l_iter, &val);
+      }
+      numbering->setLocalSize(localSize);
+    };
+    template<typename ABundle_>
+    const Obj<numbering_type>& getLocalNumbering(const Obj<ABundle_>& bundle, const int depth) {
+      if ((this->_localNumberings.find(bundle.ptr()) == this->_localNumberings.end()) ||
+          (this->_localNumberings[bundle.ptr()].find(depth) == this->_localNumberings[bundle.ptr()].end())) {
+        Obj<numbering_type>    numbering   = new numbering_type(bundle->comm(), bundle->debug());
+        Obj<send_overlap_type> sendOverlap = new send_overlap_type(bundle->comm(), bundle->debug());
+
+        this->constructLocalNumbering(numbering, sendOverlap, bundle->depthStratum(depth));
+        if (this->_debug) {std::cout << "Creating new local numbering: depth " << depth << std::endl;}
+        this->_localNumberings[bundle.ptr()][depth] = numbering;
+      }
+      return this->_localNumberings[bundle.ptr()][depth];
+    };
+    template<typename ABundle_>
+    const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const int depth) {
+      const Obj<numbering_type>& numbering = this->getLocalNumbering(bundle, depth);
+      int offsets[2] = {0, numbering->getLocalSize()};
+      numbering->setGlobalOffsets(offsets);
+      return numbering;
+    }
   };
   template<typename Sieve_>
   class Bundle : public ALE::ParallelObject {
@@ -683,8 +783,8 @@ namespace Field {
     typedef ALE::Point                                                index_type;
     typedef typename sieve_type::coneArray                            coneArray;
     typedef std::vector<index_type>                                   indexArray;
-    typedef NumberingFactory<sieve_type>                              NumberingFactory;
-    ///typedef NumberingFactory::numbering_type          numbering_type;
+    typedef NumberingFactory<Bundle<sieve_type> >                     NumberingFactory;
+    typedef typename NumberingFactory::numbering_type                 numbering_type;
     ///typedef NumberingFactory::order_type              order_type;
     typedef typename ALE::Sifter<int,point_type,point_type>           send_overlap_type;
     typedef typename ALE::Sifter<point_type,int,point_type>           recv_overlap_type;
@@ -801,6 +901,7 @@ namespace Field {
       }
       return names;
     };
+    const Obj<NumberingFactory>& getFactory() const {return this->_factory;};
   public: // Labels
     int getValue (const Obj<label_type>& label, const point_type& point, const int defValue = 0) {
       const Obj<typename label_type::coneSequence>& cone = label->cone(point);
@@ -1232,13 +1333,13 @@ namespace Field {
     typedef sieve_type::point_type           point_type;
     typedef base_type::label_sequence        label_sequence;
     typedef base_type::real_section_type     real_section_type;
+    typedef base_type::numbering_type        numbering_type;
     ///typedef base_type::send_overlap_type              send_overlap_type;
     ///typedef base_type::recv_overlap_type              recv_overlap_type;
     ///typedef base_type::send_section_type              send_section_type;
     ///typedef base_type::recv_section_type              recv_section_type;
   protected:
     int                   _dim;
-    ///Obj<NumberingFactory> _factory;
     // Discretization
     Obj<Discretization>    _discretization;
     Obj<BoundaryCondition> _boundaryCondition;
@@ -1251,7 +1352,6 @@ namespace Field {
   public: // Accessors
     int getDimension() const {return this->_dim;};
     void setDimension(const int dim) {this->_dim = dim;};
-    ///const Obj<NumberingFactory>& getFactory() {return this->_factory;};
     const Obj<Discretization>&    getDiscretization() {return this->_discretization;};
     void setDiscretization(const Obj<Discretization>& discretization) {this->_discretization = discretization;};
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};

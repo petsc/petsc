@@ -57,7 +57,7 @@ namespace ALE {
 
           for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
             if (sendFiller->hasPoint(patch, *b_iter)) {
-              sendSection->update(rank, *b_iter, sendFiller->restrict(patch, *b_iter));
+              sendSection->updatePoint(rank, *b_iter, sendFiller->restrictPoint(patch, *b_iter));
             }
           }
         }

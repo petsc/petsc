@@ -22,11 +22,11 @@ namespace ALE {
       typedef typename bundle_type::arrow_section_type arrow_section_type;
       typedef MinimalArrow<point_type, point_type>     arrow_type;
       typedef typename ALE::array<arrow_type>          arrowArray;
-      const Obj<sieve_type>&         sieve       = bundle->getSieve();
-      const int                      depth       = bundle->depth();
-      Obj<arrowArray>                cone        = new arrowArray();
-      Obj<arrowArray>                base        = new arrowArray();
-      Obj<coneArray>                 closure     = new coneArray();
+      const Obj<sieve_type>&         sieve   = bundle->getSieve();
+      const int                      depth   = bundle->depth();
+      Obj<arrowArray>                cone    = new arrowArray();
+      Obj<arrowArray>                base    = new arrowArray();
+      Obj<coneArray>                 closure = new coneArray();
       coneSet                        seen;
 
       // Cone is guarateed to be ordered correctly
@@ -65,6 +65,71 @@ namespace ALE {
         }
       }
       return closure;
+    };
+    template<typename Bundle_>
+    static Obj<typename Bundle_::sieve_type::coneArray> nCone(const Obj<Bundle_>& bundle, const typename Bundle_::point_type& p, const int n) {
+      typedef Bundle_                                  bundle_type;
+      typedef typename bundle_type::sieve_type         sieve_type;
+      typedef typename sieve_type::point_type          point_type;
+      typedef typename sieve_type::coneArray           coneArray;
+      typedef typename sieve_type::coneSet             coneSet;
+      typedef typename bundle_type::arrow_section_type arrow_section_type;
+      typedef MinimalArrow<point_type, point_type>     arrow_type;
+      typedef typename ALE::array<arrow_type>          arrowArray;
+      const Obj<sieve_type>&         sieve       = bundle->getSieve();
+      const Obj<arrow_section_type>& orientation = bundle->getArrowSection("orientation");
+      const int                      depth       = std::min(n, bundle->depth());
+      Obj<arrowArray>                cone        = new arrowArray();
+      Obj<arrowArray>                base        = new arrowArray();
+      Obj<coneArray>                 nCone       = new coneArray();
+      coneSet                        seen;
+
+      if (depth == 0) {
+        nCone->push_back(p);
+        return nCone;
+      }
+
+      // Cone is guarateed to be ordered correctly
+      const Obj<typename sieve_type::traits::coneSequence>& initCone = sieve->cone(p);
+
+      if (depth == 1) {
+        for(typename sieve_type::traits::coneSequence::iterator c_iter = initCone->begin(); c_iter != initCone->end(); ++c_iter) {
+          nCone->push_back(*c_iter);
+        }
+        return nCone;
+      } else {
+        for(typename sieve_type::traits::coneSequence::iterator c_iter = initCone->begin(); c_iter != initCone->end(); ++c_iter) {
+          cone->push_back(arrow_type(*c_iter, p));
+        }
+      }
+      for(int i = 1; i < depth; ++i) {
+        Obj<arrowArray> tmp = cone; cone = base; base = tmp;
+
+        cone->clear();
+        for(typename arrowArray::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(b_iter->source);
+          const typename arrow_section_type::value_type         o     = orientation->restrictPoint(*b_iter)[0];
+
+          if (o == -1) {
+            for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter) {
+              if (seen.find(*c_iter) == seen.end()) {
+                seen.insert(*c_iter);
+                cone->push_back(arrow_type(*c_iter, b_iter->source));
+                if (i == depth-1) nCone->push_back(*c_iter);
+              }
+            }
+          } else {
+            for(typename sieve_type::traits::coneSequence::iterator c_iter = pCone->begin(); c_iter != pCone->end(); ++c_iter) {
+              if (seen.find(*c_iter) == seen.end()) {
+                seen.insert(*c_iter);
+                cone->push_back(arrow_type(*c_iter, b_iter->source));
+                if (i == depth-1) nCone->push_back(*c_iter);
+              }
+            }
+          }
+        }
+      }
+      return nCone;
     };
   };
 }

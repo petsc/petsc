@@ -38,6 +38,20 @@ class VTKViewer {
   };
 
   #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteVertices"
+  static PetscErrorCode writeVertices(const Obj<ALE::Field::Mesh>& mesh, PetscViewer viewer) {
+    const Obj<ALE::Field::Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+    const Obj<ALE::Field::Mesh::numbering_type>&    vNumbering  = mesh->getFactory()->getNumbering(mesh, 0);
+    const int      embedDim = coordinates->getFiberDimension(*mesh->depthStratum(0)->begin());
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", vNumbering->getGlobalSize());CHKERRQ(ierr);
+    ierr = writeSection(coordinates, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteField"
   template<typename Section>
   static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer) {
@@ -67,7 +81,7 @@ class VTKViewer {
     PetscFunctionBegin;
     if (field->commRank() == 0) {
       for(typename Section::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const typename Section::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
+        const typename Section::atlas_type::value_type& idx = atlas->restrictPoint(patch, *p_iter)[0];
 
         // Perhaps there should be a flag for excluding boundary values
         if (idx.prefix != 0) {
@@ -119,12 +133,96 @@ class VTKViewer {
 
       ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(typename Section::value_type), &localValues);CHKERRQ(ierr);
       for(typename Section::atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const typename Section::atlas_type::value_type& idx = atlas->restrict(patch, *p_iter)[0];
+        const typename Section::atlas_type::value_type& idx = atlas->restrictPoint(patch, *p_iter)[0];
         const int& dim    = idx.prefix;
         const int& offset = idx.index;
 
         if (numbering->isLocal(*p_iter)) {
           for(int i = offset; i < offset+dim; ++i) {
+            localValues[k++] = array[i];
+          }
+        }
+      }
+      if (k != numLocalElements*fiberDim) {
+        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, numLocalElements*fiberDim);
+      }
+      ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
+      ierr = MPI_Send(localValues, numLocalElements*fiberDim, mpiType, 0, 1, field->comm());CHKERRQ(ierr);
+      ierr = PetscFree(localValues);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteSection"
+  template<typename Section>
+  static PetscErrorCode writeSection(const Obj<Section>& field, const int fiberDim, const Obj<ALE::Field::Mesh::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
+    typedef typename Section::value_type value_type;
+    const typename Section::chart_type& chart   = field->getChart();
+    const MPI_Datatype                  mpiType = ALE::New::ParallelFactory<value_type>::singleton(field->debug())->getMPIType();
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    if (field->commRank() == 0) {
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const value_type *array = field->restrictPoint(*p_iter);
+        const int&        dim   = field->getFiberDimension(*p_iter);
+
+        // Perhaps there should be a flag for excluding boundary values
+        if (dim != 0) {
+          for(int d = 0; d < fiberDim; d++) {
+            if (d > 0) {
+              ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+            }
+            if (mpiType == MPI_INT) {
+              ierr = PetscViewerASCIIPrintf(viewer, "%d", array[d]);CHKERRQ(ierr);
+            } else {
+              ierr = PetscViewerASCIIPrintf(viewer, "%G", array[d]);CHKERRQ(ierr);
+            }
+          }
+          for(int d = fiberDim; d < enforceDim; d++) {
+            ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
+      }
+      for(int p = 1; p < field->commSize(); p++) {
+        value_type *remoteValues;
+        int         numLocalElements;
+        MPI_Status  status;
+
+        ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteValues, numLocalElements*fiberDim, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
+        for(int e = 0; e < numLocalElements; e++) {
+          for(int d = 0; d < fiberDim; d++) {
+            if (d > 0) {
+              ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+            }
+            if (mpiType == MPI_INT) {
+              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+            } else {
+              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+            }
+          }
+          for(int d = fiberDim; d < enforceDim; d++) {
+            ierr = PetscViewerASCIIPrintf(viewer, " 0.0");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
+      }
+    } else {
+      value_type *localValues;
+      int         numLocalElements = numbering->getLocalSize();
+      int         k = 0;
+
+      ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(value_type), &localValues);CHKERRQ(ierr);
+      for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (numbering->isLocal(*p_iter)) {
+          const value_type *array = field->restrictPoint(*p_iter);
+          const int&        dim   = field->getFiberDimension(*p_iter);
+
+          for(int i = 0; i < dim; ++i) {
             localValues[k++] = array[i];
           }
         }
@@ -238,6 +336,79 @@ class VTKViewer {
 
         if (cNumbering->isLocal(*e_iter)) {
           //for(ALE::Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            localVertices[k++] = vNumbering->getIndex(*c_iter);
+          }
+        }
+      }
+      if (k != numLocalElements*corners) {
+        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of vertices to send %d should be %d", k, numLocalElements*corners);
+      }
+      ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+      ierr = MPI_Send(localVertices, numLocalElements*corners, MPI_INT, 0, 1, mesh->comm());CHKERRQ(ierr);
+      ierr = PetscFree(localVertices);CHKERRQ(ierr);
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+    const int cellType = getCellType(mesh->getDimension(), corners);
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%d\n", cellType);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteElements"
+  static PetscErrorCode writeElements(const Obj<ALE::Field::Mesh>& mesh, PetscViewer viewer)
+  {
+    const Obj<ALE::Field::Mesh::sieve_type>&     sieve      = mesh->getSieve();
+    const Obj<ALE::Field::Mesh::label_sequence>& elements   = mesh->heightStratum(0);
+    int                                          depth      = mesh->depth();
+    const Obj<ALE::Field::Mesh::numbering_type>& vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
+    const Obj<ALE::Field::Mesh::numbering_type>& cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
+    int            corners = sieve->nCone(*elements->begin(), depth)->size();
+    int            numElements;
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    numElements = cNumbering->getGlobalSize();
+    ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
+    if (mesh->commRank() == 0) {
+      for(ALE::Field::Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        const Obj<ALE::Field::Mesh::sieve_type::coneArray>& cone = ALE::Closure::nCone(mesh, *e_iter, depth);
+
+        ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+        for(ALE::Field::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter));CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+      }
+      for(int p = 1; p < mesh->commSize(); p++) {
+        int        numLocalElements;
+        int       *remoteVertices;
+        MPI_Status status;
+
+        ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &remoteVertices);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteVertices, numLocalElements*corners, MPI_INT, p, 1, mesh->comm(), &status);CHKERRQ(ierr);
+        for(int e = 0; e < numLocalElements; e++) {
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+          for(int c = 0; c < corners; c++) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", remoteVertices[e*corners+c]);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
+        ierr = PetscFree(remoteVertices);CHKERRQ(ierr);
+      }
+    } else {
+      int  numLocalElements = cNumbering->getLocalSize();
+      int *localVertices;
+      int  k = 0;
+
+      ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
+      for(ALE::Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        const Obj<ALE::Mesh::sieve_type::coneArray>& cone = ALE::Closure::nCone(mesh, *e_iter, depth);
+
+        if (cNumbering->isLocal(*e_iter)) {
           for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
             localVertices[k++] = vNumbering->getIndex(*c_iter);
           }

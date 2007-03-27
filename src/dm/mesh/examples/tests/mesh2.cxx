@@ -2,6 +2,9 @@ static char help[] = "Mesh Tests.\n\n";
 
 #include <petscmesh.h>
 
+#include <Generator.hh>
+#include <src/dm/mesh/meshvtk.h>
+
 using ALE::Obj;
 
 typedef struct {
@@ -30,6 +33,57 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreatePartition"
+// Creates a field whose value is the processor rank on each element
+PetscErrorCode CreatePartition(const Obj<ALE::Field::Mesh>& m/*Mesh mesh*/, const Obj<ALE::Field::Mesh::int_section_type>& s/*SectionInt *partition*/)
+{
+  //Obj<ALE::Field::Mesh::int_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  //ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
+  //ierr = SectionIntGetSection(*partition, s);CHKERRQ(ierr);
+  const Obj<ALE::Field::Mesh::label_sequence>&         cells = m->heightStratum(0);
+  const ALE::Field::Mesh::int_section_type::value_type rank  = s->commRank();
+
+  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    s->updatePoint(*c_iter, &rank);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "ViewMesh"
+PetscErrorCode ViewMesh(const Obj<ALE::Field::Mesh>& m/*Mesh mesh*/, const char filename[])
+{
+  MPI_Comm       comm = m->comm();
+  SectionInt     partition;
+  PetscViewer    viewer;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  //ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
+  ierr = PetscViewerCreate(comm, &viewer);CHKERRQ(ierr);
+  ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+  ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
+  ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
+#if 0
+  ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+  ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
+  ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
+  ierr = SectionIntView(partition, viewer);CHKERRQ(ierr);
+  ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
+  ierr = SectionIntDestroy(partition);CHKERRQ(ierr);
+#else
+  ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
+  ierr = VTKViewer::writeVertices(m, viewer);CHKERRQ(ierr);
+  ierr = VTKViewer::writeElements(m, viewer);CHKERRQ(ierr);
+#endif
+  ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 {
@@ -39,7 +93,6 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  Obj<ALE::Field::Mesh> m = ALE::Field::Mesh(comm, options->debug);
 
   ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
   if (options->dim == 2) {
@@ -47,8 +100,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
 
-    ALE::Obj<ALE::Field::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+    Obj<ALE::Field::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
     mB->view("Boundary");
+    Obj<ALE::Field::Mesh> m = ALE::Generator::generateMesh(mB, options->interpolate);
+    m->view("Mesh");
+    ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
+    if (view) {ierr = ViewMesh(m, "mesh.vtk");CHKERRQ(ierr);}
 #if 0
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
   } else if (options->dim == 3) {
@@ -56,7 +113,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     double upper[3] = {1.0, 1.0, 1.0};
     int    faces[3] = {1, 1, 1};
 
-    ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
+    Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
 #endif
   } else {
@@ -86,10 +143,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
 #if 0
-    ALE::Obj<ALE::Field::Mesh> m;
+    Obj<ALE::Field::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-#endif
     m->view("Mesh");
+#endif
   }
   *dm = (DM) mesh;
   PetscFunctionReturn(0);

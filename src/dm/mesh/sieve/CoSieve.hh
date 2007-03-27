@@ -2176,7 +2176,7 @@ namespace ALE {
           int                                  rank = p_iter->first;
 
           for(typename topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            this->setFiberDimension(rank, *b_iter, *(sizer->restrict(rank, *b_iter)));
+            this->setFiberDimension(rank, *b_iter, *(sizer->restrictPoint(rank, *b_iter)));
           }
         }
       };
