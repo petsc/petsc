@@ -1270,6 +1270,17 @@ namespace ALE {
           coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
         }
       };
+      static void buildCoordinatesNew(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+        const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
+        const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
+        const int numCells = bundle->heightStratum(0)->size();
+
+        coordinates->setFiberDimension(vertices, embedDim);
+        bundle->allocate(coordinates);
+        for(typename Bundle_::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+          coordinates->updatePoint(*v_iter, &(coords[(*v_iter - numCells)*embedDim]));
+        }
+      };
     };
 
     // A Section is our most general construct (more general ones could be envisioned)

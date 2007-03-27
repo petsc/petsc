@@ -695,67 +695,64 @@ namespace ALE {
       |     |     |
      12--0-13--1--14
     */
-    static Obj<Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const int debug = 0) {
-      Obj<Mesh> mesh        = new ALE::Mesh(comm, 1, debug);
+    static Obj<ALE::Field::Mesh> createSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const int debug = 0) {
+      Obj<ALE::Field::Mesh> mesh        = new ALE::Field::Mesh(comm, 1, debug);
       int       numVertices = (edges[0]+1)*(edges[1]+1);
       int       numEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
       double   *coords      = new double[numVertices*2];
-      const Obj<Mesh::sieve_type>           sieve    = new ALE::Mesh::sieve_type(mesh->comm(), mesh->debug());
-      const Obj<Mesh::topology_type>        topology = new ALE::Mesh::topology_type(mesh->comm(), mesh->debug());
-      Mesh::point_type                     *vertices = new Mesh::point_type[numVertices];
-      const Mesh::topology_type::patch_type patch    = 0;
+      const Obj<ALE::Field::Mesh::sieve_type>           sieve    = new ALE::Field::Mesh::sieve_type(mesh->comm(), mesh->debug());
+      ALE::Field::Mesh::point_type                     *vertices = new ALE::Field::Mesh::point_type[numVertices];
       int                                   order    = 0;
 
-      topology->setPatch(patch, sieve);
-      mesh->setTopology(topology);
-      const Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+      mesh->setSieve(sieve);
+      const Obj<ALE::Field::Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
-        /* Create topology and ordering */
+        /* Create sieve and ordering */
         for(int v = numEdges; v < numEdges+numVertices; v++) {
-          vertices[v-numEdges] = ALE::Mesh::point_type(v);
+          vertices[v-numEdges] = ALE::Field::Mesh::point_type(v);
         }
         for(int vy = 0; vy <= edges[1]; vy++) {
           for(int ex = 0; ex < edges[0]; ex++) {
-            ALE::Mesh::point_type edge(vy*edges[0] + ex);
+            ALE::Field::Mesh::point_type edge(vy*edges[0] + ex);
             int vertex = vy*(edges[0]+1) + ex;
 
             sieve->addArrow(vertices[vertex+0], edge, order++);
             sieve->addArrow(vertices[vertex+1], edge, order++);
             if ((vy == 0) || (vy == edges[1])) {
-              topology->setValue(markers, edge, 1);
-              topology->setValue(markers, vertices[vertex], 1);
+              mesh->setValue(markers, edge, 1);
+              mesh->setValue(markers, vertices[vertex], 1);
               if (ex == edges[0]-1) {
-                topology->setValue(markers, vertices[vertex+1], 1);
+                mesh->setValue(markers, vertices[vertex+1], 1);
               }
             }
           }
         }
         for(int vx = 0; vx <= edges[0]; vx++) {
           for(int ey = 0; ey < edges[1]; ey++) {
-            ALE::Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
+            ALE::Field::Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
             int vertex = ey*(edges[0]+1) + vx;
 
             sieve->addArrow(vertices[vertex],            edge, order++);
             sieve->addArrow(vertices[vertex+edges[0]+1], edge, order++);
             if ((vx == 0) || (vx == edges[0])) {
-              topology->setValue(markers, edge, 1);
-              topology->setValue(markers, vertices[vertex], 1);
+              mesh->setValue(markers, edge, 1);
+              mesh->setValue(markers, vertices[vertex], 1);
               if (ey == edges[1]-1) {
-                topology->setValue(markers, vertices[vertex+edges[0]+1], 1);
+                mesh->setValue(markers, vertices[vertex+edges[0]+1], 1);
               }
             }
           }
         }
       }
-      sieve->stratify();
-      topology->stratify();
+      mesh->stratify();
       for(int vy = 0; vy <= edges[1]; ++vy) {
         for(int vx = 0; vx <= edges[0]; ++vx) {
           coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
           coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
         }
       }
-      ALE::New::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
+      delete [] vertices;
+      ALE::New::SieveBuilder<ALE::Field::Mesh>::buildCoordinatesNew(mesh, mesh->getDimension()+1, coords);
       return mesh;
     }
     #undef __FUNCT__

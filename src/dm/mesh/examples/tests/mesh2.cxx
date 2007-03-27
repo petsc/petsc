@@ -47,7 +47,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
 
-    ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+    ALE::Obj<ALE::Field::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+    mB->view("Boundary");
+#if 0
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
   } else if (options->dim == 3) {
     double lower[3] = {0.0, 0.0, 0.0};
@@ -56,9 +58,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
     ALE::Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
+#endif
   } else {
     SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
+#if 0
   ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
   if (options->refinementLimit > 0.0) {
     Mesh refinedMesh;
@@ -78,10 +82,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
   if (view) {ierr = ViewMesh(mesh, "mesh.vtk");CHKERRQ(ierr);}
+#endif
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
-    ALE::Obj<ALE::Mesh> m;
+#if 0
+    ALE::Obj<ALE::Field::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+#endif
     m->view("Mesh");
   }
   *dm = (DM) mesh;

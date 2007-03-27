@@ -348,13 +348,16 @@ namespace Field {
     values_type     _array;
   public:
     Section(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-      this->_atlas      = new atlas_type(comm, debug);
-      this->_atlasNew   = NULL;
+      this->_atlas    = new atlas_type(comm, debug);
+      this->_atlasNew = NULL;
+      this->_array    = NULL;
     };
-    Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL) {};
+    Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL) {};
     virtual ~Section() {
-      delete [] this->_array;
-      this->_array = NULL;
+      if (!this->_array) {
+        delete [] this->_array;
+        this->_array = NULL;
+      }
     };
   public:
     value_type *getRawArray(const int size) {
@@ -733,6 +736,7 @@ namespace Field {
       if (!this->hasArrowSection(name)) {
         Obj<arrow_section_type> section = new arrow_section_type(this->comm(), this->debug());
 
+        section->setName(name);
         if (this->_debug) {std::cout << "Creating new arrow section: " << name << std::endl;}
         this->_arrowSections[name] = section;
       }
@@ -756,6 +760,7 @@ namespace Field {
       if (!this->hasRealSection(name)) {
         Obj<real_section_type> section = new real_section_type(this->comm(), this->debug());
 
+        section->setName(name);
         if (this->_debug) {std::cout << "Creating new real section: " << name << std::endl;}
         this->_realSections[name] = section;
       }
@@ -779,6 +784,7 @@ namespace Field {
       if (!this->hasIntSection(name)) {
         Obj<int_section_type> section = new int_section_type(this->comm(), this->debug());
 
+        section->setName(name);
         if (this->_debug) {std::cout << "Creating new int section: " << name << std::endl;}
         this->_intSections[name] = section;
       }
