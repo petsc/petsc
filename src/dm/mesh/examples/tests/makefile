@@ -72,6 +72,10 @@ mesh1: mesh1.o chkopts
 	-${CLINKER} -o mesh1 mesh1.o ${PETSC_DM_LIB}
 	${RM} -f mesh1.o
 
+mesh2: mesh2.o chkopts
+	-${CLINKER} -o mesh2 mesh2.o ${PETSC_DM_LIB}
+	${RM} -f mesh2.o
+
 overlap1: overlap1.o chkopts
 	-${CLINKER} -o overlap1 overlap1.o ${PETSC_DM_LIB}
 	${RM} -f overlap1.o
@@ -79,6 +83,10 @@ overlap1: overlap1.o chkopts
 overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
+
+closure1: closure1.o chkopts
+	-${CLINKER} -o closure1 closure1.o ${PETSC_DM_LIB}
+	${RM} -f closure1.o
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}

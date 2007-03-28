@@ -756,8 +756,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->linear_its        = 0;
   snes->numbermonitors    = 0;
   snes->data              = 0;
-  snes->ops->converged    = 0;
-  snes->ops->view         = 0;
   snes->setupcalled       = PETSC_FALSE;
   snes->ksp_ewconv        = PETSC_FALSE;
   snes->vwork             = 0;
@@ -1177,6 +1175,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   if (flg) {
     Mat J;
     ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Setting default matrix-free operator routines (version 2)\n");CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
   }
@@ -1191,18 +1190,18 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     Mat  J;
     KSP ksp;
     PC   pc;
-
+    /* create and set matrix-free operator */
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
     ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
-    ierr = PetscInfo(snes,"Setting default matrix-free operator and preconditioner routines;\nThat is no preconditioner is being used.\n");CHKERRQ(ierr);
+    ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
-
     /* force no preconditioner */
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
     ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)pc,PCSHELL,&flg);CHKERRQ(ierr);
     if (!flg) {
+      ierr = PetscInfo(snes,"Setting default matrix-free preconditioner routines;\nThat is no preconditioner is being used\n");CHKERRQ(ierr);
       ierr = PCSetType(pc,PCNONE);CHKERRQ(ierr);
     }
   }
@@ -1213,15 +1212,16 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   if (!snes->ops->computefunction && !snes->afine) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetFunction() first");
   }
-  if (!snes->jacobian) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetJacobian() first \n or use -snes_mf option");
-  if (snes->vec_func == snes->vec_sol) {  
+  if (!snes->jacobian) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call SNESSetJacobian() first \n or use -snes_mf option");
+  }
+  if (snes->vec_func == snes->vec_sol) {
     SETERRQ(PETSC_ERR_ARG_IDN,"Solution vector cannot be function vector");
   }
 
   if (!snes->type_name) {
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
-  
   if (snes->ops->setup) {
     ierr = (*snes->ops->setup)(snes);CHKERRQ(ierr);
   }
@@ -1951,19 +1951,21 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
 
   ierr = PetscTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
-
-  if (snes->setupcalled) {
-    snes->setupcalled = PETSC_FALSE;
-    ierr              = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr);
-    snes->data        = 0;
-  }
-
   /* Get the function pointers for the iterative method requested */
   if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr =  PetscFListFind(snes->comm,SNESList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
-  ierr = PetscFree(snes->data);CHKERRQ(ierr);
-  snes->data = 0;
+  /* Destroy the previous private SNES context */
+  if (snes->ops->destroy) { ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr); }
+  /* Reinitialize function pointers in SNESOps structure */
+  snes->ops->converged      = 0;
+  snes->ops->setup          = 0;
+  snes->ops->solve          = 0;
+  snes->ops->view           = 0;
+  snes->ops->setfromoptions = 0;
+  snes->ops->destroy        = 0;
+  /* Call the SNESCreate_XXX routine for this particular Nonlinear solver */
+  snes->setupcalled = PETSC_FALSE;
   ierr = (*r)(snes);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)snes,type);CHKERRQ(ierr);
   PetscFunctionReturn(0); 

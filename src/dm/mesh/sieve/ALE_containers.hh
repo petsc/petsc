@@ -23,7 +23,86 @@
 #endif
 
 namespace ALE {
+  class ParallelObject {
+  protected:
+    int         _debug;
+    MPI_Comm    _comm;
+    int         _commRank;
+    int         _commSize;
+    std::string _name;
+    PetscObject _petscObj;
+    void __init(MPI_Comm comm) {
+      static PetscCookie objType = -1;
+      //const char        *id_name = ALE::getClassName<T>();
+      const char        *id_name = "ParallelObject";
+      PetscErrorCode     ierr;
 
+      if (objType < 0) {
+        ierr = PetscLogClassRegister(&objType, id_name);CHKERROR(ierr, "Error in PetscLogClassRegister");
+      }
+      this->_comm = comm;
+      ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
+      ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_size");
+#ifdef USE_PETSC_OBJ
+      ierr = PetscObjectCreateGeneric(this->_comm, objType, id_name, &this->_petscObj);CHKERROR(ierr, "Error in PetscObjectCreate");
+#endif
+      //ALE::restoreClassName<T>(id_name);
+    };
+  public:
+    ParallelObject(MPI_Comm comm = PETSC_COMM_SELF, const int debug = 0) : _debug(debug), _petscObj(NULL) {__init(comm);}
+    virtual ~ParallelObject() {
+#ifdef USE_PETSC_OBJ
+      if (this->_petscObj) {
+        PetscErrorCode ierr = PetscObjectDestroy(this->_petscObj); CHKERROR(ierr, "Failed in PetscObjectDestroy");
+        this->_petscObj = NULL;
+      }
+#endif
+    };
+  public:
+    int                debug()    const {return this->_debug;};
+    void               setDebug(const int debug) {this->_debug = debug;};
+    MPI_Comm           comm()     const {return this->_comm;};
+    int                commSize() const {return this->_commSize;};
+    int                commRank() const {return this->_commRank;}
+#ifdef USE_PETSC_OBJ
+    PetscObject        petscObj() const {return this->_petscObj;};
+#endif
+    const std::string& getName() const {return this->_name;};
+    void               setName(const std::string& name) {this->_name = name;};
+  };
+
+  // Use for ArrowSections
+  template<typename Source_, typename Target_>
+  struct MinimalArrow {
+    typedef Source_ source_type;
+    typedef Target_ target_type;
+    source_type source;
+    target_type target;
+    MinimalArrow() {};
+    MinimalArrow(const source_type& source, const target_type& target) : source(source), target(target) {};
+    MinimalArrow(const MinimalArrow& a) : source(a.source), target(a.target) {};
+    friend std::ostream& operator<<(std::ostream& os, const MinimalArrow& a) {
+      os << a.source << " ----> " << a.target;
+      return os;
+    }
+    // Comparisons
+    class less_than {
+    public: 
+      bool operator()(const MinimalArrow& p, const MinimalArrow& q) const {
+        return((p.source < q.source) || ((p.source == q.source) && (p.target < q.target)));
+      };
+    };
+    typedef less_than Cmp;
+    bool operator==(const MinimalArrow& q) const {
+      return((this->source == q.source) && (this->target == q.target));
+    };
+    bool operator!=(const MinimalArrow& q) const {
+      return((this->source != q.source) || (this->target != q.target));
+    };
+    bool operator<(const MinimalArrow& q) const {
+      return((this->source < q.source) || ((this->source == q.source) && (this->target < q.target)));
+    };
+  };
 
   //
   // This is a set of classes and class templates describing an interface to point containers.

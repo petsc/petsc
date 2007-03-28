@@ -98,6 +98,17 @@ static PetscErrorCode SNESSetFromOptions_Test(SNES snes)
 }
 
 /* ------------------------------------------------------------ */
+/*MC
+      SNESTEST - Test hand-coded Jacobian against finite difference Jacobian
+
+   Options Database:
+.    -snes_test_display  Display difference between approximate and hand-coded Jacobian
+
+   Level: intermediate
+
+.seealso:  SNESCreate(), SNES, SNESSetType(), SNESLS, SNESTR
+
+M*/
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "SNESCreate_Test"
@@ -112,6 +123,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   snes->ops->destroy	     = SNESDestroy_Test;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
   snes->ops->converged	     = 0;
+  snes->ops->view            = 0;
 
   ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(snes,sizeof(SNES_Test));CHKERRQ(ierr);
@@ -120,7 +132,3 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
-
-
-
-

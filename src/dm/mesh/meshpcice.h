@@ -10,7 +10,7 @@ namespace ALE {
     class Builder {
     public:
       typedef ALE::Sieve<int, int, int>                sieve_type;
-      typedef ALE::New::Topology<int, sieve_type>      topology_type;
+      typedef ALE::Topology<int, sieve_type>           topology_type;
       typedef ALE::New::Section<topology_type, double> section_type;
     public:
       Builder() {};
