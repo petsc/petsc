@@ -3075,6 +3075,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCopy(Mat A,Mat B,MatStructure str)
 -  reuse - denotes if the destination matrix is to be created or reused.  Currently
    MAT_REUSE_MATRIX is only supported for inplace conversion, otherwise use
    MAT_INITIAL_MATRIX.
+
    Output Parameter:
 .  M - pointer to place new matrix
 

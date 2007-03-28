@@ -190,40 +190,49 @@ namespace ALE {
       typedef      int  predicate_type;
       typedef      int  printable_type;
       static const predicate_type default_value;
+      static const predicate_type zero;
       static printable_type printable(const predicate_type& p) {return (printable_type)p;};
     };
     const PredicateTraits<int>::predicate_type PredicateTraits<int>::default_value = 0;
+    const PredicateTraits<int>::predicate_type PredicateTraits<int>::zero          = 0;
     //
     template<>
     struct PredicateTraits<unsigned int> {
       typedef      unsigned int  predicate_type;
       typedef      unsigned int  printable_type;
       static const predicate_type default_value;
+      static const predicate_type zero;
       static printable_type printable(const predicate_type& p) {return (printable_type)p;};
     };
     const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::default_value = 0;
+    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::zero          = 0;
     //
     template<>
     struct PredicateTraits<short> {
       typedef      short  predicate_type;
       typedef      short  printable_type;
       static const predicate_type default_value;
+      static const predicate_type zero;
       static printable_type printable(const predicate_type& p) {return (printable_type)p;};
     };
     const PredicateTraits<short>::predicate_type PredicateTraits<short>::default_value = 0;
+    const PredicateTraits<short>::predicate_type PredicateTraits<short>::zero          = 0;
+
     //
     template<>
     struct PredicateTraits<char> {
       typedef char  predicate_type;
       typedef short printable_type;
       static const predicate_type default_value;
+      static const predicate_type zero;
       static printable_type printable(const predicate_type& p) {return (printable_type)p;};
     };
     const PredicateTraits<char>::predicate_type PredicateTraits<char>::default_value = '\0';
+    const PredicateTraits<char>::predicate_type PredicateTraits<char>::zero          = '\0';
 
 
     //
-    // RangeFilter defines a subset of Index_ based on the high and low value of a key.
+    // RangeFilter defines a subset of a Sequence_ based on the high and low value of a key.
     // The type and ordering of the key are defined by KeyExtractor_ and KeyCompare_ respectively.
     // 
     #undef  __CLASS__
@@ -245,16 +254,17 @@ namespace ALE {
       key_type                              _low, _high;
     public:
       // Basic interface
-      RangeFilter(index_type* index) : 
-        XObject(), _index(index), _have_low(false), _have_high(false) {};
-      RangeFilter(index_type* index, const key_type& low, const key_type& high) : 
-        XObject(), _index(index), _have_low(true), _have_high(true), _low(low), _high(high)  {};
+      RangeFilter(index_type* order) : 
+        XObject(), _index(order), _have_low(false), _have_high(false) {};
+      RangeFilter(index_type* order, const key_type& low, const key_type& high) : 
+        XObject(), _index(order), _have_low(true), _have_high(true), _low(low), _high(high)  {};
       RangeFilter(const RangeFilter& f) : 
         XObject(f), _index(f._index), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
       ~RangeFilter(){};
       //
       void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
       void setHigh(const key_type& high) {this->_high = high; this->_have_high = true;};
+      void setLowAndHigh(const key_type& low, const key_type& high) {this->setLow(low); this->setHigh(high);};
       //
       key_type         low()       const {return this->_low;};
       key_type         high()      const {return this->_high;};
@@ -487,6 +497,7 @@ namespace ALE {
               typename ValueExtractor_ = ::boost::multi_index::identity<typename Index_::value_type>, bool Strided = false >
     struct FilteredIndexSequence : XObject {
       typedef Index_                                           index_type;
+      typedef typename index_type::value_type                  rec_type;
       typedef InnerFilter_                                     inner_filter_type;
       typedef OuterFilter_                                     outer_filter_type;
        //
@@ -535,8 +546,11 @@ namespace ALE {
         virtual ~iterator() {};
         virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;};
         virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
+        //
+        virtual rec_type&         rec() {return *(this->_itor);};
         // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
         virtual const value_type  operator*() const {return _ex(*(this->_itor));};
+        //
         virtual iterator   operator++() {
           this->_sequence->next(this->_itor, this->_outerCookie, this->_innerCookie);
           return *this;
@@ -911,34 +925,52 @@ namespace ALE {
       typedef Arrow_                                  arrow_type;
       typedef typename arrow_type::source_type        source_type;
       typedef typename arrow_type::target_type        target_type;
-      typedef typename arrow_type::color_type         color_type;
       //
       typedef Predicate_                              predicate_type;
       typedef PredicateTraits<predicate_type>         predicate_traits;
     protected:
       // Predicate stored alongside the arrow data
       predicate_type _predicate;
+      // Slice pointer
+      // HACK: ArrowRec should really reside at a lower level
+      void * _slice_ptr;
+      predicate_type _slice_marker;
     public:
       // Basic interface
-      ArrowRec(const arrow_type& a) : arrow_type(a), _predicate(predicate_traits::default_value) {};
-      ArrowRec(const arrow_type& a, const predicate_type& p) : arrow_type(a), _predicate(p) {};
+      ArrowRec(const arrow_type& a) : arrow_type(a), _predicate(predicate_traits::zero), _slice_ptr(NULL), _slice_marker(predicate_traits::zero) {};
+      ArrowRec(const arrow_type& a, const predicate_type& p) : arrow_type(a), _predicate(p), _slice_ptr(NULL), _slice_marker(predicate_traits::zero){};
       // Extended interface
       predicate_type predicate() const{return this->_predicate;};
       source_type    source() const {return this->arrow_type::source();};
       target_type    target() const {return this->arrow_type::target();};
-      color_type     color()  const {return this->arrow_type::color();};
+      //
+      // HACK: this should be implemented at the lower level of a multi_index container
+      const predicate_type slice_marker() const {return this->_slice_marker;};
+      const void*          slice_ptr()    const {return this->_slice_ptr;};
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const ArrowRec& r) {
         os << "<" << predicate_traits::printable(r._predicate) << ">" << "[" << (arrow_type)r << "]";
         return os;
       }
       // Modifier objects
-      struct predicateChanger {
-        predicateChanger(const predicate_type& newPredicate) : _newPredicate(newPredicate) {};
+      struct PredicateChanger {
+        PredicateChanger(const predicate_type& newPredicate) : _newPredicate(newPredicate) {};
         void operator()(ArrowRec& r) { r._predicate = this->_newPredicate;}
       private:
         const predicate_type _newPredicate;
       };
+      //
+      struct SliceChanger {
+        SliceChanger(const predicate_type& new_slice_marker, const void *& new_slice_ptr) : _new_slice_marker(new_slice_marker), _new_slice_ptr(new_slice_ptr) {};
+        void setSlice(const predicate_type& new_slice_marker, const void *& new_slice_ptr){
+          this->_new_slice_marker = new_slice_marker;
+          this->_new_slice_pointer = new_slice_ptr;
+        }
+        void operator()(ArrowRec& r) {r._slice_marker = this->_new_slice_marker; r._slice_ptr = this->_new_slice_ptr;};
+      private:
+        void *_new_slice_ptr;
+        predicate_type _new_slice_marker;
+      };// struct SliceChanger
     };// struct ArrowRec
 
     //
@@ -958,20 +990,20 @@ namespace ALE {
       typedef typename super::outer_key_type                                                                  outer_key_type;
       typedef typename super::inner_key_type                                                                  inner_key_type;
       //
+      typedef typename xsifter_type::rec_type                                                                 rec_type;
       typedef typename xsifter_type::arrow_type                                                               arrow_type;
       typedef typename arrow_type::source_type                                                                source_type;
       typedef typename arrow_type::target_type                                                                target_type;
-      typedef typename arrow_type::color_type                                                                 color_type;
       //
       // Need to extend the inherited iterators to be able to extract arrow components in addition to what comes out of ValueExtractor_
       class iterator : public super::iterator {
       public:
         iterator() : super::iterator() {};
         iterator(const typename super::iterator& super_iter) : super::iterator(super_iter) {};
-        virtual const source_type& source() const {return this->_itor->_source;};
-        virtual const color_type&  color()  const {return this->_itor->_color;};
-        virtual const target_type& target() const {return this->_itor->_target;};
+        virtual const source_type& source() const {return this->_itor->source();};
+        virtual const target_type& target() const {return this->_itor->target();};
         virtual const arrow_type&  arrow()  const {return *(this->_itor);};
+        virtual const rec_type&    rec()    const {return *(this->_itor);};
       };
     protected:
       xsifter_type *_xsifter;
@@ -1025,158 +1057,116 @@ namespace ALE {
         this->_xsifter->addArrow(a);
       };
       //
-    };// class ArrowSequence    
+    };// class ArrowSequence  
 
   }; // namespace XSifterDef
   
-
   //
-  // XSifter1A definition
+  // XSifter definition
   //
   template<typename Arrow_, 
-           typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
            typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
-           typename Predicate_ = unsigned int, typename PredicateOrder_ = std::less<Predicate_> >
-  struct XSifter1A : XObject { // struct XSifter1A
+           typename Predicate_ = unsigned int>
+  struct XSifter : XObject { // struct XSifter
     //
-    typedef XSifter1A xsifter_type;
+    typedef XSifter xsifter_type;
     //
     // Encapsulated types: re-export types and/or bind parameterized types
     //
-    typedef Arrow_                           arrow_type;
-    typedef typename arrow_type::source_type source_type;
-    typedef typename arrow_type::target_type target_type;
-    typedef typename arrow_type::color_type  color_type;
     //
-    typedef Predicate_                                        predicate_type;
-    typedef ALE::XSifterDef::PredicateTraits<predicate_type>  predicate_traits;
-    typedef PredicateOrder_                                   predicate_order_type;
+    typedef Arrow_                                                 arrow_type;
+    typedef typename arrow_type::source_type                       source_type;
+    typedef typename arrow_type::target_type                       target_type;
     //
-    typedef ALE::XSifterDef::ArrowRec<arrow_type, predicate_type>  arrow_rec_type;
+    typedef Predicate_                                             predicate_type;
+    typedef ALE::XSifterDef::PredicateTraits<predicate_type>       predicate_traits;
+    //
+    typedef ALE::XSifterDef::ArrowRec<arrow_type, predicate_type>  rec_type;
     // 
     // Key extractors are defined here
     //
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, source_type,    &arrow_rec_type::source>    source_extractor_type;
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, target_type,    &arrow_rec_type::target>    target_extractor_type;
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, color_type,     &arrow_rec_type::color>     color_extractor_type;
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, predicate_type, &arrow_rec_type::predicate> predicate_extractor_type;
+    typedef ::boost::multi_index::const_mem_fun<rec_type, source_type,    &rec_type::source>    source_extractor_type;
+    typedef ::boost::multi_index::const_mem_fun<rec_type, target_type,    &rec_type::target>    target_extractor_type;
+    typedef ::boost::multi_index::const_mem_fun<rec_type, predicate_type, &rec_type::predicate> predicate_extractor_type;
     //
     // Orders are defined here
     //
-    typedef std::less<typename arrow_rec_type::source_type> source_order_type; 
-    typedef std::less<typename arrow_rec_type::target_type> target_order_type;
+    typedef std::less<typename rec_type::target_type> target_order_type;
+    typedef ArrowConeOrder_                                 arrow_cone_order_type;
     //
-    // Rec 'Base' order type: first order by predicate, then target
-    struct base_order_type : public 
-    XSifterDef::RecKeyXXXOrder<arrow_rec_type, 
-                              typename ::boost::multi_index::const_mem_fun<arrow_rec_type,predicate_type, &arrow_rec_type::predicate>, 
-                              predicate_order_type,
-                              XSifterDef::RecKeyOrder<arrow_rec_type,
-                                                      ::boost::multi_index::const_mem_fun<arrow_rec_type, typename arrow_rec_type::target_type, &arrow_rec_type::target>,
-                                                      target_order_type> >
-    {};
-    // Rec 'Cone' order type: first by target, then predicate
+    // Rec 'Cone' order type: first order by target then using a custom arrow_cone order
     struct cone_order_type : public 
-    XSifterDef::RecKeyXXXOrder<arrow_rec_type, 
-                              typename ::boost::multi_index::const_mem_fun<arrow_rec_type,target_type, &arrow_rec_type::target>, 
+    XSifterDef::RecKeyXXXOrder<rec_type, 
+                              typename ::boost::multi_index::const_mem_fun<rec_type,target_type, &rec_type::target>, 
                               target_order_type,
-                              XSifterDef::RecKeyXXXOrder<arrow_rec_type,
-                                                         ::boost::multi_index::const_mem_fun<arrow_rec_type, predicate_type,&arrow_rec_type::predicate>,
-                                                       predicate_order_type, 
-                                                       ArrowConeOrder_> >
+                              XSifterDef::RecKeyOrder<rec_type,
+                                                    ::boost::multi_index::identity<rec_type>, arrow_cone_order_type> >
     {};
     
     //
     // Index tags
     //
-    struct                                   BaseTag{};
     struct                                   ConeTag{};
     
     // Rec set type
     typedef ::boost::multi_index::multi_index_container< 
-      arrow_rec_type,
+      rec_type,
       ::boost::multi_index::indexed_by< 
         ::boost::multi_index::ordered_non_unique<
-          ::boost::multi_index::tag<BaseTag>, ::boost::multi_index::identity<arrow_rec_type>, base_order_type
-        >,
-        ::boost::multi_index::ordered_non_unique<
-          ::boost::multi_index::tag<ConeTag>, ::boost::multi_index::identity<arrow_rec_type>, cone_order_type
+          ::boost::multi_index::tag<ConeTag>, ::boost::multi_index::identity<rec_type>, cone_order_type
         > 
       >,
-      ALE_ALLOCATOR<arrow_rec_type> > 
+      ALE_ALLOCATOR<rec_type> > 
     rec_set_type;
     //
     // Index types
     //
-    typedef typename ::boost::multi_index::index<rec_set_type, BaseTag>::type base_index_type;
     typedef typename ::boost::multi_index::index<rec_set_type, ConeTag>::type cone_index_type;
 
     //
     // Specialized RangeFilters
     //
-    //typedef ALE::XSifterDef::RangeFilter<base_index_type, predicate_extractor_type, predicate_order_type> base_predicate_filter_type;
-    //typedef ALE::XSifterDef::RangeFilter<base_index_type, target_extractor_type, target_order_type>       base_target_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, target_extractor_type, target_order_type>       cone_target_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, predicate_extractor_type, predicate_order_type> cone_predicate_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, predicate_extractor_type, predicate_order_type, true> cone_predicate_strided_filter_type;
+    typedef ALE::XSifterDef::RangeFilter<cone_index_type, target_extractor_type, target_order_type>             cone_target_filter_type;
+    typedef ALE::XSifterDef::RangeFilter<cone_index_type, target_extractor_type, target_order_type, true>       cone_target_strided_filter_type;
+
     //
     // Specialized sequence types
     //
-    //typedef ALE::XSifterDef::ArrowSequence<xsifter_type, base_index_type, base_predicate_filter_type, base_target_filter_type, target_extractor_type, true>  BaseSequence;
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, cone_target_filter_type, cone_predicate_strided_filter_type, target_extractor_type, true>  BaseSequence;
-
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, cone_target_filter_type, cone_predicate_filter_type, source_extractor_type>        ConeSequence;
+    // FIXIT: need to allow a single filter in ArrowSequence; optimize for no filter?
+    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, cone_target_strided_filter_type, cone_target_filter_type, target_extractor_type, true> BaseSequence;
+    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, cone_target_filter_type, cone_target_filter_type, source_extractor_type>               ConeSequence;
     //
     // Basic interface
     //
-    XSifter1A(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
+    XSifter(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
       XObject(debug), _rec_set(), 
-      _base_index(::boost::multi_index::get<BaseTag>(this->_rec_set)), 
       _cone_index(::boost::multi_index::get<ConeTag>(this->_rec_set))
     {};
     //
     // Extended interface
     //
     void addArrow(const arrow_type& a, const predicate_type& p) {
-      this->_rec_set.insert(arrow_rec_type(a,p));
+      this->_rec_set.insert(rec_type(a,p));
     };
     void addArrow(const arrow_type& a) {
-      this->_rec_set.insert(arrow_rec_type(a));
+      this->_rec_set.insert(rec_type(a));
     };
     //
     void cone(const target_type& t, ConeSequence& seq) {
-      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index,t,t),cone_predicate_filter_type(&this->_cone_index));
-    };
-    void cone(const target_type& t, const predicate_type& p, ConeSequence& seq) {
-      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index,t,t),cone_predicate_filter_type(&this->_cone_index,p,p));
+      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index,t,t),cone_target_filter_type(&this->_cone_index,t,t));
     };
     ConeSequence& cone(const target_type& t) {
       static ConeSequence cseq;
       this->cone(t,cseq);
       return cseq;
     };
-    ConeSequence& cone(const target_type& t, const predicate_type& p) {
-      static ConeSequence cseq;
-      this->cone(t,p,cseq);
-      return cseq;
-    };
     //
     void base(BaseSequence& seq) {
-      //seq.reset(this, &this->_base_index,base_predicate_filter_type(&this->_base_index),base_target_filter_type(&this->_base_index));
-      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_strided_filter_type(&this->_cone_index));
-    };
-    void base(const predicate_type& p, BaseSequence& seq) {
-      //seq.reset(this, &this->_base_index,base_predicate_filter_type(&this->_base_index),base_target_filter_type(&this->_base_index));
-      seq.reset(this, &this->_cone_index,cone_target_filter_type(&this->_cone_index),cone_predicate_strided_filter_type(&this->_cone_index,p,p));
+      seq.reset(this, &this->_cone_index,cone_target_strided_filter_type(&this->_cone_index),cone_target_strided_filter_type(&this->_cone_index));
     };
     BaseSequence& base() {
       static BaseSequence bseq;
       this->base(bseq);
-      return bseq;
-    };
-    BaseSequence& base(const predicate_type& p) {
-      static BaseSequence bseq;
-      this->base(p,bseq);
       return bseq;
     };
     //
@@ -1188,11 +1178,6 @@ namespace ALE {
       else {
         os << "Viewing a XSifter (debug: " << this->debug() << "): " << std::endl;
       } 
-      // os << "Base index: (";
-//         for(typename base_index_type::iterator itor = this->_base_index.begin(); itor != this->_base_index.end(); ++itor) {
-//           os << *itor << " ";
-//         }
-//       os << ")" << std::endl;
       os << "Cone index: (";
         for(typename cone_index_type::iterator itor = this->_cone_index.begin(); itor != this->_cone_index.end(); ++itor) {
           os << *itor << " ";
@@ -1200,187 +1185,94 @@ namespace ALE {
       os << ")" << std::endl;
     };
     //
-    // Backdoor
+    // Direct access (a kind of hack)
     //
     // Whole container begin/end
     typedef typename cone_index_type::iterator iterator;
     iterator begin() const {return this->_cone_index.begin();};
-    //
     iterator end() const {return this->_cone_index.end();};
+    //
+    // Slice class
+    //
+    struct Slice {
+    //
+    public:
+      typedef XSifter xsifter_type;
+      //
+      // Encapsulated types: re-export types and/or bind parameterized types
+      //
+      typedef typename xsifter_type::rec_type   rec_type;
+      // 
+      class iterator {
+      protected:
+        typename xsifter_type::iterator _itor;
+      protected:
+        iterator() {};
+        iterator(const xsifter_type::iterator itor) : _itor(itor) {};
+      public:
+        virtual iterator   operator=(const iterator& iter)  const {this->_itor = iter._itor; return *this;};
+        virtual bool       operator==(const iterator& iter) const {return this->_itor == iter._itor;};
+        virtual bool       operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
+        virtual iterator   operator++() {
+          this->_itor = (xsifter_type::iterator)(this->_itor->rec().slice_ptr());
+          return *this;
+        };
+        virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
+        //
+        virtual const source_type& source() const {return this->_itor->_source;};
+        virtual const target_type& target() const {return this->_itor->_target;};
+        virtual const arrow_type&  arrow()  const {return *(this->_itor);};
+        //
+      };
+    protected:
+      xsifter_type   _xsifter;
+      predicate_type _slice_marker;
+      void* _slice_head;
+      void* _slice_tail;
+      bool _clean_on_destruction;
+    public:
+      // 
+      // Basic interface
+      //
+      Slice(xsifter_type *xsifter, const predicate_type& marker = predicate_traits::zero(), const bool& clean = false) : 
+        _slice_marker(marker), _slice_head(NULL), _slice_tail(NULL), _clean_on_destruction(clean) {};
+      ~Slice() {
+        if(this->_clean_on_destruction) {
+          iterator tmp;
+          iterator sitor = this->begin(); 
+          iterator send  = this->end();
+          for(;sitor != send();) {
+            tmp = ++sitor;
+            // CONTINUE: modify (*itor)'s _slice_marker and _next_in_slice pointer.
+            sitor = tmp;
+          }
+        }// if(this->_clean_on_destruction)
+      };// ~Slice()
+      iterator begin(){ return iterator((typename xsifter_type::iterator)this->_slice_head);}; 
+      iterator end(){ return iterator((typename xsifter_type::iterator)((xsifter_type::iterator)(this->_slice_tail)->rec().slice_ptr()));}; 
+      void add(const xsifter_type::iterator& itor) {
+        // add *itor at the tail of the slice linked list
+        static typename xsifter_type::rec_type::SliceChanger  tailSlicer(this->_slice_marker, NULL), nextSlicer;
+        nextSlicer.setSlice(this->_slice_marker, (void*)itor);
+        // set the current slice tail to point to itor 
+        //   CAUTION: hoping for no cycles; can check itor's slice_marker, but will hurt performance
+        //   However, the caller should really be checking that itor is not in the slice yet; otherwise the 'set' semantics are violated.
+        this->_xsifter.update((typename xsifter_type::iterator)(this->_slice_tail), nextSlicer);
+        // mark itor with the slice_marker and set it -- the new tail -- to point to NULL
+        this->_xsifter.update(itor, tailSlicer);
+      };
+      //
+    };// Slice
     
   protected:
-    // set of arrow records
-    rec_set_type     _rec_set;
-    base_index_type& _base_index;
-    cone_index_type& _cone_index;
-  }; // class XSifter1A
-
- //
-  // XSifter1B definition
-  //
-  template<typename Arrow_, 
-           typename ArrowSupportOrder_= XSifterDef::TargetColorOrder<Arrow_>, 
-           typename ArrowConeOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
-           typename Predicate_ = unsigned int, typename PredicateOrder_ = std::less<Predicate_> >
-  struct XSifter1B : XObject { // struct XSifterI
-    //
-    typedef XSifter1B xsifter_type;
-    //
-    // Encapsulated types: re-export types and/or bind parameterized types
-    //
-    typedef Arrow_                           arrow_type;
-    typedef typename arrow_type::source_type source_type;
-    typedef typename arrow_type::target_type target_type;
-    typedef typename arrow_type::color_type  color_type;
-    //
-    typedef Predicate_                                        predicate_type;
-    typedef ALE::XSifterDef::PredicateTraits<predicate_type>  predicate_traits;
-    typedef PredicateOrder_                                   predicate_order_type;
-    //
-    typedef ALE::XSifterDef::ArrowRec<arrow_type, predicate_type>  arrow_rec_type;
-    // 
-    // Key extractors are defined here
-    //
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, source_type,    &arrow_rec_type::source>    source_extractor_type;
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, target_type,    &arrow_rec_type::target>    target_extractor_type;
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, color_type,     &arrow_rec_type::color>     color_extractor_type;
-    typedef ::boost::multi_index::const_mem_fun<arrow_rec_type, predicate_type, &arrow_rec_type::predicate> predicate_extractor_type;
-    //
-    // Index tags
-    //
-    struct                                   BaseTag{};
-    struct                                   ConeTag{};
-
-    //
-    // Orders are defined here
-    //
-    typedef std::less<typename arrow_rec_type::source_type> source_order_type; 
-    typedef std::less<typename arrow_rec_type::target_type> target_order_type;
-    //
-    // Rec 'Cone' order type: first by predicate, then target, etc.
-    struct cone_order_type : public 
-    XSifterDef::RecKeyXXXOrder<arrow_rec_type, 
-                               ::boost::multi_index::const_mem_fun<arrow_rec_type, predicate_type,&arrow_rec_type::predicate>,
-                               predicate_order_type, 
-                               XSifterDef::RecKeyXXXOrder<arrow_rec_type,
-                                                          typename ::boost::multi_index::const_mem_fun<arrow_rec_type,target_type, &arrow_rec_type::target>, 
-                                                          target_order_type,
-                                                          ArrowConeOrder_> >
-    {};        
-    // Rec set type
-    typedef ::boost::multi_index::multi_index_container< 
-      arrow_rec_type,
-      ::boost::multi_index::indexed_by< 
-        ::boost::multi_index::ordered_non_unique<
-          ::boost::multi_index::tag<ConeTag>, ::boost::multi_index::identity<arrow_rec_type>, cone_order_type
-        > 
-      >,
-      ALE_ALLOCATOR<arrow_rec_type> > 
-    rec_set_type;
-    //
-    // Index types
-    //
-    typedef typename ::boost::multi_index::index<rec_set_type, ConeTag>::type cone_index_type;
-
-    //
-    // Specialized RangeFilters
-    //
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, target_extractor_type,    target_order_type>          cone_target_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, target_extractor_type,    target_order_type, true>    cone_target_strided_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, predicate_extractor_type, predicate_order_type>       cone_predicate_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_type, predicate_extractor_type, predicate_order_type, true> cone_predicate_strided_filter_type;
-    //
-    // Specialized sequence types
-    //
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, cone_predicate_strided_filter_type, cone_target_filter_type, target_extractor_type, true>  BaseSequence;
-
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, cone_predicate_filter_type, cone_target_filter_type, source_extractor_type>        ConeSequence;
-    //
-    // Basic interface
-    //
-    XSifter1B(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
-      XObject(debug), _rec_set(), 
-      _cone_index(::boost::multi_index::get<ConeTag>(this->_rec_set))
-    {};
-    //
-    // Extended interface
-    //
-    void addArrow(const arrow_type& a, const predicate_type& p) {
-      this->_rec_set.insert(arrow_rec_type(a,p));
-    };
-    void addArrow(const arrow_type& a) {
-      this->_rec_set.insert(arrow_rec_type(a));
-    };
-    //
-    void cone(const target_type& t, ConeSequence& seq) {
-      seq.reset(this, &this->_cone_index,cone_predicate_filter_type(&this->_cone_index),cone_target_filter_type(&this->_cone_index, t,t));
-    };
-    void cone(const target_type& t, const predicate_type& p, ConeSequence& seq) {
-      seq.reset(this, &this->_cone_index,cone_predicate_filter_type(&this->_cone_index,p,p),cone_target_filter_type(&this->_cone_index,t,t));
-    };
-    ConeSequence& cone(const target_type& t) {
-      static ConeSequence cseq;
-      this->cone(t,cseq);
-      return cseq;
-    };
-    ConeSequence& cone(const target_type& t, const predicate_type& p) {
-      static ConeSequence cseq;
-      this->cone(t,p,cseq);
-      return cseq;
-    };
-    //
-    void base(BaseSequence& seq) {
-      seq.reset(this, &this->_cone_index,cone_predicate_strided_filter_type(&this->_cone_index),cone_target_filter_type(&this->_cone_index));
-    };
-    void base(const predicate_type& p, BaseSequence& seq) {
-      seq.reset(this, &this->_cone_index,cone_predicate_strided_filter_type(&this->_cone_index,p,p),cone_target_filter_type(&this->_cone_index));
-    };
-    BaseSequence& base() {
-      static BaseSequence bseq;
-      this->base(bseq);
-      return bseq;
-    };
-    BaseSequence& base(const predicate_type& p) {
-      static BaseSequence bseq;
-      this->base(p,bseq);
-      return bseq;
-    };
-    //
-    template<typename ostream_type>
-    void view(ostream_type& os, const char* label = NULL){
-      if(label != NULL) {
-        os << "Viewing " << label << " XSifter (debug: " << this->debug() << "): " << std::endl;
-      } 
-      else {
-        os << "Viewing a XSifter (debug: " << this->debug() << "): " << std::endl;
-      } 
-      // os << "Base index: (";
-//         for(typename base_index_type::iterator itor = this->_base_index.begin(); itor != this->_base_index.end(); ++itor) {
-//           os << *itor << " ";
-//         }
-//       os << ")" << std::endl;
-      os << "Cone index: (";
-        for(typename cone_index_type::iterator itor = this->_cone_index.begin(); itor != this->_cone_index.end(); ++itor) {
-          os << *itor << " ";
-        }
-      os << ")" << std::endl;
-    };
-    //
-    // Backdoor
-    //
-    // Whole container begin/end
-    typedef typename cone_index_type::iterator iterator;
-    iterator begin() const {return this->_cone_index.begin();};
-    //
-    iterator end() const {return this->_cone_index.end();};
-    
-  protected:
-    // set of arrow records
+  // set of arrow records
     rec_set_type     _rec_set;
     cone_index_type& _cone_index;
-  }; // class XSifter1B
+  public:
+    //
+  }; // class XSifter
 
-
+  
 } // namespace ALE
 
 #endif
