@@ -80,7 +80,6 @@ overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
 #-----------------------------------------------------------------
-EXTRA_FLAGS = "-DALE_XSIFTER_TYPE=XSifter1A"
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}
 	${RM} -f xsifter0.o
@@ -91,7 +90,6 @@ debugxsifter0:
 	-@${MPIEXEC} -np ${NP} ./xsifter0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
-EXTRA_FLAGS = "-DALE_XSIFTER_TYPE=XSifter1A"
 xsifter1: xsifter1.o chkopts
 	-${CLINKER} -o xsifter1 xsifter1.o ${PETSC_DM_LIB}
 	${RM} -f xsifter1.o
@@ -102,7 +100,6 @@ debugxsifter1:
 	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
-EXTRA_FLAGS = "-DALE_XSIFTER_TYPE=XSifter1A"
 xsifter2: xsifter2.o chkopts
 	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB}
 	${RM} -f xsifter2.o

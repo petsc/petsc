@@ -8,13 +8,13 @@ namespace ALE {
   namespace Test {
     namespace XSifter {
       typedef ALE::XSifterDef::Arrow<double,int,char>    arrow_type;
-      typedef ALE::ALE_XSIFTER_TYPE<arrow_type>          xsifter_type;
+      typedef ALE::XSifter<arrow_type>                   xsifter_type;
       typedef std::set<arrow_type::target_type>          RealBase;
       typedef std::set<arrow_type::source_type>          RealCone;
       //
       struct Options {
         int      debug;   // The debugging level
-        int      codebug; // The codebugging level
+        int      codebug; // The co-debugging level
         PetscInt iters;   // The number of test repetitions
         PetscInt capSize; // The size of the Fork sifter cap
         PetscInt baseSize; // The size of the Fork sifter base
@@ -58,16 +58,16 @@ namespace ALE {
       static ALE::Obj<xsifter_type> createForkXSifter(const MPI_Comm& comm, const Options& options) {
         ALE::Obj<xsifter_type>   xsifter = new xsifter_type(comm, options.debug);
         for(int i = 0; i < options.baseSize; i++) {
-          // Add an arrow from i mod baseSize to i with predicate (i+1) % universeSize and color 'Y'.
-          xsifter->addArrow(arrow_type((double)(i%options.capSize),i,'Y'),(i+1)%options.universeSize);
+          // Add an arrow from i mod baseSize to i with color 'Y'.
+          xsifter->addArrow(arrow_type((double)(i%options.capSize),i,'Y'));
         }
         return xsifter;
       };// createForkXSifter()
       static ALE::Obj<xsifter_type> createHatXSifter(const MPI_Comm& comm, const Options& options) {
         ALE::Obj<xsifter_type>   xsifter = new xsifter_type(comm, options.debug);
         for(int i = 0; i < options.baseSize; i++) {
-          // Add an arrow from i to i mod baseSize with predicate (i+2) % universeSize and color 'H'.
-          xsifter->addArrow(arrow_type((double)i,i%options.capSize,'H'),(i+2)%options.universeSize);
+          // Add an arrow from i to i mod baseSize with  color 'H'.
+          xsifter->addArrow(arrow_type((double)i,i%options.capSize,'H'));
         }
         return xsifter;
       };// createHatXSifter()
