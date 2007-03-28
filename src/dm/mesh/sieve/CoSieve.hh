@@ -12,112 +12,6 @@
 extern "C" PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 namespace ALE {
-  template<typename Point_>
-  class DiscreteSieve {
-  public:
-    typedef Point_                  point_type;
-    typedef std::vector<point_type> coneSequence;
-    typedef std::vector<point_type> coneSet;
-    typedef std::vector<point_type> coneArray;
-    typedef std::vector<point_type> supportSequence;
-    typedef std::vector<point_type> supportSet;
-    typedef std::vector<point_type> supportArray;
-    typedef std::set<point_type>    points_type;
-    typedef points_type             baseSequence;
-    typedef points_type             capSequence;
-  protected:
-    Obj<points_type>  _points;
-    Obj<coneSequence> _empty;
-    Obj<coneSequence> _return;
-    void _init() {
-      this->_points = new points_type();
-      this->_empty  = new coneSequence();
-      this->_return = new coneSequence();
-    };
-  public:
-    DiscreteSieve() {
-      this->_init();
-    };
-    template<typename Input>
-    DiscreteSieve(const Obj<Input>& points) {
-      this->_init();
-      this->_points->insert(points->begin(), points->end());
-    };
-    virtual ~DiscreteSieve() {};
-  public:
-    void addPoint(const point_type& point) {
-      this->_points->insert(point);
-    };
-    template<typename Input>
-    void addPoints(const Obj<Input>& points) {
-      this->_points->insert(points->begin(), points->end());
-    };
-    const Obj<coneSequence>& cone(const point_type& p) {return this->_empty;};
-    template<typename Input>
-    const Obj<coneSequence>& cone(const Input& p) {return this->_empty;};
-    const Obj<coneSet>& nCone(const point_type& p, const int level) {
-      if (level == 0) {
-        return this->closure(p);
-      } else {
-        return this->_empty;
-      }
-    };
-    const Obj<coneArray>& closure(const point_type& p) {
-      this->_return->clear();
-      this->_return->push_back(p);
-      return this->_return;
-    };
-    const Obj<supportSequence>& support(const point_type& p) {return this->_empty;};
-    template<typename Input>
-    const Obj<supportSequence>& support(const Input& p) {return this->_empty;};
-    const Obj<supportSet>& nSupport(const point_type& p, const int level) {
-      if (level == 0) {
-        return this->star(p);
-      } else {
-        return this->_empty;
-      }
-    };
-    const Obj<supportArray>& star(const point_type& p) {
-      this->_return->clear();
-      this->_return->push_back(p);
-      return this->_return;
-    };
-    const Obj<capSequence>& roots() {return this->_points;};
-    const Obj<capSequence>& cap() {return this->_points;};
-    const Obj<baseSequence>& leaves() {return this->_points;};
-    const Obj<baseSequence>& base() {return this->_points;};
-    template<typename Color>
-    void addArrow(const point_type& p, const point_type& q, const Color& color) {
-      throw ALE::Exception("Cannot add an arrow to a DiscreteSieve");
-    };
-    void stratify() {};
-    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
-      ostringstream txt;
-      int rank;
-
-      if (comm == MPI_COMM_NULL) {
-        comm = MPI_COMM_SELF;
-        rank = 0;
-      } else {
-        MPI_Comm_rank(comm, &rank);
-      }
-      if (name == "") {
-        if(rank == 0) {
-          txt << "viewing a DiscreteSieve" << std::endl;
-        }
-      } else {
-        if(rank == 0) {
-          txt << "viewing DiscreteSieve '" << name << "'" << std::endl;
-        }
-      }
-      for(typename points_type::const_iterator p_iter = this->_points->begin(); p_iter != this->_points->end(); ++p_iter) {
-        txt << "  Point " << *p_iter << std::endl;
-      }
-      PetscSynchronizedPrintf(comm, txt.str().c_str());
-      PetscSynchronizedFlush(comm);
-    };
-  };
-
   // A Topology is a collection of Sieves
   //   Each Sieve has a label, which we call a \emph{patch}
   //   The collection itself we call a \emph{sheaf}
@@ -484,7 +378,6 @@ namespace ALE {
       }
     };
   };
-
   // An AbstractSection is a mapping from Sieve points to sets of values
   //   This is our presentation of a section of a fibre bundle,
   //     in which the Topology is the base space, and
@@ -563,6 +456,10 @@ namespace ALE {
       this->checkPatch(patch);
       return this->_atlas.find(patch)->second.count(point) > 0;
     };
+    bool hasPoint(const point_type& point) const {
+      this->checkPatch(0);
+      return this->_atlas.find(0)->second.count(point) > 0;
+    };
   public: // Accessors
     const Obj<topology_type>& getTopology() const {return this->_topology;};
     void setTopology(const Obj<topology_type>& topology) {this->_topology = topology;};
@@ -628,6 +525,7 @@ namespace ALE {
       return &this->_defaultValue;
     };
     const value_type *restrictPoint(const patch_type& patch, const point_type& p) const {return this->restrict(patch, p);};
+    const value_type *restrictPoint(const point_type& p) const {return this->restrict(0, p);};
     void update(const patch_type& patch, const point_type& p, const value_type v[]) {
       this->checkPatch(patch);
       this->_value = v[0];
@@ -738,6 +636,9 @@ namespace ALE {
     };
     bool hasPoint(const patch_type& patch, const point_type& point) {
       return this->_atlas->hasPoint(patch, point);
+    };
+    bool hasPoint(const point_type& point) {
+      return this->_atlas->hasPoint(0, point);
     };
     void checkDimension(const int& dim) {
       if (dim != fiberDim) {
@@ -970,6 +871,10 @@ namespace ALE {
     const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
       this->checkPatch(patch);
       return this->_arrays[patch][p].v;
+    };
+    const value_type *restrictPoint(const point_type& p) {
+      this->checkPatch(0);
+      return this->_arrays[0][p].v;
     };
     // Update only the values associated to this point, not its closure
     void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
@@ -2034,6 +1939,7 @@ namespace ALE {
     template<typename Topology_, typename Value_>
     class OldConstantSection : public ALE::ParallelObject {
     public:
+      typedef OldConstantSection<Topology_, Value_> section_type;
       typedef Topology_                          topology_type;
       typedef typename topology_type::patch_type patch_type;
       typedef typename topology_type::sieve_type sieve_type;
@@ -2042,18 +1948,26 @@ namespace ALE {
     protected:
       Obj<topology_type> _topology;
       const value_type   _value;
+      Obj<section_type>  _section;
     public:
       OldConstantSection(MPI_Comm comm, const value_type value, const int debug = 0) : ParallelObject(comm, debug), _value(value) {
         this->_topology = new topology_type(comm, debug);
+        this->_section  = this;
+        this->_section.addRef();
       };
-      OldConstantSection(const Obj<topology_type>& topology, const value_type value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value) {};
+      OldConstantSection(const Obj<topology_type>& topology, const value_type value) : ParallelObject(topology->comm(), topology->debug()), _topology(topology), _value(value) {
+        this->_section  = this;
+        this->_section.addRef();
+      };
       virtual ~OldConstantSection() {};
-    public:
+    public: // Verifiers
       bool hasPoint(const patch_type& patch, const point_type& point) const {return true;};
+    public: // Restriction
       const value_type *restrict(const patch_type& patch) {return &this->_value;};
-      // This should return something the size of the closure
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return &this->_value;};
       const value_type *restrictPoint(const patch_type& patch, const point_type& p) {return &this->_value;};
+    public: // Adapter
+      const Obj<section_type>& getSection(const patch_type& patch) {return this->_section;};
+      const value_type *restrictPoint(const point_type& p) {return &this->_value;};
     public:
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
         ostringstream txt;
@@ -2084,8 +1998,8 @@ namespace ALE {
     public:
       typedef Overlap_                          overlap_type;
       typedef Section<Topology_, Value_>        base_type;
-      typedef typename base_type::patch_type    patch_type;
       typedef typename base_type::topology_type topology_type;
+      typedef typename base_type::patch_type    patch_type;
       typedef typename base_type::chart_type    chart_type;
       typedef typename base_type::atlas_type    atlas_type;
       typedef typename base_type::value_type    value_type;

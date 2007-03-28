@@ -104,8 +104,10 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     mB->view("Boundary");
     Obj<ALE::Field::Mesh> m = ALE::Generator::generateMesh(mB, options->interpolate);
     m->view("Mesh");
+    Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(m);
+    newMesh->view("Parallel Mesh");
     ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-    if (view) {ierr = ViewMesh(m, "mesh.vtk");CHKERRQ(ierr);}
+    if (view) {ierr = ViewMesh(newMesh, "mesh.vtk");CHKERRQ(ierr);}
 #if 0
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
   } else if (options->dim == 3) {

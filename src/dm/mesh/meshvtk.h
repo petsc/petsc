@@ -22,6 +22,7 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
+#if 0
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteVertices"
   static PetscErrorCode writeVertices(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::topology_type::patch_type& patch, PetscViewer viewer) {
@@ -36,6 +37,7 @@ class VTKViewer {
     ierr = writeSection(coordinates, patch, embedDim, vNumbering, viewer, 3);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
+#endif
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteVertices"
@@ -51,6 +53,7 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
+#if 0
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteField"
   template<typename Section>
@@ -67,7 +70,26 @@ class VTKViewer {
     ierr = writeSection(field, 0, fiberDim, numbering, viewer);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
+#endif
 
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteField"
+  template<typename Section>
+    static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Field::Mesh::numbering_type>& numbering, PetscViewer viewer) {
+    PetscErrorCode ierr;
+
+    PetscFunctionBegin;
+    if (fiberDim == 3) {
+      ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
+    } else {
+      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), fiberDim);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
+    }
+    ierr = writeSection(field, fiberDim, numbering, viewer);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  };
+
+#if 0
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteSection"
   template<typename Section>
@@ -152,6 +174,7 @@ class VTKViewer {
     }
     PetscFunctionReturn(0);
   };
+#endif
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteSection"
@@ -259,6 +282,7 @@ class VTKViewer {
     return -1;
   };
 
+#if 0
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::topology_type::patch_type& patch, PetscViewer viewer)
@@ -355,6 +379,7 @@ class VTKViewer {
     }
     PetscFunctionReturn(0);
   };
+#endif
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteElements"

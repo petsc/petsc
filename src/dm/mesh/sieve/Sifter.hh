@@ -1309,6 +1309,8 @@ template<typename Source_, typename Target_, typename Color_, SifterDef::ColorMu
       typedef Sifter<OtherSource_, OtherTarget_, OtherColor_, OtherSupportCompare_, OtherSourceCtnr_, OtherTargetCtnr_> type;
     };
     // Re-export some typedefs expected by CoSifter
+    typedef typename traits::source_type                                            source_type;
+    typedef typename traits::target_type                                            target_type;
     typedef typename traits::arrow_type                                             Arrow_;
     typedef typename traits::coneSequence                                           coneSequence;
     typedef typename traits::supportSequence                                        supportSequence;
