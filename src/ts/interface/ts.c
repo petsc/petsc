@@ -388,17 +388,20 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetMatrices(TS ts,Mat Arhs,PetscErrorCode (*f
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  PetscValidHeaderSpecific(Arhs,MAT_COOKIE,2);
-  PetscCheckSameComm(ts,1,Arhs,2);
-  if (Alhs) PetscCheckSameComm(ts,1,Alhs,4);
-  if (ts->problem_type == TS_NONLINEAR) 
-    SETERRQ(PETSC_ERR_ARG_WRONG,"Not for nonlinear problems; use TSSetRHSJacobian()");
+  if (Arhs){
+    PetscValidHeaderSpecific(Arhs,MAT_COOKIE,2);
+    PetscCheckSameComm(ts,1,Arhs,2);
+    ts->Arhs           = Arhs;
+    ts->ops->rhsmatrix = frhs;
+  }
+  if (Alhs){
+    PetscValidHeaderSpecific(Alhs,MAT_COOKIE,4);
+    PetscCheckSameComm(ts,1,Alhs,4);
+    ts->Alhs           = Alhs;
+    ts->ops->lhsmatrix = flhs;
+  }
   
-  ts->ops->rhsmatrix = frhs;
-  ts->ops->lhsmatrix = flhs;
   ts->jacP           = ctx;
-  ts->Arhs           = Arhs;
-  ts->Alhs           = Alhs;
   ts->matflg         = flag;
   PetscFunctionReturn(0);
 }
