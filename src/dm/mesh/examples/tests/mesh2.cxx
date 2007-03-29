@@ -8,9 +8,10 @@ static char help[] = "Mesh Tests.\n\n";
 using ALE::Obj;
 
 typedef struct {
-  int        debug;       // The debugging level
-  int        dim;         // The topological mesh dimension
-  PetscTruth interpolate; // Construct missing elements of the mesh
+  int        debug;           // The debugging level
+  int        dim;             // The topological mesh dimension
+  PetscTruth interpolate;     // Construct missing elements of the mesh
+  PetscReal  refinementLimit; // The largest allowable cell volume
 } Options;
 
 #undef __FUNCT__
@@ -20,14 +21,16 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->debug       = 0;
-  options->dim         = 2;
-  options->interpolate = PETSC_TRUE;
+  options->debug           = 0;
+  options->dim             = 2;
+  options->interpolate     = PETSC_TRUE;
+  options->refinementLimit = 0.0;
 
   ierr = PetscOptionsBegin(comm, "", "Options for mesh test", "Mesh");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level",            "mesh2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-dim",   "The topological mesh dimension", "mesh2.cxx", options->dim, &options->dim,   PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Construct missing elements of the mesh", "mesh2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "mesh2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
   PetscFunctionReturn(0);
 }
@@ -104,10 +107,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     mB->view("Boundary");
     Obj<ALE::Field::Mesh> m = ALE::Generator::generateMesh(mB, options->interpolate);
     m->view("Mesh");
-    Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(m);
-    newMesh->view("Parallel Mesh");
+    if (options->refinementLimit > 0.0) {
+      Obj<ALE::Field::Mesh> refMesh = ALE::Generator::refineMesh(m, options->refinementLimit, options->interpolate);
+      refMesh->view("Refined Mesh");
+      m = refMesh;
+    }
+    if (size > 1) {
+      Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(m);
+      newMesh->view("Parallel Mesh");
+      m = newMesh;
+    }
     ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-    if (view) {ierr = ViewMesh(newMesh, "mesh.vtk");CHKERRQ(ierr);}
+    if (view) {ierr = ViewMesh(m, "mesh.vtk");CHKERRQ(ierr);}
 #if 0
     ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
   } else if (options->dim == 3) {

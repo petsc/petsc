@@ -905,6 +905,78 @@ namespace ALE {
       }
       return parallelSection;
     };
+    static void unifyBundle(const Obj<bundle_type>& bundle, const int dim, const Obj<bundle_type>& bundleNew, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+      typedef int part_type;
+      const Obj<sieve_type>& sieve    = bundle->getSieve();
+      const Obj<sieve_type>& sieveNew = bundleNew->getSieve();
+      const int              rank     = bundle->commRank();
+      const int              debug    = bundle->debug();
+
+      // 1) Form partition point overlap a priori
+      if (rank == 0) {
+        for(int p = 1; p < sieve->commSize(); p++) {
+          // The arrow is from remote partition point 0 on rank p to local partition point 0
+          recvOverlap->addCone(p, 0, 0);
+        }
+      } else {
+        // The arrow is from local partition point 0 to remote partition point 0 on rank 0
+        sendOverlap->addCone(0, 0, 0);
+      }
+      if (debug) {
+        sendOverlap->view("Send overlap for partition");
+        recvOverlap->view("Receive overlap for partition");
+      }
+      // 2) Partition the mesh
+      int        numCells   = bundle->heightStratum(0)->size();
+      part_type *assignment = new part_type[numCells];
+
+      for(int c = 0; c < numCells; ++c) {
+        assignment[c] = 0;
+      }
+      // 3) Scatter the sieve
+      sieveCompletion::scatterSieve(bundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, 0, numCells, assignment);
+      bundleNew->stratify();
+      // 4) Cleanup
+      if (assignment != NULL) delete [] assignment;
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "unifyMesh"
+    static Obj<ALE::Field::Mesh> unifyMesh(const Obj<ALE::Field::Mesh>& parallelMesh) {
+      const int                                dim         = parallelMesh->getDimension();
+      Obj<ALE::Field::Mesh>                    serialMesh  = new ALE::Field::Mesh(parallelMesh->comm(), dim, parallelMesh->debug());
+      const Obj<ALE::Field::Mesh::sieve_type>& serialSieve = new ALE::Field::Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
+
+      ALE_LOG_EVENT_BEGIN;
+      serialMesh->setSieve(serialSieve);
+      if (parallelMesh->debug()) {
+        parallelMesh->view("Parallel topology");
+      }
+
+      // Unify cones
+      Obj<send_overlap_type> sendOverlap = new send_overlap_type(serialMesh->comm(), serialMesh->debug());
+      Obj<recv_overlap_type> recvOverlap = new recv_overlap_type(serialMesh->comm(), serialMesh->debug());
+      unifyBundle(parallelMesh, dim, serialMesh, sendOverlap, recvOverlap);
+      serialMesh->setDistSendOverlap(sendOverlap);
+      serialMesh->setDistRecvOverlap(recvOverlap);
+
+      // Unify labels
+      const typename bundle_type::labels_type& labels = parallelMesh->getLabels();
+
+      for(typename bundle_type::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
+        if (serialMesh->hasLabel(l_iter->first)) continue;
+        const Obj<typename bundle_type::label_type>& parallelLabel = l_iter->second;
+        const Obj<typename bundle_type::label_type>& serialLabel   = serialMesh->createLabel(l_iter->first);
+
+        sieveCompletion::scatterCones(parallelLabel, serialLabel, sendOverlap, recvOverlap);
+      }
+
+      // Unify coordinates
+      serialMesh->setRealSection("coordinates", distributeSection(parallelMesh->getRealSection("coordinates"), serialMesh, sendOverlap, recvOverlap));
+
+      if (serialMesh->debug()) {serialMesh->view("Serial Mesh");}
+      ALE_LOG_EVENT_END;
+      return serialMesh;
+    };
   };
 }
 
