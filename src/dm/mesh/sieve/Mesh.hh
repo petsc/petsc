@@ -150,9 +150,9 @@ namespace ALE {
       return os;
     };
   public: // Adapter
-    const Obj<sieve_type>& getSieve() {return this->_topology->getPatch(0);};
-    int height() {return 2;};
-    int depth() {return 2;};
+    const Obj<sieve_type>& getSieve() const {return this->_topology->getPatch(0);};
+    int height() const {return 2;};
+    int depth() const {return 2;};
   public: // Traversal
     template<typename Section_>
     int size(const Obj<Section_>& section, const point_type& p) {
@@ -698,7 +698,7 @@ namespace ALE {
     typedef std::vector<index_type>                                   indexArray;
     typedef NumberingFactory<Bundle<sieve_type> >                     NumberingFactory;
     typedef typename NumberingFactory::numbering_type                 numbering_type;
-    ///typedef NumberingFactory::order_type              order_type;
+    typedef typename NumberingFactory::order_type                     order_type;
     typedef typename ALE::Sifter<int,point_type,point_type>           send_overlap_type;
     typedef typename ALE::Sifter<point_type,int,point_type>           recv_overlap_type;
   protected:
@@ -1017,8 +1017,8 @@ namespace ALE {
         const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
         typename coneArray::iterator end     = closure->end();
 
-        for(typename sieve_type::coneSet::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          this->_indexArray->push_back(this->getIndex(*p_iter, numbering));
+        for(typename sieve_type::coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          this->_indexArray->push_back(section->getIndex(*p_iter, numbering));
         }
       } else {
         throw ALE::Exception("Bundle has not yet implemented nCone");
@@ -1352,10 +1352,9 @@ namespace ALE {
     typedef base_type::label_sequence        label_sequence;
     typedef base_type::real_section_type     real_section_type;
     typedef base_type::numbering_type        numbering_type;
-    ///typedef base_type::send_overlap_type              send_overlap_type;
-    ///typedef base_type::recv_overlap_type              recv_overlap_type;
-    ///typedef base_type::send_section_type              send_section_type;
-    ///typedef base_type::recv_section_type              recv_section_type;
+    typedef base_type::order_type            order_type;
+    typedef base_type::send_overlap_type     send_overlap_type;
+    typedef base_type::recv_overlap_type     recv_overlap_type;
   protected:
     int                   _dim;
     // Discretization

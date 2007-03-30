@@ -77,7 +77,7 @@ namespace ALE {
     public:
       #undef __FUNCT__
       #define __FUNCT__ "updateOverlap"
-      // This is just crappy. WE could introduce another phase to find out exactly what
+      // This is just crappy. We could introduce another phase to find out exactly what
       //   indices people do not have in the global order after communication
       template<typename SendSection, typename RecvSection>
       static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
@@ -194,7 +194,7 @@ namespace ALE {
           }
         }
       };
-       #undef __FUNCT__
+      #undef __FUNCT__
       #define __FUNCT__ "coneCompletion"
       template<typename SendSection, typename RecvSection>
       static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<topology_type>& topology, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
@@ -787,7 +787,7 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "distributeMesh"
-    static Obj<ALE::Field::Mesh> distributeMesh(const Obj<ALE::Field::Mesh>& serialMesh, const std::string& partitioner = "chaco", const int height = 0) {
+    static Obj<ALE::Field::Mesh> distributeMesh(const Obj<ALE::Field::Mesh>& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
       MPI_Comm                                 comm          = serialMesh->comm();
       const int                                dim           = serialMesh->getDimension();
       Obj<ALE::Field::Mesh>                    parallelMesh  = new ALE::Field::Mesh(comm, dim, serialMesh->debug());
@@ -976,6 +976,117 @@ namespace ALE {
       if (serialMesh->debug()) {serialMesh->view("Serial Mesh");}
       ALE_LOG_EVENT_END;
       return serialMesh;
+    };
+  public: // Do not like these
+    #undef __FUNCT__
+    #define __FUNCT__ "updateOverlap"
+    // This is just crappy. We could introduce another phase to find out exactly what
+    //   indices people do not have in the global order after communication
+    template<typename SendSection, typename RecvSection>
+    static void updateOverlap(const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+      const typename SendSection::sheaf_type& sendRanks = sendSection->getPatches();
+      const typename RecvSection::sheaf_type& recvRanks = recvSection->getPatches();
+
+      for(typename SendSection::sheaf_type::const_iterator p_iter = sendRanks.begin(); p_iter != sendRanks.end(); ++p_iter) {
+        const typename SendSection::patch_type&               rank    = p_iter->first;
+        const Obj<typename SendSection::section_type>&        section = p_iter->second;
+        const typename SendSection::section_type::chart_type& chart   = section->getChart();
+
+        for(typename SendSection::section_type::chart_type::iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+          const typename SendSection::value_type *points = section->restrictPoint(*b_iter);
+          const int                               size   = section->getFiberDimension(*b_iter);
+
+          for(int p = 0; p < size; p++) {
+            sendOverlap->addArrow(points[p], rank, points[p]);
+          }
+        }
+      }
+      for(typename RecvSection::sheaf_type::const_iterator p_iter = recvRanks.begin(); p_iter != recvRanks.end(); ++p_iter) {
+        const typename RecvSection::patch_type&               rank    = p_iter->first;
+        const Obj<typename RecvSection::section_type>&        section = p_iter->second;
+        const typename RecvSection::section_type::chart_type& chart   = section->getChart();
+
+        for(typename RecvSection::section_type::chart_type::iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+          const typename RecvSection::value_type *points = section->restrictPoint(*b_iter);
+          const int                               size   = section->getFiberDimension(*b_iter);
+
+          for(int p = 0; p < size; p++) {
+            recvOverlap->addArrow(rank, points[p], points[p]);
+          }
+        }
+      }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "updateSieve"
+    template<typename RecvSection>
+    static void updateSieve(const Obj<RecvSection>& recvSection, const Obj<sieve_type>& sieve) {
+      const typename RecvSection::sheaf_type& ranks = recvSection->getPatches();
+
+      for(typename RecvSection::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
+        const Obj<typename RecvSection::section_type>&        section = p_iter->second;
+        const typename RecvSection::section_type::chart_type& chart   = section->getChart();
+
+        for(typename RecvSection::section_type::chart_type::iterator b_iter = chart.begin(); b_iter != chart.end(); ++b_iter) {
+          const typename RecvSection::value_type *points = section->restrictPoint(*b_iter);
+          int                                     size   = section->getFiberDimension(*b_iter);
+          int                                     c      = 0;
+
+          for(int p = 0; p < size; p++) {
+            //sieve->addArrow(points[p], *b_iter, c++);
+            sieve->addArrow(points[p], *b_iter, c);
+          }
+        }
+      }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "coneCompletion"
+    template<typename SendSection, typename RecvSection>
+    static void coneCompletion(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<bundle_type>& bundle, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+      if (sendOverlap->commSize() == 1) return;
+      // Distribute cones
+      const Obj<sieve_type>&                                 sieve           = bundle->getSieve();
+      const Obj<typename sieveCompletion::topology_type>     secTopology     = sieveCompletion::completion::createSendTopology(sendOverlap);
+      const Obj<typename sieveCompletion::cone_size_section> coneSizeSection = new typename sieveCompletion::cone_size_section(bundle, sieve);
+      const Obj<typename sieveCompletion::cone_section>      coneSection     = new typename sieveCompletion::cone_section(sieve);
+      sieveCompletion::completion::completeSection(sendOverlap, recvOverlap, coneSizeSection, coneSection, sendSection, recvSection);
+      // Update cones
+      updateSieve(recvSection, sieve);
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "completeSection"
+    template<typename Section>
+    static void completeSection(const Obj<bundle_type>& bundle, const Obj<Section>& section) {
+      typedef typename Distribution<bundle_type>::sieveCompletion sieveCompletion;
+      typedef typename bundle_type::send_overlap_type             send_overlap_type;
+      typedef typename bundle_type::recv_overlap_type             recv_overlap_type;
+      typedef typename Section::value_type                        value_type;
+      typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, value_type> > send_section_type;
+      typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, value_type> > recv_section_type;
+      typedef ALE::New::SizeSection<Section>                                SectionSizer;
+      const int debug = section->debug();
+
+      bundle->constructOverlap();
+      const Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
+      const Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
+      const Obj<send_section_type> sendSection = new send_section_type(section->comm(), section->debug());
+      const Obj<recv_section_type> recvSection = new recv_section_type(section->comm(), sendSection->getTag(), section->debug());
+      const Obj<SectionSizer>      sizer       = new SectionSizer(section);
+
+      sectionCompletion::completeSection(sendOverlap, recvOverlap, sizer, section, sendSection, recvSection);
+      // Update section with remote data
+      const Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = bundle->getRecvOverlap()->base();
+
+      for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+        const Obj<typename recv_overlap_type::traits::coneSequence>&     recvPatches = recvOverlap->cone(*r_iter);
+        const typename recv_overlap_type::traits::coneSequence::iterator end         = recvPatches->end();
+
+        for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != end; ++p_iter) {
+          if (recvSection->getSection(*p_iter)->getFiberDimension(p_iter.color())) {
+            if (debug) {std::cout << "["<<section->commRank()<<"]Completed point " << *r_iter << std::endl;}
+            section->updateAddPoint(*r_iter, recvSection->getSection(*p_iter)->restrictPoint(p_iter.color()));
+          }
+        }
+      }
     };
   };
 }

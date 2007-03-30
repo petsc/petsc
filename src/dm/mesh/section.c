@@ -11,15 +11,14 @@ PetscEvent  SectionPair_View = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionView_Sieve_Ascii"
-template<typename Section>
-PetscErrorCode SectionView_Sieve_Ascii(const Obj<Section>& s, const char name[], PetscViewer viewer)
+template<typename Bundle, typename Section>
+PetscErrorCode SectionView_Sieve_Ascii(const Obj<Bundle>& bundle, const Obj<Section>& s, const char name[], PetscViewer viewer)
 {
   // state 0: No header has been output
   // state 1: Only POINT_DATA has been output
   // state 2: Only CELL_DATA has been output
   // state 3: Output both, POINT_DATA last
   // state 4: Output both, CELL_DATA last
-  const ALE::Obj<ALE::Mesh::topology_type>& topology = s->getTopology();
   PetscViewerFormat format;
   PetscErrorCode    ierr;
 
@@ -50,9 +49,8 @@ PetscErrorCode SectionView_Sieve_Ascii(const Obj<Section>& s, const char name[],
       } else if (outputState == 4) {
         SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Tried to output POINT_DATA again after intervening CELL_DATA");
       }
-      const typename Section::patch_type         patch     = topology->getPatches().begin()->first;
-      const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, 0);
-      PetscInt fiberDim = std::abs(s->getFiberDimension(patch, *topology->depthStratum(patch, 0)->begin()));
+      const ALE::Obj<ALE::Field::Mesh::numbering_type>& numbering = bundle->getFactory()->getNumbering(bundle, 0);
+      PetscInt fiberDim = std::abs(s->getFiberDimension(*bundle->depthStratum(0)->begin()));
 
       if (doOutput) {
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
@@ -72,9 +70,8 @@ PetscErrorCode SectionView_Sieve_Ascii(const Obj<Section>& s, const char name[],
       } else if (outputState == 4) {
         doOutput = 0;
       }
-      const typename Section::patch_type         patch     = topology->getPatches().begin()->first;
-      const ALE::Obj<ALE::Mesh::numbering_type>& numbering = ALE::Mesh::NumberingFactory::singleton(s->debug())->getNumbering(topology, patch, topology->depth());
-      PetscInt fiberDim = s->getFiberDimension(patch, *topology->heightStratum(patch, 0)->begin());
+      const ALE::Obj<ALE::Field::Mesh::numbering_type>& numbering = bundle->getFactory()->getNumbering(bundle, bundle->depth());
+      PetscInt fiberDim = s->getFiberDimension(*bundle->heightStratum(0)->begin());
 
       if (doOutput) {
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
@@ -101,12 +98,14 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ALE::Obj<ALE::Mesh::real_section_type> s;
-    const char                            *name;
+    ALE::Obj<ALE::Field::Mesh::real_section_type> s;
+    ALE::Obj<ALE::Field::Mesh>                    b;
+    const char                                   *name;
 
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    ierr = SectionRealGetBundle(section, b);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
-    ierr = SectionView_Sieve_Ascii(s, name, viewer);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
@@ -201,8 +200,8 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidPointer(newSection, 2);
-  const ALE::Obj<ALE::Mesh::real_section_type>& s = section->s;
-  ALE::Obj<ALE::Mesh::real_section_type>        t = new ALE::Mesh::real_section_type(s->getTopology());
+  const ALE::Obj<ALE::Field::Mesh::real_section_type>& s = section->s;
+  ALE::Obj<ALE::Field::Mesh::real_section_type>        t = new ALE::Field::Mesh::real_section_type(s->comm(), s->debug());
 
   t->setAtlas(s->getAtlas());
   t->allocateStorage();
@@ -229,7 +228,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
 
 .seealso SectionRealCreate(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE::Obj<ALE::Mesh::real_section_type>& s)
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE::Obj<ALE::Field::Mesh::real_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
@@ -252,7 +251,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE:
 
 .seealso SectionRealCreate(), SectionRealGetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, const ALE::Obj<ALE::Mesh::real_section_type>& s)
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, const ALE::Obj<ALE::Field::Mesh::real_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
@@ -261,9 +260,9 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, cons
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionRealGetTopology"
+#define __FUNCT__ "SectionRealGetBundle"
 /*@C
-  SectionRealGetTopology - Gets the internal section topology
+  SectionRealGetBundle - Gets the section bundle
 
   Not collective
 
@@ -271,40 +270,40 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, cons
 . section - the section object
 
   Output Parameter:
-. t - the internal section topology
+. b - the section bundle
  
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealGetSection(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetTopology(SectionReal section, ALE::Obj<ALE::Mesh::topology_type>& t)
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetBundle(SectionReal section, ALE::Obj<ALE::Field::Mesh>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
-  t = section->s->getTopology();
+  b = section->b;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionRealSetTopology"
+#define __FUNCT__ "SectionRealSetBundle"
 /*@C
-  SectionRealSetTopology - Sets the internal section topology
+  SectionRealSetBundle - Sets the section bundle
 
   Not collective
 
   Input Parameters:
 + section - the section object
-- t - the internal section topology
+- b - the section bundle
  
   Level: advanced
 
 .seealso SectionRealCreate(), SectionRealGetSection(), SectionRealSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetTopology(SectionReal section, const ALE::Obj<ALE::Mesh::topology_type>& t)
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetBundle(SectionReal section, const ALE::Obj<ALE::Field::Mesh>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
-  section->s->setTopology(t);
+  section->b = b;
   PetscFunctionReturn(0);
 }
 
@@ -342,7 +341,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreate(MPI_Comm comm, SectionReal *s
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
-  s->s             = new ALE::Mesh::real_section_type(comm);
+  s->s             = new ALE::Field::Mesh::real_section_type(comm);
   *section = s;
   PetscFunctionReturn(0);
 }
@@ -394,15 +393,15 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal section)
 @*/
 PetscErrorCode SectionRealDistribute(SectionReal serialSection, Mesh parallelMesh, SectionReal *parallelSection)
 {
-  ALE::Obj<ALE::Mesh::real_section_type> oldSection;
-  ALE::Obj<ALE::Mesh>               m;
+  ALE::Obj<ALE::Field::Mesh::real_section_type> oldSection;
+  ALE::Obj<ALE::Field::Mesh>               m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(serialSection, oldSection);CHKERRQ(ierr);
   ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh::real_section_type> newSection = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeSection(oldSection, m->getTopology(), m->getTopology()->getDistSendOverlap(), m->getTopology()->getDistRecvOverlap());
+  ALE::Obj<ALE::Field::Mesh::real_section_type> newSection = ALE::Distribution<ALE::Field::Mesh>::distributeSection(oldSection, m, m->getDistSendOverlap(), m->getDistRecvOverlap());
   ierr = SectionRealSetSection(*parallelSection, newSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -430,7 +429,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealRestrict(SectionReal section, PetscI
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
-  *values = (PetscScalar *) section->s->restrict(0, point);
+  *values = (PetscScalar *) section->b->restrict(section->s, point);
   PetscFunctionReturn(0);
 }
 
@@ -455,7 +454,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdate(SectionReal section, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
-  section->s->update(0, point, values);
+  section->b->update(section->s, point, values);
   PetscFunctionReturn(0);
 }
 
@@ -480,7 +479,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal section, Petsc
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
-  section->s->updateAdd(0, point, values);
+  section->b->updateAdd(section->s, point, values);
   PetscFunctionReturn(0);
 }
 
@@ -500,12 +499,14 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal section, Petsc
 @*/
 PetscErrorCode SectionRealComplete(SectionReal section)
 {
-  Obj<ALE::Mesh::real_section_type> s;
+  Obj<ALE::Field::Mesh::real_section_type> s;
+  Obj<ALE::Field::Mesh>                    b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ALE::New::Distribution<ALE::Mesh::topology_type>::completeSection(s);
+  ierr = SectionRealGetBundle(section, b);CHKERRQ(ierr);
+  ALE::Distribution<ALE::Field::Mesh>::completeSection(b, s);
   PetscFunctionReturn(0);
 }
 
@@ -528,13 +529,12 @@ PetscErrorCode SectionRealComplete(SectionReal section)
 @*/
 PetscErrorCode SectionRealGetLocalVector(SectionReal section, Vec *lv)
 {
-  const ALE::Mesh::real_section_type::patch_type patch = 0;
-  Obj<ALE::Mesh::real_section_type> s;
+  Obj<ALE::Field::Mesh::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->size(patch), s->restrict(patch), lv);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->size(), s->restrict(), lv);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -554,15 +554,12 @@ PetscErrorCode SectionRealGetLocalVector(SectionReal section, Vec *lv)
 @*/
 PetscErrorCode SectionRealZero(SectionReal section)
 {
-  const ALE::Mesh::real_section_type::patch_type patch = 0;
-  Obj<ALE::Mesh::real_section_type> s;
+  Obj<ALE::Field::Mesh::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  if (s->hasPatch(patch)) {
-    s->zero(patch);CHKERRQ(ierr);
-  }
+  s->zero();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -586,7 +583,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetFiberDimension(SectionReal sectio
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
-  section->s->setFiberDimension(0, point, size);
+  section->s->setFiberDimension(point, size);
   PetscFunctionReturn(0);
 }
 
@@ -608,7 +605,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
-  section->s->allocate();
+  section->b->allocate(section->s);
   PetscFunctionReturn(0);
 }
 
@@ -655,17 +652,17 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
 @*/
 PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal *section)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> s;
+  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Field::Mesh::real_section_type> s;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
-  ierr = SectionRealSetTopology(*section, m->getTopology());CHKERRQ(ierr);
+  ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(*section, s);CHKERRQ(ierr);
-  s->setFiberDimensionByDepth(0, 0, fiberDim);
-  s->allocate();
+  s->setFiberDimension(m->depthStratum(0), fiberDim);
+  m->allocate(s);
   PetscFunctionReturn(0);
 }
 
@@ -690,17 +687,17 @@ PetscErrorCode MeshGetVertexSectionReal(Mesh mesh, PetscInt fiberDim, SectionRea
 @*/
 PetscErrorCode MeshGetCellSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal *section)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::real_section_type> s;
+  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Field::Mesh::real_section_type> s;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
-  ierr = SectionRealSetTopology(*section, m->getTopology());CHKERRQ(ierr);
+  ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(*section, s);CHKERRQ(ierr);
-  s->setFiberDimensionByHeight(0, 0, fiberDim);
-  s->allocate();
+  s->setFiberDimension(m->heightStratum(0), fiberDim);
+  m->allocate(s);
   PetscFunctionReturn(0);
 }
 
@@ -717,12 +714,14 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ALE::Obj<ALE::Mesh::int_section_type> s;
-    const char                           *name;
+    ALE::Obj<ALE::Field::Mesh::int_section_type> s;
+    ALE::Obj<ALE::Field::Mesh>                   b;
+    const char                                  *name;
 
     ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
+    ierr = SectionIntGetBundle(section, b);CHKERRQ(ierr);
     ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
-    ierr = SectionView_Sieve_Ascii(s, name, viewer);CHKERRQ(ierr);
+    ierr = SectionView_Sieve_Ascii(b, s, name, viewer);CHKERRQ(ierr);
   } else if (isbinary) {
     SETERRQ(PETSC_ERR_SUP, "Binary viewer not implemented for Section");
   } else if (isdraw){ 
@@ -810,7 +809,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
 
 .seealso SectionIntCreate(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::Obj<ALE::Mesh::int_section_type>& s)
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::Obj<ALE::Field::Mesh::int_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
@@ -833,7 +832,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::O
 
 .seealso SectionIntCreate(), SectionIntGetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const ALE::Obj<ALE::Mesh::int_section_type>& s)
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const ALE::Obj<ALE::Field::Mesh::int_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
@@ -842,9 +841,9 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const 
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionIntGetTopology"
+#define __FUNCT__ "SectionIntGetBundle"
 /*@C
-  SectionIntGetTopology - Gets the internal section topology
+  SectionIntGetBundle - Gets the section bundle
 
   Not collective
 
@@ -852,40 +851,40 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const 
 . section - the section object
 
   Output Parameter:
-. t - the internal section topology
+. b - the section bundle
  
   Level: advanced
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetTopology(SectionInt section, ALE::Obj<ALE::Mesh::topology_type>& t)
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt section, ALE::Obj<ALE::Field::Mesh>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
-  t = section->s->getTopology();
+  b = section->b;
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionIntSetTopology"
+#define __FUNCT__ "SectionIntSetBundle"
 /*@C
-  SectionIntSetTopology - Sets the internal section topology
+  SectionIntSetBundle - Sets the section bundle
 
   Not collective
 
   Input Parameters:
 + section - the section object
-- t - the internal section topology
+- b - the section bundle
  
   Level: advanced
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetTopology(SectionInt section, const ALE::Obj<ALE::Mesh::topology_type>& t)
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetTopology(SectionInt section, const ALE::Obj<ALE::Field::Mesh>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
-  section->s->setTopology(t);
+  section->b = b;
   PetscFunctionReturn(0);
 }
 
@@ -923,7 +922,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntCreate(MPI_Comm comm, SectionInt *sec
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
-  s->s             = new ALE::Mesh::int_section_type(comm);
+  s->s             = new ALE::Field::Mesh::int_section_type(comm);
   *section = s;
   PetscFunctionReturn(0);
 }
@@ -975,15 +974,15 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt section)
 @*/
 PetscErrorCode SectionIntDistribute(SectionInt serialSection, Mesh parallelMesh, SectionInt *parallelSection)
 {
-  ALE::Obj<ALE::Mesh::int_section_type> oldSection;
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Field::Mesh::int_section_type> oldSection;
+  ALE::Obj<ALE::Field::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(serialSection, oldSection);CHKERRQ(ierr);
   ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh::int_section_type> newSection = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeSection(oldSection, m->getTopology(), m->getTopology()->getDistSendOverlap(), m->getTopology()->getDistRecvOverlap());
+  ALE::Obj<ALE::Field::Mesh::int_section_type> newSection = ALE::Distribution<ALE::Field::Mesh>::distributeSection(oldSection, m, m->getDistSendOverlap(), m->getDistRecvOverlap());
   ierr = SectionIntSetSection(*parallelSection, newSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1011,7 +1010,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntRestrict(SectionInt section, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidPointer(values,3);
-  *values = (PetscInt *) section->s->restrict(0, point);
+  *values = (PetscInt *) section->b->restrict(section->s, point);
   PetscFunctionReturn(0);
 }
 
@@ -1036,7 +1035,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdate(SectionInt section, PetscInt p
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidIntPointer(values,3);
-  section->s->update(0, point, values);
+  section->b->update(section->s, point, values);
   PetscFunctionReturn(0);
 }
 
@@ -1061,7 +1060,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt section, PetscIn
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidScalarPointer(values,3);
-  section->s->updateAdd(0, point, values);
+  section->b->updateAdd(section->s, point, values);
   PetscFunctionReturn(0);
 }
 
@@ -1081,12 +1080,14 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntUpdateAdd(SectionInt section, PetscIn
 @*/
 PetscErrorCode SectionIntComplete(SectionInt section)
 {
-  Obj<ALE::Mesh::int_section_type> s;
+  Obj<ALE::Field::Mesh::int_section_type> s;
+  Obj<ALE::Field::Mesh>                   b;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = SectionIntGetSection(section, s);CHKERRQ(ierr);
-  ALE::New::Distribution<ALE::Mesh::topology_type>::completeSection(s);
+  ierr = SectionIntGetBundle(section, b);CHKERRQ(ierr);
+  ALE::Distribution<ALE::Field::Mesh>::completeSection(b, s);
   PetscFunctionReturn(0);
 }
 
@@ -1110,7 +1111,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetFiberDimension(SectionInt section,
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
-  section->s->setFiberDimension(0, point, size);
+  section->s->setFiberDimension(point, size);
   PetscFunctionReturn(0);
 }
 
@@ -1132,7 +1133,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntAllocate(SectionInt section)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
-  section->s->allocate();
+  section->b->allocate(section->s);
   PetscFunctionReturn(0);
 }
 
@@ -1179,17 +1180,17 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntClear(SectionInt section)
 @*/
 PetscErrorCode MeshGetVertexSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt *section)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::int_section_type> s;
+  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Field::Mesh::int_section_type> s;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
-  ierr = SectionIntSetTopology(*section, m->getTopology());CHKERRQ(ierr);
+  ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*section, s);CHKERRQ(ierr);
-  s->setFiberDimensionByDepth(0, 0, fiberDim);
-  s->allocate();
+  s->setFiberDimension(m->depthStratum(0), fiberDim);
+  m->allocate(s);
   PetscFunctionReturn(0);
 }
 
@@ -1214,20 +1215,21 @@ PetscErrorCode MeshGetVertexSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt 
 @*/
 PetscErrorCode MeshGetCellSectionInt(Mesh mesh, PetscInt fiberDim, SectionInt *section)
 {
-  ALE::Obj<ALE::Mesh> m;
-  ALE::Obj<ALE::Mesh::int_section_type> s;
+  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Field::Mesh::int_section_type> s;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
-  ierr = SectionIntSetTopology(*section, m->getTopology());CHKERRQ(ierr);
+  ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*section, s);CHKERRQ(ierr);
-  s->setFiberDimensionByHeight(0, 0, fiberDim);
-  s->allocate();
+  s->setFiberDimension(m->heightStratum(0), fiberDim);
+  m->allocate(s);
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "SectionPairView_Sieve"
 PetscErrorCode SectionPairView_Sieve(SectionPair section, PetscViewer viewer)
@@ -1241,7 +1243,7 @@ PetscErrorCode SectionPairView_Sieve(SectionPair section, PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_DRAW, &isdraw);CHKERRQ(ierr);
 
   if (iascii){
-    ALE::Obj<ALE::Mesh::pair_section_type> s;
+    ALE::Obj<ALE::Field::Mesh::pair_section_type> s;
     const char                            *name;
 
     ierr = SectionPairGetSection(section, s);CHKERRQ(ierr);
@@ -1334,7 +1336,7 @@ PetscErrorCode SectionPairView(SectionPair section, PetscViewer viewer)
 
 .seealso SectionPairCreate(), SectionPairSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetSection(SectionPair section, ALE::Obj<ALE::Mesh::pair_section_type>& s)
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetSection(SectionPair section, ALE::Obj<ALE::Field::Mesh::pair_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
@@ -1357,7 +1359,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetSection(SectionPair section, ALE:
 
 .seealso SectionPairCreate(), SectionPairGetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetSection(SectionPair section, const ALE::Obj<ALE::Mesh::pair_section_type>& s)
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetSection(SectionPair section, const ALE::Obj<ALE::Field::Mesh::pair_section_type>& s)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
@@ -1382,7 +1384,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetSection(SectionPair section, cons
 
 .seealso SectionPairCreate(), SectionPairGetSection(), SectionPairSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetTopology(SectionPair section, ALE::Obj<ALE::Mesh::topology_type>& t)
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetTopology(SectionPair section, ALE::Obj<ALE::Field::Mesh::topology_type>& t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
@@ -1405,7 +1407,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairGetTopology(SectionPair section, ALE
 
 .seealso SectionPairCreate(), SectionPairGetSection(), SectionPairSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetTopology(SectionPair section, const ALE::Obj<ALE::Mesh::topology_type>& t)
+PetscErrorCode PETSCDM_DLLEXPORT SectionPairSetTopology(SectionPair section, const ALE::Obj<ALE::Field::Mesh::topology_type>& t)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
@@ -1447,7 +1449,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairCreate(MPI_Comm comm, SectionPair *s
 
   ierr = PetscObjectChangeTypeName((PetscObject) s, "sieve");CHKERRQ(ierr);
 
-  s->s             = new ALE::Mesh::pair_section_type(comm);
+  s->s             = new ALE::Field::Mesh::pair_section_type(comm);
   *section = s;
   PetscFunctionReturn(0);
 }
@@ -1499,15 +1501,15 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairDestroy(SectionPair section)
 @*/
 PetscErrorCode SectionPairDistribute(SectionPair serialSection, Mesh parallelMesh, SectionPair *parallelSection)
 {
-  ALE::Obj<ALE::Mesh::pair_section_type> oldSection;
-  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Field::Mesh::pair_section_type> oldSection;
+  ALE::Obj<ALE::Field::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = SectionPairGetSection(serialSection, oldSection);CHKERRQ(ierr);
   ierr = MeshGetMesh(parallelMesh, m);CHKERRQ(ierr);
   ierr = SectionPairCreate(oldSection->comm(), parallelSection);CHKERRQ(ierr);
-  ALE::Obj<ALE::Mesh::pair_section_type> newSection = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeSection(oldSection, m->getTopology(), m->getTopology()->getDistSendOverlap(), m->getTopology()->getDistRecvOverlap());
+  ALE::Obj<ALE::Field::Mesh::pair_section_type> newSection = ALE::New::Distribution<ALE::Field::Mesh::topology_type>::distributeSection(oldSection, m->getTopology(), m->getTopology()->getDistSendOverlap(), m->getTopology()->getDistRecvOverlap());
   ierr = SectionPairSetSection(*parallelSection, newSection);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1560,7 +1562,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairUpdate(SectionPair section, PetscInt
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
   PetscValidPointer(values,3);
-  section->s->update(0, point, (ALE::pair<int, ALE::Mesh::split_value> *) values);
+  section->s->update(0, point, (ALE::pair<int, ALE::Field::Mesh::split_value> *) values);
   PetscFunctionReturn(0);
 }
 
@@ -1631,3 +1633,4 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionPairClear(SectionPair section)
   section->s->clear();
   PetscFunctionReturn(0);
 }
+#endif

@@ -155,8 +155,8 @@ namespace Field {
     value_type _defaultValue;
   public:
     ConstantSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _defaultValue(0) {};
-    ConstantSection(MPI_Comm comm, const value_type& value, const int debug = 0) : ParallelObject(comm, debug), _value(value), _defaultValue(value) {};
-    ConstantSection(MPI_Comm comm, const value_type& value, const value_type& defaultValue, const int debug = 0) : ParallelObject(comm, debug), _value(value), _defaultValue(defaultValue) {};
+    ConstantSection(MPI_Comm comm, const value_type& value, const int debug) : ParallelObject(comm, debug), _value(value), _defaultValue(value) {};
+    ConstantSection(MPI_Comm comm, const value_type& value, const value_type& defaultValue, const int debug) : ParallelObject(comm, debug), _value(value), _defaultValue(defaultValue) {};
   public: // Verifiers
     void checkPoint(const point_type& point) const {
       if (this->_chart.find(point) == this->_chart.end()) {
@@ -422,7 +422,7 @@ namespace Field {
         }
       }
       const typename atlas_type::chart_type& chart = this->_atlas->getChart();
-      const values_type&                     array = this->_array;
+      values_type&                           array = this->_array;
 
       for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const point_type&                     point = *p_iter;
@@ -688,6 +688,313 @@ namespace Field {
           txt << "[" << this->commRank() << "]:   " << point << " dim " << idx.prefix << " offset " << idx.index << "  ";
           for(int i = 0; i < std::abs(idx.prefix); i++) {
             txt << " " << array[idx.index+i];
+          }
+          txt << std::endl;
+        }
+      }
+      PetscSynchronizedPrintf(comm, txt.str().c_str());
+      PetscSynchronizedFlush(comm);
+    };
+  };
+  // GeneralSection will support BC on a subset of unknowns on a point
+  //   We make a separate constraint Atlas to mark constrained dofs on a point
+  //   Storage will be contiguous by node, just as in Section
+  //     This allows fast restrict(p)
+  //     Then update() is accomplished by skipping constrained unknowns
+  //     We must eliminate restrict() since it does not correspond to the constrained system
+  //   Numbering will have to be rewritten to calculate correct mappings
+  //     I think we can just generate multiple tuples per point
+  template<typename Point_, typename Value_>
+  class GeneralSection : public ALE::ParallelObject {
+  public:
+    typedef Point_                                 point_type;
+    typedef ALE::Point                             index_type;
+    typedef UniformSection<point_type, index_type> atlas_type;
+    typedef Section<point_type, int>               bc_type;
+    typedef typename atlas_type::chart_type        chart_type;
+    typedef Value_                                 value_type;
+    typedef value_type *                           values_type;
+  protected:
+    Obj<atlas_type> _atlas;
+    Obj<atlas_type> _atlasNew;
+    values_type     _array;
+    Obj<bc_type>    _bc;
+  public:
+    GeneralSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
+      this->_atlas    = new atlas_type(comm, debug);
+      this->_atlasNew = NULL;
+      this->_array    = NULL;
+      this->_bc       = new bc_type(comm, debug);
+    };
+    GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL) {
+      this->_bc       = new bc_type(comm, debug);
+    };
+    virtual ~GeneralSection() {
+      if (!this->_array) {
+        delete [] this->_array;
+        this->_array = NULL;
+      }
+    };
+  public:
+    value_type *getRawArray(const int size) {
+      static value_type *array   = NULL;
+      static int         maxSize = 0;
+
+      if (size > maxSize) {
+        maxSize = size;
+        if (array) delete [] array;
+        array = new value_type[maxSize];
+      };
+      return array;
+    };
+  public: // Verifiers
+    bool hasPoint(const point_type& point) {
+      return this->_atlas->hasPoint(point);
+    };
+  public: // Accessors
+    const Obj<atlas_type>& getAtlas() const {return this->_atlas;};
+    void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
+    const Obj<atlas_type>& getNewAtlas() const {return this->_atlasNew;};
+    void setNewAtlas(const Obj<atlas_type>& atlas) {this->_atlasNew = atlas;};
+    const chart_type& getChart() const {return this->_atlas->getChart();};
+  public: // Sizes
+    void clear() {
+      this->_atlas->clear(); 
+      delete [] this->_array;
+      this->_array = NULL;
+      this->_bc->clear(); 
+    };
+    int getFiberDimension(const point_type& p) const {
+      return this->_atlas->restrictPoint(p)->prefix;
+    };
+    int getFiberDimension(const Obj<atlas_type>& atlas, const point_type& p) const {
+      return atlas->restrictPoint(p)->prefix;
+    };
+    void setFiberDimension(const point_type& p, int dim) {
+      const index_type idx(dim, -1);
+      this->_atlas->addPoint(p);
+      this->_atlas->updatePoint(p, &idx);
+    };
+    template<typename Sequence>
+    void setFiberDimension(const Obj<Sequence>& points, int dim) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->setFiberDimension(*p_iter, dim);
+      }
+    };
+    void addFiberDimension(const point_type& p, int dim) {
+      if (this->_atlas->hasPoint(p)) {
+        const index_type values(dim, 0);
+        this->_atlas->updateAddPoint(p, &values);
+      } else {
+        this->setFiberDimension(p, dim);
+      }
+    };
+    int size() const {
+      const chart_type& points = this->getChart();
+      int               size   = 0;
+
+      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getFiberDimension(*p_iter) - this->getConstraintDimension(*p_iter);
+      }
+      return size;
+    };
+    int sizeWithBC() const {
+      const chart_type& points = this->getChart();
+      int               size   = 0;
+
+      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getFiberDimension(*p_iter);
+      }
+      return size;
+    };
+  public: // Index retrieval
+    const index_type& getIndex(const point_type& p) {
+      return this->_atlas->restrictPoint(p)[0];
+    };
+    template<typename Numbering>
+    const index_type getIndex(const point_type& p, const Obj<Numbering>& numbering) {
+      return index_type(this->getFiberDimension(p), numbering->getIndex(p));
+    };
+  public: // Allocation
+    void allocateStorage() {
+      this->_array = new value_type[this->sizeWithBC()];
+      PetscMemzero(this->_array, this->sizeWithBC() * sizeof(value_type));
+    };
+    void replaceStorage(value_type *newArray) {
+      delete [] this->_array;
+      this->_array    = newArray;
+      this->_atlas    = this->_atlasNew;
+      this->_atlasNew = NULL;
+    };
+    void addPoint(const point_type& point, const int dim) {
+      if (dim == 0) return;
+      if (this->_atlasNew.isNull()) {
+        this->_atlasNew = new atlas_type(this->comm(), this->debug());
+        this->_atlasNew->copy(this->_atlas);
+      }
+      const index_type idx(dim, -1);
+      this->_atlasNew->addPoint(point);
+      this->_atlasNew->updatePoint(point, &idx);
+    };
+    void orderPoints(const Obj<atlas_type>& atlas){
+      const chart_type& chart  = this->getChart();
+      int               offset = 0;
+
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        typename atlas_type::value_type idx = atlas->restrictPoint(*c_iter)[0];
+        const int&                      dim = idx.prefix;
+
+        idx.index = offset;
+        atlas->updatePoint(*c_iter, &idx);
+        offset += dim;
+      }
+    };
+    void allocatePoint() {
+      this->orderPoints(this->_atlas);
+      this->allocateStorage();
+      this->_bc->allocatePoint();
+    };
+  public: // Restriction and Update
+    // Zero entries
+    void zero() {
+      //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        const value_type *array = this->restrictPoint(*c_iter);
+        const int&        dim   = this->getFiberDimenson(*c_iter);
+        const int&        cDim  = this->getConstraintDimenson(*c_iter);
+
+        if (!cDim) {
+          memset(array, 0, dim * sizeof(value_type));
+        } else {
+          const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = 0.0;
+          }
+        }
+      }
+    };
+    // Return only the values associated to this point, not its closure
+    const value_type *restrictPoint(const point_type& p) const {
+      return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
+    };
+    // Update only the values associated to this point, not its closure
+    void updatePoint(const point_type& p, const value_type v[]) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  dim   = this->getFiberDimension(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        for(int i = 0; i < dim; ++i) {
+          array[i] = v[i];
+        }
+      } else {
+        const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+        int                                 cInd = 0;
+
+        for(int i = 0, k = -1; i < dim; ++i) {
+          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+          array[i] = v[++k];
+        }
+      }
+    };
+    // Update only the values associated to this point, not its closure
+    void updateAddPoint(const point_type& p, const value_type v[]) {
+      const value_type *array = this->restrictPoint(p);
+      const int&        dim   = this->getFiberDimenson(p);
+      const int&        cDim  = this->getConstraintDimenson(p);
+
+      if (!cDim) {
+        for(int i = 0; i < dim; ++i) {
+          array[i] += v[i];
+        }
+      } else {
+        const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+        int                                 cInd = 0;
+
+        for(int i = 0, k = -1; i < dim; ++i) {
+          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+          array[i] += v[++k];
+        }
+      }
+    };
+    void updatePointBC(const point_type& p, const value_type v[]) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  dim   = this->getFiberDimension(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (cDim) {
+        const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+        int                                 cInd = 0;
+
+        for(int i = 0, k = 0; i < dim; ++i) {
+          if (cInd == cDim) break;
+          if (i == cDof[cInd]) {
+            array[i] = v[k];
+            ++cInd;
+            ++k;
+          }
+        }
+      }
+    };
+  public: // BC
+    const int getConstraintDimension(const point_type& p) const {
+      if (!this->_bc->hasPoint(p)) return 0;
+      return this->_bc->getFiberDimension(p);
+    };
+    void setConstraintDimension(const point_type& p, const int numConstraints) {
+      this->_bc->setFiberDimension(p, numConstraints);
+    };
+    const int *getConstraintDof(const point_type& p) {
+      return this->_bc->restrictPoint(p);
+    };
+    void setConstraintDof(const point_type& p, const int dofs[]) {
+      this->_bc->updatePoint(p, dofs);
+    };
+  public:
+    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+      ostringstream txt;
+      int rank;
+
+      if (comm == MPI_COMM_NULL) {
+        comm = this->comm();
+        rank = this->commRank();
+      } else {
+        MPI_Comm_rank(comm, &rank);
+      }
+      if (name == "") {
+        if(rank == 0) {
+          txt << "viewing a Section" << std::endl;
+        }
+      } else {
+        if(rank == 0) {
+          txt << "viewing Section '" << name << "'" << std::endl;
+        }
+      }
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const value_type *array = this->restrictPoint(*p_iter);
+        const int&        dim   = this->getFiberDimension(*p_iter);
+
+        if (dim != 0) {
+          txt << "[" << this->commRank() << "]:   " << *p_iter << " dim " << dim << " offset " << this->_atlas->restrictPoint(*p_iter)->index << "  ";
+          for(int i = 0; i < std::abs(dim); i++) {
+            txt << " " << array[i];
+          }
+          const int& dim = this->_bc->getFiberDimension(*p_iter);
+
+          if (dim) {
+            const typename bc_type::value_type *bcArray = this->_bc->restrictPoint(*p_iter);
+
+            txt << " constrained";
+            for(int i = 0; i < dim; ++i) {
+              txt << " " << bcArray[i];
+            }
           }
           txt << std::endl;
         }

@@ -536,6 +536,50 @@ namespace ALE {
     point_type getPoint(const int& index) {return this->_invOrder[index];};
     void setPoint(const int& index, const point_type& point) {this->_invOrder[index] = point;};
   };
+  template<typename Point_, typename Value_ = ALE::Point>
+  class GlobalOrder : public UniformSection<Point_, Value_> {
+  public:
+    typedef UniformSection<Point_, Value_> base_type;
+    typedef typename base_type::point_type point_type;
+    typedef typename base_type::value_type value_type;
+    typedef typename base_type::atlas_type atlas_type;
+  protected:
+    int  _localSize;
+    int *_offsets;
+  public:
+    GlobalOrder(MPI_Comm comm, const int debug = 0) : UniformSection<Point_, Value_>(comm, debug), _localSize(0) {
+      this->_offsets    = new int[this->commSize()+1];
+      this->_offsets[0] = 0;
+    };
+    ~GlobalOrder() {
+      delete [] this->_offsets;
+    };
+  public: // Sizes
+    int        getLocalSize() const {return this->_localSize;};
+    void       setLocalSize(const int size) {this->_localSize = size;};
+    int        getGlobalSize() const {return this->_offsets[this->commSize()];};
+    int        getGlobalOffset(const int p) const {return this->_offsets[p];};
+    const int *getGlobalOffsets() const {return this->_offsets;};
+    void       setGlobalOffsets(const int offsets[]) {
+      for(int p = 0; p <= this->commSize(); ++p) {
+        this->_offsets[p] = offsets[p];
+      }
+    };
+  public: // Indices
+    virtual int getIndex(const point_type& p) {
+      const int idx = this->restrictPoint(p)[0].prefix;
+      if (idx >= 0) {
+        return idx;
+      }
+      return -(idx+1);
+    };
+    virtual void setIndex(const point_type& p, const int index) {
+      const value_type idx(index, this->restrictPoint(p)[0].index);
+      this->updatePoint(p, &idx);
+    };
+    virtual bool isLocal(const point_type& p) {return this->restrictPoint(p)[0].prefix >= 0;};
+    virtual bool isRemote(const point_type& p) {return this->restrictPoint(p)[0].prefix < 0;};
+  };
   template<typename Bundle_, typename Value_ = int>
   class NumberingFactory : ALE::ParallelObject {
   public:
@@ -544,15 +588,20 @@ namespace ALE {
     typedef typename sieve_type::point_type                 point_type;
     typedef Value_                                          value_type;
     typedef Numbering<point_type, value_type>               numbering_type;
-    typedef std::map<bundle_type*, std::map<int, Obj<numbering_type> > > numberings_type;
+    typedef std::map<bundle_type*, std::map<int, Obj<numbering_type> > >     numberings_type;
+    typedef GlobalOrder<point_type>                         order_type;
+    typedef typename order_type::value_type                 oValue_type;
+    typedef std::map<bundle_type*, std::map<std::string, Obj<order_type> > > orders_type;
     typedef typename ALE::Sifter<int,point_type,point_type> send_overlap_type;
     typedef typename ALE::Sifter<point_type,int,point_type> recv_overlap_type;
   protected:
-    numberings_type  _localNumberings;
-    numberings_type  _numberings;
-    const value_type _unknownNumber;
+    numberings_type   _localNumberings;
+    numberings_type   _numberings;
+    orders_type       _orders;
+    const value_type  _unknownNumber;
+    const oValue_type _unknownOrder;
   protected:
-    NumberingFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), _unknownNumber(-1) {};
+    NumberingFactory(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), _unknownNumber(-1), _unknownOrder(-1, 0) {};
   public:
     ~NumberingFactory() {};
   public:
@@ -669,6 +718,68 @@ namespace ALE {
       }
       numbering->setLocalSize(localSize);
     };
+    // Order all local points
+    //   points in the overlap are only ordered by the owner with the lowest rank
+    template<typename Sequence_, typename Atlas_>
+    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<Sequence_>& points, const Obj<Atlas_>& atlas) {
+      int localSize = 0;
+
+      order->setFiberDimension(points, 1);
+      for(typename Sequence_::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+        oValue_type val;
+
+        if (sendOverlap->capContains(*l_iter)) {
+          const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
+          int minRank = sendOverlap->commSize();
+
+          for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
+            if (*p_iter < minRank) minRank = *p_iter;
+          }
+          if (minRank < sendOverlap->commRank()) {
+            val = this->_unknownOrder;
+          } else {
+            val.prefix = localSize;
+            val.index  = atlas->restrict(*l_iter)[0].prefix;
+          }
+        } else {
+          val.prefix = localSize;
+          val.index  = atlas->restrict(*l_iter)[0].prefix;
+        }
+        localSize += std::max(0, val.index);
+        order->updatePoint(*l_iter, &val);
+      }
+      order->setLocalSize(localSize);
+    };
+    template<typename Point_, typename Atlas_>
+    void constructLocalOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const std::set<Point_>& points, const Obj<Atlas_>& atlas) {
+      int localSize = 0;
+
+      order->setFiberDimension(points, 1);
+      for(typename std::set<Point_>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
+        oValue_type val;
+
+        if (sendOverlap->capContains(*l_iter)) {
+          const Obj<typename send_overlap_type::traits::supportSequence>& sendPatches = sendOverlap->support(*l_iter);
+          int minRank = sendOverlap->commSize();
+
+          for(typename send_overlap_type::traits::supportSequence::iterator p_iter = sendPatches->begin(); p_iter != sendPatches->end(); ++p_iter) {
+            if (*p_iter < minRank) minRank = *p_iter;
+          }
+          if (minRank < sendOverlap->commRank()) {
+            val = this->_unknownOrder;
+          } else {
+            val.prefix = localSize;
+            val.index  = atlas->restrictPoint(*l_iter)[0].prefix;
+          }
+        } else {
+          val.prefix = localSize;
+          val.index  = atlas->restrictPoint(*l_iter)[0].prefix;
+        }
+        localSize += std::max(0, val.index);
+        order->updatePoint(*l_iter, &val);
+      }
+      order->setLocalSize(localSize);
+    };
     // Calculate process offsets
     template<typename Numbering>
     void calculateOffsets(const Obj<Numbering>& numbering) {
@@ -689,6 +800,16 @@ namespace ALE {
       const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
 
       for(typename Sequence::iterator l_iter = points->begin(); l_iter != points->end(); ++l_iter) {
+        if (numbering->isLocal(*l_iter)) {
+          numbering->updateAddPoint(*l_iter, &val);
+        }
+      }
+    };
+    template<typename Numbering, typename Point>
+    void updateOrder(const Obj<Numbering>& numbering, const std::set<Point>& points) {
+      const typename Numbering::value_type val = numbering->getGlobalOffset(numbering->commRank());
+
+      for(typename std::set<Point>::iterator l_iter = points.begin(); l_iter != points.end(); ++l_iter) {
         if (numbering->isLocal(*l_iter)) {
           numbering->updateAddPoint(*l_iter, &val);
         }
@@ -734,6 +855,52 @@ namespace ALE {
         }
       }
     };
+    // Communicate (size,offset)s in the overlap
+    void completeOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, bool allowDuplicates = false) {
+      typedef Field<send_overlap_type, int, Section<point_type, oValue_type> > send_section_type;
+      typedef Field<recv_overlap_type, int, Section<point_type, oValue_type> > recv_section_type;
+      typedef ConstantSection<point_type, int>                                 constant_sizer;
+      typedef typename ALE::DiscreteSieve<point_type>                   dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type>                  dtopology_type;
+      typedef typename ALE::New::SectionCompletion<dtopology_type, int> completion;
+      const Obj<send_section_type> sendSection = new send_section_type(order->comm(), this->debug());
+      const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
+      const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());
+
+      completion::completeSection(sendOverlap, recvOverlap, sizer, order, sendSection, recvSection);
+      Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
+
+      for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+        if (!order->hasPoint(*r_iter)) {
+          order->setFiberDimension(*r_iter, 1);
+          order->updatePoint(*r_iter, &this->_unknownOrder);
+        }
+      }
+      for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+        const Obj<typename recv_overlap_type::traits::coneSequence>& recvPatches = recvOverlap->cone(*r_iter);
+    
+        for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
+          const typename recv_section_type::value_type *values = recvSection->getSection(*p_iter)->restrictPoint(*r_iter);
+
+          if (values[0].index == 0) continue;
+          if (values[0].prefix >= 0) {
+            if (order->isLocal(*r_iter)) {
+              if (!allowDuplicates) {
+                ostringstream msg;
+                msg << "["<<order->commRank()<<"]Multiple indices for point " << *r_iter << " from " << *p_iter << " with index " << values[0];
+                throw ALE::Exception(msg.str().c_str());
+              }
+              continue;
+            }
+            const oValue_type val(-(values[0].prefix+1), values[0].index);
+            order->updatePoint(*r_iter, &val);
+          } else {
+            if (order->isLocal(*r_iter)) continue;
+            order->updatePoint(*r_iter, values);
+          }
+        }
+      }
+    };
     // Construct a full global numbering
     template<typename Sequence>
     void constructNumbering(const Obj<numbering_type>& numbering, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points) {
@@ -741,6 +908,21 @@ namespace ALE {
       this->calculateOffsets(numbering);
       this->updateOrder(numbering, points);
       this->completeNumbering(numbering, sendOverlap, recvOverlap);
+    };
+    // Construct a full global order
+    template<typename Sequence, typename Atlas>
+    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<Sequence>& points, const Obj<Atlas>& atlas) {
+      this->constructLocalOrder(order, sendOverlap, points, atlas);
+      this->calculateOffsets(order);
+      this->updateOrder(order, points);
+      this->completeOrder(order, sendOverlap, recvOverlap);
+    };
+    template<typename PointType, typename Atlas>
+    void constructOrder(const Obj<order_type>& order, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const std::set<PointType>& points, const Obj<Atlas>& atlas) {
+      this->constructLocalOrder(order, sendOverlap, points, atlas);
+      this->calculateOffsets(order);
+      this->updateOrder(order, points);
+      this->completeOrder(order, sendOverlap, recvOverlap);
     };
   public: // Real interface
     template<typename ABundle_>
@@ -770,7 +952,22 @@ namespace ALE {
         this->_numberings[bundle.ptr()][depth] = numbering;
       }
       return this->_numberings[bundle.ptr()][depth];
-    }
+    };
+    template<typename ABundle_, typename Atlas_>
+    const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Atlas_>& atlas) {
+      if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||
+          (this->_orders[bundle.ptr()].find(name) == this->_orders[bundle.ptr()].end())) {
+        bundle->constructOverlap();
+        Obj<order_type>        order       = new order_type(bundle->comm(), bundle->debug());
+        Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
+        Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
+
+        this->constructOrder(order, sendOverlap, recvOverlap, atlas->getChart(), atlas);
+        if (this->_debug) {std::cout << "Creating new global order: name " << name << std::endl;}
+        this->_orders[bundle.ptr()][name] = order;
+      }
+      return this->_orders[bundle.ptr()][name];
+    };
   };
   }
 }

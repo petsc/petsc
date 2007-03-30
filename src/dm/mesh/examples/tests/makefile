@@ -68,6 +68,10 @@ section1: section1.o chkopts
 	-${CLINKER} -o section1 section1.o ${PETSC_DM_LIB}
 	${RM} -f section1.o
 
+section2: section2.o chkopts
+	-${CLINKER} -o section2 section2.o ${PETSC_DM_LIB}
+	${RM} -f section2.o
+
 mesh1: mesh1.o chkopts
 	-${CLINKER} -o mesh1 mesh1.o ${PETSC_DM_LIB}
 	${RM} -f mesh1.o
