@@ -14,13 +14,13 @@ namespace ALE {
       typedef Value_                                                                  value_type;
       typedef Topology_                                                               mesh_topology_type;
       typedef typename mesh_topology_type::sieve_type                                 sieve_type;
-      typedef typename ALE::New::DiscreteSieve<point_type>                            dsieve_type;
-      typedef typename ALE::New::Topology<int, dsieve_type>                           topology_type;
+      typedef typename ALE::DiscreteSieve<point_type>                                 dsieve_type;
+      typedef typename ALE::Topology<int, dsieve_type>                                topology_type;
       typedef typename ALE::Sifter<int, point_type, point_type>                       send_overlap_type;
-      typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, int> send_sizer_type;
       typedef typename ALE::Sifter<point_type, int, point_type>                       recv_overlap_type;
-      typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int> recv_sizer_type;
-      typedef typename ALE::New::ConstantSection<topology_type, int>                  constant_sizer;
+      //typedef typename ALE::New::OverlapValues<send_overlap_type, topology_type, int> send_sizer_type;
+      //typedef typename ALE::New::OverlapValues<recv_overlap_type, topology_type, int> recv_sizer_type;
+      typedef typename ALE::New::OldConstantSection<topology_type, int>               constant_sizer;
       typedef typename ALE::New::SectionCompletion<mesh_topology_type, int>           int_completion;
       typedef typename ALE::New::SectionCompletion<mesh_topology_type, value_type>    completion;
     public:
@@ -41,23 +41,22 @@ namespace ALE {
         // Here we should just use the overlap as the topology (once it is a new-style sieve)
         sendSection->clear();
         sendSection->setTopology(completion::createSendTopology(sendOverlap));
-        if (sendSection->debug() > 10) {sendSection->getTopology()->view("Send topology after setup", MPI_COMM_SELF);}
         sendSection->construct(sendSizer);
         sendSection->allocate();
+        if (sendSection->debug() > 10) {sendSection->view("Send section after setup", MPI_COMM_SELF);}
         sendSection->constructCommunication(Section::SEND);
       };
       template<typename Filler, typename Section>
       static void fillSend(const Filler& sendFiller, const Obj<Section>& sendSection) {
-        const topology_type::sheaf_type& ranks = sendSection->getTopology()->getPatches();
-        const topology_type::patch_type  patch = 0; // FIX: patch should come from overlap
+        const typename Section::sheaf_type& patches = sendSection->getPatches();
 
-        for(topology_type::sheaf_type::const_iterator p_iter = ranks.begin(); p_iter != ranks.end(); ++p_iter) {
-          const int&                                          rank = p_iter->first;
-          const Obj<topology_type::sieve_type::baseSequence>& base = p_iter->second->base();
+        for(typename Section::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
+          const Obj<typename Section::section_type>&        section = p_iter->second;
+          const typename Section::section_type::chart_type& chart   = section->getChart();
 
-          for(topology_type::sieve_type::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-            if (sendFiller->hasPoint(patch, *b_iter)) {
-              sendSection->update(rank, *b_iter, sendFiller->restrict(patch, *b_iter));
+          for(typename Section::section_type::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+            if (sendFiller->hasPoint(*c_iter)) {
+              section->updatePoint(*c_iter, sendFiller->restrictPoint(*c_iter));
             }
           }
         }
@@ -69,24 +68,24 @@ namespace ALE {
 
         recvSection->clear();
         for(recv_overlap_type::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-          Obj<dsieve_type> recvSieve = new dsieve_type();
-          const Obj<recv_overlap_type::supportSequence>& points = recvOverlap->support(*r_iter);
+          const Obj<recv_overlap_type::supportSequence>& points  = recvOverlap->support(*r_iter);
+          const Obj<typename Section::section_type>&     section = recvSection->getSection(*r_iter);
 
           // Want to replace this loop with a slice through color
           for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
             const dsieve_type::point_type& point = p_iter.color();
 
-            recvSieve->addPoint(point);
+            section->setFiberDimension(point, 1);
           }
-          recvSection->getTopology()->setPatch(*r_iter, recvSieve);
         }
-        recvSection->getTopology()->stratify();
         recvSection->construct(recvSizer);
         recvSection->allocate();
         recvSection->constructCommunication(Section::RECEIVE);
       };
       template<typename SizerFiller, typename Filler, typename SendSection, typename RecvSection>
       static void completeSection(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<SizerFiller>& sizerFiller, const Filler& filler, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
+        typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, int> > send_sizer_type;
+        typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, int> > recv_sizer_type;
         Obj<send_sizer_type> sendSizer     = new send_sizer_type(sendSection->comm(), sendSection->debug());
         Obj<recv_sizer_type> recvSizer     = new recv_sizer_type(recvSection->comm(), sendSizer->getTag(), recvSection->debug());
         Obj<constant_sizer>  constantSizer = new constant_sizer(recvSection->comm(), 1, sendSection->debug());

@@ -43,7 +43,7 @@ def chkcygwin():
 def chkcygwinpython():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
-    if buf.find('2.4') > -1:
+    if (buf.find('2.4') > -1) or (buf.find('2.5') > -1) or (buf.find('2.6') > -1):
       return 1
     else:
       return 0

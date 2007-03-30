@@ -110,6 +110,10 @@ ex24: ex24.o   chkopts
 ex25: ex25.o   chkopts
 	-${CLINKER} -o ex25 ex25.o  ${PETSC_DM_LIB}
 	${RM} -f ex25.o
+
+ex26: ex26.o   chkopts
+	-${CLINKER} -o ex26 ex26.o  ${PETSC_DM_LIB}
+	${RM} -f ex26.o
 #-------------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np 2 ./ex1 -nox > ex1_1.tmp 2>&1;	  \

@@ -8,31 +8,28 @@
 namespace ALE {
   namespace New {
     // This section takes an existing section, and reports instead the fiber dimensions as values
-    //   Should not need the _patch variable
     template<typename Section_>
     class SizeSection : public ALE::ParallelObject {
     public:
       typedef Section_                          section_type;
-      typedef typename section_type::patch_type patch_type;
       typedef typename section_type::point_type point_type;
       typedef int                               value_type;
     protected:
       Obj<section_type> _section;
-      const patch_type  _patch;
       value_type        _size;
     public:
-      SizeSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
+      SizeSection(const Obj<section_type>& section) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section) {};
       virtual ~SizeSection() {};
     public:
-      bool hasPoint(const patch_type& patch, const point_type& point) {
-        return this->_section->hasPoint(patch, point);
+      bool hasPoint(const point_type& point) {
+        return this->_section->hasPoint(point);
       };
-      const value_type *restrict(const patch_type& patch, const point_type& p) {
-        this->_size = this->_section->getFiberDimension(this->_patch, p); // Could be size()
+      const value_type *restrict(const point_type& p) {
+        this->_size = this->_section->getFiberDimension(p); // Could be size()
         return &this->_size;
       };
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        this->_size = this->_section->getFiberDimension(this->_patch, p);
+      const value_type *restrictPoint(const point_type& p) {
+        this->_size = this->_section->getFiberDimension(p);
         return &this->_size;
       };
     public:
@@ -42,57 +39,49 @@ namespace ALE {
     };
 
     // This section reports as values the size of the partition associated with the partition point
-    template<typename Topology_, typename MeshTopology_, typename Marker_>
+    template<typename Bundle_, typename Marker_>
     class PartitionSizeSection : public ALE::ParallelObject {
     public:
-      typedef Topology_                          topology_type;
-      typedef MeshTopology_                      mesh_topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef typename ALE::New::NumberingFactory<mesh_topology_type> NumberingFactory;
-      typedef Marker_                            marker_type;
-      typedef int                                value_type;
-      typedef std::map<patch_type,int>           sizes_type;
+      typedef Bundle_                          bundle_type;
+      typedef typename bundle_type::sieve_type sieve_type;
+      typedef typename bundle_type::point_type point_type;
+      typedef Marker_                          marker_type;
+      typedef int                              value_type;
+      typedef std::map<marker_type, int>       sizes_type;
     protected:
-      Obj<topology_type> _topology;
-      sizes_type         _sizes;
-      int                _height;
-      void _init(const Obj<mesh_topology_type>& topology, const int numElements, const marker_type partition[]) {
-        // Should check for patch 0
-        const typename mesh_topology_type::patch_type           patch = 0;
-        const Obj<typename mesh_topology_type::sieve_type>&     sieve = topology->getPatch(patch);
-        const Obj<typename mesh_topology_type::label_sequence>& cells = topology->heightStratum(patch, this->_height);
-        const Obj<typename NumberingFactory::numbering_type>&   cNumbering = NumberingFactory::singleton(topology->debug())->getLocalNumbering(topology, patch, topology->depth(patch) - this->_height);
-        std::map<patch_type, std::set<point_type> >             points;
+      sizes_type _sizes;
+      int        _height;
+      void _init(const Obj<bundle_type>& bundle, const int numElements, const marker_type partition[]) {
+        const Obj<typename bundle_type::label_sequence>& cells      = bundle->heightStratum(this->_height);
+        const Obj<typename bundle_type::numbering_type>& cNumbering = bundle->getFactory()->getLocalNumbering(bundle, bundle->depth() - this->_height);
+        std::map<marker_type, std::set<point_type> >     points;
 
         if (numElements != (int) cells->size()) {
           throw ALE::Exception("Partition size does not match the number of elements");
         }
-        for(typename mesh_topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-          const Obj<typename mesh_topology_type::sieve_type::coneSet>& closure = sieve->closure(*e_iter);
+        for(typename bundle_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
+          const Obj<typename bundle_type::coneArray>& closure = ALE::Closure::closure(bundle, *e_iter);
           const int idx = cNumbering->getIndex(*e_iter);
 
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->star(*e_iter);
+            const Obj<typename bundle_type::supportArray>& star = ALE::Closure::star(bundle, *e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
         }
-        for(typename std::map<patch_type, std::set<point_type> >::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        for(typename std::map<marker_type, std::set<point_type> >::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           this->_sizes[p_iter->first] = p_iter->second.size();
         }
       };
     public:
-      PartitionSizeSection(const Obj<topology_type>& topology, const Obj<mesh_topology_type>& meshTopology, const int elementHeight, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _height(elementHeight) {
-        this->_init(meshTopology, numElements, partition);
+      PartitionSizeSection(const Obj<bundle_type>& bundle, const int elementHeight, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, bundle->debug()), _height(elementHeight) {
+        this->_init(bundle, numElements, partition);
       };
       virtual ~PartitionSizeSection() {};
     public:
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+      bool hasPoint(const point_type& point) {return true;};
+      const value_type *restrictPoint(const point_type& p) {
         return &this->_sizes[p];
       };
     public:
@@ -116,22 +105,20 @@ namespace ALE {
           }
         }
         for(typename sizes_type::const_iterator s_iter = this->_sizes.begin(); s_iter != this->_sizes.end(); ++s_iter) {
-          const patch_type& patch = s_iter->first;
-          const value_type  size  = s_iter->second;
+          const marker_type& partition = s_iter->first;
+          const value_type   size      = s_iter->second;
 
-          txt << "[" << this->commRank() << "]: Patch " << patch << " size " << size << std::endl;
+          txt << "[" << this->commRank() << "]: Partition " << partition << " size " << size << std::endl;
         }
         PetscSynchronizedPrintf(comm, txt.str().c_str());
         PetscSynchronizedFlush(comm);
       };
     };
 
-    template<typename Topology_>
+    template<typename Point_>
     class PartitionDomain {
     public:
-      typedef Topology_                          topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::point_type point_type;
+      typedef Point_ point_type;
     public:
       PartitionDomain() {};
       ~PartitionDomain() {};
@@ -140,55 +127,49 @@ namespace ALE {
     };
 
     // This section returns the points in each partition
-    template<typename Topology_, typename MeshTopology_, typename Marker_>
+    template<typename Bundle_, typename Marker_>
     class PartitionSection : public ALE::ParallelObject {
     public:
-      typedef Topology_                          topology_type;
-      typedef MeshTopology_                      mesh_topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef ALE::New::NumberingFactory<mesh_topology_type> NumberingFactory;
+      typedef Bundle_                            bundle_type;
+      typedef typename bundle_type::sieve_type   sieve_type;
+      typedef typename bundle_type::point_type   point_type;
       typedef Marker_                            marker_type;
       typedef int                                value_type;
-      typedef std::map<patch_type,point_type*>   points_type;
-      typedef PartitionDomain<topology_type>     chart_type;
+      typedef std::map<marker_type, point_type*> points_type;
+      typedef PartitionDomain<point_type>        chart_type;
     protected:
-      Obj<topology_type> _topology;
-      points_type        _points;
-      chart_type         _domain;
-      int                _height;
-      void _init(const Obj<mesh_topology_type>& topology, const int numElements, const marker_type partition[]) {
+      points_type _points;
+      chart_type  _domain;
+      int         _height;
+      void _init(const Obj<bundle_type>& bundle, const int numElements, const marker_type partition[]) {
         // Should check for patch 0
-        const typename mesh_topology_type::patch_type           patch = 0;
-        const Obj<typename mesh_topology_type::sieve_type>&     sieve = topology->getPatch(patch);
-        const Obj<typename mesh_topology_type::label_sequence>& cells = topology->heightStratum(patch, this->_height);
-        const Obj<typename NumberingFactory::numbering_type>&   cNumbering = NumberingFactory::singleton(topology->debug())->getLocalNumbering(topology, patch, topology->depth(patch) - this->_height);
-        std::map<patch_type, std::set<point_type> >             points;
-        std::map<patch_type, int>                               offsets;
+        const Obj<typename bundle_type::label_sequence>& cells      = bundle->heightStratum(this->_height);
+        const Obj<typename bundle_type::numbering_type>& cNumbering = bundle->getFactory()->getLocalNumbering(bundle, bundle->depth() - this->_height);
+        std::map<marker_type, std::set<point_type> >     points;
+        std::map<marker_type, int>                       offsets;
 
         if (numElements != (int) cells->size()) {
           throw ALE::Exception("Partition size does not match the number of elements");
         }
-        for(typename mesh_topology_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-          const Obj<typename mesh_topology_type::sieve_type::coneSet>& closure = sieve->closure(*e_iter);
+        for(typename bundle_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
+          const Obj<typename bundle_type::coneArray>& closure = ALE::Closure::closure(bundle, *e_iter);
           const int idx = cNumbering->getIndex(*e_iter);
 
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->star(*e_iter);
+            const Obj<typename bundle_type::supportArray>& star = ALE::Closure::star(bundle, *e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
         }
-        for(typename std::map<patch_type, std::set<point_type> >::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        for(typename std::map<marker_type, std::set<point_type> >::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           this->_points[p_iter->first] = new point_type[p_iter->second.size()];
           offsets[p_iter->first] = 0;
           for(typename std::set<point_type>::const_iterator s_iter = p_iter->second.begin(); s_iter != p_iter->second.end(); ++s_iter) {
             this->_points[p_iter->first][offsets[p_iter->first]++] = *s_iter;
           }
         }
-        for(typename std::map<patch_type, std::set<point_type> >::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        for(typename std::map<marker_type, std::set<point_type> >::const_iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
           if (offsets[p_iter->first] != (int) p_iter->second.size()) {
             ostringstream txt;
             txt << "Invalid offset for partition " << p_iter->first << ": " << offsets[p_iter->first] << " should be " << p_iter->second.size();
@@ -197,8 +178,8 @@ namespace ALE {
         }
       };
     public:
-      PartitionSection(const Obj<topology_type>& topology, const Obj<mesh_topology_type>& meshTopology, const int elementHeight, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _height(elementHeight) {
-        this->_init(meshTopology, numElements, partition);
+      PartitionSection(const Obj<bundle_type>& bundle, const int elementHeight, const int numElements, const marker_type *partition) : ParallelObject(MPI_COMM_SELF, bundle->debug()), _height(elementHeight) {
+        this->_init(bundle, numElements, partition);
       };
       virtual ~PartitionSection() {
         for(typename points_type::iterator p_iter = this->_points.begin(); p_iter != this->_points.end(); ++p_iter) {
@@ -206,10 +187,9 @@ namespace ALE {
         }
       };
     public:
-      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
+      const chart_type& getChart() {return this->_domain;};
+      bool hasPoint(const point_type& point) {return true;};
+      const value_type *restrictPoint(const point_type& p) {
         return this->_points[p];
       };
     public:
@@ -233,10 +213,10 @@ namespace ALE {
           }
         }
         for(typename points_type::const_iterator p_iter = this->_points.begin(); p_iter != this->_points.end(); ++p_iter) {
-          const patch_type& patch  = p_iter->first;
+          const marker_type& partition  = p_iter->first;
           //const point_type *points = p_iter->second;
 
-          txt << "[" << this->commRank() << "]: Patch " << patch << std::endl;
+          txt << "[" << this->commRank() << "]: Partition " << partition << std::endl;
         }
         if (this->_points.size() == 0) {
           txt << "[" << this->commRank() << "]: empty" << std::endl;
@@ -246,36 +226,41 @@ namespace ALE {
       };
     };
 
-    template<typename Topology_, typename MeshTopology_, typename Sieve_>
+    template<typename Bundle_, typename Sieve_>
     class ConeSizeSection : public ALE::ParallelObject {
     public:
-      typedef Topology_                          topology_type;
-      typedef MeshTopology_                      mesh_topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef Sieve_                             cone_sieve_type;
-      typedef int                                value_type;
-      typedef std::map<patch_type,int>           sizes_type;
+      typedef ConeSizeSection<Bundle_, Sieve_> section_type;
+      typedef int                              patch_type;
+      typedef Bundle_                          bundle_type;
+      typedef Sieve_                           sieve_type;
+      typedef typename bundle_type::point_type point_type;
+      typedef int                              value_type;
     protected:
-      Obj<topology_type>      _topology;
-      Obj<mesh_topology_type> _meshTopology;
-      Obj<cone_sieve_type>    _sieve;
-      value_type              _size;
-      int                     _minHeight;
+      Obj<bundle_type> _bundle;
+      Obj<sieve_type>  _sieve;
+      value_type       _size;
+      int              _minHeight;
+      Obj<section_type> _section;
     public:
-      ConeSizeSection(const Obj<topology_type>& topology, const Obj<mesh_topology_type>& meshTopology, const Obj<cone_sieve_type>& sieve, int minimumHeight = 0) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _meshTopology(meshTopology), _sieve(sieve), _minHeight(minimumHeight) {};
+      ConeSizeSection(const Obj<bundle_type>& bundle, const Obj<sieve_type>& sieve, int minimumHeight = 0) : ParallelObject(MPI_COMM_SELF, sieve->debug()), _bundle(bundle), _sieve(sieve), _minHeight(minimumHeight) {
+        this->_section = this;
+        this->_section.addRef();
+      };
       virtual ~ConeSizeSection() {};
-    public:
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        if ((this->_minHeight == 0) || (this->_meshTopology->height(patch, p) >= this->_minHeight)) {
+    public: // Verifiers
+      bool hasPoint(const point_type& point) {return true;};
+    public: // Restriction
+      const value_type *restrictPoint(const point_type& p) {
+        if ((this->_minHeight == 0) || (this->_bundle->height(p) >= this->_minHeight)) {
           this->_size = this->_sieve->cone(p)->size();
         } else {
           this->_size = 0;
         }
         return &this->_size;
+      };
+    public: // Adapter
+      const Obj<section_type>& getSection(const patch_type& patch) {
+        return this->_section;
       };
     public:
       void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
@@ -302,23 +287,18 @@ namespace ALE {
       };
     };
 
-    template<typename Topology_, typename Sieve_>
+    template<typename Sieve_>
     class ConeSection : public ALE::ParallelObject {
     public:
-      typedef Topology_                          topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef Sieve_                             cone_sieve_type;
-      typedef point_type                         value_type;
-      typedef std::map<patch_type,int>           sizes_type;
-      typedef PartitionDomain<topology_type>     chart_type;
+      typedef Sieve_                           sieve_type;
+      typedef typename sieve_type::target_type point_type;
+      typedef typename sieve_type::source_type value_type;
+      typedef PartitionDomain<sieve_type>      chart_type;
     protected:
-      Obj<topology_type>      _topology;
-      Obj<cone_sieve_type>    _sieve;
-      int                     _coneSize;
-      value_type             *_cone;
-      chart_type              _domain;
+      Obj<sieve_type> _sieve;
+      int             _coneSize;
+      value_type     *_cone;
+      chart_type      _domain;
       void ensureCone(const int size) {
         if (size > this->_coneSize) {
           if (this->_cone) delete [] this->_cone;
@@ -327,21 +307,17 @@ namespace ALE {
         }
       };
     public:
-      ConeSection(MPI_Comm comm, const Obj<cone_sieve_type>& sieve, const int debug = 0) : ParallelObject(comm, debug), _sieve(sieve), _coneSize(-1), _cone(NULL) {
-        this->_topology = new topology_type(comm, debug);
-      };
-      ConeSection(const Obj<topology_type>& topology, const Obj<cone_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve), _coneSize(-1), _cone(NULL) {};
+      ConeSection(const Obj<sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, sieve->debug()), _sieve(sieve), _coneSize(-1), _cone(NULL) {};
       virtual ~ConeSection() {if (this->_cone) delete [] this->_cone;};
     public:
-      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        const Obj<typename cone_sieve_type::traits::coneSequence>& cone = this->_sieve->cone(p);
+      const chart_type& getChart() {return this->_domain;};
+      bool hasPoint(const point_type& point) {return true;};
+      const value_type *restrictPoint(const point_type& p) {
+        const Obj<typename sieve_type::traits::coneSequence>& cone = this->_sieve->cone(p);
         int c = 0;
 
         this->ensureCone(cone->size());
-        for(typename cone_sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+        for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
           this->_cone[c++] = *c_iter;
         }
         return this->_cone;
@@ -371,31 +347,25 @@ namespace ALE {
       };
     };
 
-    template<typename Topology_, typename MeshTopology_, typename Sieve_>
+    template<typename Bundle_, typename Sieve_>
     class SupportSizeSection : public ALE::ParallelObject {
     public:
-      typedef Topology_                          topology_type;
-      typedef MeshTopology_                      mesh_topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef Sieve_                             support_sieve_type;
-      typedef int                                value_type;
-      typedef std::map<patch_type,int>           sizes_type;
+      typedef Bundle_                          bundle_type;
+      typedef Sieve_                           sieve_type;
+      typedef typename sieve_type::source_type point_type;
+      typedef typename sieve_type::target_type value_type;
     protected:
-      Obj<topology_type>      _topology;
-      Obj<mesh_topology_type> _meshTopology;
-      Obj<support_sieve_type> _sieve;
-      value_type              _size;
-      int                     _minDepth;
+      Obj<bundle_type> _bundle;
+      Obj<sieve_type>  _sieve;
+      value_type       _size;
+      int              _minDepth;
     public:
-      SupportSizeSection(const Obj<topology_type>& topology, const Obj<mesh_topology_type>& meshTopology, const Obj<support_sieve_type>& sieve, int minimumDepth = 0) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _meshTopology(meshTopology), _sieve(sieve), _minDepth(minimumDepth) {};
+      SupportSizeSection(const Obj<bundle_type>& bundle, const Obj<sieve_type>& sieve, int minimumDepth = 0) : ParallelObject(MPI_COMM_SELF, bundle->debug()), _bundle(bundle), _sieve(sieve), _minDepth(minimumDepth) {};
       virtual ~SupportSizeSection() {};
     public:
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        if ((this->_minDepth == 0) || (this->_meshTopology->depth(patch, p) >= this->_minDepth)) {
+      bool hasPoint(const point_type& point) {return true;};
+      const value_type *restrictPoint(const point_type& p) {
+        if ((this->_minDepth == 0) || (this->_bundle->depth(p) >= this->_minDepth)) {
           this->_size = this->_sieve->support(p)->size();
         } else {
           this->_size = 0;
@@ -427,23 +397,18 @@ namespace ALE {
       };
     };
 
-    template<typename Topology_, typename Sieve_>
+    template<typename Sieve_>
     class SupportSection : public ALE::ParallelObject {
     public:
-      typedef Topology_                          topology_type;
-      typedef typename topology_type::patch_type patch_type;
-      typedef typename topology_type::sieve_type sieve_type;
-      typedef typename topology_type::point_type point_type;
-      typedef Sieve_                             support_sieve_type;
-      typedef point_type                         value_type;
-      typedef std::map<patch_type,int>           sizes_type;
-      typedef PartitionDomain<topology_type>     chart_type;
+      typedef Sieve_                           sieve_type;
+      typedef typename sieve_type::source_type point_type;
+      typedef typename sieve_type::target_type value_type;
+      typedef PartitionDomain<sieve_type>      chart_type;
     protected:
-      Obj<topology_type>      _topology;
-      Obj<support_sieve_type> _sieve;
-      int                     _supportSize;
-      value_type             *_support;
-      chart_type              _domain;
+      Obj<sieve_type> _sieve;
+      int             _supportSize;
+      value_type     *_support;
+      chart_type      _domain;
       void ensureSupport(const int size) {
         if (size > this->_supportSize) {
           if (this->_support) delete [] this->_support;
@@ -452,21 +417,17 @@ namespace ALE {
         }
       };
     public:
-      SupportSection(MPI_Comm comm, const Obj<support_sieve_type>& sieve, const int debug = 0) : ParallelObject(comm, debug), _sieve(sieve), _supportSize(-1), _support(NULL) {
-        this->_topology = new topology_type(comm, debug);
-      };
-      SupportSection(const Obj<topology_type>& topology, const Obj<support_sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, topology->debug()), _topology(topology), _sieve(sieve), _supportSize(-1), _support(NULL) {};
+      SupportSection(const Obj<sieve_type>& sieve) : ParallelObject(MPI_COMM_SELF, sieve->debug()), _sieve(sieve), _supportSize(-1), _support(NULL) {};
       virtual ~SupportSection() {if (this->_support) delete [] this->_support;};
     public:
-      const chart_type& getPatch(const patch_type& patch) {return this->_domain;};
-      bool hasPoint(const patch_type& patch, const point_type& point) {return true;};
-      const value_type *restrict(const patch_type& patch, const point_type& p) {return this->restrictPoint(patch, p);};
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        const Obj<typename support_sieve_type::traits::supportSequence>& support = this->_sieve->support(p);
+      const chart_type& getChart() {return this->_domain;};
+      bool hasPoint(const point_type& point) {return true;};
+      const value_type *restrictPoint(const point_type& p) {
+        const Obj<typename sieve_type::traits::supportSequence>& support = this->_sieve->support(p);
         int s = 0;
 
         this->ensureSupport(support->size());
-        for(typename support_sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+        for(typename sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
           this->_support[s++] = *s_iter;
         }
         return this->_support;

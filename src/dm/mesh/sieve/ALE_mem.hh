@@ -428,7 +428,8 @@ namespace ALE {
     X* pointer() const {return objPtr;};
     X  obj() const     {assertNull(false); return *objPtr;};
     X  object() const  {assertNull(false); return *objPtr;};
-    
+
+    void addRef() {if (refCnt) {(*refCnt)++;}}
   };// class Obj<X>
 
   // Constructors 
