@@ -46,17 +46,15 @@ extern PetscErrorCode RHSfunction(TS,PetscReal,Vec,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       nt,i,j,k,m,nz,steps, max_steps;
-  PetscScalar    zInitial,zFinal,val,*soln,*z;
-  PetscReal      tminit,maxtm,stepsz,T,ftime;
+  PetscInt       i,m,nz,steps, max_steps;
+  PetscScalar    zInitial,zFinal,val,*z;
+  PetscReal      stepsz,T,ftime;
   PetscErrorCode ierr;
   TS             ts;
   Mat            Jmat;
   AppCtx         appctx; /* user-defined application context */
   Vec     	 ts_sol; /* ts solution vector */
   PetscMPIInt    size;
-  TSType         type;
-  PetscTruth     sundialstype=PETSC_FALSE;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
@@ -146,10 +144,14 @@ int main(int argc,char **argv)
   ierr = TSSetFromOptions(ts);CHKERRQ(ierr);
 
 #ifdef PETSC_HAVE_SUNDIALS
-  ierr = TSGetType(ts,&type);CHKERRQ(ierr);
-  ierr = PetscTypeCompare((PetscObject)ts,TS_SUNDIALS,&sundialstype);CHKERRQ(ierr);
-  if (sundialstype && appctx.useAlhs){
-    SETERRQ(PETSC_ERR_SUP,"Cannot use Alhs formulation for TS_SUNDIALS type");
+  {
+    TSType         type;
+    PetscTruth     sundialstype=PETSC_FALSE;
+    ierr = TSGetType(ts,&type);CHKERRQ(ierr);
+    ierr = PetscTypeCompare((PetscObject)ts,TS_SUNDIALS,&sundialstype);CHKERRQ(ierr);
+    if (sundialstype && appctx.useAlhs){
+      SETERRQ(PETSC_ERR_SUP,"Cannot use Alhs formulation for TS_SUNDIALS type");
+    }
   }
 #endif
 
