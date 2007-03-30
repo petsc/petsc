@@ -4,8 +4,8 @@ FFLAGS	        =
 CPPFLAGS        = ${SIEVE_FLAGS}
 FPPFLAGS        = 
 LOCDIR          = src/dm/mesh/examples/tutorials/
-EXAMPLESC       = ex1.c ex10.cxx
-EXAMPLESF       = 
+EXAMPLESC       = ex1.c ex10.cxx ex12.cxx
+EXAMPLESF       = ex11f90.F90 mex12f90.F90
 MANSEC          = DA
 NP              = 1
 DISPLAY         = :0.0
@@ -48,6 +48,10 @@ ex10: ex10.o   chkopts
 ex11: ex11.o   chkopts
 	-${CLINKER} -o ex11 ex11.o  ${PETSC_DM_LIB}
 	${RM} -f ex11.o
+
+ex12: ex12.o mex12f90.o ex12f90.o chkopts
+	-${CLINKER} -o ex12 ex12.o ex12f90.o mex12f90.o ${PETSC_SNES_LIB}
+	${RM} -f ex12.o mex12f90.mod mex12f90.o ex12f90.o
 
 ex_coarsen: ex_coarsen.o   chkopts
 	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}

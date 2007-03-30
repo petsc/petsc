@@ -1555,19 +1555,19 @@ efficiency for matrix assembly will remain.
 
 As described above, the option \trl{-info} \findex{-info}
 will print information about the success of preallocation during
-matrix assembly.  For the MATMPIAIJ format, PETSc will also list
+matrix assembly.  For the MATMPIAIJ and MATMPIBAIJ formats, PETSc will also list
 the number of elements owned by on each process that were generated
 on a different process.  For example, the statements
 \begin{tabbing}
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 10\\
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 7\\
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 5
+   MatAssemblyBegin\_MPIAIJ:Stash has 10 entries, uses 0 mallocs
+   MatAssemblyBegin\_MPIAIJ:Stash has 3 entries, uses 0 mallocs 
+   MatAssemblyBegin\_MPIAIJ:Stash has 5 entries, uses 0 mallocs 
 \end{tabbing}
 indicate that very few values have been generated on different processes.
 On the other hand, the statements
 \begin{tabbing}
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 100000\\
-   MatAssemblyBegin\_MPIAIJ:Number of off processor values 77777
+   MatAssemblyBegin\_MPIAIJ:Stash has 100000 entries, uses 100 mallocs
+   MatAssemblyBegin\_MPIAIJ:Stash has 77777 entries, uses 70 mallocs
 \end{tabbing}
 indicate that many values have been generated on the ``wrong'' processes.
 This situation can be very inefficient, since the transfer of values

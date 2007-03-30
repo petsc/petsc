@@ -4,7 +4,7 @@ FFLAGS	        =
 CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/ts/examples/tests/
-EXAMPLESC       = ex1.c ex2.c ex4.c
+EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF       = ex1f.F
 EXAMPLESFH      = ex1f.h
 MANSEC          = TS
@@ -20,48 +20,17 @@ ex1f: ex1f.o  chkopts
 	${RM} ex1f.o
 
 ex2: ex2.o  chkopts
-	-${CLINKER} -o ex2 ex2.o -L${PETSC_LIB_DIR} -lpetscts ${PETSC_TS_LIB}
+	-${CLINKER} -o ex2 ex2.o ${PETSC_TS_LIB}
 	${RM} ex2.o
 
 ex3: ex3.o  chkopts
-	-${CLINKER} -o ex3 ex3.o -L${PETSC_LIB_DIR} -lpetscts 
+	-${CLINKER} -o ex3 ex3.o ${PETSC_TS_LIB}
 	${RM} ex3.o
 
 ex4: ex4.o  chkopts
-	-${CLINKER} -o ex4 ex4.o -L${PETSC_LIB_DIR} -lpetscts ${PETSC_TS_LIB}
+	-${CLINKER} -o ex4 ex4.o ${PETSC_TS_LIB}
 	${RM} ex4.o
 
-ex5: ex5.o  chkopts
-	-${CLINKER} -o ex5 ex5.o -L${PETSC_LIB_DIR} -lpetscts ${PETSC_TS_LIB}
-	${RM} ex5.o
-
-ex6: ex6.o  chkopts
-	-${CLINKER} -o ex6 ex6.o ${PETSC_TS_LIB}
-	${RM} ex6.o
-
-ex7: ex7.o  chkopts
-	-${CLINKER} -o ex7 ex7.o ${PETSC_TS_LIB}
-	${RM} ex7.o
-
-ex8: ex8.o  chkopts
-	-${CLINKER} -o ex8 ex8.o ${PETSC_TS_LIB}
-	${RM} ex8.o
-
-ex9: ex9.o  chkopts
-	-${CLINKER} -o ex9 ex9.o ${PETSC_TS_LIB}
-	${RM} ex9.o
-
-ex10: ex10.o  chkopts
-	-${CLINKER} -o ex10 ex10.o ${PETSC_TS_LIB}
-	${RM} ex10.o
-
-ex11: ex11.o  chkopts
-	-${CLINKER} -o ex11 ex11.o ${PETSC_TS_LIB}
-	${RM} ex11.o
-
-ex12: ex12.o  chkopts
-	-${FLINKER} -o ex12 ex12.o ${PETSC_TS_LIB}
-	${RM} ex12.o
 #----------------------------------------------------------------------------------
 NPROCS    = 1  3
 runex1_euler:
@@ -189,9 +158,21 @@ runex1f:
 	-@${MPIEXEC} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -linear_variable_matrix 
 	-@${MPIEXEC} -np 1 ./ex1f -test -nox -ts_type beuler -ksp_gmres_cgs_refinement_type refine_always -nonlinear_jacobian 
 
+runex3:
+	-@${MPIEXEC} -np 1 ./ex3 > ex3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
+	   else echo "Possible problem with ex3, diffs above"; fi; \
+	   ${RM} -f ex3.tmp
+
+runex3_2:
+	-@${MPIEXEC} -np 1 ./ex3 -useAlhs > ex3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex3.out ex3.tmp) then true; \
+	   else echo "Possible problem with ex3_2, diffs above"; fi; \
+	   ${RM} -f ex3.tmp
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1_euler runex1_euler_2 runex1_euler_3 runex1_euler_4 runex1_euler_5 \
                             runex1_beuler runex1_beuler_2 runex1_beuler_3 runex1_beuler_4 runex1_beuler_5 \
-                            runex1_cn runex1_cn_2 runex1_cn_3 ex1.rm 
+                            runex1_cn runex1_cn_2 runex1_cn_3 ex1.rm ex3.PETSc runex3 runex3_2 ex3.rm
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
