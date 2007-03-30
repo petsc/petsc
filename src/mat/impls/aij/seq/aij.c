@@ -2429,7 +2429,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetColumnIndices_SeqAIJ(Mat mat,Petsc
   PetscFunctionBegin;
 
   nz = aij->maxnz;
-  n  = mat->cmap.n;
+  n  = mat->rmap.n;
   for (i=0; i<nz; i++) {
     aij->j[i] = indices[i];
   }
