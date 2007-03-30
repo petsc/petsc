@@ -880,7 +880,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetBundle(SectionInt section, ALE::Ob
 
 .seealso SectionIntCreate(), SectionIntGetSection(), SectionIntSetSection()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetTopology(SectionInt section, const ALE::Obj<ALE::Field::Mesh>& b)
+PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetBundle(SectionInt section, const ALE::Obj<ALE::Field::Mesh>& b)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
