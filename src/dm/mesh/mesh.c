@@ -593,20 +593,30 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 #define __FUNCT__ "MeshCreateGlobalScatter"
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
-  typedef ALE::Field::Mesh::real_section_type::index_type index_type;
   ALE::Obj<ALE::Field::Mesh> m;
   ALE::Obj<ALE::Field::Mesh::real_section_type> s;
-  const char         *name;
-  PetscErrorCode      ierr;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = MeshCreateGlobalScatter(m, s, scatter);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreateGlobalScatter"
+template<typename Section>
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Field::Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
+{
+  typedef ALE::Field::Mesh::real_section_type::index_type index_type;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
   const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& atlas = s->getAtlas();
   const ALE::Field::Mesh::real_section_type::chart_type&           chart = s->getChart();
-  const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, name, atlas);
+  const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), atlas);
   int *localIndices, *globalIndices;
   int  localSize = s->size();
   int  localIndx = 0, globalIndx = 0;
