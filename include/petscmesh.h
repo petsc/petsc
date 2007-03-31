@@ -200,4 +200,5 @@ typedef struct {
 PETSC_EXTERN_CXX_END
 
 template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const ALE::Obj<ALE::Field::Mesh>&, const ALE::Obj<Section>&, MatType, Mat *);
+template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Field::Mesh>&, const ALE::Obj<Section>&, VecScatter *);
 #endif
