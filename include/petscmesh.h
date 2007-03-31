@@ -98,6 +98,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetCellSectionReal(Mesh, PetscInt, S
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshHasSectionReal(Mesh, const char [], PetscTruth *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], SectionReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, SectionReal, MatType, Mat *);
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh, SectionReal, Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,VecScatter *);
@@ -198,5 +199,5 @@ typedef struct {
 
 PETSC_EXTERN_CXX_END
 
-template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, const ALE::Obj<Section>&, MatType, Mat *);
+template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const ALE::Obj<ALE::Field::Mesh>&, const ALE::Obj<Section>&, MatType, Mat *);
 #endif
