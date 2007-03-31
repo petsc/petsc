@@ -21,7 +21,7 @@ EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 PetscErrorCode MeshFinalize()
 {
   PetscFunctionBegin;
-  ALE::Field::Mesh::NumberingFactory::singleton(0, true);
+  ALE::Field::Mesh::NumberingFactory::singleton(0, 0, true);
   PetscFunctionReturn(0);
 }
 

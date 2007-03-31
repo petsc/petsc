@@ -677,7 +677,7 @@ namespace ALE {
       return output.str();
     };
   };
-  namespace Field{
+  namespace Field {
   template<typename Sieve_>
   class Bundle : public ALE::ParallelObject {
   public:
