@@ -1117,7 +1117,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   const ALE::Obj<ALE::Field::Mesh>              adjBundle = new ALE::Field::Mesh(comm, mesh->debug());
   const ALE::Obj<ALE::Field::Mesh::sieve_type>  adjGraph  = new ALE::Field::Mesh::sieve_type(comm, mesh->debug());
   const ALE::Obj<ALE::Field::Mesh::sieve_type>& sieve     = mesh->getSieve();
-  PetscInt       numLocalRows, firstRow;
+  PetscInt       numLocalRows, firstRow, bs;
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
 
@@ -1126,6 +1126,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   numLocalRows = globalOrder->getLocalSize();
   firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
   ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
+  ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
   /* Create local adjacency graph */
   /*   In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
   const typename Atlas::chart_type& chart = atlas->getChart();
@@ -1154,8 +1155,8 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   /* Read out adjacency graph */
   const ALE::Obj<ALE::Field::Mesh::sieve_type> graph = adjBundle->getSieve();
 
-  ierr = PetscMemzero(dnz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
-  ierr = PetscMemzero(onz, numLocalRows * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const typename Atlas::point_type& point = *c_iter;
 
@@ -1163,18 +1164,18 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
       const ALE::Obj<ALE::Field::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
       const ALE::Field::Mesh::order_type::value_type&                     rIdx  = globalOrder->restrictPoint(point)[0];
       const int                                                           row   = rIdx.prefix;
-      const int                                                           rSize = rIdx.index;
+      const int                                                           rSize = rIdx.index/bs;
 
       for(ALE::Field::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Field::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Field::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
-        const int&                                      cSize    = cIdx.index;
+        const int&                                      cSize    = cIdx.index/bs;
 
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {
-            for(int r = 0; r < rSize; ++r) {dnz[row - firstRow + r] += cSize;}
+            for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
           } else {
-            for(int r = 0; r < rSize; ++r) {onz[row - firstRow + r] += cSize;}
+            for(int r = 0; r < rSize; ++r) {onz[(row - firstRow)/bs + r] += cSize;}
           }
         }
       }
@@ -1188,6 +1189,8 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   }
   ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
+  ierr = MatSeqBAIJSetPreallocation(A, bs, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIBAIJSetPreallocation(A, bs, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
   ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
   PetscFunctionReturn(0);
