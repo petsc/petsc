@@ -1273,7 +1273,6 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   PetscFunctionBegin;
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-#if 0
   try {
     m  = ALE::PCICE::Builder::readMesh(comm, dim, std::string(coordFilename), std::string(adjFilename), false, interpolate, debug);
   } catch(ALE::Exception e) {
@@ -1282,7 +1281,6 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
   if (bcFilename) {
     ALE::PCICE::Builder::readBoundary(m, std::string(bcFilename));
   }
-#endif
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1318,13 +1316,11 @@ PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFil
   PetscFunctionBegin;
   ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
-#if 0
   try {
     m  = ALE::PyLith::Builder::readMesh(comm, dim, std::string(baseFilename), zeroBase, interpolate, debug);
   } catch(ALE::Exception e) {
     SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
   }
-#endif
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1741,7 +1737,8 @@ PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *sec
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
-  ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));
+  ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
+  ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1838,7 +1835,8 @@ PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *secti
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
-  ierr = SectionIntSetSection(*section, m->getIntSection(std::string(name)));
+  ierr = SectionIntSetSection(*section, m->getIntSection(std::string(name)));CHKERRQ(ierr);
+  ierr = SectionIntSetBundle(*section, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1936,7 +1934,8 @@ PetscErrorCode MeshGetSectionPair(Mesh mesh, const char name[], SectionPair *sec
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionPairCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
-  ierr = SectionPairSetSection(*section, m->getPairSection(std::string(name)));
+  ierr = SectionPairSetSection(*section, m->getPairSection(std::string(name)));CHKERRQ(ierr);
+  ierr = SectionPairSetBundle(*section, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
