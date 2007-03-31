@@ -495,6 +495,7 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
+#if 0
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteHierarchyElements"
   static PetscErrorCode writeHierarchyElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer) {
@@ -539,4 +540,5 @@ class VTKViewer {
     }
     PetscFunctionReturn(0);
   };
+#endif
 };

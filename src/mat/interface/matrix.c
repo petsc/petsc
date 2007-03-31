@@ -3109,8 +3109,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   if (flg) {
     newtype = mtype;
   }
-  ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
-  
   ierr = PetscTypeCompare((PetscObject)mat,newtype,&sametype);CHKERRQ(ierr);
   ierr = PetscStrcmp(newtype,"same",&issame);CHKERRQ(ierr);
   if ((reuse==MAT_REUSE_MATRIX) && (mat != *M)) {
@@ -3122,7 +3120,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     PetscErrorCode (*conv)(Mat, MatType,MatReuse,Mat*)=PETSC_NULL;
     const char     *prefix[3] = {"seq","mpi",""};
     PetscInt       i;
-
     /* 
        Order of precedence:
        1) See if a specialized converter is known to the current matrix.
@@ -3132,8 +3129,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
        4) See if a good general converter is known for the current matrix.
        5) Use a really basic converter.
     */
+    
+    /* 1) See if a specialized converter is known to the current matrix and the desired class */
     for (i=0; i<3; i++) {
-      /* 1) See if a specialized converter is known to the current matrix and the desired class */
       ierr = PetscStrcpy(convname,"MatConvert_");CHKERRQ(ierr);
       ierr = PetscStrcat(convname,mat->type_name);CHKERRQ(ierr);
       ierr = PetscStrcat(convname,"_");CHKERRQ(ierr);
@@ -3177,10 +3175,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
     conv = MatConvert_Basic;
 
     foundconv:
+    ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
     ierr = (*conv)(mat,newtype,reuse,M);CHKERRQ(ierr);
+    ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   }
   B = *M;
-  ierr = PetscLogEventEnd(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject)B);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -3221,10 +3220,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDuplicate(Mat mat,MatDuplicateOption op,Mat
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
   *M  = 0;
-  ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   if (!mat->ops->duplicate) {
     SETERRQ(PETSC_ERR_SUP,"Not written for this matrix type");
   }
+  ierr = PetscLogEventBegin(MAT_Convert,mat,0,0,0);CHKERRQ(ierr);
   ierr = (*mat->ops->duplicate)(mat,op,M);CHKERRQ(ierr);
   B = *M;
   if (mat->mapping) {

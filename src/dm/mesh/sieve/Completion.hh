@@ -10,56 +10,6 @@
 
 namespace ALE {
   namespace New {
-    template<typename Section_>
-    class PatchlessSection : public ALE::ParallelObject {
-    public:
-      typedef Section_                          section_type;
-      typedef typename section_type::patch_type patch_type;
-      typedef typename section_type::sieve_type sieve_type;
-      typedef typename section_type::point_type point_type;
-      typedef typename section_type::value_type value_type;
-      typedef typename section_type::chart_type chart_type;
-    protected:
-      Obj<section_type> _section;
-      const patch_type  _patch;
-    public:
-      PatchlessSection(const Obj<section_type>& section, const patch_type& patch) : ParallelObject(MPI_COMM_SELF, section->debug()), _section(section), _patch(patch) {};
-      virtual ~PatchlessSection() {};
-    public:
-      const chart_type& getPatch(const patch_type& patch) {
-        return this->_section->getAtlas()->getPatch(this->_patch);
-      };
-      bool hasPoint(const patch_type& patch, const point_type& point) {
-        return this->_section->hasPoint(patch, point);
-      };
-      const value_type *restrict(const patch_type& patch) {
-        return this->_section->restrict(this->_patch);
-      };
-      const value_type *restrict(const patch_type& patch, const point_type& p) {
-        return this->_section->restrict(this->_patch, p);
-      };
-      const value_type *restrictPoint(const patch_type& patch, const point_type& p) {
-        return this->_section->restrictPoint(this->_patch, p);
-      };
-      void update(const patch_type& patch, const point_type& p, const value_type v[]) {
-        this->_section->update(this->_patch, p, v);
-      };
-      void updateAdd(const patch_type& patch, const point_type& p, const value_type v[]) {
-        this->_section->updateAdd(this->_patch, p, v);
-      };
-      void updatePoint(const patch_type& patch, const point_type& p, const value_type v[]) {
-        this->_section->updatePoint(this->_patch, p, v);
-      };
-      template<typename Input>
-      void update(const patch_type& patch, const point_type& p, const Obj<Input>& v) {
-        this->_section->update(this->_patch, p, v);
-      };
-    public:
-      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
-        this->_section->view(name, comm);
-      };
-    };
-
     template<typename Bundle_, typename Value_>
     class Completion {
     public:
@@ -73,8 +23,6 @@ namespace ALE {
       typedef typename ALE::Sifter<point_type, int, point_type>                           recv_overlap_type;
       typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, int> > send_sizer_type;
       typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, int> > recv_sizer_type;
-      typedef typename ALE::New::OldConstantSection<topology_type, int>                   constant_sizer;
-      typedef typename ALE::New::OldConstantSection<topology_type, value_type>            constant_section;
       typedef typename ALE::New::ConeSizeSection<bundle_type, sieve_type>                 cone_size_section;
       typedef typename ALE::New::ConeSection<sieve_type>                                  cone_section;
       typedef typename ALE::New::SectionCompletion<bundle_type, value_type>               completion;

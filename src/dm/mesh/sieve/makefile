@@ -5,8 +5,9 @@ FFLAGS   =
 CPPFLAGS = ${SIEVE_FLAGS}
 SOURCEC  = ALE.cxx
 SOURCEF  =
-SOURCEH  = ALE_containers.hh ALE_exception.hh ALE.hh ALE_log.hh ALE_mem.hh CoSieve.hh CoSifter.hh Delta.hh Filter.hh Map.hh \
-	Mesh.hh ParDelta.hh Partitioner.hh Sieve.hh Sifter.hh
+SOURCEH  = ALE_containers.hh ALE_exception.hh ALE_log.hh ALE_mem.hh ALE.hh CartesianSieve.hh CoSieve.hh Completion.hh \
+           Distribution.hh Field.hh Filter.hh Generator.hh Map.hh Mesh.hh Numbering.hh Partitioner.hh \
+           SectionCompletion.hh Sections.hh Sieve.hh SieveAlgorithms.hh Sifter.hh XSifter.hh
 OBJSC    = ALE.o               
 OBJSF    =
 LIBBASE  = libpetscdm

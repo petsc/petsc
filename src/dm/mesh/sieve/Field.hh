@@ -522,12 +522,15 @@ namespace Field {
         this->setFiberDimension(p, dim);
       }
     };
+    int getConstrainedFiberDimension(const point_type& p) const {
+      return std::max(0, this->getFiberDimension(p));
+    };
     int size() const {
       const typename atlas_type::chart_type& points = this->_atlas->getChart();
       int size = 0;
 
       for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-        size += std::max(0, this->getFiberDimension(*p_iter));
+        size += this->getConstrainedFiberDimension(*p_iter);
       }
       return size;
     };
@@ -540,17 +543,6 @@ namespace Field {
       }
       return size;
     };
-#if 0
-    int size(const Obj<atlas_type>& atlas) {
-      const typename atlas_type::chart_type& points = atlas->getChart();
-      int size = 0;
-
-      for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-        size += std::max(0, this->getFiberDimension(atlas, *p_iter));
-      }
-      return size;
-    };
-#endif
   public: // Index retrieval
     const index_type& getIndex(const point_type& p) {
       return this->_atlas->restrictPoint(p)[0];
@@ -757,6 +749,20 @@ namespace Field {
     const Obj<atlas_type>& getNewAtlas() const {return this->_atlasNew;};
     void setNewAtlas(const Obj<atlas_type>& atlas) {this->_atlasNew = atlas;};
     const chart_type& getChart() const {return this->_atlas->getChart();};
+  public: // BC
+    const int getConstraintDimension(const point_type& p) const {
+      if (!this->_bc->hasPoint(p)) return 0;
+      return this->_bc->getFiberDimension(p);
+    };
+    void setConstraintDimension(const point_type& p, const int numConstraints) {
+      this->_bc->setFiberDimension(p, numConstraints);
+    };
+    const int *getConstraintDof(const point_type& p) {
+      return this->_bc->restrictPoint(p);
+    };
+    void setConstraintDof(const point_type& p, const int dofs[]) {
+      this->_bc->updatePoint(p, dofs);
+    };
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
@@ -789,12 +795,15 @@ namespace Field {
         this->setFiberDimension(p, dim);
       }
     };
+    int getConstrainedFiberDimension(const point_type& p) const {
+      return this->getFiberDimension(p) - this->getConstraintDimension(p);
+    };
     int size() const {
       const chart_type& points = this->getChart();
       int               size   = 0;
 
       for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-        size += this->getFiberDimension(*p_iter) - this->getConstraintDimension(*p_iter);
+        size += this->getConstrainedFiberDimension(*p_iter);
       }
       return size;
     };
@@ -940,20 +949,6 @@ namespace Field {
           }
         }
       }
-    };
-  public: // BC
-    const int getConstraintDimension(const point_type& p) const {
-      if (!this->_bc->hasPoint(p)) return 0;
-      return this->_bc->getFiberDimension(p);
-    };
-    void setConstraintDimension(const point_type& p, const int numConstraints) {
-      this->_bc->setFiberDimension(p, numConstraints);
-    };
-    const int *getConstraintDof(const point_type& p) {
-      return this->_bc->restrictPoint(p);
-    };
-    void setConstraintDof(const point_type& p, const int dofs[]) {
-      this->_bc->updatePoint(p, dofs);
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
