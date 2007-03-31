@@ -40,7 +40,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogClassRegister(&MESH_COOKIE,       "Mesh");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&SECTIONREAL_COOKIE,"SectionReal");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&SECTIONINT_COOKIE, "SectionInt");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&SECTIONPAIR_COOKIE,"SectionPair");CHKERRQ(ierr);
 #endif
   /* Register Events */
   ierr = PetscLogEventRegister(&AO_PetscToApplication,       "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);
@@ -58,7 +57,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogEventRegister(&Mesh_updateOperator,         "MeshUpdateOperator",   MESH_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SectionReal_View,            "SectionRealView",      SECTIONREAL_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SectionInt_View,             "SectionIntView",       SECTIONINT_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&SectionPair_View,            "SectionPairView",      SECTIONPAIR_COOKIE);CHKERRQ(ierr);
 #endif
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -83,10 +81,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
     ierr = PetscStrstr(logList, "sectionint", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscInfoDeactivateClass(SECTIONINT_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "sectionpair", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(SECTIONPAIR_COOKIE);CHKERRQ(ierr);
     }
 #endif
   }
@@ -113,10 +107,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
     ierr = PetscStrstr(logList, "sectionint", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(SECTIONINT_COOKIE);CHKERRQ(ierr);
-    }
-    ierr = PetscStrstr(logList, "sectionpair", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(SECTIONPAIR_COOKIE);CHKERRQ(ierr);
     }
 #endif
   }

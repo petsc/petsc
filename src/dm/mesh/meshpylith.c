@@ -5,7 +5,6 @@
 
 namespace ALE {
   namespace PyLith {
-    using ALE::Mesh;
     //
     // Builder methods
     //
@@ -224,6 +223,7 @@ namespace ALE {
       *loadHistory = loadHist;
       *splitValues = splitVal;
     };
+#if 0
     void Builder::buildSplit(const Obj<pair_section_type>& splitField, const Obj<int_section_type>& loadField, int numCells, int numSplit, int splitInd[], int loadHistory[], double splitVals[]) {
       const pair_section_type::patch_type                     patch = 0;
       pair_section_type::value_type                          *values;
@@ -263,6 +263,7 @@ namespace ALE {
       }
       delete [] values;
     };
+#endif
     void Builder::readTractions(MPI_Comm comm, const std::string& filename, const int dim, const int& corners, const bool useZeroBase, int& numTractions, int& vertsPerFace, int *tractionVertices[], double *tractionValues[]) {
       PetscViewer    viewer;
       FILE          *f;
@@ -366,48 +367,44 @@ namespace ALE {
       *tractionVertices = tractionVerts;
       *tractionValues   = tractionVals;
     };
-    void Builder::buildTractions(const Obj<real_section_type>& tractionField, const Obj<topology_type>& boundaryTopology, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]) {
-      const real_section_type::patch_type                  patch = 0;
-      real_section_type::value_type                        values[3];
+    void Builder::buildTractions(const Obj<real_section_type>& tractionField, const Obj<Mesh>& boundaryMesh, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]) {
+      real_section_type::value_type values[3];
       // Make boundary topology
       Obj<sieve_type> boundarySieve = new sieve_type(tractionField->comm(), tractionField->debug());
 
       ALE::New::SieveBuilder<Mesh>::buildTopology(boundarySieve, 2, numTractions, tractionVertices, 0, false, vertsPerFace, numCells);
-      boundaryTopology->setPatch(patch, boundarySieve);
-      boundaryTopology->stratify();
+      boundaryMesh->setSieve(boundarySieve);
+      boundaryMesh->stratify();
       // Make traction field
       tractionField->setName("traction");
-      tractionField->setTopology(boundaryTopology);
-      tractionField->setFiberDimensionByHeight(patch, 0, 3);
-      tractionField->allocate();
-      const Obj<topology_type::label_sequence>& faces = boundaryTopology->heightStratum(patch, 0);
+      tractionField->setFiberDimension(boundaryMesh->heightStratum(0), 3);
+      boundaryMesh->allocate(tractionField);
+      const Obj<Mesh::label_sequence>& faces = boundaryMesh->heightStratum(0);
       int k = 0;
 
-      for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-        const topology_type::point_type& face = *f_iter;
+      for(Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+        const Mesh::point_type& face = *f_iter;
 
         values[0] = tractionValues[k*3+0];
         values[1] = tractionValues[k*3+1];
         values[2] = tractionValues[k*3+2];
         k++;
-        tractionField->update(patch, face, values);
+        tractionField->updatePoint(face, values);
       }
     };
-    void Builder::buildMaterials(const Obj<int_section_type>& matField, const int materials[]) {
-      const int_section_type::patch_type        patch    = 0;
-      const Obj<topology_type::label_sequence>& elements = matField->getTopology()->heightStratum(patch, 0);
+    void Builder::buildMaterials(const Obj<Mesh>& mesh, const Obj<int_section_type>& matField, const int materials[]) {
+      const Obj<Mesh::label_sequence>& elements = mesh->heightStratum(0);
 
       matField->setName("material");
-      matField->setFiberDimensionByHeight(patch, 0, 1);
-      matField->allocate();
-      for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        matField->update(patch, *e_iter, &materials[*e_iter]);
+      matField->setFiberDimension(elements, 1);
+      mesh->allocate(matField);
+      for(Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+        matField->updatePoint(*e_iter, &materials[*e_iter]);
       }
     };
-    Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
-      Obj<Mesh>             mesh     = new Mesh(comm, dim, debug);
-      Obj<sieve_type>       sieve    = new sieve_type(comm, debug);
-      Obj<topology_type>    topology = new topology_type(comm, debug);
+    Obj<ALE::Field::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
+      Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
+      Obj<sieve_type> sieve = new sieve_type(comm, debug);
       int    *cells, *materials;
       double *coordinates;
       int     numCells = 0, numVertices = 0, numCorners = dim+1;
@@ -415,19 +412,20 @@ namespace ALE {
       ALE::PyLith::Builder::readConnectivity(comm, basename+".connect", numCorners, useZeroBase, numCells, &cells, &materials);
       ALE::PyLith::Builder::readCoordinates(comm, basename+".coord", dim, numVertices, &coordinates);
       ALE::New::SieveBuilder<Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
-      sieve->stratify();
-      topology->setPatch(0, sieve);
-      topology->stratify();
-      mesh->setTopology(topology);
-      ALE::New::SieveBuilder<Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), dim, coordinates);
+      mesh->setSieve(sieve);
+      mesh->stratify();
+      ALE::New::SieveBuilder<Mesh>::buildCoordinatesNew(mesh, dim, coordinates);
       Obj<int_section_type> material = mesh->getIntSection("material");
-      buildMaterials(material, materials);
+      buildMaterials(mesh, material, materials);
+#if 0
       Obj<ALE::Mesh::pair_section_type> split = createSplit(mesh, basename, useZeroBase);
       if (!split.isNull()) {mesh->setPairSection("split", split);}
-      Obj<ALE::Mesh::real_section_type> traction = createTraction(mesh, basename, useZeroBase);
-      if (!traction.isNull()) {mesh->setRealSection("traction", traction);}
+#endif
+      Obj<ALE::Mesh> tractionMesh = createTraction(mesh, basename, useZeroBase);
+      if (!tractionMesh.isNull()) {/* Have to carry tractions around somehow */}
       return mesh;
     };
+#if 0
     Obj<Builder::pair_section_type> Builder::createSplit(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
       Obj<pair_section_type> split = NULL;
       MPI_Comm comm     = mesh->comm();
@@ -446,13 +444,14 @@ namespace ALE {
       }
       return split;
     };
-    Obj<Mesh::real_section_type> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
-      Obj<real_section_type> traction = NULL;
+#endif
+    Obj<ALE::Field::Mesh> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
+      Obj<Mesh> tractionMesh = NULL;
       MPI_Comm comm       = mesh->comm();
       int      debug      = mesh->debug();
       int      dim        = mesh->getDimension();
-      int      numCells   = mesh->getTopology()->heightStratum(0, 0)->size();
-      int      numCorners = mesh->getTopology()->getPatch(0)->cone(*mesh->getTopology()->heightStratum(0, 0)->begin())->size();
+      int      numCells   = mesh->heightStratum(0)->size();
+      int      numCorners = mesh->getSieve()->cone(*mesh->heightStratum(0)->begin())->size();
       int     *tractionVertices;
       double  *tractionValues;
       int      numTractions = 0, vertsPerFace = 0, hasTractions;
@@ -460,18 +459,17 @@ namespace ALE {
       ALE::PyLith::Builder::readTractions(comm, basename+".traction", dim, numCorners, useZeroBase, numTractions, vertsPerFace, &tractionVertices, &tractionValues);
       MPI_Allreduce(&numTractions, &hasTractions, 1, MPI_INT, MPI_MAX, comm);
       if (hasTractions) {
-        Obj<topology_type> boundaryTopology = new topology_type(mesh->comm(), debug);
+        tractionMesh = new Mesh(comm, debug);
 
-        traction = new real_section_type(boundaryTopology);
-        buildTractions(traction, boundaryTopology, numCells, numTractions, vertsPerFace, tractionVertices, tractionValues);
+        const Obj<Mesh::real_section_type>& traction = tractionMesh->getRealSection("traction");
+        buildTractions(traction, tractionMesh, numCells, numTractions, vertsPerFace, tractionVertices, tractionValues);
       }
-      return traction;
+      return tractionMesh;
     };
     void Builder::createCohesiveElements(const Obj<Mesh>& mesh, const std::set<Mesh::point_type>& faultVertices) {
       typedef std::vector<Mesh::point_type> PointArray;
-      const Mesh::real_section_type::patch_type patch      = 0;
-      const Obj<Mesh::sieve_type>               sieve      = mesh->getTopology()->getPatch(patch);
-      const Obj<Mesh::topology_type>            fault      = new Mesh::topology_type(sieve->comm(), sieve->debug());
+      const Obj<Mesh::sieve_type>               sieve      = mesh->getSieve();
+      const Obj<Mesh>                           fault      = new Mesh(mesh->comm(), mesh->debug());
       const Obj<Mesh::sieve_type>               faultSieve = new Mesh::sieve_type(sieve->comm(), sieve->debug());
       const std::set<Mesh::point_type>::const_iterator fvBegin = faultVertices.begin();
       const std::set<Mesh::point_type>::const_iterator fvEnd   = faultVertices.end();
@@ -489,15 +487,15 @@ namespace ALE {
         const Mesh::sieve_type::traits::supportSequence::iterator cEnd   = cells->end();
 
         if (debug) {std::cout << "Checking fault vertex " << *fv_iter << std::endl;}
-        for(ALE::Mesh::sieve_type::traits::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
+        for(Mesh::sieve_type::traits::supportSequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
           if (debug) {std::cout << "  Checking cell " << *c_iter << std::endl;}
           if (faultCells.find(*c_iter) != faultCells.end()) continue;
-          const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone   = sieve->cone(*c_iter);
+          const Obj<Mesh::sieve_type::traits::coneSequence>& cone   = sieve->cone(*c_iter);
           const Mesh::sieve_type::traits::coneSequence::iterator  vBegin = cone->begin();
           const Mesh::sieve_type::traits::coneSequence::iterator  vEnd   = cone->end();
 
           face->clear();
-          for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
+          for(Mesh::sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
             if (faultVertices.find(*v_iter) != fvEnd) {
               if (debug) {std::cout << "    contains fault vertex " << *v_iter << std::endl;}
               face->insert(face->end(), *v_iter);
@@ -526,28 +524,28 @@ namespace ALE {
           }
         }
       }
-      fault->setPatch(patch, faultSieve);
+      fault->setSieve(faultSieve);
       fault->stratify();
       faultCells.clear();
-      if (debug) {fault->view("Fault sieve");}
+      if (debug) {fault->view("Fault mesh");}
       // Add new shadow vertices
-      const Obj<Mesh::topology_type::label_sequence>& fVertices = fault->depthStratum(patch, 0);
-      const Obj<Mesh::topology_type::label_sequence>& vertices  = mesh->getTopology()->depthStratum(patch, 0);
-      Mesh::topology_type::point_type                 newVertex = *vertices->begin() + vertices->size();
-      std::map<int,int>                               vertexRenumber;
+      const Obj<Mesh::label_sequence>& fVertices = fault->depthStratum(0);
+      const Obj<Mesh::label_sequence>& vertices  = mesh->depthStratum(0);
+      Mesh::point_type                 newVertex = *vertices->begin() + vertices->size();
+      std::map<int,int>                vertexRenumber;
 
-      for(Mesh::topology_type::label_sequence::iterator v_iter = fVertices->begin(); v_iter != fVertices->end(); ++v_iter) {
+      for(Mesh::label_sequence::iterator v_iter = fVertices->begin(); v_iter != fVertices->end(); ++v_iter) {
         if (debug) {std::cout << "Duplicating " << *v_iter << " to " << vertexRenumber[*v_iter] << std::endl;}
         vertexRenumber[*v_iter] = newVertex++;
       }
       // Split the mesh along the fault sieve and create cohesive elements
-      const Obj<Mesh::topology_type::label_sequence>& faces     = fault->depthStratum(patch, 1);
-      PointArray                                      newVertices;
+      const Obj<Mesh::label_sequence>& faces = fault->depthStratum(1);
+      PointArray                       newVertices;
 
-      for(Mesh::topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+      for(Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
         if (debug) {std::cout << "Considering fault face " << *f_iter << std::endl;}
         const Obj<Mesh::sieve_type::traits::supportSequence>& cells = faultSieve->support(*f_iter);
-        Mesh::topology_type::point_type                       cell  = std::max(*cells->begin(), *(++cells->begin()));
+        Mesh::point_type                                      cell  = std::max(*cells->begin(), *(++cells->begin()));
         const Obj<Mesh::sieve_type::traits::coneSequence>&    cone  = sieve->cone(cell);
 
         if (debug) {std::cout << "  Replacing cell " << cell << std::endl;}
@@ -568,15 +566,15 @@ namespace ALE {
         }
       }
       // Fix coordinates
-      const Obj<Mesh::real_section_type>&             coordinates = mesh->getRealSection("coordinates");
-      const Obj<Mesh::topology_type::label_sequence>& fVertices2  = fault->depthStratum(patch, 0);
+      const Obj<Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+      const Obj<Mesh::label_sequence>&    fVertices2  = fault->depthStratum(0);
 
-      for(Mesh::topology_type::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
-        coordinates->addPoint(patch, vertexRenumber[*v_iter], coordinates->getFiberDimension(patch, *v_iter));
+      for(Mesh::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
+        coordinates->addPoint(vertexRenumber[*v_iter], coordinates->getFiberDimension(*v_iter));
       }
-      coordinates->reallocate();
-      for(Mesh::topology_type::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
-        coordinates->updatePoint(patch, vertexRenumber[*v_iter], coordinates->restrictPoint(patch, *v_iter));
+      mesh->reallocate(coordinates);
+      for(Mesh::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
+        coordinates->updatePoint(vertexRenumber[*v_iter], coordinates->restrictPoint(*v_iter));
       }
     };
     //
@@ -671,7 +669,6 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteElements"
     PetscErrorCode Viewer::writeElements(const Obj<Mesh>& mesh, const Obj<Builder::int_section_type>& materialField, PetscViewer viewer) {
-      Obj<Mesh::topology_type> topology = mesh->getTopology();
 #if 0
       Obj<Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
       Obj<Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
@@ -775,12 +772,10 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteVerticesLocal"
     PetscErrorCode Viewer::writeVerticesLocal(const Obj<Mesh>& mesh, PetscViewer viewer) {
-      const Builder::real_section_type::patch_type       patch       = 0;
-      const Obj<Builder::real_section_type>&             coordinates = mesh->getRealSection("coordinates");
-      const Obj<Builder::topology_type>&                 topology    = mesh->getTopology();
-      const Obj<Builder::topology_type::label_sequence>& vertices    = topology->depthStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                   vNumbering  = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
-      int            embedDim = coordinates->getFiberDimension(patch, *vertices->begin());
+      const Obj<Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+      const Obj<Mesh::label_sequence>&    vertices    = mesh->depthStratum(0);
+      const Obj<Mesh::numbering_type>&    vNumbering  = mesh->getFactory()->getLocalNumbering(mesh, 0);
+      int            embedDim = coordinates->getFiberDimension(*vertices->begin());
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -791,8 +786,8 @@ namespace ALE {
       ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
 
-      for(Mesh::topology_type::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const Builder::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
+      for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        const Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
 
         PetscViewerASCIIPrintf(viewer, "%7D ", vNumbering->getIndex(*v_iter)+1);
         for(int d = 0; d < embedDim; d++) {
@@ -808,12 +803,10 @@ namespace ALE {
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteElementsLocal"
     PetscErrorCode Viewer::writeElementsLocal(const Obj<Mesh>& mesh, const Obj<Builder::int_section_type>& materialField, PetscViewer viewer) {
-      const Mesh::topology_type::patch_type           patch      = 0;
-      const Obj<Mesh::topology_type>&                 topology   = mesh->getTopology();
-      const Obj<Mesh::sieve_type>&                    sieve      = topology->getPatch(patch);
-      const Obj<Mesh::topology_type::label_sequence>& elements   = topology->heightStratum(patch, 0);
-      const Obj<Mesh::numbering_type>&                eNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, topology->depth());
-      const Obj<Mesh::numbering_type>&                vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
+      const Obj<Mesh::sieve_type>&     sieve      = mesh->getSieve();
+      const Obj<Mesh::label_sequence>& elements   = mesh->heightStratum(0);
+      const Obj<Mesh::numbering_type>& eNumbering = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
+      const Obj<Mesh::numbering_type>& vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
       int            dim          = mesh->getDimension();
       //int            corners      = sieve->nCone(*elements->begin(), topology->depth())->size();
       int            corners      = sieve->cone(*elements->begin())->size();
@@ -837,7 +830,7 @@ namespace ALE {
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#     N ETP MAT INF     N1     N2     N3     N4     N5     N6     N7     N8\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      for(Mesh::topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+      for(Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
         const Obj<Mesh::sieve_type::traits::coneSequence> cone  = sieve->cone(*e_iter);
         Mesh::sieve_type::traits::coneSequence::iterator  begin = cone->begin();
         Mesh::sieve_type::traits::coneSequence::iterator  end   = cone->end();
@@ -845,7 +838,7 @@ namespace ALE {
         ierr = PetscViewerASCIIPrintf(viewer, "%7d %3d", eNumbering->getIndex(*e_iter)+1, elementType);CHKERRQ(ierr);
         if (hasMaterial) {
           // No infinite elements
-          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) materialField->restrict(patch, *e_iter)[0], 0);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", (int) materialField->restrictPoint(*e_iter)[0], 0);CHKERRQ(ierr);
         } else {
           // No infinite elements
           ierr = PetscViewerASCIIPrintf(viewer, " %3d %3d", 1, 0);CHKERRQ(ierr);
@@ -858,6 +851,7 @@ namespace ALE {
       }
       PetscFunctionReturn(0);
     };
+#if 0
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteSplitLocal"
     // The elements seem to be implicitly numbered by appearance, which makes it impossible to
@@ -887,17 +881,13 @@ namespace ALE {
       }
       PetscFunctionReturn(0);
     };
+#endif
     #undef __FUNCT__  
     #define __FUNCT__ "PyLithWriteTractionsLocal"
-    PetscErrorCode Viewer::writeTractionsLocal(const Obj<Mesh>& mesh, const Obj<Builder::real_section_type>& tractionField, PetscViewer viewer) {
-      typedef Builder::topology_type     topology_type;
-      typedef Builder::real_section_type section_type;
-      const section_type::patch_type            patch      = 0;
-      const Obj<topology_type>&         boundaryTopology   = tractionField->getTopology();
-      const Obj<topology_type::sieve_type>&     sieve      = boundaryTopology->getPatch(patch);
-      const Obj<topology_type::label_sequence>& faces      = boundaryTopology->heightStratum(patch, 0);
-      const Obj<Mesh::topology_type>&           topology   = mesh->getTopology();
-      const Obj<Mesh::numbering_type>&          vNumbering = mesh->getFactory()->getLocalNumbering(topology, patch, 0);
+    PetscErrorCode Viewer::writeTractionsLocal(const Obj<Mesh>& mesh, const Obj<Mesh>& tractionMesh, const Obj<Builder::real_section_type>& tractionField, PetscViewer viewer) {
+      const Obj<Mesh::sieve_type>&     sieve = tractionMesh->getSieve();
+      const Obj<Mesh::label_sequence>& faces = tractionMesh->heightStratum(0);
+      const Obj<Mesh::numbering_type>& vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
       PetscErrorCode ierr;
 
       PetscFunctionBegin;
@@ -905,17 +895,17 @@ namespace ALE {
       ierr = PetscViewerASCIIPrintf(viewer,"traction_units = Pa\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-        const topology_type::point_type& face = *f_iter;
-        const Obj<topology_type::sieve_type::traits::coneSequence>& cone = sieve->cone(face);
+      for(Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+        const Mesh::point_type& face = *f_iter;
+        const Obj<Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(face);
 
-        for(topology_type::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-          const topology_type::point_type& vertex = *c_iter;
+        for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          const Mesh::point_type& vertex = *c_iter;
 
           ierr = PetscViewerASCIIPrintf(viewer, "%6d", vNumbering->getIndex(vertex)+1);CHKERRQ(ierr);
           std::cout << vNumbering->getIndex(vertex) << " ("<<vertex<<") ";
         }
-        const section_type::value_type *values = tractionField->restrict(patch, face);
+        const Mesh::real_section_type::value_type *values = tractionField->restrictPoint(face);
 
         for(int i = 0; i < mesh->getDimension(); ++i) {
           if (i > 0) {
