@@ -286,14 +286,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Fiel
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
-template<typename Atlas>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& atlas, MatType mtype, Mat *J)
+template<typename Section>
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Section>& section, MatType mtype, Mat *J)
 {
   Obj<ALE::Field::Mesh> m;
-  PetscTruth     isShell;
+  PetscTruth     isShell, isBlock;
   PetscErrorCode ierr;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", atlas);
+  const ALE::Obj<typename Section::atlas_type>&          atlas = section->getAtlas();
+  const ALE::Obj<typename ALE::Field::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", atlas);
   int localSize  = order->getLocalSize();
   int globalSize = order->getGlobalSize();
 
@@ -304,8 +305,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, const Obj<Atlas>& a
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject) *J, "mesh", (PetscObject) mesh);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
   if (!isShell) {
-    //ierr = MatSetBlockSize(*J, 1);CHKERRQ(ierr);
+    if (isBlock) {
+      ierr = MatSetBlockSize(*J, section->getFiberDimension(*section->getChart().begin()));CHKERRQ(ierr);
+    }
     ierr = preallocateOperator(m, atlas, order, *J);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -323,7 +327,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
   ALE::Obj<ALE::Field::Mesh::real_section_type> s = new ALE::Field::Mesh::real_section_type(m->comm(), m->debug());
   s->setFiberDimension(m->depthStratum(0), 1);
   m->allocate(s);
-  ierr = MeshCreateMatrix(mesh, s->getAtlas(), mtype, J);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(mesh, s, mtype, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -362,7 +366,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = MeshCreateMatrix(mesh, m->getRealSection("default")->getAtlas(), mtype, J);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(mesh, m->getRealSection("default"), mtype, J);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

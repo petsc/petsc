@@ -349,13 +349,8 @@ namespace ALE {
     typedef ALE::Topology<int, sieve_type>            topology_type;
     typedef topology_type::patch_type                 patch_type;
     typedef Bundle<topology_type>                     base_type;
-    typedef ALE::New::NumberingFactory<topology_type> NumberingFactory;
-    typedef NumberingFactory::numbering_type          numbering_type;
-    typedef NumberingFactory::order_type              order_type;
     typedef base_type::send_overlap_type              send_overlap_type;
     typedef base_type::recv_overlap_type              recv_overlap_type;
-    //typedef base_type::send_section_type              send_section_type;
-    //typedef base_type::recv_section_type              recv_section_type;
     typedef base_type::real_sections_type             real_sections_type;
     // PCICE BC
     typedef struct {double rho,u,v,p;}                bc_value_type;
@@ -364,166 +359,16 @@ namespace ALE {
     typedef ALE::New::Section<topology_type, ALE::pair<int,double> > foliated_section_type;
   protected:
     int                   _dim;
-    Obj<NumberingFactory> _factory;
     // PCICE BC
     bc_values_type        _bcValues;
     // PyLith BC
     Obj<foliated_section_type> _boundaries;
-    // Discretization
-    Obj<Discretization>    _discretization;
-    Obj<BoundaryCondition> _boundaryCondition;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<ALE::Topology<int, ALE::Sieve<int,int,int> > >(comm, debug), _dim(dim) {
-      this->_factory = NumberingFactory::singleton(debug);
-      this->_boundaries = NULL;
-      this->_discretization = new Discretization(comm, debug);
-      this->_boundaryCondition = new BoundaryCondition(comm, debug);
-    };
-    Mesh(const Obj<topology_type>& topology, int dim) : Bundle<ALE::Topology<int, ALE::Sieve<int,int,int> > >(topology), _dim(dim) {
-      this->_factory = NumberingFactory::singleton(topology->debug());
       this->_boundaries = NULL;
     };
   public: // Accessors
-    int getDimension() const {return this->_dim;};
-    void setDimension(const int dim) {this->_dim = dim;};
-    const Obj<NumberingFactory>& getFactory() {return this->_factory;};
-    const Obj<Discretization>&    getDiscretization() {return this->_discretization;};
-    void setDiscretization(const Obj<Discretization>& discretization) {this->_discretization = discretization;};
-    const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
-    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
-  public: // Mesh geometry
 #if 0
-    void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double *coords = this->restrict(coordinates, e);
-      const int     dim    = 2;
-      double        invDet;
-
-      if (v0) {
-        for(int d = 0; d < dim; d++) {
-          v0[d] = coords[d];
-        }
-      }
-      if (J) {
-        for(int d = 0; d < dim; d++) {
-          for(int f = 0; f < dim; f++) {
-            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
-          }
-        }
-        detJ = J[0]*J[3] - J[1]*J[2];
-      }
-      if (invJ) {
-        invDet  = 1.0/detJ;
-        invJ[0] =  invDet*J[3];
-        invJ[1] = -invDet*J[1];
-        invJ[2] = -invDet*J[2];
-        invJ[3] =  invDet*J[0];
-      }
-    };
-    static void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const patch_type patch  = 0;
-      const double    *coords = coordinates->restrict(patch, e);
-      const int        dim    = 3;
-      double           invDet;
-
-      if (v0) {
-        for(int d = 0; d < dim; d++) {
-          v0[d] = coords[d];
-        }
-      }
-      if (J) {
-        for(int d = 0; d < dim; d++) {
-          for(int f = 0; f < dim; f++) {
-            J[d*dim+f] = 0.5*(coords[(f+1)*dim+d] - coords[0*dim+d]);
-          }
-        }
-        detJ = J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
-          J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
-          J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
-      }
-      if (invJ) {
-        invDet  = 1.0/detJ;
-        invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
-        invJ[0*3+1] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
-        invJ[0*3+2] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
-        invJ[1*3+0] = invDet*(J[0*3+1]*J[2*3+2] - J[0*3+2]*J[2*3+1]);
-        invJ[1*3+1] = invDet*(J[0*3+2]*J[2*3+0] - J[0*3+0]*J[2*3+2]);
-        invJ[1*3+2] = invDet*(J[0*3+0]*J[2*3+1] - J[0*3+1]*J[2*3+0]);
-        invJ[2*3+0] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
-        invJ[2*3+1] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
-        invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-      }
-    };
-    void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      if (this->_dim == 2) {
-        computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
-      } else if (this->_dim == 3) {
-        computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
-      } else {
-        throw ALE::Exception("Unsupport dimension for element geometry computation");
-      }
-    };
-    double getMaxVolume() {
-      const topology_type::sheaf_type& patches = this->getTopology()->getPatches();
-      double v0[3], J[9], invJ[9], detJ, maxVolume = 0.0;
-
-      for(topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
-        const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
-        const Obj<topology_type::label_sequence>& cells       = this->getTopology()->heightStratum(p_iter->first, 0);
-
-        for(topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-          this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-          maxVolume = std::max(maxVolume, detJ);
-        }
-      }
-      return maxVolume;
-    };
-    // Find the cell in which this point lies (stupid algorithm)
-    point_type locatePoint_2D(const patch_type& patch, const real_section_type::value_type point[]) {
-      const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
-      const Obj<topology_type::label_sequence>& cells       = this->getTopology()->heightStratum(patch, 0);
-      const int                                 embedDim    = 2;
-      double v0[2], J[4], invJ[4], detJ;
-
-      for(topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-        double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
-        double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
-
-        if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 1.0)) {
-          return *c_iter;
-        }
-      }
-      throw ALE::Exception("Could not locate point");
-    };
-    //   Assume a simplex and 3D
-    point_type locatePoint_3D(const patch_type& patch, const real_section_type::value_type point[]) {
-      const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
-      const Obj<topology_type::label_sequence>& cells       = this->getTopology()->heightStratum(patch, 0);
-      const int                                 embedDim    = 3;
-      double v0[3], J[9], invJ[9], detJ;
-
-      for(topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-        this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-        double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]);
-        double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
-        double zeta = invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]);
-
-        if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 1.0)) {
-          return *c_iter;
-        }
-      }
-      throw ALE::Exception("Could not locate point");
-    };
-    point_type locatePoint(const patch_type& patch, const real_section_type::value_type point[]) {
-      if (this->_dim == 2) {
-        return locatePoint_2D(patch, point);
-      } else if (this->_dim == 3) {
-        return locatePoint_3D(patch, point);
-      } else {
-        throw ALE::Exception("No point location for mesh dimension");
-      }
-    };
-#endif
     // Only works in 2D
     int orientation(const patch_type& patch, const point_type& cell) {
       const Obj<real_section_type>&     coordinates = this->getRealSection("coordinates");
@@ -551,6 +396,7 @@ namespace ALE {
       if (det < 0.0) return -1;
       return 0;
     };
+#endif
   public: // BC values for PCICE
     const bc_value_type& getBCValue(const int bcFunc) {
       return this->_bcValues[bcFunc];
@@ -582,97 +428,6 @@ namespace ALE {
           MPI_Bcast((void *) &funcVal, 4, MPI_DOUBLE, 0, this->comm());
         }
       }
-    };
-  public: // BC values for PyLith
-    const Obj<foliated_section_type>& getBoundariesNew() {
-      if (this->_boundaries.isNull()) {
-        this->_boundaries = new foliated_section_type(this->getTopology());
-      }
-      return this->_boundaries;
-    };
-  public: // Discretization
-    void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
-      const std::string& name  = this->_boundaryCondition->getLabelName();
-      const patch_type   patch = 0;
-
-      for(int d = 0; d <= this->_dim; ++d) {
-        s->setFiberDimensionByDepth(patch, d, this->_discretization->getNumDof(d));
-      }
-      if (!name.empty()) {
-        const Obj<topology_type::label_sequence>& boundary = this->_topology->getLabelStratum(patch, name, 1);
-
-        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          s->setFiberDimension(patch, *e_iter, -this->_discretization->getNumDof(this->_topology->depth(patch, *e_iter)));
-        }
-      }
-      s->allocate(postponeGhosts);
-      if (!name.empty()) {
-        const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
-        const Obj<topology_type::label_sequence>& boundary    = this->_topology->getLabelStratum(patch, name, 1);
-
-        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *e_iter);
-          const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
-
-          s->updatePointBC(patch, *e_iter, &value);
-        }
-      }
-    };
-  public:
-    void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
-      if (comm == MPI_COMM_NULL) {
-        comm = this->comm();
-      }
-      if (name == "") {
-        PetscPrintf(comm, "viewing a Mesh\n");
-      } else {
-        PetscPrintf(comm, "viewing Mesh '%s'\n", name.c_str());
-      }
-      this->getTopology()->view("mesh topology", comm);
-      Obj<std::set<std::string> > sections = this->getRealSections();
-
-      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
-        this->getRealSection(*name)->view(*name);
-      }
-      sections = this->getIntSections();
-      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
-        this->getIntSection(*name)->view(*name);
-      }
-      sections = this->getPairSections();
-      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
-        this->getPairSection(*name)->view(*name);
-      }
-    };
-    template<typename value_type>
-    static std::string printMatrix(const std::string& name, const int rows, const int cols, const value_type matrix[], const int rank = -1)
-    {
-      ostringstream output;
-      ostringstream rankStr;
-
-      if (rank >= 0) {
-        rankStr << "[" << rank << "]";
-      }
-      output << rankStr.str() << name << " = " << std::endl;
-      for(int r = 0; r < rows; r++) {
-        if (r == 0) {
-          output << rankStr.str() << " /";
-        } else if (r == rows-1) {
-          output << rankStr.str() << " \\";
-        } else {
-          output << rankStr.str() << " |";
-        }
-        for(int c = 0; c < cols; c++) {
-          output << " " << matrix[r*cols+c];
-        }
-        if (r == 0) {
-          output << " \\" << std::endl;
-        } else if (r == rows-1) {
-          output << " /" << std::endl;
-        } else {
-          output << " |" << std::endl;
-        }
-      }
-      return output.str();
     };
   };
   namespace Field {
@@ -951,7 +706,7 @@ namespace ALE {
 
       for(typename coneArray::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
         if (chart.count(*c_iter)) {
-          size += std::max(0, section->getFiberDimension(*c_iter));
+          size += section->getConstrainedFiberDimension(*c_iter);
         }
       }
       return size;
@@ -1784,7 +1539,9 @@ namespace ALE {
       coords[7*2+1] = upper[1];
       coords[7*2+2] = lower[2];
 #endif
+#if 0
       ALE::New::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh->getRealSection("coordinates"), mesh->getDimension()+1, coords);
+#endif
       return mesh;
     }
   };
