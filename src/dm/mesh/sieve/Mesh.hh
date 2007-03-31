@@ -32,8 +32,6 @@ namespace ALE {
     typedef typename topology_type::send_overlap_type      send_overlap_type;
     typedef typename topology_type::recv_overlap_type      recv_overlap_type;
     typedef typename ALE::New::SectionCompletion<topology_type, point_type>::topology_type      comp_topology_type;
-    //typedef typename ALE::New::OverlapValues<send_overlap_type, comp_topology_type, point_type> send_section_type;
-    //typedef typename ALE::New::OverlapValues<recv_overlap_type, comp_topology_type, point_type> recv_section_type;
   protected:
     Obj<topology_type> _topology;
     bool               _distributed;

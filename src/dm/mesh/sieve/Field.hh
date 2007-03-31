@@ -540,17 +540,6 @@ namespace Field {
       }
       return size;
     };
-#if 0
-    int size(const Obj<atlas_type>& atlas) {
-      const typename atlas_type::chart_type& points = atlas->getChart();
-      int size = 0;
-
-      for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-        size += std::max(0, this->getFiberDimension(atlas, *p_iter));
-      }
-      return size;
-    };
-#endif
   public: // Index retrieval
     const index_type& getIndex(const point_type& p) {
       return this->_atlas->restrictPoint(p)[0];
