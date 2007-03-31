@@ -144,7 +144,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawGetPopup(PetscDraw,PetscDraw*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawCheckResizedWindow(PetscDraw);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawResizeWindow(PetscDraw,int,int);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawScalePopup(PetscDraw,PetscReal min,PetscReal max); 
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawScalePopup(PetscDraw,PetscReal,PetscReal); 
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLine(PetscDraw,PetscReal,PetscReal,PetscReal,PetscReal,int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawLineSetWidth(PetscDraw,PetscReal);

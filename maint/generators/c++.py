@@ -4,12 +4,12 @@
 #
 # change python to whatever is needed on your system to invoke python
 #
-#  Reads classes.data and prints the language d classes
+#  Reads classes.data and prints the C++ classes
 #
 #  Crude as all hack!
 #
 #  Calling sequence: 
-#      d.py
+#      c++.py
 ##
 import os
 import re
@@ -26,16 +26,19 @@ def main(args):
   structs = pickle.load(file)    
   aliases = pickle.load(file)  
   classes = pickle.load(file)
-  outfile = open('petsc.d','w')
+  outfile = open('petsc.hh','w')
 
+  def ClassToPointer(a):
+    if a in classes: return a+"*"
+    else: return a
+    
   for i in aliases:
-    outfile.write("alias "+aliases[i]+" "+i+"; \n")
+    outfile.write("typedef "+aliases[i]+" "+i+"; \n")
   outfile.write("\n")
 
   for i in senums:
-    outfile.write("alias char* "+i+"; \n")
-#    for j in senums[i]:
-#      outfile.write("alias "+senums[i][j]+" "+j+"; \n")
+    outfile.write("#define "+i+" char*\n")
+  outfile.write("\n")
   
   for i in enums:
     outfile.write("enum "+i+"\n")
@@ -49,11 +52,17 @@ def main(args):
     outfile.write("};\n")      
   outfile.write("\n")
 
+  for i in classes:
+    outfile.write("class "+i+";\n")
+  outfile.write("\n")
+  
   for i in structs:
     outfile.write("struct "+i+"\n")
     outfile.write("{\n")
     for j in structs[i]:
-      outfile.write("    "+j+";\n")
+      l = j[:j.find(" ")]
+      if l in classes: j = l+"* "+j[j.find(" "):]
+      outfile.write("    "+ClassToPointer(j)+";\n")
     outfile.write("};\n")      
   outfile.write("\n")
 
@@ -61,15 +70,16 @@ def main(args):
     outfile.write("class "+i+"\n")
     outfile.write("{\n")
     for j in classes[i]:
+      if not classes[i][j][0] == i: outfile.write("  static ")
       outfile.write("  int "+j+"(")
       cnt = 0
       for k in classes[i][j]:
-        if cnt > 0:
-          outfile.write(k.replace("const ","").replace("unsigned long","ulong"))
+        if cnt > 0 or not k == i:
+          outfile.write(ClassToPointer(k))
           if cnt < len(classes[i][j])-1: outfile.write(",")
         cnt = cnt + 1
       outfile.write("){return 0;};\n")
-    outfile.write("}\n")        
+    outfile.write("};\n")        
   
     
 #

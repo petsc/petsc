@@ -263,7 +263,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfOpen(MPI_Comm,const char[
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerNetcdfGetID(PetscViewer, int *);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4Open(MPI_Comm,const char[],PetscFileMode,PetscViewer*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer viewer, float *xf, int d, int *dims, int bs);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF4WriteSDS(PetscViewer,float *,int,int *,int);
 
 /*
      These are all the default viewers that do not have 
