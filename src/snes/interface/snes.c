@@ -1993,7 +1993,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (SNESList) {
-    ierr = PetscFListDestroy(&SNESList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(SNESList);CHKERRQ(ierr);
     SNESList = 0;
   }
   SNESRegisterAllCalled = PETSC_FALSE;

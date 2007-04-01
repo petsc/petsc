@@ -129,7 +129,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatOrderingRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatOrderingList) {
-    ierr = PetscFListDestroy(&MatOrderingList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(MatOrderingList);CHKERRQ(ierr);
     MatOrderingList = 0;
   }
   PetscFunctionReturn(0);

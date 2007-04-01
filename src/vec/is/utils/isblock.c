@@ -83,7 +83,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCompressIndicesGeneral(PetscInt n,PetscInt b
 #endif
   }
 #if defined (PETSC_USE_CTABLE)
-  ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
 #else
   ierr = PetscBTDestroy(table);CHKERRQ(ierr);
   ierr = PetscFree(nidx);CHKERRQ(ierr);

@@ -676,7 +676,7 @@ from which linked lists of composed objects may be constructed. The routines
 to manipulate these elementary objects are
 \begin{tabbing}
   int PetscOListAdd(PetscOList *fl,char *name,PetscObject obj );\\
-  int PetscOListDestroy(PetscOList *fl );\\
+  int PetscOListDestroy(PetscOList fl );\\
   int PetscOListFind(PetscOList fl, char *name, PetscObject *obj)\\
   int PetscOListDuplicate(PetscOList fl, PetscOList *nl);
 \end{tabbing}

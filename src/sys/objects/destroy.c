@@ -260,7 +260,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject obj)
 /*@C
    PetscObjectRegisterDestroyAll - Frees all the PETSc objects that have been registered
      with PetscObjectRegisterDestroy(). Called by PetscFinalize()
-     PetscFinalize() is called.
 
    Collective on individual PetscObjects
 

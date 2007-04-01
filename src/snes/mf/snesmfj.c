@@ -123,7 +123,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatSNESMPetscFList) {
-    ierr = PetscFListDestroy(&MatSNESMPetscFList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(MatSNESMPetscFList);CHKERRQ(ierr);
     MatSNESMPetscFList = 0;
   }
   MatSNESMFRegisterAllCalled = PETSC_FALSE;

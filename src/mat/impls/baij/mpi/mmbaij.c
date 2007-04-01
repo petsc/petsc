@@ -66,7 +66,7 @@ PetscErrorCode MatSetUpMultiply_MPIBAIJ(Mat mat)
   B->nbs     = ec;
   baij->B->cmap.n = baij->B->cmap.N = ec*mat->rmap.bs;
   ierr = PetscMapSetUp(&(baij->B->cmap));CHKERRQ(ierr);
-  ierr = PetscTableDelete(gid1_lid1);CHKERRQ(ierr);
+  ierr = PetscTableDestroy(gid1_lid1);CHKERRQ(ierr);
   /* Mark Adams */
 #else
   /* Make an array as long as the number of columns */
@@ -175,7 +175,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   ierr = VecScatterDestroy(baij->Mvctx);CHKERRQ(ierr); baij->Mvctx = 0;
   if (baij->colmap) {
 #if defined (PETSC_USE_CTABLE)
-    ierr = PetscTableDelete(baij->colmap); baij->colmap = 0;CHKERRQ(ierr);
+    ierr = PetscTableDestroy(baij->colmap); baij->colmap = 0;CHKERRQ(ierr);
 #else
     ierr = PetscFree(baij->colmap);CHKERRQ(ierr);
     baij->colmap = 0;

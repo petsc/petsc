@@ -22,7 +22,7 @@
    Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject obj,int *cookie)
+PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject obj,PetscCookie *cookie)
 {
   PetscFunctionBegin;
   PetscValidHeader(obj,1);

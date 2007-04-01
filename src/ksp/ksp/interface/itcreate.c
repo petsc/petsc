@@ -511,7 +511,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (KSPList) {
-    ierr = PetscFListDestroy(&KSPList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(KSPList);CHKERRQ(ierr);
     KSPList = 0;
   }
   KSPRegisterAllCalled = PETSC_FALSE;

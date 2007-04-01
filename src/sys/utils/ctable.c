@@ -67,12 +67,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscTableCreateCopy(const PetscTable intable,Pet
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscTableDelete"
-/* PetscTableDelete() ********************************************
+#define __FUNCT__ "PetscTableDestroy"
+/* PetscTableDestroy() ********************************************
  * 
  *
  */
-PetscErrorCode PETSC_DLLEXPORT PetscTableDelete(PetscTable ta)
+PetscErrorCode PETSC_DLLEXPORT PetscTableDestroy(PetscTable ta)
 {
   PetscErrorCode ierr;
 

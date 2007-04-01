@@ -90,19 +90,18 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
     Input Parameter:
 .   fl   - pointer to list
 */
-PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList *fl)
+PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList fl)
 {
-  PetscOList     tmp, entry = *fl;
+  PetscOList     tmp;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  while (entry) {
-    tmp   = entry->next;
-    ierr  = PetscObjectDereference(entry->obj);CHKERRQ(ierr);
-    ierr  = PetscFree(entry);CHKERRQ(ierr);
-    entry = tmp;
+  while (fl) {
+    tmp   = fl->next;
+    ierr  = PetscObjectDereference(fl->obj);CHKERRQ(ierr);
+    ierr  = PetscFree(fl);CHKERRQ(ierr);
+    fl    = tmp;
   }
-  *fl = 0;
   PetscFunctionReturn(0);
 }
 

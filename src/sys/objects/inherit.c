@@ -67,8 +67,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
   ierr = PetscFree(h->ops);CHKERRQ(ierr);
-  ierr = PetscOListDestroy(&h->olist);CHKERRQ(ierr);
-  ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
+  ierr = PetscOListDestroy(h->olist);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(h->qlist);CHKERRQ(ierr);
   ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
   ierr = PetscStrfree(h->name);CHKERRQ(ierr);
   h->cookie = PETSCFREEDHEADER;

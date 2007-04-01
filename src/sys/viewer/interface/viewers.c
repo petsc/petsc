@@ -91,7 +91,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm comm,PetscViewers *v)
 .seealso: PetscViewersCreate(), PetscViewersDestroy()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,int n,PetscViewer *viewer)
+PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,PetscInt n,PetscViewer *viewer)
 {
   PetscErrorCode ierr;
 

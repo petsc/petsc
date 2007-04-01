@@ -715,7 +715,7 @@ PetscErrorCode MatDestroy_MPIAIJ(Mat mat)
   ierr = MatDestroy(aij->A);CHKERRQ(ierr);
   ierr = MatDestroy(aij->B);CHKERRQ(ierr);
 #if defined (PETSC_USE_CTABLE)
-  if (aij->colmap) {ierr = PetscTableDelete(aij->colmap);CHKERRQ(ierr);}
+  if (aij->colmap) {ierr = PetscTableDestroy(aij->colmap);CHKERRQ(ierr);}
 #else
   ierr = PetscFree(aij->colmap);CHKERRQ(ierr);
 #endif

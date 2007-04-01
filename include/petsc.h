@@ -1161,7 +1161,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm, PetscCo
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectDestroy(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectExists(PetscObject,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetComm(PetscObject,MPI_Comm *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject,int *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetCookie(PetscObject,PetscCookie *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetType(PetscObject,const char []);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectGetType(PetscObject,const char *[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject,const char[]);
@@ -1245,7 +1245,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject,const char[],
 S*/
 typedef struct _n_PetscOList *PetscOList;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList,const char[],PetscObject*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListReverseFind(PetscOList,PetscObject,char**);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *,const char[],PetscObject);
@@ -1256,7 +1256,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListDuplicate(PetscOList,PetscOList 
   link libraries that will be loaded as needed.
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListFind(MPI_Comm,PetscFList,const char[],void (**)(void));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)

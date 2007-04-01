@@ -163,6 +163,7 @@ M*/
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
 

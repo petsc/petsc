@@ -127,7 +127,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PetscRandomList) {
-    ierr = PetscFListDestroy(&PetscRandomList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(PetscRandomList);CHKERRQ(ierr);
     PetscRandomList = PETSC_NULL;
   }
   PetscRandomRegisterAllCalled = PETSC_FALSE;

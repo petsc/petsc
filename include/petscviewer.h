@@ -374,7 +374,7 @@ S*/
 typedef struct _n_PetscViewers* PetscViewers;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersCreate(MPI_Comm,PetscViewers*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersDestroy(PetscViewers);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers,int,PetscViewer*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers,PetscInt,PetscViewer*);
 
 PETSC_EXTERN_CXX_END
 #endif

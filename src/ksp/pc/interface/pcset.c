@@ -70,7 +70,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); }
-  ierr = PetscFListDestroy(&pc->qlist);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(pc->qlist);CHKERRQ(ierr);
   /* Reinitialize function pointers in PCOps structure */
   ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
   /* XXX Is this OK?? */
@@ -104,7 +104,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PCList) {
-    ierr = PetscFListDestroy(&PCList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(PCList);CHKERRQ(ierr);
     PCList = 0;
   }
   PCRegisterAllCalled = PETSC_FALSE;
