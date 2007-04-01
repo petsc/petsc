@@ -248,6 +248,37 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGetLocalSize(IS is,PetscInt *size)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "ISCopy"
+/*@
+   ISCopy - Creates a new IS with the same information as the current IS
+
+   Not Collective
+
+   Input Parameter:
+.  is - the index set
+
+   Output Parameter:
+.  isnew - the copy
+
+   Level: beginner
+
+   Concepts: size^of index set
+   Concepts: local size^of index set
+   Concepts: index sets^local size
+  
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISCopy(IS is,IS *isnew)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(is,IS_COOKIE,1);
+  if (!is->ops->copy) SETERRQ(PETSC_ERR_SUP,"Send mail to petsc-maint@mcs.anl.gov");
+  ierr = (*is->ops->copy)(is,isnew);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "ISGetIndices" 
 /*@C
    ISGetIndices - Returns a pointer to the indices.  The user should call 

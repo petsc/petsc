@@ -79,16 +79,29 @@ def main(args):
   for i in skeys:
     outfile.write("class "+i+"\n")
     outfile.write("{\n")
-    for j in classes[i]:
-      if not classes[i][j][0] == i: outfile.write("  static ")
-      outfile.write("  int "+j+"(")
-      cnt = 0
-      for k in classes[i][j]:
-        if cnt > 0 or not k == i:
-          outfile.write(ClassToPointer(k))
-          if cnt < len(classes[i][j])-1: outfile.write(",")
-        cnt = cnt + 1
-      outfile.write("){return 0;};\n")
+    sskeys = classes[i].keys()
+    sskeys.sort()
+    for j in sskeys:
+      if not classes[i][j][0] == i:
+        outfile.write("  static ")
+        outfile.write("  int "+j+"(")
+        cnt = 0
+        for k in classes[i][j]:
+          if cnt > 0 or not k == i:
+            outfile.write(ClassToPointer(k))
+            if cnt < len(classes[i][j])-1: outfile.write(",")
+          cnt = cnt + 1
+        outfile.write("){return 0;};\n")
+    for j in sskeys:
+      if classes[i][j][0] == i:
+        outfile.write("  int "+j+"(")
+        cnt = 0
+        for k in classes[i][j]:
+          if cnt > 0 or not k == i:
+            outfile.write(ClassToPointer(k))
+            if cnt < len(classes[i][j])-1: outfile.write(",")
+          cnt = cnt + 1
+        outfile.write("){return 0;};\n")
     outfile.write("};\n")        
   
     

@@ -23,9 +23,9 @@ struct _n_PetscOList {
 */
 PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],PetscObject obj)
 {
-  PetscOList olist,nlist,prev;
+  PetscOList     olist,nlist,prev;
   PetscErrorCode ierr;
-  PetscTruth match;
+  PetscTruth     match;
 
   PetscFunctionBegin;
 
@@ -92,7 +92,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListAdd(PetscOList *fl,const char name[],Pe
 */
 PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList *fl)
 {
-  PetscOList   tmp, entry = *fl;
+  PetscOList     tmp, entry = *fl;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -129,7 +129,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOListDestroy(PetscOList *fl)
 PetscErrorCode PETSC_DLLEXPORT PetscOListFind(PetscOList fl,const char name[],PetscObject *obj)
 {
   PetscErrorCode ierr;
-  PetscTruth match;
+  PetscTruth     match;
 
   PetscFunctionBegin;
 

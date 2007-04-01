@@ -208,6 +208,7 @@ def getaliases():
   aliases['PetscScalar']        = 'double'
   aliases['PetscReal']          = 'double'  
   aliases['MPI_Comm']           = 'int'
+  aliases['MPI_Request']        = 'int'  
   aliases['FILE']               = 'int'
   aliases['PetscMPIInt']        = 'int'
   aliases['PetscCookie']        = 'int'
@@ -227,6 +228,8 @@ def main(args):
   classes['Petsc'] = {}
   classes['PetscLog'] = {}
   classes['PetscSort'] = {}
+  classes['PetscStr'] = {}
+  classes['PetscBinary'] = {}    
   for i in args:
     getclasses(i)
   for i in args:
