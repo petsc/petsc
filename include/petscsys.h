@@ -32,7 +32,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 /* Logging support */
 extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char[]);
 
 /*S
      PetscRandom - Abstract PETSc object that manages generating random numbers

@@ -32,7 +32,7 @@ static void *mathematicaEnv                   = PETSC_NULL;
 .keywords: Petsc, initialize, package, PLAPACK
 .seealso: PetscInitializePackage(), PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(const char path[])
 {
   static PetscTruth initialized = PETSC_FALSE;
 

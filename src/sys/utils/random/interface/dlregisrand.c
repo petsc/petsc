@@ -20,7 +20,7 @@
 .keywords: PetscRandom, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(char *path) 
+PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char path[]) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   PetscErrorCode    ierr;
@@ -48,7 +48,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petscrandom(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petscrandom(const char path[])
 {
   PetscErrorCode ierr;
 

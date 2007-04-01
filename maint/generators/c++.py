@@ -23,8 +23,8 @@ def main(args):
   file = open('classes.data')
   enums   = pickle.load(file)
   senums  = pickle.load(file)
-  structs = pickle.load(file)    
-  aliases = pickle.load(file)  
+  structs = pickle.load(file)
+  aliases = pickle.load(file)
   classes = pickle.load(file)
   outfile = open('petsc.hh','w')
 
@@ -36,11 +36,15 @@ def main(args):
     outfile.write("typedef "+aliases[i]+" "+i+"; \n")
   outfile.write("\n")
 
-  for i in senums:
+  skeys = senums.keys()
+  skeys.sort()
+  for i in skeys:
     outfile.write("#define "+i+" char*\n")
   outfile.write("\n")
   
-  for i in enums:
+  skeys = enums.keys()
+  skeys.sort()
+  for i in skeys:
     outfile.write("enum "+i+"\n")
     outfile.write("{\n")
     cnt = 0
@@ -52,11 +56,15 @@ def main(args):
     outfile.write("};\n")      
   outfile.write("\n")
 
-  for i in classes:
+  skeys = classes.keys()
+  skeys.sort()
+  for i in skeys:
     outfile.write("class "+i+";\n")
   outfile.write("\n")
   
-  for i in structs:
+  skeys = structs.keys()
+  skeys.sort()
+  for i in skeys:
     outfile.write("struct "+i+"\n")
     outfile.write("{\n")
     for j in structs[i]:
@@ -66,7 +74,9 @@ def main(args):
     outfile.write("};\n")      
   outfile.write("\n")
 
-  for i in classes:
+  skeys = classes.keys()
+  skeys.sort()
+  for i in skeys:
     outfile.write("class "+i+"\n")
     outfile.write("{\n")
     for j in classes[i]:

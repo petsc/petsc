@@ -32,7 +32,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],ch
 /*
     This is the list used by the DLRegister routines
 */
-PetscDLLibraryList DLLibrariesLoaded = 0;
+PetscDLLibrary DLLibrariesLoaded = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscInitialize_DynamicLibraries"

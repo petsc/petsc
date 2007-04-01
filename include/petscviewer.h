@@ -236,7 +236,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWriteStringArray(PetscVie
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName(PetscViewer,const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerFileGetName(PetscViewer,char**);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscPLAPACKFinalizePackage(void);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetPointer(PetscViewer, FILE**);
@@ -245,7 +245,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUGetVecSeen(PetscViewer, Petsc
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUPrintDeferred(PetscViewer, const char [], ...) PETSC_PRINTF_FORMAT_CHECK(2,3);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerVUFlushDeferred(PetscViewer);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaGetName(PetscViewer, const char **);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetName(PetscViewer, const char []);

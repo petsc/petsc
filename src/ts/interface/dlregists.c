@@ -67,7 +67,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(char *path)
+PetscErrorCode PETSCTS_DLLEXPORT PetscDLLibraryRegister_petscts(const char path[])
 {
   PetscErrorCode ierr;
 

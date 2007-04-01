@@ -54,7 +54,7 @@ E*/
 extern PETSCVEC_DLLEXPORT PetscCookie VEC_COOKIE;
 extern PETSCVEC_DLLEXPORT PetscCookie VEC_SCATTER_COOKIE;
 
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm,Vec*);
 PetscPolymorphicSubroutine(VecCreate,(Vec *x),(PETSC_COMM_SELF,x))

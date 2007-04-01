@@ -151,10 +151,13 @@ def getfunctions(filename):
   regfun      = re.compile('EXTERN PetscErrorCode PETSC[A-Z]*_DLLEXPORT ')
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   regblank    = re.compile(' [ ]*')
-  regarg      = re.compile('\([A-Za-z*]*[,\)]')
+  regarg      = re.compile('\([A-Za-z*_\[\]]*[,\)]')
   regerror    = re.compile('PetscErrorCode')
 
   rejects     = ['PetscErrorCode','DALocalFunction','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','size_t','PetscStack']
+  classlist   = classes.keys()
+  classlist.sort()
+  classlist.reverse()
   f = open(filename)
   line = f.readline()
   while line:
@@ -184,10 +187,12 @@ def getfunctions(filename):
           if arg in classes and struct.startswith(arg):
             name = name[len(arg):]
             classes[arg][name] = args
-          elif name.startswith('Petsc'):
-            name = name[len('PETSc'):]            
-            classes['Petsc'][name] = args          
-          
+          else:
+            for i in classlist:
+              if name.startswith(i):
+                name = name[len(i):]            
+                classes[i][name] = args          
+
       
     line = f.readline()
   
@@ -220,6 +225,8 @@ def main(args):
   for i in args:
     getstructs(i)
   classes['Petsc'] = {}
+  classes['PetscLog'] = {}
+  classes['PetscSort'] = {}
   for i in args:
     getclasses(i)
   for i in args:
