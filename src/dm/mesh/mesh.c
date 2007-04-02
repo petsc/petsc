@@ -1186,7 +1186,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   }
   if (mesh->debug()) {
     int rank = mesh->commRank();
-    for(int r = 0; r < numLocalRows; r++) {
+    for(int r = 0; r < numLocalRows/bs; r++) {
       std::cout << "["<<rank<<"]: dnz["<<r<<"]: " << dnz[r] << " onz["<<r<<"]: " << onz[r] << std::endl;
     }
   }

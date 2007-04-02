@@ -34,11 +34,22 @@ namespace ALE {
         topology->stratify();
         return topology;
       };
+      static Obj<topology_type> createRecvTopology(const Obj<send_overlap_type>& recvOverlap) {
+        const Obj<recv_overlap_type::traits::capSequence> ranks = recvOverlap->cap();
+        Obj<topology_type> topology = new topology_type(recvOverlap->comm(), recvOverlap->debug());
+
+        for(recv_overlap_type::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
+          Obj<dsieve_type> recvSieve = new dsieve_type(recvOverlap->support(*r_iter));
+          topology->setPatch(*r_iter, recvSieve);
+        }
+        topology->stratify();
+        return topology;
+      };
       template<typename Sizer, typename Section>
-      static void setupSend(const Obj<send_overlap_type>& sendOverlap, const Obj<Sizer>& sendSizer, const Obj<Section>& sendSection) {
+      static void setupSend(const Obj<topology_type>& sendChart, const Obj<Sizer>& sendSizer, const Obj<Section>& sendSection) {
         // Here we should just use the overlap as the topology (once it is a new-style sieve)
         sendSection->clear();
-        sendSection->setTopology(completion::createSendTopology(sendOverlap));
+        sendSection->setTopology(sendChart);
         sendSection->construct(sendSizer);
         sendSection->allocate();
         if (sendSection->debug() > 10) {sendSection->view("Send section after setup", MPI_COMM_SELF);}
@@ -84,13 +95,30 @@ namespace ALE {
       static void completeSection(const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap, const Obj<SizerFiller>& sizerFiller, const Filler& filler, const Obj<SendSection>& sendSection, const Obj<RecvSection>& recvSection) {
         typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, int> > send_sizer_type;
         typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, int> > recv_sizer_type;
-        Obj<send_sizer_type> sendSizer     = new send_sizer_type(sendSection->comm(), sendSection->debug());
-        Obj<recv_sizer_type> recvSizer     = new recv_sizer_type(recvSection->comm(), sendSizer->getTag(), recvSection->debug());
-        Obj<constant_sizer>  constantSizer = new constant_sizer(recvSection->comm(), 1, sendSection->debug());
+        Obj<send_sizer_type> sendSizer      = new send_sizer_type(sendSection->comm(), sendSection->debug());
+        Obj<recv_sizer_type> recvSizer      = new recv_sizer_type(recvSection->comm(), sendSizer->getTag(), recvSection->debug());
+        Obj<constant_sizer>  constSendSizer = new constant_sizer(sendSection->comm(), sendSection->debug());
+        Obj<constant_sizer>  constRecvSizer = new constant_sizer(recvSection->comm(), recvSection->debug());
+        Obj<topology_type>   sendChart      = completion::createSendTopology(sendOverlap);
+        Obj<topology_type>   recvChart      = completion::createRecvTopology(recvOverlap);
 
         // 1) Create the sizer sections
-        int_completion::setupSend(sendOverlap, constantSizer, sendSizer);
-        int_completion::setupReceive(recvOverlap, constantSizer, recvSizer);
+        constSendSizer->setTopology(sendChart);
+        const typename topology_type::sheaf_type& sendRanks = sendChart->getPatches();
+        for(typename topology_type::sheaf_type::const_iterator r_iter = sendRanks.begin(); r_iter != sendRanks.end(); ++r_iter) {
+          const int rank = r_iter->first;
+          const int one  = 1;
+          constSendSizer->getSection(rank)->updatePoint(*r_iter->second->base()->begin(), &one);
+        }
+        constRecvSizer->setTopology(recvChart);
+        const typename topology_type::sheaf_type& recvRanks = recvChart->getPatches();
+        for(typename topology_type::sheaf_type::const_iterator r_iter = recvRanks.begin(); r_iter != recvRanks.end(); ++r_iter) {
+          const int rank = r_iter->first;
+          const int one  = 1;
+          constRecvSizer->getSection(rank)->updatePoint(*r_iter->second->base()->begin(), &one);
+        }
+        int_completion::setupSend(sendChart, constSendSizer, sendSizer);
+        int_completion::setupReceive(recvOverlap, constRecvSizer, recvSizer);
         // 2) Fill the sizer section and communicate
         int_completion::fillSend(sizerFiller, sendSizer);
         if (sendSizer->debug()) {sendSizer->view("Send Sizer in Completion", MPI_COMM_SELF);}
@@ -101,7 +129,7 @@ namespace ALE {
         if (recvSizer->debug()) {recvSizer->view("Receive Sizer in Completion", MPI_COMM_SELF);}
         // No need to update a global section since the receive sizes are all on the interface
         // 3) Create the send and receive sections
-        completion::setupSend(sendOverlap, sendSizer, sendSection);
+        completion::setupSend(sendChart, sendSizer, sendSection);
         completion::setupReceive(recvOverlap, recvSizer, recvSection);
         // 4) Fill up send section and communicate
         completion::fillSend(filler, sendSection);
