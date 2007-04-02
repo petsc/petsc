@@ -661,6 +661,43 @@ Visual Studio/DF98/LIB'"</font><br>
       <br>
 Note the usage of both single quotes and double quotes in the above
 line. <br>
+      <br>
+      <font color="#551a8b"><b>Using Visual Studio 2005</b></font><font
+ color="#551a8b"><b>:</b></font> win32fe currently is unable to
+autodetect visual studio 2005 compilers. In such case one should adopt
+the following procedure to install PETSc <br>
+      <ul>
+        <li>setup compilers to work from 'cmd' shell. This is done by
+running vcvars32.bat or equivalent compiler initialization scripts in
+'cmd' shell.<br>
+          <br>
+Some compilers install&nbsp; shortcuts in program files for this
+operation [For eg:&nbsp; Start&nbsp; -&gt; Programs -&gt; Visual C++
+2005 Express Edition -&gt; Visual Studio Tools -&gt; Visual Studio 2005
+Command Prompt]<br>
+          <br>
+If using both C and Fortran compilers, the fortran compiler shell
+[either .bat file - or the&nbsp; Start -&gt; Program shortcut]&nbsp; is
+likely to initialize both C and fortran compilers. <br>
+          <br>
+        </li>
+        <li>make sure the compilers work in this cmd shell,&nbsp; by
+compiling sample test code<br>
+&nbsp; cl testcode.c<br>
+&nbsp; ifort testcode.f<br>
+          <br>
+        </li>
+        <li>from within this 'cmd' run bash [which is in likley at
+c:\cygwin\bin\bash.exe]<br>
+          <br>
+        </li>
+        <li>within this bash shell, run win32fe with --nodetect option
+i.e:</li>
+      </ul>
+      <span style="color: rgb(255, 0, 0);">&nbsp;&nbsp;&nbsp;&nbsp;
+./config/configure.py --with-cc='win32fe cl --nodetect'
+--with-fc='win32fe ifort --nodetect' --with-mpi=0
+--download-f-blas-lapack=1</span><br>
       <p><font color="#551a8b"><b>Configure</b></font><font
  color="#551a8b"><b>:</b> </font>--download-package
 option does not
