@@ -777,45 +777,66 @@ EXTERN PetscErrorCode MatToSymmetricIJ_SeqAIJ(PetscInt,PetscInt*,PetscInt*,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqBAIJ"
-static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       n = a->mbs,i;
+  PetscInt     i,j,n = a->mbs,nz = a->i[n],bs = A->rmap.bs;
+  PetscInt     *tia, *tja;
 
   PetscFunctionBegin;
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
   if (symmetric) {
-    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,oshift,ia,ja);CHKERRQ(ierr);
-  } else if (oshift == 1) {
-    /* temporarily add 1 to i and j indices */
-    PetscInt nz = a->i[n]; 
-    for (i=0; i<nz; i++) a->j[i]++;
-    for (i=0; i<n+1; i++) a->i[i]++;
-    *ia = a->i; *ja = a->j;
+    ierr = MatToSymmetricIJ_SeqAIJ(n,a->i,a->j,0,0,&tia,&tja);CHKERRQ(ierr);
   } else {
-    *ia = a->i; *ja = a->j;
+    tia = a->i; tja = a->j;
   }
-
+    
+  if (!blockcompressed) {
+    /* malloc & create the natural set of indices */
+    ierr = PetscMalloc2((n+1)*bs,PetscInt,*ia,nz*bs,PetscInt,*ja);CHKERRQ(ierr);
+    for (i=0; i<n+1; i++) {
+      for (j=0; j<bs; j++) {
+        *ia[i*bs+j] = tia[i]*bs+j;
+      }
+    }
+    for (i=0; i<nz; i++) {
+      for (j=0; j<bs; j++) {
+        *ja[i*bs+j] = tia[i]*bs+j;
+      }
+    }
+    if (symmetric) { /* deallocate memory allocated in MatToSymmetricIJ_SeqAIJ() */
+      ierr = PetscFree(tia);CHKERRQ(ierr);
+      ierr = PetscFree(tja);CHKERRQ(ierr);
+    }
+  } else {
+    *ia = tia;
+    *ja = tja;
+  }
+  if (oshift == 1) {
+    for (i=0; i<nz; i++) (*ja)[i]++;
+    for (i=0; i<n+1; i++) (*ia)[i]++;
+  }
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqBAIJ" 
-static PetscErrorCode MatRestoreRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatRestoreRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt       i,n = a->mbs;
+  PetscInt       i,n = a->mbs,nz = a->i[n];
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
-  if (symmetric) {
+  if (!blockcompressed) {
+    ierr = PetscFree2(*ia,*ja);CHKERRQ(ierr);
+  }else if (symmetric) {
     ierr = PetscFree(*ia);CHKERRQ(ierr);
     ierr = PetscFree(*ja);CHKERRQ(ierr);
-  } else if (oshift == 1) {
-    PetscInt nz = a->i[n]-1; 
+  } else if (oshift == 1) { /* blockcompressed */
     for (i=0; i<nz; i++) a->j[i]--;
     for (i=0; i<n+1; i++) a->i[i]--;
   }

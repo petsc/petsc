@@ -37,20 +37,20 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,size_t *iia,PetscInt *ja,size_t *jja,
-                                PetscTruth *done,PetscErrorCode *ierr)
+void PETSC_STDCALL matgetrowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed,PetscInt *n,PetscInt *ia,size_t *iia,
+                                PetscInt *ja,size_t *jja,PetscTruth *done,PetscErrorCode *ierr)
 {
   PetscInt *IA,*JA;
-  *ierr = MatGetRowIJ(*B,*shift,*sym,n,&IA,&JA,done);if (*ierr) return;
+  *ierr = MatGetRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);if (*ierr) return;
   *iia  = PetscIntAddressToFortran(ia,IA);
   *jja  = PetscIntAddressToFortran(ja,JA);
 }
 
-void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscInt *n,PetscInt *ia,size_t *iia,PetscInt *ja,size_t *jja,
-                                    PetscTruth *done,PetscErrorCode *ierr)
+void PETSC_STDCALL matrestorerowij_(Mat *B,PetscInt *shift,PetscTruth *sym,PetscTruth *blockcompressed, PetscInt *n,PetscInt *ia,size_t *iia,
+                                    PetscInt *ja,size_t *jja,PetscTruth *done,PetscErrorCode *ierr)
 {
   PetscInt *IA = PetscIntAddressFromFortran(ia,*iia),*JA = PetscIntAddressFromFortran(ja,*jja);
-  *ierr = MatRestoreRowIJ(*B,*shift,*sym,n,&IA,&JA,done);
+  *ierr = MatRestoreRowIJ(*B,*shift,*sym,*blockcompressed,n,&IA,&JA,done);
 }
 
 /*

@@ -77,10 +77,10 @@ struct _MatOps {
   PetscErrorCode (*iludtfactor)(Mat,IS,IS,MatFactorInfo*,Mat *);
   /*50*/
   PetscErrorCode (*setblocksize)(Mat,PetscInt);
-  PetscErrorCode (*getrowij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-  PetscErrorCode (*restorerowij)(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
-  PetscErrorCode (*getcolumnij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-  PetscErrorCode (*restorecolumnij)(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+  PetscErrorCode (*getrowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+  PetscErrorCode (*restorerowij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+  PetscErrorCode (*getcolumnij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+  PetscErrorCode (*restorecolumnij)(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
   /*55*/
   PetscErrorCode (*fdcoloringcreate)(Mat,ISColoring,MatFDColoring);
   PetscErrorCode (*coloringpatch)(Mat,PetscInt,PetscInt,ISColoringValue[],ISColoring*);
