@@ -10,7 +10,7 @@ OBJSC    = blockmat.o
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/blockmat/seq
+LOCDIR   = src/mat/impls/blockmat/seq/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -11,7 +11,7 @@ OBJSC    = rand.o
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/sys/utils/random/impls/rand
+LOCDIR   = src/sys/utils/random/impls/rand/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

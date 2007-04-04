@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = aopart.c aosetlocal.c
+SOURCEC  = aosetlocal.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = aopart.o aosetlocal.o
+OBJSC    = aosetlocal.o
 OBJSF    =
 LIBBASE  = libpetscdm
 MANSEC   = AO

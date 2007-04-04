@@ -11,7 +11,7 @@ OBJSF    =
 LIBBASE  = libpetsccontrib
 MANSEC   = SemiLagrange
 DIRS     = 
-LOCDIR   = src/contrib/semiLagrange/interface
+LOCDIR   = src/contrib/semiLagrange/interface/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

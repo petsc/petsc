@@ -10,7 +10,7 @@ OBJSC    =
 OBJSF    =
 LIBBASE  = libpetscmat
 MANSEC   = Mat
-LOCDIR   = src/mat/impls/blockmat
+LOCDIR   = src/mat/impls/blockmat/
 DIRS     = seq
 
 include ${PETSC_DIR}/bmake/common/base

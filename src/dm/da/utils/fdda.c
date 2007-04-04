@@ -278,7 +278,7 @@ PetscErrorCode DAGetColoring2d_MPIAIJ(DA da,ISColoringType ctype,ISColoring *col
 	}
         ncolors = nc + nc*(col - 1 + col*(col-1));
 	ierr = ISColoringCreate(comm,ncolors,nc*gnx*gny,colors,&da->ghostedcoloring);CHKERRQ(ierr);
-        //PetscIntView(ncolors,(PetscInt *)colors,0);
+        /* PetscIntView(ncolors,(PetscInt *)colors,0); */
 
 	ierr = ISColoringSetType(da->ghostedcoloring,IS_COLORING_GHOSTED);CHKERRQ(ierr);
       }

@@ -45,7 +45,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalSet_SeqAIJ(Mat Y,Vec D,InsertMode i
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqAIJ"
-PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *m,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -72,7 +72,7 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,Pet
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqAIJ"
-PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
  
@@ -87,7 +87,7 @@ PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnIJ_SeqAIJ"
-PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -129,7 +129,7 @@ PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreColumnIJ_SeqAIJ"
-PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 

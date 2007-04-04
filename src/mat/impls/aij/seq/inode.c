@@ -231,7 +231,7 @@ static PetscErrorCode MatGetRowIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_Inode"
-static PetscErrorCode MatGetRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatGetRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -239,8 +239,9 @@ static PetscErrorCode MatGetRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetr
   PetscFunctionBegin;  
   *n     = a->inode.node_count;
   if (!ia) PetscFunctionReturn(0);
-
-  if (symmetric) {
+  if (!blockcompressed) {
+    ierr = MatGetRowIJ_SeqAIJ(A,oshift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);;
+  } else if (symmetric) {
     ierr = MatGetRowIJ_Inode_Symmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
   } else {
     ierr = MatGetRowIJ_Inode_Nonsymmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
@@ -250,14 +251,20 @@ static PetscErrorCode MatGetRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetr
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_Inode"
-static PetscErrorCode MatRestoreRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatRestoreRowIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   if (!ia) PetscFunctionReturn(0);
-  ierr = PetscFree(*ia);CHKERRQ(ierr);
-  ierr = PetscFree(*ja);CHKERRQ(ierr);
+
+  if (!blockcompressed) {
+    ierr = MatRestoreRowIJ_SeqAIJ(A,oshift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);;
+  } else {
+    ierr = PetscFree(*ia);CHKERRQ(ierr);
+    ierr = PetscFree(*ja);CHKERRQ(ierr);
+  }
+
   PetscFunctionReturn(0);
 }
 
@@ -347,7 +354,7 @@ static PetscErrorCode MatGetColumnIJ_Inode_Nonsymmetric(Mat A,PetscInt *iia[],Pe
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColumnIJ_Inode"
-static PetscErrorCode MatGetColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatGetColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
@@ -355,7 +362,9 @@ static PetscErrorCode MatGetColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth symm
   ierr = Mat_CreateColInode(A,n,PETSC_NULL);CHKERRQ(ierr);
   if (!ia) PetscFunctionReturn(0);
 
-  if (symmetric) {
+  if (!blockcompressed) {
+    ierr = MatGetColumnIJ_SeqAIJ(A,oshift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);;
+  } else if (symmetric) {
     /* Since the indices are symmetric it does'nt matter */
     ierr = MatGetRowIJ_Inode_Symmetric(A,ia,ja,0,oshift);CHKERRQ(ierr);
   } else {
@@ -366,14 +375,18 @@ static PetscErrorCode MatGetColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth symm
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreColumnIJ_Inode"
-static PetscErrorCode MatRestoreColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatRestoreColumnIJ_Inode(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
   if (!ia) PetscFunctionReturn(0);
-  ierr = PetscFree(*ia);CHKERRQ(ierr);
-  ierr = PetscFree(*ja);CHKERRQ(ierr);
+  if (!blockcompressed) {
+    ierr = MatRestoreColumnIJ_SeqAIJ(A,oshift,symmetric,blockcompressed,n,ia,ja,done);CHKERRQ(ierr);;
+  } else {
+    ierr = PetscFree(*ia);CHKERRQ(ierr);
+    ierr = PetscFree(*ja);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 

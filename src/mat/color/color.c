@@ -62,8 +62,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSL_Minpack(Mat mat,MatColoringTyp
   PetscTruth      done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
@@ -78,8 +78,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSL_Minpack(Mat mat,MatColoringTyp
 
   ierr = PetscFree(list);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
-  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -109,8 +109,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringLF_Minpack(Mat mat,MatColoringTyp
   PetscTruth     done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
@@ -127,8 +127,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringLF_Minpack(Mat mat,MatColoringTyp
   ierr = PetscFree(list);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
 
-  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");
@@ -158,8 +158,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringID_Minpack(Mat mat,MatColoringTyp
   PetscTruth     done;
 
   PetscFunctionBegin;
-  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
   if (!done) SETERRQ(PETSC_ERR_SUP,"Ordering requires IJ");
 
   ierr = MatFDColoringDegreeSequence_Minpack(n,cja,cia,rja,ria,&seq);CHKERRQ(ierr);
@@ -175,8 +175,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringID_Minpack(Mat mat,MatColoringTyp
   ierr = PetscFree(list);CHKERRQ(ierr);
   ierr = PetscFree(seq);CHKERRQ(ierr);
 
-  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,&n,&ria,&rja,&done);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,&n,&cia,&cja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&ria,&rja,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ(mat,1,PETSC_FALSE,PETSC_TRUE,&n,&cia,&cja,&done);CHKERRQ(ierr);
 
   /* shift coloring numbers to start at zero and shorten */
   if (ncolors > IS_COLORING_MAX-1) SETERRQ(PETSC_ERR_SUP,"Maximum color size exceeded");

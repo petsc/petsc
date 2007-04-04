@@ -11,7 +11,7 @@ OBJSC    = sprng.o
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/sys/utils/random/impls/sprng
+LOCDIR   = src/sys/utils/random/impls/sprng/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

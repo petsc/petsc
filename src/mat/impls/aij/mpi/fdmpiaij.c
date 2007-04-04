@@ -3,8 +3,6 @@
 #include "src/mat/impls/aij/mpi/mpiaij.h"
 
 EXTERN PetscErrorCode CreateColmap_MPIAIJ_Private(Mat);
-EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
-EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_MPIAIJ"
@@ -50,8 +48,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       Calls the _SeqAIJ() version of these routines to make sure it does not 
      get the reduced (by inodes) version of I and J
   */
-  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatGetColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&rowhit);CHKERRQ(ierr);
   ierr = PetscMalloc((M+1)*sizeof(PetscInt),&columnsforrow);CHKERRQ(ierr);
@@ -274,8 +272,8 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
-  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->A,0,PETSC_FALSE,PETSC_FALSE,&ncols,&A_ci,&A_cj,&done);CHKERRQ(ierr); 
+  ierr = MatRestoreColumnIJ_SeqAIJ(aij->B,0,PETSC_FALSE,PETSC_FALSE,&ncols,&B_ci,&B_cj,&done);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 

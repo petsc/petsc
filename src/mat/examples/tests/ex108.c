@@ -40,10 +40,11 @@ int main(int argc,char **argv) {
   ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
 
   /* Create a baij matrix using MatCreateSeqBAIJWithArrays() */
-  ierr = MatGetRowIJ(A,0,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
+  ierr = MatGetRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatGetArray(A,&aa);CHKERRQ(ierr);
   ierr = MatCreateSeqBAIJWithArrays(PETSC_COMM_SELF,1,5,5,ai,aj,aa,&B);CHKERRQ(ierr); 
   ierr = MatRestoreArray(A,&aa);CHKERRQ(ierr);
+  ierr = MatRestoreRowIJ(A,0,PETSC_FALSE,PETSC_FALSE,&n,&ai,&aj,&flg);CHKERRQ(ierr);
   ierr = MatMultEqual(A,B,10,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"MatMult(A,B) are NOT equal"); 
 
