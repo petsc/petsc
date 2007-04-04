@@ -21,13 +21,13 @@ EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 PetscErrorCode MeshFinalize()
 {
   PetscFunctionBegin;
-  ALE::Field::Mesh::NumberingFactory::singleton(0, 0, true);
+  ALE::Mesh::NumberingFactory::singleton(0, 0, true);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve_Ascii"
-PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Field::Mesh>& mesh, PetscViewer viewer)
+PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
 {
   PetscViewerFormat format;
   PetscErrorCode    ierr;
@@ -38,7 +38,6 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Field::Mesh>& mesh, Pets
     ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
     ierr = VTKViewer::writeElements(mesh, viewer);CHKERRQ(ierr);
-#if 0
   } else if (format == PETSC_VIEWER_ASCII_PYLITH) {
     char *filename;
     char  connectFilename[2048];
@@ -63,7 +62,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Field::Mesh>& mesh, Pets
     } 
     CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_PYLITH_LOCAL) {
-    PetscViewer connectViewer, coordViewer, splitViewer, tractionViewer;
+    PetscViewer connectViewer, coordViewer;
     char       *filename;
     char        localFilename[2048];
     int         rank = mesh->commRank();
@@ -103,7 +102,6 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Field::Mesh>& mesh, Pets
     ierr = PetscStrcat(coordFilename, ".nodes");CHKERRQ(ierr);
     ierr = PetscViewerFileSetName(viewer, coordFilename);CHKERRQ(ierr);
     ierr = ALE::PCICE::Viewer::writeVertices(mesh, viewer);CHKERRQ(ierr);
-#endif
   } else {
     int dim = mesh->getDimension();
 
@@ -119,7 +117,7 @@ PetscErrorCode MeshView_Sieve_Ascii(const ALE::Obj<ALE::Field::Mesh>& mesh, Pets
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshView_Sieve"
-PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Field::Mesh>& mesh, PetscViewer viewer)
+PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewer)
 {
   PetscTruth     iascii, isbinary, isdraw;
   PetscErrorCode ierr;
@@ -252,7 +250,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshLoad(PetscViewer viewer, Mesh *mesh)
 .seealso MeshCreate(), MeshSetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Field::Mesh>& m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Mesh>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
@@ -276,7 +274,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh mesh, ALE::Obj<ALE::Field::Mes
 .seealso MeshCreate(), MeshGetMesh()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Field::Mesh>& m)
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh>& m)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
@@ -287,9 +285,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Fiel
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateMatrix" 
 template<typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Field::Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J)
 {
-  const ALE::Obj<typename ALE::Field::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section->getAtlas());
+  const ALE::Obj<typename ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section->getAtlas());
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
   PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock;
@@ -319,8 +317,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Field::Mesh>& m
 #define __FUNCT__ "MeshCreateMatrix" 
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh mesh, SectionReal section, MatType mtype, Mat *J)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::real_section_type> s;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -372,7 +370,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh mesh, MatType mtype, M
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh mesh, MatType mtype, Mat *J)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscTruth          flag;
   PetscErrorCode      ierr;
 
@@ -488,12 +486,12 @@ inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt
 
 #undef __FUNCT__
 #define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Field::Mesh::indexArray> intervals, PetscInt *indices)
+PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Mesh::indexArray> intervals, PetscInt *indices)
 {
   int k = 0;
 
   PetscFunctionBegin;
-  for(ALE::Field::Mesh::indexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
+  for(ALE::Mesh::indexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
     ExpandInterval_New(*i_itor, indices, &k);
   }
   PetscFunctionReturn(0);
@@ -522,7 +520,7 @@ PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Field::Mesh::indexArray> intervals,
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscTruth     flag;
   PetscErrorCode ierr;
 
@@ -530,7 +528,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default")->getAtlas());
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default")->getAtlas());
 
   ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
@@ -558,7 +556,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, SectionReal section, Vec *localVec)
 {
-  ALE::Obj<ALE::Field::Mesh::real_section_type> s;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -597,8 +595,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh mesh,PetscInt *idx[])
 #define __FUNCT__ "MeshCreateGlobalScatter"
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal section, VecScatter *scatter)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::real_section_type> s;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -611,16 +609,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh mesh, SectionReal 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateGlobalScatter"
 template<typename Section>
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Field::Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<Section>& s, VecScatter *scatter)
 {
-  typedef ALE::Field::Mesh::real_section_type::index_type index_type;
+  typedef ALE::Mesh::real_section_type::index_type index_type;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& atlas = s->getAtlas();
-  const ALE::Field::Mesh::real_section_type::chart_type&           chart = s->getChart();
-  const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), atlas);
+  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas = s->getAtlas();
+  const ALE::Mesh::real_section_type::chart_type&           chart = s->getChart();
+  const ALE::Obj<ALE::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), atlas);
   int *localIndices, *globalIndices;
   int  localSize = s->size();
   int  localIndx = 0, globalIndx = 0;
@@ -633,8 +631,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Fie
   // Loop over all local points
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
-  for(ALE::Field::Mesh::real_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-    const ALE::Field::Mesh::real_section_type::index_type& idx = atlas->restrictPoint(*p_iter)[0];
+  for(ALE::Mesh::real_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+    const ALE::Mesh::real_section_type::index_type& idx = atlas->restrictPoint(*p_iter)[0];
 
     // Map local indices to global indices
     ExpandInterval(idx, localIndices, localIndx);
@@ -743,15 +741,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh mesh, SectionReal X, Mat 
 //  - All values have the same dimension
 PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal section, int numPoints, double *points, double **values)
 {
-  Obj<ALE::Field::Mesh> m;
-  Obj<ALE::Field::Mesh::real_section_type> s;
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
   double        *v0, *J, *invJ, detJ;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   int embedDim = coordinates->getFiberDimension(*m->depthStratum(0)->begin());
   int dim      = s->getFiberDimension(*m->depthStratum(0)->begin());
 
@@ -759,8 +757,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
   ierr = PetscMalloc(numPoints*dim * sizeof(double), &values);CHKERRQ(ierr);
   for(int p = 0; p < numPoints; p++) {
     double *point = &points[p*embedDim];
-    ALE::Field::Mesh::point_type e = m->locatePoint(point);
-    const ALE::Field::Mesh::real_section_type::value_type *coeff = s->restrictPoint(e);
+    ALE::Mesh::point_type e = m->locatePoint(point);
+    const ALE::Mesh::real_section_type::value_type *coeff = s->restrictPoint(e);
 
     m->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
     double xi   = (invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]) + invJ[0*embedDim+2]*(point[2] - v0[2]))*0.5;
@@ -794,16 +792,16 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
 @*/
 PetscErrorCode MeshGetMaximumDegree(Mesh mesh, PetscInt *maxDegree)
 {
-  Obj<ALE::Field::Mesh> m;
+  Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::label_sequence>& vertices = m->depthStratum(0);
-  const ALE::Obj<ALE::Field::Mesh::sieve_type>&     sieve    = m->getSieve();
+  const ALE::Obj<ALE::Mesh::label_sequence>& vertices = m->depthStratum(0);
+  const ALE::Obj<ALE::Mesh::sieve_type>&     sieve    = m->getSieve();
   PetscInt                                          maxDeg   = -1;
 
-  for(ALE::Field::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     maxDeg = PetscMax(maxDeg, (PetscInt) sieve->support(*v_iter)->size());
   }
   *maxDegree = maxDeg;
@@ -914,7 +912,7 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
 PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   Mesh                       mesh;
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscInt                   firstElement;
   PetscErrorCode             ierr;
 
@@ -926,9 +924,9 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
   firstElement = 0;
   // Must relate b to field
   if (mode == INSERT_VALUES) {
-    m->update(m->getRealSection(std::string("x")), ALE::Field::Mesh::point_type(e + firstElement), v);
+    m->update(m->getRealSection(std::string("x")), ALE::Mesh::point_type(e + firstElement), v);
   } else {
-    m->updateAdd(m->getRealSection(std::string("x")), ALE::Field::Mesh::point_type(e + firstElement), v);
+    m->updateAdd(m->getRealSection(std::string("x")), ALE::Mesh::point_type(e + firstElement), v);
   }
   ierr = PetscLogEventEnd(Mesh_assembleVector,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -936,7 +934,7 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperator"
-PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Field::Mesh>& m, const ALE::Obj<ALE::Field::Mesh::real_section_type>& section, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, const ALE::Field::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& section, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
   static PetscInt  indicesSize = 0;
   static PetscInt *indices     = NULL;
@@ -944,11 +942,11 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Field::Mesh>& m, const 
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  const ALE::Obj<ALE::Field::Mesh::indexArray> intervals = m->getIndices(section, e, globalOrder);
+  const ALE::Obj<ALE::Mesh::indexArray> intervals = m->getIndices(section, e, globalOrder);
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (section->debug()) {printf("[%d]mat for element %d\n", section->commRank(), e);}
-  for(ALE::Field::Mesh::indexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+  for(ALE::Mesh::indexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
     numIndices += std::abs(i_iter->prefix);
     if (section->debug()) {
       printf("[%d]mat interval (%d, %d)\n", section->commRank(), i_iter->prefix, i_iter->index);
@@ -989,7 +987,7 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Field::Mesh>& m, const 
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperatorGeneral"
-PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Field::Mesh>& m, const ALE::Obj<ALE::Field::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Field::Mesh::order_type>& rowGlobalOrder, const ALE::Field::Mesh::point_type& rowE, const ALE::Obj<ALE::Field::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Field::Mesh::order_type>& colGlobalOrder, const ALE::Field::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
 {
   static PetscInt  rowIndicesSize = 0;
   static PetscInt *rowIndices     = NULL;
@@ -1000,12 +998,12 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Field::Mesh>& m,
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  const ALE::Obj<ALE::Field::Mesh::indexArray> rowIntervals = m->getIndices(rowSection, rowE, rowGlobalOrder);
-  const ALE::Obj<ALE::Field::Mesh::indexArray> colIntervals = m->getIndices(colSection, colE, colGlobalOrder);
+  const ALE::Obj<ALE::Mesh::indexArray> rowIntervals = m->getIndices(rowSection, rowE, rowGlobalOrder);
+  const ALE::Obj<ALE::Mesh::indexArray> colIntervals = m->getIndices(colSection, colE, colGlobalOrder);
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
   if (rowSection->debug()) {printf("[%d]mat for elements %d %d\n", rowSection->commRank(), rowE, colE);}
-  for(ALE::Field::Mesh::indexArray::iterator i_iter = rowIntervals->begin(); i_iter != rowIntervals->end(); ++i_iter) {
+  for(ALE::Mesh::indexArray::iterator i_iter = rowIntervals->begin(); i_iter != rowIntervals->end(); ++i_iter) {
     numRowIndices += std::abs(i_iter->prefix);
     if (rowSection->debug()) {
       printf("[%d]mat row interval (%d, %d)\n", rowSection->commRank(), i_iter->prefix, i_iter->index);
@@ -1025,7 +1023,7 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Field::Mesh>& m,
       printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
     }
   }
-  for(ALE::Field::Mesh::indexArray::iterator i_iter = colIntervals->begin(); i_iter != colIntervals->end(); ++i_iter) {
+  for(ALE::Mesh::indexArray::iterator i_iter = colIntervals->begin(); i_iter != colIntervals->end(); ++i_iter) {
     numColIndices += std::abs(i_iter->prefix);
     if (colSection->debug()) {
       printf("[%d]mat col interval (%d, %d)\n", colSection->commRank(), i_iter->prefix, i_iter->index);
@@ -1089,7 +1087,7 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Field::Mesh>& m,
 PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mode)
 {
   Mesh           mesh;
-  Obj<ALE::Field::Mesh> m;
+  Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1097,9 +1095,9 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   ierr = PetscObjectQuery((PetscObject) A, "mesh", (PetscObject *) &mesh);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   try {
-    const ALE::Obj<ALE::Field::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
-    const ALE::Obj<ALE::Field::Mesh::real_section_type>& s           = m->getRealSection("default");
-    const ALE::Obj<ALE::Field::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s->getAtlas());
+    const ALE::Obj<ALE::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
+    const ALE::Obj<ALE::Mesh::real_section_type>& s           = m->getRealSection("default");
+    const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s->getAtlas());
 
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
@@ -1115,12 +1113,12 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperator"
 template<typename Atlas>
-PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
   MPI_Comm                                      comm      = mesh->comm();
-  const ALE::Obj<ALE::Field::Mesh>              adjBundle = new ALE::Field::Mesh(comm, mesh->debug());
-  const ALE::Obj<ALE::Field::Mesh::sieve_type>  adjGraph  = new ALE::Field::Mesh::sieve_type(comm, mesh->debug());
-  const ALE::Obj<ALE::Field::Mesh::sieve_type>& sieve     = mesh->getSieve();
+  const ALE::Obj<ALE::Mesh>              adjBundle = new ALE::Mesh(comm, mesh->debug());
+  const ALE::Obj<ALE::Mesh::sieve_type>  adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
+  const ALE::Obj<ALE::Mesh::sieve_type>& sieve     = mesh->getSieve();
   PetscInt       numLocalRows, firstRow;
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
@@ -1139,11 +1137,11 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   }
   /* Distribute adjacency graph */
   adjBundle->constructOverlap();
-  typedef typename ALE::Field::Mesh::sieve_type::point_type point_type;
-  typedef typename ALE::Field::Mesh::send_overlap_type send_overlap_type;
-  typedef typename ALE::Field::Mesh::recv_overlap_type recv_overlap_type;
-  typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, point_type> > send_section_type;
-  typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, point_type> > recv_section_type;
+  typedef typename ALE::Mesh::sieve_type::point_type point_type;
+  typedef typename ALE::Mesh::send_overlap_type send_overlap_type;
+  typedef typename ALE::Mesh::recv_overlap_type recv_overlap_type;
+  typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, point_type> > send_section_type;
+  typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, point_type> > recv_section_type;
   const Obj<send_overlap_type>& vertexSendOverlap = mesh->getSendOverlap();
   const Obj<recv_overlap_type>& vertexRecvOverlap = mesh->getRecvOverlap();
   const Obj<send_overlap_type>  nbrSendOverlap    = new send_overlap_type(comm, mesh->debug());
@@ -1151,12 +1149,12 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   const Obj<send_section_type>  sendSection       = new send_section_type(comm, mesh->debug());
   const Obj<recv_section_type>  recvSection       = new recv_section_type(comm, sendSection->getTag(), mesh->debug());
 
-  ALE::Distribution<ALE::Field::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
+  ALE::Distribution<ALE::Mesh>::coneCompletion(vertexSendOverlap, vertexRecvOverlap, adjBundle, sendSection, recvSection);
   /* Distribute indices for new points */
-  ALE::Distribution<ALE::Field::Mesh>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
+  ALE::Distribution<ALE::Mesh>::updateOverlap(sendSection, recvSection, nbrSendOverlap, nbrRecvOverlap);
   mesh->getFactory()->completeOrder(globalOrder, nbrSendOverlap, nbrRecvOverlap, true);
   /* Read out adjacency graph */
-  const ALE::Obj<ALE::Field::Mesh::sieve_type> graph = adjBundle->getSieve();
+  const ALE::Obj<ALE::Mesh::sieve_type> graph = adjBundle->getSieve();
 
   ierr = PetscMemzero(dnz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
   ierr = PetscMemzero(onz, numLocalRows/bs * sizeof(PetscInt));CHKERRQ(ierr);
@@ -1164,14 +1162,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
     const typename Atlas::point_type& point = *c_iter;
 
     if (globalOrder->isLocal(point)) {
-      const ALE::Obj<ALE::Field::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
-      const ALE::Field::Mesh::order_type::value_type&                     rIdx  = globalOrder->restrictPoint(point)[0];
+      const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
+      const ALE::Mesh::order_type::value_type&                     rIdx  = globalOrder->restrictPoint(point)[0];
       const int                                                           row   = rIdx.prefix;
       const int                                                           rSize = rIdx.index/bs;
 
-      for(ALE::Field::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
-        const ALE::Field::Mesh::point_type&             neighbor = *v_iter;
-        const ALE::Field::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
+      for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
+        const ALE::Mesh::point_type&             neighbor = *v_iter;
+        const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
         const int&                                      cSize    = cIdx.index/bs;
 
         if (cSize > 0) {
@@ -1201,7 +1199,7 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
 
 #undef __FUNCT__
 #define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Field::Mesh>& mesh, const int bs, const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
   return preallocateOperator(mesh, bs, atlas, globalOrder, A);
 }
@@ -1219,7 +1217,7 @@ PetscErrorCode WriteVTKHeader(PetscViewer viewer)
 #define __FUNCT__ "WriteVTKVertices"
 PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1230,7 +1228,7 @@ PetscErrorCode WriteVTKVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WriteVTKElements"
 PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1241,7 +1239,7 @@ PetscErrorCode WriteVTKElements(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICEVertices"
 PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1252,7 +1250,7 @@ PetscErrorCode WritePCICEVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICEElements"
 PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1263,7 +1261,7 @@ PetscErrorCode WritePCICEElements(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePCICERestart"
 PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -1296,7 +1294,7 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 @*/
 PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFilename[], const char adjFilename[], PetscTruth interpolate, const char bcFilename[], Mesh *mesh)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscInt            debug = 0;
   PetscTruth          flag;
   PetscErrorCode      ierr;
@@ -1339,7 +1337,7 @@ PetscErrorCode MeshCreatePCICE(MPI_Comm comm, const int dim, const char coordFil
 @*/
 PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFilename[], PetscTruth zeroBase, PetscTruth interpolate, Mesh *mesh)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscInt            debug = 0;
   PetscTruth          flag;
   PetscErrorCode      ierr;
@@ -1379,7 +1377,7 @@ PetscErrorCode MeshCreatePyLith(MPI_Comm comm, const int dim, const char baseFil
 @*/
 PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *numVertices, PetscInt *dim, PetscReal *coords[])
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1411,7 +1409,7 @@ PetscErrorCode MeshGetCoordinates(Mesh mesh, PetscTruth columnMajor, PetscInt *n
 @*/
 PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numElements, PetscInt *numCorners, PetscInt *vertices[])
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1442,17 +1440,17 @@ PetscErrorCode MeshGetElements(Mesh mesh, PetscTruth columnMajor, PetscInt *numE
 @*/
 PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
 {
-  ALE::Obj<ALE::Field::Mesh> oldMesh;
+  ALE::Obj<ALE::Mesh> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
   if (partitioner == NULL) {
-    ALE::Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(oldMesh);
+    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   } else {
-    ALE::Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(oldMesh, 0, partitioner);
+    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh, 0, partitioner);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1480,17 +1478,17 @@ PetscErrorCode MeshDistribute(Mesh serialMesh, const char partitioner[], Mesh *p
 @*/
 PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], Mesh *parallelMesh)
 {
-  ALE::Obj<ALE::Field::Mesh> oldMesh;
+  ALE::Obj<ALE::Mesh> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(serialMesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), parallelMesh);CHKERRQ(ierr);
   if (partitioner == NULL) {
-    ALE::Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(oldMesh, 1);
+    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh, 1);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   } else {
-    ALE::Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(oldMesh, 1, partitioner);
+    ALE::Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(oldMesh, 1, partitioner);
     ierr = MeshSetMesh(*parallelMesh, newMesh);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -1517,13 +1515,13 @@ PetscErrorCode MeshDistributeByFace(Mesh serialMesh, const char partitioner[], M
 @*/
 PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
 {
-  ALE::Obj<ALE::Field::Mesh> mB;
+  ALE::Obj<ALE::Mesh> mB;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(boundary, mB);CHKERRQ(ierr);
   ierr = MeshCreate(mB->comm(), mesh);CHKERRQ(ierr);
-  ALE::Obj<ALE::Field::Mesh> m = ALE::Generator::generateMesh(mB, interpolate);
+  ALE::Obj<ALE::Mesh> m = ALE::Generator::generateMesh(mB, interpolate);
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1550,13 +1548,13 @@ PetscErrorCode MeshGenerate(Mesh boundary, PetscTruth interpolate, Mesh *mesh)
 @*/
 PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpolate, Mesh *refinedMesh)
 {
-  ALE::Obj<ALE::Field::Mesh> oldMesh;
+  ALE::Obj<ALE::Mesh> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(oldMesh->comm(), refinedMesh);CHKERRQ(ierr);
-  ALE::Obj<ALE::Field::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, interpolate);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1565,7 +1563,7 @@ PetscErrorCode MeshRefine(Mesh mesh, double refinementLimit, PetscTruth interpol
 #define __FUNCT__ "MeshRefine_Mesh"
 PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 {
-  ALE::Obj<ALE::Field::Mesh> oldMesh;
+  ALE::Obj<ALE::Mesh> oldMesh;
   double              refinementLimit;
   PetscErrorCode      ierr;
 
@@ -1573,9 +1571,9 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
   refinementLimit = oldMesh->getMaxVolume()/2.0;
-  ALE::Obj<ALE::Field::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, false);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, false);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
 
   newMesh->setDiscretization(oldMesh->getDiscretization());
   newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
@@ -1611,7 +1609,7 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
 @*/
 PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningFactor, PetscTruth interpolate, Mesh **coarseHierarchy)
 {
-  ALE::Obj<ALE::Field::Mesh> oldMesh;
+  ALE::Obj<ALE::Mesh> oldMesh;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1628,8 +1626,8 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
   ierr = ALE::Coarsener::CreateCoarsenedHierarchyNew(oldMesh, 2, numLevels, coarseningFactor);CHKERRQ(ierr);
   ierr = PetscMalloc(numLevels * sizeof(Mesh),coarseHierarchy);CHKERRQ(ierr);
   for(int l = 0; l < numLevels; l++) {
-    ALE::Obj<ALE::Field::Mesh> newMesh = new ALE::Field::Mesh(oldMesh->comm(), oldMesh->debug());
-    const ALE::Obj<ALE::Field::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+    ALE::Obj<ALE::Mesh> newMesh = new ALE::Mesh(oldMesh->comm(), oldMesh->debug());
+    const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
 
     ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[l]);CHKERRQ(ierr);
     newMesh->getTopology()->setPatch(0, oldMesh->getTopology()->getPatch(l+1));
@@ -1658,8 +1656,8 @@ PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarse
 */
 PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interpolation, Vec *scaling)
 {
-  ALE::Obj<ALE::Field::Mesh> coarse;
-  ALE::Obj<ALE::Field::Mesh> fine;
+  ALE::Obj<ALE::Mesh> coarse;
+  ALE::Obj<ALE::Mesh> fine;
   Mesh coarseMesh = (Mesh) dmCoarse;
   Mesh fineMesh   = (Mesh) dmFine;
   Mat  P;
@@ -1668,15 +1666,15 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
   PetscFunctionBegin;
   ierr = MeshGetMesh(fineMesh,   fine);CHKERRQ(ierr);
   ierr = MeshGetMesh(coarseMesh, coarse);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>&             coarseCoordinates = coarse->getRealSection("coordinates");
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>&             fineCoordinates   = fine->getRealSection("coordinates");
-  const ALE::Obj<ALE::Field::Mesh::label_sequence>&                vertices          = fine->depthStratum(0);
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>&             sCoarse           = coarse->getRealSection("default");
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>&             sFine             = fine->getRealSection("default");
-  const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& coarseAtlas       = sCoarse->getAtlas();
-  const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& fineAtlas         = sFine->getAtlas();
-  const ALE::Obj<ALE::Field::Mesh::order_type>& coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", coarseAtlas);
-  const ALE::Obj<ALE::Field::Mesh::order_type>& fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", fineAtlas);
+  const ALE::Obj<ALE::Mesh::real_section_type>&             coarseCoordinates = coarse->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>&             fineCoordinates   = fine->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::label_sequence>&                vertices          = fine->depthStratum(0);
+  const ALE::Obj<ALE::Mesh::real_section_type>&             sCoarse           = coarse->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type>&             sFine             = fine->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& coarseAtlas       = sCoarse->getAtlas();
+  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& fineAtlas         = sFine->getAtlas();
+  const ALE::Obj<ALE::Mesh::order_type>& coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", coarseAtlas);
+  const ALE::Obj<ALE::Mesh::order_type>& fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", fineAtlas);
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
@@ -1684,9 +1682,9 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
-  for(ALE::Field::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    const ALE::Field::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
-    const ALE::Field::Mesh::point_type                     coarseCell = coarse->locatePoint(coords);
+  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+    const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
+    const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(coords);
 
     coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
     for(int d = 0; d < dim; ++d) {
@@ -1729,7 +1727,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
 @*/
 PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscTruth *flag)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1761,7 +1759,7 @@ PetscErrorCode MeshHasSectionReal(Mesh mesh, const char name[], PetscTruth *flag
 @*/
 PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *section)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1793,8 +1791,8 @@ PetscErrorCode MeshGetSectionReal(Mesh mesh, const char name[], SectionReal *sec
 @*/
 PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::real_section_type> s;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
   const char         *name;
   PetscErrorCode      ierr;
 
@@ -1827,7 +1825,7 @@ PetscErrorCode MeshSetSectionReal(Mesh mesh, SectionReal section)
 @*/
 PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscTruth *flag)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1859,7 +1857,7 @@ PetscErrorCode MeshHasSectionInt(Mesh mesh, const char name[], PetscTruth *flag)
 @*/
 PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *section)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -1891,8 +1889,8 @@ PetscErrorCode MeshGetSectionInt(Mesh mesh, const char name[], SectionInt *secti
 @*/
 PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::int_section_type> s;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::int_section_type> s;
   const char         *name;
   PetscErrorCode      ierr;
 
@@ -1903,106 +1901,6 @@ PetscErrorCode MeshSetSectionInt(Mesh mesh, SectionInt section)
   m->setIntSection(std::string(name), s);
   PetscFunctionReturn(0);
 }
-
-#if 0
-#undef __FUNCT__  
-#define __FUNCT__ "MeshHasSectionPair"
-/*@C
-  MeshHasSectionPair - Determines whether this mesh has a SectionPair with the given name.
-
-  Not Collective
-
-  Input Parameters:
-+ mesh - The Mesh object
-- name - The section name
-
-  Output Parameter:
-. flag - True if the SectionPair is present in the Mesh
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshHasSectionPair(Mesh mesh, const char name[], PetscTruth *flag)
-{
-  ALE::Obj<ALE::Field::Mesh> m;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  *flag = (PetscTruth) m->hasPairSection(std::string(name));
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshGetSectionPair"
-/*@C
-  MeshGetSectionPair - Returns a SectionPair of the given name from the Mesh.
-
-  Collective on Mesh
-
-  Input Parameters:
-+ mesh - The Mesh object
-- name - The section name
-
-  Output Parameter:
-. section - The SectionPair
-
-  Note: The section is a new object, and must be destroyed by the user
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshGetSectionPair(Mesh mesh, const char name[], SectionPair *section)
-{
-  ALE::Obj<ALE::Field::Mesh> m;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = SectionPairCreate(m->comm(), section);CHKERRQ(ierr);
-  ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
-  ierr = SectionPairSetSection(*section, m->getPairSection(std::string(name)));CHKERRQ(ierr);
-  ierr = SectionPairSetBundle(*section, m);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MeshSetSectionPair"
-/*@C
-  MeshSetSectionPair - Puts a SectionPair of the given name into the Mesh.
-
-  Collective on Mesh
-
-  Input Parameters:
-+ mesh - The Mesh object
-- section - The SectionPair
-
-  Note: This takes the section name from the PETSc object
-
-  Level: intermediate
-
-.keywords: mesh, elements
-.seealso: MeshCreate()
-@*/
-PetscErrorCode MeshSetSectionPair(Mesh mesh, SectionPair section)
-{
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::pair_section_type> s;
-  const char         *name;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
-  ierr = SectionPairGetSection(section, s);CHKERRQ(ierr);
-  m->setPairSection(std::string(name), s);
-  PetscFunctionReturn(0);
-}
-#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "SectionGetArray"
@@ -2027,19 +1925,19 @@ PetscErrorCode MeshSetSectionPair(Mesh mesh, SectionPair section)
 @*/
 PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::real_section_type>& section = m->getRealSection(std::string(name));
+  const Obj<ALE::Mesh::real_section_type>& section = m->getRealSection(std::string(name));
   if (section->size() == 0) {
     *numElements = 0;
     *fiberDim    = 0;
     *array       = NULL;
     PetscFunctionReturn(0);
   }
-  const ALE::Field::Mesh::real_section_type::chart_type& chart = section->getChart();
+  const ALE::Mesh::real_section_type::chart_type& chart = section->getChart();
 /*   const int                                  depth   = m->depth(*chart.begin()); */
 /*   *numElements = m->depthStratum(depth)->size(); */
 /*   *fiberDim    = section->getFiberDimension(*chart.begin()); */
@@ -2047,12 +1945,12 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Field::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Field::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
@@ -2067,7 +1965,7 @@ PetscErrorCode SectionGetArray(Mesh mesh, const char name[], PetscInt *numElemen
 #define __FUNCT__ "WritePyLithVertices"
 PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2078,8 +1976,8 @@ PetscErrorCode WritePyLithVertices(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePyLithElements"
 PetscErrorCode WritePyLithElements(Mesh mesh, SectionInt material, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::int_section_type> s;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::int_section_type> s;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2091,7 +1989,7 @@ PetscErrorCode WritePyLithElements(Mesh mesh, SectionInt material, PetscViewer v
 #define __FUNCT__ "WritePyLithVerticesLocal"
 PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2102,8 +2000,8 @@ PetscErrorCode WritePyLithVerticesLocal(Mesh mesh, PetscViewer viewer)
 #define __FUNCT__ "WritePyLithElementsLocal"
 PetscErrorCode WritePyLithElementsLocal(Mesh mesh, SectionInt material, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
-  ALE::Obj<ALE::Field::Mesh::int_section_type> s;
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::int_section_type> s;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
@@ -2116,7 +2014,7 @@ PetscErrorCode WritePyLithElementsLocal(Mesh mesh, SectionInt material, PetscVie
 #define __FUNCT__ "WritePyLithTractionsLocal"
 PetscErrorCode WritePyLithTractionsLocal(Mesh mesh, PetscViewer viewer)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);

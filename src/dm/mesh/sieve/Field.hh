@@ -138,7 +138,6 @@ namespace ALE {
       PetscSynchronizedFlush(comm);
     };
   };
-namespace Field {
   // A ConstantSection is the simplest Section
   //   All fibers are dimension 1
   //   All values are equal to a constant
@@ -1219,7 +1218,6 @@ namespace Field {
       }
     };
   };
-}
 }
 
 #endif

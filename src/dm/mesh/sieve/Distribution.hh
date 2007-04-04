@@ -210,11 +210,11 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "distributeMesh"
-    static Obj<ALE::Field::Mesh> distributeMesh(const Obj<ALE::Field::Mesh>& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
-      MPI_Comm                                 comm          = serialMesh->comm();
-      const int                                dim           = serialMesh->getDimension();
-      Obj<ALE::Field::Mesh>                    parallelMesh  = new ALE::Field::Mesh(comm, dim, serialMesh->debug());
-      const Obj<ALE::Field::Mesh::sieve_type>& parallelSieve = new ALE::Field::Mesh::sieve_type(comm, serialMesh->debug());
+    static Obj<ALE::Mesh> distributeMesh(const Obj<ALE::Mesh>& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
+      MPI_Comm                          comm          = serialMesh->comm();
+      const int                         dim           = serialMesh->getDimension();
+      Obj<ALE::Mesh>                    parallelMesh  = new ALE::Mesh(comm, dim, serialMesh->debug());
+      const Obj<ALE::Mesh::sieve_type>& parallelSieve = new ALE::Mesh::sieve_type(comm, serialMesh->debug());
 
       ALE_LOG_EVENT_BEGIN;
       parallelMesh->setSieve(parallelSieve);
@@ -317,8 +317,8 @@ namespace ALE {
       if (serialSection->debug()) {
         serialSection->view("Serial Section");
       }
-      typedef ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, typename Section::value_type> > send_section_type;
-      typedef ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, typename Section::value_type> > recv_section_type;
+      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > send_section_type;
+      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > recv_section_type;
       typedef ALE::New::SizeSection<Section> SectionSizer;
       Obj<Section>                 parallelSection = new Section(serialSection->comm(), serialSection->debug());
       const Obj<send_section_type> sendSection     = new send_section_type(serialSection->comm(), serialSection->debug());
@@ -395,8 +395,8 @@ namespace ALE {
       if (serialSection->debug()) {
         serialSection->view("Serial ArrowSection");
       }
-      typedef ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, typename Section::value_type> > send_section_type;
-      typedef ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, typename Section::value_type> > recv_section_type;
+      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > send_section_type;
+      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > recv_section_type;
       typedef ALE::New::ConeSizeSection<bundle_type, sieve_type> SectionSizer;
       typedef ALE::New::ArrowSection<sieve_type, Section>        ArrowFiller;
       Obj<Section>                 parallelSection = new Section(serialSection->comm(), serialSection->debug());
@@ -449,10 +449,10 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "unifyMesh"
-    static Obj<ALE::Field::Mesh> unifyMesh(const Obj<ALE::Field::Mesh>& parallelMesh) {
-      const int                                dim         = parallelMesh->getDimension();
-      Obj<ALE::Field::Mesh>                    serialMesh  = new ALE::Field::Mesh(parallelMesh->comm(), dim, parallelMesh->debug());
-      const Obj<ALE::Field::Mesh::sieve_type>& serialSieve = new ALE::Field::Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
+    static Obj<ALE::Mesh> unifyMesh(const Obj<ALE::Mesh>& parallelMesh) {
+      const int                         dim         = parallelMesh->getDimension();
+      Obj<ALE::Mesh>                    serialMesh  = new ALE::Mesh(parallelMesh->comm(), dim, parallelMesh->debug());
+      const Obj<ALE::Mesh::sieve_type>& serialSieve = new ALE::Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
 
       ALE_LOG_EVENT_BEGIN;
       serialMesh->setSieve(serialSieve);
@@ -568,8 +568,8 @@ namespace ALE {
       typedef typename bundle_type::send_overlap_type             send_overlap_type;
       typedef typename bundle_type::recv_overlap_type             recv_overlap_type;
       typedef typename Section::value_type                        value_type;
-      typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, value_type> > send_section_type;
-      typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, value_type> > recv_section_type;
+      typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type> > send_section_type;
+      typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type> > recv_section_type;
       typedef ALE::New::SizeSection<Section>                                SectionSizer;
       const int debug = section->debug();
 

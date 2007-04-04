@@ -16,7 +16,7 @@
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh mesh)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
@@ -52,28 +52,28 @@ PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh mesh)
 @*/
 PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscInt *array[])
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::int_section_type>& section = m->getIntSection(std::string(name));
+  const ALE::Obj<ALE::Mesh::int_section_type>& section = m->getIntSection(std::string(name));
   if (!section->size()) {
     *numElements = 0;
     *fiberDim    = 0;
     *array       = NULL;
     PetscFunctionReturn(0);
   }
-  const ALE::Field::Mesh::int_section_type::chart_type& chart = section->getChart();
+  const ALE::Mesh::int_section_type::chart_type& chart = section->getChart();
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Field::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Field::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
@@ -103,16 +103,16 @@ PetscErrorCode BCSectionGetArray(Mesh mesh, const char name[], PetscInt *numElem
 @*/
 PetscErrorCode BCSectionRealCreate(Mesh mesh, const char name[], PetscInt fiberDim)
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>&  section = m->getRealSection(std::string(name));
-  const ALE::Obj<ALE::Field::Mesh::int_section_type>&   ibc     = m->getIntSection("IBC");
-  const ALE::Field::Mesh::int_section_type::chart_type& chart   = ibc->getChart();
+  const ALE::Obj<ALE::Mesh::real_section_type>&  section = m->getRealSection(std::string(name));
+  const ALE::Obj<ALE::Mesh::int_section_type>&   ibc     = m->getIntSection("IBC");
+  const ALE::Mesh::int_section_type::chart_type& chart   = ibc->getChart();
 
-  for(ALE::Field::Mesh::int_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+  for(ALE::Mesh::int_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     section->setFiberDimension(*p_iter, ibc->getFiberDimension(*p_iter));
   }
   m->allocate(section);
@@ -142,28 +142,28 @@ PetscErrorCode BCSectionRealCreate(Mesh mesh, const char name[], PetscInt fiberD
 @*/
 PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *numElements, PetscInt *fiberDim, PetscReal *array[])
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Field::Mesh::real_section_type>& section = m->getRealSection(std::string(name));
+  const ALE::Obj<ALE::Mesh::real_section_type>& section = m->getRealSection(std::string(name));
   if (!section->size()) {
     *numElements = 0;
     *fiberDim    = 0;
     *array       = NULL;
     PetscFunctionReturn(0);
   }
-  const ALE::Field::Mesh::real_section_type::chart_type& chart = section->getChart();
+  const ALE::Mesh::real_section_type::chart_type& chart = section->getChart();
   int fiberDimMin = section->getFiberDimension(*chart.begin());
   int numElem     = 0;
 
-  for(ALE::Field::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     if (fiberDim < fiberDimMin) fiberDimMin = fiberDim;
   }
-  for(ALE::Field::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+  for(ALE::Mesh::real_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
     const int fiberDim = section->getFiberDimension(*c_iter);
 
     numElem += fiberDim/fiberDimMin;
@@ -178,13 +178,13 @@ PetscErrorCode BCSectionRealGetArray(Mesh mesh, const char name[], PetscInt *num
 #define __FUNCT__ "BCFUNCGetArray"
 PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberDim, PetscScalar *array[])
 {
-  ALE::Obj<ALE::Field::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
   PetscErrorCode      ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
 #if 0
-  ALE::Field::Mesh::bc_values_type& bcValues = m->getBCValues();
+  ALE::Mesh::bc_values_type& bcValues = m->getBCValues();
   *numElements = bcValues.size();
   *fiberDim    = 4;
   *array       = new PetscScalar[(*numElements)*(*fiberDim)];
@@ -295,10 +295,10 @@ namespace ALE {
       numVertices = numVerts;
       *coordinates = coords;
     };
-    Obj<ALE::Field::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+    Obj<ALE::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
       return readMesh(comm, dim, basename+".nodes", basename+".lcon", useZeroBase, interpolate, debug);
     };
-    Obj<ALE::Field::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
+    Obj<ALE::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& coordFilename, const std::string& adjFilename, const bool useZeroBase = true, const bool interpolate = true, const int debug = 0) {
       Obj<Mesh>          mesh     = new Mesh(comm, dim, debug);
       Obj<sieve_type>    sieve    = new sieve_type(comm, debug);
       int    *cells = NULL;
@@ -308,10 +308,10 @@ namespace ALE {
 
       ALE::PCICE::Builder::readConnectivity(comm, adjFilename, numCorners, useZeroBase, numCells, &cells);
       ALE::PCICE::Builder::readCoordinates(comm, coordFilename, dim, numVertices, &coordinates);
-      ALE::New::SieveBuilder<ALE::Field::Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
       mesh->setSieve(sieve);
       mesh->stratify();
-      ALE::New::SieveBuilder<ALE::Field::Mesh>::buildCoordinatesNew(mesh, dim, coordinates);
+      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh, dim, coordinates);
       if (cells) {ierr = PetscFree(cells);}
       if (coordinates) {ierr = PetscFree(coordinates);}
       return mesh;
@@ -548,10 +548,10 @@ namespace ALE {
     };
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteVertices"
-    PetscErrorCode Viewer::writeVertices(const ALE::Obj<ALE::Field::Mesh>& mesh, PetscViewer viewer) {
-      ALE::Obj<ALE::Field::Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
+    PetscErrorCode Viewer::writeVertices(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
+      ALE::Obj<Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
 #if 0
-      ALE::Field::Mesh::field_type::patch_type patch;
+      Mesh::field_type::patch_type patch;
       const double  *array = coordinates->restrict(patch);
       int            numVertices;
       PetscErrorCode ierr;
@@ -598,8 +598,8 @@ namespace ALE {
           }
         }
       } else {
-        ALE::Obj<ALE::Field::Mesh::bundle_type>                           globalOrder = coordinates->getGlobalOrder();
-        ALE::Obj<ALE::Field::Mesh::bundle_type::order_type::coneSequence> cone        = globalOrder->getPatch(patch);
+        ALE::Obj<Mesh::bundle_type>                           globalOrder = coordinates->getGlobalOrder();
+        ALE::Obj<Mesh::bundle_type::order_type::coneSequence> cone        = globalOrder->getPatch(patch);
         const int *offsets = coordinates->getGlobalOffsets();
         int        embedDim = coordinates->getFiberDimension(patch, *mesh->getTopology()->depthStratum(0)->begin());
         int        numLocalVertices = (offsets[mesh->commRank()+1] - offsets[mesh->commRank()])/embedDim;
@@ -607,7 +607,7 @@ namespace ALE {
         int        k = 0;
 
         ierr = PetscMalloc(numLocalVertices*embedDim * sizeof(double), &localCoords);CHKERRQ(ierr);
-        for(ALE::Field::Mesh::bundle_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        for(Mesh::bundle_type::order_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
           int dim = globalOrder->getFiberDimension(patch, *p_iter);
 
           if (dim > 0) {
@@ -630,14 +630,14 @@ namespace ALE {
     };
     #undef __FUNCT__  
     #define __FUNCT__ "PCICEWriteElements"
-    PetscErrorCode Viewer::writeElements(const ALE::Obj<ALE::Field::Mesh>& mesh, PetscViewer viewer) {
+    PetscErrorCode Viewer::writeElements(const ALE::Obj<Mesh>& mesh, PetscViewer viewer) {
 #if 0
-      ALE::Obj<ALE::Field::Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
-      ALE::Obj<ALE::Field::Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
-      ALE::Obj<ALE::Field::Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
-      ALE::Obj<ALE::Field::Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
-      ALE::Obj<ALE::Field::Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
-      ALE::Field::Mesh::bundle_type::patch_type patch;
+      ALE::Obj<Mesh::sieve_type::traits::heightSequence> elements = topology->heightStratum(0);
+      ALE::Obj<Mesh::bundle_type> elementBundle = mesh->getBundle(topology->depth());
+      ALE::Obj<Mesh::bundle_type> vertexBundle = mesh->getBundle(0);
+      ALE::Obj<Mesh::bundle_type> globalVertex = vertexBundle->getGlobalOrder();
+      ALE::Obj<Mesh::bundle_type> globalElement = elementBundle->getGlobalOrder();
+      Mesh::bundle_type::patch_type patch;
       std::string    orderName("element");
       int            dim  = mesh->getDimension();
       int            corners = topology->nCone(*elements->begin(), topology->depth())->size();
@@ -660,11 +660,11 @@ namespace ALE {
         int elementCount = 1;
 
         ierr = PetscViewerASCIIPrintf(viewer, "%d\n", numElements);CHKERRQ(ierr);
-        for(ALE::Field::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-          ALE::Obj<ALE::Field::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
+        for(Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+          ALE::Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
           ierr = PetscViewerASCIIPrintf(viewer, "%7d", elementCount++);CHKERRQ(ierr);
-          for(ALE::Field::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+          for(Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
             ierr = PetscViewerASCIIPrintf(viewer, " %7d", globalVertex->getIndex(patch, *c_itor).prefix);CHKERRQ(ierr);
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -693,11 +693,11 @@ namespace ALE {
         int        k = 0;
 
         ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
-        for(ALE::Field::Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
-          ALE::Obj<ALE::Field::Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
+        for(Mesh::sieve_type::traits::heightSequence::iterator e_itor = elements->begin(); e_itor != elements->end(); ++e_itor) {
+          ALE::Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch(orderName, *e_itor);
 
           if (globalElement->getFiberDimension(patch, *e_itor) > 0) {
-            for(ALE::Field::Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
+            for(Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
               localVertices[k++] = globalVertex->getIndex(patch, *c_itor).prefix;
             }
           }
@@ -762,9 +762,9 @@ namespace ALE {
 
         for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
-            const ALE::Field::Mesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
-            const ALE::Field::Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
-            const ALE::Field::Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
+            const Mesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
+            const Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
+            const Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
 
             ierr = PetscViewerASCIIPrintf(viewer, "%6d% 16.8E% 16.8E% 16.8E% 16.8E\n", *v_iter-numCells+1, veln[0], veln[1], pn[0], tn[0]);CHKERRQ(ierr);
           }
@@ -790,9 +790,9 @@ namespace ALE {
         ierr = PetscMalloc(numLocalElements * sizeof(RestartType), &localValues);CHKERRQ(ierr);
         for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
           if (vNumbering->isLocal(*v_iter)) {
-            const ALE::Field::Mesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
-            const ALE::Field::Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
-            const ALE::Field::Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
+            const Mesh::real_section_type::value_type *veln = velocity->restrictPoint(*v_iter);
+            const Mesh::real_section_type::value_type *pn   = pressure->restrictPoint(*v_iter);
+            const Mesh::real_section_type::value_type *tn   = temperature->restrictPoint(*v_iter);
 
             localValues[k].vertex = *v_iter;
             localValues[k].veln_x = veln[0];
@@ -823,11 +823,11 @@ namespace ALE {
     //
     // Note: Any vertex or element number from PCICE is 1-based, but in Sieve we are 0-based. Thus
     //       we add and subtract 1 during conversion. Also, Sieve vertices are numbered after cells.
-    void fuseBoundary(const ALE::Obj<ALE::Field::Mesh>& mesh) {
+    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh) {
       // Extract PCICE boundary sections
-      ALE::Obj<ALE::Field::Mesh::int_section_type> IBCsec    = mesh->getIntSection("IBC");
-      ALE::Obj<ALE::Field::Mesh::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");
-      ALE::Obj<ALE::Field::Mesh::int_section_type> IBCNUMsec = mesh->getIntSection("IBCNUM");
+      ALE::Obj<ALE::Mesh::int_section_type> IBCsec    = mesh->getIntSection("IBC");
+      ALE::Obj<ALE::Mesh::int_section_type> IBNDFSsec = mesh->getIntSection("IBNDFS");
+      ALE::Obj<ALE::Mesh::int_section_type> IBCNUMsec = mesh->getIntSection("IBCNUM");
 
       // Look at the sections, if debugging
       if (mesh->debug()) {
@@ -836,21 +836,21 @@ namespace ALE {
       }
 
       // Extract the local numberings
-      ALE::Obj<ALE::Field::Mesh::numbering_type> vertexNum  = mesh->getFactory()->getLocalNumbering(mesh, 0);
-      ALE::Obj<ALE::Field::Mesh::numbering_type> elementNum = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
+      ALE::Obj<ALE::Mesh::numbering_type> vertexNum  = mesh->getFactory()->getLocalNumbering(mesh, 0);
+      ALE::Obj<ALE::Mesh::numbering_type> elementNum = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
       const int numElements = mesh->getFactory()->getNumbering(mesh, mesh->depth())->getGlobalSize();
       std::map<int,int> bfMap;
       // Declare points to the extracted numbering data
-      const ALE::Field::Mesh::numbering_type::value_type *vNum, *eNum;
+      const ALE::Mesh::numbering_type::value_type *vNum, *eNum;
 
       // Create map from serial bdFace numbers to local bdFace numbers
       {
-        const ALE::Field::Mesh::int_section_type::chart_type     chart = IBCNUMsec->getChart();
-        ALE::Field::Mesh::int_section_type::chart_type::iterator begin = chart.begin();
-        ALE::Field::Mesh::int_section_type::chart_type::iterator end   = chart.end();
+        const ALE::Mesh::int_section_type::chart_type     chart = IBCNUMsec->getChart();
+        ALE::Mesh::int_section_type::chart_type::iterator begin = chart.begin();
+        ALE::Mesh::int_section_type::chart_type::iterator end   = chart.end();
         int num = 0;
 
-        for(ALE::Field::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
           const int  fiberDim  = IBCNUMsec->getFiberDimension(*p_iter);
           const int *globalNum = IBCNUMsec->restrictPoint(*p_iter);
 
@@ -861,14 +861,14 @@ namespace ALE {
       }
       // Renumber vertex section IBC
       {
-        const ALE::Field::Mesh::int_section_type::chart_type     IBCchart = IBCsec->getChart();
-        ALE::Field::Mesh::int_section_type::chart_type::iterator begin    = IBCchart.begin();
-        ALE::Field::Mesh::int_section_type::chart_type::iterator end      = IBCchart.end();
-        for(ALE::Field::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
-          ALE::Field::Mesh::point_type p = *p_iter;
-          const ALE::Field::Mesh::int_section_type::value_type *ibc_in = IBCsec->restrictPoint(p);
+        const ALE::Mesh::int_section_type::chart_type     IBCchart = IBCsec->getChart();
+        ALE::Mesh::int_section_type::chart_type::iterator begin    = IBCchart.begin();
+        ALE::Mesh::int_section_type::chart_type::iterator end      = IBCchart.end();
+        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          ALE::Mesh::point_type p = *p_iter;
+          const ALE::Mesh::int_section_type::value_type *ibc_in = IBCsec->restrictPoint(p);
           int fiberDimension = IBCsec->getFiberDimension(p);
-          ALE::Field::Mesh::int_section_type::value_type ibc_out[8];
+          ALE::Mesh::int_section_type::value_type ibc_out[8];
           // k controls the update of edge connectivity for each containing element;
           // if fiberDimension is 4, only one boundary face is connected to the element, and that edge's data
           // are contained in entries 0 - 3 of the section over the element p;
@@ -880,7 +880,7 @@ namespace ALE {
             // see IBC's description.
             // Here we assume that elementNum's domain contains all boundary elements found in IBC, 
             // so we can restrict to the extracted entry.
-            eNum = elementNum->restrictPoint((ALE::Field::Mesh::numbering_type::point_type) ibc_in[k*4]-1);
+            eNum = elementNum->restrictPoint((ALE::Mesh::numbering_type::point_type) ibc_in[k*4]-1);
             ibc_out[k*4+0] = eNum[0]+1;
             // Copy the other entries right over
             ibc_out[k*4+1] = ibc_in[k*4+1];
@@ -893,17 +893,17 @@ namespace ALE {
       }
       {
         // Renumber vertex section IBNDFS
-        const ALE::Field::Mesh::int_section_type::chart_type     IBNDFSchart = IBNDFSsec->getChart();
-        ALE::Field::Mesh::int_section_type::chart_type::iterator begin       = IBNDFSchart.begin();
-        ALE::Field::Mesh::int_section_type::chart_type::iterator end         = IBNDFSchart.end();
-        for(ALE::Field::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
-          ALE::Field::Mesh::point_type p = *p_iter;
-          const ALE::Field::Mesh::int_section_type::value_type *ibndfs_in = IBNDFSsec->restrictPoint(p);
+        const ALE::Mesh::int_section_type::chart_type     IBNDFSchart = IBNDFSsec->getChart();
+        ALE::Mesh::int_section_type::chart_type::iterator begin       = IBNDFSchart.begin();
+        ALE::Mesh::int_section_type::chart_type::iterator end         = IBNDFSchart.end();
+        for(ALE::Mesh::int_section_type::chart_type::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          ALE::Mesh::point_type p = *p_iter;
+          const ALE::Mesh::int_section_type::value_type *ibndfs_in = IBNDFSsec->restrictPoint(p);
           // Here we assume the fiber dimension is 5
-          ALE::Field::Mesh::int_section_type::value_type ibndfs_out[5];
+          ALE::Mesh::int_section_type::value_type ibndfs_out[5];
           // Renumber entries 1,2 & 3 (4 & 5 are invariant under distribution), see IBNDFS's description
           // Here we assume that vertexNum's domain contains all boundary verticies found in IBNDFS, so we can restrict to the first extracted entry
-          vNum= vertexNum->restrictPoint((ALE::Field::Mesh::numbering_type::point_type)ibndfs_in[0]-1+numElements);
+          vNum= vertexNum->restrictPoint((ALE::Mesh::numbering_type::point_type)ibndfs_in[0]-1+numElements);
           ibndfs_out[0] = vNum[0]+1;
           // Map serial bdFace numbers to local bdFace numbers
           ibndfs_out[1] = bfMap[ibndfs_in[1]];

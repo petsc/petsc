@@ -7,7 +7,6 @@
 
 
 namespace ALE {
-  namespace Field {
     // We have a dichotomy between \emph{types}, describing the structure of objects,
     //   and \emph{concepts}, describing the role these objects play in the algorithm.
     //   Below we identify concepts with potential implementing types.
@@ -507,7 +506,6 @@ namespace ALE {
       return this->_orders[bundle.ptr()][name];
     };
   };
-  }
 }
 
 #endif

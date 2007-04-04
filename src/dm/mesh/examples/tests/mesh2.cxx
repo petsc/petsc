@@ -38,18 +38,18 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 #undef __FUNCT__
 #define __FUNCT__ "CreatePartition"
 // Creates a field whose value is the processor rank on each element
-PetscErrorCode CreatePartition(const Obj<ALE::Field::Mesh>& m/*Mesh mesh*/, const Obj<ALE::Field::Mesh::int_section_type>& s/*SectionInt *partition*/)
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& m/*Mesh mesh*/, const Obj<ALE::Mesh::int_section_type>& s/*SectionInt *partition*/)
 {
-  //Obj<ALE::Field::Mesh::int_section_type> s;
+  //Obj<ALE::Mesh::int_section_type> s;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   //ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
   //ierr = SectionIntGetSection(*partition, s);CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::label_sequence>&         cells = m->heightStratum(0);
-  const ALE::Field::Mesh::int_section_type::value_type rank  = s->commRank();
+  const Obj<ALE::Mesh::label_sequence>&         cells = m->heightStratum(0);
+  const ALE::Mesh::int_section_type::value_type rank  = s->commRank();
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     s->updatePoint(*c_iter, &rank);
   }
   PetscFunctionReturn(0);
@@ -57,7 +57,7 @@ PetscErrorCode CreatePartition(const Obj<ALE::Field::Mesh>& m/*Mesh mesh*/, cons
 
 #undef __FUNCT__
 #define __FUNCT__ "ViewMesh"
-PetscErrorCode ViewMesh(const Obj<ALE::Field::Mesh>& m/*Mesh mesh*/, const char filename[])
+PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& m/*Mesh mesh*/, const char filename[])
 {
   MPI_Comm       comm = m->comm();
   SectionInt     partition;
@@ -103,19 +103,20 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
 
-    Obj<ALE::Field::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+    Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
     mB->view("Boundary");
-    Obj<ALE::Field::Mesh> m = ALE::Generator::generateMesh(mB, options->interpolate);
+    Obj<ALE::Mesh> m = ALE::Generator::generateMesh(mB, options->interpolate);
     m->view("Mesh");
     if (options->refinementLimit > 0.0) {
-      Obj<ALE::Field::Mesh> refMesh = ALE::Generator::refineMesh(m, options->refinementLimit, options->interpolate);
+      Obj<ALE::Mesh> refMesh = ALE::Generator::refineMesh(m, options->refinementLimit, options->interpolate);
       refMesh->view("Refined Mesh");
       m = refMesh;
-    }
-    if (size > 1) {
-      Obj<ALE::Field::Mesh> newMesh = ALE::Distribution<ALE::Field::Mesh>::distributeMesh(m);
-      newMesh->view("Parallel Mesh");
-      m = newMesh;
+    } else {
+      if (size > 1) {
+        Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(m);
+        newMesh->view("Parallel Mesh");
+        m = newMesh;
+      }
     }
     ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
     if (view) {ierr = ViewMesh(m, "mesh.vtk");CHKERRQ(ierr);}
@@ -156,7 +157,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
 #if 0
-    Obj<ALE::Field::Mesh> m;
+    Obj<ALE::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     m->view("Mesh");
 #endif

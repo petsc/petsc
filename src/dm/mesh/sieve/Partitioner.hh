@@ -422,14 +422,13 @@ namespace ALE {
           int    options[9]; // Options
           // Outputs
           int    edgeCut;    // The number of edges cut by the partition
-          const typename bundle_type::patch_type patch = 0;
-          const Obj<ALE::Mesh::numbering_type>& fNumbering = ALE::New::NumberingFactory<bundle_type>::singleton(topology->debug())->getNumbering(topology, patch, topology->depth()-1);
+          const Obj<ALE::Mesh::numbering_type>& fNumbering = bundle->getFactory()->getNumbering(bundle, bundle->depth()-1);
 
           if (topology->commRank() == 0) {
-            nvtxs      = topology->heightStratum(patch, 1)->size();
+            nvtxs      = bundle->heightStratum(1)->size();
             vwgts      = NULL;
             hewgts     = NULL;
-            nparts     = topology->commSize();
+            nparts     = bundle->commSize();
             ubfactor   = 5;
             options[0] = 1;  // Use all defaults
             options[1] = 10; // Number of bisections tested
@@ -442,16 +441,16 @@ namespace ALE {
             options[8] = 24; // Debugging level
             assignment = new part_type[nvtxs];
 
-            if (topology->commSize() == 1) {
+            if (bundle->commSize() == 1) {
               PetscMemzero(assignment, nvtxs * sizeof(part_type));
             } else {
-              ALE::New::Partitioner<bundle_type>::buildFaceCSR(topology, dim, patch, fNumbering, &nhedges, &eptr, &eind);
+              ALE::New::Partitioner<bundle_type>::buildFaceCSR(bundle, dim, fNumbering, &nhedges, &eptr, &eind);
               HMETIS_PartKway(nvtxs, nhedges, vwgts, eptr, eind, hewgts, nparts, ubfactor, options, assignment, &edgeCut);
 
               delete [] eptr;
               delete [] eind;
             }
-            if (topology->debug()) {for (int i = 0; i<nvtxs; i++) printf("[%d] %d\n", PetscGlobalRank, assignment[i]);}
+            if (bundle->debug()) {for (int i = 0; i<nvtxs; i++) printf("[%d] %d\n", PetscGlobalRank, assignment[i]);}
           } else {
             assignment = NULL;
           }
