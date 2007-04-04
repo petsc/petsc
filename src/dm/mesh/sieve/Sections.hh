@@ -456,6 +456,66 @@ namespace ALE {
         PetscSynchronizedFlush(comm);
       };
     };
+
+    template<typename Sieve_, typename Section_>
+    class ArrowSection : public ALE::ParallelObject {
+    public:
+      typedef Sieve_                            sieve_type;
+      typedef Section_                          section_type;
+      typedef typename sieve_type::target_type  point_type;
+      typedef typename section_type::point_type arrow_type;
+      typedef typename section_type::value_type value_type;
+    protected:
+      Obj<sieve_type>   _sieve;
+      Obj<section_type> _section;
+      int               _coneSize;
+      value_type       *_cone;
+      void ensureCone(const int size) {
+        if (size > this->_coneSize) {
+          if (this->_cone) delete [] this->_cone;
+          this->_coneSize = size;
+          this->_cone     = new value_type[this->_coneSize];
+        }
+      };
+    public:
+      ArrowSection(const Obj<sieve_type>& sieve, const Obj<section_type>& section) : ParallelObject(MPI_COMM_SELF, sieve->debug()), _sieve(sieve), _section(section), _coneSize(-1), _cone(NULL) {};
+      virtual ~ArrowSection() {if (this->_cone) delete [] this->_cone;};
+    public:
+      bool hasPoint(const point_type& point) {return this->_sieve->baseContains(point);};
+      const value_type *restrictPoint(const point_type& p) {
+        const Obj<typename sieve_type::traits::coneSequence>& cone = this->_sieve->cone(p);
+        int c = -1;
+
+        this->ensureCone(cone->size());
+        for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+          this->_cone[++c] = this->_section->restrictPoint(arrow_type(*c_iter, p))[0];
+        }
+        return this->_cone;
+      };
+    public:
+      void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
+        ostringstream txt;
+        int rank;
+
+        if (comm == MPI_COMM_NULL) {
+          comm = this->comm();
+          rank = this->commRank();
+        } else {
+          MPI_Comm_rank(comm, &rank);
+        }
+        if (name == "") {
+          if(rank == 0) {
+            txt << "viewing a ConeSection" << std::endl;
+          }
+        } else {
+          if(rank == 0) {
+            txt << "viewing ConeSection '" << name << "'" << std::endl;
+          }
+        }
+        PetscSynchronizedPrintf(comm, txt.str().c_str());
+        PetscSynchronizedFlush(comm);
+      };
+    };
   }
 }
 #endif

@@ -660,14 +660,12 @@ namespace Field {
       } else {
         MPI_Comm_rank(comm, &rank);
       }
-      if (name == "") {
-        if(rank == 0) {
-          txt << "viewing a Section" << std::endl;
+      if(rank == 0) {
+        txt << "viewing Section " << this->getName() << std::endl;
+        if (name != "") {
+          txt << ": " << name << "'";
         }
-      } else {
-        if(rank == 0) {
-          txt << "viewing Section '" << name << "'" << std::endl;
-        }
+        txt << std::endl;
       }
       const typename atlas_type::chart_type& chart = this->_atlas->getChart();
       const value_type                      *array = this->_array;
