@@ -1,5 +1,5 @@
 
-DIRS     = oberman fun3d blopex semiLagrange
+DIRS     = fun3d blopex semiLagrange
 LOCDIR   = src/contrib/
 
 include ${PETSC_DIR}/bmake/common/base

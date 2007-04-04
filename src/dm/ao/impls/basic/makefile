@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = aobasic.c aodatabasic.c aoreduced.c
+SOURCEC  = aobasic.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = aobasic.o aodatabasic.o aoreduced.o
+OBJSC    = aobasic.o
 OBJSF    =
 LIBBASE  = libpetscdm
 DIRS     = 

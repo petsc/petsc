@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao da mesh usg
+DIRS     = ao da mesh
 LOCDIR   = src/dm/
 MANSEC   = DA
 
