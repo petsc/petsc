@@ -330,7 +330,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemoryShowUsage"
-/*@
+/*@C
     PetscMemoryShowUsage - Shows the amount of memory currently being used 
         in a communicator.
    
