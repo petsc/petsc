@@ -144,9 +144,7 @@ class QuadratureGenerator(script.Script):
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealCreate',
                                                                  [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
                                                                   self.Cxx.getAddress(secVar)])))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealSetTopology',
-                                                                 [secVar,
-                                                                  self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'getTopology'))])))
+    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealSetBundle', [secVar, 'm'])))
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealGetSection', [secVar, 's'])))
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('PetscObjectSetName', [self.Cxx.castToType(secVar, self.Cxx.getType('PetscObject')),
                                                                                         self.Cxx.getString('default')])))

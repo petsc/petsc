@@ -205,13 +205,14 @@ namespace ALE {
         this->orderPoint(atlas, sieve, *p_iter, off, bcOff, sendOverlap);
       }
       for(typename Atlas_::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        typename Atlas_::value_type idx = atlas->restrictPoint(*p_iter)[0];
-        const int&                  dim = idx.prefix;
+        const typename Atlas_::value_type *idx = atlas->restrictPoint(*p_iter);
+        const int&                         dim = idx->prefix;
 
         if (dim < 0) {
+          typename Atlas_::value_type newIdx(dim, off - (idx->index + 2));
+
           if (this->_debug > 1) {std::cout << "Correcting boundary offset of point " << *p_iter << std::endl;}
-          idx.index = offset - (idx.index+2);
-          atlas->updatePoint(*p_iter, &idx);
+          atlas->updatePoint(*p_iter, &newIdx);
         }
       }
     };

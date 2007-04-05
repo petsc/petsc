@@ -554,6 +554,8 @@ namespace ALE {
         if (interpolate) {
           bdVertices[dim].clear();
           for(int b = 0; b < corners; b++) {
+            // This ordering produces the same vertex order as the uninterpolated mesh
+            //typename sieve_type::point_type vertex(cells[c*corners+(b+corners-1)%corners]+firstVertex);
             typename sieve_type::point_type vertex(cells[c*corners+b]+firstVertex);
 
             if (debug > 1) {std::cout << "Adding boundary vertex " << vertex << std::endl;}
@@ -567,10 +569,12 @@ namespace ALE {
             buildFaces(sieve, dim, curElement, bdVertices, faces, cell);
           }
           if ((dim == 2) && (!orientation.isNull())) {
+            if (debug > 1) {std::cout << "Orienting cell " << cell << std::endl;}
             const Obj<typename sieve_type::traits::coneSequence>&     cone = sieve->cone(cell);
             const typename sieve_type::traits::coneSequence::iterator end  = cone->end();
 
             for(typename sieve_type::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+              if (debug > 1) {std::cout << "  edge " << *p_iter << std::endl;}
               const Obj<typename sieve_type::traits::coneSequence>& vertices = sieve->cone(*p_iter);
               typename sieve_type::traits::coneSequence::iterator   vertex   = vertices->begin();
               MinimalArrow<typename sieve_type::point_type,typename sieve_type::point_type> arrow(*p_iter, cell);
@@ -578,14 +582,17 @@ namespace ALE {
 
               orientation->addPoint(arrow);
               for(indA = 0; indA < corners; indA++) {if (*vertex == cells[c*corners+indA] + numCells) break;}
+              if (debug > 1) {std::cout << "    vertexA " << *vertex << " indA " << indA <<std::endl;}
               ++vertex;
               for(indB = 0; indB < corners; indB++) {if (*vertex == cells[c*corners+indB] + numCells) break;}
+              if (debug > 1) {std::cout << "    vertexB " << *vertex << " indB " << indB <<std::endl;}
               if ((indA == corners) || (indB == corners) || (indA == indB)) {throw ALE::Exception("Invalid edge endpoints");}
-              if ((indA < indB) || (indB - indA == 2)) {
+              if ((indB - indA == 1) || (indA - indB == 2)) {
                 value =  1;
               } else {
                 value = -1;
               }
+              if (debug > 1) {std::cout << "  value " << value <<std::endl;}
               orientation->updatePoint(arrow, &value);
             }
           }

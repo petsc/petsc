@@ -879,6 +879,10 @@ namespace ALE {
       for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
         this->getIntSection(*name)->view(*name);
       }
+      sections = this->getArrowSections();
+      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+        this->getArrowSection(*name)->view(*name);
+      }
     };
     template<typename value_type>
     static std::string printMatrix(const std::string& name, const int rows, const int cols, const value_type matrix[], const int rank = -1)

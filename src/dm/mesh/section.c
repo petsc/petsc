@@ -208,6 +208,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDuplicate(SectionReal section, Secti
   t->copyBC(s);
   ierr = SectionRealCreate(s->comm(), newSection);CHKERRQ(ierr);
   ierr = SectionRealSetSection(*newSection, t);CHKERRQ(ierr);
+  ierr = SectionRealSetBundle(*newSection, section->b);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
