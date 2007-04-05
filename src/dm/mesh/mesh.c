@@ -292,7 +292,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Field::Mesh>& m
   const ALE::Obj<typename ALE::Field::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section->getAtlas());
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
-  PetscTruth     isShell, isBlock;
+  PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -302,11 +302,15 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Field::Mesh>& m
   ierr = MatSetFromOptions(*J);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATSHELL, &isShell);CHKERRQ(ierr);
   ierr = PetscStrcmp(mtype, MATBAIJ, &isBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATSEQBAIJ, &isSeqBlock);CHKERRQ(ierr);
+  ierr = PetscStrcmp(mtype, MATMPIBAIJ, &isMPIBlock);CHKERRQ(ierr);
   if (!isShell) {
-    if (isBlock) {
-      ierr = MatSetBlockSize(*J, section->getFiberDimension(*section->getChart().begin()));CHKERRQ(ierr);
+    int bs = 1;
+
+    if (isBlock || isSeqBlock || isMPIBlock) {
+      bs = section->getFiberDimension(*section->getChart().begin());
     }
-    ierr = preallocateOperator(mesh, section->getAtlas(), order, *J);CHKERRQ(ierr);
+    ierr = preallocateOperator(mesh, bs, section->getAtlas(), order, *J);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 } 
@@ -1111,13 +1115,13 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 #undef __FUNCT__
 #define __FUNCT__ "preallocateOperator"
 template<typename Atlas>
-PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, Mat A)
 {
   MPI_Comm                                      comm      = mesh->comm();
   const ALE::Obj<ALE::Field::Mesh>              adjBundle = new ALE::Field::Mesh(comm, mesh->debug());
   const ALE::Obj<ALE::Field::Mesh::sieve_type>  adjGraph  = new ALE::Field::Mesh::sieve_type(comm, mesh->debug());
   const ALE::Obj<ALE::Field::Mesh::sieve_type>& sieve     = mesh->getSieve();
-  PetscInt       numLocalRows, firstRow, bs;
+  PetscInt       numLocalRows, firstRow;
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
 
@@ -1126,7 +1130,6 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
   numLocalRows = globalOrder->getLocalSize();
   firstRow     = globalOrder->getGlobalOffsets()[mesh->commRank()];
   ierr = PetscMalloc2(numLocalRows, PetscInt, &dnz, numLocalRows, PetscInt, &onz);CHKERRQ(ierr);
-  ierr = MatGetBlockSize(A, &bs);CHKERRQ(ierr);
   /* Create local adjacency graph */
   /*   In general, we need to get FIAT info that attaches dual basis vectors to sieve points */
   const typename Atlas::chart_type& chart = atlas->getChart();
@@ -1198,9 +1201,9 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Field::Mesh>& mesh, const
 
 #undef __FUNCT__
 #define __FUNCT__ "preallocateMatrix"
-PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Field::Mesh>& mesh, const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, Mat A)
+PetscErrorCode preallocateMatrix(const ALE::Obj<ALE::Field::Mesh>& mesh, const int bs, const ALE::Obj<ALE::Field::Mesh::real_section_type::atlas_type>& atlas, const ALE::Obj<ALE::Field::Mesh::order_type>& globalOrder, Mat A)
 {
-  return preallocateOperator(mesh, atlas, globalOrder, A);
+  return preallocateOperator(mesh, bs, atlas, globalOrder, A);
 }
 
 /******************************** C Wrappers **********************************/

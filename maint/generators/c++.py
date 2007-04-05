@@ -93,7 +93,7 @@ def main(args):
           cnt = cnt + 1
         outfile.write("){return 0;};\n")
     for j in sskeys:
-      if classes[i][j][0] == i:
+      if classes[i][j][0] == i and not j == 'Destroy':
         outfile.write("  int "+j+"(")
         cnt = 0
         for k in classes[i][j]:

@@ -56,7 +56,7 @@ int main(int argc,char **args)
 
   ierr = MatConvert(C,MATSEQSBAIJ,MAT_INITIAL_MATRIX,&sC);CHKERRQ(ierr);
 
-  ierr = MatIsSymmetric(C,0.0,&flg);CHKERRQ(ierr);
+  ierr = MatIs Symmetric(C,0.0,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(1,"C is non-symmetric");
 
   /* Create vectors for error checking */

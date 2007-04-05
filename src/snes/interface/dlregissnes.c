@@ -30,7 +30,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMFCtx");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMF");CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */

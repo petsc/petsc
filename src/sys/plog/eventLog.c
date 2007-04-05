@@ -502,9 +502,9 @@ PetscErrorCode EventPerfLogGetVisible(EventPerfLog eventLog, PetscEvent event, P
 #define __FUNCT__ "PetscLogEventBeginDefault"
 PetscErrorCode PetscLogEventBeginDefault(PetscEvent event, int t, PetscObject o1, PetscObject o2, PetscObject o3, PetscObject o4) 
 {
-  StageLog     stageLog;
-  EventPerfLog eventLog;
-  int          stage;
+  StageLog       stageLog;
+  EventPerfLog   eventLog;
+  int            stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

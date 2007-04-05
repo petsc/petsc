@@ -139,7 +139,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetCheckh(Mat,PetscErrorCode 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDSSetUmin(Mat,PetscReal);
 
 
-typedef struct _p_MatSNESMFCtx* MatSNESMFCtx;
+typedef struct _p_MatSNESMF* MatSNESMF;
 
 /*E
     MatSNESMFType - algorithm used to compute the h used in computing matrix-vector products via differencing of the function
@@ -153,7 +153,7 @@ E*/
 #define MATSNESMF_WP  "wp"
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat,MatSNESMFType);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatSNESMFCtx));
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatSNESMF));
 
 /*MC
    MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.

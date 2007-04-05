@@ -7,7 +7,7 @@
 #define SNES PetscFortranAddr
 #define SNESType character*(80)
 #define SNESConvergedReason integer
-#define MatSNESMFCtx PetscFortranAddr
+#define MatSNESMF PetscFortranAddr
 #define MatSNESMFType PetscFortranAddr
 !
 !  SNESType
@@ -16,7 +16,7 @@
 #define SNESTR 'tr'
 #define SNESTEST 'test'
 !
-! MatSNESMFCtx
+! MatSNESMF
 ! 
 #define MATSNESMF_DEFAULT 'ds'
 #define MATSNESMF_WP 'wp'

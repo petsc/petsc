@@ -61,7 +61,7 @@ typedef struct {
 .   h - the scale computed
 
 */
-static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
+static PetscErrorCode MatSNESMFCompute_WP(MatSNESMF ctx,Vec U,Vec a,PetscScalar *h,PetscTruth *zeroa)
 {
   MatSNESMFWP    *hctx = (MatSNESMFWP*)ctx->hctx;
   PetscReal      normU,norma = 1.0;
@@ -107,7 +107,7 @@ static PetscErrorCode MatSNESMFCompute_WP(MatSNESMFCtx ctx,Vec U,Vec a,PetscScal
 -   viewer - the PETSc viewer
 
 */   
-static PetscErrorCode MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
+static PetscErrorCode MatSNESMFView_WP(MatSNESMF ctx,PetscViewer viewer)
 {
   MatSNESMFWP    *hctx = (MatSNESMFWP *)ctx->hctx;
   PetscErrorCode ierr;
@@ -136,7 +136,7 @@ static PetscErrorCode MatSNESMFView_WP(MatSNESMFCtx ctx,PetscViewer viewer)
 .  ctx - the matrix free context
 
 */
-static PetscErrorCode MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
+static PetscErrorCode MatSNESMFSetFromOptions_WP(MatSNESMF ctx)
 {
   PetscErrorCode ierr;
   MatSNESMFWP    *hctx = (MatSNESMFWP*)ctx->hctx;
@@ -161,7 +161,7 @@ static PetscErrorCode MatSNESMFSetFromOptions_WP(MatSNESMFCtx ctx)
    Notes: does not free the ctx, that is handled by the calling routine
 
 */
-static PetscErrorCode MatSNESMFDestroy_WP(MatSNESMFCtx ctx)
+static PetscErrorCode MatSNESMFDestroy_WP(MatSNESMF ctx)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -174,7 +174,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatSNESMFWPSetComputeNormU_P"
 PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormU_P(Mat mat,PetscTruth flag)
 {
-  MatSNESMFCtx ctx = (MatSNESMFCtx)mat->data;
+  MatSNESMF    ctx = (MatSNESMF)mat->data;
   MatSNESMFWP  *hctx;
 
   PetscFunctionBegin;
@@ -232,7 +232,7 @@ EXTERN_C_BEGIN
 .  ctx - the matrix free context created by MatSNESMFCreate()
 
 */
-PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMFCtx ctx)
+PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMF ctx)
 {
   PetscErrorCode ierr;
   MatSNESMFWP    *hctx;

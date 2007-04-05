@@ -3,8 +3,8 @@
 #include "src/snes/mf/snesmfj.h"   /*I  "petscsnes.h"   I*/
 
 EXTERN_C_BEGIN
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_DS(MatSNESMFCtx);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMFCtx);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_DS(MatSNESMF);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCreate_WP(MatSNESMF);
 EXTERN_C_END
 
 #undef __FUNCT__  
