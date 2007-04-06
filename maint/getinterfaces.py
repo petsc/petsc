@@ -155,6 +155,9 @@ def getfunctions(filename):
   regerror    = re.compile('PetscErrorCode')
 
   rejects     = ['PetscErrorCode','DALocalFunction','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','size_t','PetscStack']
+  #
+  # search through list BACKWARDS to get the longest match
+  #
   classlist   = classes.keys()
   classlist.sort()
   classlist.reverse()
@@ -184,14 +187,10 @@ def getfunctions(filename):
           args = struct[struct.find("(")+1:struct.find(")")]
           args = args.split(",")
           name = struct[:struct.find("(")]
-          if arg in classes and struct.startswith(arg):
-            name = name[len(arg):]
-            classes[arg][name] = args
-          else:
-            for i in classlist:
-              if name.startswith(i):
-                name = name[len(i):]            
-                classes[i][name] = args          
+          for i in classlist:
+            if name.startswith(i):
+              classes[i][name] = args
+              break
 
       
     line = f.readline()
