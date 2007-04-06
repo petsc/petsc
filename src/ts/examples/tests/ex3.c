@@ -30,15 +30,14 @@ typedef struct{
   Vec            solution;        /* global exact ts solution vector */
   PetscScalar    *z;              /* array of grid points */
   PetscTruth     debug;           /* flag (1 indicates activation of debugging printouts) */
-  PetscReal      norm_2,norm_max; /* error norms */
 } AppCtx;
 
 extern double exact(double,double);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern void  Petsc_KSPSolve(AppCtx*);
 extern double bspl(double[],double,int,int,int[][2],int);
-extern void femBg(double[][3],double[], int,double[],double);
-extern void femA(AppCtx*,int,double[]);
+extern void femBg(double[][3],PetscScalar*,PetscInt,PetscScalar*,PetscReal);
+extern void femA(AppCtx*,PetscInt,PetscScalar*);
 extern void rhs(AppCtx *,double[], int, double[],double);
 extern PetscErrorCode RHSfunction(TS,PetscReal,Vec,Vec,void*);
 
@@ -243,8 +242,6 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
   ierr = PetscPrintf(PETSC_COMM_SELF,"Timestep %D: time = %G, 2-norm error = %6.4f, max norm error = %6.4f\n",
               step,time,norm_2,norm_max);CHKERRQ(ierr);
-  appctx->norm_2   += norm_2;
-  appctx->norm_max += norm_max;
 
   /*
      Print debugging information if desired
@@ -331,7 +328,7 @@ double bspl(double x[],double xx,int il,int iq,int nll[][2],int id)
 /*---------------------------------------------------------
   Function called by rhs function to get B and g 
 ---------------------------------------------------------*/
-void femBg(double btri[][3],double f[],int nz,double z[], double t)
+void femBg(double btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, PetscReal t)
 {  
   int i,j,jj,il,ip,ipp,ipq,iq,iquad,iqq;
   int nli[num_z][2],indx[num_z];
@@ -414,7 +411,7 @@ void femBg(double btri[][3],double f[],int nz,double z[], double t)
   return;
 }
 
-void femA(AppCtx *obj,int nz,double z[])
+void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
 {  
   int             i,j,il,ip,ipp,ipq,iq,iquad,iqq;
   int             nli[num_z][2],indx[num_z];
@@ -557,9 +554,9 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
 {
   PetscErrorCode ierr;
   AppCtx         *obj = (AppCtx*)ctx;
-  PetscScalar    *soln_ptr;
-  int            i,nz=obj->nz;
-  double	 soln[num_z-2], time;
+  PetscScalar    *soln_ptr,soln[num_z-2];
+  PetscInt       i,nz=obj->nz;
+  PetscReal      time;
 
   /* get the previous solution to compute updated system */
   ierr = VecGetArray(globalin,&soln_ptr);
