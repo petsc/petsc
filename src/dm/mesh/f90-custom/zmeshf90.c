@@ -46,8 +46,8 @@ void PETSC_STDCALL meshgetelementsf90_(Mesh *mesh,F90Array2d *ptr,int *__ierr)
 {
   PetscInt   *v;
   PetscInt   n, c;
-  *__ierr = MeshGetElements(*mesh,PETSC_TRUE,&n,&c,&v); if (*__ierr) return;
-  *__ierr = F90Array2dCreate(v,PETSC_INT,1,n,1,c,ptr);
+  *__ierr = MeshGetElements(*mesh,PETSC_FALSE,&n,&c,&v); if (*__ierr) return;
+  *__ierr = F90Array2dCreate(v,PETSC_INT,1,c,1,n,ptr);
 }
 void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr)
 {

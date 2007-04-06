@@ -571,6 +571,12 @@ namespace ALE {
       this->_atlasNew->addPoint(point);
       this->_atlasNew->updatePoint(point, &idx);
     };
+    template<typename Sequence>
+    void addPoints(const Obj<Sequence>& points, const int dim) {
+      for(typename Sequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        this->addPoint(*p_iter, dim);
+      }
+    };
     void orderPoints(const Obj<atlas_type>& atlas){
       const typename atlas_type::chart_type& chart = atlas->getChart();
       int offset = 0;
