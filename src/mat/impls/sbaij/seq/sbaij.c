@@ -48,42 +48,58 @@ PetscErrorCode MatMarkDiagonal_SeqSBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetRowIJ_SeqSBAIJ"
-static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  PetscInt     n = a->mbs,i;
+  PetscInt     i,j,n = a->mbs,nz = a->i[n],bs = A->rmap.bs;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   *nn = n;
   if (!ia) PetscFunctionReturn(0);
-
-  if (oshift == 1) {
-    /* temporarily add 1 to i and j indices */
-    PetscInt nz = a->i[n]; 
-    for (i=0; i<nz; i++) a->j[i]++;
-    for (i=0; i<n+1; i++) a->i[i]++;
-    *ia = a->i; *ja = a->j;
-  } else {
+  if (!blockcompressed) {
+    /* malloc & create the natural set of indices */
+    ierr = PetscMalloc2((n+1)*bs,PetscInt,*ia,nz*bs,PetscInt,*ja);CHKERRQ(ierr);
+    for (i=0; i<n+1; i++) {
+      for (j=0; j<bs; j++) {
+        *ia[i*bs+j] = a->i[i]*bs+j+oshift;
+      }
+    }
+    for (i=0; i<nz; i++) {
+      for (j=0; j<bs; j++) {
+        *ja[i*bs+j] = a->j[i]*bs+j+oshift;
+      }
+    }
+  } else { /* blockcompressed */
+    if (oshift == 1) {
+      /* temporarily add 1 to i and j indices */
+      for (i=0; i<nz; i++) a->j[i]++;
+      for (i=0; i<n+1; i++) a->i[i]++;
+    }
     *ia = a->i; *ja = a->j;
   }
+
   PetscFunctionReturn(0); 
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatRestoreRowIJ_SeqSBAIJ" 
-static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
+static PetscErrorCode MatRestoreRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *nn,PetscInt *ia[],PetscInt *ja[],PetscTruth *done)
 {
   Mat_SeqSBAIJ *a = (Mat_SeqSBAIJ*)A->data;
-  PetscInt     i,n = a->mbs;
+  PetscInt     i,n = a->mbs,nz = a->i[n];
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!ia) PetscFunctionReturn(0);
 
-  if (oshift == 1) {
-    PetscInt nz = a->i[n]-1; 
+  if (!blockcompressed) {
+    ierr = PetscFree2(*ia,*ja);CHKERRQ(ierr);
+  } else if (oshift == 1) { /* blockcompressed */
     for (i=0; i<nz; i++) a->j[i]--;
     for (i=0; i<n+1; i++) a->i[i]--;
   }
+
   PetscFunctionReturn(0); 
 }
 

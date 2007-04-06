@@ -2,9 +2,6 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 
-EXTERN PetscErrorCode MatGetColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
-EXTERN PetscErrorCode MatRestoreColumnIJ_SeqAIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt*[],PetscInt*[],PetscTruth*);
-
 #undef __FUNCT__  
 #define __FUNCT__ "MatFDColoringCreate_SeqAIJ"
 PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDColoring c)
@@ -37,7 +34,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
       Calls the _SeqAIJ() version of these routines to make sure it does not 
      get the reduced (by inodes) version of I and J
   */
-  ierr = MatGetColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+  ierr = MatGetColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
 
   /*
      Temporary option to allow for debugging/testing
@@ -135,7 +132,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
     } /* ---------------------------------------------------------------------------------------*/
     ierr = ISRestoreIndices(isa[i],&is);CHKERRQ(ierr);  
   }
-  ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
+  ierr = MatRestoreColumnIJ_SeqAIJ(mat,0,PETSC_FALSE,PETSC_FALSE,&ncols,&ci,&cj,&done);CHKERRQ(ierr);
 
   ierr = PetscFree(rowhit);CHKERRQ(ierr);
   ierr = PetscFree(columnsforrow);CHKERRQ(ierr);

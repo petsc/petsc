@@ -14,7 +14,7 @@ OUTPUTDATAFILES =
 PETSCPORTABLE   = true
 
 DIRS     = 
-LOCDIR   = src/contrib/remote
+LOCDIR   = src/contrib/remote/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -210,11 +210,11 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "distributeMesh"
-    static Obj<ALE::Field::Mesh> distributeMesh(const Obj<ALE::Field::Mesh>& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
-      MPI_Comm                                 comm          = serialMesh->comm();
-      const int                                dim           = serialMesh->getDimension();
-      Obj<ALE::Field::Mesh>                    parallelMesh  = new ALE::Field::Mesh(comm, dim, serialMesh->debug());
-      const Obj<ALE::Field::Mesh::sieve_type>& parallelSieve = new ALE::Field::Mesh::sieve_type(comm, serialMesh->debug());
+    static Obj<ALE::Mesh> distributeMesh(const Obj<ALE::Mesh>& serialMesh, const int height = 0, const std::string& partitioner = "chaco") {
+      MPI_Comm                          comm          = serialMesh->comm();
+      const int                         dim           = serialMesh->getDimension();
+      Obj<ALE::Mesh>                    parallelMesh  = new ALE::Mesh(comm, dim, serialMesh->debug());
+      const Obj<ALE::Mesh::sieve_type>& parallelSieve = new ALE::Mesh::sieve_type(comm, serialMesh->debug());
 
       ALE_LOG_EVENT_BEGIN;
       parallelMesh->setSieve(parallelSieve);
@@ -255,6 +255,11 @@ namespace ALE {
       sections = serialMesh->getIntSections();
       for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
         parallelMesh->setIntSection(*name, distributeSection(serialMesh->getIntSection(*name), parallelMesh, sendOverlap, recvOverlap));
+      }
+      sections = serialMesh->getArrowSections();
+
+      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+        parallelMesh->setArrowSection(*name, distributeArrowSection(serialMesh->getArrowSection(*name), serialMesh, parallelMesh, sendOverlap, recvOverlap));
       }
       if (parallelMesh->debug()) {parallelMesh->view("Parallel Mesh");}
       ALE_LOG_EVENT_END;
@@ -312,8 +317,8 @@ namespace ALE {
       if (serialSection->debug()) {
         serialSection->view("Serial Section");
       }
-      typedef ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, typename Section::value_type> > send_section_type;
-      typedef ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, typename Section::value_type> > recv_section_type;
+      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > send_section_type;
+      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > recv_section_type;
       typedef ALE::New::SizeSection<Section> SectionSizer;
       Obj<Section>                 parallelSection = new Section(serialSection->comm(), serialSection->debug());
       const Obj<send_section_type> sendSection     = new send_section_type(serialSection->comm(), serialSection->debug());
@@ -325,6 +330,86 @@ namespace ALE {
       updateSectionRemote(recvOverlap, recvSection, parallelBundle, parallelSection);
       if (parallelSection->debug()) {
         parallelSection->view("Parallel Section");
+      }
+      return parallelSection;
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "updateArrowSectionLocal"
+    template<typename Section>
+    static void updateArrowSectionLocal(const Obj<Section>& oldSection, const Obj<bundle_type>& newBundle, const Obj<Section>& newSection) {
+      const Obj<typename bundle_type::sieve_type>&    newSieve = newBundle->getSieve();
+      const typename Section::atlas_type::chart_type& oldChart = oldSection->getChart();
+
+      for(typename Section::atlas_type::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {
+        // Dmitry should provide a Sieve::contains(MinimalArrow) method
+        if (newSieve->capContains(c_iter->source) && newSieve->baseContains(c_iter->target)) {
+          newSection->setFiberDimension(*c_iter, oldSection->getFiberDimension(*c_iter));
+        }
+      }
+      //newBundle->allocate(newSection);
+      const typename Section::atlas_type::chart_type& newChart = newSection->getChart();
+
+      for(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        newSection->updatePoint(*c_iter, oldSection->restrictPoint(*c_iter));
+      }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "updateArrowSectionRemote"
+    template<typename RecvSection, typename Section>
+    static void updateArrowSectionRemote(const Obj<recv_overlap_type>& recvOverlap, const Obj<RecvSection>& recvSection, const Obj<bundle_type>& newBundle, const Obj<Section>& newSection) {
+      Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
+
+      for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+        const Obj<typename bundle_type::sieve_type::traits::coneSequence>&     cone = newBundle->getSieve()->cone(*r_iter);
+        const typename bundle_type::sieve_type::traits::coneSequence::iterator end  = cone->end();
+
+        for(typename bundle_type::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
+          newSection->setFiberDimension(typename Section::point_type(*c_iter, *r_iter), 1);
+        }
+      }
+      //newBundle->reallocate(newSection);
+      for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
+        const Obj<typename recv_overlap_type::traits::coneSequence>&     recvPatches = recvOverlap->cone(*r_iter);
+        const typename recv_overlap_type::traits::coneSequence::iterator recvEnd     = recvPatches->end();
+
+        for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvEnd; ++p_iter) {
+          const Obj<typename RecvSection::section_type>& section = recvSection->getSection(*p_iter);
+
+          if (section->getFiberDimension(*r_iter)) {
+            const Obj<typename bundle_type::sieve_type::traits::coneSequence>&     cone    = newBundle->getSieve()->cone(*r_iter);
+            const typename bundle_type::sieve_type::traits::coneSequence::iterator end     = cone->end();
+            const typename RecvSection::value_type                                *values  = section->restrictPoint(*r_iter);
+            int                                                                    c       = -1;
+
+            for(typename bundle_type::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
+              newSection->updatePoint(typename Section::point_type(*c_iter, *r_iter), &values[++c]);
+            }
+          }
+        }
+      }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "distributeArrowSection"
+    template<typename Section>
+    static Obj<Section> distributeArrowSection(const Obj<Section>& serialSection, const Obj<bundle_type>& serialBundle, const Obj<bundle_type>& parallelBundle, const Obj<send_overlap_type>& sendOverlap, const Obj<recv_overlap_type>& recvOverlap) {
+      if (serialSection->debug()) {
+        serialSection->view("Serial ArrowSection");
+      }
+      typedef ALE::Field<send_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > send_section_type;
+      typedef ALE::Field<recv_overlap_type, int, ALE::Section<point_type, typename Section::value_type> > recv_section_type;
+      typedef ALE::New::ConeSizeSection<bundle_type, sieve_type> SectionSizer;
+      typedef ALE::New::ArrowSection<sieve_type, Section>        ArrowFiller;
+      Obj<Section>                 parallelSection = new Section(serialSection->comm(), serialSection->debug());
+      const Obj<send_section_type> sendSection     = new send_section_type(serialSection->comm(), serialSection->debug());
+      const Obj<recv_section_type> recvSection     = new recv_section_type(serialSection->comm(), sendSection->getTag(), serialSection->debug());
+      const Obj<SectionSizer>      sizer           = new SectionSizer(serialBundle, serialBundle->getSieve());
+      const Obj<ArrowFiller>       filler          = new ArrowFiller(serialBundle->getSieve(), serialSection);
+
+      updateArrowSectionLocal(serialSection, parallelBundle, parallelSection);
+      sectionCompletion::completeSection(sendOverlap, recvOverlap, sizer, filler, sendSection, recvSection);
+      updateArrowSectionRemote(recvOverlap, recvSection, parallelBundle, parallelSection);
+      if (parallelSection->debug()) {
+        parallelSection->view("Parallel ArrowSection");
       }
       return parallelSection;
     };
@@ -364,10 +449,10 @@ namespace ALE {
     };
     #undef __FUNCT__
     #define __FUNCT__ "unifyMesh"
-    static Obj<ALE::Field::Mesh> unifyMesh(const Obj<ALE::Field::Mesh>& parallelMesh) {
-      const int                                dim         = parallelMesh->getDimension();
-      Obj<ALE::Field::Mesh>                    serialMesh  = new ALE::Field::Mesh(parallelMesh->comm(), dim, parallelMesh->debug());
-      const Obj<ALE::Field::Mesh::sieve_type>& serialSieve = new ALE::Field::Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
+    static Obj<ALE::Mesh> unifyMesh(const Obj<ALE::Mesh>& parallelMesh) {
+      const int                         dim         = parallelMesh->getDimension();
+      Obj<ALE::Mesh>                    serialMesh  = new ALE::Mesh(parallelMesh->comm(), dim, parallelMesh->debug());
+      const Obj<ALE::Mesh::sieve_type>& serialSieve = new ALE::Mesh::sieve_type(parallelMesh->comm(), parallelMesh->debug());
 
       ALE_LOG_EVENT_BEGIN;
       serialMesh->setSieve(serialSieve);
@@ -483,8 +568,8 @@ namespace ALE {
       typedef typename bundle_type::send_overlap_type             send_overlap_type;
       typedef typename bundle_type::recv_overlap_type             recv_overlap_type;
       typedef typename Section::value_type                        value_type;
-      typedef typename ALE::Field::Field<send_overlap_type, int, ALE::Field::Section<point_type, value_type> > send_section_type;
-      typedef typename ALE::Field::Field<recv_overlap_type, int, ALE::Field::Section<point_type, value_type> > recv_section_type;
+      typedef typename ALE::Field<send_overlap_type, int, ALE::Section<point_type, value_type> > send_section_type;
+      typedef typename ALE::Field<recv_overlap_type, int, ALE::Section<point_type, value_type> > recv_section_type;
       typedef ALE::New::SizeSection<Section>                                SectionSizer;
       const int debug = section->debug();
 

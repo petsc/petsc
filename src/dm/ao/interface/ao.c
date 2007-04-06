@@ -7,7 +7,6 @@
 
 /* Logging support */
 PetscCookie PETSCDM_DLLEXPORT AO_COOKIE = 0;
-PetscCookie PETSCDM_DLLEXPORT AODATA_COOKIE = 0;
 PetscEvent  AO_PetscToApplication = 0, AO_ApplicationToPetsc = 0;
 
 #undef __FUNCT__  

@@ -5,13 +5,13 @@
 
 namespace ALE {
   namespace PCICE {
-    void fuseBoundary(const ALE::Obj<ALE::Field::Mesh>& mesh);
+    void fuseBoundary(const ALE::Obj<ALE::Mesh>& mesh);
 
     class Builder {
     public:
-      typedef ALE::Field::Mesh                                    Mesh;
-      typedef ALE::Sieve<int, int, int>                           sieve_type;
-      typedef ALE::Field::Section<sieve_type::point_type, double> section_type;
+      typedef ALE::Mesh               Mesh;
+      typedef Mesh::sieve_type        sieve_type;
+      typedef Mesh::real_section_type section_type;
     public:
       Builder() {};
       virtual ~Builder() {};
@@ -35,7 +35,7 @@ namespace ALE {
 
     class Viewer {
     public:
-      typedef ALE::Field::Mesh Mesh;
+      typedef ALE::Mesh Mesh;
     public:
       Viewer() {};
       virtual ~Viewer() {};

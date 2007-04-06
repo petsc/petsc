@@ -451,10 +451,10 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,Pet
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,MatType,Mat*);
 PetscPolymorphicFunction(MatLoad,(PetscViewer v,MatType t),(v,t,&a),Mat,a)
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat,PetscInt,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat,PetscInt,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreRowIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetColumnIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt*,PetscInt *[],PetscInt *[],PetscTruth *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreColumnIJ(Mat,PetscInt,PetscTruth,PetscTruth,PetscInt *,PetscInt *[],PetscInt *[],PetscTruth *);
 
 /*S
      MatInfo - Context of matrix information, used with MatGetInfo()

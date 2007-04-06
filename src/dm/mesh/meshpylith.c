@@ -372,7 +372,7 @@ namespace ALE {
       // Make boundary topology
       Obj<sieve_type> boundarySieve = new sieve_type(tractionField->comm(), tractionField->debug());
 
-      ALE::New::SieveBuilder<Mesh>::buildTopology(boundarySieve, 2, numTractions, tractionVertices, 0, false, vertsPerFace, numCells);
+      ALE::SieveBuilder<Mesh>::buildTopology(boundarySieve, 2, numTractions, tractionVertices, 0, false, vertsPerFace, numCells);
       boundaryMesh->setSieve(boundarySieve);
       boundaryMesh->stratify();
       // Make traction field
@@ -402,7 +402,7 @@ namespace ALE {
         matField->updatePoint(*e_iter, &materials[*e_iter]);
       }
     };
-    Obj<ALE::Field::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
+    Obj<Builder::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
       Obj<Mesh>       mesh  = new Mesh(comm, dim, debug);
       Obj<sieve_type> sieve = new sieve_type(comm, debug);
       int    *cells, *materials;
@@ -411,10 +411,10 @@ namespace ALE {
 
       ALE::PyLith::Builder::readConnectivity(comm, basename+".connect", numCorners, useZeroBase, numCells, &cells, &materials);
       ALE::PyLith::Builder::readCoordinates(comm, basename+".coord", dim, numVertices, &coordinates);
-      ALE::New::SieveBuilder<Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+      ALE::SieveBuilder<Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
       mesh->setSieve(sieve);
       mesh->stratify();
-      ALE::New::SieveBuilder<Mesh>::buildCoordinatesNew(mesh, dim, coordinates);
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordinates);
       Obj<int_section_type> material = mesh->getIntSection("material");
       buildMaterials(mesh, material, materials);
 #if 0
@@ -445,7 +445,7 @@ namespace ALE {
       return split;
     };
 #endif
-    Obj<ALE::Field::Mesh> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
+    Obj<Builder::Mesh> Builder::createTraction(const Obj<Mesh>& mesh, const std::string& basename, const bool useZeroBase = false) {
       Obj<Mesh> tractionMesh = NULL;
       MPI_Comm comm       = mesh->comm();
       int      debug      = mesh->debug();

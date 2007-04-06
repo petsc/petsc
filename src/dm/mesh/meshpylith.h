@@ -10,7 +10,7 @@ namespace ALE {
 
     class Builder {
     public:
-      typedef ALE::Field::Mesh        Mesh;
+      typedef ALE::Mesh               Mesh;
       typedef Mesh::sieve_type        sieve_type;
       typedef Mesh::real_section_type real_section_type;
       typedef Mesh::int_section_type  int_section_type;
@@ -39,7 +39,7 @@ namespace ALE {
 
     class Viewer {
     public:
-      typedef ALE::Field::Mesh        Mesh;
+      typedef ALE::Mesh Mesh;
     public:
       Viewer() {};
       virtual ~Viewer() {};

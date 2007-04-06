@@ -15,35 +15,31 @@ EXTERN_C_END
 PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
 {
   PetscErrorCode ierr;
-  PetscInt       i,j;
-  PetscInt       bs,n_d,*ia_d,*ja_d,n_o,*ia_o,*ja_o;
+  PetscInt       i;
+  PetscInt       n_d,*ia_d,*ja_d,n_o,*ia_o,*ja_o;
   PetscTruth     done_d=PETSC_FALSE,done_o=PETSC_FALSE;
-  PetscInt       nz_d,nz_o,*nnz_d=PETSC_NULL,*nnz_o=PETSC_NULL;
+  PetscInt       *nnz_d=PETSC_NULL,*nnz_o=PETSC_NULL;
   
   PetscFunctionBegin;
   if (A_d) { /* determine number of nonzero entries in local diagonal part */
-    ierr = MatGetBlockSize(A_d,&bs);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,&n_d,&ia_d,&ja_d,&done_d);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,&ja_d,&done_d);CHKERRQ(ierr);
     if (done_d) {
-      ierr = PetscMalloc(n_d*bs*sizeof(PetscInt),&nnz_d);CHKERRQ(ierr);
+      ierr = PetscMalloc(n_d*sizeof(PetscInt),&nnz_d);CHKERRQ(ierr);
       for (i=0; i<n_d; i++) {
-	nz_d = (ia_d[i+1] - ia_d[i])*bs;
-	for (j=0; j<bs; j++) nnz_d[i+j*bs] = nz_d;
+        nnz_d[i] = ia_d[i+1] - ia_d[i];
       }
     }
-    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,&n_d,&ia_d,&ja_d,&done_d);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,&ja_d,&done_d);CHKERRQ(ierr);
   }
   if (A_o) { /* determine number of nonzero entries in local off-diagonal part */
-    ierr = MatGetBlockSize(A_o,&bs);CHKERRQ(ierr);
-    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,&n_o,&ia_o,&ja_o,&done_o);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,&ja_o,&done_o);CHKERRQ(ierr);
     if (done_o) {
-      ierr = PetscMalloc(n_o*bs*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
+      ierr = PetscMalloc(n_o*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
       for (i=0; i<n_o; i++) {
-	nz_o = (ia_o[i+1] - ia_o[i])*bs;
-	for (j=0; j<bs; j++) nnz_o[i+j*bs] = nz_o;
+        nnz_o[i] = ia_o[i+1] - ia_o[i];
       }
     }
-    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,&n_o,&ia_o,&ja_o,&done_o);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,&ja_o,&done_o);CHKERRQ(ierr);
   }
   if (done_d) {    /* set number of nonzeros in HYPRE IJ matrix */
     if (!done_o) { /* only diagonal part */

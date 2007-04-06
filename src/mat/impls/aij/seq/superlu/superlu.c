@@ -93,6 +93,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_SeqAIJ(Mat A,MatType type,M
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -114,7 +116,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
   Mat_SuperLU    *lu;
 
   PetscFunctionBegin;
-  if (reuse == MAT_INITIAL_MATRIX) {
+  if (reuse == MAT_INITIAL_MATRIX){
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
@@ -128,7 +130,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
   lu->CleanUpSuperLU       = PETSC_FALSE;
 
   /* add to the matrix the location for all the SuperLU data is to be stored */
-  B->spptr                 = (void*)lu;
+  B->spptr                 = (void*)lu; /* attach Mat_SuperLU to B->spptr is a bad design! */
 
   /* set the methods in the function table to the SuperLU versions */
   B->ops->duplicate        = MatDuplicate_SuperLU;
