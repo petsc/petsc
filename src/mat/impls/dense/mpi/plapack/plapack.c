@@ -58,6 +58,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Plapack_Dense(Mat A,MatType type,Ma
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqdense_plapack_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_plapack_seqdense_C","",PETSC_NULL);CHKERRQ(ierr);

@@ -79,6 +79,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SuperLU_DIST_AIJ(Mat A,MatType type
   B->ops->assemblyend      = lu->MatAssemblyEnd;
   B->ops->lufactorsymbolic = lu->MatLUFactorSymbolic;
   B->ops->destroy          = lu->MatDestroy;
+  ierr     = PetscFree(lu);CHKERRQ(ierr);
+  A->spptr = PETSC_NULL;
 
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_seqaij_superlu_dist_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)B,"MatConvert_superlu_dist_seqaij_C","",PETSC_NULL);CHKERRQ(ierr);
