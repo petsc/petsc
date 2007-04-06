@@ -719,7 +719,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy(Mat A)
   }
   ierr = PetscFree(A->rmap.range);CHKERRQ(ierr);
   ierr = PetscFree(A->cmap.range);CHKERRQ(ierr);
-  ierr = PetscFree(A->spptr);CHKERRQ(ierr);
+  if (A->spptr){ierr = PetscFree(A->spptr);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
