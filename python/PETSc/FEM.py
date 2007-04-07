@@ -64,6 +64,44 @@ class QuadratureGenerator(script.Script):
             self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)'),
             self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)')]
 
+  def getBasisFuncOrder(self, element):
+    '''Map from FIAT order to Sieve order
+       - In 2D, FIAT uses the numbering, and in 3D
+         v2                                     v2
+         |\                                     |\
+         | \                                    |\\
+       e1|  \e0                                 | |\
+         |   \                                e1| | \e0
+         v0--v1                                 | \  \
+           e2                                   |  |e5\
+                                                |  |   \
+                                                |  |    \
+                                                |  v4    \
+                                                | /  \e4  \
+                                                | |e3 ----\\
+                                                |/         \\
+                                                v0-----------v1
+                                                    e2
+    '''
+    import FIAT.shapes
+    basis = element.function_space()
+    dim   = FIAT.shapes.dimension(basis.base.shape)
+    ids   = element.Udual.entity_ids
+    if dim == 2:
+      perm = []
+      for f in ids[2]:
+        perm.extend(ids[2][f])
+      for e in ids[1]:
+        perm.extend(ids[1][(e+2)%3])
+      for v in ids[0]:
+        perm.extend(ids[0][v])
+    else:
+      perm = None
+    #print element.Udual.pts
+    #print element.Udual.entity_ids
+    #print 'Perm:',perm
+    return perm
+
   def getBasisStructs(self, name, element, quadrature, num):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
@@ -81,9 +119,19 @@ class QuadratureGenerator(script.Script):
     numFunctions.replacementText = str(len(basis))
     basisName = name+'Basis'+ext
     basisDerName = name+'BasisDerivatives'+ext
+    perm = self.getBasisFuncOrder(element)
+    basisTab = Numeric.transpose(basis.tabulate(points))
+    basisDerTab = Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+    if not perm is None:
+      basisTabOld    = Numeric.array(basisTab)
+      basisDerTabOld = Numeric.array(basisDerTab)
+      for q in range(len(points)):
+        for i,pi in enumerate(perm):
+          basisTab[q][i]    = basisTabOld[q][pi]
+          basisDerTab[q][i] = basisDerTabOld[q][pi]
     return [numFunctions,
-            self.getArray(self.Cxx.getVar(basisName), Numeric.transpose(basis.tabulate(points)), 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
-            self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
+            self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
+            self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
 
   def getQuadratureBlock(self, num):
     from Cxx import CompoundStatement
@@ -163,6 +211,9 @@ class QuadratureGenerator(script.Script):
     cmpd.children.append(self.Cxx.getIf(self.Cxx.getEquality(self.Cxx.getStructRef(optVar, 'bcType'), 'DIRICHLET'), [trueBranch]))
     cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'setDebug'), [self.Cxx.getStructRef(optVar, 'debug')])))
     cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setupField'), ['s'])))
+    cmpd.children.append(self.Cxx.getIf(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug')),
+                                        [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'view'),
+                                                                                      [self.Cxx.getString('Default field')]))]))
     stmts.append(cmpd)
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealDestroy', [secVar])))
     stmts.append(self.Cxx.getReturn(isPetsc = 1))
