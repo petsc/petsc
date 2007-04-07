@@ -115,7 +115,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "DMInitializePackage"
+#define __FUNCT__ "DMFinalizePackage"
 /*@C
   DMFinalizePackage - This function finalizes everything in the DM package. It is called
   from PetscFinalize().
@@ -148,7 +148,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage() {
   Input Parameter:
   path - library path
 */
-PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister_petscdm(char *path)
+PetscErrorCode PETSCDM_DLLEXPORT PetscDLLibraryRegister_petscdm(const char path[])
 {
   PetscErrorCode ierr;
 

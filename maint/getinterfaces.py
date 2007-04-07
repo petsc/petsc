@@ -151,10 +151,16 @@ def getfunctions(filename):
   regfun      = re.compile('EXTERN PetscErrorCode PETSC[A-Z]*_DLLEXPORT ')
   regcomment  = re.compile('/\* [A-Za-z _(),<>|^\*]* \*/')
   regblank    = re.compile(' [ ]*')
-  regarg      = re.compile('\([A-Za-z]*[,\)]')
+  regarg      = re.compile('\([A-Za-z*_\[\]]*[,\)]')
   regerror    = re.compile('PetscErrorCode')
 
-  rejects     = ['PetscErrorCode','DALocalFunction','...','<','(*)','(**)']
+  rejects     = ['PetscErrorCode','DALocalFunction','...','<','(*)','(**)','off_t','MPI_Datatype','va_list','size_t','PetscStack']
+  #
+  # search through list BACKWARDS to get the longest match
+  #
+  classlist   = classes.keys()
+  classlist.sort()
+  classlist.reverse()
   f = open(filename)
   line = f.readline()
   while line:
@@ -162,9 +168,11 @@ def getfunctions(filename):
     if fl:
       struct = line
       struct = regfun.sub("",struct)
-      struct = regcomment.sub("",struct)      
-      struct = regblank.sub(" ",struct)
+      struct = regcomment.sub("",struct)
+      struct = struct.replace("unsigned ","u")      
+      struct = regblank.sub("",struct)
       struct = struct.replace("\n","")
+      struct = struct.replace("const","")
       struct = struct.replace(";","")
       struct = struct.strip()
       fl = regarg.search(struct)
@@ -173,13 +181,17 @@ def getfunctions(filename):
         arg = arg[1:-1]
         reject = 0
         for i in rejects:
-          if struct.find(i) > 0:
+          if struct.find(i) > -1:
             reject = 1
-	if arg in classes and struct.startswith(arg) and not reject:
+	if  not reject:
           args = struct[struct.find("(")+1:struct.find(")")]
           args = args.split(",")
           name = struct[:struct.find("(")]
-          classes[arg][name] = args
+          for i in classlist:
+            if name.startswith(i):
+              classes[i][name] = args
+              break
+
       
     line = f.readline()
   
@@ -188,16 +200,21 @@ def getfunctions(filename):
 #  For now, hardwire aliases
 #
 def getaliases():
-  aliases['PetscInt']           = 'int'
+  aliases['ulong']              = 'unsigned long'
+  aliases['ushort']             = 'unsigned short'
+  aliases['uchar']              = 'unsigned char'  
+  aliases['PetscInt']           = 'int'  
   aliases['PetscScalar']        = 'double'
   aliases['PetscReal']          = 'double'  
   aliases['MPI_Comm']           = 'int'
+  aliases['MPI_Request']        = 'int'  
   aliases['FILE']               = 'int'
   aliases['PetscMPIInt']        = 'int'
   aliases['PetscCookie']        = 'int'
   aliases['PetscLogDouble']     = 'double'
   aliases['PetscTablePosition'] = 'int*'
-  aliases['ISColoringValue']    = 'ushort'            
+  aliases['ISColoringValue']    = 'ushort'
+  aliases['PetscEvent']         = 'int'              
   
 def main(args):
   for i in args:
@@ -207,6 +224,11 @@ def main(args):
   getaliases()
   for i in args:
     getstructs(i)
+  classes['Petsc'] = {}
+  classes['PetscLog'] = {}
+  classes['PetscSort'] = {}
+  classes['PetscStr'] = {}
+  classes['PetscBinary'] = {}    
   for i in args:
     getclasses(i)
   for i in args:

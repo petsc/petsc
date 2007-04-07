@@ -277,7 +277,7 @@ extern const char *PCCompositeTypes[];
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetUseTrue(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSetType(PC,PCCompositeType);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC(PC,PCType);
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC pc,PetscInt n,PC *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeGetPC(PC,PetscInt,PC *);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeSpecialSetAlpha(PC,PetscScalar);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCRedundantSetNumber(PC,PetscInt);

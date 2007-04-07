@@ -17,7 +17,8 @@
 .keywords: SNES, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) {
+PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) 
+{
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
   char              *className;
@@ -29,7 +30,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[]) {
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMFCtx");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMF");CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
@@ -70,7 +71,7 @@ EXTERN_C_BEGIN
   path - library path
 
  */
-PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister_petscsnes(char *path)
+PetscErrorCode PETSCSNES_DLLEXPORT PetscDLLibraryRegister_petscsnes(const char path[])
 {
   PetscErrorCode ierr;
 

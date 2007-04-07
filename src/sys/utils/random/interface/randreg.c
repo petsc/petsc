@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, PetscRandomTy
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscRandomRegister(const char sname[], const char path[], const char name[], PetscErrorCode (*function)(PetscRandom))
 {
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -127,7 +127,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (PetscRandomList) {
-    ierr = PetscFListDestroy(&PetscRandomList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(PetscRandomList);CHKERRQ(ierr);
     PetscRandomList = PETSC_NULL;
   }
   PetscRandomRegisterAllCalled = PETSC_FALSE;

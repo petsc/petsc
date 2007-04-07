@@ -28,7 +28,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   char              logList[256];
   char             *className;
   PetscTruth        opt;
-  PetscErrorCode ierr;
+  PetscErrorCode    ierr;
 
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
@@ -141,7 +141,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(char *path)
+PetscErrorCode PETSCKSP_DLLEXPORT PetscDLLibraryRegister_petscksp(const char path[])
 {
   PetscErrorCode ierr;
 

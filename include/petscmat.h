@@ -100,7 +100,7 @@ extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
 E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
 PetscPolymorphicFunction(MatCreate,(MPI_Comm comm),(comm,&A),Mat,A)
@@ -163,6 +163,7 @@ M*/
 #define MatRegisterDynamic(a,b,c,d) MatRegister(a,b,c,d)
 #endif
 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char[]);
 extern PetscTruth MatRegisterAllCalled;
 extern PetscFList MatList;
 

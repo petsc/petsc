@@ -53,10 +53,10 @@ PetscFList CCAList = 0;
 #if defined(PETSC_HAVE_DLFCN_H)
 #include <dlfcn.h>
 #endif
-struct _n_PetscDLLibraryList {
-  PetscDLLibraryList next;
-  void          *handle;
-  char          libname[PETSC_MAX_PATH_LEN];
+struct _n_PetscDLLibrary {
+  PetscDLLibrary next;
+  void           *handle;
+  char           libname[PETSC_MAX_PATH_LEN];
 };
 
 EXTERN_C_BEGIN
@@ -67,7 +67,7 @@ EXTERN_C_END
 #define __FUNCT__ "PetscDLLibraryPrintPath"
 PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrintPath(void)
 {
-  PetscDLLibraryList libs;
+  PetscDLLibrary libs;
 
   PetscFunctionBegin;
   libs = DLLibrariesLoaded;
@@ -283,7 +283,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
    Collective on MPI_Comm
 
    Input Parameter:
-+  path     - optional complete library name
++  comm - communicator that will open the library
+.  inlist - list of already open libraries that may contain symbol (checks here before path)
+.  path     - optional complete library name
 -  insymbol - name of symbol
 
    Output Parameter:
@@ -297,12 +299,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
         Will attempt to (retrieve and) open the library if it is not yet been opened.
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryList *inlist,const char path[],const char insymbol[],void **value)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibrary *inlist,const char path[],const char insymbol[],void **value)
 {
-  char               *par1,*symbol;
+  char           *par1,*symbol;
   PetscErrorCode ierr;
-  size_t             len;
-  PetscDLLibraryList nlist,prev,list;
+  size_t         len;
+  PetscDLLibrary nlist,prev,list;
 
   PetscFunctionBegin;
   if (inlist) list = *inlist; else list = PETSC_NULL;
@@ -345,7 +347,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryLis
     }
     ierr = PetscDLLibraryOpen(comm,path,&handle);CHKERRQ(ierr);
 
-    ierr          = PetscNew(struct _n_PetscDLLibraryList,&nlist);CHKERRQ(ierr);
+    ierr          = PetscNew(struct _n_PetscDLLibrary,&nlist);CHKERRQ(ierr);
     nlist->next   = 0;
     nlist->handle = handle;
     ierr = PetscStrcpy(nlist->libname,path);CHKERRQ(ierr);
@@ -421,15 +423,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibrarySym(MPI_Comm comm,PetscDLLibraryLis
 
      Notes: if library is already in path will not add it.
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char libname[])
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char libname[])
 {
-  PetscDLLibraryList list,prev;
-  void*              handle;
-  PetscErrorCode     ierr;
-  size_t             len;
-  PetscTruth         match,dir;
-  char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
-  PetscToken         *token;
+  PetscDLLibrary list,prev;
+  void*          handle;
+  PetscErrorCode ierr;
+  size_t         len;
+  PetscTruth     match,dir;
+  char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
+  PetscToken     *token;
 
   PetscFunctionBegin;
 
@@ -475,7 +477,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
 
       ierr = PetscDLLibraryOpen(comm,libname1,&handle);CHKERRQ(ierr);
 
-      ierr         = PetscNew(struct _n_PetscDLLibraryList,&list);CHKERRQ(ierr);
+      ierr         = PetscNew(struct _n_PetscDLLibrary,&list);CHKERRQ(ierr);
       list->next   = 0;
       list->handle = handle;
       ierr = PetscStrcpy(list->libname,libname1);CHKERRQ(ierr);
@@ -517,15 +519,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryAppend(MPI_Comm comm,PetscDLLibrary
      Notes: If library is already in path will remove old reference.
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibraryList *outlist,const char libname[])
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrary *outlist,const char libname[])
 {
-  PetscDLLibraryList list,prev;
-  void*              handle;
+  PetscDLLibrary list,prev;
+  void*          handle;
   PetscErrorCode ierr;
-  size_t             len;
-  PetscTruth         match,dir;
-  char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
-  PetscToken         *token;
+  size_t         len;
+  PetscTruth     match,dir;
+  char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*found,*libname1,suffix[16],*s;
+  PetscToken     *token;
 
   PetscFunctionBegin;
  
@@ -579,7 +581,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
       
       ierr = PetscInfo1(0,"Prepending %s to dynamic library search path\n",libname1);CHKERRQ(ierr);
 
-      ierr         = PetscNew(struct _n_PetscDLLibraryList,&list);CHKERRQ(ierr);
+      ierr         = PetscNew(struct _n_PetscDLLibrary,&list);CHKERRQ(ierr);
       list->handle = handle;
       list->next   = *outlist;
       ierr = PetscStrcpy(list->libname,libname1);CHKERRQ(ierr);
@@ -608,9 +610,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryPrepend(MPI_Comm comm,PetscDLLibrar
      Level: developer
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibraryList next)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibrary next)
 {
-  PetscDLLibraryList prev;
+  PetscDLLibrary prev;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -643,15 +645,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryClose(PetscDLLibraryList next)
 
      Notes: if library is already in path will not add it.
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibraryList *outlist,const char dirname[])
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibrary *outlist,const char dirname[])
 {
   PetscErrorCode ierr;
-  size_t             l;
-  PetscTruth         dir;
-  char               program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*libname1,fbuf[PETSC_MAX_PATH_LEN],*found,suffix[16],*f2;
-  char               *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;
-  FILE               *fp;
-  PetscToken         *token1,*token2;
+  size_t         l;
+  PetscTruth     dir;
+  char           program[PETSC_MAX_PATH_LEN],buf[8*PETSC_MAX_PATH_LEN],*libname1,fbuf[PETSC_MAX_PATH_LEN],*found,suffix[16],*f2;
+  char           *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;
+  FILE           *fp;
+  PetscToken     *token1,*token2;
 
   PetscFunctionBegin;
 

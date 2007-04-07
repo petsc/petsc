@@ -134,7 +134,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (VecList) {
-    ierr = PetscFListDestroy(&VecList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(VecList);CHKERRQ(ierr);
     VecList = PETSC_NULL;
   }
   VecRegisterAllCalled = PETSC_FALSE;

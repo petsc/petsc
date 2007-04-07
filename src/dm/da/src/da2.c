@@ -329,16 +329,22 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   }
 
   if (m == PETSC_DECIDE || n == PETSC_DECIDE) {
-    /* try for squarish distribution */
-    m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
-    if (!m) m = 1;
-    while (m > 0) {
+    if (n != PETSC_DECIDE) {
+      m = size/n;
+    } else if (m != PETSC_DECIDE) {
       n = size/m;
-      if (m*n == size) break;
-      m--;
+    } else {
+      /* try for squarish distribution */
+      m = (PetscInt)(0.5 + sqrt(((double)M)*((double)size)/((double)N)));
+      if (!m) m = 1;
+      while (m > 0) {
+	n = size/m;
+	if (m*n == size) break;
+	m--;
+      }
+      if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
     }
-    if (M > N && m < n) {PetscInt _m = m; m = n; n = _m;}
-    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Internally Created Bad Partition");
+    if (m*n != size) SETERRQ(PETSC_ERR_PLIB,"Unable to create partition, check the size of the communicator and input m and n ");
   } else if (m*n != size) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Given Bad partition"); 
 
   if (M < m) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Partition in x direction is too fine! %D %D",M,m);

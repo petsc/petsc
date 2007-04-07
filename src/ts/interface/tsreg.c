@@ -149,7 +149,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (TSList) {
-    ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(TSList);CHKERRQ(ierr);
     TSList = PETSC_NULL;
   }
   TSRegisterAllCalled = PETSC_FALSE;

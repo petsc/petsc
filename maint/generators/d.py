@@ -4,12 +4,12 @@
 #
 # change python to whatever is needed on your system to invoke python
 #
-#  Reads classes.data and prints the information out nicely
+#  Reads classes.data and prints the language d classes
 #
 #  Crude as all hack!
 #
 #  Calling sequence: 
-#      prettyprint.py
+#      d.py
 ##
 import os
 import re

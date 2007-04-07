@@ -33,7 +33,7 @@ const char *MatOptions[] = {"ROW_ORIENTED","COLUMN_ORIENTED","ROWS_SORTED",
 .keywords: Mat, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(char *path) 
+PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[]) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -141,7 +141,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(char *path)
+PetscErrorCode PETSCMAT_DLLEXPORT PetscDLLibraryRegister_petscmat(const char path[])
 {
   PetscErrorCode ierr;
 

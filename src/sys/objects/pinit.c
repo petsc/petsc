@@ -727,6 +727,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       else           {ierr = PetscLogPrintSummary(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
     }
 
+    ierr = PetscOptionsGetString(PETSC_NULL,"-log_detailed",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
+    if (flg1) { 
+      if (mname[0])  {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,mname);CHKERRQ(ierr);}
+      else           {ierr = PetscLogPrintDetailed(PETSC_COMM_WORLD,0);CHKERRQ(ierr);}
+    }
+
     mname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-log_all",mname,PETSC_MAX_PATH_LEN,&flg1);CHKERRQ(ierr);
     ierr = PetscOptionsGetString(PETSC_NULL,"-log",mname,PETSC_MAX_PATH_LEN,&flg2);CHKERRQ(ierr);

@@ -31,7 +31,7 @@ PetscInt   NormIds[7];  /* map from NormType to IDs used to cache Normvalues */
 .keywords: Vec, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(char *path) 
+PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[]) 
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -151,7 +151,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(char *path)
+PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(const char path[])
 {
   PetscErrorCode ierr;
 

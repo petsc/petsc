@@ -4,6 +4,7 @@
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define petsclogprintsummary_     PETSCLOGPRINTSUMMARY
+#define petsclogprintDetailed_     PETSCLOGPRINTDETAILED
 #define petsclogallbegin_         PETSCLOGALLBEGIN
 #define petsclogdestroy_          PETSCLOGDESTROY
 #define petsclogbegin_            PETSCLOGBEGIN
@@ -13,9 +14,10 @@
 #define petsclogstageregister_    PETSCLOGSTAGEREGISTER
 #define petsclogclassregister_    PETSCLOGCLASSREGISTER
 #define petsclogstagepush_        PETSCLOGSTAGEPUSH
-#define petscgetflops_             PETSCGETFLOPS
+#define petscgetflops_            PETSCGETFLOPS
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petsclogprintsummary_     petsclogprintsummary
+#define petsclogprintDetailed_     petsclogprintDetailed
 #define petsclogallbegin_         petsclogallbegin
 #define petsclogdestroy_          petsclogdestroy
 #define petsclogbegin_            petsclogbegin
@@ -25,7 +27,7 @@
 #define petsclogstageregister_    petsclogstageregister
 #define petsclogclassregister_    petsclogclassregister
 #define petsclogstagepush_        petsclogstagepush
-#define petscgetflops_             petscgetflops 
+#define petscgetflops_            petscgetflops 
 #endif
 
 EXTERN_C_BEGIN
@@ -40,6 +42,15 @@ void PETSC_STDCALL petsclogprintsummary_(MPI_Comm *comm,CHAR filename PETSC_MIXE
 #endif
 }
 
+void PETSC_STDCALL petsclogprintDetailed_(MPI_Comm *comm,CHAR filename PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
+{
+#if defined(PETSC_USE_LOG)
+  char *t;
+  FIXCHAR(filename,len,t);
+  *ierr = PetscLogPrintDetailed((MPI_Comm)PetscToPointerComm(*comm),t);
+  FREECHAR(filename,t);
+#endif
+}
 
 
 void PETSC_STDCALL petsclogdump_(CHAR name PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))

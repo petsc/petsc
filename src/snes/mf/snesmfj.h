@@ -19,13 +19,13 @@
     of the parameter for finite difference based matrix-free computations
 */
 struct _MFOps {
-  PetscErrorCode (*compute)(MatSNESMFCtx,Vec,Vec,PetscScalar *,PetscTruth* zeroa);
-  PetscErrorCode (*view)(MatSNESMFCtx,PetscViewer);
-  PetscErrorCode (*destroy)(MatSNESMFCtx);
-  PetscErrorCode (*setfromoptions)(MatSNESMFCtx);
+  PetscErrorCode (*compute)(MatSNESMF,Vec,Vec,PetscScalar *,PetscTruth* zeroa);
+  PetscErrorCode (*view)(MatSNESMF,PetscViewer);
+  PetscErrorCode (*destroy)(MatSNESMF);
+  PetscErrorCode (*setfromoptions)(MatSNESMF);
 };
 
-struct _p_MatSNESMFCtx {    /* context for default matrix-free SNES */
+struct _p_MatSNESMF {    /* context for default matrix-free SNES */
   PETSCHEADER(struct _MFOps);
   SNES             snes;                   /* nonlinear solver */
   Vec              w;                      /* work vector */

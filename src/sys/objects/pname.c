@@ -53,8 +53,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectSetName(PetscObject obj,const char nam
 PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject obj)
 {
   PetscErrorCode ierr;
-  char       name[64];
-  static int counter = 0;
+  char           name[64];
+  static int     counter = 0;
 
   PetscFunctionBegin;
   PetscValidHeader(obj,1);

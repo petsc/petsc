@@ -4891,7 +4891,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatICCFactorSymbolic(Mat mat,IS perm,MatFactor
 
    Concepts: matrices^access array
 
-.seealso: MatRestoreArray(), MatGetArrayF90()
+.seealso: MatRestoreArray(), MatGetArrayF90(), MatGetRowIJ()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetArray(Mat mat,PetscScalar *v[])
 {
@@ -5241,7 +5241,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat mat,PetscInt bs)
 
            Use MatRestoreRowIJ() when you are finished accessing the ia[] and ja[] values
 
-.seealso: MatGetColumnIJ(), MatRestoreRowIJ()
+.seealso: MatGetColumnIJ(), MatRestoreRowIJ(), MatGetArray()
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowIJ(Mat mat,PetscInt shift,PetscTruth symmetric,PetscTruth blockcompressed,PetscInt *n,PetscInt *ia[],PetscInt* ja[],PetscTruth *done)
 {

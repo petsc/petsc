@@ -131,7 +131,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningRegisterDestroy(void)
 
   PetscFunctionBegin;
   if (MatPartitioningList) {
-    ierr = PetscFListDestroy(&MatPartitioningList);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(MatPartitioningList);CHKERRQ(ierr);
     MatPartitioningList = 0;
   }
   PetscFunctionReturn(0);

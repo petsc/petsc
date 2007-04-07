@@ -21,7 +21,7 @@ extern PetscEvent PETSC_DLLEXPORT PETSC_Barrier;
 .keywords: Petsc, initialize, package
 .seealso: PetscInitialize()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
 {
   static PetscTruth initialized = PETSC_FALSE;
   char              logList[256];
@@ -80,7 +80,7 @@ EXTERN_C_BEGIN
   Input Parameter:
   path - library path
  */
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(char *path)
+PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
 {
   PetscErrorCode ierr;
 
