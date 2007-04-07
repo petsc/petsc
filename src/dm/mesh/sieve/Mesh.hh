@@ -848,14 +848,38 @@ namespace ALE {
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       if (!name.empty()) {
-        const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
-        const Obj<label_sequence>&    boundary    = this->getLabelStratum(name, 1);
+        const Obj<real_section_type>&  coordinates = this->getRealSection("coordinates");
+        const Obj<label_sequence>&     boundary    = this->getLabelStratum(name, 1);
+        const int                      tDim        = this->getDimension();
+        real_section_type::value_type *eCoords     = new real_section_type::value_type[tDim];
 
         for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
           const real_section_type::value_type *coords = coordinates->restrictPoint(*e_iter);
+          const int                            dim    = coordinates->getFiberDimension(*e_iter);
           const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
 
-          s->updatePointBC(*e_iter, &value);
+          if (dim) {
+            s->updatePointBC(*e_iter, &value);
+          } else {
+            const Obj<sieve_type::coneSequence>& cone = this->getSieve()->cone(*e_iter);
+
+            for(int d = 0; d < tDim; ++d) {
+              eCoords[d] = 0.0;
+            }
+            for(sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              const real_section_type::value_type *vertex = coordinates->restrictPoint(*c_iter);
+
+              for(int d = 0; d < tDim; ++d) {
+                eCoords[d] += vertex[d];
+              }
+            }
+            for(int d = 0; d < tDim; ++d) {
+              eCoords[d] /= tDim;
+            }
+            const PetscScalar value = this->_boundaryCondition->evaluate(eCoords);
+
+            s->updatePointBC(*e_iter, &value);
+          }
         }
       }
     };
