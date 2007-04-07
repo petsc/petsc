@@ -194,6 +194,10 @@ PetscErrorCode BCFUNCGetArray(Mesh mesh, PetscInt *numElements, PetscInt *fiberD
     (*array)[(bcf-1)*4+2] = bcValues[bcf].v;
     (*array)[(bcf-1)*4+3] = bcValues[bcf].p;
   }
+#else
+  *numElements = 0;
+  *fiberDim    = 0;
+  *array       = NULL;
 #endif
   PetscFunctionReturn(0);
 }
@@ -415,10 +419,11 @@ namespace ALE {
       }
       delete [] tmpIBC;
       // Create BCFUNC section
-#if 0
       int numBcFunc = atoi(strtok(fgets(buf, 2048, f), " "));
+      if (numBcFunc != 0) {throw ALE::Exception("Cannot handle BCFUNCS after rewrite");}
       for(int bc = 0; bc < numBcFunc; bc++) {
         const char *x = strtok(fgets(buf, 2048, f), " ");
+#if 0
         Mesh::bc_value_type value;
 
         // Ignore function number
@@ -431,7 +436,9 @@ namespace ALE {
         x = strtok(NULL, " ");
         value.p   = atof(x);
         mesh->setBCValue(bc+1, value);
+#endif
       }
+#if 0
       mesh->distributeBCValues();
 #endif
       // Create IBNDFS section
