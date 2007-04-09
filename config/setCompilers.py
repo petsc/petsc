@@ -146,7 +146,7 @@ class Configure(config.base.Configure):
     return 0
   isCompaqF90 = staticmethod(isCompaqF90)
 
-  def isSUN(compiler):
+  def isSun(compiler):
     '''Returns true if the compiler is a Sun compiler'''
     try:
       (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -flags')
@@ -158,7 +158,7 @@ class Configure(config.base.Configure):
     except RuntimeError:
       pass
     return 0
-  isSUN = staticmethod(isSUN)
+  isSun = staticmethod(isSun)
 
   def isIBM(compiler):
     '''Returns true if the compiler is a IBM compiler'''
@@ -1109,7 +1109,7 @@ class Configure(config.base.Configure):
       # test '-R' before '-rpath' as sun compilers [c,fortran] don't give proper errors with wrong options.
       testFlags = ['-Wl,-rpath,', '-R','-rpath ' , '-Wl,-R,']
       # test '-R' before '-Wl,-rpath' for SUN compilers [as cc on linux accepts -Wl,-rpath, but  f90 & CC do not.
-      if self.isSUN(self.framework.getCompiler()):
+      if self.isSun(self.framework.getCompiler()):
         testFlags.insert(0,'-R')
       for testFlag in testFlags:
         self.framework.logPrint('Trying '+language+' linker flag '+testFlag)

@@ -852,7 +852,7 @@ class Configure(config.base.Configure):
       f90Guess = 'nag'
     elif config.setCompilers.Configure.isNAG(self.setCompilers.FC):
       f90Guess = 'cray_x1'
-    elif config.setCompilers.Configure.isSUN(self.setCompilers.FC):
+    elif config.setCompilers.Configure.isSun(self.setCompilers.FC):
       f90Guess = 'solaris'
     elif self.setCompilers.vendor:
       if self.setCompilers.vendor == 'absoft':
