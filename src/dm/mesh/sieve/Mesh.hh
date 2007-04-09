@@ -459,12 +459,12 @@ namespace ALE {
       int j = 0;
 
       if (this->height() < 2) {
-        section->updateBCPoint(p, &v[j]);
+        section->updatePointBC(p, &v[j]);
         j += std::abs(section->getFiberDimension(p));
         const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
 
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
-          section->updateBCPoint(*p_iter, &v[j]);
+          section->updatePointBC(*p_iter, &v[j]);
           j += std::abs(section->getFiberDimension(*p_iter));
         }
       } else {
@@ -472,7 +472,7 @@ namespace ALE {
         typename coneArray::iterator end     = closure->end();
 
         for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          section->updateBCPoint(*p_iter, &v[j]);
+          section->updatePointBC(*p_iter, &v[j]);
           j += std::abs(section->getFiberDimension(*p_iter));
         }
       }
@@ -663,19 +663,28 @@ namespace ALE {
     void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
   };
   class BoundaryCondition : public ALE::ParallelObject {
+  public:
+    typedef double (*function_type)(const double []);
+    typedef double (*integrator_type)(const double [], const double [], const int, function_type);
   protected:
-    std::string _labelName;
-    double    (*_func)(const double []);
+    std::string     _labelName;
+    function_type   _func;
+    integrator_type _integrator;
   public:
     BoundaryCondition(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
     ~BoundaryCondition() {};
   public:
     const std::string& getLabelName() {return this->_labelName;};
     void setLabelName(const std::string& name) {this->_labelName = name;};
-    void setFunction(double (*func)(const double [])) {this->_func = func;};
+    void setFunction(function_type func) {this->_func = func;};
+    void setDualIntegrator(integrator_type integrator) {this->_integrator = integrator;};
   public:
     double evaluate(const double coords[]) {return this->_func(coords);};
+    double integrateDual(const double v0[], const double J[], const int dualIndex) {return this->_integrator(v0, J, dualIndex, this->_func);};
   };
+}
+
+namespace ALE {
   class Mesh : public Bundle<ALE::Sieve<int,int,int> > {
   public:
     typedef Bundle<ALE::Sieve<int,int,int> > base_type;
@@ -832,6 +841,19 @@ namespace ALE {
       }
     };
   public: // Discretization
+    void markBoundaryCells(const std::string& name) {
+      const Obj<label_type>&     label    = this->getLabel(name);
+      const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);
+      const Obj<sieve_type>&     sieve    = this->getSieve();
+
+      for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+        if (this->height(*e_iter) == 1) {
+          const point_type cell = *sieve->support(*e_iter)->begin();
+
+          this->setValue(label, cell, 1);
+        }
+      }
+    };
     void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
       const std::string& name = this->_boundaryCondition->getLabelName();
 
@@ -848,39 +870,38 @@ namespace ALE {
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       if (!name.empty()) {
-        const Obj<real_section_type>&  coordinates = this->getRealSection("coordinates");
         const Obj<label_sequence>&     boundary    = this->getLabelStratum(name, 1);
-        const int                      tDim        = this->getDimension();
-        real_section_type::value_type *eCoords     = new real_section_type::value_type[tDim];
+        const Obj<real_section_type>&  coordinates = this->getRealSection("coordinates");
+        const point_type               firstCell   = *this->heightStratum(0)->begin();
+        real_section_type::value_type *values      = new real_section_type::value_type[this->sizeWithBC(s, firstCell)];
+        double                        *v0          = new double[this->getDimension()];
+        double                        *J           = new double[this->getDimension()*this->getDimension()];
+        double                         detJ;
 
-        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          const real_section_type::value_type *coords = coordinates->restrictPoint(*e_iter);
-          const int                            dim    = coordinates->getFiberDimension(*e_iter);
-          const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
+        for(label_sequence::iterator c_iter = boundary->begin(); c_iter != boundary->end(); ++c_iter) {
+          if (this->height(*c_iter) > 0) continue;
+          const Obj<coneArray>      closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), *c_iter);
+          const coneArray::iterator end     = closure->end();
+          int                       cl      = 0;
+          int                       v       = -1;
 
-          if (dim) {
-            s->updatePointBC(*e_iter, &value);
-          } else {
-            const Obj<sieve_type::coneSequence>& cone = this->getSieve()->cone(*e_iter);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter, ++cl) {
+            if (s->getConstraintDimension(*cl_iter)) {
+              values[++v] = this->_boundaryCondition->integrateDual(v0, J, cl);
+            } else {
+              const int dim = s->getFiberDimension(*cl_iter);
 
-            for(int d = 0; d < tDim; ++d) {
-              eCoords[d] = 0.0;
-            }
-            for(sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
-              const real_section_type::value_type *vertex = coordinates->restrictPoint(*c_iter);
-
-              for(int d = 0; d < tDim; ++d) {
-                eCoords[d] += vertex[d];
+              for(int d = 0; d < dim; ++d) {
+                values[++v] = 0.0;
               }
             }
-            for(int d = 0; d < tDim; ++d) {
-              eCoords[d] /= tDim;
-            }
-            const PetscScalar value = this->_boundaryCondition->evaluate(eCoords);
-
-            s->updatePointBC(*e_iter, &value);
           }
+          this->updateBC(s, *c_iter, values);
         }
+        delete [] values;
+        delete [] v0;
+        delete [] J;
       }
     };
   public:
