@@ -832,7 +832,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       import sys
 
       args = self.clArgs[:]
-      body = ['FILE *output = fopen("reconfigure","w");']
+      body = ['FILE *output = fopen("reconfigure.py","w");']
+      body.append('fprintf(output, "#!'+sys.executable+'\\n");')
       body.append('fprintf(output, "\\nconfigure_options = [\\n");')
       body.extend(self.batchBodies)
       body.append('fprintf(output, "  '+repr(args)[1:-1]+'\\n]");')
@@ -841,13 +842,14 @@ class Framework(config.base.Configure, script.LanguageProcessor):
                 '  import sys',
                 '  sys.path.insert(0, os.path.abspath(os.path.join(\'config\')))',
                 '  import configure',
-                '  configure.petsc_configure(configure_options)");']
+                '  configure.petsc_configure(configure_options)\\n");']
       body.append('\\n'.join(driver))
       body.append('\nfclose(output);\n')
+      body.append('chmod("reconfigure.py",0744);')
 
       oldFlags = self.compilers.CPPFLAGS
       self.compilers.CPPFLAGS += ' '.join(self.batchIncludeDirs)
-      self.batchIncludes.insert(0, '#include <stdio.h>')
+      self.batchIncludes.insert(0, '#include <stdio.h>\n#include <sys/types.h>\n#include <sys/stat.h>')
       if not self.checkLink('\n'.join(self.batchIncludes)+'\n', '\n'.join(body), cleanup = 0):
         sys.exit('Unable to generate test file for cross-compilers/batch-system\n')
       self.compilers.CPPFLAGS = oldFlags
@@ -855,8 +857,8 @@ class Framework(config.base.Configure, script.LanguageProcessor):
       print '=================================================================================\r'
       print '    Since your compute nodes require use of a batch system or mpiexec you must:  \r'
       print ' 1) Submit ./conftest to 1 processor of your batch system or system you are      \r'
-      print '    cross-compiling for; this will generate the file reconfigure                 \r'
-      print ' 2) Run "python reconfigure" (to complete the configure process).                \r'
+      print '    cross-compiling for; this will generate the file reconfigure.py              \r'
+      print ' 2) Run ./reconfigure.py (to complete the configure process).                    \r'
       print '=================================================================================\r'
       sys.exit(0)
     return

@@ -579,10 +579,10 @@ class Configure(config.base.Configure):
       loc2 = output.find(' -lpgf90rtl -lpgftnrtl')
       if loc2 >= -1:
         output = output[0:loc] + ' -lpgf90rtl -lpgftnrtl' + output[loc:]
-    elif output.find(' -lpgf90rtl') >= 0:
+    elif output.find(' -lpgf90rtl -lpgftnrtl') >= 0:
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
-      self.logPrint('Removing -lpgf90rtl from library list')
-      output = output.replace(' -lpgf90rtl','')
+      self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in library list')
+      output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
         
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
@@ -646,7 +646,7 @@ class Configure(config.base.Configure):
             flibs.append(arg)
           continue
         # Check for system libraries
-        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crtbegin.o|c|gcc)$', arg)
+        m = re.match(r'^-l(ang.*|crt0.o|crt1.o|crt2.o|crtbegin.o|c|gcc)$', arg)
         if m: continue
         # Check for canonical library argument
         m = re.match(r'^-[lLR]$', arg)
