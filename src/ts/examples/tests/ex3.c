@@ -45,24 +45,29 @@ extern PetscErrorCode RHSfunction(TS,PetscReal,Vec,Vec,void*);
 #define __FUNCT__ "main"
 int main(int argc,char **argv)
 {
-  PetscInt       i,m,nz,steps, max_steps;
+  PetscInt       i,m,nz,steps,max_steps,k,nphase=1;
   PetscScalar    zInitial,zFinal,val,*z;
-  PetscReal      stepsz,T,ftime;
+  PetscReal      stepsz[4],T,ftime;
   PetscErrorCode ierr;
   TS             ts;
   Mat            Jmat;
   AppCtx         appctx; /* user-defined application context */
-  Vec     	 ts_sol; /* ts solution vector */
+  Vec     	 init_sol,ts_sol; /* ts solution vector */
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only");
+  
+  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-nphase",&nphase,PETSC_NULL);CHKERRQ(ierr);
+  if (nphase > 3) SETERRQ(PETSC_ERR_SUP,"nphase must be an integer between 1 and 3");
 
   /* initializations */
   zInitial       = 0.0;
   zFinal         = 1.0;
-  T              = 0.014;
+  T              = 0.014/nphase;
   nz             = num_z; 
   m              = nz-2;
   appctx.nz      = nz;
@@ -72,18 +77,15 @@ int main(int argc,char **argv)
   appctx.max_probsz = nz;
   appctx.debug      = PETSC_FALSE;
   appctx.useAlhs    = PETSC_FALSE;
-  
-  ierr = PetscOptionsHasName(PETSC_NULL,"-debug",&appctx.debug);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-useAlhs",&appctx.useAlhs);CHKERRQ(ierr); 
 
   /* create vector to hold ts solution */
   /*-----------------------------------*/
-  ierr = VecCreate(PETSC_COMM_WORLD, &ts_sol);CHKERRQ(ierr);
-  ierr = VecSetSizes(ts_sol, PETSC_DECIDE, m);CHKERRQ(ierr);
-  ierr = VecSetFromOptions(ts_sol);CHKERRQ(ierr);
+  ierr = VecCreate(PETSC_COMM_WORLD, &init_sol);CHKERRQ(ierr);
+  ierr = VecSetSizes(init_sol, PETSC_DECIDE, m);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(init_sol);CHKERRQ(ierr);
 
   /* create vector to hold true ts soln for comparison */
-  ierr = VecDuplicate(ts_sol, &appctx.solution);CHKERRQ(ierr);
+  ierr = VecDuplicate(init_sol, &appctx.solution);CHKERRQ(ierr);
 
   /* create LHS matrix Amat */
   /*------------------------*/
@@ -102,19 +104,17 @@ int main(int argc,char **argv)
   ierr = MatSetFromOptions(Jmat);CHKERRQ(ierr);
   
   /* create working vectors for formulating rhs=inv(Alhs)*(Arhs*U + g) */
-  ierr = VecDuplicate(ts_sol,&appctx.ksp_rhs);CHKERRQ(ierr); 
-  ierr = VecDuplicate(ts_sol,&appctx.ksp_sol);CHKERRQ(ierr);
-
- 
+  ierr = VecDuplicate(init_sol,&appctx.ksp_rhs);CHKERRQ(ierr); 
+  ierr = VecDuplicate(init_sol,&appctx.ksp_sol);CHKERRQ(ierr);
 
   /* set intial guess */
   /*------------------*/
   for(i=0; i<nz-2; i++){
     val = exact(z[i+1], 0.0); 
-    ierr = VecSetValue(ts_sol,i,(PetscScalar)val,INSERT_VALUES);CHKERRQ(ierr);
+    ierr = VecSetValue(init_sol,i,(PetscScalar)val,INSERT_VALUES);CHKERRQ(ierr);
   }
-  ierr = VecAssemblyBegin(ts_sol);
-  ierr = VecAssemblyEnd(ts_sol);
+  ierr = VecAssemblyBegin(init_sol);
+  ierr = VecAssemblyEnd(init_sol);
 
   /*create a time-stepping context and set the problem type */
   /*--------------------------------------------------------*/
@@ -129,7 +129,6 @@ int main(int argc,char **argv)
   
   /* set the right hand side of U_t = RHSfunction(U,t) */
   ierr = TSSetRHSFunction(ts,(PetscErrorCode (*)(TS,double,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
-
 
   if (appctx.useAlhs){
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
@@ -153,15 +152,23 @@ int main(int argc,char **argv)
     }
   }
 #endif
-
-  ierr = TSSetSolution(ts,ts_sol);CHKERRQ(ierr);
-  stepsz = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
-  ierr = TSSetInitialTimeStep(ts,0.0,stepsz);CHKERRQ(ierr);
-  ierr = TSSetDuration(ts,max_steps,T);CHKERRQ(ierr);
+  /* Sets the initial solution */
+  ierr = TSSetSolution(ts,init_sol);CHKERRQ(ierr);
   
-  /* loop over time steps */
-  /*----------------------*/
-  ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+  stepsz[0] = 1.0/(2.0*(nz-1)*(nz-1)); /* (mesh_size)^2/2.0 */
+  ftime = 0.0;
+  for (k=0; k<nphase; k++){
+    if (nphase > 1) {
+      printf("Phase %d: initial time %g, stepsz %g, duration: %g\n",k,ftime,stepsz[k],(k+1)*T);
+    }
+    ierr = TSSetInitialTimeStep(ts,ftime,stepsz[k]);CHKERRQ(ierr);
+    ierr = TSSetDuration(ts,max_steps,(k+1)*T);CHKERRQ(ierr);
+ 
+    /* loop over time steps */
+    /*----------------------*/
+    ierr = TSStep(ts,&steps,&ftime);CHKERRQ(ierr);
+    stepsz[k+1] = stepsz[k]*1.5; /* change step size for the next phase */
+  }
  
   /* free space */ 
   ierr = TSDestroy(ts);CHKERRQ(ierr)
@@ -169,7 +176,7 @@ int main(int argc,char **argv)
   ierr = MatDestroy(Jmat);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.ksp_rhs);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.ksp_sol);CHKERRQ(ierr);
-  ierr = VecDestroy(ts_sol);CHKERRQ(ierr);
+  ierr = VecDestroy(init_sol);CHKERRQ(ierr);
   ierr = VecDestroy(appctx.solution);CHKERRQ(ierr);
   ierr = PetscFree(z);CHKERRQ(ierr);
 
@@ -227,7 +234,7 @@ PetscErrorCode Monitor(TS ts,PetscInt step,PetscReal time,Vec u,void *ctx)
 
   /* Print debugging information if desired */
   if (appctx->debug) {
-     ierr = PetscPrintf(PETSC_COMM_SELF,"Computed solution vector\n");CHKERRQ(ierr);
+     ierr = PetscPrintf(PETSC_COMM_SELF,"Computed solution vector at time %g\n",time);CHKERRQ(ierr);
      ierr = VecView(u,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
      ierr = PetscPrintf(PETSC_COMM_SELF,"Exact solution vector\n");CHKERRQ(ierr);
      ierr = VecView(appctx->solution,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
