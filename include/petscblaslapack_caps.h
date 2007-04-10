@@ -32,6 +32,8 @@ EXTERN_C_BEGIN
 #  define BLAStrmv_    STRMV
 #  define LAPACKgesvd_ SGESVD
 #  define LAPACKgeev_  SGEEV
+#  define LAPACKsyev_  SSYEV
+#  define LAPACKsyevx_ SSYEVX
 #  define LAPACKsygv_  SSYGV
 #  define LAPACKsygvx_ SSYGVX
 #  define BLASgemm_    SGEMM
@@ -56,6 +58,8 @@ EXTERN_C_BEGIN
 #  define BLAStrmv_    DTRMV
 #  define LAPACKgesvd_ DGESVD
 #  define LAPACKgeev_  DGEEV
+#  define LAPACKsyev_  DSYEV
+#  define LAPACKsyevx_ DSYEVX
 #  define LAPACKsygv_  DSYGV
 #  define LAPACKsygvx_ DSYGVX
 #  define BLASgemm_    DGEMM
@@ -84,6 +88,8 @@ EXTERN_C_BEGIN
 #  define BLASgemm_    SGEMM
 #  define LAPACKgesvd_ CGESVD
 #  define LAPACKgeev_  CGEEV
+#  define LAPACKsyev_  CSYEV
+#  define LAPACKsyevx_ CSYEVX
 #  define LAPACKsygv_  CSYGV
 #  define LAPACKsygvx_ CSYGVX
 # else
@@ -108,6 +114,8 @@ EXTERN_C_BEGIN
 #  define BLASgemm_    ZGEMM
 #  define LAPACKgesvd_ ZGESVD
 #  define LAPACKgeev_  ZGEEV
+#  define LAPACKsyev_  ZSYEV
+#  define LAPACKsyevx_ ZSYEVX
 #  define LAPACKsygv_  ZSYGV
 #  define LAPACKsygvx_ ZSYGVX
 # endif
@@ -136,10 +144,18 @@ EXTERN void BLASgemm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscB
 #if !defined(PETSC_USE_COMPLEX)
 EXTERN void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+
+EXTERN void LAPACKsyev_(const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void LAPACKsyevx_(const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+
 EXTERN void LAPACKsygv_(PetscBLASInt*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKsygvx_(PetscBLASInt*,const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #else
 EXTERN void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+
+EXTERN void LAPACKsyev_(const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void LAPACKsyevx_(const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
+
 EXTERN void LAPACKsygv_(PetscBLASInt*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKsygvx_(PetscBLASInt*,const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
