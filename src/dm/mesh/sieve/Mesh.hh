@@ -562,7 +562,7 @@ namespace ALE {
         typename oConeArray::iterator end     = closure->end();
 
         for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          section->updatePointBC(p_iter->first, &v[j], p_iter->first);
+          section->updatePointBC(p_iter->first, &v[j], p_iter->second);
           j += std::abs(section->getFiberDimension(p_iter->first));
         }
       }
