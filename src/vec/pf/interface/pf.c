@@ -461,8 +461,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf);CHKERRQ(ierr);}
   pf->data        = 0;
 
-  /* Get the function pointers for the method requested */
-  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
   /* Determine the PFCreateXXX routine for a particular function */
   ierr =  PetscFListFind(pf->comm,PPetscFList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);

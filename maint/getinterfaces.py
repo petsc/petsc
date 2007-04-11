@@ -189,7 +189,7 @@ def getfunctions(filename):
           name = struct[:struct.find("(")]
           for i in classlist:
             if name.startswith(i):
-              classes[i][name] = args
+              classes[i][name[len(i):]] = args
               break
 
       

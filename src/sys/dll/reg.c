@@ -301,13 +301,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList *fl,const char name[],co
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList fl)
+PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList *fl)
 {
   PetscFList     next,entry,tmp = dlallhead;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!fl) PetscFunctionReturn(0);
+  CHKMEMQ;
+  if (!*fl) PetscFunctionReturn(0);
 
   if (!dlallhead) {
     PetscFunctionReturn(0);
@@ -316,14 +317,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList fl)
   /*
        Remove this entry from the master DL list (if it is in it)
   */
-  if (dlallhead == fl) {
+  if (dlallhead == *fl) {
     if (dlallhead->next_list) {
       dlallhead = dlallhead->next_list;
     } else {
       dlallhead = 0;
     }
   } else {
-    while (tmp->next_list != fl) {
+    while (tmp->next_list != *fl) {
       tmp = tmp->next_list;
       if (!tmp->next_list) break;
     }
@@ -331,7 +332,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList fl)
   }
 
   /* free this list */
-  entry = fl;
+  entry = *fl;
   while (entry) {
     next = entry->next;
     ierr = PetscStrfree(entry->path);CHKERRQ(ierr);
@@ -340,6 +341,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList fl)
     ierr = PetscFree(entry);CHKERRQ(ierr);
     entry = next;
   }
+  *fl = 0;
   PetscFunctionReturn(0);
 }
 
@@ -356,7 +358,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroyAll(void)
   PetscFunctionBegin;
   while (tmp1) {
     tmp2 = tmp1->next_list;
-    ierr = PetscFListDestroy(tmp1);CHKERRQ(ierr);
+    ierr = PetscFListDestroy(&tmp1);CHKERRQ(ierr);
     tmp1 = tmp2;
   }
   dlallhead = 0;

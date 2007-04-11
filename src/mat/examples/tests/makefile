@@ -433,6 +433,10 @@ ex114: ex114.o chkopts
 ex115: ex115.o chkopts
 	-${CLINKER} -o ex115 ex115.o ${PETSC_MAT_LIB}
 	${RM} ex115.o
+
+ex116: ex116.o chkopts
+	-${CLINKER} -o ex116 ex116.o ${PETSC_MAT_LIB}
+	${RM} ex116.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B

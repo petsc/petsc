@@ -1256,7 +1256,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOListDuplicate(PetscOList,PetscOList 
   link libraries that will be loaded as needed.
 */
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListAdd(PetscFList*,const char[],const char[],void (*)(void));
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListDestroy(PetscFList*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListFind(MPI_Comm,PetscFList,const char[],void (**)(void));
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(MPI_Comm,FILE*,const char[],const char[],const char[],const char[],PetscFList);
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)

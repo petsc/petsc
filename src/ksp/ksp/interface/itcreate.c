@@ -112,7 +112,7 @@ $                 supported only by CG, Richardson, Bi-CG-stab, CR, and CGS meth
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
-$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide) 
+$                 CG, CHEBYCHEV, and RICHARDSON, automatically true for right (see KSPSetPreconditioningSide()) 
 $                 preconditioning..
 $   KSP_NORM_NATURAL - supported  by cg, cr, and cgs 
 
@@ -474,8 +474,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
 
   ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
-  /* Get the function pointers for the iterative method requested */
-  if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+
   ierr =  PetscFListFind(ksp->comm,KSPList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
@@ -510,10 +509,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (KSPList) {
-    ierr = PetscFListDestroy(KSPList);CHKERRQ(ierr);
-    KSPList = 0;
-  }
+  ierr = PetscFListDestroy(&KSPList);CHKERRQ(ierr);
   KSPRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

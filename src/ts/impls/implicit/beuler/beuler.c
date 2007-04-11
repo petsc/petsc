@@ -62,6 +62,8 @@ static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
+    if (ts->ptime + ts->time_step > ts->max_time) break;
+
     /* set rhs = 1/dt*Alhs*sol */
     if (ts->Alhs){
       ierr = MatMult(ts->Alhs,sol,rhs);CHKERRQ(ierr);
@@ -71,7 +73,6 @@ static PetscErrorCode TSStep_BEuler_Linear_Constant_Matrix(TS ts,PetscInt *steps
     ierr = VecScale(rhs,mdt);CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
-    if (ts->ptime > ts->max_time) break;
 
     /* solve (1/dt*Alhs - A)*update = rhs */
     ierr = KSPSolve(ts->ksp,rhs,update);CHKERRQ(ierr);
@@ -112,6 +113,8 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
   ierr = VecCopy(sol,update);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
+    if (ts->ptime +ts->time_step > ts->max_time) break;
+
     /* set rhs = 1/dt*Alhs(t_mid)*sol */
     if (ts->Alhs){
       /* evaluate lhs matrix function at t_mid */
@@ -124,7 +127,6 @@ static PetscErrorCode TSStep_BEuler_Linear_Variable_Matrix(TS ts,PetscInt *steps
     ierr = VecScale(rhs,mdt);CHKERRQ(ierr);
 
     ts->ptime += ts->time_step;
-    if (ts->ptime > ts->max_time) break;
 
     /* evaluate rhs matrix function at current ptime */
     ierr = (*ts->ops->rhsmatrix)(ts,ts->ptime,&ts->Arhs,&ts->B,&str,ts->jacP);CHKERRQ(ierr);
@@ -163,8 +165,8 @@ static PetscErrorCode TSStep_BEuler_Nonlinear(TS ts,PetscInt *steps,PetscReal *p
   ierr = TSMonitor(ts,ts->steps,ts->ptime,sol);CHKERRQ(ierr);
 
   for (i=0; i<max_steps; i++) {
+    if (ts->ptime + ts->time_step > ts->max_time) break;
     ts->ptime += ts->time_step;
-    if (ts->ptime > ts->max_time) break;
     ierr = VecCopy(sol,beuler->update);CHKERRQ(ierr);
     ierr = SNESSolve(ts->snes,PETSC_NULL,beuler->update);CHKERRQ(ierr);
     ierr = SNESGetLinearSolveIterations(ts->snes,&lits);CHKERRQ(ierr);

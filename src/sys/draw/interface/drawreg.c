@@ -99,8 +99,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char display[
 PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,PetscDrawType type)
 {
   PetscErrorCode ierr,(*r)(PetscDraw);
-  PetscTruth    match;
-  PetscTruth    flg=PETSC_FALSE;
+  PetscTruth      match;
+  PetscTruth      flg=PETSC_FALSE;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(draw,PETSC_DRAW_COOKIE,1);
@@ -140,10 +140,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,PetscDrawType typ
     draw->data = 0;
   }
 
-  /* Get the function pointers for the graphics method requested */
-  if (!PetscDrawList) {
-    ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
   ierr =  PetscFListFind(draw->comm,PetscDrawList,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
   ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
@@ -169,10 +165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscDrawList) {
-    ierr = PetscFListDestroy(PetscDrawList);CHKERRQ(ierr);
-    PetscDrawList = 0;
-  }
+  ierr = PetscFListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

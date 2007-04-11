@@ -255,10 +255,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (MatColoringList) {
-    ierr = PetscFListDestroy(MatColoringList);CHKERRQ(ierr);
-    MatColoringList = 0;
-  }
+  ierr = PetscFListDestroy(&MatColoringList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

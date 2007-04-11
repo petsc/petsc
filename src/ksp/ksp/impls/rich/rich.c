@@ -235,7 +235,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP ksp)
   ierr = PetscNew(KSP_Richardson,&richardsonP);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSP_Richardson));CHKERRQ(ierr);
   ksp->data                        = (void*)richardsonP;
-  richardsonP->scale               = 1.0;
+
+  ksp->normtype                    = KSP_NORM_PRECONDITIONED;
+  ksp->pc_side                     = PC_LEFT;
+
   ksp->ops->setup                  = KSPSetUp_Richardson;
   ksp->ops->solve                  = KSPSolve_Richardson;
   ksp->ops->destroy                = KSPDestroy_Richardson;
@@ -247,6 +250,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP ksp)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPRichardsonSetScale_C",
                                     "KSPRichardsonSetScale_Richardson",
                                     KSPRichardsonSetScale_Richardson);CHKERRQ(ierr);
+  richardsonP->scale               = 1.0;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

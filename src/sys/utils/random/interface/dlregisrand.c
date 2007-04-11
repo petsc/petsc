@@ -36,33 +36,5 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char path[])
   PetscFunctionReturn(0);
 }
 
-#ifdef PETSC_USE_DYNAMIC_LIBRARIES
-EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "PetscDLLibraryRegister_petscrandom"
-/*
-  PetscDLLibraryRegister - This function is called when the dynamic library it is in is opened.
-
-  This one registers all the methods that are in the basic PETSc library.
-
-  Input Parameter:
-  path - library path
- */
-PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petscrandom(const char path[])
-{
-  PetscErrorCode ierr;
-
-  ierr = PetscInitializeNoArguments(); if (ierr) return 1;
-
-  PetscFunctionBegin;
-  /*
-      If we got here then PETSc was properly loaded
-  */
-  ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-EXTERN_C_END
-
-#endif /* PETSC_USE_DYNAMIC_LIBRARIES */
 
 

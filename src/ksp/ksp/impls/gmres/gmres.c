@@ -814,8 +814,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP ksp)
   ierr = PetscNew(KSP_GMRES,&gmres);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp,sizeof(KSP_GMRES));CHKERRQ(ierr);
   ksp->data                              = (void*)gmres;
-  ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
 
+
+  ksp->normtype                          = KSP_NORM_PRECONDITIONED;
+  ksp->pc_side                           = PC_LEFT;
+
+  ksp->ops->buildsolution                = KSPBuildSolution_GMRES;
   ksp->ops->setup                        = KSPSetUp_GMRES;
   ksp->ops->solve                        = KSPSolve_GMRES;
   ksp->ops->destroy                      = KSPDestroy_GMRES;

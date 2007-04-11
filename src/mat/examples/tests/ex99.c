@@ -6,7 +6,8 @@ a real generalized symmetric-definite eigenproblem \n\
 Input parameters include\n\
   -f0 <input_file> : first file to load (small system)\n\
   -fA <input_file> -fB <input_file>: second files to load (larger system) \n\
-e.g. ex99 -f0 $D/small -fA diamond_xxs_A -fB diamond_xxs_B \n\n";
+e.g. ./ex99 -f0 $D/small -fA $D/Eigdftb/dftb_bin/diamond_xxs_A -fB $D/Eigdftb/dftb_bin/diamond_xxs_B -mat_getrow_uppertriangular,\n\
+     where $D = /home/petsc/datafiles/matrices/Eigdftb/dftb_bin\n\n";
 
 #include "petscmat.h"
 #include "petscblaslapack.h"
@@ -22,7 +23,7 @@ PetscInt main(PetscInt argc,char **args)
   Vec            *evecs;
   PetscViewer    fd;                /* viewer */
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYGVX=PETSC_TRUE; 
+  PetscTruth     flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYGVX=PETSC_TRUE;
   PetscErrorCode ierr;
   PetscTruth     preload=PETSC_TRUE,isSymmetric;
   PetscScalar    sigma,one=1.0,*arrayA,*arrayB,*evecs_array,*work,*evals;
@@ -223,7 +224,7 @@ PetscInt main(PetscInt argc,char **args)
      cklvl      - check level: 
                     1: check residual
                     2: 1 and check B-orthogonality locally 
-     fA, fB     - matrix pencil
+     mats       - matrix pencil
      eval, evec - eigenvalues and eigenvectors stored in this process
      ievbd_loc  - local eigenvalue bounds, see eigc()
      offset     - see eigc()
