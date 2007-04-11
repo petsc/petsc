@@ -643,6 +643,9 @@ namespace ALE {
       }
     };
   public: // BC
+    const int getConstraintDimension(const point_type& p) const {
+      return std::max(0, -this->getFiberDimension(p));
+    };
     void copyBC(const Obj<Section>& section) {
       const typename atlas_type::chart_type& chart = this->_atlas->getChart();
 

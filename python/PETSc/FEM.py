@@ -64,6 +64,61 @@ class QuadratureGenerator(script.Script):
             self.getArray(self.Cxx.getVar('points'+ext), quadrature.get_points(), 'Quadrature points\n   - (x1,y1,x2,y2,...)'),
             self.getArray(self.Cxx.getVar('weights'+ext), quadrature.get_weights(), 'Quadrature weights\n   - (v1,v2,...)')]
 
+  def getBasisFuncOrder(self, element):
+    '''Map from FIAT order to Sieve order
+       - In 2D, FIAT uses the numbering, and in 3D
+         v2                                     v2
+         |\                                     |\
+         | \                                    |\\
+       e1|  \e0                                 | |\
+         |   \                                e1| | \e0
+         v0--v1                                 | \  \
+           e2                                   |  |e5\
+                                                |  |   \
+                                                |  |    \
+                                                |  v4    \
+                                                | /  \e4  \
+                                                | |e3 ----\\
+                                                |/         \\
+                                                v0-----------v1
+                                                    e2
+    '''
+    import FIAT.shapes
+    basis = element.function_space()
+    dim   = FIAT.shapes.dimension(basis.base.shape)
+    ids   = element.Udual.entity_ids
+    if dim == 1:
+      perm = []
+      for e in ids[1]:
+        perm.extend(ids[1][e])
+      for v in ids[0]:
+        perm.extend(ids[0][v])
+    elif dim == 2:
+      perm = []
+      for f in ids[2]:
+        perm.extend(ids[2][f])
+      for e in ids[1]:
+        perm.extend(ids[1][(e+2)%3])
+      for v in ids[0]:
+        perm.extend(ids[0][v])
+    elif dim == 3:
+      print 'WARING: 3D FIAT-Sieve permuation not yet implemented'
+      perm = []
+      for c in ids[3]:
+        perm.extend(ids[3][c])
+      for f in ids[2]:
+        perm.extend(ids[2][f])
+      for e in ids[1]:
+        perm.extend(ids[1][(e+2)%6])
+      for v in ids[0]:
+        perm.extend(ids[0][v])
+    else:
+      perm = None
+    print element.Udual.pts
+    print element.Udual.entity_ids
+    print 'Perm:',perm
+    return perm
+
   def getBasisStructs(self, name, element, quadrature, num):
     '''Return C arrays with the basis functions and their derivatives evalauted at the quadrature points
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
@@ -81,9 +136,19 @@ class QuadratureGenerator(script.Script):
     numFunctions.replacementText = str(len(basis))
     basisName = name+'Basis'+ext
     basisDerName = name+'BasisDerivatives'+ext
+    perm = self.getBasisFuncOrder(element)
+    basisTab = Numeric.transpose(basis.tabulate(points))
+    basisDerTab = Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+    if not perm is None:
+      basisTabOld    = Numeric.array(basisTab)
+      basisDerTabOld = Numeric.array(basisDerTab)
+      for q in range(len(points)):
+        for i,pi in enumerate(perm):
+          basisTab[q][i]    = basisTabOld[q][pi]
+          basisDerTab[q][i] = basisDerTabOld[q][pi]
     return [numFunctions,
-            self.getArray(self.Cxx.getVar(basisName), Numeric.transpose(basis.tabulate(points)), 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
-            self.getArray(self.Cxx.getVar(basisDerName), Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)]), 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
+            self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
+            self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
 
   def getQuadratureBlock(self, num):
     from Cxx import CompoundStatement
@@ -126,6 +191,151 @@ class QuadratureGenerator(script.Script):
                                 [], stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
+  def getIntegratorSetup(self, n, element):
+    import FIAT.shapes
+    from Cxx import Break, CompoundStatement, Function, Pointer, Switch
+    dim = FIAT.shapes.dimension(element.function_space().base.shape)
+    ids = element.Udual.entity_ids
+    pts = element.Udual.pts
+    perm = self.getBasisFuncOrder(element)
+    p   = 0
+    funcName = 'IntegrateDualBasis_gen_'+str(n)
+    idxVar  = self.Cxx.getVar('dualIndex')
+    refVar  = self.Cxx.getVar('refCoords')
+    decls = []
+    decls.append(self.Cxx.getArray(refVar,   self.Cxx.getType('double'), 2))
+    decls.append(self.Cxx.getArray('coords', self.Cxx.getType('double'), 2))
+    stmts = []
+    switch  = Switch()
+    switch.branch = idxVar
+    cmpd = CompoundStatement()
+    if dim == 1:
+      if len(ids[1][0]) == 0:
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('0')
+        cmpd.children.append(retStmt)
+      elif len(ids[1][0]) == 1:
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][0][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('0')
+        cmpd.children.extend([cStmt, Break()])
+        p += 1
+      else:
+        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
+      if len(ids[0][0]) == 0:
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('1')
+        cmpd.children.append(retStmt)
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('2')
+        cmpd.children.append(retStmt)
+      elif len(ids[0][0]) == 1:
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][0][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('1')
+        cmpd.children.extend([cStmt, Break()])
+        p += 1
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][1][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('2')
+        cmpd.children.extend([cStmt, Break()])
+        p += 1
+      else:
+        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
+    elif dim == 2:
+      if len(ids[2][0]) == 0:
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('0')
+        cmpd.children.append(retStmt)
+      elif len(ids[2][0]) == 1:
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[2][0][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('0')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+      else:
+        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
+      if len(ids[1][0]) == 0:
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('1')
+        cmpd.children.append(retStmt)
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('2')
+        cmpd.children.append(retStmt)
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('3')
+        cmpd.children.append(retStmt)
+      elif len(ids[1][0]) == 1:
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][0][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('1')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][1][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('2')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][2][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('3')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+      else:
+        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
+      if len(ids[0][0]) == 0:
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('4')
+        cmpd.children.append(retStmt)
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('5')
+        cmpd.children.append(retStmt)
+        retStmt = self.Cxx.getReturn(0.0)
+        retStmt.caseLabel = self.Cxx.getValue('6')
+        cmpd.children.append(retStmt)
+      elif len(ids[0][0]) == 1:
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][0][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('4')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][1][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('5')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][2][0]][0]))
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+        cStmt.caseLabel = self.Cxx.getValue('6')
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+        p += 1
+      else:
+        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
+    elif dim == 3:
+      pass
+    cStmt = self.Cxx.getExpStmt(self.Cxx.getFunctionCall('printf', [self.Cxx.getString('dualIndex: %d\\n'), 'dualIndex']))
+    cStmt.caseLabel = self.Cxx.getValue('default')
+    cmpd.children.extend([cStmt, self.Cxx.getThrow(self.Cxx.getFunctionCall('ALE::Exception', [self.Cxx.getString('Bad dual index')]))])
+    switch.children = [cmpd]
+    stmts.append(switch)
+    basisLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('e', 'int'), 0, dim)
+    basisLoop.children[0].children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(self.Cxx.getArrayRef('coords', 'd'), self.Cxx.getMultiplication(self.Cxx.getArrayRef('J', self.Cxx.getAddition(self.Cxx.getMultiplication('d', dim), 'e')), self.Cxx.getGroup(self.Cxx.getAddition(self.Cxx.getArrayRef(refVar, 'e'), 1.0))))))
+    testLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('d', 'int'), 0, dim)
+    testLoop.children[0].children.extend([self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef('coords', 'd'), self.Cxx.getArrayRef('v0', 'd'))), basisLoop])
+    stmts.append(testLoop)
+    stmts.append(self.Cxx.getReturn(self.Cxx.getFunctionCall(self.Cxx.getGroup(self.Cxx.getIndirection('func')), ['coords'])))
+    bcFunc = Function()
+    bcFunc.children = [self.Cxx.getDeclGroup(self.Cxx.getDeclarator('func', Pointer()))]
+    bcFunc.type = self.Cxx.getType('double')
+    bcFunc.parameters = [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))]
+    func = self.Cxx.getFunction(funcName, self.Cxx.getType('double'),
+                                [self.Cxx.getParameter('v0', self.Cxx.getType('double', 1, isConst = 1)),
+                                 self.Cxx.getParameter('J',  self.Cxx.getType('double', 1, isConst = 1)),
+                                 self.Cxx.getParameter(idxVar, self.Cxx.getType('int', isConst = 1)),
+                                 self.Cxx.getParameter(None, bcFunc)],
+                                decls, stmts)
+    return self.Cxx.getFunctionHeader(funcName)+[func]
+
   def getSectionSetup(self, n, element):
     from Cxx import CompoundStatement
     funcName = 'CreateProblem_gen_'+str(n)
@@ -159,10 +369,14 @@ class QuadratureGenerator(script.Script):
       cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setNumDof'), [d, len(ids[0])])))
     trueBranch = CompoundStatement()
     trueBranch.children = [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])),
-                           self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getStructRef(optVar, 'exactFunc')]))]
+                           self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getStructRef(optVar, 'exactFunc')])),
+                           self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n)]))]
     cmpd.children.append(self.Cxx.getIf(self.Cxx.getEquality(self.Cxx.getStructRef(optVar, 'bcType'), 'DIRICHLET'), [trueBranch]))
     cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'setDebug'), [self.Cxx.getStructRef(optVar, 'debug')])))
     cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setupField'), ['s'])))
+    cmpd.children.append(self.Cxx.getIf(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug')),
+                                        [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'view'),
+                                                                                      [self.Cxx.getString('Default field')]))]))
     stmts.append(cmpd)
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealDestroy', [secVar])))
     stmts.append(self.Cxx.getReturn(isPetsc = 1))
@@ -357,6 +571,7 @@ class QuadratureGenerator(script.Script):
         quadrature = self.createQuadrature(shape, 2*order+1)
         defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
+        defns.extend(self.getIntegratorSetup(n, element))
         defns.extend(self.getSectionSetup(n, element))
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())

@@ -1115,10 +1115,9 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 template<typename Atlas>
 PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
-  MPI_Comm                                      comm      = mesh->comm();
-  const ALE::Obj<ALE::Mesh>              adjBundle = new ALE::Mesh(comm, mesh->debug());
-  const ALE::Obj<ALE::Mesh::sieve_type>  adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
-  const ALE::Obj<ALE::Mesh::sieve_type>& sieve     = mesh->getSieve();
+  MPI_Comm                              comm      = mesh->comm();
+  const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, mesh->debug());
+  const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
   PetscInt       numLocalRows, firstRow;
   PetscInt      *dnz, *onz;
   PetscErrorCode ierr;
@@ -1133,7 +1132,15 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   const typename Atlas::chart_type& chart = atlas->getChart();
 
   for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    adjGraph->addCone(sieve->cone(sieve->support(*c_iter)), *c_iter);
+    const Obj<typename ALE::Mesh::sieve_type::supportArray>& star = ALE::Closure::star(mesh, *c_iter);
+
+    for(typename ALE::Mesh::sieve_type::supportArray::const_iterator s_iter = star->begin(); s_iter != star->end(); ++s_iter) {
+      const Obj<typename ALE::Mesh::sieve_type::coneArray>& closure = ALE::Closure::closure(mesh, *s_iter);
+
+      for(typename ALE::Mesh::sieve_type::coneArray::const_iterator cl_iter = closure->begin(); cl_iter != closure->end(); ++cl_iter) {
+        adjGraph->addCone(*cl_iter, *c_iter);
+      }
+    }
   }
   /* Distribute adjacency graph */
   adjBundle->constructOverlap();
