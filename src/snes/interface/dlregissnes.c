@@ -55,6 +55,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
+  ierr = MatSNESMFRegisterAll(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
