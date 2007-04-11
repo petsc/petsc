@@ -129,10 +129,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (VecList) {
-    ierr = PetscFListDestroy(VecList);CHKERRQ(ierr);
-    VecList = PETSC_NULL;
-  }
+  ierr = PetscFListDestroy(&VecList);CHKERRQ(ierr);
   VecRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

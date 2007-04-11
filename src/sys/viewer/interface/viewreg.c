@@ -109,10 +109,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscViewerList) {
-    ierr = PetscFListDestroy(PetscViewerList);CHKERRQ(ierr);
-    PetscViewerList = 0;
-  }
+  ierr = PetscFListDestroy(&PetscViewerList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -85,10 +85,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (MatList) {
-    ierr = PetscFListDestroy(MatList);CHKERRQ(ierr);
-    MatList = 0;
-  }
+  ierr = PetscFListDestroy(&MatList);CHKERRQ(ierr);
   MatRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

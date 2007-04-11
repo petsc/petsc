@@ -144,10 +144,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (TSList) {
-    ierr = PetscFListDestroy(TSList);CHKERRQ(ierr);
-    TSList = PETSC_NULL;
-  }
+  ierr = PetscFListDestroy(&TSList);CHKERRQ(ierr);
   TSRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }

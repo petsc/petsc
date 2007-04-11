@@ -165,10 +165,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (PetscDrawList) {
-    ierr = PetscFListDestroy(PetscDrawList);CHKERRQ(ierr);
-    PetscDrawList = 0;
-  }
+  ierr = PetscFListDestroy(&PetscDrawList);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
