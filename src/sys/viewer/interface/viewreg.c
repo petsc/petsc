@@ -34,7 +34,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate(MPI_Comm comm,PetscViewer *invi
   PetscFunctionBegin;
   *inviewer = 0;
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
-  ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscViewerInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
   ierr = PetscHeaderCreate(viewer,_p_PetscViewer,struct _PetscViewerOps,PETSC_VIEWER_COOKIE,-1,"PetscViewer",comm,PetscViewerDestroy,0);CHKERRQ(ierr);
   *inviewer           = viewer;

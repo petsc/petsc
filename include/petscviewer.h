@@ -66,6 +66,7 @@ E*/
 extern PetscFList PetscViewerList;
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterAll(const char *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegisterDestroy(void);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerRegister(const char*,const char*,const char*,PetscErrorCode (*)(PetscViewer));
 
