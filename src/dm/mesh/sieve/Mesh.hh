@@ -25,14 +25,18 @@ namespace ALE {
     typedef Section<point_type, int>                                  int_section_type;
     typedef std::map<std::string, Obj<int_section_type> >             int_sections_type;
     typedef ALE::Point                                                index_type;
-    typedef typename sieve_type::coneArray                            coneArray;
-    typedef typename sieve_type::supportArray                         supportArray;
-    typedef std::vector<index_type>                                   indexArray;
+    typedef std::pair<index_type, int>                                oIndex_type;
+    typedef std::vector<oIndex_type>                                  oIndexArray;
+    typedef std::pair<int *, int>                                     indices_type;
     typedef NumberingFactory<Bundle<sieve_type> >                     NumberingFactory;
     typedef typename NumberingFactory::numbering_type                 numbering_type;
     typedef typename NumberingFactory::order_type                     order_type;
     typedef typename ALE::Sifter<int,point_type,point_type>           send_overlap_type;
     typedef typename ALE::Sifter<point_type,int,point_type>           recv_overlap_type;
+    typedef typename ALE::SieveAlg<Bundle<sieve_type> >               sieve_alg_type;
+    typedef typename sieve_alg_type::coneArray                        coneArray;
+    typedef typename sieve_alg_type::orientedConeArray                oConeArray;
+    typedef typename sieve_alg_type::supportArray                     supportArray;
   protected:
     Obj<sieve_type>       _sieve;
     labels_type           _labels;
@@ -41,7 +45,7 @@ namespace ALE {
     arrow_sections_type   _arrowSections;
     real_sections_type    _realSections;
     int_sections_type     _intSections;
-    Obj<indexArray>       _indexArray;
+    Obj<oIndexArray>      _indexArray;
     Obj<NumberingFactory> _factory;
     bool                   _calculatedOverlap;
     Obj<send_overlap_type> _sendOverlap;
@@ -52,7 +56,7 @@ namespace ALE {
     Obj<std::set<point_type> > _modifiedPoints;
   public:
     Bundle(MPI_Comm comm, int debug = 0) : ALE::ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
-      this->_indexArray        = new indexArray();
+      this->_indexArray        = new oIndexArray();
       this->_modifiedPoints    = new std::set<point_type>();
       this->_factory           = NumberingFactory::singleton(this->comm(), this->debug());
       this->_calculatedOverlap = false;
@@ -60,7 +64,7 @@ namespace ALE {
       this->_recvOverlap       = new recv_overlap_type(comm, debug);
     };
     Bundle(const Obj<sieve_type>& sieve) : ALE::ParallelObject(sieve->comm(), sieve->debug()), _sieve(sieve), _maxHeight(-1), _maxDepth(-1) {
-      this->_indexArray        = new indexArray();
+      this->_indexArray        = new oIndexArray();
       this->_modifiedPoints    = new std::set<point_type>();
       this->_factory           = NumberingFactory::singleton(this->comm(), this->debug());
       this->_calculatedOverlap = false;
@@ -279,7 +283,7 @@ namespace ALE {
     template<typename Section_>
     int size(const Obj<Section_>& section, const point_type& p) {
       const typename Section_::chart_type&  chart   = section->getAtlas()->getChart();
-      const Obj<coneArray>                  closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
+      const Obj<coneArray>                  closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), p);
       typename coneArray::iterator          end     = closure->end();
       int                                   size    = 0;
 
@@ -293,7 +297,7 @@ namespace ALE {
     template<typename Section_>
     int sizeWithBC(const Obj<Section_>& section, const point_type& p) {
       const typename Section_::chart_type&  chart   = section->getAtlas()->getChart();
-      const Obj<coneArray>                  closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
+      const Obj<coneArray>                  closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), p);
       typename coneArray::iterator          end     = closure->end();
       int                                   size    = 0;
 
@@ -304,67 +308,147 @@ namespace ALE {
       }
       return size;
     };
+  protected:
+    int *getIndexArray(const int size) {
+      static int *array   = NULL;
+      static int  maxSize = 0;
+
+      if (size > maxSize) {
+        maxSize = size;
+        if (array) delete [] array;
+        array = new int[maxSize];
+      };
+      return array;
+    };
   public: // Index traversal
+    void expandInterval(const index_type& interval, PetscInt indices[], PetscInt *indx) {
+      const int end = interval.prefix + interval.index;
+
+      for(int i = interval.index; i < end; ++i) {
+        indices[(*indx)++] = i;
+      }
+    };
+    void expandInterval(const index_type& interval, const int orientation, PetscInt indices[], PetscInt *indx) {
+      if (orientation >= 0) {
+        for(int i = 0; i < interval.prefix; ++i) {
+          indices[(*indx)++] = interval.index + i;
+        }
+      } else {
+        for(int i = interval.prefix-1; i >= 0; --i) {
+          indices[(*indx)++] = interval.index + i;
+        }
+      }
+      for(int i = 0; i < -interval.prefix; ++i) {
+        indices[(*indx)++] = -1;
+      }
+    };
+    void expandIntervals(Obj<oIndexArray> intervals, PetscInt *indices) {
+      int k = 0;
+
+      for(typename oIndexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
+        this->expandInterval(i_iter->first, i_iter->second, indices, &k);
+      }
+    }
     template<typename Section_>
-    const Obj<indexArray>& getIndices(const Obj<Section_>& section, const point_type& p, const int level = -1) {
+    const indices_type getIndices(const Obj<Section_>& section, const point_type& p, const int level = -1) {
       this->_indexArray->clear();
+      int size = 0;
 
       if (level == 0) {
-        this->_indexArray->push_back(section->getIndex(p));
+        const index_type& idx = section->getIndex(p);
+
+        this->_indexArray->push_back(oIndex_type(idx, 0));
+        size += std::abs(idx.prefix);
       } else if ((level == 1) || (this->height() == 1)) {
         const Obj<typename sieve_type::coneSequence>& cone = this->_sieve->cone(p);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
+        const index_type& idx = section->getIndex(p);
 
-        this->_indexArray->push_back(section->getIndex(p));
+        this->_indexArray->push_back(idx);
+        size += idx.prefix;
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
-          this->_indexArray->push_back(section->getIndex(*p_iter));
+          const index_type& pIdx = section->getIndex(*p_iter);
+
+          this->_indexArray->push_back(oIndex_type(pIdx, 0));
+          size += std::abs(pIdx.prefix);
         }
       } else if (level == -1) {
-        const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
-        typename coneArray::iterator end     = closure->end();
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
 
-        for(typename sieve_type::coneSet::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          this->_indexArray->push_back(section->getIndex(*p_iter));
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          const index_type& pIdx = section->getIndex(p_iter->first);
+
+          this->_indexArray->push_back(oIndex_type(pIdx, p_iter->second));
+          size += std::abs(pIdx.prefix);
         }
       } else {
         throw ALE::Exception("Bundle has not yet implemented nCone");
       }
-      return this->_indexArray;
+      if (this->debug()) {
+        for(typename oIndexArray::iterator i_iter = this->_indexArray->begin(); i_iter != this->_indexArray->end(); ++i_iter) {
+          printf("[%d]index interval (%d, %d)\n", this->commRank(), i_iter->first.prefix, i_iter->first.index);
+        }
+      }
+      int *indexArray = this->getIndexArray(size);
+
+      this->expandIntervals(this->_indexArray, indexArray);
+      return indices_type(indexArray, size);
     };
     template<typename Section_, typename Numbering>
-    const Obj<indexArray>& getIndices(const Obj<Section_>& section, const point_type& p, const Obj<Numbering>& numbering, const int level = -1) {
+    const indices_type getIndices(const Obj<Section_>& section, const point_type& p, const Obj<Numbering>& numbering, const int level = -1) {
       this->_indexArray->clear();
+      int size = 0;
 
       if (level == 0) {
-        this->_indexArray->push_back(section->getIndex(p, numbering));
+        const index_type& idx = section->getIndex(p, numbering);
+
+        this->_indexArray->push_back(oIndex_type(idx, 0));
+        size += std::abs(idx.prefix);
       } else if ((level == 1) || (this->height() == 1)) {
         const Obj<typename sieve_type::coneSequence>& cone = this->_sieve->cone(p);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
+        const index_type& idx = section->getIndex(p, numbering);
 
-        this->_indexArray->push_back(section->getIndex(p, numbering));
+        this->_indexArray->push_back(oIndex_type(idx, 0));
+        size += std::abs(idx.prefix);
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
-          this->_indexArray->push_back(section->getIndex(*p_iter, numbering));
+          const index_type& pIdx = section->getIndex(*p_iter, numbering);
+
+          this->_indexArray->push_back(oIndex_type(pIdx, 0));
+          size += std::abs(pIdx.prefix);
         }
       } else if (level == -1) {
-        const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
-        typename coneArray::iterator end     = closure->end();
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
 
-        for(typename sieve_type::coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          this->_indexArray->push_back(section->getIndex(*p_iter, numbering));
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          const index_type& pIdx = section->getIndex(p_iter->first, numbering);
+
+          this->_indexArray->push_back(oIndex_type(pIdx, p_iter->second));
+          size += std::abs(pIdx.prefix);
         }
       } else {
         throw ALE::Exception("Bundle has not yet implemented nCone");
       }
-      return this->_indexArray;
+      if (this->debug()) {
+        for(typename oIndexArray::iterator i_iter = this->_indexArray->begin(); i_iter != this->_indexArray->end(); ++i_iter) {
+          printf("[%d]index interval (%d, %d)\n", this->commRank(), i_iter->first.prefix, i_iter->first.index);
+        }
+      }
+      int *indexArray = this->getIndexArray(size);
+
+      this->expandIntervals(this->_indexArray, indexArray);
+      return indices_type(indexArray, size);
     };
   public: // Retrieval traversal
     // Return the values for the closure of this point
     //   use a smart pointer?
     template<typename Section_>
     const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
-      const int                             size   = this->sizeWithBC(section, p);
-      typename Section_::value_type        *values = section->getRawArray(size);
-      int                                   j      = -1;
+      const int                       size   = this->sizeWithBC(section, p);
+      typename Section_::value_type  *values = section->getRawArray(size);
+      int                             j      = -1;
 
       // We could actually ask for the height of the individual point
       if (this->height() < 2) {
@@ -386,15 +470,21 @@ namespace ALE {
           }
         }
       } else {
-        const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
-        typename coneArray::iterator end     = closure->end();
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
 
-        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          const int& dim = std::abs(section->getFiberDimension(*p_iter));
-          const typename Section_::value_type *array = section->restrictPoint(*p_iter);
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          const typename Section_::value_type *array = section->restrictPoint(p_iter->first);
+          const int& dim = std::abs(section->getFiberDimension(p_iter->first));
 
-          for(int i = 0; i < dim; ++i) {
-            values[++j] = array[i];
+          if (p_iter->second >= 0) {
+            for(int i = 0; i < dim; ++i) {
+              values[++j] = array[i];
+            }
+          } else {
+            for(int i = dim-1; i >= 0; --i) {
+              values[++j] = array[i];
+            }
           }
         }
       }
@@ -422,12 +512,12 @@ namespace ALE {
           j += std::abs(section->getFiberDimension(*p_iter));
         }
       } else {
-        const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
-        typename coneArray::iterator end     = closure->end();
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
 
-        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          section->updatePoint(*p_iter, &v[j]);
-          j += std::abs(section->getFiberDimension(*p_iter));
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          section->updatePoint(p_iter->first, &v[j], p_iter->second);
+          j += std::abs(section->getFiberDimension(p_iter->first));
         }
       }
     };
@@ -445,12 +535,12 @@ namespace ALE {
           j += std::abs(section->getFiberDimension(*p_iter));
         }
       } else {
-        const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
-        typename coneArray::iterator end     = closure->end();
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
 
-        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          section->updateAddPoint(*p_iter, &v[j]);
-          j += std::abs(section->getFiberDimension(*p_iter));
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          section->updateAddPoint(p_iter->first, &v[j], p_iter->second);
+          j += std::abs(section->getFiberDimension(p_iter->first));
         }
       }
     };
@@ -468,12 +558,12 @@ namespace ALE {
           j += std::abs(section->getFiberDimension(*p_iter));
         }
       } else {
-        const Obj<coneArray>         closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), p);
-        typename coneArray::iterator end     = closure->end();
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
 
-        for(typename coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          section->updatePointBC(*p_iter, &v[j]);
-          j += std::abs(section->getFiberDimension(*p_iter));
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          section->updatePointBC(p_iter->first, &v[j], p_iter->first);
+          j += std::abs(section->getFiberDimension(p_iter->first));
         }
       }
     };
@@ -696,6 +786,7 @@ namespace ALE {
     typedef base_type::order_type            order_type;
     typedef base_type::send_overlap_type     send_overlap_type;
     typedef base_type::recv_overlap_type     recv_overlap_type;
+    typedef base_type::sieve_alg_type        sieve_alg_type;
   protected:
     int                   _dim;
     // Discretization
@@ -850,7 +941,7 @@ namespace ALE {
         if (this->height(*e_iter) == 1) {
           const point_type cell = *sieve->support(*e_iter)->begin();
 
-          this->setValue(label, cell, 1);
+          this->setValue(label, cell, 2);
         }
       }
     };
@@ -870,30 +961,31 @@ namespace ALE {
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       if (!name.empty()) {
-        const Obj<label_sequence>&     boundary    = this->getLabelStratum(name, 1);
-        const Obj<real_section_type>&  coordinates = this->getRealSection("coordinates");
-        const point_type               firstCell   = *this->heightStratum(0)->begin();
-        real_section_type::value_type *values      = new real_section_type::value_type[this->sizeWithBC(s, firstCell)];
-        double                        *v0          = new double[this->getDimension()];
-        double                        *J           = new double[this->getDimension()*this->getDimension()];
+        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(name, 2);
+        const Obj<real_section_type>&  coordinates   = this->getRealSection("coordinates");
+        real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, *boundaryCells->begin())];
+        double                        *v0            = new double[this->getDimension()];
+        double                        *J             = new double[this->getDimension()*this->getDimension()];
         double                         detJ;
 
-        for(label_sequence::iterator c_iter = boundary->begin(); c_iter != boundary->end(); ++c_iter) {
-          if (this->height(*c_iter) > 0) continue;
-          const Obj<coneArray>      closure = ALE::Closure::closure(this, this->getArrowSection("orientation"), *c_iter);
+        for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
+          const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
           const coneArray::iterator end     = closure->end();
-          int                       cl      = 0;
-          int                       v       = -1;
+          int                       v       = 0;
 
           this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
-          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter, ++cl) {
-            if (s->getConstraintDimension(*cl_iter)) {
-              values[++v] = this->_boundaryCondition->integrateDual(v0, J, cl);
+          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+            const int cDim = s->getConstraintDimension(*cl_iter);
+
+            if (cDim) {
+              for(int d = 0; d < cDim; ++d, ++v) {
+                values[v] = this->_boundaryCondition->integrateDual(v0, J, v);
+              }
             } else {
               const int dim = s->getFiberDimension(*cl_iter);
 
-              for(int d = 0; d < dim; ++d) {
-                values[++v] = 0.0;
+              for(int d = 0; d < dim; ++d, ++v) {
+                values[v] = 0.0;
               }
             }
           }

@@ -99,16 +99,14 @@ PetscErrorCode TraverseCells(DM dm, Options *options)
   ALE::Obj<ALE::Mesh> m;
   
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const int                                      rank        = m->commRank();
-  const ALE::Mesh::real_section_type::patch_type patch       = 0;
-  const ALE::Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::topology_type>&      topology    = m->getTopology();
-  const ALE::Obj<ALE::Mesh::sieve_type>&         sieve       = topology->getPatch(patch);
+  const int                                     rank        = m->commRank();
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::sieve_type>&        sieve       = m->getSieve();
     
   // Loop over cells
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell (including ghosts), on each process\n");CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  const ALE::Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Cell %d\n", rank, *c_iter);CHKERRQ(ierr);
     const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& faces = sieve->cone(*c_iter);
@@ -117,11 +115,11 @@ PetscErrorCode TraverseCells(DM dm, Options *options)
     // Loop over faces owned by this process on the given cell    
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != end; ++f_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Face %d, with coordinates ", *f_iter);CHKERRQ(ierr);
-      const ALE::Obj<ALE::Mesh::sieve_type::coneArray>& vertices = sieve->nCone(*f_iter, topology->depth(patch, *f_iter));
+      const ALE::Obj<ALE::Mesh::sieve_type::coneArray>& vertices = sieve->nCone(*f_iter, m->depth(*f_iter));
       
       // Loop over vertices of the given face
       for(ALE::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const ALE::Mesh::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
+        const ALE::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
 	
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (", *v_iter);CHKERRQ(ierr);
         for(int d = 0; d < m->getDimension(); ++d) {
@@ -134,12 +132,23 @@ PetscErrorCode TraverseCells(DM dm, Options *options)
     }
 
     // Loop over closure
-    const Obj<ALE::Mesh::coneArray> closure = ALE::Closure::closure(m, *c_iter);
-    ALE::Mesh::coneArray::iterator  cEnd    = closure->end();
+    typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
+    const Obj<sieve_alg_type::coneArray> closure = sieve_alg_type::closure(m, *c_iter);
+    sieve_alg_type::coneArray::iterator  cEnd    = closure->end();
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Closure of %d\n      ", *c_iter);CHKERRQ(ierr);
-    for(ALE::Mesh::coneArray::iterator p_iter = closure->begin(); p_iter != cEnd; ++p_iter) {
+    for(sieve_alg_type::coneArray::iterator p_iter = closure->begin(); p_iter != cEnd; ++p_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d", *p_iter);CHKERRQ(ierr);
+    }
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
+
+    // Loop over oriented closure
+    const Obj<sieve_alg_type::orientedConeArray> oClosure = sieve_alg_type::orientedClosure(m, *c_iter);
+    sieve_alg_type::orientedConeArray::iterator  ocEnd    = oClosure->end();
+
+    ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Oriented Closure of %d\n      ", *c_iter);CHKERRQ(ierr);
+    for(sieve_alg_type::orientedConeArray::iterator p_iter = oClosure->begin(); p_iter != ocEnd; ++p_iter) {
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " (%d, %d)", p_iter->first, p_iter->second);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
   }

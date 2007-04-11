@@ -422,8 +422,8 @@ namespace ALE {
       int numBcFunc = atoi(strtok(fgets(buf, 2048, f), " "));
       if (numBcFunc != 0) {throw ALE::Exception("Cannot handle BCFUNCS after rewrite");}
       for(int bc = 0; bc < numBcFunc; bc++) {
-        const char *x = strtok(fgets(buf, 2048, f), " ");
 #if 0
+        const char *x = strtok(fgets(buf, 2048, f), " ");
         Mesh::bc_value_type value;
 
         // Ignore function number

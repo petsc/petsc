@@ -462,41 +462,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "ExpandInterval"
-inline void ExpandInterval(const ALE::Point& interval, int indices[], int& indx)
-{
-  const int end = interval.prefix + interval.index;
-  for(int i = interval.index; i < end; i++) {
-    indices[indx++] = i;
-  }
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ExpandInterval_New"
-inline void ExpandInterval_New(ALE::Point interval, PetscInt indices[], PetscInt *indx)
-{
-  for(int i = 0; i < interval.prefix; i++) {
-    indices[(*indx)++] = interval.index + i;
-  }
-  for(int i = 0; i < -interval.prefix; i++) {
-    indices[(*indx)++] = -1;
-  }
-}
-
-#undef __FUNCT__
-#define __FUNCT__ "ExpandIntervals"
-PetscErrorCode ExpandIntervals(ALE::Obj<ALE::Mesh::indexArray> intervals, PetscInt *indices)
-{
-  int k = 0;
-
-  PetscFunctionBegin;
-  for(ALE::Mesh::indexArray::iterator i_itor = intervals->begin(); i_itor != intervals->end(); i_itor++) {
-    ExpandInterval_New(*i_itor, indices, &k);
-  }
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCreateGlobalVector"
 /*@C
@@ -635,8 +600,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mes
     const ALE::Mesh::real_section_type::index_type& idx = atlas->restrictPoint(*p_iter)[0];
 
     // Map local indices to global indices
-    ExpandInterval(idx, localIndices, localIndx);
-    ExpandInterval(index_type(idx.prefix, globalOrder->getIndex(*p_iter)), globalIndices, globalIndx);
+    m->expandInterval(idx, localIndices, &localIndx);
+    m->expandInterval(index_type(idx.prefix, globalOrder->getIndex(*p_iter)), globalIndices, &globalIndx);
   }
   if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
   if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
@@ -936,32 +901,16 @@ PetscErrorCode assembleVector(Vec b, PetscInt e, PetscScalar v[], InsertMode mod
 #define __FUNCT__ "updateOperator"
 PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& section, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, const ALE::Mesh::point_type& e, PetscScalar array[], InsertMode mode)
 {
-  static PetscInt  indicesSize = 0;
-  static PetscInt *indices     = NULL;
-  PetscInt         numIndices  = 0;
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  const ALE::Obj<ALE::Mesh::indexArray> intervals = m->getIndices(section, e, globalOrder);
+  const ALE::Mesh::indices_type indicesBlock = m->getIndices(section, e, globalOrder);
+  const PetscInt *indices    = indicesBlock.first;
+  const int&      numIndices = indicesBlock.second;
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (section->debug()) {printf("[%d]mat for element %d\n", section->commRank(), e);}
-  for(ALE::Mesh::indexArray::iterator i_iter = intervals->begin(); i_iter != intervals->end(); ++i_iter) {
-    numIndices += std::abs(i_iter->prefix);
-    if (section->debug()) {
-      printf("[%d]mat interval (%d, %d)\n", section->commRank(), i_iter->prefix, i_iter->index);
-    }
-  }
-  if (indicesSize && (indicesSize != numIndices)) {
-    ierr = PetscFree(indices); CHKERRQ(ierr);
-    indices = NULL;
-  }
-  if (!indices) {
-    indicesSize = numIndices;
-    ierr = PetscMalloc(indicesSize * sizeof(PetscInt), &indices); CHKERRQ(ierr);
-  }
-  ierr = ExpandIntervals(intervals, indices); CHKERRQ(ierr);
   if (section->debug()) {
+    printf("[%d]mat for element %d\n", section->commRank(), e);
     for(int i = 0; i < numIndices; i++) {
       printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
     }
@@ -989,55 +938,23 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Ob
 #define __FUNCT__ "updateOperatorGeneral"
 PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
 {
-  static PetscInt  rowIndicesSize = 0;
-  static PetscInt *rowIndices     = NULL;
-  PetscInt         numRowIndices  = 0;
-  static PetscInt  colIndicesSize = 0;
-  static PetscInt *colIndices     = NULL;
-  PetscInt         numColIndices  = 0;
-  PetscErrorCode   ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  const ALE::Obj<ALE::Mesh::indexArray> rowIntervals = m->getIndices(rowSection, rowE, rowGlobalOrder);
-  const ALE::Obj<ALE::Mesh::indexArray> colIntervals = m->getIndices(colSection, colE, colGlobalOrder);
+  const ALE::Mesh::indices_type rowIndicesBlock = m->getIndices(rowSection, rowE, rowGlobalOrder);
+  const PetscInt *rowIndices    = rowIndicesBlock.first;
+  const int&      numRowIndices = rowIndicesBlock.second;
+  const ALE::Mesh::indices_type colIndicesBlock = m->getIndices(colSection, colE, colGlobalOrder);
+  const PetscInt *colIndices    = colIndicesBlock.first;
+  const int&      numColIndices = colIndicesBlock.second;
 
   ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
-  if (rowSection->debug()) {printf("[%d]mat for elements %d %d\n", rowSection->commRank(), rowE, colE);}
-  for(ALE::Mesh::indexArray::iterator i_iter = rowIntervals->begin(); i_iter != rowIntervals->end(); ++i_iter) {
-    numRowIndices += std::abs(i_iter->prefix);
-    if (rowSection->debug()) {
-      printf("[%d]mat row interval (%d, %d)\n", rowSection->commRank(), i_iter->prefix, i_iter->index);
-    }
-  }
-  if (rowIndicesSize && (rowIndicesSize != numRowIndices)) {
-    ierr = PetscFree(rowIndices); CHKERRQ(ierr);
-    rowIndices = NULL;
-  }
-  if (!rowIndices) {
-    rowIndicesSize = numRowIndices;
-    ierr = PetscMalloc(rowIndicesSize * sizeof(PetscInt), &rowIndices); CHKERRQ(ierr);
-  }
-  ierr = ExpandIntervals(rowIntervals, rowIndices); CHKERRQ(ierr);
   if (rowSection->debug()) {
+    printf("[%d]mat for elements %d %d\n", rowSection->commRank(), rowE, colE);
     for(int i = 0; i < numRowIndices; i++) {
       printf("[%d]mat row indices[%d] = %d\n", rowSection->commRank(), i, rowIndices[i]);
     }
   }
-  for(ALE::Mesh::indexArray::iterator i_iter = colIntervals->begin(); i_iter != colIntervals->end(); ++i_iter) {
-    numColIndices += std::abs(i_iter->prefix);
-    if (colSection->debug()) {
-      printf("[%d]mat col interval (%d, %d)\n", colSection->commRank(), i_iter->prefix, i_iter->index);
-    }
-  }
-  if (colIndicesSize && (colIndicesSize != numColIndices)) {
-    ierr = PetscFree(colIndices); CHKERRQ(ierr);
-    colIndices = NULL;
-  }
-  if (!colIndices) {
-    colIndicesSize = numColIndices;
-    ierr = PetscMalloc(colIndicesSize * sizeof(PetscInt), &colIndices); CHKERRQ(ierr);
-  }
-  ierr = ExpandIntervals(colIntervals, colIndices); CHKERRQ(ierr);
   if (colSection->debug()) {
     for(int i = 0; i < numColIndices; i++) {
       printf("[%d]mat col indices[%d] = %d\n", colSection->commRank(), i, colIndices[i]);
@@ -1115,6 +1032,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
 template<typename Atlas>
 PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs, const ALE::Obj<Atlas>& atlas, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, Mat A)
 {
+  typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
   MPI_Comm                              comm      = mesh->comm();
   const ALE::Obj<ALE::Mesh>             adjBundle = new ALE::Mesh(comm, mesh->debug());
   const ALE::Obj<ALE::Mesh::sieve_type> adjGraph  = new ALE::Mesh::sieve_type(comm, mesh->debug());
@@ -1132,12 +1050,12 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
   const typename Atlas::chart_type& chart = atlas->getChart();
 
   for(typename Atlas::chart_type::const_iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-    const Obj<typename ALE::Mesh::sieve_type::supportArray>& star = ALE::Closure::star(mesh, *c_iter);
+    const Obj<typename sieve_alg_type::supportArray>& star = sieve_alg_type::star(mesh, *c_iter);
 
-    for(typename ALE::Mesh::sieve_type::supportArray::const_iterator s_iter = star->begin(); s_iter != star->end(); ++s_iter) {
-      const Obj<typename ALE::Mesh::sieve_type::coneArray>& closure = ALE::Closure::closure(mesh, *s_iter);
+    for(typename sieve_alg_type::supportArray::const_iterator s_iter = star->begin(); s_iter != star->end(); ++s_iter) {
+      const Obj<typename sieve_alg_type::coneArray>& closure = sieve_alg_type::closure(mesh, *s_iter);
 
-      for(typename ALE::Mesh::sieve_type::coneArray::const_iterator cl_iter = closure->begin(); cl_iter != closure->end(); ++cl_iter) {
+      for(typename sieve_alg_type::coneArray::const_iterator cl_iter = closure->begin(); cl_iter != closure->end(); ++cl_iter) {
         adjGraph->addCone(*cl_iter, *c_iter);
       }
     }

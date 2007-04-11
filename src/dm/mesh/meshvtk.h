@@ -166,6 +166,7 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteElements"
   static PetscErrorCode writeElements(const Obj<ALE::Mesh>& mesh, PetscViewer viewer)
   {
+    typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
     const Obj<ALE::Mesh::sieve_type>&     sieve      = mesh->getSieve();
     const Obj<ALE::Mesh::label_sequence>& elements   = mesh->heightStratum(0);
     int                                          depth      = mesh->depth();
@@ -180,10 +181,10 @@ class VTKViewer {
     ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
     if (mesh->commRank() == 0) {
       for(ALE::Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        const Obj<ALE::Mesh::sieve_type::coneArray>& cone = ALE::Closure::nCone(mesh, *e_iter, depth);
+        const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(mesh, *e_iter, depth);
 
         ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
-        for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+        for(sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
           ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter));CHKERRQ(ierr);
         }
         ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
@@ -212,7 +213,7 @@ class VTKViewer {
 
       ierr = PetscMalloc(numLocalElements*corners * sizeof(int), &localVertices);CHKERRQ(ierr);
       for(ALE::Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        const Obj<ALE::Mesh::sieve_type::coneArray>& cone = ALE::Closure::nCone(mesh, *e_iter, depth);
+        const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(mesh, *e_iter, depth);
 
         if (cNumbering->isLocal(*e_iter)) {
           for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {

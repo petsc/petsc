@@ -617,29 +617,53 @@ namespace ALE {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
     // Update only the values associated to this point, not its closure
-    void updatePoint(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
       value_type       *a   = &(this->_array[idx.index]);
 
-      for(int i = 0; i < idx.prefix; ++i) {
-        a[i] = v[i];
+      if (orientation >= 0) {
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] = v[i];
+        }
+      } else {
+        const int dim = idx.prefix-1;
+
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] = v[dim-i];
+        }
       }
     };
     // Update only the values associated to this point, not its closure
-    void updateAddPoint(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
       value_type       *a   = &(this->_array[idx.index]);
 
-      for(int i = 0; i < idx.prefix; ++i) {
-        a[i] += v[i];
+      if (orientation >= 0) {
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] += v[i];
+        }
+      } else {
+        const int dim = idx.prefix-1;
+
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] += v[dim-i];
+        }
       }
     };
-    void updatePointBC(const point_type& p, const value_type v[]) {
+    void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
       value_type       *a   = &(this->_array[idx.index]);
 
-      for(int i = 0; i < std::abs(idx.prefix); ++i) {
-        a[i] = v[i];
+      if (orientation >= 0) {
+        for(int i = 0; i < std::abs(idx.prefix); ++i) {
+          a[i] = v[i];
+        }
+      } else {
+        const int dim = std::abs(idx.prefix)-1;
+
+        for(int i = 0; i < std::abs(idx.prefix); ++i) {
+          a[i] = v[dim-i];
+        }
       }
     };
   public: // BC

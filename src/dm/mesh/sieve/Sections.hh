@@ -60,12 +60,13 @@ namespace ALE {
           throw ALE::Exception("Partition size does not match the number of elements");
         }
         for(typename bundle_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-          const Obj<typename bundle_type::coneArray>& closure = ALE::Closure::closure(bundle, *e_iter);
+          typedef ALE::SieveAlg<bundle_type> sieve_alg_type;
+          const Obj<typename sieve_alg_type::coneArray>& closure = sieve_alg_type::closure(bundle, *e_iter);
           const int idx = cNumbering->getIndex(*e_iter);
 
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename bundle_type::supportArray>& star = ALE::Closure::star(bundle, *e_iter);
+            const Obj<typename sieve_alg_type::supportArray>& star = sieve_alg_type::star(bundle, *e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
@@ -152,12 +153,13 @@ namespace ALE {
           throw ALE::Exception("Partition size does not match the number of elements");
         }
         for(typename bundle_type::label_sequence::iterator e_iter = cells->begin(); e_iter != cells->end(); ++e_iter) {
-          const Obj<typename bundle_type::coneArray>& closure = ALE::Closure::closure(bundle, *e_iter);
+          typedef ALE::SieveAlg<bundle_type> sieve_alg_type;
+          const Obj<typename sieve_alg_type::coneArray>& closure = sieve_alg_type::closure(bundle, *e_iter);
           const int idx = cNumbering->getIndex(*e_iter);
 
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename bundle_type::supportArray>& star = ALE::Closure::star(bundle, *e_iter);
+            const Obj<typename sieve_alg_type::supportArray>& star = sieve_alg_type::star(bundle, *e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
