@@ -181,8 +181,7 @@ PetscErrorCode CharacteristicSetType(Characteristic c, const CharacteristicType 
     ierr = (*c->ops->destroy)(c);CHKERRQ(ierr);
     c->data = 0;
   }
-  /* Get the function pointers for the iterative method requested */
-  if (!CharacteristicRegisterAllCalled) {ierr = CharacteristicRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
+
   ierr =  PetscFListFind(c->comm, CharacteristicList, type, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown Characteristic type given: %s", type);
   c->setupcalled = 0;

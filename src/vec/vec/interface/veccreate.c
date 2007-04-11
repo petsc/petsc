@@ -26,7 +26,7 @@
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
 {
-  Vec v;
+  Vec            v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

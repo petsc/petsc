@@ -43,10 +43,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetType(Vec vec, VecType method)
 
   if (vec->map.n < 0 && vec->map.N < 0) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call VecSetSizes() first");
 
-  /* Get the function pointers for the vector requested */
-  if (!VecRegisterAllCalled) {
-    ierr = VecRegisterAll(PETSC_NULL);CHKERRQ(ierr);
-  }
   ierr = PetscFListFind(vec->comm, VecList, method,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown vector type: %s", method);
 

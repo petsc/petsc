@@ -51,8 +51,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat mat,MatSNESMFType ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  /* Get the function pointers for the requrested method */
-  if (!MatSNESMFRegisterAllCalled) {ierr = MatSNESMFRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
   ierr =  PetscFListFind(ctx->comm,MatSNESMPetscFList,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatSNESMF type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);

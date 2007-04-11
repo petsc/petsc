@@ -519,8 +519,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningSetType(MatPartitioning part,Ma
     part->setupcalled = 0;
   }
 
-  /* Get the function pointers for the method requested */
-  if (!MatPartitioningRegisterAllCalled){ ierr = MatPartitioningRegisterAll(0);CHKERRQ(ierr);}
   ierr =  PetscFListFind(part->comm,MatPartitioningList,type,(void (**)(void)) &r);CHKERRQ(ierr);
 
   if (!r) {SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown partitioning type %s",type);}
