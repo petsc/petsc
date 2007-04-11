@@ -7,6 +7,63 @@
 PetscCookie PETSC_DRAW_COOKIE = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscDrawInitializePackage" 
+/*@C
+  PetscInitializeDrawPackage - This function initializes everything in the PetscDraw package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the call to PetscInitialize()
+  when using static libraries.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Petsc, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PETSC_DRAW_COOKIE,   "Draw");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWAXIS_COOKIE,     "Axis");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWLG_COOKIE,       "Line Graph");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWHG_COOKIE,       "Histogram");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&DRAWSP_COOKIE,       "Scatter Plot");CHKERRQ(ierr);
+  /* Register Constructors */
+  ierr = PetscDrawRegisterAll(path);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "draw", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
+    }
+  }
+  /* Setup auxiliary packages */
+#if defined(PETSC_HAVE_MATHEMATICA)
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscDrawResizeWindow" 
 /*@
    PetscDrawResizeWindow - Allows one to resize a window from a program.

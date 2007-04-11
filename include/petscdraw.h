@@ -33,7 +33,8 @@ S*/
 typedef struct _p_PetscDraw* PetscDraw;
 
 extern PetscFList PetscDrawList;
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterAll(const char *);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawInitializePackage(const char[]);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDrawRegister(const char*,const char*,const char*,PetscErrorCode(*)(PetscDraw));

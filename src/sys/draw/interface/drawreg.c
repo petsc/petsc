@@ -42,6 +42,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate(MPI_Comm comm,const char display[
   PetscTruth     flag;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = PetscDrawInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   *indraw = 0;
   ierr = PetscHeaderCreate(draw,_p_PetscDraw,struct _PetscDrawOps,PETSC_DRAW_COOKIE,-1,"Draw",comm,PetscDrawDestroy,0);CHKERRQ(ierr);
   draw->data    = 0;
