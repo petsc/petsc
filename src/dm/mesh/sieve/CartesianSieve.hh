@@ -1,8 +1,8 @@
 #ifndef included_ALE_CartesianSieve_hh
 #define included_ALE_CartesianSieve_hh
 
-#ifndef  included_ALE_CoSieve_hh
-#include <CoSieve.hh>
+#ifndef  included_ALE_Bundle_hh
+#include <Bundle.hh>
 #endif
 
 namespace ALE {

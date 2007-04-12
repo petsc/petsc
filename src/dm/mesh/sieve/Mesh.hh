@@ -9,6 +9,10 @@
 #include <Field.hh>
 #endif
 
+#ifndef  included_ALE_SieveBuilder_hh
+#include <SieveBuilder.hh>
+#endif
+
 namespace ALE {
   template<typename Sieve_>
   class Bundle : public ALE::ParallelObject {

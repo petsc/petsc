@@ -1,8 +1,8 @@
 #ifndef included_ALE_SieveAlgorithms_hh
 #define included_ALE_SieveAlgorithms_hh
 
-#ifndef  included_ALE_Distribution_hh
-#include <CoSieve.hh>
+#ifndef  included_ALE_Sieve_hh
+#include <Sieve.hh>
 #endif
 
 namespace ALE {

@@ -1,10 +1,6 @@
 #ifndef included_ALE_Field_hh
 #define included_ALE_Field_hh
 
-#ifndef  included_ALE_Sieve_hh
-#include <Sieve.hh>
-#endif
-
 #ifndef  included_ALE_SieveAlgorithms_hh
 #include <SieveAlgorithms.hh>
 #endif
