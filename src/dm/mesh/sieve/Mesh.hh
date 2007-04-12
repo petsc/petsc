@@ -567,6 +567,29 @@ namespace ALE {
         }
       }
     };
+    template<typename Section_>
+    void updateAll(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      int j = 0;
+
+      if (this->height() < 2) {
+        section->updatePointBC(p, &v[j]);
+        j += std::abs(section->getFiberDimension(p));
+        const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+          section->updatePointAll(*p_iter, &v[j]);
+          j += std::abs(section->getFiberDimension(*p_iter));
+        }
+      } else {
+        const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator end     = closure->end();
+
+        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+          section->updatePointAll(p_iter->first, &v[j], p_iter->second);
+          j += std::abs(section->getFiberDimension(p_iter->first));
+        }
+      }
+    };
   public: // Allocation
     template<typename Section_>
     void allocate(const Obj<Section_>& section, const Obj<send_overlap_type>& sendOverlap = NULL) {
@@ -989,7 +1012,7 @@ namespace ALE {
               }
             }
           }
-          this->updateBC(s, *c_iter, values);
+          this->updateAll(s, *c_iter, values);
         }
         delete [] values;
         delete [] v0;

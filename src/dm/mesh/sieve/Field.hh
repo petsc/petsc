@@ -626,10 +626,10 @@ namespace ALE {
           a[i] = v[i];
         }
       } else {
-        const int dim = idx.prefix-1;
+        const int last = idx.prefix-1;
 
         for(int i = 0; i < idx.prefix; ++i) {
-          a[i] = v[dim-i];
+          a[i] = v[last-i];
         }
       }
     };
@@ -643,14 +643,31 @@ namespace ALE {
           a[i] += v[i];
         }
       } else {
-        const int dim = idx.prefix-1;
+        const int last = idx.prefix-1;
 
         for(int i = 0; i < idx.prefix; ++i) {
-          a[i] += v[dim-i];
+          a[i] += v[last-i];
         }
       }
     };
     void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
+      const index_type& idx = this->_atlas->restrictPoint(p)[0];
+      const int         dim = -idx.prefix;
+      value_type       *a   = &(this->_array[idx.index]);
+
+      if (orientation >= 0) {
+        for(int i = 0; i < dim; ++i) {
+          a[i] = v[i];
+        }
+      } else {
+        const int last = dim-1;
+
+        for(int i = 0; i < dim; ++i) {
+          a[i] = v[last-i];
+        }
+      }
+    };
+    void updatePointAll(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
       value_type       *a   = &(this->_array[idx.index]);
 
@@ -659,10 +676,10 @@ namespace ALE {
           a[i] = v[i];
         }
       } else {
-        const int dim = std::abs(idx.prefix)-1;
+        const int last = std::abs(idx.prefix)-1;
 
         for(int i = 0; i < std::abs(idx.prefix); ++i) {
-          a[i] = v[dim-i];
+          a[i] = v[last-i];
         }
       }
     };
@@ -922,46 +939,82 @@ namespace ALE {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
     // Update only the values associated to this point, not its closure
-    void updatePoint(const point_type& p, const value_type v[]) {
+    void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  dim   = this->getFiberDimension(p);
       const int&  cDim  = this->getConstraintDimension(p);
 
       if (!cDim) {
-        for(int i = 0; i < dim; ++i) {
-          array[i] = v[i];
+        if (orientation >= 0) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[i];
+          }
+        } else {
+          const int last = dim-1;
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[last-i];
+          }
         }
       } else {
         const typename bc_type::value_type *cDof = this->getConstraintDof(p);
         int                                 cInd = 0;
 
-        for(int i = 0, k = -1; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-          array[i] = v[++k];
+        if (orientation >= 0) {
+          for(int i = 0, k = -1; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[++k];
+          }
+        } else {
+          const int tDim = this->getConstrainedFiberDimension(p);
+
+          for(int i = 0, k = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[tDim-k];
+            ++k;
+          }
         }
       }
     };
     // Update only the values associated to this point, not its closure
-    void updateAddPoint(const point_type& p, const value_type v[]) {
+    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
       const value_type *array = this->restrictPoint(p);
       const int&        dim   = this->getFiberDimenson(p);
       const int&        cDim  = this->getConstraintDimenson(p);
 
       if (!cDim) {
-        for(int i = 0; i < dim; ++i) {
-          array[i] += v[i];
+        if (orientation >= 0) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[i];
+          }
+        } else {
+          const int last = dim-1;
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[last-i];
+          }
         }
       } else {
         const typename bc_type::value_type *cDof = this->getConstraintDof(p);
         int                                 cInd = 0;
 
-        for(int i = 0, k = -1; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-          array[i] += v[++k];
+        if (orientation >= 0) {
+          for(int i = 0, k = -1; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[++k];
+          }
+        } else {
+          const int tDim = this->getConstrainedDimension(p);
+
+          for(int i = 0, k = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[tDim-k];
+            ++k;
+          }
         }
       }
     };
-    void updatePointBC(const point_type& p, const value_type v[]) {
+    void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  dim   = this->getFiberDimension(p);
       const int&  cDim  = this->getConstraintDimension(p);
@@ -980,6 +1033,22 @@ namespace ALE {
         }
       }
     };
+    void updatePointAll(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  dim   = this->getFiberDimension(p);
+
+      if (orientation >= 0) {
+        for(int i = 0; i < dim; ++i) {
+          array[i] = v[i];
+        }
+      } else {
+        const int last = dim-1;
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] = v[last-i];
+        }
+      }
+    };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -993,11 +1062,11 @@ namespace ALE {
       }
       if (name == "") {
         if(rank == 0) {
-          txt << "viewing a Section" << std::endl;
+          txt << "viewing a GeneralSection" << std::endl;
         }
       } else {
         if(rank == 0) {
-          txt << "viewing Section '" << name << "'" << std::endl;
+          txt << "viewing GeneralSection '" << name << "'" << std::endl;
         }
       }
       const chart_type& chart = this->getChart();
@@ -1011,7 +1080,7 @@ namespace ALE {
           for(int i = 0; i < std::abs(dim); i++) {
             txt << " " << array[i];
           }
-          const int& dim = this->_bc->getFiberDimension(*p_iter);
+          const int& dim = this->getConstraintDimension(*p_iter);
 
           if (dim) {
             const typename bc_type::value_type *bcArray = this->_bc->restrictPoint(*p_iter);
