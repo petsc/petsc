@@ -32,13 +32,13 @@ typedef struct{
   PetscTruth     debug;           /* flag (1 indicates activation of debugging printouts) */
 } AppCtx;
 
-extern double exact(double,double);
+extern PetscScalar exact(PetscScalar,PetscReal);
 extern PetscErrorCode Monitor(TS,PetscInt,PetscReal,Vec,void*);
 extern void  Petsc_KSPSolve(AppCtx*);
-extern double bspl(double[],double,int,int,int[][2],int);
-extern void femBg(double[][3],PetscScalar*,PetscInt,PetscScalar*,PetscReal);
+extern PetscScalar bspl(PetscScalar*,PetscScalar,PetscInt,PetscInt,PetscInt[][2],PetscInt);
+extern void femBg(PetscScalar[][3],PetscScalar*,PetscInt,PetscScalar*,PetscReal);
 extern void femA(AppCtx*,PetscInt,PetscScalar*);
-extern void rhs(AppCtx *,double[], int, double[],double);
+extern void rhs(AppCtx*,PetscScalar*, PetscInt, PetscScalar*,PetscReal);
 extern PetscErrorCode RHSfunction(TS,PetscReal,Vec,Vec,void*);
 
 #undef __FUNCT__
@@ -51,8 +51,8 @@ int main(int argc,char **argv)
   PetscErrorCode ierr;
   TS             ts;
   Mat            Jmat;
-  AppCtx         appctx; /* user-defined application context */
-  Vec     	 init_sol,ts_sol; /* ts solution vector */
+  AppCtx         appctx;   /* user-defined application context */
+  Vec     	 init_sol; /* ts solution vector */
   PetscMPIInt    size;
 
   ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
@@ -92,7 +92,7 @@ int main(int argc,char **argv)
   ierr = MatCreateSeqAIJ(PETSC_COMM_WORLD, m, m, 3, PETSC_NULL, &appctx.Amat);
   ierr = MatSetFromOptions(appctx.Amat);
   /* set space grid points - interio points only! */   
-  ierr = PetscMalloc((nz+1)*sizeof(double),&z);CHKERRQ(ierr);
+  ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&z);CHKERRQ(ierr);
   for (i=0; i<nz; i++) z[i]=(i)*((zFinal-zInitial)/(nz-1)); 
   appctx.z = z;
   femA(&appctx,nz,z);
@@ -128,7 +128,7 @@ int main(int argc,char **argv)
   ierr = TSMonitorSet(ts,Monitor,&appctx,PETSC_NULL);CHKERRQ(ierr);
   
   /* set the right hand side of U_t = RHSfunction(U,t) */
-  ierr = TSSetRHSFunction(ts,(PetscErrorCode (*)(TS,double,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
+  ierr = TSSetRHSFunction(ts,(PetscErrorCode (*)(TS,PetscScalar,Vec,Vec,void*))RHSfunction,&appctx);CHKERRQ(ierr);
 
   if (appctx.useAlhs){
     /* set the left hand side matrix of Amat*U_t = rhs(U,t) */
@@ -189,9 +189,9 @@ int main(int argc,char **argv)
   Set exact solution 
   u(z,t) = sin(6*PI*z)*exp(-36.*PI*PI*t) + 3.*sin(2*PI*z)*exp(-4.*PI*PI*t)
 --------------------------------------------------------------------------*/
-double exact(double z,double t)
+PetscScalar exact(PetscScalar z,PetscReal t)
 {
-  double val, ex1, ex2;
+  PetscScalar val, ex1, ex2;
 
   ex1 = exp(-36.*PETSC_PI*PETSC_PI*t);
   ex2 = exp(-4.*PETSC_PI*PETSC_PI*t);
@@ -307,10 +307,10 @@ void  Petsc_KSPSolve(AppCtx *obj)
  *                     derivative of the basis function is returned.   *
  ***********************************************************************/
 
-double bspl(double x[],double xx,int il,int iq,int nll[][2],int id)
+PetscScalar bspl(PetscScalar *x, PetscScalar xx,PetscInt il,PetscInt iq,PetscInt nll[][2],PetscInt id)
 {
-  double  x1,x2,bfcn;
-  int i1,i2,iq1,iq2;
+  PetscScalar  x1,x2,bfcn;
+  PetscInt     i1,i2,iq1,iq2;
 
   /*** Determine which basis function in interval intrvl is to be used in ***/                        
   iq1 = iq;
@@ -335,12 +335,12 @@ double bspl(double x[],double xx,int il,int iq,int nll[][2],int id)
 /*---------------------------------------------------------
   Function called by rhs function to get B and g 
 ---------------------------------------------------------*/
-void femBg(double btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, PetscReal t)
+void femBg(PetscScalar btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, PetscReal t)
 {  
-  int i,j,jj,il,ip,ipp,ipq,iq,iquad,iqq;
-  int nli[num_z][2],indx[num_z];
-  double dd,dl,zip,zipq,zz,bb,b_z,bbb,bb_z,bij;
-  double zquad[num_z][3],dlen[num_z],qdwt[3];
+  PetscInt    i,j,jj,il,ip,ipp,ipq,iq,iquad,iqq;
+  PetscInt    nli[num_z][2],indx[num_z];
+  PetscScalar dd,dl,zip,zipq,zz,bb,b_z,bbb,bb_z,bij;
+  PetscScalar zquad[num_z][3],dlen[num_z],qdwt[3];
 
   /*  initializing everything - btri and f are initialized in rhs.c  */  
   for(i=0; i < nz; i++){
@@ -420,11 +420,10 @@ void femBg(double btri[][3],PetscScalar *f,PetscInt nz,PetscScalar *z, PetscReal
 
 void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
 {  
-  int             i,j,il,ip,ipp,ipq,iq,iquad,iqq;
-  int             nli[num_z][2],indx[num_z];
-  double          dd,dl,zip,zipq,zz,bb,bbb,aij;
-  double          rquad[num_z][3],dlen[num_z],qdwt[3],add_term;
-
+  PetscInt        i,j,il,ip,ipp,ipq,iq,iquad,iqq;
+  PetscInt        nli[num_z][2],indx[num_z];
+  PetscScalar     dd,dl,zip,zipq,zz,bb,bbb,aij;
+  PetscScalar     rquad[num_z][3],dlen[num_z],qdwt[3],add_term;
   PetscErrorCode  ierr;
 
   /*  initializing everything  */
@@ -490,7 +489,7 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
             aij = bb*bbb;
             if(j > -1) {
               add_term = aij*dd;
-              ierr = MatSetValue(obj->Amat,(PetscInt)i,(PetscInt)j,(PetscScalar)add_term,ADD_VALUES);
+              ierr = MatSetValue(obj->Amat,i,j,add_term,ADD_VALUES);
             }/*endif*/ 
           }/*end for(iqq)*/
         }/*end if(i>0)*/
@@ -506,12 +505,10 @@ void femA(AppCtx *obj,PetscInt nz,PetscScalar *z)
 	Function to fill the rhs vector with 
 	By + g values ****
 ---------------------------------------------------------*/
-void rhs(AppCtx *obj,double y[], int nz, double z[], double t)
+void rhs(AppCtx *obj,PetscScalar *y, PetscInt nz, PetscScalar *z, PetscReal t)
 { 
-  int             i,j,js,je,jj;
-  double          val;
-  double          g[num_z];
-  double          btri[num_z][3],add_term;
+  PetscInt        i,j,js,je,jj;
+  PetscScalar     val,g[num_z],btri[num_z][3],add_term;
   PetscErrorCode  ierr;
 
   for(i=0; i < nz-2; i++){
@@ -522,7 +519,7 @@ void rhs(AppCtx *obj,double y[], int nz, double z[], double t)
   }
 
   /*  call femBg to set the tri-diagonal b matrix and vector g  */
-  femBg(btri, g,nz,z,t);
+  femBg(btri,g,nz,z,t);
 
   /*  setting the entries of the right hand side vector  */
   for(i=0; i < nz-2; i++){
@@ -575,7 +572,7 @@ PetscErrorCode RHSfunction(TS ts,PetscReal t,Vec globalin,Vec globalout,void *ct
   /* clear out the matrix and rhs for ksp to keep things straight */  
   ierr = VecSet(obj->ksp_rhs,(PetscScalar)0.0);
 
-  time = (double)t;
+  time = t;
   /* get the updated system */
   rhs(obj,soln,nz,obj->z,time); /* setup of the By+g rhs */  
 
