@@ -90,7 +90,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 static PetscErrorCode PFPublish_Petsc(PetscObject obj)
 {
 #if defined(PETSC_HAVE_AMS)
-  PF          v = (PF) obj;
+  PF              v = (PF) obj;
   PetscErrorCode ierr;
 #endif
 
@@ -130,14 +130,14 @@ static PetscErrorCode PFPublish_Petsc(PetscObject obj)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt dimout,PF *pf)
 {
-  PF  newpf;
+  PF             newpf;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidPointer(pf,1);
   *pf = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
+  ierr = PFInitializePackage(PETSC_NULL);CHKERRQ(ierr);   
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);CHKERRQ(ierr);
@@ -380,15 +380,13 @@ M*/
 PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(PF,void*))
 {
   PetscErrorCode ierr;
-  char fullname[PETSC_MAX_PATH_LEN];
+  char           fullname[PETSC_MAX_PATH_LEN];
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
   ierr = PetscFListAdd(&PPetscFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
-
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PFGetType"
@@ -449,7 +447,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
 PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
 {
   PetscErrorCode ierr,(*r)(PF,void*);
-  PetscTruth match;
+  PetscTruth     match;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
@@ -501,13 +499,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
 PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
 {
   PetscErrorCode ierr;
-  char       type[256];
-  PetscTruth flg;
+  char           type[256];
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
 
-  if (!PFRegisterAllCalled) {ierr = PFRegisterAll(0);CHKERRQ(ierr);}
   ierr = PetscOptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
     ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PPetscFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
@@ -521,6 +518,54 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PFInitializePackage"
+/*@C
+  PFInitializePackage - This function initializes everything in the PF package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to PFCreate()
+  when using static libraries.
+
+  Input Parameter:
+. path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Vec, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT PFInitializePackage(const char path[]) 
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr);
+  /* Register Constructors */
+  ierr = PFRegisterAll(path);CHKERRQ(ierr);
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(PF_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "pf", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(PF_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 
 
