@@ -97,7 +97,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
 #undef __FUNCT__  
 #define __FUNCT__ "MGSetInterpolate"
 /*@
-   PCMGSetInterpolate - Sets the function to be used to calculate the 
+   PCMGSetInterpolation - Sets the function to be used to calculate the 
    interpolation on the lth level. 
 
    Collective on PC and Mat
@@ -123,7 +123,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
 
 .seealso: PCMGSetRestriction()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolate(PC pc,PetscInt l,Mat mat)
+PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 { 
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
@@ -159,12 +159,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolate(PC pc,PetscInt l,Mat mat)
           One can pass in the interpolation matrix or its transpose; PETSc figures
     out from the matrix size which one it is.
 
-         If you do not set this, the transpose of the Mat set with PCMGSetInterpolate()
+         If you do not set this, the transpose of the Mat set with PCMGSetInterpolation()
     is used.
 
 .keywords: MG, set, multigrid, restriction, level
 
-.seealso: PCMGSetInterpolate()
+.seealso: PCMGSetInterpolation()
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC pc,PetscInt l,Mat mat)  
 {

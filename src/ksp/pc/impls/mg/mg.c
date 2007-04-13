@@ -437,7 +437,7 @@ static PetscErrorCode PCSetUp_MG(PC pc)
         ierr = PCMGSetResidual(pc,i,PCMGDefaultResidual,mat);CHKERRQ(ierr);
       }
       if (mg[i]->restrct && !mg[i]->interpolate) {
-        ierr = PCMGSetInterpolate(pc,i,mg[i]->restrct);CHKERRQ(ierr);
+        ierr = PCMGSetInterpolation(pc,i,mg[i]->restrct);CHKERRQ(ierr);
       }
       if (!mg[i]->restrct && mg[i]->interpolate) {
         ierr = PCMGSetRestriction(pc,i,mg[i]->interpolate);CHKERRQ(ierr);

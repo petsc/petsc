@@ -169,7 +169,7 @@ int main( int argc, char **argv )
   /* Create interpolation between the levels */
   for (i=1; i<user.nlevels; i++) {
     ierr = FormInterpolation(&user,&user.grid[i],&user.grid[i-1]);CHKERRA(ierr);
-    ierr = PCMGSetInterpolate(pc,i,user.grid[i].R);CHKERRA(ierr);
+    ierr = PCMGSetInterpolation(pc,i,user.grid[i].R);CHKERRA(ierr);
     ierr = PCMGSetRestriction(pc,i,user.grid[i].R);CHKERRA(ierr);
   }
 

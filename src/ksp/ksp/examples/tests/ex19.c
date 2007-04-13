@@ -131,7 +131,7 @@ int main(int argc,char **argv)
 
   /* Create interpolation between the levels */
   ierr = DAGetInterpolation(user.coarse.da,user.fine.da,&user.Ii,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.Ii);CHKERRQ(ierr);
 
   ierr = KSPSetOperators(ksp,user.fine.J,user.fine.J,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);

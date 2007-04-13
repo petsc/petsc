@@ -269,7 +269,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /* create coarse level and the interpolation between the levels */
   for (level=0; level<fine_level; level++){  
     level1 = level + 1;
-    ierr = PCMGSetInterpolate(pc,level1,gridctx[level].P);CHKERRQ(ierr);
+    ierr = PCMGSetInterpolation(pc,level1,gridctx[level].P);CHKERRQ(ierr);
     ierr = PCMGSetRestriction(pc,level1,gridctx[level].R);CHKERRQ(ierr);     
     if (level > 0){
       ierr = PCMGSetResidual(pc,level,PCMGDefaultResidual,gridctx[level].A);CHKERRQ(ierr);
