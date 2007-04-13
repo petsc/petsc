@@ -1,8 +1,8 @@
 #ifndef included_ALE_SieveBuilder_hh
 #define included_ALE_SieveBuilder_hh
 
-#ifndef  included_ALE_Field_hh
-#include <Field.hh>
+#ifndef  included_ALE_ALE_hh
+#include <ALE.hh>
 #endif
 
 namespace ALE {

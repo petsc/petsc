@@ -287,7 +287,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
 template<typename Section>
 PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const Obj<ALE::Mesh>& mesh, const Obj<Section>& section, MatType mtype, Mat *J)
 {
-  const ALE::Obj<typename ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section->getAtlas());
+  const ALE::Obj<typename ALE::Mesh::order_type>& order = mesh->getFactory()->getGlobalOrder(mesh, "default", section);
   int            localSize  = order->getLocalSize();
   int            globalSize = order->getGlobalSize();
   PetscTruth     isShell, isBlock, isSeqBlock, isMPIBlock;
@@ -493,7 +493,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default")->getAtlas());
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
   ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
@@ -526,7 +526,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, SectionReal se
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->size(), s->restrict(), localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), localVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -581,9 +581,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mes
 
   PetscFunctionBegin;
   ierr = PetscLogEventBegin(Mesh_GetGlobalScatter,0,0,0,0);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& atlas = s->getAtlas();
-  const ALE::Mesh::real_section_type::chart_type&           chart = s->getChart();
-  const ALE::Obj<ALE::Mesh::order_type>& globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), atlas);
+  const ALE::Mesh::real_section_type::chart_type& chart       = s->getChart();
+  const ALE::Obj<ALE::Mesh::order_type>&          globalOrder = m->getFactory()->getGlobalOrder(m, s->getName(), s);
   int *localIndices, *globalIndices;
   int  localSize = s->size();
   int  localIndx = 0, globalIndx = 0;
@@ -597,11 +596,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mes
   ierr = PetscMalloc(localSize*sizeof(int), &localIndices); CHKERRQ(ierr);
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
   for(ALE::Mesh::real_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-    const ALE::Mesh::real_section_type::index_type& idx = atlas->restrictPoint(*p_iter)[0];
-
     // Map local indices to global indices
-    m->expandInterval(idx, localIndices, &localIndx);
-    m->expandInterval(index_type(idx.prefix, globalOrder->getIndex(*p_iter)), globalIndices, &globalIndx);
+    s->getIndices(*p_iter, localIndices, &localIndx, 0, true);
+    s->getIndices(*p_iter, globalOrder, globalIndices, &globalIndx, 0, true);
   }
   if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
   if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
@@ -615,7 +612,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mes
   ierr = ISCreateGeneral(PETSC_COMM_SELF, localSize, globalIndices, &globalIS);CHKERRQ(ierr);
   ierr = PetscFree(localIndices);CHKERRQ(ierr);
   ierr = PetscFree(globalIndices);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, localSize, s->restrict(), &localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), &localVec);CHKERRQ(ierr);
   ierr = VecScatterCreate(localVec, localIS, globalVec, globalIS, scatter);CHKERRQ(ierr);
   ierr = ISDestroy(globalIS);CHKERRQ(ierr);
   ierr = ISDestroy(localIS);CHKERRQ(ierr);
@@ -1014,7 +1011,7 @@ PetscErrorCode assembleMatrix(Mat A, PetscInt e, PetscScalar v[], InsertMode mod
   try {
     const ALE::Obj<ALE::Mesh::numbering_type>&    cNumbering  = m->getFactory()->getLocalNumbering(m, m->depth());
     const ALE::Obj<ALE::Mesh::real_section_type>& s           = m->getRealSection("default");
-    const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s->getAtlas());
+    const ALE::Obj<ALE::Mesh::order_type>&        globalOrder = m->getFactory()->getGlobalOrder(m, "default", s);
 
     if (m->debug()) {
       std::cout << "Assembling matrix for element number " << e << " --> point " << cNumbering->getPoint(e) << std::endl;
@@ -1592,15 +1589,13 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
   PetscFunctionBegin;
   ierr = MeshGetMesh(fineMesh,   fine);CHKERRQ(ierr);
   ierr = MeshGetMesh(coarseMesh, coarse);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>&             coarseCoordinates = coarse->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>&             fineCoordinates   = fine->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::label_sequence>&                vertices          = fine->depthStratum(0);
-  const ALE::Obj<ALE::Mesh::real_section_type>&             sCoarse           = coarse->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::real_section_type>&             sFine             = fine->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& coarseAtlas       = sCoarse->getAtlas();
-  const ALE::Obj<ALE::Mesh::real_section_type::atlas_type>& fineAtlas         = sFine->getAtlas();
-  const ALE::Obj<ALE::Mesh::order_type>& coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", coarseAtlas);
-  const ALE::Obj<ALE::Mesh::order_type>& fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", fineAtlas);
+  const ALE::Obj<ALE::Mesh::real_section_type>& coarseCoordinates = coarse->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& fineCoordinates   = fine->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::label_sequence>&    vertices          = fine->depthStratum(0);
+  const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse           = coarse->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fine->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
+  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
