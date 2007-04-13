@@ -206,9 +206,10 @@ namespace ALE {
             }
           } else if (serialMesh->depth() == 2) {
             for(Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-              const Obj<Mesh::sieve_type::coneArray>& cone = ALE::Closure::nCone(serialMesh, *f_iter, 2);
-              const int                               idx  = fNumbering->getIndex(*f_iter);
-              int                                     v    = 0;
+              typedef ALE::SieveAlg<Mesh> sieve_alg_type;
+              const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(serialMesh, *f_iter, 2);
+              const int                             idx  = fNumbering->getIndex(*f_iter);
+              int                                   v    = 0;
 
               for(Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
                 in.trianglelist[idx*in.numberofcorners + v++] = vNumbering->getIndex(*c_iter);

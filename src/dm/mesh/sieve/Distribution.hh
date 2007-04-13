@@ -281,7 +281,7 @@ namespace ALE {
       const typename Section::atlas_type::chart_type& newChart = newSection->getChart();
 
       for(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
-        newSection->updatePoint(*c_iter, oldSection->restrictPoint(*c_iter));
+        newSection->updatePointAll(*c_iter, oldSection->restrictPoint(*c_iter));
       }
     };
     #undef __FUNCT__
@@ -305,7 +305,7 @@ namespace ALE {
 
         for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != end; ++p_iter) {
           if (recvSection->getSection(*p_iter)->getFiberDimension(*r_iter)) {
-            newSection->updatePoint(*r_iter, recvSection->getSection(*p_iter)->restrictPoint(*r_iter));
+            newSection->updatePointAll(*r_iter, recvSection->getSection(*p_iter)->restrictPoint(*r_iter));
           }
         }
       }
@@ -350,7 +350,7 @@ namespace ALE {
       const typename Section::atlas_type::chart_type& newChart = newSection->getChart();
 
       for(typename Section::atlas_type::chart_type::const_iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
-        newSection->updatePoint(*c_iter, oldSection->restrictPoint(*c_iter));
+        newSection->updatePointAll(*c_iter, oldSection->restrictPoint(*c_iter));
       }
     };
     #undef __FUNCT__

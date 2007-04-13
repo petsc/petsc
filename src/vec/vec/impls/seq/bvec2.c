@@ -780,6 +780,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec V)
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   }
   ierr = PetscMalloc( n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);
   s    = (Vec_Seq*)V->data;

@@ -1,10 +1,6 @@
 #ifndef included_ALE_Field_hh
 #define included_ALE_Field_hh
 
-#ifndef  included_ALE_Sieve_hh
-#include <Sieve.hh>
-#endif
-
 #ifndef  included_ALE_SieveAlgorithms_hh
 #include <SieveAlgorithms.hh>
 #endif
@@ -400,6 +396,9 @@ namespace ALE {
         this->_array[p].v[i] += v[i];
       }
     };
+    void updatePointAll(const point_type& p, const value_type v[]) {
+      this->updatePoint(p, v);
+    };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
       ostringstream txt;
@@ -463,7 +462,7 @@ namespace ALE {
     };
     Section(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL) {};
     virtual ~Section() {
-      if (!this->_array) {
+      if (this->_array) {
         delete [] this->_array;
         this->_array = NULL;
       }
@@ -489,19 +488,42 @@ namespace ALE {
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     const Obj<atlas_type>& getNewAtlas() {return this->_atlasNew;};
     void setNewAtlas(const Obj<atlas_type>& atlas) {this->_atlasNew = atlas;};
-    const chart_type& getChart() {return this->_atlas->getChart();};
+    const chart_type& getChart() const {return this->_atlas->getChart();};
+  public: // BC
+    // Returns the number of constraints on a point
+    const int getConstraintDimension(const point_type& p) const {
+      return std::max(0, -this->_atlas->restrictPoint(p)->prefix);
+    };
+    // Set the number of constraints on a point
+    //   We only allow the entire point to be constrained, so these will be the
+    //   only dofs on the point
+    void setConstraintDimension(const point_type& p, const int numConstraints) {
+      this->setFiberDimension(p, -numConstraints);
+    };
+    void copyBC(const Obj<Section>& section) {
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (this->getConstraintDimension(*p_iter)) {
+          this->updatePointBC(*p_iter, section->restrictPoint(*p_iter));
+        }
+      }
+    };
+    void defaultConstraintDof() {};
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
       delete [] this->_array;
       this->_array = NULL;
     };
+    // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
-      return this->_atlas->restrictPoint(p)->prefix;
+      return std::abs(this->_atlas->restrictPoint(p)->prefix);
     };
     int getFiberDimension(const Obj<atlas_type>& atlas, const point_type& p) const {
-      return atlas->restrictPoint(p)->prefix;
+      return std::abs(atlas->restrictPoint(p)->prefix);
     };
+    // Set the total number of dofs on the point (free and constrained)
     void setFiberDimension(const point_type& p, int dim) {
       const index_type idx(dim, -1);
       this->_atlas->addPoint(p);
@@ -521,44 +543,82 @@ namespace ALE {
         this->setFiberDimension(p, dim);
       }
     };
+    // Return the number of constrained dofs on this point
+    //   If constrained, this is equal to the fiber dimension
+    //   Otherwise, 0
     int getConstrainedFiberDimension(const point_type& p) const {
-      return std::max(0, this->getFiberDimension(p));
+      return std::max(0, this->_atlas->restrictPoint(p)->prefix);
     };
+    // Return the total number of free dofs
     int size() const {
-      const typename atlas_type::chart_type& points = this->_atlas->getChart();
+      const chart_type& points = this->getChart();
       int size = 0;
 
-      for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
         size += this->getConstrainedFiberDimension(*p_iter);
       }
       return size;
     };
+    // Return the total number of dofs (free and constrained)
     int sizeWithBC() const {
-      const typename atlas_type::chart_type& points = this->_atlas->getChart();
+      const chart_type& points = this->getChart();
       int size = 0;
 
-      for(typename atlas_type::chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
-        size += std::abs(this->getFiberDimension(*p_iter));
+      for(typename chart_type::iterator p_iter = points.begin(); p_iter != points.end(); ++p_iter) {
+        size += this->getFiberDimension(*p_iter);
       }
       return size;
     };
   public: // Index retrieval
-    const index_type& getIndex(const point_type& p) {
-      return this->_atlas->restrictPoint(p)[0];
+    const int& getIndex(const point_type& p) {
+      return this->_atlas->restrictPoint(p)->index;
     };
-    template<typename Numbering>
-    const index_type getIndex(const point_type& p, const Obj<Numbering>& numbering) {
-      return index_type(this->getFiberDimension(p), numbering->getIndex(p));
+    void setIndex(const point_type& p, const int& index) {
+      ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
+    };
+    void setIndexBC(const point_type& p, const int& index) {
+      this->setIndex(p, index);
+    };
+    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+      this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly);
+    };
+    template<typename Order_>
+    void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+      this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly);
+    };
+    void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+      const int& dim   = this->getFiberDimension(p);
+      const int& cDim  = this->getConstraintDimension(p);
+      const int  end   = start + dim;
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          for(int i = start; i < end; ++i) {
+            indices[(*indx)++] = i;
+          }
+        } else {
+          for(int i = end-1; i >= start; --i) {
+            indices[(*indx)++] = i;
+          }
+        }
+      } else {
+        if (!freeOnly) {
+          for(int i = start; i < end; ++i) {
+            indices[(*indx)++] = -1;
+          }
+        }
+      }
     };
   public: // Allocation
     void allocateStorage() {
-      this->_array = new value_type[this->sizeWithBC()];
-      PetscMemzero(this->_array, this->sizeWithBC() * sizeof(value_type));
+      const int totalSize = this->sizeWithBC();
+
+      this->_array = new value_type[totalSize];
+      PetscMemzero(this->_array, totalSize * sizeof(value_type));
     };
     void replaceStorage(value_type *newArray) {
       delete [] this->_array;
       this->_array    = newArray;
-      this->_atlas    = this->_atlasNew;
       this->_atlasNew = NULL;
     };
     void addPoint(const point_type& point, const int dim) {
@@ -578,16 +638,23 @@ namespace ALE {
       }
     };
     void orderPoints(const Obj<atlas_type>& atlas){
-      const typename atlas_type::chart_type& chart = atlas->getChart();
-      int offset = 0;
+      const chart_type& chart    = this->getChart();
+      int               offset   = 0;
+      int               bcOffset = this->size();
 
-      for(typename atlas_type::chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-        typename atlas_type::value_type idx = atlas->restrictPoint(*c_iter)[0];
-        const int&                      dim = idx.prefix;
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        typename atlas_type::value_type idx  = atlas->restrictPoint(*c_iter)[0];
+        const int&                      dim  = idx.prefix;
 
-        idx.index = offset;
-        atlas->updatePoint(*c_iter, &idx);
-        offset += dim;
+        if (dim >= 0) {
+          idx.index = offset;
+          atlas->updatePoint(*c_iter, &idx);
+          offset += dim;
+        } else {
+          idx.index = bcOffset;
+          atlas->updatePoint(*c_iter, &idx);
+          bcOffset -= dim;
+        }
       }
     };
     void allocatePoint() {
@@ -612,48 +679,77 @@ namespace ALE {
         array[i] = v[i];
       }
     };
-    // Return only the values associated to this point, not its closure
+    // Return the free values on a point
     const value_type *restrictPoint(const point_type& p) {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
-    // Update only the values associated to this point, not its closure
-    void updatePoint(const point_type& p, const value_type v[]) {
+    // Update the free values on a point
+    void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
       value_type       *a   = &(this->_array[idx.index]);
 
-      for(int i = 0; i < idx.prefix; ++i) {
-        a[i] = v[i];
+      if (orientation >= 0) {
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] = v[i];
+        }
+      } else {
+        const int last = idx.prefix-1;
+
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] = v[last-i];
+        }
       }
     };
-    // Update only the values associated to this point, not its closure
-    void updateAddPoint(const point_type& p, const value_type v[]) {
+    // Update the free values on a point
+    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
       value_type       *a   = &(this->_array[idx.index]);
 
-      for(int i = 0; i < idx.prefix; ++i) {
-        a[i] += v[i];
+      if (orientation >= 0) {
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] += v[i];
+        }
+      } else {
+        const int last = idx.prefix-1;
+
+        for(int i = 0; i < idx.prefix; ++i) {
+          a[i] += v[last-i];
+        }
       }
     };
-    void updatePointBC(const point_type& p, const value_type v[]) {
+    // Update only the constrained dofs on a point
+    void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
       const index_type& idx = this->_atlas->restrictPoint(p)[0];
+      const int         dim = -idx.prefix;
       value_type       *a   = &(this->_array[idx.index]);
 
-      for(int i = 0; i < std::abs(idx.prefix); ++i) {
-        a[i] = v[i];
+      if (orientation >= 0) {
+        for(int i = 0; i < dim; ++i) {
+          a[i] = v[i];
+        }
+      } else {
+        const int last = dim-1;
+
+        for(int i = 0; i < dim; ++i) {
+          a[i] = v[last-i];
+        }
       }
     };
-  public: // BC
-    const int getConstraintDimension(const point_type& p) const {
-      return std::max(0, -this->getFiberDimension(p));
-    };
-    void copyBC(const Obj<Section>& section) {
-      const typename atlas_type::chart_type& chart = this->_atlas->getChart();
+    // Update all dofs on a point (free and constrained)
+    void updatePointAll(const point_type& p, const value_type v[], const int orientation = 1) {
+      const index_type& idx = this->_atlas->restrictPoint(p)[0];
+      const int         dim = std::abs(idx.prefix);
+      value_type       *a   = &(this->_array[idx.index]);
 
-      for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
-        const index_type& idx = this->_atlas->restrictPoint(*p_iter)[0];
+      if (orientation >= 0) {
+        for(int i = 0; i < dim; ++i) {
+          a[i] = v[i];
+        }
+      } else {
+        const int last = dim-1;
 
-        if (idx.prefix < 0) {
-          this->updatePointBC(*p_iter, section->restrictPoint(*p_iter));
+        for(int i = 0; i < dim; ++i) {
+          a[i] = v[last-i];
         }
       }
     };
@@ -681,10 +777,11 @@ namespace ALE {
       for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const point_type& point = *p_iter;
         const index_type& idx   = this->_atlas->restrictPoint(point)[0];
+        const int         dim   = this->getFiberDimension(point);
 
         if (idx.prefix != 0) {
           txt << "[" << this->commRank() << "]:   " << point << " dim " << idx.prefix << " offset " << idx.index << "  ";
-          for(int i = 0; i < std::abs(idx.prefix); i++) {
+          for(int i = 0; i < dim; i++) {
             txt << " " << array[idx.index+i];
           }
           txt << std::endl;
@@ -754,20 +851,55 @@ namespace ALE {
     void setAtlas(const Obj<atlas_type>& atlas) {this->_atlas = atlas;};
     const Obj<atlas_type>& getNewAtlas() const {return this->_atlasNew;};
     void setNewAtlas(const Obj<atlas_type>& atlas) {this->_atlasNew = atlas;};
+    const Obj<bc_type>& getBC() const {return this->_bc;};
+    void setBC(const Obj<bc_type>& bc) {this->_bc = bc;};
     const chart_type& getChart() const {return this->_atlas->getChart();};
   public: // BC
+    // Returns the number of constraints on a point
     const int getConstraintDimension(const point_type& p) const {
       if (!this->_bc->hasPoint(p)) return 0;
       return this->_bc->getFiberDimension(p);
     };
+    // Set the number of constraints on a point
     void setConstraintDimension(const point_type& p, const int numConstraints) {
       this->_bc->setFiberDimension(p, numConstraints);
     };
+    // Return the local dofs which are constrained on a point
     const int *getConstraintDof(const point_type& p) {
       return this->_bc->restrictPoint(p);
     };
+    // Set the local dofs which are constrained on a point
     void setConstraintDof(const point_type& p, const int dofs[]) {
       this->_bc->updatePoint(p, dofs);
+    };
+    void copyBC(const Obj<GeneralSection>& section) {
+      this->setBC(section->getBC());
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (this->getConstraintDimension(*p_iter)) {
+          this->updatePointBC(*p_iter, section->restrictPoint(*p_iter));
+        }
+      }
+    };
+    void defaultConstraintDof() {
+      const chart_type& chart = this->getChart();
+      int size = 0;
+
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        size = std::max(size, this->getConstraintDimension(*p_iter));
+      }
+      int *dofs = new int[size];
+      for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        const int cDim = this->getConstraintDimension(*p_iter);
+
+        if (cDim) {
+          for(int d = 0; d < cDim; ++d) {
+            dofs[d] = d;
+          }
+          this->_bc->updatePoint(*p_iter, dofs);
+        }
+      }
     };
   public: // Sizes
     void clear() {
@@ -776,12 +908,14 @@ namespace ALE {
       this->_array = NULL;
       this->_bc->clear(); 
     };
+    // Return the total number of dofs on the point (free and constrained)
     int getFiberDimension(const point_type& p) const {
       return this->_atlas->restrictPoint(p)->prefix;
     };
     int getFiberDimension(const Obj<atlas_type>& atlas, const point_type& p) const {
       return atlas->restrictPoint(p)->prefix;
     };
+    // Set the total number of dofs on the point (free and constrained)
     void setFiberDimension(const point_type& p, int dim) {
       const index_type idx(dim, -1);
       this->_atlas->addPoint(p);
@@ -801,9 +935,11 @@ namespace ALE {
         this->setFiberDimension(p, dim);
       }
     };
+    // Return the number of constrained dofs on this point
     int getConstrainedFiberDimension(const point_type& p) const {
       return this->getFiberDimension(p) - this->getConstraintDimension(p);
     };
+    // Return the total number of free dofs
     int size() const {
       const chart_type& points = this->getChart();
       int               size   = 0;
@@ -813,6 +949,7 @@ namespace ALE {
       }
       return size;
     };
+    // Return the total number of dofs (free and constrained)
     int sizeWithBC() const {
       const chart_type& points = this->getChart();
       int               size   = 0;
@@ -823,17 +960,69 @@ namespace ALE {
       return size;
     };
   public: // Index retrieval
-    const index_type& getIndex(const point_type& p) {
-      return this->_atlas->restrictPoint(p)[0];
+    const int& getIndex(const point_type& p) {
+      return this->_atlas->restrictPoint(p)->index;
     };
-    template<typename Numbering>
-    const index_type getIndex(const point_type& p, const Obj<Numbering>& numbering) {
-      return index_type(this->getFiberDimension(p), numbering->getIndex(p));
+    void setIndex(const point_type& p, const int& index) {
+      ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
+    };
+    void setIndexBC(const point_type& p, const int& index) {};
+    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+      this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly);
+    };
+    template<typename Order_>
+    void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+      this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly);
+    };
+    void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+      const int& dim   = this->getFiberDimension(p);
+      const int& cDim  = this->getConstraintDimension(p);
+      const int  end   = start + dim;
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          for(int i = start; i < end; ++i) {
+            indices[(*indx)++] = i;
+          }
+        } else {
+          for(int i = end-1; i >= start; --i) {
+            indices[(*indx)++] = i;
+          }
+        }
+      } else {
+        const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+        int                                 cInd = 0;
+
+        if (orientation >= 0) {
+          for(int i = start, k = 0; k < dim; ++k) {
+            if ((cInd < cDim) && (k == cDof[cInd])) {
+              if (!freeOnly) indices[(*indx)++] = -(k+1);
+              ++cInd;
+            } else {
+              indices[(*indx)++] = i++;
+            }
+          }
+        } else {
+          const int tEnd = start + this->getConstrainedFiberDimension(p);
+
+          for(int i = tEnd-1, k = 0; k < dim; ++k) {
+            if ((cInd < cDim) && (k == cDof[cInd])) {
+              if (!freeOnly) indices[(*indx)++] = -(dim-k+1);
+              ++cInd;
+            } else {
+              indices[(*indx)++] = i--;
+            }
+          }
+        }
+      }
     };
   public: // Allocation
     void allocateStorage() {
-      this->_array = new value_type[this->sizeWithBC()];
-      PetscMemzero(this->_array, this->sizeWithBC() * sizeof(value_type));
+      const int totalSize = this->sizeWithBC();
+
+      this->_array = new value_type[totalSize];
+      PetscMemzero(this->_array, totalSize * sizeof(value_type));
+      this->_bc->allocatePoint();
     };
     void replaceStorage(value_type *newArray) {
       delete [] this->_array;
@@ -867,7 +1056,6 @@ namespace ALE {
     void allocatePoint() {
       this->orderPoints(this->_atlas);
       this->allocateStorage();
-      this->_bc->allocatePoint();
     };
   public: // Restriction and Update
     // Zero entries
@@ -876,9 +1064,9 @@ namespace ALE {
       const chart_type& chart = this->getChart();
 
       for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
-        const value_type *array = this->restrictPoint(*c_iter);
-        const int&        dim   = this->getFiberDimenson(*c_iter);
-        const int&        cDim  = this->getConstraintDimenson(*c_iter);
+        value_type *array = (value_type *) this->restrictPoint(*c_iter);
+        const int&  dim   = this->getFiberDimension(*c_iter);
+        const int&  cDim  = this->getConstraintDimension(*c_iter);
 
         if (!cDim) {
           memset(array, 0, dim * sizeof(value_type));
@@ -893,51 +1081,92 @@ namespace ALE {
         }
       }
     };
-    // Return only the values associated to this point, not its closure
+    // Return the free values on a point
+    const value_type *restrict() const {
+      return this->_array;
+    };
+    // Return the free values on a point
     const value_type *restrictPoint(const point_type& p) const {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
-    // Update only the values associated to this point, not its closure
-    void updatePoint(const point_type& p, const value_type v[]) {
+    // Update the free values on a point
+    void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  dim   = this->getFiberDimension(p);
       const int&  cDim  = this->getConstraintDimension(p);
 
       if (!cDim) {
-        for(int i = 0; i < dim; ++i) {
-          array[i] = v[i];
+        if (orientation >= 0) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[i];
+          }
+        } else {
+          const int last = dim-1;
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[last-i];
+          }
         }
       } else {
         const typename bc_type::value_type *cDof = this->getConstraintDof(p);
         int                                 cInd = 0;
 
-        for(int i = 0, k = -1; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-          array[i] = v[++k];
+        if (orientation >= 0) {
+          for(int i = 0, k = -1; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[++k];
+          }
+        } else {
+          const int tDim = this->getConstrainedFiberDimension(p);
+
+          for(int i = 0, k = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[tDim-k];
+            ++k;
+          }
         }
       }
     };
-    // Update only the values associated to this point, not its closure
-    void updateAddPoint(const point_type& p, const value_type v[]) {
-      const value_type *array = this->restrictPoint(p);
-      const int&        dim   = this->getFiberDimenson(p);
-      const int&        cDim  = this->getConstraintDimenson(p);
+    // Update the free values on a point
+    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  dim   = this->getFiberDimension(p);
+      const int&  cDim  = this->getConstraintDimension(p);
 
       if (!cDim) {
-        for(int i = 0; i < dim; ++i) {
-          array[i] += v[i];
+        if (orientation >= 0) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[i];
+          }
+        } else {
+          const int last = dim-1;
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[last-i];
+          }
         }
       } else {
         const typename bc_type::value_type *cDof = this->getConstraintDof(p);
         int                                 cInd = 0;
 
-        for(int i = 0, k = -1; i < dim; ++i) {
-          if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-          array[i] += v[++k];
+        if (orientation >= 0) {
+          for(int i = 0, k = -1; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[++k];
+          }
+        } else {
+          const int tDim = this->getConstrainedFiberDimension(p);
+
+          for(int i = 0, k = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[tDim-k];
+            ++k;
+          }
         }
       }
     };
-    void updatePointBC(const point_type& p, const value_type v[]) {
+    // Update only the constrained dofs on a point
+    void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  dim   = this->getFiberDimension(p);
       const int&  cDim  = this->getConstraintDimension(p);
@@ -956,6 +1185,23 @@ namespace ALE {
         }
       }
     };
+    // Update all dofs on a point (free and constrained)
+    void updatePointAll(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  dim   = this->getFiberDimension(p);
+
+      if (orientation >= 0) {
+        for(int i = 0; i < dim; ++i) {
+          array[i] = v[i];
+        }
+      } else {
+        const int last = dim-1;
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] = v[last-i];
+        }
+      }
+    };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
       ostringstream txt;
@@ -969,11 +1215,11 @@ namespace ALE {
       }
       if (name == "") {
         if(rank == 0) {
-          txt << "viewing a Section" << std::endl;
+          txt << "viewing a GeneralSection" << std::endl;
         }
       } else {
         if(rank == 0) {
-          txt << "viewing Section '" << name << "'" << std::endl;
+          txt << "viewing GeneralSection '" << name << "'" << std::endl;
         }
       }
       const chart_type& chart = this->getChart();
@@ -984,10 +1230,10 @@ namespace ALE {
 
         if (dim != 0) {
           txt << "[" << this->commRank() << "]:   " << *p_iter << " dim " << dim << " offset " << this->_atlas->restrictPoint(*p_iter)->index << "  ";
-          for(int i = 0; i < std::abs(dim); i++) {
+          for(int i = 0; i < dim; i++) {
             txt << " " << array[i];
           }
-          const int& dim = this->_bc->getFiberDimension(*p_iter);
+          const int& dim = this->getConstraintDimension(*p_iter);
 
           if (dim) {
             const typename bc_type::value_type *bcArray = this->_bc->restrictPoint(*p_iter);

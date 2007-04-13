@@ -1,8 +1,12 @@
 #ifndef included_ALE_SectionCompletion_hh
 #define included_ALE_SectionCompletion_hh
 
-#ifndef  included_ALE_CoSieve_hh
-#include <CoSieve.hh>
+#ifndef  included_ALE_Topology_hh
+#include <Topology.hh>
+#endif
+
+#ifndef  included_ALE_Field_hh
+#include <Field.hh>
 #endif
 
 namespace ALE {

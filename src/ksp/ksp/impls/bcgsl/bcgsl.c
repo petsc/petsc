@@ -56,6 +56,10 @@ static PetscErrorCode  KSPSolve_BCGSL(KSP ksp)
 
   ierr = (*ksp->converged)(ksp, 0, zeta0, &ksp->reason, ksp->cnvP);CHKERRQ(ierr);
   if (ksp->reason) {
+    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+    ksp->its   = 0;
+    ksp->rnorm = zeta0;
+    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
     ierr = PetscFree(AY0c);CHKERRQ(ierr);
     ierr = PetscFree(AYlc);CHKERRQ(ierr);
     ierr = PetscFree(AYtc);CHKERRQ(ierr);

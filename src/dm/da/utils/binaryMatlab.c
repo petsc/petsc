@@ -26,19 +26,23 @@
 #define __FUNCT__ "PetscViewerBinaryMatlabOpen"
 /*@C
   PetscViewerBinaryMatlabOpen - Open a binary viewer and write matlab info file initialization.
+  This class of viewer writes matlab code to the .info file associated with the binary output file.
+  Executing the matlab code with bin/matlab/PetscReadBinaryMatlab.m loads the output into a
+  matlab data structure.
 
   Collective on MPI_Comm
 
   Input Parameters:
 + comm - The communicator
-- fname - The output filename
+- fname - The binary output filename
 
   Output Parameter:
 . viewer - The viewer object
 
   Level: beginner
 
-  .seealso: PetscViewerBinaryMatlabDestroy()
+.seealso: PetscViewerBinaryMatlabDestroy(), PetscViewerBinaryMatlabOutputVec(),
+          PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
 @*/
 PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], PetscViewer *viewer)
 {
@@ -48,11 +52,11 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
   PetscFunctionBegin;
   ierr = PetscViewerBinaryOpen(comm,fname,FILE_MODE_WRITE,viewer);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(*viewer,&info);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscWriteOutputInitialize ---%\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOpen ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ Set.filename = '%s';\n",fname);CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ fd = fopen(Set.filename, 'r', 'ieee-be');\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ if (fd < 0) error('Cannot open %s, check for existence of file'); end\n",fname);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscWriteOutputInitialize ---%\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabOpen ---%\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -66,8 +70,8 @@ PetscErrorCode PetscViewerBinaryMatlabOpen(MPI_Comm comm, const char fname[], Pe
 
   Level: beginner
 
-  .seealso PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), 
-           PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
+.seealso PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(),
+         PetscViewerBinaryMatlabOutputVecDA(), PetscViewerBinaryMatlabOutputBag()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabDestroy"
@@ -80,16 +84,17 @@ PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscWriteOutputFinalize ---%\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabDestroy ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ fclose(fd);\n");
-  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscWriteOutputFinalize ---%\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabDestroy ---%\n\n");CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscViewerBinaryMatlabOutputBag - Write matlab code to info file to read a PetscBag from binary.
+  PetscViewerBinaryMatlabOutputBag - Output a bag object to the viewer and write matlab code to the
+  info file to read a PetscBag from binary.
 
   Input Parameters:
 + viewer - The viewer object
@@ -98,7 +103,7 @@ PetscErrorCode PetscViewerBinaryMatlabDestroy(PetscViewer viewer)
 
   Level: intermediate
 
-  .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), PetscViewerBinaryMatlabOutputVecDA()
+.seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputVec(), PetscViewerBinaryMatlabOutputVecDA()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputBag"
@@ -112,14 +117,15 @@ PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char n
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
   ierr = PetscBagView(bag,viewer);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscWriteOutputBag ---%\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOutputBag ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscWriteOutputBag ---%\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabOutputBag ---%\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
   
 /*@C
-  PetscViewerBinaryMatlabOutputVec - Write matlab code to info file to read a (non DA) Vec from binary.
+  PetscViewerBinaryMatlabOutputVec - Output a Vec object to the viewer and write matlab code to
+  the info file to read a (non-DA) Vec from binary.
 
   Input Parameters:
 + viewer - The viewer object
@@ -128,7 +134,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputBag(PetscViewer viewer, const char n
 
   Level: intermediate
 
-  .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVecDA()
+.seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVecDA()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVec"
@@ -142,14 +148,15 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char n
   ierr = PetscObjectGetComm((PetscObject)viewer,&comm);CHKERRQ(ierr);
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
   ierr = VecView(vec,viewer);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscWriteOutputVec ---%\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOutputVec ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ Set.%s = PetscBinaryRead(fd);\n",name);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscWriteOutputVec ---%\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabOutputVec ---%\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 /*@C
-  PetscViewerBinaryMatlabOutputVecDA - Write matlab code to info file to read a DA's Vec from binary.
+  PetscViewerBinaryMatlabOutputVecDA - Output a Vec object associtated with a DA to the viewer and write matlab code
+  to the info file to read a DA's Vec from binary.
 
   Input Parameters:
 + viewer - The viewer object
@@ -159,9 +166,9 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVec(PetscViewer viewer, const char n
 
   Level: intermediate
 
-  Note: This method requires dof names have been set using DASetFieldName().
+  Note: This method requires dof names to have been set using DASetFieldName().
 
-  .seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVec(), DASetFieldName()
+.seealso: PetscViewerBinaryMatlabOpen(), PetscViewerBinaryMatlabOutputBag(), PetscViewerBinaryMatlabOutputVec(), DASetFieldName()
 @*/
 #undef __FUNCT__
 #define __FUNCT__ "PetscViewerBinaryMatlabOutputVecDA"
@@ -179,7 +186,7 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
   ierr = PetscViewerBinaryGetInfoPointer(viewer,&info);CHKERRQ(ierr);
   ierr = DAGetInfo(da,&dim,&ni,&nj,&nk,&pi,&pj,&pk,&dof,PETSC_NULL,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
   ierr = VecView(vec,viewer);CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscWriteOutputVecDA ---%\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- begin code written by PetscViewerBinaryMatlabOutputVecDA ---%\n");CHKERRQ(ierr);
   ierr = PetscFPrintf(comm,info,"%%$$ tmp = PetscBinaryRead(fd); \n");CHKERRQ(ierr);
   if (dim == 1) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d);\n",dof,ni);CHKERRQ(ierr); }
   if (dim == 2) { ierr = PetscFPrintf(comm,info,"%%$$ tmp = reshape(tmp,%d,%d,%d);\n",dof,ni,nj);CHKERRQ(ierr); }
@@ -195,6 +202,6 @@ PetscErrorCode PetscViewerBinaryMatlabOutputVecDA(PetscViewer viewer, const char
     }
   }
   ierr = PetscFPrintf(comm,info,"%%$$ clear tmp; \n");CHKERRQ(ierr);
-  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscWriteOutputVecDA ---%\n\n");CHKERRQ(ierr);
+  ierr = PetscFPrintf(comm,info,"%%--- end code written by PetscViewerBinaryMatlabOutputVecDA ---%\n\n");CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

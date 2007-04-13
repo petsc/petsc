@@ -1,33 +1,37 @@
 #ifndef included_ALE_SieveAlgorithms_hh
 #define included_ALE_SieveAlgorithms_hh
 
-#ifndef  included_ALE_Distribution_hh
-#include <CoSieve.hh>
+#ifndef  included_ALE_Sieve_hh
+#include <Sieve.hh>
 #endif
 
 namespace ALE {
-  class Closure {
+  template<typename Bundle_>
+  class SieveAlg {
   public:
-    template<typename Bundle_>
-    static Obj<typename Bundle_::sieve_type::coneArray> closure(const Obj<Bundle_>& bundle, const typename Bundle_::point_type& p) {
+    typedef Bundle_                                  bundle_type;
+    typedef typename bundle_type::sieve_type         sieve_type;
+    typedef typename sieve_type::point_type          point_type;
+    typedef typename sieve_type::coneSet             coneSet;
+    typedef typename sieve_type::coneArray           coneArray;
+    typedef typename sieve_type::supportSet          supportSet;
+    typedef typename sieve_type::supportArray        supportArray;
+    typedef typename bundle_type::arrow_section_type arrow_section_type;
+    typedef std::pair<point_type, int>               oriented_point_type;
+    typedef ALE::array<oriented_point_type>          orientedConeArray;
+  public:
+    static Obj<coneArray> closure(const Obj<bundle_type>& bundle, const point_type& p) {
       return closure(bundle.ptr(), bundle->getArrowSection("orientation"), p);
     };
-    template<typename Bundle_>
-    static Obj<typename Bundle_::sieve_type::coneArray> closure(const Bundle_ *bundle, const Obj<typename Bundle_::arrow_section_type>& orientation, const typename Bundle_::point_type& p) {
-      typedef Bundle_                                  bundle_type;
-      typedef typename bundle_type::sieve_type         sieve_type;
-      typedef typename sieve_type::point_type          point_type;
-      typedef typename sieve_type::coneArray           coneArray;
-      typedef typename sieve_type::coneSet             coneSet;
-      typedef typename bundle_type::arrow_section_type arrow_section_type;
-      typedef MinimalArrow<point_type, point_type>     arrow_type;
-      typedef typename ALE::array<arrow_type>          arrowArray;
-      const Obj<sieve_type>&         sieve   = bundle->getSieve();
-      const int                      depth   = bundle->depth();
-      Obj<arrowArray>                cone    = new arrowArray();
-      Obj<arrowArray>                base    = new arrowArray();
-      Obj<coneArray>                 closure = new coneArray();
-      coneSet                        seen;
+    static Obj<coneArray> closure(const Bundle_ *bundle, const Obj<arrow_section_type>& orientation, const point_type& p) {
+      typedef MinimalArrow<point_type, point_type> arrow_type;
+      typedef typename ALE::array<arrow_type>      arrowArray;
+      const Obj<sieve_type>& sieve   = bundle->getSieve();
+      const int              depth   = bundle->depth();
+      Obj<arrowArray>        cone    = new arrowArray();
+      Obj<arrowArray>        base    = new arrowArray();
+      Obj<coneArray>         closure = new coneArray();
+      coneSet                seen;
 
       // Cone is guarateed to be ordered correctly
       const Obj<typename sieve_type::traits::coneSequence>& initCone = sieve->cone(p);
@@ -66,16 +70,65 @@ namespace ALE {
       }
       return closure;
     };
-    template<typename Bundle_>
-    static Obj<typename Bundle_::sieve_type::coneArray> nCone(const Obj<Bundle_>& bundle, const typename Bundle_::point_type& p, const int n) {
-      typedef Bundle_                                  bundle_type;
-      typedef typename bundle_type::sieve_type         sieve_type;
-      typedef typename sieve_type::point_type          point_type;
-      typedef typename sieve_type::coneArray           coneArray;
-      typedef typename sieve_type::coneSet             coneSet;
-      typedef typename bundle_type::arrow_section_type arrow_section_type;
-      typedef MinimalArrow<point_type, point_type>     arrow_type;
-      typedef typename ALE::array<arrow_type>          arrowArray;
+    static Obj<orientedConeArray> orientedClosure(const Obj<bundle_type>& bundle, const point_type& p) {
+      return orientedClosure(bundle.ptr(), bundle->getArrowSection("orientation"), p);
+    };
+    static Obj<orientedConeArray> orientedClosure(const bundle_type *bundle, const Obj<arrow_section_type>& orientation, const point_type& p) {
+      typedef MinimalArrow<point_type, point_type> arrow_type;
+      typedef typename ALE::array<arrow_type>      arrowArray;
+      const Obj<sieve_type>& sieve   = bundle->getSieve();
+      const int              depth   = bundle->depth();
+      Obj<arrowArray>        cone    = new arrowArray();
+      Obj<arrowArray>        base    = new arrowArray();
+      Obj<orientedConeArray> closure = new orientedConeArray();
+      coneSet                seen;
+
+      // Cone is guarateed to be ordered correctly
+      const Obj<typename sieve_type::traits::coneSequence>& initCone = sieve->cone(p);
+
+      closure->push_back(oriented_point_type(p, 0));
+      for(typename sieve_type::traits::coneSequence::iterator c_iter = initCone->begin(); c_iter != initCone->end(); ++c_iter) {
+        const arrow_type arrow(*c_iter, p);
+
+        cone->push_back(arrow);
+        closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(arrow)[0]));
+      }
+      for(int i = 1; i < depth; ++i) {
+        Obj<arrowArray> tmp = cone; cone = base; base = tmp;
+
+        cone->clear();
+        for(typename arrowArray::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(b_iter->source);
+          const typename arrow_section_type::value_type         o     = orientation->restrictPoint(*b_iter)[0];
+
+          if (o == -1) {
+            for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter) {
+              if (seen.find(*c_iter) == seen.end()) {
+                const arrow_type arrow(*c_iter, b_iter->source);
+
+                seen.insert(*c_iter);
+                cone->push_back(arrow);
+                closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(arrow)[0]));
+              }
+            }
+          } else {
+            for(typename sieve_type::traits::coneSequence::iterator c_iter = pCone->begin(); c_iter != pCone->end(); ++c_iter) {
+              if (seen.find(*c_iter) == seen.end()) {
+                const arrow_type arrow(*c_iter, b_iter->source);
+
+                seen.insert(*c_iter);
+                cone->push_back(arrow);
+                closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(arrow)[0]));
+              }
+            }
+          }
+        }
+      }
+      return closure;
+    };
+    static Obj<coneArray> nCone(const Obj<bundle_type>& bundle, const point_type& p, const int n) {
+      typedef MinimalArrow<point_type, point_type> arrow_type;
+      typedef typename ALE::array<arrow_type>      arrowArray;
       const Obj<sieve_type>&         sieve       = bundle->getSieve();
       const Obj<arrow_section_type>& orientation = bundle->getArrowSection("orientation");
       const int                      depth       = std::min(n, bundle->depth());
@@ -131,16 +184,9 @@ namespace ALE {
       }
       return nCone;
     };
-    template<typename Bundle_>
-    static Obj<typename Bundle_::sieve_type::supportArray> star(const Obj<Bundle_>& bundle, const typename Bundle_::point_type& p) {
-      typedef Bundle_                                  bundle_type;
-      typedef typename bundle_type::sieve_type         sieve_type;
-      typedef typename sieve_type::point_type          point_type;
-      typedef typename sieve_type::supportArray        supportArray;
-      typedef typename sieve_type::supportSet          supportSet;
-      typedef typename bundle_type::arrow_section_type arrow_section_type;
-      typedef MinimalArrow<point_type, point_type>     arrow_type;
-      typedef typename ALE::array<arrow_type>          arrowArray;
+    static Obj<supportArray> star(const Obj<bundle_type>& bundle, const point_type& p) {
+      typedef MinimalArrow<point_type, point_type> arrow_type;
+      typedef typename ALE::array<arrow_type>      arrowArray;
       const Obj<sieve_type>&         sieve       = bundle->getSieve();
       const Obj<arrow_section_type>& orientation = bundle->getArrowSection("orientation");
       const int                      height      = bundle->height();

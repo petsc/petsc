@@ -169,7 +169,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
   if (n3==n1) { /* no new elements to be added */
     ierr = ISRestoreIndices(is1,&i1); CHKERRQ(ierr);
     ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
-    ierr = ISCopy(is1,is3);CHKERRQ(ierr);
+    ierr = ISDuplicate(is1,is3);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
   ierr = PetscMalloc(n3*sizeof(PetscInt),&iout);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISSum(IS is1,IS is2,IS *is3)
 
   ierr = ISRestoreIndices(is1,&i1); CHKERRQ(ierr);
   ierr = ISRestoreIndices(is2,&i2); CHKERRQ(ierr);
-  ierr = ISCreateGeneral(PETSC_COMM_SELF,n3,iout,is3); CHKERRQ(ierr);
+  ierr = ISCreateGeneral(comm,n3,iout,is3); CHKERRQ(ierr);
   ierr = PetscFree(iout); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

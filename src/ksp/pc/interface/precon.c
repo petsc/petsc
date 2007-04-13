@@ -347,11 +347,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApply(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  if (!pc->ops->apply) SETERRQ(PETSC_ERR_SUP,"PC does not have apply");
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
+  if (!pc->ops->apply) SETERRQ(PETSC_ERR_SUP,"PC does not have apply");
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->apply)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -389,12 +389,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricLeft(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  if (!pc->ops->applysymmetricleft) SETERRQ(PETSC_ERR_SUP,"PC does not have left symmetric apply");
-
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-
+  if (!pc->ops->applysymmetricleft) SETERRQ(PETSC_ERR_SUP,"PC does not have left symmetric apply");
   ierr = PetscLogEventBegin(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricleft)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricLeft,pc,x,y,0);CHKERRQ(ierr);
@@ -432,12 +431,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplySymmetricRight(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  if (!pc->ops->applysymmetricright) SETERRQ(PETSC_ERR_SUP,"PC does not have left symmetric apply");
-
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-
+  if (!pc->ops->applysymmetricright) SETERRQ(PETSC_ERR_SUP,"PC does not have left symmetric apply");
   ierr = PetscLogEventBegin(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applysymmetricright)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_ApplySymmetricRight,pc,x,y,0);CHKERRQ(ierr);
@@ -472,13 +470,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyTranspose(PC pc,Vec x,Vec y)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
-  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,"PC does not have apply transpose");
   if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
-
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-
+  if (!pc->ops->applytranspose) SETERRQ(PETSC_ERR_SUP,"PC does not have apply transpose");
   ierr = PetscLogEventBegin(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
   ierr = (*pc->ops->applytranspose)(pc,x,y);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(PC_Apply,pc,x,y,0);CHKERRQ(ierr);
@@ -509,7 +505,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHasApplyTranspose(PC pc,PetscTruth *flg)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidPointer(flg,2);
-  *flg = (PetscTruth) (pc->ops->applytranspose != 0);
+  if (pc->ops->applytranspose) *flg = PETSC_TRUE;
+  else                         *flg = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -682,7 +679,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC pc,PetscTruth *exis
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidIntPointer(exists,2);
   if (pc->ops->applyrichardson) *exists = PETSC_TRUE; 
-  else                    *exists = PETSC_FALSE;
+  else                          *exists = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -729,12 +726,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC pc,Vec x,Vec y,Vec w,Pets
   PetscValidHeaderSpecific(x,VEC_COOKIE,2);
   PetscValidHeaderSpecific(y,VEC_COOKIE,3);
   PetscValidHeaderSpecific(w,VEC_COOKIE,4);
-  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"PC does not have apply richardson");
-
+  if (x == y) SETERRQ(PETSC_ERR_ARG_IDN,"x and y must be different vectors");
   if (pc->setupcalled < 2) {
     ierr = PCSetUp(pc);CHKERRQ(ierr);
   }
-
+  if (!pc->ops->applyrichardson) SETERRQ(PETSC_ERR_SUP,"PC does not have apply richardson");
   ierr = (*pc->ops->applyrichardson)(pc,x,y,w,rtol,abstol,dtol,its);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -768,6 +764,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
+  if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
+
   if (pc->setupcalled > 1) {
     ierr = PetscInfo(pc,"Setting PC with identical preconditioner\n");CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -778,8 +776,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
   } else {
     ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
-
-  if (!pc->mat) {SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Matrix must be set first");}
 
   if (!pc->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
@@ -920,6 +916,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC pc,PetscInt nsub,const 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (!pc->modifysubmatrices) PetscFunctionReturn(0);
   ierr = PetscLogEventBegin(PC_ModifySubMatrices,pc,0,0,0);CHKERRQ(ierr);
   ierr = (*pc->modifysubmatrices)(pc,nsub,row,col,submat,ctx);CHKERRQ(ierr);

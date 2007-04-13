@@ -120,11 +120,11 @@ PetscErrorCode DAMapCoordsToPeriodicDomain(DA da, PetscScalar *x, PetscScalar *y
   if ( periodic_type == DA_NONPERIODIC ) {
     ierr = 0;
   } else {
-    if (periodic_type==DA_XPERIODIC || periodic_type==DA_XYPERIODIC || periodic_type==DA_XZPERIODIC || periodic_type==DA_XYZPERIODIC) {
+    if (periodic_type==DA_XPERIODIC || periodic_type==DA_XYPERIODIC) {
       while (*x >= ( PetscScalar ) gx ) { *x -= ( PetscScalar ) gx; }
       while (*x < 0.0 )                 { *x += ( PetscScalar ) gx; }
     }
-    if (periodic_type==DA_YPERIODIC || periodic_type==DA_XYPERIODIC  || periodic_type==DA_YZPERIODIC || periodic_type==DA_XYZPERIODIC) {
+    if (periodic_type==DA_YPERIODIC || periodic_type==DA_XYPERIODIC) {
       while (*y >= ( PetscScalar ) gy ) { *y -= ( PetscScalar ) gy; }
       while (*y < 0.0 )                 { *y += ( PetscScalar ) gy; }
     }

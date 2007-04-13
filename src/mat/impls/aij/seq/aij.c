@@ -1032,6 +1032,7 @@ PetscErrorCode MatMarkDiagonal_SeqAIJ(Mat A)
   PetscFunctionBegin;
   if (!a->diag) {
     ierr = PetscMalloc(m*sizeof(PetscInt),&a->diag);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A, m*sizeof(PetscInt));CHKERRQ(ierr);
   }  
   for (i=0; i<A->rmap.n; i++) {
     a->diag[i] = a->i[i+1];
@@ -1092,6 +1093,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   diag = a->diag;
   if (!a->idiag) {
     ierr     = PetscMalloc(3*m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory(A, 3*m*sizeof(PetscScalar));CHKERRQ(ierr);
     a->ssor  = a->idiag + m;
     mdiag    = a->ssor + m;
     v        = a->a;
@@ -1757,6 +1759,7 @@ PetscErrorCode MatILUFactor_SeqAIJ(Mat inA,IS row,IS col,MatFactorInfo *info)
 
   if (!a->solve_work) { /* this matrix may have been factored before */
      ierr = PetscMalloc((inA->rmap.n+1)*sizeof(PetscScalar),&a->solve_work);CHKERRQ(ierr);
+     ierr = PetscLogObjectMemory(inA, (inA->rmap.n+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   ierr = MatMarkDiagonal_SeqAIJ(inA);CHKERRQ(ierr);
@@ -2502,6 +2505,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqAIJ(Mat mat)
   /* allocate space for values if not already there */
   if (!aij->saved_values) {
     ierr = PetscMalloc((nz+1)*sizeof(PetscScalar),&aij->saved_values);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(mat,(nz+1)*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
   /* copy values over */
@@ -2796,6 +2800,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
 
   if (!skipallocation) {
     ierr = PetscMalloc2(B->rmap.n,PetscInt,&b->imax,B->rmap.n,PetscInt,&b->ilen);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(B,2*B->rmap.n*sizeof(PetscInt));CHKERRQ(ierr);
     if (!nnz) {
       if (nz == PETSC_DEFAULT || nz == PETSC_DECIDE) nz = 10;
       else if (nz <= 0)        nz = 1;
@@ -2811,6 +2816,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation_SeqAIJ(Mat B,PetscIn
 
     /* allocate the matrix space */
     ierr = PetscMalloc3(nz,PetscScalar,&b->a,nz,PetscInt,&b->j,B->rmap.n+1,PetscInt,&b->i);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(B,(B->rmap.n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
     b->i[0] = 0;
     for (i=1; i<B->rmap.n+1; i++) {
       b->i[i] = b->i[i-1] + b->imax[i-1];
@@ -3047,6 +3053,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   C->assembled      = PETSC_TRUE;
  
   ierr = PetscMalloc2(m,PetscInt,&c->imax,m,PetscInt,&c->ilen);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(C, 2*m*sizeof(PetscInt));CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     c->imax[i] = a->imax[i];
     c->ilen[i] = a->ilen[i]; 
@@ -3054,6 +3061,7 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
 
   /* allocate the matrix space */
   ierr = PetscMalloc3(a->i[m],PetscScalar,&c->a,a->i[m],PetscInt,&c->j,m+1,PetscInt,&c->i);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(C, a->i[m]*(sizeof(PetscScalar)+sizeof(PetscInt))+(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   c->singlemalloc = PETSC_TRUE;
   ierr = PetscMemcpy(c->i,a->i,(m+1)*sizeof(PetscInt));CHKERRQ(ierr);
   if (m > 0) {

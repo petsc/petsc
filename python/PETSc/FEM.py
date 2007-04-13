@@ -194,11 +194,11 @@ class QuadratureGenerator(script.Script):
   def getIntegratorSetup(self, n, element):
     import FIAT.shapes
     from Cxx import Break, CompoundStatement, Function, Pointer, Switch
-    dim = FIAT.shapes.dimension(element.function_space().base.shape)
-    ids = element.Udual.entity_ids
-    pts = element.Udual.pts
+    dim  = FIAT.shapes.dimension(element.function_space().base.shape)
+    ids  = element.Udual.entity_ids
+    pts  = element.Udual.pts
     perm = self.getBasisFuncOrder(element)
-    p   = 0
+    p    = 0
     funcName = 'IntegrateDualBasis_gen_'+str(n)
     idxVar  = self.Cxx.getVar('dualIndex')
     refVar  = self.Cxx.getVar('refCoords')
@@ -210,107 +210,64 @@ class QuadratureGenerator(script.Script):
     switch.branch = idxVar
     cmpd = CompoundStatement()
     if dim == 1:
-      if len(ids[1][0]) == 0:
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('0')
-        cmpd.children.append(retStmt)
-      elif len(ids[1][0]) == 1:
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][0][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('0')
+##      if len(ids[1][0]) == 0:
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = p))
+##      if len(ids[0][0]) == 0:
+##        retStmt = self.Cxx.getReturn(0.0, caseLabel = p)
+##        retStmt.caseLabel = self.Cxx.getValue('1')
+##        cmpd.children.append(retStmt)
+##        retStmt = self.Cxx.getReturn(0.0, caseLabel = p)
+##        retStmt.caseLabel = self.Cxx.getValue('2')
+##        cmpd.children.append(retStmt)
+      for i in range(len(ids[1][0]) + len(ids[0][0])*2):
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
         cmpd.children.extend([cStmt, Break()])
         p += 1
-      else:
-        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
-      if len(ids[0][0]) == 0:
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('1')
-        cmpd.children.append(retStmt)
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('2')
-        cmpd.children.append(retStmt)
-      elif len(ids[0][0]) == 1:
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][0][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('1')
-        cmpd.children.extend([cStmt, Break()])
-        p += 1
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][1][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('2')
-        cmpd.children.extend([cStmt, Break()])
-        p += 1
-      else:
-        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
     elif dim == 2:
-      if len(ids[2][0]) == 0:
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('0')
-        cmpd.children.append(retStmt)
-      elif len(ids[2][0]) == 1:
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[2][0][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('0')
+##      if len(ids[2][0]) == 0:
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = p))
+##      elif len(ids[2][0]) == 1:
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+##      if len(ids[1][0]) == 0:
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '1'))
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '2'))
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '3'))
+##      elif len(ids[1][0]) == 1:
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+##        cStmt.caseLabel = self.Cxx.getValue('1')
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+##        cStmt.caseLabel = self.Cxx.getValue('2')
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+##        cStmt.caseLabel = self.Cxx.getValue('3')
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+##      if len(ids[0][0]) == 0:
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '4'))
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '5'))
+##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '6'))
+##      elif len(ids[0][0]) == 1:
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+##        cStmt.caseLabel = self.Cxx.getValue('4')
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+##        cStmt.caseLabel = self.Cxx.getValue('5')
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
+##        cStmt.caseLabel = self.Cxx.getValue('6')
+##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
+##        p += 1
+      for i in range(len(ids[2][0]) + len(ids[1][0])*3 + len(ids[0][0])*3):
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
         cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
         p += 1
-      else:
-        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
-      if len(ids[1][0]) == 0:
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('1')
-        cmpd.children.append(retStmt)
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('2')
-        cmpd.children.append(retStmt)
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('3')
-        cmpd.children.append(retStmt)
-      elif len(ids[1][0]) == 1:
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][0][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('1')
-        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-        p += 1
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][1][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('2')
-        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-        p += 1
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[1][2][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('3')
-        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-        p += 1
-      else:
-        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
-      if len(ids[0][0]) == 0:
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('4')
-        cmpd.children.append(retStmt)
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('5')
-        cmpd.children.append(retStmt)
-        retStmt = self.Cxx.getReturn(0.0)
-        retStmt.caseLabel = self.Cxx.getValue('6')
-        cmpd.children.append(retStmt)
-      elif len(ids[0][0]) == 1:
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][0][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('4')
-        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-        p += 1
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][1][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('5')
-        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-        p += 1
-        #cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[ids[0][2][0]][0]))
-        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-        cStmt.caseLabel = self.Cxx.getValue('6')
-        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-        p += 1
-      else:
-        raise RuntimeError('Cannot handle multiple dual basis elements on a simplex')
     elif dim == 3:
       pass
     cStmt = self.Cxx.getExpStmt(self.Cxx.getFunctionCall('printf', [self.Cxx.getString('dualIndex: %d\\n'), 'dualIndex']))

@@ -3,8 +3,6 @@
 
 #include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
 
-#include <CoSieve.hh>
-
 namespace ALE {
   namespace PyLith {
 
