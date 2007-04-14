@@ -245,7 +245,7 @@ PetscErrorCode samgmgpetsc(const int numnodes, double* Asky, int* ia,
    /*....Create interpolation between the levels....*/   
    for (k=1;k<=levels-1;k++){
      petsc_level = levels - k; 
-     ierr = PCMGSetInterpolate(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);
+     ierr = PCMGSetInterpolation(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);
      ierr = PCMGSetRestriction(pc,petsc_level,grid[k].Interp);CHKERRQ(ierr);  
    }
 

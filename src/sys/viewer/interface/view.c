@@ -5,6 +5,55 @@
 PetscCookie PETSC_VIEWER_COOKIE = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerInitializePackage" 
+/*@C
+  PetscViewerInitializePackage - This function initializes everything in the main PetscViewer package.
+
+  Input Parameter:
+  path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Petsc, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerInitializePackage(const char path[])
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&PETSC_VIEWER_COOKIE, "Viewer");CHKERRQ(ierr);
+
+  /* Register Constructors */
+  ierr = PetscViewerRegisterAll(path);CHKERRQ(ierr);
+
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "viewer", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(0);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "viewer", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerDestroy" 
 /*@
    PetscViewerDestroy - Destroys a PetscViewer.

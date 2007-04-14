@@ -499,7 +499,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetUpLevel(DMMG *dmmg,KSP ksp,PetscInt nl
 
     /* Set interpolation/restriction between levels */
     for (i=1; i<nlevels; i++) {
-      ierr = PCMGSetInterpolate(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
+      ierr = PCMGSetInterpolation(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
       ierr = PCMGSetRestriction(pc,i,dmmg[i]->R);CHKERRQ(ierr); 
     }
   }

@@ -190,7 +190,7 @@ int main( int argc, char **argv )
 
   /* Create interpolation between the levels */
   ierr = FormInterpolation(&user);CHKERRQ(ierr);
-  ierr = PCMGSetInterpolate(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
+  ierr = PCMGSetInterpolation(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
   ierr = PCMGSetRestriction(pc,FINE_LEVEL,user.R);CHKERRQ(ierr);
 
   /* Set options, then solve nonlinear system */
