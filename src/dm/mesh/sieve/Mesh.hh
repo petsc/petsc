@@ -806,7 +806,6 @@ namespace ALE {
 }
 
 namespace ALE {
-#define NEW_SECTION
 #ifdef NEW_SECTION
   class Mesh : public Bundle<ALE::Sieve<int,int,int>, GeneralSection<int, double> > {
 #else
@@ -1273,7 +1272,7 @@ namespace ALE {
       mesh->setSieve(sieve);
       const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
       if (mesh->commRank() == 0) {
-        /* Create topology and ordering */
+        /* Create sieve and ordering */
         for(int v = numFaces; v < numFaces+numVertices; v++) {
           vertices[v-numFaces] = Mesh::point_type(v);
           mesh->setValue(markers, vertices[v-numFaces], 1);

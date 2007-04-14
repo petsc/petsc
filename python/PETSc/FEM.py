@@ -109,7 +109,7 @@ class QuadratureGenerator(script.Script):
       for f in ids[2]:
         perm.extend(ids[2][f])
       for e in ids[1]:
-        perm.extend(ids[1][(e+2)%6])
+        perm.extend(ids[1][e])
       for v in ids[0]:
         perm.extend(ids[0][v])
     else:

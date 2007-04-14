@@ -56,19 +56,19 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 // Creates a field whose value is the processor rank on each element
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 {
-  Obj<ALE::Field::Mesh> m;
-  Obj<ALE::Field::Mesh::int_section_type> section;
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::int_section_type> section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
   ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::label_sequence>&         cells = m->heightStratum(0);
-  const ALE::Field::Mesh::label_sequence::iterator     end   = cells->end();
-  const ALE::Field::Mesh::int_section_type::value_type rank  = section->commRank();
+  const Obj<ALE::Mesh::label_sequence>&         cells = m->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator     end   = cells->end();
+  const ALE::Mesh::int_section_type::value_type rank  = section->commRank();
 
-  for(ALE::Field::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     section->updatePoint(*c_iter, &rank);
   }
   PetscFunctionReturn(0);
@@ -127,7 +127,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
-    Obj<ALE::Field::Mesh> m;
+    Obj<ALE::Mesh> m;
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     m->view("Mesh");
   }
@@ -152,34 +152,34 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
 #define __FUNCT__ "TraverseCells"
 PetscErrorCode TraverseCells(DM dm, Options *options)
 {
+  typedef ALE::SieveAlg<ALE::Mesh> sieve_alg;
+  Mesh           mesh = (Mesh) dm;
+  Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  Mesh mesh = (Mesh) dm;
-  Obj<ALE::Field::Mesh> m;
-  
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const int                                       rank        = m->commRank();
-  const Obj<ALE::Field::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Field::Mesh::sieve_type>&        sieve       = m->getSieve();
+  const int                                rank        = m->commRank();
+  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::sieve_type>&        sieve       = m->getSieve();
     
   // Loop over cells
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell (including ghosts), on each process\n");CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::label_sequence>& cells = m->heightStratum(0);
-  for(ALE::Field::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Cell %d\n", rank, *c_iter);CHKERRQ(ierr);
-    const Obj<ALE::Field::Mesh::sieve_type::traits::coneSequence>& faces = sieve->cone(*c_iter);
-    const ALE::Field::Mesh::sieve_type::traits::coneSequence::iterator  end  = faces->end();
+    const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& faces = sieve->cone(*c_iter);
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator  end  = faces->end();
 
     // Loop over faces owned by this process on the given cell    
-    for(ALE::Field::Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != end; ++f_iter) {
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = faces->begin(); f_iter != end; ++f_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      Face %d, with coordinates ", *f_iter);CHKERRQ(ierr);
-      const Obj<ALE::Field::Mesh::sieve_type::coneArray>& vertices = ALE::Closure::nCone(m, *f_iter, m->depth(*f_iter));
+      const Obj<sieve_alg::coneArray>& vertices = sieve_alg::nCone(m, *f_iter, m->depth(*f_iter));
       
       // Loop over vertices of the given face
-      for(ALE::Field::Mesh::sieve_type::coneArray::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-        const ALE::Field::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
+      for(sieve_alg::coneArray::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        const ALE::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
 	
         ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (%g,%g,%g)",*v_iter,array[0],array[1],array[2]);CHKERRQ(ierr);
       }
@@ -198,24 +198,24 @@ PetscErrorCode TraverseFaces(DM dm, Options *options)
 
   PetscFunctionBegin;
   Mesh mesh = (Mesh) dm;
-  Obj<ALE::Field::Mesh> m;
+  Obj<ALE::Mesh> m;
   
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   const int                                rank  = m->commRank();
-  const Obj<ALE::Field::Mesh::sieve_type>& sieve = m->getSieve();
+  const Obj<ALE::Mesh::sieve_type>& sieve = m->getSieve();
     
   // Loop over cells
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Each face (they are not ghosted), on each process\n");CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::label_sequence>& faces = m->heightStratum(1);
-  for(ALE::Field::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+  const Obj<ALE::Mesh::label_sequence>& faces = m->heightStratum(1);
+  for(ALE::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
 
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Face %d\n", rank, *f_iter);CHKERRQ(ierr);
-    const Obj<ALE::Field::Mesh::sieve_type::traits::supportSequence>& cells = sieve->support(*f_iter);
-    const ALE::Field::Mesh::sieve_type::traits::supportSequence::iterator  end   = cells->end();
+    const Obj<ALE::Mesh::sieve_type::traits::supportSequence>& cells = sieve->support(*f_iter);
+    const ALE::Mesh::sieve_type::traits::supportSequence::iterator  end   = cells->end();
 
     // Loop over cells (including ghosts) for the given face
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "       Cells ");CHKERRQ(ierr);
-    for(ALE::Field::Mesh::sieve_type::traits::supportSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    for(ALE::Mesh::sieve_type::traits::supportSequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "       %d ", *c_iter);CHKERRQ(ierr);
     }
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "\n");CHKERRQ(ierr);
@@ -233,13 +233,13 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   PetscFunctionBegin;
   Mesh        mesh = (Mesh) dm;
   SectionReal f;
-  Obj<ALE::Field::Mesh> m;
-  Obj<ALE::Field::Mesh::real_section_type> s;
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
   
   ierr = MeshGetSectionReal(mesh, "default", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-  const Obj<ALE::Field::Discretization>& disc = m->getDiscretization();
+  const Obj<ALE::Discretization>& disc = m->getDiscretization();
   
   disc->setNumDof(m->depth(), 2);
   s->setDebug(options->debug);
@@ -250,7 +250,7 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   ierr = MeshCreateGlobalScatter(mesh, f, &scatter);CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter);CHKERRQ(ierr);
 
-  const Obj<ALE::Field::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default")->getAtlas());
+  const Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, "default", m->getRealSection("default"));
 
   ierr = VecCreate(m->comm(), &options->global);CHKERRQ(ierr);
   ierr = VecSetSizes(options->global, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
@@ -280,20 +280,20 @@ PetscErrorCode CreateField(DM dm, Options *options)
   PetscFunctionBegin;
   Mesh        mesh = (Mesh) dm;
   SectionReal f;
-  Obj<ALE::Field::Mesh> m;
-  Obj<ALE::Field::Mesh::real_section_type> s;
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
   
   ierr = MeshGetSectionReal(mesh, "u", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::label_sequence>& cells = m->heightStratum(0);
-  const Obj<ALE::Field::Discretization>&       disc  = m->getDiscretization();
+  const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
+  const Obj<ALE::Discretization>&       disc  = m->getDiscretization();
   
   disc->setNumDof(m->depth(), 1);
   s->setDebug(options->debug);
   m->setupField(s, options->postponeGhosts);
   // Loop over elements (quadrilaterals)
-  for(ALE::Field::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     const double value = (double) *c_iter;
     
     ierr = SectionRealUpdate(f, *c_iter, &value);CHKERRQ(ierr);
@@ -312,22 +312,22 @@ PetscErrorCode UpdateGhosts(DM dm, Options *options)
   PetscFunctionBegin;
   Mesh        mesh = (Mesh) dm;
   SectionReal f;
-  Obj<ALE::Field::Mesh> m;
-  Obj<ALE::Field::Mesh::real_section_type> s;
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
   
   ierr = MeshGetSectionReal(mesh, "u", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-  const Obj<ALE::Field::Mesh::sieve_type>&     sieve = m->getSieve();
-  const Obj<ALE::Field::Mesh::label_sequence>& faces = m->heightStratum(1);
+  const Obj<ALE::Mesh::sieve_type>&     sieve = m->getSieve();
+  const Obj<ALE::Mesh::label_sequence>& faces = m->heightStratum(1);
   
   ierr = SectionRealZero(f);CHKERRQ(ierr);
-  for(ALE::Field::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
-    const Obj<ALE::Field::Mesh::sieve_type::traits::supportSequence>& neighbors = sieve->support(*f_iter);
-    const ALE::Field::Mesh::sieve_type::traits::supportSequence::iterator  end       = neighbors->end();
+  for(ALE::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+    const Obj<ALE::Mesh::sieve_type::traits::supportSequence>& neighbors = sieve->support(*f_iter);
+    const ALE::Mesh::sieve_type::traits::supportSequence::iterator  end       = neighbors->end();
     const double value = 1.0;
     
-    for(ALE::Field::Mesh::sieve_type::traits::supportSequence::iterator c_iter = neighbors->begin(); c_iter != end; ++c_iter) {
+    for(ALE::Mesh::sieve_type::traits::supportSequence::iterator c_iter = neighbors->begin(); c_iter != end; ++c_iter) {
       ierr = SectionRealUpdateAdd(f, *c_iter, &value);CHKERRQ(ierr);
     }
   }
