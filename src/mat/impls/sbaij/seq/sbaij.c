@@ -513,6 +513,9 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
   PetscTruth     iascii,isdraw;
   
   PetscFunctionBegin;
+  if (A->factor){
+    ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored. MatView_SeqSBAIJ() may not display complete or logically correct entries!\n");CHKERRQ(ierr);
+  }
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii){
