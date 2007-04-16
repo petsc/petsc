@@ -182,14 +182,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenMPMerge(PetscMPIInt nodesize)
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOpenMPFinalize"
 /*@C
-   PetscOpenMPFinalizes - Finalizes the PETSc and MPI to work with OpenMP. Called by PetscFinalize() cannot
+   PetscOpenMPFinalize - Finalizes the PETSc and MPI to work with OpenMP. Called by PetscFinalize() cannot
        be called by user.
 
    Collective on the entire system
 
    Level: developer
            
-.seealso: PetscFinalize(), PetscInitializeFortran(), PetscGetArgs(), PetscOpenMPMerge()
+.seealso: PetscFinalize(), PetscGetArgs(), PetscOpenMPMerge()
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscOpenMPFinalize(void)
