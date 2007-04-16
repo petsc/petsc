@@ -334,15 +334,13 @@ namespace ALE {
     class Generator {
     public:
       static Obj<Mesh> generateMesh(const Obj<Mesh>& boundary, const bool interpolate = false) {
-        const int                    dim   = 3;
-        Obj<Mesh>                    mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
-        const Obj<Mesh::sieve_type>& sieve = boundary->getSieve();
-        const PetscMPIInt            rank  = mesh->commRank();
-        const bool                   createConvexHull = false;
-        std::string                  args("pqenzQ");
-        ::tetgenio                   in;
-        ::tetgenio                   out;
-        PetscErrorCode               ierr;
+        typedef ALE::SieveAlg<Mesh> sieve_alg_type;
+        const int         dim   = 3;
+        Obj<Mesh>         mesh  = new Mesh(boundary->comm(), dim, boundary->debug());
+        const PetscMPIInt rank  = mesh->commRank();
+        const bool        createConvexHull = false;
+        ::tetgenio        in;
+        ::tetgenio        out;
 
         const Obj<Mesh::label_sequence>&    vertices    = boundary->depthStratum(0);
         const Obj<Mesh::numbering_type>&    vNumbering  = boundary->getFactory()->getLocalNumbering(boundary, 0);
@@ -373,77 +371,87 @@ namespace ALE {
           in.facetlist       = new tetgenio::facet[in.numberoffacets];
           in.facetmarkerlist = new int[in.numberoffacets];
           for(Mesh::label_sequence::iterator f_iter = facets->begin(); f_iter != facets->end(); ++f_iter) {
-            const Mesh::field_type::index_type& interval = facetBundle->getIndex(patch, *f_itor);
-            //Obj<Mesh::bundle_type::order_type::coneSequence> cone = vertexBundle->getPatch("element", *f_itor);
-            Obj<Mesh::bundle_type::order_type::coneSequence> cone;
+            const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(boundary, *f_iter, boundary->depth());
+            const int                             idx  = fNumbering->getIndex(*f_iter);
 
-            in.facetlist[interval.prefix].numberofpolygons = 1;
-            in.facetlist[interval.prefix].polygonlist = new tetgenio::polygon[in.facetlist[interval.prefix].numberofpolygons];
-            in.facetlist[interval.prefix].numberofholes = 0;
-            in.facetlist[interval.prefix].holelist = NULL;
+            in.facetlist[idx].numberofpolygons = 1;
+            in.facetlist[idx].polygonlist      = new tetgenio::polygon[in.facetlist[idx].numberofpolygons];
+            in.facetlist[idx].numberofholes    = 0;
+            in.facetlist[idx].holelist         = NULL;
 
-            tetgenio::polygon *poly = in.facetlist[interval.prefix].polygonlist;
-            int                c = 0;
+            tetgenio::polygon *poly = in.facetlist[idx].polygonlist;
+            int                c    = 0;
 
             poly->numberofvertices = cone->size();
-            poly->vertexlist = new int[poly->numberofvertices];
-            // The "element" reorder should be fused with the structural order
-            for(Mesh::bundle_type::order_type::coneSequence::iterator c_itor = cone->begin(); c_itor != cone->end(); ++c_itor) {
-              const Mesh::field_type::index_type& vInterval = vertexBundle->getIndex(patch, *c_itor);
+            poly->vertexlist       = new int[poly->numberofvertices];
+            for(sieve_alg_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+              const int vIdx = vNumbering->getIndex(*c_iter);
 
-              poly->vertexlist[c++] = vInterval.prefix;
+              poly->vertexlist[c++] = vIdx;
             }
-            in.facetmarkerlist[interval.prefix] = f_itor.marker();
+            in.facetmarkerlist[idx] = boundary->getValue(markers, *f_iter);
           }
         }
 
+        in.numberofholes = 0;
         if (rank == 0) {
-          in.numberofholes = 0;
+          std::string args("pqenzQ");
+
           if (createConvexHull) args += "c";
           ::tetrahedralize((char *) args.c_str(), &in, &out);
         }
-        m->populate(out.numberoftetrahedra, out.tetrahedronlist, out.numberofpoints, out.pointlist, interpolate);
+        const Obj<Mesh::sieve_type> newSieve = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+        int     numCorners  = 4;
+        int     numCells    = out.numberoftetrahedra;
+        int    *cells       = out.tetrahedronlist;
+        int     numVertices = out.numberofpoints;
+        double *coords      = out.pointlist;
+
+        ALE::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, mesh->getArrowSection("orientation"));
+        mesh->setSieve(newSieve);
+        mesh->stratify();
+        ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
+        const Obj<Mesh::label_type>& newMarkers = mesh->createLabel("marker");
   
         if (rank == 0) {
-          Obj<Mesh::sieve_type> topology = m->getTopology();
-
           for(int v = 0; v < out.numberofpoints; v++) {
             if (out.pointmarkerlist[v]) {
-              topology->setMarker(Mesh::point_type(v + out.numberoftetrahedra), out.pointmarkerlist[v]);
+              mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
             }
           }
           if (interpolate) {
             if (out.edgemarkerlist) {
               for(int e = 0; e < out.numberofedges; e++) {
                 if (out.edgemarkerlist[e]) {
-                  Mesh::point_type endpointA(out.edgelist[e*2+0] + out.numberoftetrahedra);
-                  Mesh::point_type endpointB(out.edgelist[e*2+1] + out.numberoftetrahedra);
-                  Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(endpointA, endpointB, 1);
+                  Mesh::point_type endpointA(out.edgelist[e*2+0]+out.numberoftetrahedra);
+                  Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
+                  Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(endpointA, endpointB, 1);
 
-                  topology->setMarker(*join->begin(), out.edgemarkerlist[e]);
+                  mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
                 }
               }
             }
             if (out.trifacemarkerlist) {
               for(int f = 0; f < out.numberoftrifaces; f++) {
                 if (out.trifacemarkerlist[f]) {
-                  Obj<Mesh::sieve_type::supportSet> point = Mesh::sieve_type::supportSet();
-                  Obj<Mesh::sieve_type::supportSet> edge = Mesh::sieve_type::supportSet();
-                  Mesh::point_type cornerA(out.trifacelist[f*3+0] + out.numberoftetrahedra);
-                  Mesh::point_type cornerB(out.trifacelist[f*3+1] + out.numberoftetrahedra);
-                  Mesh::point_type cornerC(out.trifacelist[f*3+2] + out.numberoftetrahedra);
-                  point->insert(cornerA);
-                  edge->insert(cornerB);
-                  edge->insert(cornerC);
-                  Obj<Mesh::sieve_type::supportSet> join = topology->nJoin(point, edge, 2);
+                  Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
+                  Mesh::point_type cornerB(out.trifacelist[f*3+1]+out.numberoftetrahedra);
+                  Mesh::point_type cornerC(out.trifacelist[f*3+2]+out.numberoftetrahedra);
+                  Obj<Mesh::sieve_type::supportSet> corners = Mesh::sieve_type::supportSet();
+                  Obj<Mesh::sieve_type::supportSet> edges   = Mesh::sieve_type::supportSet();
+                  corners->clear();corners->insert(cornerA);corners->insert(cornerB);
+                  edges->insert(*newSieve->nJoin1(corners)->begin());
+                  corners->clear();corners->insert(cornerB);corners->insert(cornerC);
+                  edges->insert(*newSieve->nJoin1(corners)->begin());
+                  corners->clear();corners->insert(cornerC);corners->insert(cornerA);
+                  edges->insert(*newSieve->nJoin1(corners)->begin());
 
-                  topology->setMarker(*join->begin(), out.trifacemarkerlist[f]);
+                  mesh->setValue(newMarkers, *newSieve->nJoin1(edges)->begin(), out.trifacemarkerlist[f]);
                 }
               }
             }
           }
         }
-
         return mesh;
       };
     };
@@ -475,12 +483,10 @@ namespace ALE {
         throw ALE::Exception("Mesh generation currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif
       } else if (dim == 2) {
-#if 0
 #ifdef PETSC_HAVE_TETGEN
         return ALE::TetGen::Generator::generateMesh(boundary, interpolate);
 #else
         throw ALE::Exception("Mesh generation currently requires TetGen to be installed. Use --download-tetgen during configure.");
-#endif
 #endif
       }
       return NULL;

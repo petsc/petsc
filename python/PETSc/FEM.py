@@ -102,13 +102,12 @@ class QuadratureGenerator(script.Script):
       for v in ids[0]:
         perm.extend(ids[0][v])
     elif dim == 3:
-      print 'WARING: 3D FIAT-Sieve permuation not yet implemented'
       perm = []
       for c in ids[3]:
         perm.extend(ids[3][c])
-      for f in ids[2]:
+      for f in [3, 2, 0, 1]:
         perm.extend(ids[2][f])
-      for e in ids[1]:
+      for e in [2, 0, 1, 3, 4, 5]:
         perm.extend(ids[1][e])
       for v in ids[0]:
         perm.extend(ids[0][v])
@@ -203,73 +202,29 @@ class QuadratureGenerator(script.Script):
     idxVar  = self.Cxx.getVar('dualIndex')
     refVar  = self.Cxx.getVar('refCoords')
     decls = []
-    decls.append(self.Cxx.getArray(refVar,   self.Cxx.getType('double'), 2))
-    decls.append(self.Cxx.getArray('coords', self.Cxx.getType('double'), 2))
+    decls.append(self.Cxx.getArray(refVar,   self.Cxx.getType('double'), dim))
+    decls.append(self.Cxx.getArray('coords', self.Cxx.getType('double'), dim))
     stmts = []
     switch  = Switch()
     switch.branch = idxVar
     cmpd = CompoundStatement()
     if dim == 1:
-##      if len(ids[1][0]) == 0:
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = p))
-##      if len(ids[0][0]) == 0:
-##        retStmt = self.Cxx.getReturn(0.0, caseLabel = p)
-##        retStmt.caseLabel = self.Cxx.getValue('1')
-##        cmpd.children.append(retStmt)
-##        retStmt = self.Cxx.getReturn(0.0, caseLabel = p)
-##        retStmt.caseLabel = self.Cxx.getValue('2')
-##        cmpd.children.append(retStmt)
       for i in range(len(ids[1][0]) + len(ids[0][0])*2):
         cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
         cmpd.children.extend([cStmt, Break()])
         p += 1
     elif dim == 2:
-##      if len(ids[2][0]) == 0:
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = p))
-##      elif len(ids[2][0]) == 1:
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
-##      if len(ids[1][0]) == 0:
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '1'))
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '2'))
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '3'))
-##      elif len(ids[1][0]) == 1:
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-##        cStmt.caseLabel = self.Cxx.getValue('1')
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-##        cStmt.caseLabel = self.Cxx.getValue('2')
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-##        cStmt.caseLabel = self.Cxx.getValue('3')
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
-##      if len(ids[0][0]) == 0:
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '4'))
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '5'))
-##        cmpd.children.append(self.Cxx.getReturn(0.0, caseLabel = '6'))
-##      elif len(ids[0][0]) == 1:
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-##        cStmt.caseLabel = self.Cxx.getValue('4')
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-##        cStmt.caseLabel = self.Cxx.getValue('5')
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
-##        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]))
-##        cStmt.caseLabel = self.Cxx.getValue('6')
-##        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
-##        p += 1
       for i in range(len(ids[2][0]) + len(ids[1][0])*3 + len(ids[0][0])*3):
         cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
         cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])), Break()])
         p += 1
     elif dim == 3:
-      pass
+      for i in range(len(ids[3][0]) + len(ids[2][0])*4 + len(ids[1][0])*6 + len(ids[0][0])*4):
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 0), pts[perm[p]][0]), caseLabel = p)
+        cmpd.children.extend([cStmt,
+                              self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 1), pts[perm[p]][1])),
+                              self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(refVar, 2), pts[perm[p]][2])), Break()])
+        p += 1
     cStmt = self.Cxx.getExpStmt(self.Cxx.getFunctionCall('printf', [self.Cxx.getString('dualIndex: %d\\n'), 'dualIndex']))
     cStmt.caseLabel = self.Cxx.getValue('default')
     cmpd.children.extend([cStmt, self.Cxx.getThrow(self.Cxx.getFunctionCall('ALE::Exception', [self.Cxx.getString('Bad dual index')]))])

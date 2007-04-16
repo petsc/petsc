@@ -1289,17 +1289,17 @@ namespace ALE {
         {
           // Side 1 (Back)
           Mesh::point_type face(1);
-          sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[5], face, order++);
-          sieve->addArrow(vertices[6], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
           sieve->addArrow(vertices[7], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
           mesh->setValue(markers, face, 1);
         }
         {
           // Side 2 (Bottom)
           Mesh::point_type face(2);
-          sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
           sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[0], face, order++);
           mesh->setValue(markers, face, 1);
@@ -1316,19 +1316,19 @@ namespace ALE {
         {
           // Side 4 (Left)
           Mesh::point_type face(4);
-          sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
           sieve->addArrow(vertices[7], face, order++);
-          sieve->addArrow(vertices[2], face, order++);
           mesh->setValue(markers, face, 1);
         }
         {
           // Side 5 (Right)
           Mesh::point_type face(5);
+          sieve->addArrow(vertices[1], face, order++);
           sieve->addArrow(vertices[5], face, order++);
-          sieve->addArrow(vertices[0], face, order++);
-          sieve->addArrow(vertices[3], face, order++);
           sieve->addArrow(vertices[6], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
           mesh->setValue(markers, face, 1);
         }
       }
@@ -1344,30 +1344,30 @@ namespace ALE {
         }
       }
 #else
-      coords[0*2+0] = lower[0];
-      coords[0*2+1] = lower[1];
-      coords[0*2+2] = upper[2];
-      coords[1*2+0] = upper[0];
-      coords[1*2+1] = lower[1];
-      coords[1*2+2] = upper[2];
-      coords[2*2+0] = upper[0];
-      coords[2*2+1] = upper[1];
-      coords[2*2+2] = upper[2];
-      coords[3*2+0] = lower[0];
-      coords[3*2+1] = upper[1];
-      coords[3*2+2] = upper[2];
-      coords[4*2+0] = upper[0];
-      coords[4*2+1] = lower[1];
-      coords[4*2+2] = lower[2];
-      coords[5*2+0] = lower[0];
-      coords[5*2+1] = lower[1];
-      coords[5*2+2] = lower[2];
-      coords[6*2+0] = lower[0];
-      coords[6*2+1] = upper[1];
-      coords[6*2+2] = lower[2];
-      coords[7*2+0] = upper[0];
-      coords[7*2+1] = upper[1];
-      coords[7*2+2] = lower[2];
+      coords[0*3+0] = lower[0];
+      coords[0*3+1] = lower[1];
+      coords[0*3+2] = upper[2];
+      coords[1*3+0] = upper[0];
+      coords[1*3+1] = lower[1];
+      coords[1*3+2] = upper[2];
+      coords[2*3+0] = upper[0];
+      coords[2*3+1] = upper[1];
+      coords[2*3+2] = upper[2];
+      coords[3*3+0] = lower[0];
+      coords[3*3+1] = upper[1];
+      coords[3*3+2] = upper[2];
+      coords[4*3+0] = lower[0];
+      coords[4*3+1] = lower[1];
+      coords[4*3+2] = lower[2];
+      coords[5*3+0] = upper[0];
+      coords[5*3+1] = lower[1];
+      coords[5*3+2] = lower[2];
+      coords[6*3+0] = upper[0];
+      coords[6*3+1] = upper[1];
+      coords[6*3+2] = lower[2];
+      coords[7*3+0] = lower[0];
+      coords[7*3+1] = upper[1];
+      coords[7*3+2] = lower[2];
 #endif
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
