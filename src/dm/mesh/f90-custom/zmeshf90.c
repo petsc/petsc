@@ -39,7 +39,7 @@ void PETSC_STDCALL meshrestorecoordinatesf90_(Mesh *x,F90Array2d *ptr,int *__ier
 {
   PetscReal *c;
   *__ierr = F90Array2dAccess(ptr,(void**)&c);if (*__ierr) return;
-  *__ierr = F90Array2dDestroy(ptr);if (*__ierr) return;
+  *__ierr = F90Array2dDestroy(ptr,PETSC_REAL);if (*__ierr) return;
   *__ierr = PetscFree(c);
 }
 void PETSC_STDCALL meshgetelementsf90_(Mesh *mesh,F90Array2d *ptr,int *__ierr)
@@ -53,7 +53,7 @@ void PETSC_STDCALL meshrestoreelementsf90_(Mesh *x,F90Array2d *ptr,int *__ierr)
 {
   PetscInt   *v;
   *__ierr = F90Array2dAccess(ptr,(void**)&v);if (*__ierr) return;
-  *__ierr = F90Array2dDestroy(ptr);if (*__ierr) return;
+  *__ierr = F90Array2dDestroy(ptr,PETSC_INT);if (*__ierr) return;
   *__ierr = PetscFree(v);
 }
 void PETSC_STDCALL sectiongetarrayf90_(Mesh *mesh,CHAR name PETSC_MIXED_LEN(len),F90Array2d *ptr,int *ierr PETSC_END_LEN(len))

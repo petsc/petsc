@@ -30,7 +30,7 @@ void PETSC_STDCALL iscoloringrestoreisf90_(ISColoring *iscoloring,F90Array1d *pt
   PetscFortranAddr *is;
 
   *__ierr = F90Array1dAccess(ptr,(void**)&is);if (*__ierr) return;
-  *__ierr = F90Array1dDestroy(ptr);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_FORTRANADDR);if (*__ierr) return;
   *__ierr = ISColoringRestoreIS(*iscoloring,(IS **)is);if (*__ierr) return;
   *__ierr = PetscFree(is);
 }

@@ -28,7 +28,7 @@ void PETSC_STDCALL vecrestorearrayf90_(Vec *x,F90Array1d *ptr,int *__ierr)
 {
   PetscScalar *fa;
   *__ierr = F90Array1dAccess(ptr,(void**)&fa);if (*__ierr) return;
-  *__ierr = F90Array1dDestroy(ptr);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_SCALAR);if (*__ierr) return;
   *__ierr = VecRestoreArray(*x,&fa);
 }
 
@@ -57,7 +57,7 @@ void PETSC_STDCALL vecdestroyvecsf90_(F90Array1d *ptr,int *m,int *__ierr)
     *__ierr = VecDestroy((Vec)vecs[i]);
     if (*__ierr) return;
   }
-  *__ierr = F90Array1dDestroy(ptr);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_SCALAR);if (*__ierr) return;
   *__ierr = PetscFree(vecs);
 }
 

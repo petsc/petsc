@@ -28,7 +28,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,void **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dDestroy"
-PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType type)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
@@ -61,7 +61,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,void **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array2dDestroy"
-PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType type)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
@@ -93,7 +93,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d *ptr,void **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array3dDestroy"
-PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d *ptr,PetscDataType type)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
@@ -125,7 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d *ptr,void **array)
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array4dDestroy"
-PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d *ptr)
+PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d *ptr,PetscDataType type)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);

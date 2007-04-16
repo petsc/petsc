@@ -23,7 +23,7 @@ void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr)
 {
   PetscScalar *fa;
   *ierr = F90Array2dAccess(ptr,(void **)&fa);if (*ierr) return;
-  *ierr = F90Array2dDestroy(ptr);if (*ierr) return;
+  *ierr = F90Array2dDestroy(ptr,PETSC_SCALAR);if (*ierr) return;
   *ierr = MatRestoreArray(*mat,&fa);
 }
 EXTERN_C_END

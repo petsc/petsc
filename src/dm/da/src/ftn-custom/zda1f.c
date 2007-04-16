@@ -59,7 +59,7 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
 void PETSC_STDCALL davecrestorearrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
 {
   *ierr = VecRestoreArray(*v,0);
-  *ierr = F90Array1dDestroy(a);
+  *ierr = F90Array1dDestroy(a,PETSC_SCALAR);
 }
 
 void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
@@ -91,7 +91,7 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
 void PETSC_STDCALL davecrestorearrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
 {
   *ierr = VecRestoreArray(*v,0);
-  *ierr = F90Array1dDestroy(a);
+  *ierr = F90Array1dDestroy(a,PETSC_SCALAR);
 }
 
 EXTERN_C_END

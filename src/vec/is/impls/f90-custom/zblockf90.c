@@ -24,7 +24,7 @@ void PETSC_STDCALL isblockrestoreindicesf90_(IS *x,F90Array1d *ptr,int *__ierr)
 {
   int    *fa;
   *__ierr = F90Array1dAccess(ptr,(void**)&fa);if (*__ierr) return;
-  *__ierr = F90Array1dDestroy(ptr);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_INT);if (*__ierr) return;
   *__ierr = ISBlockRestoreIndices(*x,&fa);
 }
 EXTERN_C_END

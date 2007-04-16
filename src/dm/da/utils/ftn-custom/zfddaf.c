@@ -122,8 +122,8 @@ void PETSC_STDCALL dmcompositegetaccessvpvp_(DMComposite *dm,Vec *v,Vec *v1,F90A
 void PETSC_STDCALL dmcompositerestoreaccessvpvp_(DMComposite *dm,Vec *v,Vec *v1,F90Array1d *p1,Vec *v2,F90Array1d *p2,PetscErrorCode *ierr)
 {
   *ierr = DMCompositeRestoreAccess(*dm,*v,v1,0,v2,0);
-  *ierr = F90Array1dDestroy(p1);
-  *ierr = F90Array1dDestroy(p2);
+  *ierr = F90Array1dDestroy(p1,PETSC_SCALAR);
+  *ierr = F90Array1dDestroy(p2,PETSC_SCALAR);
 }
 
 void PETSC_STDCALL dmcompositegetlocalvectors4_(DMComposite *dm,void **v1,void **p1,void **v2,void **p2,PetscErrorCode *ierr)
