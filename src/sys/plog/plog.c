@@ -1196,7 +1196,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   PetscTruth    *localStageUsed,    *stageUsed;
   PetscTruth    *localStageVisible, *stageVisible;
   int            numStages, localNumEvents, numEvents;
-  int            stage, oclass;
+  int            stage, lastStage, oclass;
   PetscEvent     event;
   PetscErrorCode ierr;
   char           version[256];
@@ -1205,9 +1205,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(comm, &rank);CHKERRQ(ierr);
   /* Pop off any stages the user forgot to remove */
+  lastStage = 0;
   ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
   ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   while (stage >= 0) {
+    lastStage = stage;
     ierr = StageLogPop(stageLog);CHKERRQ(ierr);
     ierr = StageLogGetCurrent(stageLog, &stage);CHKERRQ(ierr);
   }
@@ -1649,6 +1651,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char fi
   /* Cleanup */
   ierr = PetscFPrintf(comm, fd, "\n");CHKERRQ(ierr);
   ierr = PetscFClose(comm, fd);CHKERRQ(ierr);
+  ierr = StageLogPush(stageLog, lastStage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
