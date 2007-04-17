@@ -32,32 +32,32 @@ EXTERN_C_BEGIN
 #define f90array1ddestroyfortranaddr_     f90array1ddestroyfortranaddr
 #endif
 
-extern void f90array1dcreatescalar_(void *,PetscInt *,PetscInt *,F90Array1d *);
-extern void f90array1daccessscalar_(F90Array1d*,void**);
-extern void f90array1ddestroyscalar_(F90Array1d *ptr);
-extern void f90array1dcreatereal_(void *,PetscInt *,PetscInt *,F90Array1d *);
-extern void f90array1daccessreal_(F90Array1d*,void**);
-extern void f90array1ddestroyreal_(F90Array1d *ptr);
-extern void f90array1dcreateint_(void *,PetscInt *,PetscInt *,F90Array1d *);
-extern void f90array1daccessint_(F90Array1d*,void**);
-extern void f90array1ddestroyint_(F90Array1d *ptr);
-extern void f90array1dcreatefortranaddr_(void *,PetscInt *,PetscInt *,F90Array1d *);
-extern void f90array1daccessfortranaddr_(F90Array1d*,void**);
-extern void f90array1ddestroyfortranaddr_(F90Array1d *ptr);
+extern void f90array1dcreatescalar_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO());
+extern void f90array1daccessscalar_(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array1ddestroyscalar_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
+extern void f90array1dcreatereal_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO());
+extern void f90array1daccessreal_(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array1ddestroyreal_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
+extern void f90array1dcreateint_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO());
+extern void f90array1daccessint_(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array1ddestroyint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
+extern void f90array1dcreatefortranaddr_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO());
+extern void f90array1daccessfortranaddr_(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dCreate"
-PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
+PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
-    f90array1dcreatescalar_(array,&start,&len,ptr);
+    f90array1dcreatescalar_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
-    f90array1dcreatereal_(array,&start,&len,ptr);
+    f90array1dcreatereal_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
-    f90array1dcreateint_(array,&start,&len,ptr);
+    f90array1dcreateint_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
-    f90array1dcreatefortranaddr_(array,&start,&len,ptr);
+    f90array1dcreatefortranaddr_(array,&start,&len,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ(PETSC_ERR_SUP,"unsupported PetscDataType");
   }
@@ -66,17 +66,17 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dAccess"
-PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array)
+PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
-  f90array1daccessscalar_(ptr,array);
+    f90array1daccessscalar_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
-  f90array1daccessreal_(ptr,array);
+    f90array1daccessreal_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
-  f90array1daccessint_(ptr,array);
+    f90array1daccessint_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
-  f90array1daccessfortranaddr_(ptr,array);
+    f90array1daccessfortranaddr_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ(PETSC_ERR_SUP,"unsupported PetscDataType");
   }
@@ -85,17 +85,17 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType ty
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dDestroy"
-PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType type)
+PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
-    f90array1ddestroyscalar_(ptr);
+    f90array1ddestroyscalar_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
-    f90array1ddestroyreal_(ptr);
+    f90array1ddestroyreal_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
-    f90array1ddestroyint_(ptr);
+    f90array1ddestroyint_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
-    f90array1ddestroyfortranaddr_(ptr);
+    f90array1ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ(PETSC_ERR_SUP,"unsupported PetscDataType");
   }
@@ -132,32 +132,32 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType t
 #define f90array2ddestroyfortranaddr_     f90array2ddestroyfortranaddr
 #endif
 
-extern void f90array2dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d *);
-extern void f90array2daccessscalar_(F90Array2d*,void**);
-extern void f90array2ddestroyscalar_(F90Array2d *ptr);
-extern void f90array2dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d *);
-extern void f90array2daccessreal_(F90Array2d*,void**);
-extern void f90array2ddestroyreal_(F90Array2d *ptr);
-extern void f90array2dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d *);
-extern void f90array2daccessint_(F90Array2d*,void**);
-extern void f90array2ddestroyint_(F90Array2d *ptr);
-extern void f90array2dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d *);
-extern void f90array2daccessfortranaddr_(F90Array2d*,void**);
-extern void f90array2ddestroyfortranaddr_(F90Array2d *ptr);
+extern void f90array2dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO());
+extern void f90array2daccessscalar_(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array2ddestroyscalar_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
+extern void f90array2dcreatereal_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO());
+extern void f90array2daccessreal_(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array2ddestroyreal_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
+extern void f90array2dcreateint_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO());
+extern void f90array2daccessint_(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array2ddestroyint_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
+extern void f90array2dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO());
+extern void f90array2daccessfortranaddr_(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
+extern void f90array2ddestroyfortranaddr_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dCreate"
-PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
+PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
-    f90array2dcreatescalar_(array,&start1,&len1,&start2,&len2,ptr);
+    f90array2dcreatescalar_(array,&start1,&len1,&start2,&len2,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
-    f90array2dcreatereal_(array,&start1,&len1,&start2,&len2,ptr);
+    f90array2dcreatereal_(array,&start1,&len1,&start2,&len2,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
-    f90array2dcreateint_(array,&start1,&len1,&start2,&len2,ptr);
+    f90array2dcreateint_(array,&start1,&len1,&start2,&len2,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
-    f90array2dcreatefortranaddr_(array,&start1,&len1,&start2,&len2,ptr);
+    f90array2dcreatefortranaddr_(array,&start1,&len1,&start2,&len2,ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ(PETSC_ERR_SUP,"unsupported PetscDataType");
   }
@@ -166,17 +166,17 @@ PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,P
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dAccess"
-PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array)
+PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
-  f90array2daccessscalar_(ptr,array);
+    f90array2daccessscalar_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
-  f90array2daccessreal_(ptr,array);
+    f90array2daccessreal_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
-  f90array2daccessint_(ptr,array);
+    f90array2daccessint_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
-  f90array2daccessfortranaddr_(ptr,array);
+    f90array2daccessfortranaddr_(ptr,array PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ(PETSC_ERR_SUP,"unsupported PetscDataType");
   }
@@ -185,17 +185,17 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType ty
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dDestroy"
-PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType type)
+PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType type PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscFunctionBegin;
   if (type == PETSC_SCALAR) {
-    f90array2ddestroyscalar_(ptr);
+    f90array2ddestroyscalar_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_REAL) {
-    f90array2ddestroyreal_(ptr);
+    f90array2ddestroyreal_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_INT) {
-    f90array2ddestroyint_(ptr);
+    f90array2ddestroyint_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else if (type == PETSC_FORTRANADDR) {
-    f90array2ddestroyfortranaddr_(ptr);
+    f90array2ddestroyfortranaddr_(ptr PETSC_F90_2PTR_PARAM(ptrd));
   } else {
     SETERRQ(PETSC_ERR_SUP,"unsupported PetscDataType");
   }
