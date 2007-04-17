@@ -17,7 +17,7 @@
 /*-------------------------------------------------------------*/
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array1dAccess"
-PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,void **array)
+PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d *ptr,PetscDataType data,void **array)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
@@ -50,7 +50,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dGetNextRecord(F90Array1d *ptr,void **ne
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array2dAccess"
-PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,void **array)
+PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d *ptr,PetscDataType type,void **array)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
@@ -82,7 +82,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dGetNextRecord(F90Array2d *ptr,void **ne
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array3dAccess"
-PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d *ptr,void **array)
+PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d *ptr,PetscDataType type,void **array)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
@@ -114,7 +114,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array3dGetNextRecord(F90Array3d *ptr,void **ne
 
 #undef __FUNCT__  
 #define __FUNCT__ "F90Array4dAccess"
-PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d *ptr,void **array)
+PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d *ptr,PetscDataType type,void **array)
 {
   PetscFunctionBegin;
   PetscValidPointer(ptr,1);
