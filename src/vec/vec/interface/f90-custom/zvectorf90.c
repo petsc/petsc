@@ -52,12 +52,12 @@ void PETSC_STDCALL vecdestroyvecsf90_(F90Array1d *ptr,int *m,int *__ierr)
   PetscFortranAddr *vecs;
   int       i;
 
-  *__ierr = F90Array1dAccess(ptr,PETSC_SCALAR,(void**)&vecs);if (*__ierr) return;
+  *__ierr = F90Array1dAccess(ptr,PETSC_FORTRANADDR,(void**)&vecs);if (*__ierr) return;
   for (i=0; i<*m; i++) {
     *__ierr = VecDestroy((Vec)vecs[i]);
     if (*__ierr) return;
   }
-  *__ierr = F90Array1dDestroy(ptr,PETSC_SCALAR);if (*__ierr) return;
+  *__ierr = F90Array1dDestroy(ptr,PETSC_FORTRANADDR);if (*__ierr) return;
   *__ierr = PetscFree(vecs);
 }
 
