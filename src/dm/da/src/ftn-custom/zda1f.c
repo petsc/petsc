@@ -30,7 +30,7 @@ EXTERN_C_END
 #if defined(PETSC_HAVE_F90_C)
 #include "src/sys/f90/f90impl.h"
 EXTERN_C_BEGIN
-void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
+void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
   PetscScalar *aa;
@@ -53,16 +53,16 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
   *ierr = VecGetArray(*v,&aa);
-  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxs+gxm-1,a);
+  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-void PETSC_STDCALL davecrestorearrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
+void PETSC_STDCALL davecrestorearrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *ierr = VecRestoreArray(*v,0);
-  *ierr = F90Array1dDestroy(a);
+  *ierr = F90Array1dDestroy(a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
+void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscInt    xs,ys,zs,xm,ym,zm,gxs,gys,gzs,gxm,gym,gzm,N,dim,dof;
   PetscScalar *aa;
@@ -85,13 +85,13 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
   *ierr = VecGetArray(*v,&aa);
-  *ierr = F90Array1dCreate(aa,(PetscDataType)(-dof*sizeof(PetscScalar)),gxs,gxs+gxm-1,a);
+  *ierr = F90Array1dCreate(aa,(PetscDataType)(-dof*sizeof(PetscScalar)),gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
 }
 
-void PETSC_STDCALL davecrestorearrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr)
+void PETSC_STDCALL davecrestorearrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   *ierr = VecRestoreArray(*v,0);
-  *ierr = F90Array1dDestroy(a);
+  *ierr = F90Array1dDestroy(a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 EXTERN_C_END

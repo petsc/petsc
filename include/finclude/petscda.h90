@@ -46,7 +46,8 @@
 
         Subroutine DMCompositeGetEntries4(dm, d1,d2,d3,d4,ierr)
           DM  dm
-          DM d1,d2,d3,d4
+          PetscInt d2,d4
+          DM d1,d3
           PetscErrorCode ierr
         End Subroutine
       End Interface
