@@ -36,7 +36,7 @@ class Configure(config.base.Configure):
   def setupHelp(self, help):
     import nargs
 
-    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, None, 'Specify  compiler type for eg: intel8,solaris,rs6000,IRIX,win32,absoft,t3e,alpha,cray_x1,hpux,lahey'))
+    help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, 'f90src', 'Specify  compiler type for eg: f90src,nof90src,intel8,solaris,rs6000,IRIX,win32,absoft,t3e,alpha,cray_x1,hpux,lahey'))
     return
 
   def getDispatchNames(self):
@@ -887,11 +887,15 @@ class Configure(config.base.Configure):
     if not self.fortranIsF90:
       self.logPrint('Not a Fortran90 compiler - hence skipping f90-interface test')
       return
-    self.f90Guess = self.getFortran90SourceGuesses()
-    if 'with-f90-interface' in self.framework.argDB:
-      self.f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])
 
-    if not self.f90Guess :
+    # if user specified nof90src, then guess the compilerand set the correct c-f90 variant
+    if self.stripquotes(self.framework.argDB['with-f90-interface']) == 'nof90src':
+      self.f90Guess = self.getFortran90SourceGuesses()
+      self.logPrint('Using f90 interface guess: '+self.f90Guess)
+    elif self.framework.argDB['with-f90-interface'] != 'f90src':
+      self.f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])            
+    else:
+      self.addDefine('USE_F90_SRC_IMPL',1)
       return
 
     headerPath = os.path.join('src', 'sys','f90', 'f90_'+self.f90Guess+'.h')
