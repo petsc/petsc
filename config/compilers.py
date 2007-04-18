@@ -914,6 +914,64 @@ class Configure(config.base.Configure):
       raise RuntimeError('Perhaps incorrect with-f90-interface specified. Could not confiure f90 interface for : '+self.f90Guess)      
     return
 
+  def checkFortran90Array(self):
+    '''Check for F90 array interfaces'''
+    if not self.fortranIsF90:
+      self.logPrint('Not a Fortran90 compiler - hence skipping f90-array test')
+      return
+    # Compile the C test object
+    cinc  = '#include <stdlib.h>\n'
+    ccode = 'void '+self.mangleFortranFunction('f90ptrtest')+'''(void* a1, void* a2,void* a3, void* i, void* p1 ,void* p2, void* p3)
+{
+  if ((a1 == a2) && (a2 == a3) && (p1 == p3) && (p1 != p2)) return;
+  exit(121);
+}\n'''
+    cobj = 'fooobj.o'
+    self.pushLanguage('C')
+    if not self.checkCompile(cinc+ccode, None, cleanup = 0):
+      self.logPrint('Cannot compile C function: f90ptrtest', 3, 'compilers')
+      raise RuntimeError('Could not check Fortran pointer arguments')
+    if not os.path.isfile(self.compilerObj):
+      self.logPrint('Cannot locate object file: '+os.path.abspath(self.compilerObj), 3, 'compilers')
+      raise RuntimeError('Could not check Fortran pointer arguments')
+    os.rename(self.compilerObj, cobj)
+    self.popLanguage()
+    # Link the test object against a Fortran driver
+    self.pushLanguage('FC')
+    oldLIBS = self.setCompilers.LIBS
+    self.setCompilers.LIBS = cobj+' '+self.setCompilers.LIBS
+    fcode = '''\
+      Interface
+         Subroutine f90ptrtest(p1,p2,p3,i)
+         integer, pointer :: p1(:,:)
+         integer, pointer :: p2(:,:)
+         integer, pointer :: p3(:,:)
+         integer i
+         End Subroutine
+      End Interface
+
+      integer, pointer :: ptr1(:,:),ptr2(:,:)
+      integer, target  :: array(6:8,9:21)
+      integer  in
+
+      in   = 25
+      ptr1 => array
+      ptr2 => array
+
+      call f90ptrtest(ptr1,ptr2,ptr1,in)\n'''
+    found = self.checkRun(None, fcode, defaultArg = 'f90-2ptr-arg')
+    self.setCompilers.LIBS = oldLIBS
+    self.popLanguage()
+    # Cleanup
+    if os.path.isfile(cobj):
+      os.remove(cobj)
+    if found:
+      self.addDefine('HAVE_F90_2PTR_ARG', 1)
+      self.logPrint('F90 compiler uses two arguments for array pointers', 3, 'compilers')
+    else:
+      self.logPrint('F90 uses a single argument for array pointers', 3, 'compilers')
+    return
+
   def configure(self):
     import config.setCompilers
     if hasattr(self.setCompilers, 'CC'):
@@ -944,6 +1002,7 @@ class Configure(config.base.Configure):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
       self.executeTest(self.checkFortran90Interface)
+      self.executeTest(self.checkFortran90Array)
     self.no_configure()
     return
 
