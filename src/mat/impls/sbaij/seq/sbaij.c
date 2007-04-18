@@ -59,7 +59,7 @@ static PetscErrorCode MatGetRowIJ_SeqSBAIJ(Mat A,PetscInt oshift,PetscTruth symm
   if (!ia) PetscFunctionReturn(0);
   if (!blockcompressed) {
     /* malloc & create the natural set of indices */
-    ierr = PetscMalloc2((n+1)*bs,PetscInt,*ia,nz*bs,PetscInt,*ja);CHKERRQ(ierr);
+    ierr = PetscMalloc2((n+1)*bs,PetscInt,ia,nz*bs,PetscInt,ja);CHKERRQ(ierr);
     for (i=0; i<n+1; i++) {
       for (j=0; j<bs; j++) {
         *ia[i*bs+j] = a->i[i]*bs+j+oshift;
