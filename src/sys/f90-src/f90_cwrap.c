@@ -1,7 +1,5 @@
 #include "src/sys/f90/f90impl.h"
 
-EXTERN_C_BEGIN
-
 /*************************************************************************/
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -32,6 +30,7 @@ EXTERN_C_BEGIN
 #define f90array1ddestroyfortranaddr_     f90array1ddestroyfortranaddr
 #endif
 
+EXTERN_C_BEGIN
 extern void f90array1dcreatescalar_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO());
 extern void f90array1daccessscalar_(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
 extern void f90array1ddestroyscalar_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
@@ -44,6 +43,7 @@ extern void f90array1ddestroyint_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
 extern void f90array1dcreatefortranaddr_(void *,PetscInt *,PetscInt *,F90Array1d * PETSC_F90_2PTR_PROTO());
 extern void f90array1daccessfortranaddr_(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
 extern void f90array1ddestroyfortranaddr_(F90Array1d *ptr PETSC_F90_2PTR_PROTO());
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array1dCreate"
@@ -132,6 +132,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d *ptr,PetscDataType t
 #define f90array2ddestroyfortranaddr_     f90array2ddestroyfortranaddr
 #endif
 
+EXTERN_C_BEGIN
 extern void f90array2dcreatescalar_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO());
 extern void f90array2daccessscalar_(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
 extern void f90array2ddestroyscalar_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
@@ -144,6 +145,7 @@ extern void f90array2ddestroyint_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
 extern void f90array2dcreatefortranaddr_(void *,PetscInt *,PetscInt *,PetscInt *,PetscInt *,F90Array2d * PETSC_F90_2PTR_PROTO());
 extern void f90array2daccessfortranaddr_(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
 extern void f90array2ddestroyfortranaddr_(F90Array2d *ptr PETSC_F90_2PTR_PROTO());
+EXTERN_C_END
 
 #undef __FUNCT__
 #define __FUNCT__ "F90Array2dCreate"
@@ -215,6 +217,7 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType t
 #define f90arraygetaddrfortranaddr_       f90arraygetaddrfortranaddr
 #endif
 
+EXTERN_C_BEGIN
 void PETSC_STDCALL f90arraygetaddrscalar_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
@@ -231,6 +234,8 @@ void PETSC_STDCALL f90arraygetaddrfortranaddr_(void *array, PetscFortranAddr *ad
 {
   *address = (PetscFortranAddr)array;
 }
+EXTERN_C_END
+
 /*************************************************************************/
 
-EXTERN_C_END
+

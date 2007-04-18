@@ -31,7 +31,7 @@ PETSC_EXTERN_CXX_BEGIN
 
 #endif /* PETSC_HAVE_F90_H */
 
-     EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void*,PetscDataType,int,int,F90Array1d* PETSC_F90_2PTR_PROTO());
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void*,PetscDataType,int,int,F90Array1d* PETSC_F90_2PTR_PROTO());
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d*,PetscDataType,void** PETSC_F90_2PTR_PROTO());
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d*,PetscDataType PETSC_F90_2PTR_PROTO());
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetNextRecord(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
