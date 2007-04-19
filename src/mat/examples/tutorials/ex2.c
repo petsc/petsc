@@ -172,6 +172,8 @@ int main(int argc,char **argv)
   ierr = VecDestroy(Z2);CHKERRQ(ierr);
 
 
+  /*ierr = PetscLogPrintSummary(MPI_COMM_SELF,"ex2.log"); CHKERRQ(ierr);*/
+  
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }
