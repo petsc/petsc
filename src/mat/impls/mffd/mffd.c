@@ -281,7 +281,6 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   w    = ctx->w;
   U    = ctx->current_u;
   F    = ctx->current_f;
-  VecView(U,0);
   /* 
       Compute differencing parameter 
   */
@@ -315,10 +314,10 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* w = u + ha */
   ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
 
-  /* compute func(U) as base for differencing */
-  /* if (ctx->ncurrenth == 1) {*/
+  /* compute func(U) as base for differencing; only needed first time in */
+  if (ctx->ncurrenth == 1) {
     ierr = (*ctx->func)(ctx->funcctx,U,F);CHKERRQ(ierr);
-    /*  }*/
+  }
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
 
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
@@ -424,7 +423,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U,Vec F)
   PetscFunctionBegin;
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   ctx->current_u = U;
-  ctx->current_f = F;
+  if (F) {
+    ctx->current_f = F;
+  } else {
+    ierr = VecDuplicate(ctx->current_u, &ctx->current_f);CHKERRQ(ierr);
+  }
   if (!ctx->w) {
     ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
   }
@@ -984,6 +987,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
   PetscValidHeaderSpecific(U,VEC_COOKIE,2);
+  if (F) PetscValidHeaderSpecific(F,VEC_COOKIE,3);
   ierr = PetscObjectQueryFunction((PetscObject)J,"MatMFFDSetBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(J,U,F);CHKERRQ(ierr);
