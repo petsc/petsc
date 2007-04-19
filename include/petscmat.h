@@ -1466,8 +1466,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal(Mat,Vec);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(Vec,Mat*);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat,Vec);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat,Vec,PetscErrorCode(*)(void*,Vec,Vec),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat,PetscErrorCode(*)(void*,Vec,Vec),void*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat,PetscErrorCode (*)(void*,Vec));
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat,MatNullSpace);

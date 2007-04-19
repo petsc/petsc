@@ -70,7 +70,7 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
   PetscFunctionBegin;
   *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);
   *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);
+<  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);
 
   /* Handle case where user passes in global vector as opposed to local */
   *ierr = VecGetLocalSize(*v,&N);

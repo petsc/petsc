@@ -1,6 +1,8 @@
 #define PETSCSNES_DLL
 
 #include "include/private/snesimpl.h"  /*I  "petscsnes.h" I*/
+#include "include/private/matimpl.h" 
+#include "src/mat/impls/mffd/mffdimpl.h"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDComputeJacobian"
@@ -39,6 +41,31 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES snes,Vec x,Mat *j
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode MatAssemblyEnd_MFFD(Mat,MatAssemblyType);
+#undef __FUNCT__  
+#define __FUNCT__ "MatAssemblyEnd_SNESMF"
+/*
+   MatAssemblyEnd_SNESMF - Calls MatAssemblyEnd_MFFD() and then sets the 
+    base from the SNES context
+
+*/
+PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
+{
+  PetscErrorCode ierr;
+  MatMFFD        j = (MatMFFD)J->data;
+  SNES           snes = (SNES)j->funcctx;
+
+  PetscFunctionBegin;
+  ierr = MatAssemblyEnd_MFFD(J,mt);CHKERRQ(ierr);
+
+  ierr = SNESGetSolution(snes,&j->current_u);CHKERRQ(ierr);
+  ierr = SNESGetFunction(snes,&j->current_f,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
+  if (!j->w) {
+    ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSNESMF"
 /*@
@@ -72,10 +99,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES snes,Vec x,Mat *j
      error_rel = square root of relative error in function evaluation
      umin = minimum iterate parameter
 .ve
-   (see MATSNESMF_WP or MATSNESMF_DS)
+   (see MATMFFD_WP or MATMFFD_DS)
    
-   The user can set the error_rel via MatSNESMFSetFunctionError() and 
-   umin via MatSNESMFDefaultSetUmin(); see the nonlinear solvers chapter
+   The user can set the error_rel via MatMFFDSetFunctionError() and 
+   umin via MatMFFDDefaultSetUmin(); see the nonlinear solvers chapter
    of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -83,15 +110,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES snes,Vec x,Mat *j
 
    Options Database Keys:
 +  -mat_mffd_err <error_rel> - Sets error_rel
-+  -mat_mffd_type - wp or ds (see MATSNESMF_WP or MATSNESMF_DS)
++  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_mffd_unim <umin> - Sets umin (for default PETSc routine that computes h only)
 -  -mat_mffd_ksp_monitor - KSP monitor routine that prints differencing h
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), MatSNESMFSetFunctionError(), MatSNESMFDefaultSetUmin()
-          MatSNESMFSetHHistory(), MatSNESMFResetHHistory(), MatCreateMF(),
-          MatSNESMFGetH(),MatSNESMFKSPMonitor(), MatSNESMFRegisterDynamic), MatSNESMFComputeJacobian()
+.seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDefaultSetUmin()
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMF(),
+          MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
  
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Vec x,Mat *J)
@@ -100,7 +127,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Vec x,Mat *J)
 
   PetscFunctionBegin;
   ierr = MatCreateMFFD(x,J);CHKERRQ(ierr);
-  ierr = MatMFFDSetFunction(*J,snes->vec_sol,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
+  ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
+  (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
+
   PetscFunctionReturn(0);
 }
 

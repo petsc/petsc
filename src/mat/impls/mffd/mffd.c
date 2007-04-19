@@ -3,11 +3,63 @@
 #include "include/private/matimpl.h"
 #include "src/mat/impls/mffd/mffdimpl.h"   /*I  "petscmat.h"   I*/
 
-PetscFList MatMFFDPetscFList         = 0;
+PetscFList MatMFFDPetscFList        = 0;
 PetscTruth MatMFFDRegisterAllCalled = PETSC_FALSE;
 
 PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE = 0;
 PetscEvent  MATMFFD_Mult = 0;
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDInitializePackage"
+/*@C
+  MatMFFDInitializePackage - This function initializes everything in the MatMFFD package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to MatCreate_MFFD()
+  when using static libraries.
+
+  Input Parameter:
+. path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Vec, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[]) 
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&MATMFFD_COOKIE,     "MatMFFD");CHKERRQ(ierr);
+  /* Register Constructors */
+  ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
+  /* Register Events */
+  ierr = PetscLogEventRegister(&MATMFFD_Mult, "MatMult MF",          MATMFFD_COOKIE);CHKERRQ(ierr);
+
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(MATMFFD_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "matmffd", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(MATMFFD_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetType"
@@ -228,7 +280,8 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
 
   w    = ctx->w;
   U    = ctx->current_u;
-
+  F    = ctx->current_f;
+  VecView(U,0);
   /* 
       Compute differencing parameter 
   */
@@ -242,6 +295,7 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
     PetscFunctionReturn(0);
   }
 
+  if (h != h) SETERRQ(PETSC_ERR_PLIB,"Computed Nan differencing parameter h");
   if (ctx->checkh) {
     ierr = (*ctx->checkh)(ctx->checkhctx,U,a,&h);CHKERRQ(ierr);
   }
@@ -261,11 +315,10 @@ PetscErrorCode MatMult_MFFD(Mat mat,Vec a,Vec y)
   /* w = u + ha */
   ierr = VecWAXPY(w,h,a,U);CHKERRQ(ierr);
 
-  F = ctx->funcvec;
   /* compute func(U) as base for differencing */
-  if (ctx->ncurrenth == 1) {
+  /* if (ctx->ncurrenth == 1) {*/
     ierr = (*ctx->func)(ctx->funcctx,U,F);CHKERRQ(ierr);
-  }
+    /*  }*/
   ierr = (*ctx->func)(ctx->funcctx,w,y);CHKERRQ(ierr);
 
   ierr = VecAXPY(y,-1.0,F);CHKERRQ(ierr);
@@ -363,7 +416,7 @@ PetscErrorCode MatScale_MFFD(Mat Y,PetscScalar a)
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "MatMFFDSetBase_FD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
   MatMFFD        ctx = (MatMFFD)J->data;
@@ -371,6 +424,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U)
   PetscFunctionBegin;
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   ctx->current_u = U;
+  ctx->current_f = F;
   if (!ctx->w) {
     ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
   }
@@ -424,10 +478,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
   char           ftype[256];
 
   PetscFunctionBegin;
-  if (!MatMFFDRegisterAllCalled) {ierr = MatMFFDRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  
   ierr = PetscOptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters","MatMFFD");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatSNESMPetscFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDPetscFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMFFDSetType(mat,ftype);CHKERRQ(ierr);
   }
@@ -462,6 +514,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   PetscErrorCode  ierr;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
 
   ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_COOKIE,0,"MatMFFD",A->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
   mfctx->sp              = 0;
@@ -491,7 +546,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
 
   mfctx->func                = 0;
   mfctx->funcctx             = 0;
-  mfctx->funcvec             = 0;
   mfctx->w                   = PETSC_NULL;
 
   A->data                = mfctx;
@@ -624,7 +678,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
 
    Input Parameters:
 +  mat - the matrix free matrix created via MatCreateSNESMF()
-.  v   - workspace vector
 .  func - the function to use
 -  funcctx - optional function context passed to function
 
@@ -634,7 +687,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
     If you use this you MUST call MatAssemblyBegin()/MatAssemblyEnd() on the matrix free
     matrix inside your compute Jacobian routine
 
-    If this is not set then it will use the function set with SNESSetFunction()
+    If this is not set then it will use the function set with SNESSetFunction() if MatCreateSNESMF() was used.
 
 .keywords: SNES, matrix-free, function
 
@@ -642,14 +695,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat mat,PetscScalar *h)
           MatMFFDSetHHistory(), MatMFFDResetHHistory(),
           MatMFFDKSPMonitor(), SNESetFunction()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,Vec v,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat mat,PetscErrorCode (*func)(void*,Vec,Vec),void *funcctx)
 {
   MatMFFD ctx = (MatMFFD)mat->data;
 
   PetscFunctionBegin;
   ctx->func    = func;
   ctx->funcctx = funcctx;
-  ctx->funcvec = v;
   PetscFunctionReturn(0);
 }
 
@@ -917,23 +969,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
 
     Input Parameters:
 +   J - the MatMFFD matrix
--   U - the vector
+.   U - the vector
+-   F - vector that contains F(u) if it has been already computed
 
     Notes: This is rarely used directly
 
     Level: advanced
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U)
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat J,Vec U,Vec F)
 {
-  PetscErrorCode ierr,(*f)(Mat,Vec);
+  PetscErrorCode ierr,(*f)(Mat,Vec,Vec);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(J,MAT_COOKIE,1);
   PetscValidHeaderSpecific(U,VEC_COOKIE,2);
   ierr = PetscObjectQueryFunction((PetscObject)J,"MatMFFDSetBase_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
-    ierr = (*f)(J,U);CHKERRQ(ierr);
+    ierr = (*f)(J,U,F);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

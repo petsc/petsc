@@ -883,9 +883,9 @@ EXTERN_C_END
 
   If created with a single process communicator, this matrix type inherits from MATSEQAIJ.
   Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
   conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
   without data copy.
 

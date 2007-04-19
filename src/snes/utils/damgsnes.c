@@ -59,7 +59,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
     ierr = PetscInfo3(0,"Skipping Jacobian, SNES iteration %D frequence %D level %D\n",it,dmmg[nlevels-1]->updatejacobianperiod,nlevels-1);CHKERRQ(ierr);
     *flag = SAME_PRECONDITIONER;
   }
-  ierr = MatSNESMFSetBase(DMMGGetFine(dmmg)->J,X);CHKERRQ(ierr);
+  ierr = MatMFFDSetBase(DMMGGetFine(dmmg)->J,X,PETSC_NULL);CHKERRQ(ierr);
 
   /* create coarser grid Jacobians for preconditioner if multigrid is the preconditioner */
   ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
@@ -81,7 +81,7 @@ PetscErrorCode DMMGComputeJacobian_Multigrid(SNES snes,Vec X,Mat *J,Mat *B,MatSt
       /* scale to "natural" scaling for that grid */
       ierr = VecPointwiseMult(X,X,dmmg[i]->Rscale);CHKERRQ(ierr);
       /* tell the base vector for matrix free multiplies */
-      ierr = MatSNESMFSetBase(dmmg[i-1]->J,X);CHKERRQ(ierr);
+      ierr = MatMFFDSetBase(dmmg[i-1]->J,X,PETSC_NULL);CHKERRQ(ierr);
       /* compute Jacobian on coarse grid */
       if (dmmg[i-1]->updatejacobian && ShouldUpdate(i,it)) {
 	ierr = (*dmmg[i-1]->computejacobian)(snes,X,&dmmg[i-1]->J,&dmmg[i-1]->B,&flg,dmmg[i-1]);CHKERRQ(ierr);
@@ -618,7 +618,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       ierr = MatCreateSNESMF(dmmg[i]->snes,dmmg[i]->x,&dmmg[i]->J);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work1);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work2);CHKERRQ(ierr);
-      ierr = MatSNESMFSetFunction(dmmg[i]->J,dmmg[i]->work1,function,dmmg[i]);CHKERRQ(ierr);
+      ierr = MatMFFDSetFunction(dmmg[i]->J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,dmmg[i]);CHKERRQ(ierr);
       if (mffd) {
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
@@ -902,7 +902,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioni"
-PetscErrorCode DMMGFunctioni(PetscInt i,Vec u,PetscScalar* r,void* ctx)
+PetscErrorCode DMMGFunctioni(void* ctx,PetscInt i,Vec u,PetscScalar* r)
 {
   DMMG           dmmg = (DMMG)ctx;
   Vec            U = dmmg->lwork1;
@@ -938,7 +938,7 @@ PetscErrorCode DMMGFunctionib(PetscInt i,Vec u,PetscScalar* r,void* ctx)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMMGFunctioniBase"
-PetscErrorCode DMMGFunctioniBase(Vec u,void* ctx)
+PetscErrorCode DMMGFunctioniBase(void* ctx,Vec u)
 {
   DMMG           dmmg = (DMMG)ctx;
   Vec            U = dmmg->lwork1;
@@ -962,8 +962,8 @@ PetscErrorCode DMMGSetSNESLocali_Private(DMMG *dmmg,PetscErrorCode (*functioni)(
     ierr = DASetLocalFunctioni((DA)dmmg[i]->dm,functioni);CHKERRQ(ierr);
     ierr = DASetLocalAdicFunctioni((DA)dmmg[i]->dm,adi);CHKERRQ(ierr);
     ierr = DASetLocalAdicMFFunctioni((DA)dmmg[i]->dm,adimf);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
+    ierr = MatMFFDSetFunctioni(dmmg[i]->J,DMMGFunctioni);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunctioniBase(dmmg[i]->J,DMMGFunctioniBase);CHKERRQ(ierr);    
     if (!dmmg[i]->lwork1) {
       ierr = DACreateLocalVector((DA)dmmg[i]->dm,&dmmg[i]->lwork1);CHKERRQ(ierr);
     }

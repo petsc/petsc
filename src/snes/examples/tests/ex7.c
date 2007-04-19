@@ -66,7 +66,7 @@ int main(int argc,char **argv)
   if (user.variant) {
     ierr = MatCreateMF(x,&J);CHKERRQ(ierr);
     ierr = VecDuplicate(x,&work);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFunction(J,work,FormFunction,F);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(J,work,FormFunction,F);CHKERRQ(ierr);
   } else {
     /* create matrix free matrix for Jacobian */
     ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
@@ -173,7 +173,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,v
     *flag = SAME_PRECONDITIONER;
   }
   if (user->variant) {
-    ierr = MatSNESMFSetBase(*jac,x);CHKERRQ(ierr);
+    ierr = MatMFFDSetBase(*jac,x);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

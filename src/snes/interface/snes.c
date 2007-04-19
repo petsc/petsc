@@ -1061,7 +1061,7 @@ $     func (SNES snes,Vec x,Mat *A,Mat *B,int *flag,void *ctx);
 
 .keywords: SNES, nonlinear, set, Jacobian, matrix
 
-.seealso: KSPSetOperators(), SNESSetFunction(), MatSNESMFComputeJacobian(), SNESDefaultComputeJacobianColor(), MatStructure
+.seealso: KSPSetOperators(), SNESSetFunction(), MatMFFDComputeJacobian(), SNESDefaultComputeJacobianColor(), MatStructure
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetJacobian(SNES snes,Mat A,Mat B,PetscErrorCode (*func)(SNES,Vec,Mat*,Mat*,MatStructure*,void*),void *ctx)
 {
@@ -1164,7 +1164,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   if (flg) {
     Mat J;
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
+    ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
@@ -1192,9 +1192,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     PC   pc;
     /* create and set matrix-free operator */
     ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFromOptions(J);CHKERRQ(ierr);
+    ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
-    ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,snes->funP);CHKERRQ(ierr);
+    ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,snes->funP);CHKERRQ(ierr);
     ierr = MatDestroy(J);CHKERRQ(ierr);
     /* force no preconditioner */
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
