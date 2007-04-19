@@ -198,6 +198,18 @@ class Configure(config.base.Configure):
     return 0
   isCray = staticmethod(isCray)
   
+  def isPGI(compiler):
+    '''Returns true if the compiler is a PGI compiler'''
+    try:
+      (output, error, status) = config.base.Configure.executeShellCommand(compiler+' -V')
+      output = output + error
+      if output.find('The Portland Group') >= 0:
+        return 1
+    except RuntimeError:
+      pass
+    return 0
+  isPGI = staticmethod(isPGI)
+  
   def isCygwin():
     '''Returns true if system is cygwin'''
     (output, error, status) = config.base.Configure.executeShellCommand('uname -s')

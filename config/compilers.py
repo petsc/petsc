@@ -923,6 +923,13 @@ class Configure(config.base.Configure):
     if not self.fortranIsF90:
       self.logPrint('Not a Fortran90 compiler - hence skipping f90-array test')
       return
+    # do an apporximate test when batch mode is used, as we cannot run the proper test..
+    if self.framework.argDB['with-batch']:
+      if config.setCompilers.Configure.isPGI(self.setCompilers.FC):
+        self.addDefine('HAVE_F90_2PTR_ARG', 1)
+        self.logPrint('PGI F90 compiler detected & using --with-batch', 3, 'compilers')
+      return
+    
     # Compile the C test object
     cinc  = '#include <stdlib.h>\n'
     ccode = 'void '+self.mangleFortranFunction('f90ptrtest')+'''(void* a1, void* a2,void* a3, void* i, void* p1 ,void* p2, void* p3)
