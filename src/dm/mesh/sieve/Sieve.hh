@@ -916,7 +916,9 @@ namespace ALE {
       std::set<point_type> intersectB;
       int p = 0;
 
+      //std::cout << "Doing nJoin1:" << std::endl;
       for(typename InputSequence::iterator p_iter = chain->begin(); p_iter != chain->end(); ++p_iter) {
+        //std::cout << "  point " << *p_iter << std::endl;
         const Obj<typename traits::supportSequence>& support = this->support(*p_iter);
 
         join->insert(support->begin(), support->end());
@@ -930,6 +932,10 @@ namespace ALE {
         intersectA.insert(intersectB.begin(), intersectB.end());
         intersectB.clear();
         join->clear();
+        //std::cout << "  intersection:" << std::endl;
+        //for(typename std::set<point_type>::iterator i_iter = intersectA.begin(); i_iter != intersectA.end(); ++i_iter) {
+        //  std::cout << "    " << *i_iter << std::endl;
+        //}
       }
       join->insert(intersectA.begin(), intersectA.end());
       return join;

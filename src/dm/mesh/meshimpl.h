@@ -18,6 +18,7 @@ struct _p_Mesh {
   VecScatter          globalScatter;
   PetscErrorCode    (*lf)(Mesh, SectionReal, SectionReal, void *);
   PetscErrorCode    (*lj)(Mesh, SectionReal, Mat, void *);
+  ALE::Obj<ALECompat::Mesh> mcompat;
 };
 
 extern PetscCookie MESH_COOKIE;
