@@ -620,9 +620,10 @@ namespace ALE {
     void reallocate(const Obj<Section_>& section) {
       if (section->getNewAtlas().isNull()) return;
       // Since copy() preserves offsets, we must reinitialize them before ordering
-      const Obj<typename Section_::atlas_type>&        atlas    = section->getAtlas();
+      const Obj<typename Section_::atlas_type>         atlas    = section->getAtlas();
       const Obj<typename Section_::atlas_type>&        newAtlas = section->getNewAtlas();
       const typename Section_::atlas_type::chart_type& chart    = newAtlas->getChart();
+      const typename Section_::atlas_type::chart_type& oldChart = atlas->getChart();
       int                                              newSize  = 0;
       typename Section_::index_type                    defaultIdx(0, -1);
 
@@ -635,7 +636,6 @@ namespace ALE {
       this->_factory->orderPatch(section, this->getSieve());
       // Copy over existing values
       typename Section_::value_type                   *newArray = new typename Section_::value_type[newSize];
-      const typename Section_::atlas_type::chart_type& oldChart = newAtlas->getChart();
       const typename Section_::value_type             *array    = section->restrict();
 
       for(typename Section_::atlas_type::chart_type::const_iterator c_iter = oldChart.begin(); c_iter != oldChart.end(); ++c_iter) {

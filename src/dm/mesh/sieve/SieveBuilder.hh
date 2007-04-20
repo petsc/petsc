@@ -149,14 +149,15 @@ namespace ALE {
         for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++indA) {
           if (start == *c_iter) break;
         }
-        if (debug > 1) {std::cout << "    pointA " << start << " indA " << indA <<std::endl;}
+        if (debug > 1) {std::cout << "    pointA " << start << " indA " << indA << std::endl;}
         for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++indB) {
           if (next  == *c_iter) break;
         }
-        if (debug > 1) {std::cout << "    pointB " << next  << " indB " << indB <<std::endl;}
+        if (debug > 1) {std::cout << "    pointB " << next  << " indB " << indB << std::endl;}
         if ((indB - indA == 1) || (indA - indB == wrap)) {
           cellOrientation *= 1;
         } else if ((indA - indB == 1) || (indB - indA == wrap)) {
+          if (debug > 1) {std::cout << "      reversing cell orientation" << std::endl;}
           cellOrientation *= -1;
         } else {
           throw ALE::Exception("Inconsistent orientation");
@@ -176,7 +177,7 @@ namespace ALE {
             if (debug > 1) {std::cout << "    Orienting arrow (" << f_iter->first << ", " << cell << ") to " << f_iter->second << std::endl;}
           }
         }
-        if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
+        if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << " orientation " << cellOrientation << std::endl;}
       }
     };
 #if 0
