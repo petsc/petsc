@@ -2193,6 +2193,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCompatGetGlobalScatter(Mesh mesh, VecScatte
   if (!mesh->globalScatter) {
     ALE::Obj<ALECompat::Mesh> m;
 
+    ierr = MeshCompatGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = MeshCompatCreateGlobalScatter(m, m->getRealSection("default"), &mesh->globalScatter);CHKERRQ(ierr);
   }
   *scatter = mesh->globalScatter;

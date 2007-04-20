@@ -2157,6 +2157,7 @@ namespace ALECompat {
         typename sieve_type::coneSequence::iterator  end     = closure->end();
         int size = 0;
 
+        size += std::max(0, this->getFiberDimension(patch, p));
         for(typename sieve_type::coneSequence::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
           if (points.count(*c_iter)) {
             size += std::max(0, this->getFiberDimension(patch, *c_iter));
@@ -2171,6 +2172,7 @@ namespace ALECompat {
         typename sieve_type::coneSequence::iterator  end     = closure->end();
         int size = 0;
 
+        size += std::abs(this->getFiberDimension(patch, p));
         for(typename sieve_type::coneSequence::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
           if (points.count(*c_iter)) {
             size += std::abs(this->getFiberDimension(patch, *c_iter));

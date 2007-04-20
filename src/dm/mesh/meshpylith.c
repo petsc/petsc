@@ -258,8 +258,8 @@ namespace ALE {
           values[k].second.z = splitVals[i*3+2];
           history[k]         = loadHistory[i];
         }
-        splitField->update(patch, e, values);
-        loadField->update(patch, e, history);
+        splitField->updatePoint(patch, e, values);
+        loadField->updatePoint(patch, e, history);
       }
       delete [] values;
     };
@@ -1178,8 +1178,8 @@ namespace ALECompat {
           values[k].second.z = splitVals[i*3+2];
           history[k]         = loadHistory[i];
         }
-        splitField->update(patch, e, values);
-        loadField->update(patch, e, history);
+        splitField->updatePoint(patch, e, values);
+        loadField->updatePoint(patch, e, history);
       }
       delete [] values;
     };
@@ -1310,7 +1310,7 @@ namespace ALECompat {
         values[1] = tractionValues[k*3+1];
         values[2] = tractionValues[k*3+2];
         k++;
-        tractionField->update(patch, face, values);
+        tractionField->updatePoint(patch, face, values);
       }
     };
     void Builder::buildMaterials(const Obj<int_section_type>& matField, const int materials[]) {
@@ -1321,7 +1321,7 @@ namespace ALECompat {
       matField->setFiberDimensionByHeight(patch, 0, 1);
       matField->allocate();
       for(topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
-        matField->update(patch, *e_iter, &materials[*e_iter]);
+        matField->updatePoint(patch, *e_iter, &materials[*e_iter]);
       }
     };
     Obj<Mesh> Builder::readMesh(MPI_Comm comm, const int dim, const std::string& basename, const bool useZeroBase = false, const bool interpolate = false, const int debug = 0) {
