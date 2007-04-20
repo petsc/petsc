@@ -916,7 +916,9 @@ namespace ALE {
       std::set<point_type> intersectB;
       int p = 0;
 
+      //std::cout << "Doing nJoin1:" << std::endl;
       for(typename InputSequence::iterator p_iter = chain->begin(); p_iter != chain->end(); ++p_iter) {
+        //std::cout << "  point " << *p_iter << std::endl;
         const Obj<typename traits::supportSequence>& support = this->support(*p_iter);
 
         join->insert(support->begin(), support->end());
@@ -930,6 +932,10 @@ namespace ALE {
         intersectA.insert(intersectB.begin(), intersectB.end());
         intersectB.clear();
         join->clear();
+        //std::cout << "  intersection:" << std::endl;
+        //for(typename std::set<point_type>::iterator i_iter = intersectA.begin(); i_iter != intersectA.end(); ++i_iter) {
+        //  std::cout << "    " << *i_iter << std::endl;
+        //}
       }
       join->insert(intersectA.begin(), intersectA.end());
       return join;
@@ -964,13 +970,27 @@ namespace ALE {
       // The iteration stops after n steps in addition to the join of the initial chains or sooner if at least one of the chains is empty.
       Obj<supportSet> join = supportSet(); 
       Obj<supportSet> support;
+//       std::cout << "Computing nJoin" << std::endl;
+//       std::cout << "  chain 0:" << std::endl;
+//       for(typename InputSequence::iterator i_iter = chain0->begin(); i_iter != chain0->end(); ++i_iter) {
+//         std::cout << "    " << *i_iter << std::endl;
+//       }
+//       std::cout << "  chain 1:" << std::endl;
+//       for(typename InputSequence::iterator i_iter = chain1->begin(); i_iter != chain1->end(); ++i_iter) {
+//         std::cout << "    " << *i_iter << std::endl;
+//       }
       if((chain0->size() != 0) && (chain1->size() != 0)) {
         for(int i = 0; i <= n; ++i) {
+//           std::cout << "Level " << i << std::endl;
           // Compute the intersection of chains and put it in meet at the same time removing it from c and cc
           std::set<point_type> intersect;
           //std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<supportSet>(join.obj(), join->begin()));
           std::set_intersection(chain0->begin(), chain0->end(), chain1->begin(), chain1->end(), std::insert_iterator<std::set<point_type> >(intersect, intersect.begin()));
           join->insert(intersect.begin(), intersect.end());
+//           std::cout << "  Join set:" << std::endl;
+//           for(typename supportSet::iterator i_iter = join->begin(); i_iter != join->end(); ++i_iter) {
+//             std::cout << "    " << *i_iter << std::endl;
+//           }
           for(typename std::set<point_type>::iterator i_iter = intersect.begin(); i_iter != intersect.end(); ++i_iter) {
             chain0->erase(chain0->find(*i_iter));
             chain1->erase(chain1->find(*i_iter));
@@ -981,11 +1001,19 @@ namespace ALE {
           if(chain0->size() == 0) {
             break;
           }
+//           std::cout << "  chain 0:" << std::endl;
+//           for(typename InputSequence::iterator i_iter = chain0->begin(); i_iter != chain0->end(); ++i_iter) {
+//             std::cout << "    " << *i_iter << std::endl;
+//           }
           support = this->support(chain1);
           chain1->insert(support->begin(), support->end());
           if(chain1->size() == 0) {
             break;
           }
+//           std::cout << "  chain 1:" << std::endl;
+//           for(typename InputSequence::iterator i_iter = chain1->begin(); i_iter != chain1->end(); ++i_iter) {
+//             std::cout << "    " << *i_iter << std::endl;
+//           }
           // If both supports are empty, we should quit
         }
       }

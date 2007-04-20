@@ -201,4 +201,12 @@ PETSC_EXTERN_CXX_END
 
 template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const ALE::Obj<ALE::Mesh>&, const ALE::Obj<Section>&, MatType, Mat *);
 template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mesh>&, const ALE::Obj<Section>&, VecScatter *);
+
+// Compatibility layer for PyLith 0.8
+//   This wil definitely go away soon
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCompatGetMesh(Mesh,ALE::Obj<ALECompat::Mesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCompatSetMesh(Mesh,const ALE::Obj<ALECompat::Mesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCompatGetGlobalScatter(Mesh,VecScatter *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT preallocateMatrixCompat(const ALE::Obj<ALECompat::Mesh::topology_type>&, const ALE::Obj<ALECompat::Mesh::real_section_type::atlas_type>&, const ALE::Obj<ALECompat::Mesh::order_type>&, Mat);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCompatCreatePyLith(MPI_Comm, const int, const char[], PetscTruth, PetscTruth, Mesh *);
 #endif

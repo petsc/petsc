@@ -4,20 +4,11 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dacreate1d_                  DACREATE1D
-#define dagetlocalinfof90_           DAGETLOCALINFOF90
-#define davecgetarrayf901_           DAVECGETARRAYF901
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dacreate1d_                  dacreate1d
-#define dagetlocalinfof90_           dagetlocalinfof90
-#define davecgetarrayf901_           davecgetarrayf901
 #endif
 
 EXTERN_C_BEGIN
-
-void PETSC_STDCALL dagetlocalinfof90_(DA *da,DALocalInfo *info,PetscErrorCode *ierr)
-{
-  *ierr = DAGetLocalInfo(*da,info);
-}
 
 void PETSC_STDCALL dacreate1d_(MPI_Comm *comm,DAPeriodicType *wrap,PetscInt *M,PetscInt *w,PetscInt *s,
                  PetscInt *lc,DA *inra,PetscErrorCode *ierr)

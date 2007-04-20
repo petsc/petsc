@@ -1,10 +1,10 @@
 
-#requirespackage 'PETSC_HAVE_F90_H'
+#requirespackage 'PETSC_USING_F90'
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zdaindexf90.c
+SOURCEC  = zdaindexf90.c zda1f90.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}

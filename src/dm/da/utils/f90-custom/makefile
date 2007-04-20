@@ -4,13 +4,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = zblockf90.c
+SOURCEC  = zfddaf90.c
 SOURCEF  = 
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    = 
-LIBBASE  = libpetscvec
-LOCDIR   = src/vec/is/impls/f90-custom/
+LIBBASE  = libpetscdm
+LOCDIR   = src/dm/da/utils/f90-custom/
 
 
 include ${PETSC_DIR}/bmake/common/base

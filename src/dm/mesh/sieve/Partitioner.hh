@@ -551,4 +551,348 @@ namespace ALE {
   }
 }
 
+namespace ALECompat {
+  namespace New {
+    template<typename Topology_>
+    class Partitioner {
+    public:
+      typedef Topology_                          topology_type;
+      typedef typename topology_type::sieve_type sieve_type;
+      typedef typename topology_type::patch_type patch_type;
+      typedef typename topology_type::point_type point_type;
+    public:
+      #undef __FUNCT__
+      #define __FUNCT__ "buildDualCSR"
+      // This creates a CSR representation of the adjacency matrix for cells
+      static void buildDualCSR(const Obj<topology_type>& topology, const int dim, const patch_type& patch, int **offsets, int **adjacency) {
+        ALE_LOG_EVENT_BEGIN;
+        typedef typename ALECompat::New::Completion<topology_type, typename Mesh::sieve_type::point_type> completion;
+        const Obj<sieve_type>&                             sieve        = topology->getPatch(patch);
+        const Obj<typename topology_type::label_sequence>& elements     = topology->heightStratum(patch, 0);
+        Obj<sieve_type>                                    overlapSieve = new sieve_type(topology->comm(), topology->debug());
+        int  numElements = elements->size();
+        int *off         = new int[numElements+1];
+        int  offset      = 0;
+        int *adj;
+
+        completion::scatterSupports(sieve, overlapSieve, topology->getSendOverlap(), topology->getRecvOverlap(), topology);
+        if (numElements == 0) {
+          *offsets   = NULL;
+          *adjacency = NULL;
+          ALE_LOG_EVENT_END;
+          return;
+        }
+        if (topology->depth(patch) == dim) {
+          int e = 1;
+
+          off[0] = 0;
+          for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& faces  = sieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator   fBegin = faces->begin();
+            typename sieve_type::traits::coneSequence::iterator   fEnd   = faces->end();
+
+            off[e] = off[e-1];
+            for(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+              if (sieve->support(*f_iter)->size() == 2) {
+                off[e]++;
+              } else if ((sieve->support(*f_iter)->size() == 1) && (overlapSieve->support(*f_iter)->size() == 1)) {
+                off[e]++;
+              }
+            }
+            e++;
+          }
+          adj = new int[off[numElements]];
+          for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& faces  = sieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator   fBegin = faces->begin();
+            typename sieve_type::traits::coneSequence::iterator   fEnd   = faces->end();
+
+            for(typename sieve_type::traits::coneSequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+              const Obj<typename sieve_type::traits::supportSequence>& neighbors = sieve->support(*f_iter);
+              typename sieve_type::traits::supportSequence::iterator   nBegin    = neighbors->begin();
+              typename sieve_type::traits::supportSequence::iterator   nEnd      = neighbors->end();
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = nBegin; n_iter != nEnd; ++n_iter) {
+                if (*n_iter != *e_iter) adj[offset++] = *n_iter;
+              }
+              const Obj<typename sieve_type::traits::supportSequence>& oNeighbors = overlapSieve->support(*f_iter);
+              typename sieve_type::traits::supportSequence::iterator   onBegin    = oNeighbors->begin();
+              typename sieve_type::traits::supportSequence::iterator   onEnd      = oNeighbors->end();
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = onBegin; n_iter != onEnd; ++n_iter) {
+                adj[offset++] = *n_iter;
+              }
+            }
+          }
+        } else if (topology->depth(patch) == 1) {
+          std::set<point_type> *neighborCells = new std::set<point_type>[numElements];
+          int corners      = sieve->cone(*elements->begin())->size();
+          int faceVertices = -1;
+
+          if (corners == dim+1) {
+            faceVertices = dim;
+          } else if ((dim == 2) && (corners == 4)) {
+            faceVertices = 2;
+          } else if ((dim == 3) && (corners == 8)) {
+            faceVertices = 4;
+          } else {
+            throw ALE::Exception("Could not determine number of face vertices");
+          }
+          for(typename topology_type::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& vertices  = sieve->cone(*e_iter);
+            typename sieve_type::traits::coneSequence::iterator vEnd = vertices->end();
+
+            for(typename sieve_type::traits::coneSequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+              const Obj<typename sieve_type::traits::supportSequence>& neighbors = sieve->support(*v_iter);
+              typename sieve_type::traits::supportSequence::iterator nEnd = neighbors->end();
+
+              for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
+                if (*e_iter == *n_iter) continue;
+                if ((int) sieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
+                  neighborCells[*e_iter].insert(*n_iter);
+                }
+              }
+            }
+          }
+          off[0] = 0;
+          for(int e = 1; e <= numElements; e++) {
+            off[e] = neighborCells[e-1].size() + off[e-1];
+          }
+          adj = new int[off[numElements]];
+          for(int e = 0; e < numElements; e++) {
+            for(typename std::set<point_type>::iterator n_iter = neighborCells[e].begin(); n_iter != neighborCells[e].end(); ++n_iter) {
+              adj[offset++] = *n_iter;
+            }
+          }
+          delete [] neighborCells;
+        } else {
+          throw ALE::Exception("Dual creation not defined for partially interpolated meshes");
+        }
+        if (offset != off[numElements]) {
+          ostringstream msg;
+          msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numElements];
+          throw ALE::Exception(msg.str().c_str());
+        }
+        *offsets   = off;
+        *adjacency = adj;
+        ALE_LOG_EVENT_END;
+      };
+      template<typename PartitionType>
+      static PartitionType *subordinatePartition(const Obj<topology_type>& topology, int levels, const Obj<topology_type>& subTopology, const PartitionType assignment[]) {
+        typedef ALECompat::New::NumberingFactory<topology_type> NumberingFactory;
+        const patch_type patch = 0;
+        const Obj<typename NumberingFactory::numbering_type>& cNumbering = NumberingFactory::singleton(topology->debug())->getLocalNumbering(topology, patch, topology->depth(patch));
+        const Obj<typename topology_type::label_sequence>&    cells      = subTopology->heightStratum(patch, 0);
+        const Obj<typename NumberingFactory::numbering_type>& sNumbering = NumberingFactory::singleton(subTopology->debug())->getLocalNumbering(subTopology, patch, subTopology->depth(patch));
+        const int        numCells      = cells->size();
+        PartitionType   *subAssignment = new PartitionType[numCells];
+
+        if (levels != 1) {
+          throw ALE::Exception("Cannot calculate subordinate partition for any level separation other than 1");
+        } else {
+          const Obj<typename topology_type::sieve_type>&   sieve    = topology->getPatch(patch);
+          const Obj<typename topology_type::sieve_type>&   subSieve = subTopology->getPatch(patch);
+          Obj<typename topology_type::sieve_type::coneSet> tmpSet   = new typename topology_type::sieve_type::coneSet();
+          Obj<typename topology_type::sieve_type::coneSet> tmpSet2  = new typename topology_type::sieve_type::coneSet();
+
+          for(typename topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+            const Obj<typename topology_type::sieve_type::coneSequence>& cone = subSieve->cone(*c_iter);
+
+            Obj<typename topology_type::sieve_type::supportSet> cell = sieve->nJoin1(cone);
+            if (cell->size() != 1) {
+              std::cout << "Indeterminate subordinate partition for face " << *c_iter << std::endl;
+              for(typename topology_type::sieve_type::supportSet::iterator s_iter = cell->begin(); s_iter != cell->end(); ++s_iter) {
+                std::cout << "  cell " << *s_iter << std::endl;
+              }
+              // Could relax this to choosing the first one
+              throw ALE::Exception("Indeterminate subordinate partition");
+            }
+            subAssignment[sNumbering->getIndex(*c_iter)] = assignment[cNumbering->getIndex(*cell->begin())];
+            tmpSet->clear();
+            tmpSet2->clear();
+          }
+        }
+        return subAssignment;
+      };
+    };
+#ifdef PETSC_HAVE_CHACO
+    namespace Chaco {
+      template<typename Topology_>
+      class Partitioner {
+      public:
+        typedef Topology_                          topology_type;
+        typedef typename topology_type::sieve_type sieve_type;
+        typedef typename topology_type::patch_type patch_type;
+        typedef typename topology_type::point_type point_type;
+        typedef short int                          part_type;
+      public:
+        #undef __FUNCT__
+        #define __FUNCT__ "ChacoPartitionSieve"
+        static part_type *partitionSieve(const Obj<topology_type>& topology, const int dim) {
+          part_type *assignment = NULL; /* set number of each vtx (length n) */
+          int       *start;             /* start of edge list for each vertex */
+          int       *adjacency;         /* = adj -> j; edge list data  */
+          typename topology_type::patch_type patch = 0;
+
+          ALE_LOG_EVENT_BEGIN;
+          ALECompat::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &start, &adjacency);
+          if (topology->commRank() == 0) {
+            /* arguments for Chaco library */
+            FREE_GRAPH = 0;                         /* Do not let Chaco free my memory */
+            int nvtxs;                              /* number of vertices in full graph */
+            int *vwgts = NULL;                      /* weights for all vertices */
+            float *ewgts = NULL;                    /* weights for all edges */
+            float *x = NULL, *y = NULL, *z = NULL;  /* coordinates for inertial method */
+            char *outassignname = NULL;             /*  name of assignment output file */
+            char *outfilename = NULL;               /* output file name */
+            int architecture = 1;                   /* 0 => hypercube, d => d-dimensional mesh */
+            int ndims_tot = 0;                      /* total number of cube dimensions to divide */
+            int mesh_dims[3];                       /* dimensions of mesh of processors */
+            double *goal = NULL;                    /* desired set sizes for each set */
+            int global_method = 1;                  /* global partitioning algorithm */
+            int local_method = 1;                   /* local partitioning algorithm */
+            int rqi_flag = 0;                       /* should I use RQI/Symmlq eigensolver? */
+            int vmax = 200;                         /* how many vertices to coarsen down to? */
+            int ndims = 1;                          /* number of eigenvectors (2^d sets) */
+            double eigtol = 0.001;                  /* tolerance on eigenvectors */
+            long seed = 123636512;                  /* for random graph mutations */
+            PetscErrorCode ierr;
+
+            nvtxs = topology->heightStratum(patch, 0)->size();
+            mesh_dims[0] = topology->commSize(); mesh_dims[1] = 1; mesh_dims[2] = 1;
+            for(int e = 0; e < start[nvtxs]; e++) {
+              adjacency[e]++;
+            }
+            assignment = new part_type[nvtxs];
+            ierr = PetscMemzero(assignment, nvtxs * sizeof(part_type));
+
+            /* redirect output to buffer: chaco -> msgLog */
+#ifdef PETSC_HAVE_UNISTD_H
+            char *msgLog;
+            int fd_stdout, fd_pipe[2], count;
+
+            fd_stdout = dup(1);
+            pipe(fd_pipe);
+            close(1);
+            dup2(fd_pipe[1], 1);
+            msgLog = new char[16284];
+#endif
+
+            ierr = interface(nvtxs, start, adjacency, vwgts, ewgts, x, y, z,
+                             outassignname, outfilename, assignment, architecture, ndims_tot,
+                             mesh_dims, goal, global_method, local_method, rqi_flag, vmax, ndims,
+                             eigtol, seed);
+
+#ifdef PETSC_HAVE_UNISTD_H
+            int SIZE_LOG  = 10000;
+
+            fflush(stdout);
+            count = read(fd_pipe[0], msgLog, (SIZE_LOG - 1) * sizeof(char));
+            if (count < 0) count = 0;
+            msgLog[count] = 0;
+            close(1);
+            dup2(fd_stdout, 1);
+            close(fd_stdout);
+            close(fd_pipe[0]);
+            close(fd_pipe[1]);
+            if (topology->debug()) {
+              std::cout << msgLog << std::endl;
+            }
+            delete [] msgLog;
+#endif
+          }
+          if (adjacency) delete [] adjacency;
+          if (start)     delete [] start;
+          ALE_LOG_EVENT_END;
+          return assignment;
+        };
+      };
+    };
+#endif
+#ifdef PETSC_HAVE_PARMETIS
+    namespace ParMetis {
+      template<typename Topology_>
+      class Partitioner {
+      public:
+        typedef Topology_                          topology_type;
+        typedef typename topology_type::sieve_type sieve_type;
+        typedef typename topology_type::patch_type patch_type;
+        typedef typename topology_type::point_type point_type;
+        typedef int                                part_type;
+      public:
+        #undef __FUNCT__
+        #define __FUNCT__ "ParMetisPartitionSieve"
+        static part_type *partitionSieve(const Obj<topology_type>& topology, const int dim) {
+          int    nvtxs      = 0;    // The number of vertices in full graph
+          int   *vtxdist;           // Distribution of vertices across processes
+          int   *xadj;              // Start of edge list for each vertex
+          int   *adjncy;            // Edge lists for all vertices
+          int   *vwgt       = NULL; // Vertex weights
+          int   *adjwgt     = NULL; // Edge weights
+          int    wgtflag    = 0;    // Indicates which weights are present
+          int    numflag    = 0;    // Indicates initial offset (0 or 1)
+          int    ncon       = 1;    // The number of weights per vertex
+          int    nparts     = topology->commSize(); // The number of partitions
+          float *tpwgts;            // The fraction of vertex weights assigned to each partition
+          float *ubvec;             // The balance intolerance for vertex weights
+          int    options[5];        // Options
+          // Outputs
+          int    edgeCut;           // The number of edges cut by the partition
+          int   *assignment = NULL; // The vertex partition
+          const typename topology_type::patch_type patch = 0;
+
+          options[0] = 0; // Use all defaults
+          vtxdist    = new int[nparts+1];
+          vtxdist[0] = 0;
+          tpwgts     = new float[ncon*nparts];
+          for(int p = 0; p < nparts; ++p) {
+            tpwgts[p] = 1.0/nparts;
+          }
+          ubvec      = new float[ncon];
+          ubvec[0]   = 1.05;
+          if (topology->hasPatch(patch)) {
+            nvtxs      = topology->heightStratum(patch, 0)->size();
+            assignment = new part_type[nvtxs];
+          }
+          MPI_Allgather(&nvtxs, 1, MPI_INT, &vtxdist[1], 1, MPI_INT, topology->comm());
+          for(int p = 2; p <= nparts; ++p) {
+            vtxdist[p] += vtxdist[p-1];
+          }
+          if (topology->commSize() == 1) {
+            PetscMemzero(assignment, nvtxs * sizeof(part_type));
+          } else {
+            ALECompat::New::Partitioner<topology_type>::buildDualCSR(topology, dim, patch, &xadj, &adjncy);
+
+            if (topology->debug() && nvtxs) {
+              for(int p = 0; p <= nvtxs; ++p) {
+                std::cout << "["<<topology->commRank()<<"]xadj["<<p<<"] = " << xadj[p] << std::endl;
+              }
+              for(int i = 0; i < xadj[nvtxs]; ++i) {
+                std::cout << "["<<topology->commRank()<<"]adjncy["<<i<<"] = " << adjncy[i] << std::endl;
+              }
+            }
+            if (vtxdist[1] == vtxdist[nparts]) {
+              if (topology->commRank() == 0) {
+                METIS_PartGraphKway(&nvtxs, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &nparts, options, &edgeCut, assignment);
+                if (topology->debug()) {std::cout << "Metis: edgecut is " << edgeCut << std::endl;}
+              }
+            } else {
+              MPI_Comm comm = topology->comm();
+
+              ParMETIS_V3_PartKway(vtxdist, xadj, adjncy, vwgt, adjwgt, &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec, options, &edgeCut, assignment, &comm);
+              if (topology->debug()) {std::cout << "ParMetis: edgecut is " << edgeCut << std::endl;}
+            }
+            if (xadj   != NULL) delete [] xadj;
+            if (adjncy != NULL) delete [] adjncy;
+          }
+          delete [] vtxdist;
+          delete [] tpwgts;
+          delete [] ubvec;
+          return assignment;
+        };
+      };
+    };
+#endif
+  }
+}
 #endif

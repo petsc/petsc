@@ -8,7 +8,7 @@ SOURCEF  =
 SOURCEH  = 
 OBJSC    = ${SOURCEC:.c=.o}
 OBJSF    =
-DIRS     = f90-src
+DIRS     =
 LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/interface/

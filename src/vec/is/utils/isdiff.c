@@ -95,8 +95,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
 #undef __FUNCT__  
 #define __FUNCT__ "ISSum"
 /*@
-   ISSum - Computes the sum (union) of two index sets in place. Note that
-           is1 is an existing IS, not merely a pointer.
+   ISSum - Computes the sum (union) of two index sets.
 
    Only sequential version (at the moment)
 
@@ -105,7 +104,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISDifference(IS is1,IS is2,IS *isout)
 -  is2 - index values to be added
 
    Output Parameter:
-.   is3 - the sum
+.   is3 - the sum; this can not be is1 or is2
 
    Notes:
    If n1 and n2 are the sizes of the sets, this takes O(n1+n2) time;

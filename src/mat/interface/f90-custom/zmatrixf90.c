@@ -11,19 +11,19 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *ierr)
+void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
   int    m,n;
   *ierr = MatGetArray(*mat,&fa);       if (*ierr) return;
   *ierr = MatGetLocalSize(*mat,&m,&n); if (*ierr) return;
-  *ierr = F90Array2dCreate(fa,PETSC_SCALAR,1,m,1,n,ptr);
+  *ierr = F90Array2dCreate(fa,PETSC_SCALAR,1,m,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));
 }
-void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr)
+void PETSC_STDCALL matrestorearrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  *ierr = F90Array2dAccess(ptr,(void **)&fa);if (*ierr) return;
-  *ierr = F90Array2dDestroy(ptr);if (*ierr) return;
+  *ierr = F90Array2dAccess(ptr,PETSC_SCALAR,(void **)&fa PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
+  *ierr = F90Array2dDestroy(ptr,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
   *ierr = MatRestoreArray(*mat,&fa);
 }
 EXTERN_C_END
