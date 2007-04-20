@@ -172,6 +172,30 @@ PetscErrorCode MeshCompatView_Sieve_Ascii(const ALE::Obj<ALECompat::Mesh>& mesh,
     ierr = PetscViewerFileSetName(coordViewer, localFilename);CHKERRQ(ierr);
     ierr = ALECompat::PyLith::Viewer::writeVerticesLocal(mesh, coordViewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(coordViewer);CHKERRQ(ierr);
+
+    if (mesh->hasPairSection("split")) {
+      PetscViewer splitViewer;
+
+      sprintf(localFilename, "%s.%d.split", filename, rank);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &splitViewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(splitViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(splitViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(splitViewer, localFilename);CHKERRQ(ierr);
+      ierr = ALECompat::PyLith::Viewer::writeSplitLocal(mesh, mesh->getPairSection("split"), splitViewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(splitViewer);CHKERRQ(ierr);
+    }
+
+    if (mesh->hasRealSection("traction")) {
+      PetscViewer tractionViewer;
+
+      sprintf(localFilename, "%s.%d.traction", filename, rank);
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &tractionViewer);CHKERRQ(ierr);
+      ierr = PetscViewerSetType(tractionViewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
+      ierr = PetscViewerSetFormat(tractionViewer, PETSC_VIEWER_ASCII_PYLITH);CHKERRQ(ierr);
+      ierr = PetscViewerFileSetName(tractionViewer, localFilename);CHKERRQ(ierr);
+      ierr = ALECompat::PyLith::Viewer::writeTractionsLocal(mesh, mesh->getRealSection("traction"), tractionViewer);CHKERRQ(ierr);
+      ierr = PetscViewerDestroy(tractionViewer);CHKERRQ(ierr);
+    }
   } else {
     int dim = mesh->getDimension();
 
