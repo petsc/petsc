@@ -679,6 +679,7 @@ class Configure(config.base.Configure):
           continue
         if arg == '-rpath':
           lib = argIter.next()
+          if lib == '\\': lib = argIter.next()
           self.logPrint('Found -rpath library: '+lib, 4, 'compilers')
           flibs.append(self.setCompilers.CSharedLinkerFlag+lib)
           continue
