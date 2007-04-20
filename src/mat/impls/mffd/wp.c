@@ -68,6 +68,8 @@ static PetscErrorCode MatMFFDCompute_WP(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+ VecView(U,0);
+  VecView(a,0);
 
   if (!(ctx->count % ctx->recomputeperiod)) {
     if (hctx->computenorma && (hctx->computenormU || !ctx->ncurrenth)) {

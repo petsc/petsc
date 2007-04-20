@@ -61,8 +61,8 @@ char  common_options[]      = "-dmmg_grid_sequence \
                                -mg_coarse_ksp_max_it 6 \
                                -mg_levels_ksp_max_it 3";
 
-char  matrix_free_options[] = "-snes_mf_compute_normu no \
-                               -snes_mf_type wp \
+char  matrix_free_options[] = "-mats_mffd_compute_normu no \
+                               -mats_mffd_type wp \
                                -dmmg_jacobian_mf_fd";
 
 /*

@@ -8,7 +8,8 @@
 #define __FUNCT__ "MatMFFDComputeJacobian"
 /*@
    MatMFFDComputeJacobian - Tells the matrix-free Jacobian object the new location at which
-       Jacobian matrix vector products will be computed at, i.e. J(x) * a.
+       Jacobian matrix vector products will be computed at, i.e. J(x) * a. The x is obtained
+       from the SNES object (using SNESGetSolution()).
 
    Collective on SNES
 
@@ -22,10 +23,15 @@
 
    Level: developer
 
+   Warning: 
+      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get 
+    the x from the SNES object and MatMFFDSetBase() must from that point on be used to
+    change the base vector x.
+
    Notes:
      This can be passed into SNESSetJacobian() when using a completely matrix-free solver,
      that is the B matrix is also the same matrix operator. This is used when you select
-     -mat_mffd but rarely used directly by users.
+     -snes_mf but rarely used directly by users.
 
 .seealso: MatMFFDGetH(), MatCreateSNESMF(), MatCreateMFFD(), MATMFFD,
           MatMFFDSetHHistory(),
@@ -63,15 +69,37 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   if (!j->w) {
     ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
   }
+  printf("snesmf assembly end");
+  VecView(j->current_u,0);
   PetscFunctionReturn(0);
 }
+
+EXTERN_C_BEGIN
+extern PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat,Vec,Vec);
+/*
+    This routine resets the MatAssemblyEnd() for the MatMFFD created from MatCreateSNESMF() so that it NO longer
+  uses the solution in the SNES object to update the base. See the warning in MatCreateSNESMF().
+*/
+#undef __FUNCT__  
+#define __FUNCT__ "MatMFFDSetBase_SNESMF"
+PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_SNESMF(Mat J,Vec U,Vec F)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatMFFDSetBase_FD(J,U,F);CHKERRQ(ierr);
+  J->ops->assemblyend = MatAssemblyEnd_MFFD;
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateSNESMF"
 /*@
    MatCreateSNESMF - Creates a matrix-free matrix context for use with
    a SNES solver.  This matrix can be used as the Jacobian argument for
-   the routine SNESSetJacobian().
+   the routine SNESSetJacobian(). See MatCreateMFFD() for details on how
+   the finite difference computation is done.
 
    Collective on SNES and Vec
 
@@ -84,40 +112,17 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
 
    Level: advanced
 
-   Notes:
-   The matrix-free matrix context merely contains the function pointers
-   and work space for performing finite difference approximations of
-   Jacobian-vector products, F'(u)*a, 
+   Warning: 
+      If MatMFFDSetBase() is ever called on jac then this routine will NO longer get 
+    the x from the SNES object and MatMFFDSetBase() must from that point on be used to
+    change the base vector x.
 
-   The default code uses the following approach to compute h
-
-.vb
-     F'(u)*a = [F(u+h*a) - F(u)]/h where
-     h = error_rel*u'a/||a||^2                        if  |u'a| > umin*||a||_{1}
-       = error_rel*umin*sign(u'a)*||a||_{1}/||a||^2   otherwise
- where
-     error_rel = square root of relative error in function evaluation
-     umin = minimum iterate parameter
-.ve
-   (see MATMFFD_WP or MATMFFD_DS)
-   
-   The user can set the error_rel via MatMFFDSetFunctionError() and 
-   umin via MatMFFDDefaultSetUmin(); see the nonlinear solvers chapter
-   of the users manual for details.
-
-   The user should call MatDestroy() when finished with the matrix-free
-   matrix context.
-
-   Options Database Keys:
-+  -mat_mffd_err <error_rel> - Sets error_rel
-+  -mat_mffd_type - wp or ds (see MATMFFD_WP or MATMFFD_DS)
-.  -mat_mffd_unim <umin> - Sets umin (for default PETSc routine that computes h only)
--  -mat_mffd_ksp_monitor - KSP monitor routine that prints differencing h
-
-.keywords: SNES, default, matrix-free, create, matrix
+   Notes: The difference between this routine and MatCreateMFFD() is that this matrix
+     automatically gets the current base vector from the SNES object and not from an
+     explicit call to MatMFFDSetBase().
 
 .seealso: MatDestroy(), MatMFFDSetFunctionError(), MatMFFDDefaultSetUmin()
-          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMF(),
+          MatMFFDSetHHistory(), MatMFFDResetHHistory(), MatCreateMFFD(),
           MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
  
 @*/
@@ -129,7 +134,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Vec x,Mat *J)
   ierr = MatCreateMFFD(x,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
-
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
