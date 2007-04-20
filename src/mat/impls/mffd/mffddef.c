@@ -70,9 +70,6 @@ static PetscErrorCode MatMFFDCompute_DS(MatMFFD ctx,Vec U,Vec a,PetscScalar *h,P
   PetscScalar      dot;
   PetscErrorCode   ierr;
 
-  VecView(U,0);
-  VecView(a,0);
-
   PetscFunctionBegin;
   if (!(ctx->count % ctx->recomputeperiod)) {
     /*

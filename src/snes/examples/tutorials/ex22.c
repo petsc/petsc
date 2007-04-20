@@ -61,8 +61,8 @@ char  common_options[]      = "-dmmg_grid_sequence \
                                -mg_coarse_ksp_max_it 6 \
                                -mg_levels_ksp_max_it 3";
 
-char  matrix_free_options[] = "-mats_mffd_compute_normu no \
-                               -mats_mffd_type wp \
+char  matrix_free_options[] = "-mat_mffd_compute_normu no \
+                               -mat_mffd_type wp \
                                -dmmg_jacobian_mf_fd";
 
 /*
@@ -81,7 +81,7 @@ int main(int argc,char **argv)
   UserCtx        user;
   DA             da;
   DMMG           *dmmg;
-  DMComposite        packer;
+  DMComposite    packer;
   PetscTruth     use_matrix_based = PETSC_FALSE,use_monitor = PETSC_FALSE;
   PetscInt       i;
 

@@ -69,8 +69,6 @@ PetscErrorCode MatAssemblyEnd_SNESMF(Mat J,MatAssemblyType mt)
   if (!j->w) {
     ierr = VecDuplicate(j->current_u, &j->w);CHKERRQ(ierr);
   }
-  printf("snesmf assembly end");
-  VecView(j->current_u,0);
   PetscFunctionReturn(0);
 }
 
