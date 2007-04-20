@@ -102,8 +102,7 @@ EXTERN_C_END
    Collective on SNES and Vec
 
    Input Parameters:
-+  snes - the SNES context
--  x - vector where SNES solution is to be stored.
+.  snes - the SNES context
 
    Output Parameter:
 .  J - the matrix-free matrix
@@ -124,12 +123,17 @@ EXTERN_C_END
           MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic), MatMFFDComputeJacobian()
  
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Vec x,Mat *J)
+PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Mat *J)
 {
   PetscErrorCode ierr;
+  PetscInt       n,N;
 
   PetscFunctionBegin;
-  ierr = MatCreateMFFD(x,J);CHKERRQ(ierr);
+  if (!snes->vec_func) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"SNESSetFunction() must be called first");
+  
+  ierr = VecGetLocalSize(snes->vec_func,&n);CHKERRQ(ierr);
+  ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
+  ierr = MatCreateMFFD(snes->comm,n,n,N,N,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);

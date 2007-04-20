@@ -63,16 +63,17 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,type);CHKERRQ(ierr);
 
+  /* Set various routines and options */
+  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
   if (user.variant) {
-    ierr = MatCreateMFFD(x,&J);CHKERRQ(ierr);
+    ierr = MatCreateMFFD(PETSC_COMM_WORLD,n,n,n,n,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
   } else {
     /* create matrix free matrix for Jacobian */
-    ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
   }
 
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user);CHKERRQ(ierr);
   ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);

@@ -3762,7 +3762,7 @@ be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{tabbing}
-  MatCreateSNESMF(SNES snes,Vec x, Mat *mat);
+  MatCreateSNESMF(SNES snes,Mat *mat);
 \end{tabbing}
 \findex{MatCreateSNESMF()}
 This routine creates the data structures needed for the matrix-vector 

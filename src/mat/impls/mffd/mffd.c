@@ -581,7 +581,16 @@ EXTERN_C_END
    Collective on Vec
 
    Input Parameters:
-.  x - vector that defines layout of the vectors and matrices
++  comm - MPI communicator
+.  m - number of local rows (or PETSC_DECIDE to have calculated if M is given)
+           This value should be the same as the local size used in creating the 
+           y vector for the matrix-vector product y = Ax.
+.  n - This value should be the same as the local size used in creating the 
+       x vector for the matrix-vector product y = Ax. (or PETSC_DECIDE to have
+       calculated if N is given) For square matrices n is almost always m.
+.  M - number of global rows (or PETSC_DETERMINE to have calculated if m is given)
+-  N - number of global columns (or PETSC_DETERMINE to have calculated if n is given)
+
 
    Output Parameter:
 .  J - the matrix-free matrix
@@ -624,18 +633,13 @@ EXTERN_C_END
           MatMFFDGetH(),MatMFFDKSPMonitor(), MatMFFDRegisterDynamic),, MatMFFDComputeJacobian()
  
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(Vec x,Mat *J)
+PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt M,PetscInt N,Mat *J)
 {
-  MPI_Comm       comm;
   PetscErrorCode ierr;
-  PetscInt       n,nloc;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);
-  ierr = VecGetSize(x,&n);CHKERRQ(ierr);
-  ierr = VecGetLocalSize(x,&nloc);CHKERRQ(ierr);
   ierr = MatCreate(comm,J);CHKERRQ(ierr);
-  ierr = MatSetSizes(*J,nloc,nloc,n,n);CHKERRQ(ierr);
+  ierr = MatSetSizes(*J,m,n,M,N);CHKERRQ(ierr);
   ierr = MatSetType(*J,MATMFFD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

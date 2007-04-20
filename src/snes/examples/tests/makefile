@@ -181,6 +181,11 @@ runex7:
 	   if (${DIFF} output/ex7_1.out ex7_1.tmp) then true; \
 	   else echo "Possible problem with ex7_1, diffs above"; fi; \
 	   ${RM} -f ex7_1.tmp
+runex7_2:
+	-@${MPIEXEC} -np 1 ./ex7 -variant -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_cancel -snes_monitor_short > ex7_2.tmp 2>&1; \
+	   if (${DIFF} output/ex7_1.out ex7_2.tmp) then true; \
+	   else echo "Possible problem with ex7_2, diffs above"; fi; \
+	   ${RM} -f ex7_2.tmp
 runex8:
 	-@${MPIEXEC} -np 2 ./ex8 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short  > ex8_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex8_1.out ex8_1.tmp) then true; \
@@ -240,7 +245,7 @@ runex14_3:
 # they require too many processors
 #
 TESTEXAMPLES_C		       = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm
-TESTEXAMPLES_C_X11	       = ex7.PETSc runex7 ex7.rm ex9.PETSc runex9 ex9.rm ex13.PETSc ex13.rm
+TESTEXAMPLES_C_X11	       = ex7.PETSc runex7 runex7_2 ex7.rm ex9.PETSc runex9 ex9.rm ex13.PETSc ex13.rm
 TESTEXAMPLES_FORTRAN	       = ex12f.PETSc runex12f ex12f.rm  ex1f.PETSc runex1f_2 runex1f_3 ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI      = ex7.PETSc ex7.rm ex9.PETSc ex9.rm ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm 
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = 

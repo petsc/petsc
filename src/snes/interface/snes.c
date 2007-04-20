@@ -1163,7 +1163,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   */
   if (flg) {
     Mat J;
-    ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,0,0,0);CHKERRQ(ierr);
@@ -1191,7 +1191,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
     KSP ksp;
     PC   pc;
     /* create and set matrix-free operator */
-    ierr = MatCreateSNESMF(snes,snes->vec_sol,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
     ierr = MatMFFDSetFromOptions(J);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Setting default matrix-free operator routines\n");CHKERRQ(ierr);
     ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,snes->funP);CHKERRQ(ierr);

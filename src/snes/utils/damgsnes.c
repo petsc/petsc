@@ -606,6 +606,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   /* create solvers for each level */
   for (i=0; i<nlevels; i++) {
     ierr = SNESCreate(dmmg[i]->comm,&dmmg[i]->snes);CHKERRQ(ierr);
+    ierr = SNESSetFunction(dmmg[i]->snes,dmmg[i]->b,function,dmmg[i]);CHKERRQ(ierr);
     ierr = SNESSetOptionsPrefix(dmmg[i]->snes,dmmg[i]->prefix);CHKERRQ(ierr);
     ierr = SNESGetKSP(dmmg[i]->snes,&dmmg[i]->ksp);CHKERRQ(ierr);
     if (snesmonitor) {
@@ -615,7 +616,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     }
 
     if (mffdoperator) {
-      ierr = MatCreateSNESMF(dmmg[i]->snes,dmmg[i]->x,&dmmg[i]->J);CHKERRQ(ierr);
+      ierr = MatCreateSNESMF(dmmg[i]->snes,&dmmg[i]->J);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work1);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work2);CHKERRQ(ierr);
       ierr = MatMFFDSetFunction(dmmg[i]->J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,dmmg[i]->snes);CHKERRQ(ierr);
@@ -692,7 +693,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   }
   for (i=0; i<nlevels; i++) {
     ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
-    ierr = SNESSetFunction(dmmg[i]->snes,dmmg[i]->b,function,dmmg[i]);CHKERRQ(ierr);
     ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
   }
 

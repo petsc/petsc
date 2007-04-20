@@ -118,7 +118,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES,const cha
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES,const char*[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Vec,Mat*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Mat*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
