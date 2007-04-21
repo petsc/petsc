@@ -1692,10 +1692,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogPrintDetailed(MPI_Comm comm, const char f
   StageLog       stageLog;
   StageInfo     *stageInfo = PETSC_NULL;
   EventPerfInfo *eventInfo = PETSC_NULL;
-  const char    *name;
+  const char    *name = PETSC_NULL;
   PetscLogDouble TotalTime;
   PetscLogDouble stageTime, flops, flopr, mess, messLen, red;
-  PetscLogDouble maxf, totf, maxt, tott, totm, totml, totr;
+  PetscLogDouble maxf, totf, maxt, tott, totm, totml, totr = 0.0;
   PetscMPIInt    maxCt;
   PetscMPIInt    size, rank;
   PetscTruth     *stageUsed;
