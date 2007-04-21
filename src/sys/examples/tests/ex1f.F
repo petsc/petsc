@@ -1,11 +1,12 @@
 !
 !  Simple PETSc Program to test setting error handlers from Fortran
 !
-      subroutine GenerateErr(ierr)
+      subroutine GenerateErr(line,ierr)
 #include "include/finclude/petsc.h"
       PetscErrorCode  ierr
+      PetscInt line
 
-      call PetscError(1,1,'Error message',ierr)
+      call PetscError(1,line,1,'Error message',ierr)
 
       return
       end
@@ -31,17 +32,17 @@
       call PetscPushErrorHandler(PetscTraceBackErrorHandler,               &
      &                           PETSC_NULL_INTEGER,ierr)
 
-      call GenerateErr(ierr)
+      call GenerateErr(__LINE__,ierr)
 
       call PetscPushErrorHandler(MyErrHandler,                           &
      &                           PETSC_NULL_INTEGER,ierr)
 
-      call GenerateErr(ierr)
+      call GenerateErr(__LINE__,ierr)
 
       call PetscPushErrorHandler(PetscAbortErrorHandler,                   &
      &                           PETSC_NULL_INTEGER,ierr)
 
-      call GenerateErr(ierr)
+      call GenerateErr(__LINE__,ierr)
 
       call PetscFinalize(ierr)
       end

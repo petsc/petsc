@@ -8,9 +8,25 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*S
+     DMMGArray - Fortran only. This is used in the main program when doing DMMGCreate(), DMMGSetDM() etc.
+        in the subroutines like FormFunction() one should use DMMG.
+
+        You can use DMMGArrayGetDMMG(DMMGArray,DMMG,ierr) to obtain the DMMG from a DMMG.
+
+   Level: intermediate
+
+  Concepts: multigrid, Newton-multigrid
+
+.seealso:  DMCompositeCreate(), DA, DMComposite, DM, DMMGCreate(), DMMGSetKSP(), DMMGSetSNES(), DMMGSetInitialGuess(),
+           DMMGSetNullSpace(), DMMGSetUseGalerkin(), DMMGSetMatType()
+S*/
+
+/*S
      DMMG -  Data structure to easily manage multi-level non-linear solvers on grids managed by DM
           
    Level: intermediate
+
+   Fortran Users: see also DMMGArray
 
   Concepts: multigrid, Newton-multigrid
 
