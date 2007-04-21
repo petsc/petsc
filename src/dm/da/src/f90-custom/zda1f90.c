@@ -29,12 +29,12 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
   PetscScalar *aa;
   
   PetscFunctionBegin;
-  *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);
-  *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);
+  *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
+  *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
+  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v,&N);
+  *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;
   if (N == xm*ym*zm*dof) {
     gxm = xm;
     gym = ym;
@@ -45,13 +45,13 @@ void PETSC_STDCALL davecgetarrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode
   } else if (N != gxm*gym*gzm*dof) {
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
-  *ierr = VecGetArray(*v,&aa);
-  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
+  *ierr = VecGetArray(*v,&aa);if (*ierr) return;
+  *ierr = F90Array1dCreate(aa,PETSC_SCALAR,gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));if (*ierr) return;
 }
 
 void PETSC_STDCALL davecrestorearrayf901_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = VecRestoreArray(*v,0);
+  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
   *ierr = F90Array1dDestroy(a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 
@@ -61,12 +61,12 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
   PetscScalar *aa;
   
   PetscFunctionBegin;
-  *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);
-  *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);
-  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);
+  *ierr = DAGetCorners(*da,&xs,&ys,&zs,&xm,&ym,&zm);if (*ierr) return;
+  *ierr = DAGetGhostCorners(*da,&gxs,&gys,&gzs,&gxm,&gym,&gzm);if (*ierr) return;
+  *ierr = DAGetInfo(*da,&dim,0,0,0,0,0,0,&dof,0,0,0);if (*ierr) return;
 
   /* Handle case where user passes in global vector as opposed to local */
-  *ierr = VecGetLocalSize(*v,&N);
+  *ierr = VecGetLocalSize(*v,&N);if (*ierr) return;
   if (N == xm*ym*zm*dof) {
     gxm = xm;
     gym = ym;
@@ -77,13 +77,13 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
   } else if (N != gxm*gym*gzm*dof) {
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
-  *ierr = VecGetArray(*v,&aa);
+  *ierr = VecGetArray(*v,&aa);if (*ierr) return;
   *ierr = F90Array1dCreate(aa,(PetscDataType)(-dof*sizeof(PetscScalar)),gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL davecrestorearrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  *ierr = VecRestoreArray(*v,0);
+  *ierr = VecRestoreArray(*v,0);if (*ierr) return;
   *ierr = F90Array1dDestroy(a,PETSC_SCALAR PETSC_F90_2PTR_PARAM(ptrd));
 }
 

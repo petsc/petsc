@@ -83,8 +83,8 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   /* Set various routines and options */
   ierr = SNESSetFunction(snes,r,FormFunction1,(void*)&user);CHKERRQ(ierr);
-  ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
-  ierr = SNESSetJacobian(snes,J,J,MatSNESMFComputeJacobian,&user);CHKERRQ(ierr);
+  ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
+  ierr = SNESSetJacobian(snes,J,J,MatMFFDComputeJacobian,&user);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
 
   /* Force no preconditioning to be used.  Note that this overrides whatever

@@ -232,7 +232,7 @@ PetscErrorCode MatDestroy_DAAD(Mat A)
   if (a->diagonal) {ierr = VecDestroy(a->diagonal);CHKERRQ(ierr);}
   ierr = PetscFree(a);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)A,0);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunction((PetscObject)A,"MatSNESMFSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunction((PetscObject)A,"MatMFFDSetBase_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetDA_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetSNES_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunction((PetscObject)A,"MatDAADSetCtx_C","",PETSC_NULL);CHKERRQ(ierr);
@@ -344,11 +344,11 @@ static struct _MatOps MatOps_Values = {0,
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "MatSNESMFSetBase_AD"
-PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U)
+#define __FUNCT__ "MatMFFDSetBase_AD"
+PetscErrorCode PETSCMAT_DLLEXPORT MatSNESMFSetBase_AD(Mat J,Vec U,Vec F)
 {
   PetscErrorCode ierr;
-  Mat_DAAD *a = (Mat_DAAD*)J->data;
+  Mat_DAAD       *a = (Mat_DAAD*)J->data;
 
   PetscFunctionBegin;
   a->diagonalvalid = PETSC_FALSE;
@@ -363,9 +363,9 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "MatDAADSetDA_AD"
 PetscErrorCode PETSCMAT_DLLEXPORT MatDAADSetDA_AD(Mat A,DA da)
 {
-  Mat_DAAD *a = (Mat_DAAD*)A->data;
+  Mat_DAAD       *a = (Mat_DAAD*)A->data;
   PetscErrorCode ierr;
-  int nc,nx,ny,nz,Nx,Ny,Nz;
+  PetscInt       nc,nx,ny,nz,Nx,Ny,Nz;
 
   PetscFunctionBegin;
   ierr  = PetscObjectReference((PetscObject)da);CHKERRQ(ierr);
@@ -434,7 +434,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATDAAD);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSNESMFSetBase_C","MatSNESMFSetBase_AD",MatSNESMFSetBase_AD);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatMFFDSetBase_C","MatMFFDSetBase_AD",MatMFFDSetBase_AD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetDA_C","MatDAADSetDA_AD",MatDAADSetDA_AD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetSNES_C","MatDAADSetSNES_AD",MatDAADSetSNES_AD);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatDAADSetCtx_C","MatDAADSetCtx_AD",MatDAADSetCtx_AD);CHKERRQ(ierr);

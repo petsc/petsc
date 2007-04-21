@@ -28,11 +28,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char path[])
   PetscFunctionBegin;
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
-  /* Register Classes */
+  /* Register Class */
   ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE,"PetscRandom");CHKERRQ(ierr);
-  /* ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr); */
   ierr = PetscRandomRegisterAll(path);CHKERRQ(ierr);
-  /* ierr = PFRegisterAll(path);CHKERRQ(ierr); */
   PetscFunctionReturn(0);
 }
 

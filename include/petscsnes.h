@@ -33,7 +33,6 @@ E*/
 
 /* Logging support */
 extern PetscCookie PETSCSNES_DLLEXPORT SNES_COOKIE;
-extern PetscCookie PETSCSNES_DLLEXPORT MATSNESMFCTX_COOKIE;
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char[]);
 
@@ -119,89 +118,8 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESAppendOptionsPrefix(SNES,const cha
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetOptionsPrefix(SNES,const char*[]);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES);
 
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Vec,Mat*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateMF(Vec,Mat*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetBase(Mat,Vec);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFunction(Mat,Vec,PetscErrorCode(*)(SNES,Vec,Vec,void*),void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFunctioni(Mat,PetscErrorCode (*)(PetscInt,Vec,PetscScalar*,void*));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFunctioniBase(Mat,PetscErrorCode (*)(Vec,void*));
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFAddNullSpace(Mat,MatNullSpace);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetHHistory(Mat,PetscScalar[],PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFResetHHistory(Mat);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFunctionError(Mat,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetPeriod(Mat,PetscInt);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFGetH(Mat,PetscScalar *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFKSPMonitor(KSP,PetscInt,PetscReal,void *);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetFromOptions(Mat);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFCheckPositivity(Vec,Vec,PetscScalar*,void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetCheckh(Mat,PetscErrorCode (*)(Vec,Vec,PetscScalar*,void*),void*);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDSSetUmin(Mat,PetscReal);
-
-
-typedef struct _p_MatSNESMF* MatSNESMF;
-
-/*E
-    MatSNESMFType - algorithm used to compute the h used in computing matrix-vector products via differencing of the function
-
-   Level: beginner
-
-.seealso: MatSNESMFSetType(), MatSNESMFRegister()
-E*/
-#define MatSNESMFType const char*
-#define MATSNESMF_DS  "ds"
-#define MATSNESMF_WP  "wp"
-
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFSetType(Mat,MatSNESMFType);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatSNESMF));
-
-/*MC
-   MatSNESMFRegisterDynamic - Adds a method to the MatSNESMF registry.
-
-   Synopsis:
-   PetscErrorCode MatSNESMFRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(MatSNESMF))
-
-   Not Collective
-
-   Input Parameters:
-+  name_solver - name of a new user-defined compute-h module
-.  path - path (either absolute or relative) the library containing this solver
-.  name_create - name of routine to create method context
--  routine_create - routine to create method context
-
-   Level: developer
-
-   Notes:
-   MatSNESMFRegisterDynamic() may be called multiple times to add several user-defined solvers.
-
-   If dynamic libraries are used, then the fourth input argument (routine_create)
-   is ignored.
-
-   Sample usage:
-.vb
-   MatSNESMFRegisterDynamic("my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
-               "MyHCreate",MyHCreate);
-.ve
-
-   Then, your solver can be chosen with the procedural interface via
-$     MatSNESMFSetType(mfctx,"my_h")
-   or at runtime via the option
-$     -snes_mf_type my_h
-
-.keywords: MatSNESMF, register
-
-.seealso: MatSNESMFRegisterAll(), MatSNESMFRegisterDestroy()
-M*/
-#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,0)
-#else
-#define MatSNESMFRegisterDynamic(a,b,c,d) MatSNESMFRegister(a,b,c,d)
-#endif
-
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterAll(const char[]);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFRegisterDestroy(void);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFDefaultSetUmin(Mat,PetscReal);
-EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatSNESMFWPSetComputeNormU(Mat,PetscTruth);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES,Mat*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatMFFDComputeJacobian(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT MatDAADSetSNES(Mat,SNES);
 

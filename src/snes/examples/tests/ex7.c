@@ -24,7 +24,7 @@ int main(int argc,char **argv)
 {
   SNES           snes;                 /* SNES context */
   SNESType       type = SNESLS;        /* default nonlinear solution method */
-  Vec            x,r,F,U,work;         /* vectors */
+  Vec            x,r,F,U;              /* vectors */
   Mat            J,B;                  /* Jacobian matrix-free, explicit preconditioner */
   MonitorCtx     monP;                 /* monitoring context */
   AppCtx         user;                 /* user-defined work context */
@@ -63,17 +63,17 @@ int main(int argc,char **argv)
   ierr = SNESCreate(PETSC_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,type);CHKERRQ(ierr);
 
+  /* Set various routines and options */
+  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
   if (user.variant) {
-    ierr = MatCreateMF(x,&J);CHKERRQ(ierr);
-    ierr = VecDuplicate(x,&work);CHKERRQ(ierr);
-    ierr = MatSNESMFSetFunction(J,work,FormFunction,F);CHKERRQ(ierr);
+    ierr = MatCreateMFFD(PETSC_COMM_WORLD,n,n,n,n,&J);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
   } else {
     /* create matrix free matrix for Jacobian */
-    ierr = MatCreateSNESMF(snes,x,&J);CHKERRQ(ierr);
+    ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
   }
 
   /* Set various routines and options */
-  ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
   ierr = SNESSetJacobian(snes,J,B,FormJacobian,&user);CHKERRQ(ierr);
   ierr = SNESMonitorSet(snes,Monitor,&monP,0);CHKERRQ(ierr);
   ierr = SNESSetFromOptions(snes);CHKERRQ(ierr);
@@ -85,9 +85,6 @@ int main(int argc,char **argv)
   ierr = PetscPrintf(PETSC_COMM_SELF,"number of Newton iterations = %D\n\n",its);CHKERRQ(ierr);
 
   /* Free data structures */
-  if (user.variant) {
-    ierr = VecDestroy(work);CHKERRQ(ierr);
-  }
   ierr = VecDestroy(x);CHKERRQ(ierr);  ierr = VecDestroy(r);CHKERRQ(ierr);
   ierr = VecDestroy(U);CHKERRQ(ierr);  ierr = VecDestroy(F);CHKERRQ(ierr);
   ierr = MatDestroy(J);CHKERRQ(ierr);  ierr = MatDestroy(B);CHKERRQ(ierr);
@@ -173,7 +170,7 @@ PetscErrorCode  FormJacobian(SNES snes,Vec x,Mat *jac,Mat *B,MatStructure*flag,v
     *flag = SAME_PRECONDITIONER;
   }
   if (user->variant) {
-    ierr = MatSNESMFSetBase(*jac,x);CHKERRQ(ierr);
+    ierr = MatMFFDSetBase(*jac,x,PETSC_NULL);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*jac,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

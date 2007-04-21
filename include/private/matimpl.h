@@ -981,4 +981,6 @@ extern PetscEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
 extern PetscEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
 extern PetscEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
 
+extern PetscEvent  MATMFFD_Mult;
+
 #endif

@@ -3,13 +3,13 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = snesmfj.c  snesmfjdef.c mfregis.c wp.c
+SOURCEC  = snesmfj.c
 SOURCEF  =
-SOURCEH  = snesmfj.h
-OBJSC    = snesmfj.o  snesmfjdef.o mfregis.o wp.o
+SOURCEH  = 
+OBJSC    = snesmfj.o
 OBJSF    =
 LIBBASE  = libpetscsnes
-MANSEC   = SNESMF
+MANSEC   = MATMFFD
 DIRS     = 
 LOCDIR   = src/snes/mf/
 

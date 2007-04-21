@@ -87,6 +87,7 @@ extern PetscCookie PETSCMAT_DLLEXPORT MAT_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_FDCOLORING_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_PARTITIONING_COOKIE;
 extern PetscCookie PETSCMAT_DLLEXPORT MAT_NULLSPACE_COOKIE;
+extern PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
 
 /*E
     MatReuse - Indicates if matrices obtained from a previous call to MatGetSubMatrices()
@@ -1463,6 +1464,88 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMAIJGetAIJ(Mat,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat,Mat*);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDiagonalScaleLocal(Mat,Vec);
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMFFD(MPI_Comm,PetscInt,PetscInt,PetscInt,PetscInt,Mat*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase(Mat,Vec,Vec);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunction(Mat,PetscErrorCode(*)(void*,Vec,Vec),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioni(Mat,PetscErrorCode (*)(void*,PetscInt,Vec,PetscScalar*));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctioniBase(Mat,PetscErrorCode (*)(void*,Vec));
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDAddNullSpace(Mat,MatNullSpace);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetHHistory(Mat,PetscScalar[],PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFunctionError(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetPeriod(Mat,PetscInt);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDGetH(Mat,PetscScalar *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCheckPositivity(void*,Vec,Vec,PetscScalar*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetCheckh(Mat,PetscErrorCode (*)(void*,Vec,Vec,PetscScalar*),void*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDSSetUmin(Mat,PetscReal);
+
+
+typedef struct _p_MatMFFD* MatMFFD;
+
+/*E
+    MatMFFDType - algorithm used to compute the h used in computing matrix-vector products via differencing of the function
+
+   Level: beginner
+
+.seealso: MatMFFDSetType(), MatMFFDRegister()
+E*/
+#define MatMFFDType const char*
+#define MATMFFD_DS  "ds"
+#define MATMFFD_WP  "wp"
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat,MatMFFDType);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegister(const char[],const char[],const char[],PetscErrorCode (*)(MatMFFD));
+
+/*MC
+   MatMFFDRegisterDynamic - Adds a method to the MatMFFD registry.
+
+   Synopsis:
+   PetscErrorCode MatMFFDRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(MatMFFD))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined compute-h module
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create method context
+-  routine_create - routine to create method context
+
+   Level: developer
+
+   Notes:
+   MatMFFDRegisterDynamic() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   MatMFFDRegisterDynamic("my_h",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyHCreate",MyHCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MatMFFDSetType(mfctx,"my_h")
+   or at runtime via the option
+$     -snes_mf_type my_h
+
+.keywords: MatMFFD, register
+
+.seealso: MatMFFDRegisterAll(), MatMFFDRegisterDestroy()
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MatMFFDRegisterDynamic(a,b,c,d) MatMFFDRegister(a,b,c,0)
+#else
+#define MatMFFDRegisterDynamic(a,b,c,d) MatMFFDRegister(a,b,c,d)
+#endif
+
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDDefaultSetUmin(Mat,PetscReal);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDWPSetComputeNormU(Mat,PetscTruth);
+
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutMatrix(PetscViewer, PetscInt, PetscInt, PetscReal *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT PetscViewerMathematicaPutCSRMatrix(PetscViewer, PetscInt, PetscInt, PetscInt *, PetscInt *, PetscReal *);
