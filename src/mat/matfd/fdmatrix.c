@@ -332,7 +332,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFunction(MatFDColoring matfd,P
            of relative error in the function)
 .  -mat_fd_coloring_umin <umin> - Sets umin, the minimum allowable u-value magnitude
 .  -mat_fd_coloring_freq <freq> - Sets frequency of computing a new Jacobian
-.  -mat_fd_type - "wp" or "ds" (see MATSNESMF_WP or MATSNESMF_DS)
+.  -mat_fd_type - "wp" or "ds" (see MATMFFD_WP or MATMFFD_DS)
 .  -mat_fd_coloring_view - Activates basic viewing
 .  -mat_fd_coloring_view_info - Activates viewing info
 -  -mat_fd_coloring_view_draw - Activates drawing
@@ -562,7 +562,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringGetPerturbedColumns(MatFDColoring
 
     Options Database Keys:
 +    -mat_fd_coloring_freq <freq> - Sets coloring frequency
-.    -mat_fd_type - "wp" or "ds"  (see MATSNESMF_WP or MATSNESMF_DS)
+.    -mat_fd_type - "wp" or "ds"  (see MATMFFD_WP or MATMFFD_DS)
 .    -mat_fd_coloring_view - Activates basic viewing or coloring
 .    -mat_fd_coloring_view_draw - Activates drawing of coloring
 -    -mat_fd_coloring_view_info - Activates viewing of coloring info

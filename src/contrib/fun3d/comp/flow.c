@@ -216,7 +216,7 @@ int main(int argc,char **args)
     /* Use matrix-free Jacobian to define Newton system; use explicit (approx)
        Jacobian for preconditioner */
     /*ierr = SNESDefaultMatrixFreeMatCreate(snes,user.grid->qnode,&Jpc);*/
-     ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);
+     ierr = MatCreateSNESMF(snes,&Jpc);
      CHKERRQ(ierr);
      ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);
      /*ierr = SNESSetJacobian(snes,Jpc,user.grid->A,0,&user);*/

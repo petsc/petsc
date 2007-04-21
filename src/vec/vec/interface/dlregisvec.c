@@ -47,10 +47,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PF_COOKIE,          "PointFunction");CHKERRQ(ierr);
   /* Register Constructors */
   ierr = VecRegisterAll(path);CHKERRQ(ierr);
-  ierr = PFRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
   ierr = PetscLogEventRegister(&VEC_View,                "VecView",          VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_Max,                 "VecMax",           VEC_COOKIE);CHKERRQ(ierr);
@@ -162,6 +160,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(const char pat
       If we got here then PETSc was properly loaded
   */
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
+  ierr = PFInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

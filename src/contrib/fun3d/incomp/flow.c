@@ -166,7 +166,7 @@ int main(int argc,char **args)
     ierr = PetscOptionsHasName(PETSC_NULL,"-matrix_free",&flg);CHKERRQ(ierr);
     if (flg) {
       /* Use matrix-free to define Newton system; use explicit (approx) Jacobian for preconditioner */
-      ierr = MatCreateSNESMF(snes,user.grid->qnode,&Jpc);CHKERRQ(ierr);
+      ierr = MatCreateSNESMF(snes,&Jpc);CHKERRQ(ierr);
       ierr = SNESSetJacobian(snes,Jpc,user.grid->A,FormJacobian,&user);CHKERRQ(ierr);
     } else {
       /* Use explicit (approx) Jacobian to define Newton system and preconditioner */

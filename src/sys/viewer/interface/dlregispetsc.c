@@ -34,7 +34,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&PETSC_OBJECT_COOKIE, "Object");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&PETSC_RANDOM_COOKIE, "Random Number Generator");CHKERRQ(ierr);
 
   /* Register Events */
   ierr = PetscLogEventRegister(&PETSC_Barrier, "PetscBarrier", PETSC_SMALLEST_COOKIE);CHKERRQ(ierr);
@@ -84,6 +83,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
   ierr = PetscInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
+  ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

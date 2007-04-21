@@ -85,7 +85,7 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
   PetscMPIInt    tag;
   MPI_Status     status;
   PetscTruth     aij;
-  PetscScalar    *gmataa,*ao,*ad,*gmataarestore;
+  PetscScalar    *gmataa,*ao,*ad,*gmataarestore=0;
 
   PetscFunctionBegin;
   CHKMEMQ;

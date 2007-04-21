@@ -1,6 +1,7 @@
 #define PETSCSNES_DLL
 
 #include "include/private/snesimpl.h"   /*I  "petscsnes.h"   I*/
+#include "include/private/matimpl.h"
 
 EXTERN PetscErrorCode DiffParameterCreate_More(SNES,Vec,void**);
 EXTERN PetscErrorCode DiffParameterCompute_More(SNES,void*,Vec,Vec,PetscReal*,PetscReal*);
@@ -96,7 +97,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
      separate the performance monitoring from the cases that use conventional
      storage.  We may eventually modify event logging to associate events
      with particular objects, hence alleviating the more general problem. */
-  ierr = PetscLogEventBegin(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
 
   ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr);
   ierr = MatShellGetContext(mat,(void **)&ctx);CHKERRQ(ierr);
@@ -160,7 +161,7 @@ PetscErrorCode SNESMatrixFreeMult2_Private(Mat mat,Vec a,Vec y)
   ierr = VecScale(y,1.0/hs);CHKERRQ(ierr);
   if (ctx->sp) {ierr = MatNullSpaceRemove(ctx->sp,y,PETSC_NULL);CHKERRQ(ierr);}
 
-  ierr = PetscLogEventEnd(MATSNESMF_Mult,a,y,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MATMFFD_Mult,a,y,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -197,7 +198,7 @@ $   Alternatively, the differencing parameter, h, can be set using
 $   Jorge's nifty new strategy if one specifies the option 
 $          -snes_mf_jorge
 
-   The user can set these parameters via MatSNESMFSetFunctionError().
+   The user can set these parameters via MatMFFDSetFunctionError().
    See the nonlinear solvers chapter of the users manual for details.
 
    The user should call MatDestroy() when finished with the matrix-free
@@ -212,7 +213,7 @@ $  -snes_mf_jorge
 
 .keywords: SNES, default, matrix-free, create, matrix
 
-.seealso: MatDestroy(), MatSNESMFSetFunctionError()
+.seealso: MatDestroy(), MatMFFDSetFunctionError()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,Mat *J)
 {

@@ -3762,7 +3762,7 @@ be employed. \sindex{matrix-free Jacobians} \findex{PCSHELL}
 The user can create a matrix-free context for use within SNES with 
 the routine
 \begin{tabbing}
-  MatCreateSNESMF(SNES snes,Vec x, Mat *mat);
+  MatCreateSNESMF(SNES snes,Mat *mat);
 \end{tabbing}
 \findex{MatCreateSNESMF()}
 This routine creates the data structures needed for the matrix-vector 
@@ -3783,9 +3783,9 @@ for users who need a matrix-free matrix but are not using SNES.
 The user can set one parameter to control the Jacobian-vector
 product approximation with the command
 \begin{tabbing}
-  MatSNESMFSetFunctionError(Mat mat,double rerror);
+  MatMFFDSetFunctionError(Mat mat,double rerror);
 \end{tabbing}
-\findex{MatSNESMFSetFunctionError()}
+\findex{MatMFFDSetFunctionError()}
 The parameter \trl{rerror} should be set to the square root of the 
 relative error in the function evaluations, $e_{rel}$; the default is $ 10^{-8} $, 
 which assumes that the functions are evaluated to full double precision accuracy. 
@@ -3796,16 +3796,16 @@ This parameter can also be set from the options database with
 \findex{-snes_mf_err}
 
 In addition, SNES provides a way to register new routines to compute the differencing parameter ($h$);
-see the manual page for MatSNESMFSetType() and MatSNESMFRegisterDynamic) \findex{MatSNESMFSetType()}
-\findex{MatSNESMFRegisterDynamic)}. We currently provide two default routines accessible via
+see the manual page for MatMFFDSetType() and MatMFFDRegisterDynamic) \findex{MatMFFDSetType()}
+\findex{MatMFFDRegisterDynamic)}. We currently provide two default routines accessible via
 \begin{tabbing}
   -snes\_mf\_type \trl{<default or wp>}
 \end{tabbing}
 For the default approach there is one ``tuning'' parameter, set with 
 \begin{tabbing}
-  MatSNESMFDefaultSetUmin(Mat mat,PetscReal umin);
+  MatMFFDDefaultSetUmin(Mat mat,PetscReal umin);
 \end{tabbing}
-\findex{MatSNESMFDefaultSetUmin()}
+\findex{MatMFFDDefaultSetUmin()}
 This parameter, \trl{umin} (or $u_{min}$), is a bit involved; its default is 
 $ 10^{-6} $ . The Jacobian-vector product is approximated via the formula
 \[
@@ -3832,13 +3832,13 @@ $ ||a|| = 1 $ and (b) for the entire {\bf linear} iterative process $ u $ does n
 $\sqrt{1 + ||u||} $ need be computed only once. This information may be set with the 
 options
 \begin{tabbing}
-  MatSNESMFWPSetComputeNormA(Mat mat,PetscTruth);\\
-  MatSNESMFWPSetComputeNormU(Mat mat,PetscTruth);
+  MatMFFDWPSetComputeNormA(Mat mat,PetscTruth);\\
+  MatMFFDWPSetComputeNormU(Mat mat,PetscTruth);
 \end{tabbing}
 or 
 \begin{tabbing}
-   -snes\_mf\_compute\_norma\trl{ <true or false>}\\
-   -snes\_mf\_compute\_normu \trl{<true or false>}
+   -mat\_mffd\_compute\_norma\trl{ <true or false>}\\
+   -mat\_mffd\_compute\_normu \trl{<true or false>}
 \end{tabbing}
 This information is used to eliminate the redundant computation of these parameters,
 therefor reducing the number of collective operations and improving the efficiency of the 
@@ -3847,12 +3847,11 @@ application code.
 It is also possible to monitor the differencing parameters h that are computed
 via the routines
 \begin{tabbing}
-   MatSNESMFSetHHistory(Mat,PetscScalar *,int);\\
-   MatSNESMFResetHHistory(Mat,PetscScalar *,int);\\
-   MatSNESMFGetH(Mat,PetscScalar *);\\
-   MatSNESMFKSPMonitor(KSP,int,double,void *);
+   MatMFFDSetHHistory(Mat,PetscScalar *,int);\\
+   MatMFFDResetHHistory(Mat,PetscScalar *,int);\\
+   MatMFFDGetH(Mat,PetscScalar *);\\
+   MatMFFDKSPMonitor(KSP,int,double,void *);
 \end{tabbing}
-and the runtime option  \trl{-snes_mf_ksp_monitor}. \findex{snes_mf_ksp_monitor}
 
 We include an example in Figure~\ref{fig_snesexample2} that explicitly
 uses a matrix-free approach.  Note that by using the option 
@@ -3880,7 +3879,7 @@ possible, as demonstrated by the example,
 Jacobian        & Create matrix with MatCreate(). $ ^* $ & Create matrix with MatCreateShell().\\
                & Assemble matrix with user-defined     & Use MatShellSetOperation() to set\\
 Matrix          & routine. $ ^\dagger $                         & various matrix actions.\\
-                &                                    & Or use MatCreateSNESMF().\\
+                &                                    & Or use MatCreateMFFD() or MatCreateSNESMF().\\
 & & \\ \hline
 & & \\
 Preconditioning  & Create matrix with MatCreate(). $ ^* $ & Use SNESGetKSP() and KSPGetPC() \\

@@ -291,7 +291,8 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
 
    Notes:
    The index array is copied to internally allocated storage. After the call,
-   the user can free the index array.
+   the user can free the index array. Use ISCreateGeneralNC() to use the pointers
+   passed in and NOT make a copy of the index array.
 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then
@@ -303,7 +304,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   Concepts: index sets^creating
   Concepts: IS^creating
 
-.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather()
+.seealso: ISCreateGeneralWithArray(), ISCreateStride(), ISCreateBlock(), ISAllGather(), ISCreateGeneralNC()
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const PetscInt idx[],IS *is)
 {
@@ -354,6 +355,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
    Notes: This routine does not copy the indices, just keeps the pointer to the
    indices. The ISDestroy() will free the space so it must be obtained
    with PetscMalloc() and it must not be freed nor modified elsewhere.
+   Use ISCreateGeneral() if you wish to copy the indices passed into the routine.
 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then

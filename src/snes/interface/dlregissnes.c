@@ -30,7 +30,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
   initialized = PETSC_TRUE;
   /* Register Classes */
   ierr = PetscLogClassRegister(&SNES_COOKIE,         "SNES");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&MATSNESMFCTX_COOKIE, "MatSNESMF");CHKERRQ(ierr);
   /* Register Constructors */
   ierr = SNESRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
@@ -38,7 +37,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
   ierr = PetscLogEventRegister(&SNES_LineSearch,               "SNESLineSearch",   SNES_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SNES_FunctionEval,             "SNESFunctionEval", SNES_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&SNES_JacobianEval,             "SNESJacobianEval", SNES_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&MATSNESMF_Mult,                "MatMultMatrixFre", MAT_COOKIE);CHKERRQ(ierr);
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
@@ -55,7 +53,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(SNES_COOKIE);CHKERRQ(ierr);
     }
   }
-  ierr = MatSNESMFRegisterAll(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -22,7 +22,7 @@
 +  -snes_fd - Activates SNESDefaultComputeJacobian()
 .  -snes_test_err - Square root of function error tolerance, default square root of machine
                     epsilon (1.e-8 in double, 3.e-4 in single)
--  -mat_fd_type - Either wp or ds (see MATSNESMF_WP or MATSNESMF_DS)
+-  -mat_fd_type - Either wp or ds (see MATMFFD_WP or MATMFFD_DS)
 
    Notes:
    This routine is slow and expensive, and is not currently optimized

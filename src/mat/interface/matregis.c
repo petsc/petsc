@@ -3,6 +3,7 @@
 #include "petscmat.h"  /*I "petscmat.h" I*/
 
 EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_IS(Mat);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat);
@@ -106,6 +107,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRegisterAll(const char path[])
 
   PetscFunctionBegin;
   MatRegisterAllCalled = PETSC_TRUE;
+
+  ierr = MatRegisterDynamic(MATMFFD,           path,"MatCreate_MFFD",    MatCreate_MFFD);CHKERRQ(ierr);
 
   ierr = MatRegisterDynamic(MATMPIMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);
   ierr = MatRegisterDynamic(MATSEQMAIJ,        path,"MatCreate_MAIJ",    MatCreate_MAIJ);CHKERRQ(ierr);

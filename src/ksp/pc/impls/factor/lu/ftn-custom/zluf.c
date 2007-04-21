@@ -2,13 +2,13 @@
 #include "petscpc.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define pcfactorsetmatordering_       PCFACTORSETMATORDERING
+#define pcfactorsetmatorderingtype_       PCFACTORSETMATORDERINGTYPE
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define pcfactorsetmatordering_       pcfactorsetmatordering
+#define pcfactorsetmatorderingtype_       pcfactorsetmatorderingtype
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL pcfactorsetmatordering_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){
+void PETSC_STDCALL pcfactorsetmatorderingtype_(PC *pc,CHAR ordering PETSC_MIXED_LEN(len), PetscErrorCode *ierr PETSC_END_LEN(len)){
   char *t;
 
     FIXCHAR(ordering,len,t);

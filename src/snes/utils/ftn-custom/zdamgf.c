@@ -2,6 +2,7 @@
 #include "petscdmmg.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define dmmgarraygetdmmg_        DMMGARRAYGETDMMG
 #define dmmgsetksp_              DMMGSETKSP
 #define dmmgsetinitialguess_     DMMGSETINITIALGUESS
 #define dmmgsetdm_               DMMGSETDM
@@ -14,6 +15,7 @@
 #define dmmggetuser_             DMMGGETUSER
 #define dmmggetdm_               DMMGGETDM
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define dmmgarraygetdmmg_        dmmgarraygetdmmg_
 #define dmmgsetksp_              dmmgsetksp
 #define dmmgsetinitialguess_     dmmgsetinitialguess
 #define dmmgsetdm_               dmmgsetdm
@@ -139,5 +141,12 @@ void PETSC_STDCALL dmmggetdm_(DMMG *dmmg,DM *dm,PetscErrorCode *ierr)
   *ierr = 0;
   *dm = (*dmmg)->dm;
 }
+
+void PETSC_STDCALL dmmgarraygetdmmg_(DMMG **dmmg,DMMG *dmmglevel,PetscErrorCode *ierr)
+{
+  *ierr = 0;
+  *dmmglevel = (*dmmg)[(**dmmg)->nlevels-1];
+}
+
 EXTERN_C_END
 

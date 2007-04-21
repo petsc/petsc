@@ -9,25 +9,24 @@
                             h
 */
 
-#if !defined(__SNESMFJ_H__)
-#define __SNESMFJ_H__
+#if !defined(__MFFD_H__)
+#define __MFFD_H__
 
-#include "include/petscsnes.h"         /*I  "petscsnes.h"   I*/
+#include "petscmat.h"         /*I  "petscmat.h"   I*/
 
 /*
     Table of functions that manage the computation and understanding
     of the parameter for finite difference based matrix-free computations
 */
 struct _MFOps {
-  PetscErrorCode (*compute)(MatSNESMF,Vec,Vec,PetscScalar *,PetscTruth* zeroa);
-  PetscErrorCode (*view)(MatSNESMF,PetscViewer);
-  PetscErrorCode (*destroy)(MatSNESMF);
-  PetscErrorCode (*setfromoptions)(MatSNESMF);
+  PetscErrorCode (*compute)(MatMFFD,Vec,Vec,PetscScalar *,PetscTruth* zeroa);
+  PetscErrorCode (*view)(MatMFFD,PetscViewer);
+  PetscErrorCode (*destroy)(MatMFFD);
+  PetscErrorCode (*setfromoptions)(MatMFFD);
 };
 
-struct _p_MatSNESMF {    /* context for default matrix-free SNES */
+struct _p_MatMFFD {    /* context for default matrix-free SNES */
   PETSCHEADER(struct _MFOps);
-  SNES             snes;                   /* nonlinear solver */
   Vec              w;                      /* work vector */
   MatNullSpace     sp;                     /* null space context */
   PetscReal        error_rel;              /* square root of relative error in computing function */
@@ -38,27 +37,21 @@ struct _p_MatSNESMF {    /* context for default matrix-free SNES */
   Mat              mat;                    /* back reference to shell matrix that contains this */
   PetscInt         recomputeperiod;        /* how often the h is recomputed; default to 1 */
   PetscInt         count;                  /* used by recomputeperiod */
-  void             *checkhctx;             /* optional context used by MatSNESMFSetCheckh() */
-  PetscErrorCode (*checkh)(Vec,Vec,PetscScalar*,void*);
-  /*
-        The next three are used only if user called MatSNESMFSetFunction()
-  */
-  PetscErrorCode (*func)(SNES,Vec,Vec,void*);  /* function used for matrix free */
+  PetscErrorCode   (*checkh)(void*,Vec,Vec,PetscScalar*);
+  void             *checkhctx;             /* optional context used by MatMFFDSetCheckh() */
+
+  PetscErrorCode   (*func)(void*,Vec,Vec);  /* function used for matrix free */
   void             *funcctx;                     /* the context for the function */
-  Vec              funcvec;                      /* location to store func(u) */
   Vec              current_f;                    /* location of F(u); used with F(u+h) */
   Vec              current_u;                    /* location of u; used with F(u+h) */
 
-  PetscTruth       usesnes;                      /* if false indicates that one should (*func) 
-                                                    instead of SNES even if snes is present */
-
-  PetscErrorCode (*funci)(PetscInt,Vec,PetscScalar*,void*);  /* Evaluates func_[i]() */
-  PetscErrorCode (*funcisetbase)(Vec,void*);            /* Sets base for future evaluations of func_[i]() */
+  PetscErrorCode   (*funci)(void*,PetscInt,Vec,PetscScalar*);  /* Evaluates func_[i]() */
+  PetscErrorCode   (*funcisetbase)(void*,Vec);            /* Sets base for future evaluations of func_[i]() */
 
   PetscScalar      vscale,vshift;
 };
 
-EXTERN PetscFList MatSNESMPetscFList;
-EXTERN PetscTruth MatSNESMFRegisterAllCalled;
+EXTERN PetscFList MatMFFDPetscFList;
+EXTERN PetscTruth MatMFFDRegisterAllCalled;
 
 #endif
