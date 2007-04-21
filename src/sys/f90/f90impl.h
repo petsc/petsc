@@ -6,9 +6,11 @@ PETSC_EXTERN_CXX_BEGIN
 
 /* PGI compilers pass in f90 pointers as 2 arguments */
 #if defined(PETSC_HAVE_F90_2PTR_ARG)
+#define PETSC_F90_2PTR_PROTO_NOVAR ,void*
 #define PETSC_F90_2PTR_PROTO(ptr) ,void* ptr
 #define PETSC_F90_2PTR_PARAM(ptr) , ptr
 #else
+#define PETSC_F90_2PTR_PROTO_NOVAR
 #define PETSC_F90_2PTR_PROTO(ptr)
 #define PETSC_F90_2PTR_PARAM(ptr)
 #endif
@@ -31,25 +33,25 @@ PETSC_EXTERN_CXX_BEGIN
 
 #endif /* PETSC_HAVE_F90_H */
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void*,PetscDataType,int,int,F90Array1d* PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d*,PetscDataType,void** PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d*,PetscDataType PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetNextRecord(F90Array1d*,void** PETSC_F90_2PTR_PROTO());
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dCreate(void*,PetscDataType,int,int,F90Array1d* PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dAccess(F90Array1d*,PetscDataType,void** PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dDestroy(F90Array1d*,PetscDataType PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetNextRecord(F90Array1d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dCreate(void*,PetscDataType,int,int,int,int,F90Array2d* PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d*,PetscDataType,void** PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d*,PetscDataType PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dGetNextRecord(F90Array2d*,void** PETSC_F90_2PTR_PROTO());
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dCreate(void*,PetscDataType,int,int,int,int,F90Array2d* PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dAccess(F90Array2d*,PetscDataType,void** PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d*,PetscDataType PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array2dGetNextRecord(F90Array2d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dCreate(void*,PetscDataType,int,int,int,int,int,int,F90Array3d* PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d*,PetscDataType,void** PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d*,PetscDataType PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dGetNextRecord(F90Array3d*,void** PETSC_F90_2PTR_PROTO());
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dCreate(void*,PetscDataType,int,int,int,int,int,int,F90Array3d* PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dAccess(F90Array3d*,PetscDataType,void** PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dDestroy(F90Array3d*,PetscDataType PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array3dGetNextRecord(F90Array3d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dCreate(void*,PetscDataType,int,int,int,int,int,int,int,int,F90Array4d* PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d*,PetscDataType,void** PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d*,PetscDataType PETSC_F90_2PTR_PROTO());
-EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dGetNextRecord(F90Array4d*,void** PETSC_F90_2PTR_PROTO());
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dCreate(void*,PetscDataType,int,int,int,int,int,int,int,int,F90Array4d* PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dAccess(F90Array4d*,PetscDataType,void** PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dDestroy(F90Array4d*,PetscDataType PETSC_F90_2PTR_PROTO_NOVAR);
+EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array4dGetNextRecord(F90Array4d*,void** PETSC_F90_2PTR_PROTO_NOVAR);
 
 /* 
 EXTERN PetscErrorCode PETSC_DLLEXPORT F90Array1dGetInfo(F90Array1d*,PetscDataType*,int*,int*);
