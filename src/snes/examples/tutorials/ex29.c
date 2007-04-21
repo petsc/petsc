@@ -75,7 +75,7 @@ typedef struct {
   PetscInt       ires,itstep;
   PetscInt       max_steps,print_freq;
   PetscReal      t;
-  PetscScalar    fnorm;
+  PetscReal      fnorm;
 
   PetscTruth     ts_monitor;           /* print information about each time step */
   PetscReal      dump_time;            /* time to dump solution to a file */

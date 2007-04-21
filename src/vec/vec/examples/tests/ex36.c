@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   for (i = 0; i<m; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, 
 				   "%d: idx[%d] == %d; val[%d] == %f\n", 
-				   rank, i, indices[i], i, values[i]);CHKERRQ(ierr);
+				   rank, i, indices[i], i, PetscRealPart(values[i]));CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
@@ -105,7 +105,7 @@ int main(int argc,char **argv)
   ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: Fetched values:\n", rank);CHKERRQ(ierr);
   for (i = 0; i<m; i++) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "%d: idx[%d] == %d; val[%d] == %f\n", 
-				   rank, i, indices[i], i, values[i]);CHKERRQ(ierr);
+				   rank, i, indices[i], i, PetscRealPart(values[i]));CHKERRQ(ierr);
   }
   ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);CHKERRQ(ierr);
 
