@@ -18,6 +18,25 @@ EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 
 EXTERN PetscErrorCode updateOperatorCompat(Mat, const ALE::Obj<ALECompat::Mesh::real_section_type>&, const ALE::Obj<ALECompat::Mesh::order_type>&, const ALECompat::Mesh::point_type&, PetscScalar[], InsertMode);
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "Mesh_DelTag" 
+/*
+   Private routine to delete internal tag storage when a communicator is freed.
+
+   This is called by MPI, not by users.
+
+   Note: this is declared extern "C" because it is passed to MPI_Keyval_create
+
+         we do not use PetscFree() since it is unsafe after PetscFinalize()
+*/
+PetscMPIInt PETSC_DLLEXPORT Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state)
+{
+  free(attr_val);
+  return(MPI_SUCCESS);
+}
+EXTERN_C_END
+
 #undef __FUNCT__  
 #define __FUNCT__ "MeshFinalize"
 PetscErrorCode MeshFinalize()
