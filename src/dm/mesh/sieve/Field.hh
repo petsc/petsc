@@ -5,7 +5,7 @@
 #include <SieveAlgorithms.hh>
 #endif
 
-extern "C" PetscMPIInt Petsc_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
+extern "C" PetscMPIInt Mesh_DelTag(MPI_Comm comm,PetscMPIInt keyval,void* attr_val,void* extra_state);
 
 // Sieve need point_type
 // Section need point_type and value_type
@@ -1309,8 +1309,8 @@ namespace ALE {
       int *tagvalp = NULL, *maxval, flg;
 
       if (tagKeyval == MPI_KEYVAL_INVALID) {
-        PetscMalloc(sizeof(int), &tagvalp);
-        MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag, &tagKeyval, (void *) NULL);
+        tagvalp = (int *) malloc(sizeof(int));
+        MPI_Keyval_create(MPI_NULL_COPY_FN, Mesh_DelTag, &tagKeyval, (void *) NULL);
         MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
         tagvalp[0] = 0;
       }
@@ -2897,8 +2897,8 @@ namespace ALECompat {
         int *tagvalp = NULL, *maxval, flg;
 
         if (tagKeyval == MPI_KEYVAL_INVALID) {
-          PetscMalloc(sizeof(int), &tagvalp);
-          MPI_Keyval_create(MPI_NULL_COPY_FN, Petsc_DelTag, &tagKeyval, (void *) NULL);
+          tagvalp = (int *) malloc(sizeof(int));
+          MPI_Keyval_create(MPI_NULL_COPY_FN, Mesh_DelTag, &tagKeyval, (void *) NULL);
           MPI_Attr_put(this->_comm, tagKeyval, tagvalp);
           tagvalp[0] = 0;
         }
