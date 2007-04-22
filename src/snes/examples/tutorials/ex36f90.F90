@@ -240,6 +240,7 @@
       type(channelfield), pointer :: fIHX(:),fCore(:),xIHX(:),xCore(:)
       type(appctx), pointer :: app
       PetscMPIInt rank
+      type(LocalForm) xlf
 
       double precision dhhpl, mult, dhcpl, phpco, pcpio, pcpci, phpii
 
@@ -252,6 +253,9 @@
 !         Access the grid information
 
       call DMMGGetDM(dmmg,dm,ierr);CHKR(ierr)
+      call LocalFormCreate(dm,xlf,ierr)
+      call LocalFormUpdate(dm,x,xlf,ierr)
+
       call DMCompositeGetEntries(dm,da,np,da,np,ierr);CHKR(ierr) ! get the da's and sizes that define the unknowns
       call DAGetLocalInfof90(da,dainfo,ierr);CHKR(ierr)
 
@@ -287,25 +291,25 @@
 !
 !  compute velocity into hotpool from core
 !
-         dhhpl = app%dhhpl0 + ( (xHotPool%vol - app%hpvol0) / app%ahp )
+         dhhpl = app%dhhpl0 + ( (xlf%HotPool%vol - app%hpvol0) / app%ahp )
          phpco = app%P0 + ( app%rho * app%grav * (dhhpl - app%dhco) )
          mult = app%dt / (app%dxc * app%rho)
-         fHotPool%vel = xHotPool%vel - (mult * (xCore(app%nxc-1)%press - phpco) ) + (abs(xHotPool%vel) * xHotPool%vel)
+         fHotPool%vel = xlf%HotPool%vel - (mult * (xlf%Core(app%nxc-1)%press - phpco) ) + (abs(xlf%HotPool%vel) * xlf%HotPool%vel)
 !
 ! compute change in hot pool volume
 !
-         fHotPool%vol = xHotPool%vol - app%hpvol0 - (app%dt * app%acore * (xHotPool%vel -xColdPool%vel) )
+         fHotPool%vol = xlf%HotPool%vol - app%hpvol0 - (app%dt * app%acore * (xlf%HotPool%vel -xlf%ColdPool%vel) )
 !
 !  compute velocity into coldpool from IHX
 !
-         dhcpl = app%dhcpl0 + ( (xColdPool%vol - app%cpvol0) / app%acp )
+         dhcpl = app%dhcpl0 + ( (xlf%ColdPool%vol - app%cpvol0) / app%acp )
          pcpio = app%P0 + ( app%rho * app%grav * (dhcpl - app%dhio) )
          mult = app%dt / (app%dxc * app%rho)
-         fColdPool%vel = xColdPool%vel - (mult * (xIHX(app%nxc-1)%press - pcpio) ) + (abs(xColdPool%vel) * xColdPool%vel)
+         fColdPool%vel = xlf%ColdPool%vel-(mult*(xlf%IHX(app%nxc-1)%press-pcpio))+(abs(xlf%ColdPool%vel)*xlf%ColdPool%vel)
 !
 !  compute the change in cold pool volume
 !
-         fColdPool%vol = xColdPool%vol - app%cpvol0 - (app%dt * app%aihx * (xColdPool%vel - xHotPool%vel) )
+         fColdPool%vol = xlf%ColdPool%vol - app%cpvol0 - (app%dt * app%aihx * (xlf%ColdPool%vel - xlf%HotPool%vel) )
       endif
 !
 !  Compute the pressure distribution in IHX and core
@@ -315,30 +319,30 @@
 
       do i=dainfo%xs,dainfo%xs+dainfo%xm-1
 
-        fIHX(i)%press = xIHX(i)%press - phpii - (app%rho * app%grav * dble(i) * app%dxi)
+        fIHX(i)%press = xlf%IHX(i)%press - phpii - (app%rho * app%grav * dble(i) * app%dxi)
 
-        fCore(i)%press = xCore(i)%press - pcpci + (app%rho * app%grav * dble(i) * app%dxc)
+        fCore(i)%press = xlf%Core(i)%press - pcpci + (app%rho * app%grav * dble(i) * app%dxc)
 
       enddo
 
       if (debug) then
         write(*,*)
-        write(*,*) 'Hot vel,vol ',xHotPool%vel,xHotPool%vol
-        write(*,*) 'delta p = ', xCore(app%nxc-1)%press - phpco,xCore(app%nxc-1)%press,phpco
+        write(*,*) 'Hot vel,vol ',xlf%HotPool%vel,xlf%HotPool%vol
+        write(*,*) 'delta p = ', xlf%Core(app%nxc-1)%press - phpco,xlf%Core(app%nxc-1)%press,phpco
         write(*,*)
 
         do i=dainfo%xs,dainfo%xs+dainfo%xm-1
-          write(*,*) 'xIHX(',i,')%press = ',xIHX(i)%press
+          write(*,*) 'xlf%IHX(',i,')%press = ',xlf%IHX(i)%press
         enddo
 
         write(*,*)
-        write(*,*) 'Cold vel,vol ',xColdPool%vel,xColdPool%vol
-        write(*,*) 'delta p = ',xIHX(app%nxc-1)%press - pcpio,xIHX(app%nxc-1)%press, pcpio
+        write(*,*) 'Cold vel,vol ',xlf%ColdPool%vel,xlf%ColdPool%vol
+        write(*,*) 'delta p = ',xlf%IHX(app%nxc-1)%press - pcpio,xlf%IHX(app%nxc-1)%press, pcpio
         write(*,*)
 
 
         do i=dainfo%xs,dainfo%xs+dainfo%xm-1
-          write(*,*) 'xCore(',i,')%press = ',xCore(i)%press
+          write(*,*) 'xlf%Core(',i,')%press = ',xlf%Core(i)%press
         enddo
 
       endif
@@ -351,6 +355,8 @@
       call DAVecRestoreArrayf90(da,fvc2,fCore,ierr);CHKR(ierr)
       call DMCompositeRestoreAccess(dm,f,fvc1,fHotPool,fvc2,fColdPool,ierr);CHKR(ierr)
 
+      call LocalFormRestore(dm,xlf,ierr)
+      call LocalFormDestroy(dm,xlf,ierr)
       return
       end
       subroutine FormGraph(dmmg,x,view0,view1,ierr)
