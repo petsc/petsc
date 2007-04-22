@@ -67,7 +67,7 @@ int main(int argc,char **argv)
   ierr = SNESSetFunction(snes,r,FormFunction,F);CHKERRQ(ierr);
   if (user.variant) {
     ierr = MatCreateMFFD(PETSC_COMM_WORLD,n,n,n,n,&J);CHKERRQ(ierr);
-    ierr = MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,snes);CHKERRQ(ierr);
+    ierr = MatMFFDSetFunction(J,(PetscErrorCode (*)(void*, Vec, Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
   } else {
     /* create matrix free matrix for Jacobian */
     ierr = MatCreateSNESMF(snes,&J);CHKERRQ(ierr);
