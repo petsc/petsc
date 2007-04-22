@@ -221,6 +221,10 @@
       call PetscFinalize(ierr)
       end
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
+!     The physics
+
       subroutine FormFunction(snes,x,f,dmmg,ierr)
       use mex36f90
       use mex36f90interfaces
@@ -231,13 +235,11 @@
       PetscErrorCode ierr
 
       DMComposite dm
-      Vec  fvc1,fvc2,xvc1,xvc2
+      Vec  fvc1,fvc2
       PetscInt np,i
       DA da
-      type(DALocalInfof90) dainfo
       type(poolfield), pointer :: fHotPool,fColdPool
-      type(poolfield), pointer :: xHotPool,xColdPool
-      type(channelfield), pointer :: fIHX(:),fCore(:),xIHX(:),xCore(:)
+      type(channelfield), pointer :: fIHX(:),fCore(:)
       type(appctx), pointer :: app
       PetscMPIInt rank
       type(LocalForm) xlf
@@ -250,25 +252,13 @@
 
       call DMMGGetUser(dmmg,app,ierr);CHKR(ierr)   ! access user context
 
-!         Access the grid information
+      call DMMGGetDM(dmmg,dm,ierr);CHKR(ierr)      ! access the grid information
 
-      call DMMGGetDM(dmmg,dm,ierr);CHKR(ierr)
-      call LocalFormCreate(dm,xlf,ierr)
+      call LocalFormCreate(dm,xlf,ierr)            ! Access the local parts of x
       call LocalFormUpdate(dm,x,xlf,ierr)
 
-      call DMCompositeGetEntries(dm,da,np,da,np,ierr);CHKR(ierr) ! get the da's and sizes that define the unknowns
-      call DAGetLocalInfof90(da,dainfo,ierr);CHKR(ierr)
-
-!        Access the local (ghosted) parts of x
-
-      call DMCompositeGetLocalVectors(dm,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
-      call DMCompositeScatter(dm,x,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
-
-      call DAVecGetArrayf90(da,xvc1,xIHX,ierr);CHKR(ierr)
-      call DAVecGetArrayf90(da,xvc2,xCore,ierr);CHKR(ierr)
-
 !       Access the global (non-ghosted) parts of f
-
+      call DMCompositeGetEntries(dm,da,np,da,np,ierr);CHKR(ierr) ! get the da's and sizes that define the unknowns
       call DMCompositeGetAccess(dm,f,fvc1,fHotPool,fvc2,fColdPool,ierr);CHKR(ierr)
       call DAVecGetArrayf90(da,fvc1,fIHX,ierr);CHKR(ierr)
       call DAVecGetArrayf90(da,fvc2,fCore,ierr);CHKR(ierr)
@@ -317,10 +307,9 @@
       pcpci = app%P0 + ( app%rho * app%grav * (dhcpl - app%dhci) )
       phpii = app%P0 + ( app%rho * app%grav * (dhhpl - app%dhii) )
 
-      do i=dainfo%xs,dainfo%xs+dainfo%xm-1
+      do i=xlf%dainfo%xs,xlf%dainfo%xs+xlf%dainfo%xm-1
 
         fIHX(i)%press = xlf%IHX(i)%press - phpii - (app%rho * app%grav * dble(i) * app%dxi)
-
         fCore(i)%press = xlf%Core(i)%press - pcpci + (app%rho * app%grav * dble(i) * app%dxc)
 
       enddo
@@ -331,7 +320,7 @@
         write(*,*) 'delta p = ', xlf%Core(app%nxc-1)%press - phpco,xlf%Core(app%nxc-1)%press,phpco
         write(*,*)
 
-        do i=dainfo%xs,dainfo%xs+dainfo%xm-1
+        do i=xlf%dainfo%xs,xlf%dainfo%xs+xlf%dainfo%xm-1
           write(*,*) 'xlf%IHX(',i,')%press = ',xlf%IHX(i)%press
         enddo
 
@@ -341,15 +330,11 @@
         write(*,*)
 
 
-        do i=dainfo%xs,dainfo%xs+dainfo%xm-1
+        do i=xlf%dainfo%xs,xlf%dainfo%xs+xlf%dainfo%xm-1
           write(*,*) 'xlf%Core(',i,')%press = ',xlf%Core(i)%press
         enddo
 
       endif
-
-      call DAVecRestoreArrayf90(da,xvc1,xIHX,ierr);CHKR(ierr)
-      call DAVecRestoreArrayf90(da,xvc2,xCore,ierr);CHKR(ierr)
-      call DMCompositeRestoreLocalVectors(dm,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
 
       call DAVecRestoreArrayf90(da,fvc1,fIHX,ierr);CHKR(ierr)
       call DAVecRestoreArrayf90(da,fvc2,fCore,ierr);CHKR(ierr)
@@ -359,8 +344,10 @@
       call LocalFormDestroy(dm,xlf,ierr)
       return
       end
+
       subroutine FormGraph(dmmg,x,view0,view1,ierr)
-! ---------------------------------------------------------------------
+
+! --------------------------------------------------------------------------------------
 !
 !  FormGraph - Forms Graphics output
 !
@@ -389,11 +376,9 @@
       PetscInt np            !,i
       DA da
       type(DALocalInfof90) dainfo
-      type(poolfield), pointer :: HotPool,ColdPool
       type(poolfield), pointer :: xHotPool,xColdPool
       type(channelfield), pointer :: xIHX(:),xCore(:)
       type(appctx), pointer :: app
-      PetscMPIInt rank
 
       PetscViewer        view0,view1
 
@@ -410,48 +395,16 @@
 !
 !BARRY
 
-      write(*,*) 
-      write(*,*) 'inside of FormGraph'
-      write(*,*) 
-
       call DMMGGetUser(dmmg,app,ierr);CHKR(ierr)   ! access user context
-
-      write(*,*) 
-      write(*,*) 'after DMMGGetUser'
-      write(*,*) 
-
-!         Access the grid information
-
-      call DMMGGetDM(dmmg,dm,ierr);CHKR(ierr)
-
-      write(*,*) 
-      write(*,*) 'after DMMGGetDM'
-      write(*,*) 
+      call DMMGGetDM(dmmg,dm,ierr);CHKR(ierr)      ! Access the grid information
 
       call DMCompositeGetEntries(dm,da,np,da,np,ierr);CHKR(ierr) ! get the da's and sizes that define the unknowns
-      write(*,*) 
-      write(*,*) 'after DMCompositeGetEntries'
-      write(*,*) 
       call DAGetLocalInfof90(da,dainfo,ierr);CHKR(ierr)
-      write(*,*) 
-      write(*,*) 'after DAGetLocalInfof90'
-      write(*,*) 
-!BARRY
-!
-! I think that the code dies in the call below.
-!
-!BARRY
+
       call DMCompositeGetLocalVectors(dm,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
       call DMCompositeScatter(dm,x,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
       call DAVecGetArrayf90(da,xvc1,xIHX,ierr);CHKR(ierr)
-      write(*,*) 
-      write(*,*) 'after DAVecGetArrayf90(da,xvc1,xIHX,ierr)'
-      write(*,*) 
       call DAVecGetArrayf90(da,xvc2,xCore,ierr);CHKR(ierr)
-      write(*,*) 
-      write(*,*) 'after DAVecGetArrayf90(da,xvc2,xCore,ierr)'
-      write(*,*) 
-
 
 !
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -504,6 +457,7 @@
       return
       end
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       subroutine FormInitialGuess(dmmg,v,ierr)
       use mex36f90
