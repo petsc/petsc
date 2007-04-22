@@ -425,7 +425,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U,Vec F)
   ctx->current_u = U;
   if (F) {
     ctx->current_f = F;
-  } else {
+  } else if (!ctx->current_f) {
     ierr = VecDuplicate(ctx->current_u, &ctx->current_f);CHKERRQ(ierr);
   }
   if (!ctx->w) {
@@ -980,6 +980,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDResetHHistory(Mat J)
 -   F - vector that contains F(u) if it has been already computed
 
     Notes: This is rarely used directly
+
+    Warning: for a given Mat, this must be called either ALWAYS with an F or never
 
     Level: advanced
 
