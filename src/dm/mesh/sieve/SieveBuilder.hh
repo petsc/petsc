@@ -106,7 +106,7 @@ namespace ALE {
         // Use the cone construction
         for(typename PointArray::iterator b_itor = bdVertices[dim].begin(); b_itor != bdVertices[dim].end(); ++b_itor, ++b) {
           typename sieve_type::point_type face = -1;
-          int                             o    = b%2 ? -1 : 1;
+          int                             o    = b%2 ? -bdVertices[dim].size() : 1;
 
           bdVertices[dim-1].clear();
           for(typename PointArray::iterator i_itor = bdVertices[dim].begin(); i_itor != bdVertices[dim].end(); ++i_itor) {
@@ -155,10 +155,18 @@ namespace ALE {
         }
         if (debug > 1) {std::cout << "    pointB " << next  << " indB " << indB << std::endl;}
         if ((indB - indA == 1) || (indA - indB == wrap)) {
-          cellOrientation *= (indA+1);
+          if (cellOrientation > 0) {
+            cellOrientation = indA+1;
+          } else {
+            cellOrientation = -(indA+1);
+          }
         } else if ((indA - indB == 1) || (indB - indA == wrap)) {
           if (debug > 1) {std::cout << "      reversing cell orientation" << std::endl;}
-          cellOrientation *= -(indA+1);
+          if (cellOrientation > 0) {
+            cellOrientation = -(indA+1);
+          } else {
+            cellOrientation = indA+1;
+          }
         } else {
           throw ALE::Exception("Inconsistent orientation");
         }
