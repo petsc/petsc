@@ -155,10 +155,10 @@ namespace ALE {
         }
         if (debug > 1) {std::cout << "    pointB " << next  << " indB " << indB << std::endl;}
         if ((indB - indA == 1) || (indA - indB == wrap)) {
-          cellOrientation *= 1;
+          cellOrientation *= (indA+1);
         } else if ((indA - indB == 1) || (indB - indA == wrap)) {
           if (debug > 1) {std::cout << "      reversing cell orientation" << std::endl;}
-          cellOrientation *= -1;
+          cellOrientation *= -(indA+1);
         } else {
           throw ALE::Exception("Inconsistent orientation");
         }

@@ -19,41 +19,45 @@ namespace ALE {
     typedef typename bundle_type::arrow_section_type arrow_section_type;
     typedef std::pair<point_type, int>               oriented_point_type;
     typedef ALE::array<oriented_point_type>          orientedConeArray;
+  protected:
+    typedef MinimalArrow<point_type, point_type>     arrow_type;
+    typedef std::pair<arrow_type, int>               oriented_arrow_type;
+    typedef ALE::array<oriented_arrow_type>          orientedArrowArray;
   public:
     static Obj<coneArray> closure(const Obj<bundle_type>& bundle, const point_type& p) {
       return closure(bundle.ptr(), bundle->getArrowSection("orientation"), p);
     };
     static Obj<coneArray> closure(const Bundle_ *bundle, const Obj<arrow_section_type>& orientation, const point_type& p) {
-      typedef MinimalArrow<point_type, point_type> arrow_type;
-      typedef typename ALE::array<arrow_type>      arrowArray;
-      const Obj<sieve_type>& sieve   = bundle->getSieve();
-      const int              depth   = bundle->depth();
-      Obj<arrowArray>        cone    = new arrowArray();
-      Obj<arrowArray>        base    = new arrowArray();
-      Obj<coneArray>         closure = new coneArray();
-      coneSet                seen;
+      const Obj<sieve_type>&  sieve   = bundle->getSieve();
+      const int               depth   = bundle->depth();
+      Obj<orientedArrowArray> cone    = new orientedArrowArray();
+      Obj<orientedArrowArray> base    = new orientedArrowArray();
+      Obj<coneArray>          closure = new coneArray();
+      coneSet                 seen;
 
       // Cone is guarateed to be ordered correctly
       const Obj<typename sieve_type::traits::coneSequence>& initCone = sieve->cone(p);
 
       closure->push_back(p);
       for(typename sieve_type::traits::coneSequence::iterator c_iter = initCone->begin(); c_iter != initCone->end(); ++c_iter) {
-        cone->push_back(arrow_type(*c_iter, p));
+        cone->push_back(oriented_arrow_type(arrow_type(*c_iter, p), 1));
         closure->push_back(*c_iter);
       }
       for(int i = 1; i < depth; ++i) {
-        Obj<arrowArray> tmp = cone; cone = base; base = tmp;
+        Obj<orientedArrowArray> tmp = cone; cone = base; base = tmp;
 
         cone->clear();
-        for(typename arrowArray::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
-          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(b_iter->source);
-          const typename arrow_section_type::value_type         o     = orientation->restrictPoint(*b_iter)[0];
+        for(typename orientedArrowArray::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
+          const arrow_type&                                     arrow = b_iter->first;
+          const Obj<typename sieve_type::traits::coneSequence>& pCone = sieve->cone(arrow.source);
+          const int                                             sign  = (b_iter->second > 0) ? 1 : -1;
+          const typename arrow_section_type::value_type         o     = orientation->restrictPoint(arrow)[0]*sign;
 
-          if (o == -1) {
+          if (o < 0) {
             for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter) {
               if (seen.find(*c_iter) == seen.end()) {
                 seen.insert(*c_iter);
-                cone->push_back(arrow_type(*c_iter, b_iter->source));
+                cone->push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
                 closure->push_back(*c_iter);
               }
             }
@@ -61,7 +65,7 @@ namespace ALE {
             for(typename sieve_type::traits::coneSequence::iterator c_iter = pCone->begin(); c_iter != pCone->end(); ++c_iter) {
               if (seen.find(*c_iter) == seen.end()) {
                 seen.insert(*c_iter);
-                cone->push_back(arrow_type(*c_iter, b_iter->source));
+                cone->push_back(oriented_arrow_type(arrow_type(*c_iter, arrow.source), o));
                 closure->push_back(*c_iter);
               }
             }

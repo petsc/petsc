@@ -619,7 +619,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       ierr = MatCreateSNESMF(dmmg[i]->snes,&dmmg[i]->J);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work1);CHKERRQ(ierr);
       ierr = VecDuplicate(dmmg[i]->x,&dmmg[i]->work2);CHKERRQ(ierr);
-      ierr = MatMFFDSetFunction(dmmg[i]->J,(PetscErrorCode (*)(void*, _p_Vec*, _p_Vec*))SNESComputeFunction,dmmg[i]->snes);CHKERRQ(ierr);
+      ierr = MatMFFDSetFunction(dmmg[i]->J,(PetscErrorCode (*)(void*, Vec,Vec))SNESComputeFunction,dmmg[i]->snes);CHKERRQ(ierr);
       if (mffd) {
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
