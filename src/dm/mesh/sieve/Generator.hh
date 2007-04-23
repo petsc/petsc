@@ -395,7 +395,13 @@ namespace ALE {
 
         in.numberofholes = 0;
         if (rank == 0) {
-          std::string args("pqenzQ");
+          //std::string args("pqenzQ");
+          std::string args("pqenzQi");
+          in.numberofaddpoints = 1;
+          in.addpointlist      = new double[in.numberofaddpoints*dim];
+          in.addpointlist[0]   = 0.5;
+          in.addpointlist[1]   = 0.5;
+          in.addpointlist[2]   = 0.5;
 
           if (createConvexHull) args += "c";
           ::tetrahedralize((char *) args.c_str(), &in, &out);
@@ -413,40 +419,44 @@ namespace ALE {
         ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coords);
         const Obj<Mesh::label_type>& newMarkers = mesh->createLabel("marker");
   
-        if (rank == 0) {
-          for(int v = 0; v < out.numberofpoints; v++) {
-            if (out.pointmarkerlist[v]) {
-              mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
-            }
+        for(int v = 0; v < out.numberofpoints; v++) {
+          if (out.pointmarkerlist[v]) {
+            mesh->setValue(newMarkers, v+out.numberoftetrahedra, out.pointmarkerlist[v]);
           }
-          if (interpolate) {
-            if (out.edgemarkerlist) {
-              for(int e = 0; e < out.numberofedges; e++) {
-                if (out.edgemarkerlist[e]) {
-                  Mesh::point_type endpointA(out.edgelist[e*2+0]+out.numberoftetrahedra);
-                  Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
-                  Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(endpointA, endpointB, 1);
+        }
+        if (interpolate) {
+          if (out.edgemarkerlist) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                Mesh::point_type endpointA(out.edgelist[e*2+0]+out.numberoftetrahedra);
+                Mesh::point_type endpointB(out.edgelist[e*2+1]+out.numberoftetrahedra);
+                Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(endpointA, endpointB, 1);
 
-                  mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
-                }
+                mesh->setValue(newMarkers, *edge->begin(), out.edgemarkerlist[e]);
               }
             }
-            if (out.trifacemarkerlist) {
-              for(int f = 0; f < out.numberoftrifaces; f++) {
-                if (out.trifacemarkerlist[f]) {
-                  Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
-                  Mesh::point_type cornerB(out.trifacelist[f*3+1]+out.numberoftetrahedra);
-                  Mesh::point_type cornerC(out.trifacelist[f*3+2]+out.numberoftetrahedra);
-                  Obj<Mesh::sieve_type::supportSet> corners = Mesh::sieve_type::supportSet();
-                  Obj<Mesh::sieve_type::supportSet> edges   = Mesh::sieve_type::supportSet();
-                  corners->clear();corners->insert(cornerA);corners->insert(cornerB);
-                  edges->insert(*newSieve->nJoin1(corners)->begin());
-                  corners->clear();corners->insert(cornerB);corners->insert(cornerC);
-                  edges->insert(*newSieve->nJoin1(corners)->begin());
-                  corners->clear();corners->insert(cornerC);corners->insert(cornerA);
-                  edges->insert(*newSieve->nJoin1(corners)->begin());
+          }
+          if (out.trifacemarkerlist) {
+            for(int f = 0; f < out.numberoftrifaces; f++) {
+              if (out.trifacemarkerlist[f]) {
+                Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
+                Mesh::point_type cornerB(out.trifacelist[f*3+1]+out.numberoftetrahedra);
+                Mesh::point_type cornerC(out.trifacelist[f*3+2]+out.numberoftetrahedra);
+                Obj<Mesh::sieve_type::supportSet> corners = Mesh::sieve_type::supportSet();
+                Obj<Mesh::sieve_type::supportSet> edges   = Mesh::sieve_type::supportSet();
+                corners->clear();corners->insert(cornerA);corners->insert(cornerB);
+                edges->insert(*newSieve->nJoin1(corners)->begin());
+                corners->clear();corners->insert(cornerB);corners->insert(cornerC);
+                edges->insert(*newSieve->nJoin1(corners)->begin());
+                corners->clear();corners->insert(cornerC);corners->insert(cornerA);
+                edges->insert(*newSieve->nJoin1(corners)->begin());
+                const Mesh::point_type          face       = *newSieve->nJoin1(edges)->begin();
+                const int                       faceMarker = out.trifacemarkerlist[f];
+                const Obj<Mesh::coneArray>      closure    = sieve_alg_type::closure(mesh, face);
+                const Mesh::coneArray::iterator end        = closure->end();
 
-                  mesh->setValue(newMarkers, *newSieve->nJoin1(edges)->begin(), out.trifacemarkerlist[f]);
+                for(Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+                  mesh->setValue(newMarkers, *cl_iter, faceMarker);
                 }
               }
             }
