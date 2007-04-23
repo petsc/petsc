@@ -935,11 +935,11 @@ class Configure(config.base.Configure):
     cinc  = '#include<stdio.h>\n#include <stdlib.h>\n'
     ccode = 'void '+self.mangleFortranFunction('f90ptrtest')+'''(void* a1, void* a2,void* a3, void* i, void* p1 ,void* p2, void* p3)
 {
-  if ((a1 == a2) && (a2 == a3) && (p1 == p3) && (p1 != p2)) {
-    printf("pointers match! [%p %p %p] [%p %p] [%p]\\n",a1,a2,a3,p1,p3,p2);
+  if ((p1 == p3) && (p1 != p2)) {
+    printf("pointers match! [%p %p] [%p]\\n",p1,p3,p2);
     fflush(stdout);
   } else {
-    printf("pointers do not match! [%p %p %p] [%p %p] [%p]\\n",a1,a2,a3,p1,p3,p2);
+    printf("pointers do not match! [%p %p] [%p]\\n",p1,p3,p2);
     fflush(stdout);
     abort();
   }
