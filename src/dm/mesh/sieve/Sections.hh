@@ -590,9 +590,10 @@ namespace ALECompat {
           const Obj<typename mesh_topology_type::sieve_type::coneSequence>& closure = sieve->cone(*e_iter);
           const int idx = cNumbering->getIndex(*e_iter);
 
+          points[partition[idx]].insert(*e_iter);
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->star(*e_iter);
+            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->support(*e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
@@ -692,9 +693,10 @@ namespace ALECompat {
           const Obj<typename mesh_topology_type::sieve_type::coneSequence>& closure = sieve->cone(*e_iter);
           const int idx = cNumbering->getIndex(*e_iter);
 
+          points[partition[idx]].insert(*e_iter);
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->star(*e_iter);
+            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->support(*e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
