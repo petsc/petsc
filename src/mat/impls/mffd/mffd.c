@@ -189,6 +189,9 @@ PetscErrorCode MatDestroy_MFFD(Mat mat)
   if (ctx->w) {
     ierr = VecDestroy(ctx->w);CHKERRQ(ierr);
   }
+  if (ctx->current_f_allocated) {
+    ierr = VecDestroy(ctx->current_f);
+  }
   if (ctx->ops->destroy) {ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);}
   if (ctx->sp) {ierr = MatNullSpaceDestroy(ctx->sp);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(ctx);CHKERRQ(ierr);
@@ -424,9 +427,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetBase_FD(Mat J,Vec U,Vec F)
   ierr = MatMFFDResetHHistory(J);CHKERRQ(ierr);
   ctx->current_u = U;
   if (F) {
-    ctx->current_f = F;
-  } else if (!ctx->current_f) {
+    if (ctx->current_f_allocated) {ierr = VecDestroy(ctx->current_f);CHKERRQ(ierr);}
+    ctx->current_f           = F;
+    ctx->current_f_allocated = PETSC_FALSE;
+  } else if (!ctx->current_f_allocated) {
     ierr = VecDuplicate(ctx->current_u, &ctx->current_f);CHKERRQ(ierr);
+    ctx->current_f_allocated = PETSC_TRUE;
   }
   if (!ctx->w) {
     ierr = VecDuplicate(ctx->current_u, &ctx->w);CHKERRQ(ierr);
