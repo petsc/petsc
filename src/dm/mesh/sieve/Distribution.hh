@@ -780,6 +780,10 @@ namespace ALECompat {
             recvOverlap->addCone(p, topology->commRank(), topology->commRank());
           }
         }
+        if (topology->debug()) {
+          sendOverlap->view("Initial send overlap");
+          recvOverlap->view("Initial receive overlap");
+        }
       }
       #undef __FUNCT__
       #define __FUNCT__ "createAssignment"
@@ -807,14 +811,18 @@ namespace ALECompat {
           part_type *assignment = scatterTopology<Partitioner>(topology, dim, topologyNew, sendOverlap, recvOverlap);
           if (!subTopology.isNull() && !subTopologyNew.isNull()) {
             part_type *subAssignment = GenPartitioner::subordinatePartition(topology, 1, subTopology, assignment);
+            Obj<send_overlap_type> subSendOverlap = new send_overlap_type(topology->comm(), topology->debug());
+            Obj<recv_overlap_type> subRecvOverlap = new recv_overlap_type(topology->comm(), topology->debug());
             const typename topology_type::patch_type patch      = 0;
             const Obj<sieve_type>&                   sieve      = subTopology->getPatch(patch);
             const Obj<sieve_type>&                   sieveNew   = new Mesh::sieve_type(subTopology->comm(), subTopology->debug());
             const int                                numCells   = subTopology->heightStratum(patch, 0)->size();
 
             subTopologyNew->setPatch(0, sieveNew);
-            sieveCompletion::scatterSieve(subTopology, sieve, dim, sieveNew, sendOverlap, recvOverlap, numCells, subAssignment);
+            sieveCompletion::scatterSieve(subTopology, sieve, dim, sieveNew, subSendOverlap, subRecvOverlap, numCells, subAssignment);
             subTopologyNew->stratify();
+            subTopologyNew->setDistSendOverlap(subSendOverlap);
+            subTopologyNew->setDistRecvOverlap(subRecvOverlap);
             if (subAssignment != NULL) delete [] subAssignment;
           }
           if (assignment != NULL) delete [] assignment;
@@ -875,7 +883,6 @@ namespace ALECompat {
         } else {
           scatterTopology(serialTopology, dim, parallelTopology, sendOverlap, recvOverlap, partitioner);
         }
-        // This is necessary since we create types (like PartitionSection) on a subset of processors
         parallelTopology->setDistSendOverlap(sendOverlap);
         parallelTopology->setDistRecvOverlap(recvOverlap);
 
