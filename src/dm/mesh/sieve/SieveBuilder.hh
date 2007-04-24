@@ -193,6 +193,11 @@ namespace ALE {
             if (debug > 1) {std::cout << "    Orienting arrow (" << f_iter->first << ", " << cell << ") to " << f_iter->second << std::endl;}
           }
         }
+        if (cellOrientation > 0) {
+          cellOrientation = 1;
+        } else {
+          cellOrientation = -(dim+1);
+        }
         if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << " orientation " << cellOrientation << std::endl;}
       }
     };
