@@ -4,15 +4,15 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dagetlocalinfof90_           DAGETLOCALINFOF90
 #define davecgetarrayf901_           DAVECGETARRAYF901
-davecrestorearrayf901_               DAVECRESTOREARRAYF901
-davecrestorearrayf90user1_           DAVECRESTOREARRAYF90USER1
-davecgetarrayf90user1_               DAVECGETARRAYF90USER1
+#define davecrestorearrayf901_       DAVECRESTOREARRAYF901
+#define davecrestorearrayf90user1_   DAVECRESTOREARRAYF90USER1
+#define davecgetarrayf90user1_       DAVECGETARRAYF90USER1
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetlocalinfof90_           dagetlocalinfof90
 #define davecgetarrayf901_           davecgetarrayf901
-davecrestorearrayf901_               davecrestorearrayf901
-davecrestorearrayf90user1_           davecrestorearrayf90user1
-davecgetarrayf90user1_               davecgetarrayf90user1
+#define davecrestorearrayf901_       davecrestorearrayf901
+#define davecrestorearrayf90user1_   davecrestorearrayf90user1
+#define davecgetarrayf90user1_       davecgetarrayf90user1
 #endif
 
 EXTERN_C_BEGIN
