@@ -3237,6 +3237,18 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
 
        The i and j indices are 0 based
 
+       The format which is used for the sparse matrix input, is equivalent to a
+    row-major ordering.. i.e for the following matrix, the input data expected is
+    as shown:
+
+        1 0 0
+        2 0 3
+        4 5 6
+
+        i =  {0,1,3,6}  [size = nrow+1  = 3+1]
+        j =  {0,0,2,0,1,2}  [size = nz = 6]
+        v =  {1,2,3,4,5,6}  [size = nz = 6]
+
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
