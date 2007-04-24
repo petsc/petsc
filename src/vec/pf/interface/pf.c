@@ -7,7 +7,7 @@
 /* Logging support */
 PetscCookie PF_COOKIE = 0;
 
-PetscFList PPetscFList         = PETSC_NULL; /* list of all registered PD functions */
+PetscFList PFList         = PETSC_NULL; /* list of all registered PD functions */
 PetscTruth PFRegisterAllCalled = PETSC_FALSE;
 
 #undef __FUNCT__  
@@ -384,7 +384,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 
   PetscFunctionBegin;
   ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
-  ierr = PetscFListAdd(&PPetscFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&PFList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +460,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
   pf->data        = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFListFind(pf->comm,PPetscFList,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PFList,pf->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy             = 0;
   pf->ops->view                = 0;
@@ -506,7 +506,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
 
   ierr = PetscOptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
-    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PPetscFList,0,type,256,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);
     }

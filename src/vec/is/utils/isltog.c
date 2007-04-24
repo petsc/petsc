@@ -101,8 +101,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
 PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateIS(IS is,ISLocalToGlobalMapping *mapping)
 {
   PetscErrorCode ierr;
-  PetscInt      n,*indices;
-  MPI_Comm comm;
+  PetscInt       n,*indices;
+  MPI_Comm       comm;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
@@ -312,7 +312,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalM
 PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalMapping mapping,IS is,IS *newis)
 {
   PetscErrorCode ierr;
-  PetscInt            n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
+  PetscInt       n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
 
   PetscFunctionBegin;
   PetscValidPointer(mapping,1);
@@ -373,7 +373,7 @@ M*/
 static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping mapping)
 {
   PetscErrorCode ierr;
-  PetscInt            i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
+  PetscInt       i,*idx = mapping->indices,n = mapping->n,end,start,*globals;
 
   PetscFunctionBegin;
   end   = 0;
@@ -441,7 +441,7 @@ static PetscErrorCode ISGlobalToLocalMappingSetUp_Private(ISLocalToGlobalMapping
 PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGlobalMapping mapping,ISGlobalToLocalMappingType type,
                                   PetscInt n,const PetscInt idx[],PetscInt *nout,PetscInt idxout[])
 {
-  PetscInt i,*globals,nf = 0,tmp,start,end;
+  PetscInt       i,*globals,nf = 0,tmp,start,end;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -945,7 +945,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
 PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping mapping,PetscInt *nproc,PetscInt *procs[],PetscInt *numprocs[],PetscInt **indices[])
 {
   PetscErrorCode ierr;
-  PetscInt i;
+  PetscInt       i;
 
   PetscFunctionBegin;
   ierr = PetscFree(*procs);CHKERRQ(ierr);

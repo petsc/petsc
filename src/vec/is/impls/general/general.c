@@ -356,6 +356,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateGeneral(MPI_Comm comm,PetscInt n,const
    indices. The ISDestroy() will free the space so it must be obtained
    with PetscMalloc() and it must not be freed nor modified elsewhere.
    Use ISCreateGeneral() if you wish to copy the indices passed into the routine.
+   Use ISCreateGeneralWithArray() to NOT copy the indices and NOT free the space when
+   ISDestroy() is called.
 
    When the communicator is not MPI_COMM_SELF, the operations on IS are NOT
    conceptually the same as MPI_Group operations. The IS are then

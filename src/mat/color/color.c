@@ -325,7 +325,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
   }
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(mat->comm, MatColoringList, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatColoringList,mat->comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);

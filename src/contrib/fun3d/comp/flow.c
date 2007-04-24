@@ -788,7 +788,7 @@ int GetLocalOrdering(GRID *grid)
    }
    ierr = PetscBinaryOpen(mesh_file,FILE_MODE_READ,&fdes);CHKERRQ(ierr);
   }
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,tmp,grid_param,PETSC_INT);CHKERRQ(ierr);
   grid->ncell = tmp[0];
   grid->nnodes = tmp[1];
   grid->nedge = tmp[2];
@@ -888,15 +888,15 @@ int GetLocalOrdering(GRID *grid)
   nedgeLocEst = PetscMin(nedge,1000000); 
   remEdges = nedge;
   ICALLOC(2*nedgeLocEst,&tmp);
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedSeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&currentPos);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
     /*time_ini = PetscGetTime();*/
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedSeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedSeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
     /*time_fin += PetscGetTime()-time_ini;*/
     for (j = 0; j < readEdges; j++) {
       node1 = tmp[j]-1;
@@ -930,16 +930,16 @@ int GetLocalOrdering(GRID *grid)
   ICALLOC(nedgeLoc,&eperm);
   i = 0; j = 0; k = 0;
   remEdges = nedge;
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,currentPos,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedSeek(comm,fdes,currentPos,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
   currentPos = newPos;
 
   ierr = PetscGetTime(&time_ini);CHKERRQ(ierr);
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
-    ierr = PetscSynchronizedBinarySeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,tmp,readEdges,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedSeek(comm,fdes,(nedge-readEdges)*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,tmp+readEdges,readEdges,PETSC_INT);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedSeek(comm,fdes,-nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_CUR,&newPos);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       node1 = tmp[j]-1;
       node2 = tmp[j+readEdges]-1;
@@ -955,7 +955,7 @@ int GetLocalOrdering(GRID *grid)
     remEdges = remEdges - readEdges; 
     ierr = MPI_Barrier(comm);
   }
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,currentPos+2*nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedSeek(comm,fdes,currentPos+2*nedge*PETSC_BINARY_INT_SIZE,PETSC_BINARY_SEEK_SET,&newPos);CHKERRQ(ierr);
   ierr = PetscGetTime(&time_fin);CHKERRQ(ierr);
   time_fin -= time_ini;
   ierr = PetscPrintf(comm,"Local edges stored\n");CHKERRQ(ierr);
@@ -1042,7 +1042,7 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini); CHKERRQ(ierr);
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
 	grid->xn[k] = ftmp[j];
@@ -1067,7 +1067,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
 	grid->yn[k] = ftmp[j];
@@ -1092,7 +1092,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
 	grid->zn[k] = ftmp[j];
@@ -1117,7 +1117,7 @@ int GetLocalOrdering(GRID *grid)
   remEdges = nedge;
   while (remEdges > 0) {
     readEdges = PetscMin(remEdges,nedgeLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readEdges,PETSC_SCALAR);CHKERRQ(ierr);
     for (j = 0; j < readEdges; j++) {
       if (edge_bit[k] == (i+j)) {
 	grid->rl[k] = ftmp[j];
@@ -1151,7 +1151,7 @@ int GetLocalOrdering(GRID *grid)
   ierr = PetscGetTime(&time_ini); CHKERRQ(ierr);
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes, nnodesLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR); CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes,PETSC_SCALAR); CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 	grid->x[a2l[i+j]] = ftmp[j];
@@ -1167,7 +1167,7 @@ int GetLocalOrdering(GRID *grid)
   i = 0;
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes, ftmp, readNodes, PETSC_SCALAR); CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes, ftmp, readNodes, PETSC_SCALAR); CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 	grid->y[a2l[i+j]] = ftmp[j];
@@ -1183,7 +1183,7 @@ int GetLocalOrdering(GRID *grid)
   i = 0;
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes,ftmp,readNodes, PETSC_SCALAR); CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes,ftmp,readNodes, PETSC_SCALAR); CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 	grid->z[a2l[i+j]] = ftmp[j];
@@ -1201,7 +1201,7 @@ int GetLocalOrdering(GRID *grid)
   i = 0;
   while (remNodes > 0) {
     readNodes = PetscMin(remNodes,nnodesLocEst); 
-    ierr = PetscSynchronizedBinaryRead(comm,fdes, ftmp, readNodes, PETSC_SCALAR); CHKERRQ(ierr);
+    ierr = PetscBinarySynchronizedRead(comm,fdes, ftmp, readNodes, PETSC_SCALAR); CHKERRQ(ierr);
     for (j = 0; j < readNodes; j++) {
       if (a2l[i+j] >= 0) {
 	grid->area[a2l[i+j]] = ftmp[j];
@@ -1234,14 +1234,14 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nsnode, &grid->syn);
   FCALLOC(nsnode, &grid->szn);
   FCALLOC(nsnode, &grid->sa);
-  ierr = PetscSynchronizedBinarySeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&solidBndPos);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->nntet,nnbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->nnpts,nnbound,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->f2ntn,4*nnfacet,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->isnode,nsnode,PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->sxn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->syn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes,grid->szn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedSeek(comm,fdes,0,PETSC_BINARY_SEEK_CUR,&solidBndPos);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nntet,nnbound,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->nnpts,nnbound,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->f2ntn,4*nnfacet,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->isnode,nsnode,PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->sxn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->syn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes,grid->szn,nsnode,PETSC_SCALAR);CHKERRQ(ierr);
 
   ICALLOC(3*nnfacet, &tmp);
   ICALLOC(nsnode, &tmp1);
@@ -1359,13 +1359,13 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nvnode, &grid->vyn);
   FCALLOC(nvnode, &grid->vzn);
   FCALLOC(nvnode, &grid->va);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nvtet, nvbound, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nvpts, nvbound, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->f2ntv, 4*nvfacet, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->ivnode, nvnode, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vxn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vyn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->vzn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->nvtet, nvbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->nvpts, nvbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->f2ntv, 4*nvfacet, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->ivnode, nvnode, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->vxn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->vyn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->vzn, nvnode, PETSC_SCALAR);CHKERRQ(ierr);
   isurf = 0;
   nvnodeLoc = 0;
   nvfacetLoc = 0;
@@ -1475,13 +1475,13 @@ int GetLocalOrdering(GRID *grid)
   FCALLOC(nfnode, &grid->fyn);
   FCALLOC(nfnode, &grid->fzn);
   FCALLOC(nfnode, &grid->fa);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nftet, nfbound, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->nfpts, nfbound, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->f2ntf, 4*nffacet, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->ifnode, nfnode, PETSC_INT);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fxn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fyn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
-  ierr = PetscSynchronizedBinaryRead(comm,fdes, (void *) grid->fzn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->nftet, nfbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->nfpts, nfbound, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->f2ntf, 4*nffacet, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->ifnode, nfnode, PETSC_INT);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->fxn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->fyn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(comm,fdes, (void *) grid->fzn, nfnode, PETSC_SCALAR);CHKERRQ(ierr);
   ierr = PetscBinaryClose(fdes); CHKERRQ(ierr);
   isurf = 0;
   nfnodeLoc = 0;

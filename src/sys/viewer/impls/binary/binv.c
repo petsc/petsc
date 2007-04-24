@@ -360,7 +360,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *da
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
-  ierr = PetscSynchronizedBinaryRead(viewer->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(viewer->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -391,7 +391,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *d
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
-  ierr = PetscSynchronizedBinaryWrite(viewer->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedWrite(viewer->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

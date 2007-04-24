@@ -228,7 +228,7 @@ PetscErrorCode PetscObjectQueryFunction_Petsc(PetscObject obj,const char name[],
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscFListFind(obj->comm,obj->qlist,name,ptr);CHKERRQ(ierr);
+  ierr = PetscFListFind(obj->qlist,obj->comm,name,ptr);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

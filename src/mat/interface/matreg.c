@@ -48,7 +48,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetType(Mat mat, MatType matype)
   ierr = PetscTypeCompare((PetscObject)mat,matype,&sametype);CHKERRQ(ierr);
   if (sametype) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(mat->comm,MatList,matype,(void(**)(void))&r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatList,mat->comm,matype,(void(**)(void))&r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown Mat type given: %s",matype);
   
   /* free the old data structure if it existed */
