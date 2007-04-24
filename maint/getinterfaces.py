@@ -228,7 +228,8 @@ def main(args):
   classes['PetscLog'] = {}
   classes['PetscSort'] = {}
   classes['PetscStr'] = {}
-  classes['PetscBinary'] = {}    
+  classes['PetscBinary'] = {}
+  classes['PetscOptions'] = {}      
   for i in args:
     getclasses(i)
   for i in args:

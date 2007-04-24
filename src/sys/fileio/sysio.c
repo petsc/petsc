@@ -471,9 +471,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedBinaryRead"
+#define __FUNCT__ "PetscBinarySynchronizedRead"
 /*@C
-   PetscSynchronizedBinaryRead - Reads from a binary file.
+   PetscBinarySynchronizedRead - Reads from a binary file.
 
    Collective on MPI_Comm
 
@@ -496,7 +496,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
    Notes: 
    Does a PetscBinaryRead() followed by an MPI_Bcast()
 
-   PetscSynchronizedBinaryRead() uses byte swapping to work on all machines.
+   PetscBinarySynchronizedRead() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
@@ -506,7 +506,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinarySeek(int fd,off_t off,PetscBinarySeekT
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedRead(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -523,9 +523,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedBinaryWrite"
+#define __FUNCT__ "PetscBinarySynchronizedWrite"
 /*@C
-   PetscSynchronizedBinaryWrite - writes to a binary file.
+   PetscBinarySynchronizedWrite - writes to a binary file.
 
    Collective on MPI_Comm
 
@@ -542,17 +542,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryRead(MPI_Comm comm,int fd,
    Notes: 
    Process 0 does a PetscBinaryWrite()
 
-   PetscSynchronizedBinaryWrite() uses byte swapping to work on all machines.
+   PetscBinarySynchronizedWrite() uses byte swapping to work on all machines.
    Integers are stored on the file as 32 long, regardless of whether
    they are stored in the machine as 32 or 64, this means the same
    binary file may be read on any machine.
+
+   WARNING: This is NOT like PetscSynchronizedFPrintf()! This routine ignores calls on all but process 0,
+   while PetscSynchronizedFPrintf() has all processes print their strings in order.
 
    Concepts: files^synchronized writing of binary files
    Concepts: binary files^reading, synchronized
 
 .seealso: PetscBinaryWrite(), PetscBinaryOpen(), PetscBinaryClose(), PetscBinaryRead()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedWrite(MPI_Comm comm,int fd,void *p,PetscInt n,PetscDataType type,PetscTruth istemp)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
@@ -566,9 +569,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PetscSynchronizedBinarySeek" 
+#define __FUNCT__ "PetscBinarySynchronizedSeek" 
 /*@C
-   PetscSynchronizedBinarySeek - Moves the file pointer on a PETSc binary file.
+   PetscBinarySynchronizedSeek - Moves the file pointer on a PETSc binary file.
 
 
    Input Parameters:
@@ -595,7 +598,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinaryWrite(MPI_Comm comm,int fd
 
 .seealso: PetscBinaryRead(), PetscBinaryWrite(), PetscBinaryOpen()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedBinarySeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
+PetscErrorCode PETSC_DLLEXPORT PetscBinarySynchronizedSeek(MPI_Comm comm,int fd,off_t off,PetscBinarySeekType whence,off_t *offset)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;

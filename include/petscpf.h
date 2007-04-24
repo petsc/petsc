@@ -7,10 +7,10 @@
 PETSC_EXTERN_CXX_BEGIN
 
 /*
-    PPetscFList contains the list of preconditioners currently registered
+    PFList contains the list of preconditioners currently registered
    These are added with the PFRegisterDynamic() macro
 */
-extern PetscFList PPetscFList;
+extern PetscFList PFList;
 
 /*E
     PFType - Type of PETSc mathematical function, a string name

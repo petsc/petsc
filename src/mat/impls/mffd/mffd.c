@@ -103,7 +103,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,MatMFFDType ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  ierr =  PetscFListFind(ctx->comm,MatMFFDPetscFList,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatMFFDPetscFList,ctx->comm,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);

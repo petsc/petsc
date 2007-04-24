@@ -749,7 +749,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG *dmmg,PetscTruth has_cn
 #define __FUNCT__ "DMMGInitialGuessCurrent"
 /*@C
     DMMGInitialGuessCurrent - Use with DMMGSetInitialGuess() to use the current value in the 
-       solution vector (obtainable with DMMGGetx() as the initial guess)
+       solution vector (obtainable with DMMGGetx()) as the initial guess. Otherwise for linear
+       problems zero is used for the initial guess (unless grid sequencing is used). For nonlinear 
+       problems this is not needed; it always uses the previous solution as the initial guess.
 
     Collective on DMMG
 

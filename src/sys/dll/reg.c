@@ -371,8 +371,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroyAll(void)
     PetscFListFind - Given a name, finds the matching routine.
 
     Input Parameters:
-+   comm - processors looking for routine
-.   fl   - pointer to list
++   fl   - pointer to list
+.   comm - processors looking for routine
 -   name - name string
 
     Output Parameters:
@@ -382,7 +382,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListDestroyAll(void)
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListFind(MPI_Comm comm,PetscFList fl,const char name[],void (**r)(void))
+PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const char name[],void (**r)(void))
 {
   PetscFList     entry = fl;
   PetscErrorCode ierr;
@@ -582,7 +582,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGet(PetscFList list,char ***array,int *
 
 .seealso: PetscFListAddDynamic(), PetscFList
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[],PetscFList list)
+PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(PetscFList list,MPI_Comm comm,FILE *fd,const char prefix[],const char name[],const char text[],const char man[])
 {
   PetscErrorCode ierr;
   PetscInt       count = 0;
