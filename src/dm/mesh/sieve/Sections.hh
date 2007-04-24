@@ -593,7 +593,7 @@ namespace ALECompat {
           points[partition[idx]].insert(*e_iter);
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->support(*e_iter);
+            const Obj<typename mesh_topology_type::sieve_type::supportSequence>& star = sieve->support(*e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
@@ -696,7 +696,7 @@ namespace ALECompat {
           points[partition[idx]].insert(*e_iter);
           points[partition[idx]].insert(closure->begin(), closure->end());
           if (this->_height > 0) {
-            const Obj<typename mesh_topology_type::sieve_type::supportSet>& star = sieve->support(*e_iter);
+            const Obj<typename mesh_topology_type::sieve_type::supportSequence>& star = sieve->support(*e_iter);
 
             points[partition[idx]].insert(star->begin(), star->end());
           }
