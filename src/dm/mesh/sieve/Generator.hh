@@ -108,7 +108,7 @@ namespace ALE {
           ierr = PetscMalloc(in.numberofholes*dim * sizeof(int), &in.holelist);
         }
         if (mesh->commRank() == 0) {
-          std::string args("pqenzQ");
+          std::string args("pqezQ");
 
           if (createConvexHull) {
             args += "c";
@@ -257,7 +257,7 @@ namespace ALE {
           ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
         }
         if (serialMesh->commRank() == 0) {
-          std::string args("pqenzQra");
+          std::string args("pqezQra");
 
           triangulate((char *) args.c_str(), &in, &out, NULL);
         }
@@ -395,13 +395,17 @@ namespace ALE {
 
         in.numberofholes = 0;
         if (rank == 0) {
-          //std::string args("pqenzQ");
-          std::string args("pqenzQi");
-          in.numberofaddpoints = 1;
-          in.addpointlist      = new double[in.numberofaddpoints*dim];
-          in.addpointlist[0]   = 0.5;
-          in.addpointlist[1]   = 0.5;
-          in.addpointlist[2]   = 0.5;
+          // Normal operation
+          //std::string args("pqezQ");
+          // Just make tetrahedrons
+          std::string args("efzV");
+          // Adds a center point
+//           std::string args("pqezQi");
+//           in.numberofaddpoints = 1;
+//           in.addpointlist      = new double[in.numberofaddpoints*dim];
+//           in.addpointlist[0]   = 0.5;
+//           in.addpointlist[1]   = 0.5;
+//           in.addpointlist[2]   = 0.5;
 
           if (createConvexHull) args += "c";
           ::tetrahedralize((char *) args.c_str(), &in, &out);
@@ -437,6 +441,15 @@ namespace ALE {
             }
           }
           if (out.trifacemarkerlist) {
+            // Work around TetGen bug for raw tetrahedralization
+            //   The boundary faces are 0,1,4,5,8,9,11,12,13,15,16,17
+            for(int f = 0; f < out.numberoftrifaces; f++) {
+              if (out.trifacemarkerlist[f]) {
+                out.trifacemarkerlist[f] = 0;
+              } else {
+                out.trifacemarkerlist[f] = 1;
+              }
+            }
             for(int f = 0; f < out.numberoftrifaces; f++) {
               if (out.trifacemarkerlist[f]) {
                 Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
@@ -561,7 +574,7 @@ namespace ALE {
         ierr = MPI_Comm_rank(boundary->comm(), &rank);
 
         if (rank == 0) {
-          std::string args("pqenzQ");
+          std::string args("pqezQ");
           bool        createConvexHull = false;
           Obj<Mesh::sieve_type::traits::depthSequence> vertices = bdTopology->depthStratum(0);
           Mesh::field_type::patch_type         patch;
@@ -708,7 +721,7 @@ namespace ALE {
         Obj<Mesh::bundle_type> vertexBundle = serialMesh->getBundle(0);
 
         if (rank == 0) {
-          std::string args("qenzQra");
+          std::string args("qezQra");
           Obj<Mesh::sieve_type::traits::heightSequence> cells = serialTopology->heightStratum(0);
           Obj<Mesh::sieve_type::traits::depthSequence>  vertices = serialTopology->depthStratum(0);
           Obj<Mesh::field_type>                 coordinates = serialMesh->getCoordinates();
