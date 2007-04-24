@@ -933,7 +933,13 @@ class Configure(config.base.Configure):
     
     # Compile the C test object
     cinc  = '#include<stdio.h>\n#include <stdlib.h>\n'
-    ccode = 'void '+self.mangleFortranFunction('f90ptrtest')+'''(void* a1, void* a2,void* a3, void* i, void* p1 ,void* p2, void* p3)
+    ccode = 'void '+self.mangleFortranFunction('f90arraytest')+'''(void* a1, void* a2,void* a3, void* i)
+{
+  printf("arrays [%p %p %p]\\n",a1,a2,a3);
+  fflush(stdout);
+  return;
+}
+''' + 'void '+self.mangleFortranFunction('f90ptrtest')+'''(void* a1, void* a2,void* a3, void* i, void* p1 ,void* p2, void* p3)
 {
   if ((p1 == p3) && (p1 != p2)) {
     printf("pointers match! [%p %p] [%p]\\n",p1,p3,p2);
@@ -977,7 +983,9 @@ class Configure(config.base.Configure):
       ptr1 => array
       ptr2 => array
 
+      call f90arraytest(ptr1,ptr2,ptr1,in)
       call f90ptrtest(ptr1,ptr2,ptr1,in)\n'''
+
     found = self.checkRun(None, fcode, defaultArg = 'f90-2ptr-arg')
     self.setCompilers.LIBS = oldLIBS
     self.popLanguage()
