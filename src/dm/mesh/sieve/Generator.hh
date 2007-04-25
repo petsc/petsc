@@ -396,9 +396,9 @@ namespace ALE {
         in.numberofholes = 0;
         if (rank == 0) {
           // Normal operation
-          //std::string args("pqezQ");
+          std::string args("pqezQ");
           // Just make tetrahedrons
-          std::string args("efzV");
+//           std::string args("efzV");
           // Adds a center point
 //           std::string args("pqezQi");
 //           in.numberofaddpoints = 1;
@@ -443,13 +443,13 @@ namespace ALE {
           if (out.trifacemarkerlist) {
             // Work around TetGen bug for raw tetrahedralization
             //   The boundary faces are 0,1,4,5,8,9,11,12,13,15,16,17
-            for(int f = 0; f < out.numberoftrifaces; f++) {
-              if (out.trifacemarkerlist[f]) {
-                out.trifacemarkerlist[f] = 0;
-              } else {
-                out.trifacemarkerlist[f] = 1;
-              }
-            }
+//             for(int f = 0; f < out.numberoftrifaces; f++) {
+//               if (out.trifacemarkerlist[f]) {
+//                 out.trifacemarkerlist[f] = 0;
+//               } else {
+//                 out.trifacemarkerlist[f] = 1;
+//               }
+//             }
             for(int f = 0; f < out.numberoftrifaces; f++) {
               if (out.trifacemarkerlist[f]) {
                 Mesh::point_type cornerA(out.trifacelist[f*3+0]+out.numberoftetrahedra);
