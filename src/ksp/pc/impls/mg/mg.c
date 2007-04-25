@@ -932,7 +932,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetNumberSmoothUp(PC pc,PetscInt n)
 
    Level: intermediate
 
-   Concepts: multigrid
+   Concepts: multigrid/multilevel
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC, PCMGType, 
            PCMGSetLevels(), PCMGGetLevels(), PCMGSetType(), PCMGSetCycleType(), PCMGSetNumberSmoothDown(),

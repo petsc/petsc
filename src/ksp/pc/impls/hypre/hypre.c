@@ -75,7 +75,9 @@ typedef struct {
   int                interptype;
   int                agg_nl;
   int                agg_num_paths;
-
+  int                nodal_coarsen;
+  PetscTruth         nodal_relax;
+  int                nodal_relax_levels;
 } PC_HYPRE;
 
 
@@ -572,6 +574,24 @@ static PetscErrorCode PCSetFromOptions_HYPRE_BoomerAMG(PC pc)
     ierr = HYPRE_BoomerAMGSetPrintLevel(jac->hsolver,level);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetDebugFlag(jac->hsolver,level);CHKERRQ(ierr);
   }
+
+  ierr = PetscOptionsTruth( "-pc_hypre_boomeramg_nodal_coarsen", "HYPRE_BoomerAMGSetNodal()", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  if (flg && tmp_truth) {
+    jac->nodal_coarsen = 1;
+    ierr = HYPRE_BoomerAMGSetNodal(jac->hsolver,1);CHKERRQ(ierr);
+  }
+
+  ierr = PetscOptionsTruth( "-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None", PETSC_FALSE, &tmp_truth, &flg);CHKERRQ(ierr);
+  if (flg && tmp_truth) {
+    PetscInt tmp_int;
+    ierr = PetscOptionsInt( "-pc_hypre_boomeramg_nodal_relaxation", "Nodal relaxation via Schwarz", "None",jac->nodal_relax_levels,&tmp_int,&flg);CHKERRQ(ierr);
+    if (flg) jac->nodal_relax_levels = tmp_int;
+    ierr = HYPRE_BoomerAMGSetSmoothType(jac->hsolver,6);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetDomainType(jac->hsolver,1);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetOverlap(jac->hsolver,0);CHKERRQ(ierr);
+    ierr = HYPRE_BoomerAMGSetSmoothNumLevels(jac->hsolver,jac->nodal_relax_levels);CHKERRQ(ierr);
+  }
+
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -638,7 +658,12 @@ static PetscErrorCode PCView_HYPRE_BoomerAMG(PC pc,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Measure type        %s\n",HYPREBoomerAMGMeasureType[jac->measuretype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Coarsen type        %s\n",HYPREBoomerAMGCoarsenType[jac->coarsentype]);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  HYPRE BoomerAMG: Interpolation type  %s\n",HYPREBoomerAMGInterpType[jac->interptype]);CHKERRQ(ierr);
-
+    if (jac->nodal_coarsen) {
+      ierr = PetscViewerASCIIPrintf(viewer," HYPRE BoomerAMG: Using nodal coarsening (with HYPRE_BOOMERAMGSetNodal())\n");CHKERRQ(ierr);
+    }
+    if (jac->nodal_relax) {
+      ierr = PetscViewerASCIIPrintf(viewer," HYPRE BoomerAMG: Using nodal relaxation via Schwarz smoothing on levels %d\n",jac->nodal_relax_levels);CHKERRQ(ierr);
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -828,17 +853,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->cycletype        = 1;
     jac->maxlevels        = 25;
     jac->maxiter          = 1;  
-    jac->tol              = 0.0; /* tolerance of zero indicates use as preconditioner (suppresses
-                                    convergence errors) */
+    jac->tol              = 0.0; /* tolerance of zero indicates use as preconditioner (suppresses convergence errors) */
     jac->truncfactor      = 0.0;
     jac->strongthreshold  = .25;
     jac->maxrowsum        = .9;
     jac->coarsentype      = 6;
     jac->measuretype      = 0;
     jac->gridsweeps[0]    = jac->gridsweeps[1] = jac->gridsweeps[2] = 1;
-    jac->relaxtype[0]     = jac->relaxtype[1] = 6; /* Now defaults to SYMMETRIC since
-                                                       in PETSc we are using a a PC - most likely
-                                                       with CG */
+    jac->relaxtype[0]     = jac->relaxtype[1] = 6; /* Defaults to SYMMETRIC since in PETSc we are using a a PC - most likely with CG */
     jac->relaxtype[2]     = 9; /*G.E. */
     jac->relaxweight      = 1.0;
     jac->outerrelaxweight = 1.0;
@@ -848,6 +870,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     jac->pmax             = 0;
     jac->truncfactor      = 0.0;
     jac->agg_num_paths    = 1;
+
+    jac->nodal_coarsen    = 0;
+    jac->nodal_relax      = PETSC_FALSE;
+    jac->nodal_relax_levels = 1;
     ierr = HYPRE_BoomerAMGSetCycleType(jac->hsolver,jac->cycletype);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetMaxLevels(jac->hsolver,jac->maxlevels);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetMaxIter(jac->hsolver,jac->maxiter);CHKERRQ(ierr);
@@ -864,10 +890,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPRESetType_HYPRE(PC pc,const char name[])
     ierr = HYPRE_BoomerAMGSetNumPaths(jac->hsolver,jac->agg_num_paths);CHKERRQ(ierr);
     ierr = HYPRE_BoomerAMGSetRelaxType(jac->hsolver, jac->relaxtype[0]);  /*defaults coarse to 9*/
     ierr = HYPRE_BoomerAMGSetNumSweeps(jac->hsolver, jac->gridsweeps[0]); /*defaults coarse to 1 */
-
-   
-
-
     PetscFunctionReturn(0);
   }
   ierr = PetscStrfree(jac->hypre_type);CHKERRQ(ierr);
@@ -991,7 +1013,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCHYPREGetType(PC pc,const char *name[])
           (V-cycles) and tolerance that boomeramg does EACH time it is called. So for example, if 
           -pc_hypre_boomeramg_max_iter is set to 2 then 2-V-cycles are being used to define the preconditioner 
           (-pc_hypre_boomeramg_rtol should be set to 0.0 - the default - to strictly use a fixed number of 
-          iterations per hypre call). -ksp_max_iter and -ksp_rtol STILL determine the total number of iterations 
+          iterations per hypre call). -ksp_max_it and -ksp_rtol STILL determine the total number of iterations 
           and tolerance for the Krylov solver. For example, if -pc_hypre_boomeramg_max_iter is 2 and -ksp_max_it is 10 
           then AT MOST twenty V-cycles of boomeramg will be called.
 

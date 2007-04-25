@@ -52,9 +52,9 @@ struct _p_DrawHG {
 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, PetscDrawHG *hist) {
-  PetscDrawHG h;
-  MPI_Comm    comm;
-  PetscTruth  isnull;
+  PetscDrawHG    h;
+  MPI_Comm       comm;
+  PetscTruth     isnull;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -109,7 +109,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGCreate(PetscDraw draw, int bins, Petsc
    Concepts: histogram^setting number of bins
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) {
+PetscErrorCode PETSC_DLLEXPORT PetscDrawHGSetNumberBins(PetscDrawHG hist, int bins) 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -274,12 +275,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGAddValue(PetscDrawHG hist, PetscReal v
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 {
-  PetscDraw  draw = hist->win;
-  PetscTruth isnull;
-  PetscReal  xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
-  char       title[256];
-  char       xlabel[256];
-  int        numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
+  PetscDraw      draw = hist->win;
+  PetscTruth     isnull;
+  PetscReal      xmin,xmax,ymin,ymax,*bins,*values,binSize,binLeft,binRight,maxHeight,mean,var;
+  char           title[256];
+  char           xlabel[256];
+  int            numBins,numBinsOld,numValues,initSize,i,p,bcolor,color;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -419,9 +420,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawHGDraw(PetscDrawHG hist)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscDrawHGPrint(PetscDrawHG hist)
 {
-  PetscReal xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
+  PetscReal      xmax,xmin,*bins,*values,binSize,binLeft,binRight,mean,var;
   PetscErrorCode ierr;
-  int       numBins,numBinsOld,numValues,initSize,i,p;
+  int            numBins,numBinsOld,numValues,initSize,i,p;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(hist, DRAWHG_COOKIE,1);
