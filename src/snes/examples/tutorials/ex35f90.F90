@@ -136,6 +136,7 @@
 !   Solve the nonlinear system
 !
         call DMMGSolve(dmmg,ierr);CHKR(ierr)
+        call DMMGSetInitialGuess(dmmg,PETSC_NULL_FUNCTION,ierr);CHKR(ierr)
 
         call DMMGGetX(dmmg,x,ierr);CHKR(ierr)
         call VecCopy(x,app%xold,ierr);CHKR(ierr)
