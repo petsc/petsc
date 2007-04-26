@@ -79,12 +79,16 @@ void PETSC_STDCALL dmmgsetinitialguess_(DMMG **dmmg,void (PETSC_STDCALL *initial
 {
   PetscInt i;
 
-  *ierr = DMMGSetInitialGuess(*dmmg,ourinitialguess);
-  /*
-    Save the fortran initial guess function in the DM on each level; ourinitialguess() pulls it out when needed
-  */
-  for (i=0; i<(**dmmg)->nlevels; i++) {
-    ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[2] = (PetscVoidFunction)initialguess;
+  if (FORTRANNULLFUNCTION(initialguess)) {
+    *ierr = DMMGSetInitialGuess(*dmmg,PETSC_NULL);
+  } else {
+    *ierr = DMMGSetInitialGuess(*dmmg,ourinitialguess);
+    /*
+      Save the fortran initial guess function in the DM on each level; ourinitialguess() pulls it out when needed
+    */
+    for (i=0; i<(**dmmg)->nlevels; i++) {
+      ((PetscObject)(*dmmg)[i]->dm)->fortran_func_pointers[2] = (PetscVoidFunction)initialguess;
+    }
   }
 }
 
