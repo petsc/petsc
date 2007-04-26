@@ -941,6 +941,7 @@ class Configure(config.base.Configure):
 }
 ''' + 'void '+self.mangleFortranFunction('f90ptrtest')+'''(void* a1, void* a2,void* a3, void* i, void* p1 ,void* p2, void* p3)
 {
+  printf("arrays [%p %p %p]\\n",a1,a2,a3);
   if ((p1 == p3) && (p1 != p2)) {
     printf("pointers match! [%p %p] [%p]\\n",p1,p3,p2);
     fflush(stdout);
