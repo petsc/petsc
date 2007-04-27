@@ -25,7 +25,7 @@ typedef struct {
 EXTERN_C_BEGIN
 
 extern void fortran_routine_(abc *);
-void c_routine_(abc *x)
+void PETSC_STDCALL c_routine_(abc *x)
 {
   double     *data;
 
