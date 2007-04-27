@@ -203,7 +203,7 @@ class CompilerOptions(config.base.Configure):
       # Windows Intel
       elif compiler.find('win32fe ifl') >= 0 or compiler.find('win32fe ifort') >= 0:
         if bopt == 'g':
-          flags.append(['-MT', '-Z7'])
+          flags.extend(['-MT', '-Z7'])
         elif bopt == 'O':
           flags.extend(['-MT', '-O3', '-QxW'])
       # Compaq Visual FORTRAN
