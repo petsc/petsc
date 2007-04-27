@@ -139,6 +139,10 @@ class Configure(config.package.Package):
     if self.isPOE:
       self.mpiexec = os.path.abspath(os.path.join('bin', 'mpiexec.poe'))
       return
+    if self.framework.argDB['with-batch']:
+      self.mpiexec = 'Not_appropriate_for_batch_systems'
+      self.addMakeMacro('MPIEXEC',self.mpiexec)
+      return   
     mpiexecs = ['mpiexec -np 1', 'mpirun -np 1', 'mprun -np 1', 'mpiexec', 'mpirun', 'mprun']
     path    = []
     if 'with-mpi-dir' in self.framework.argDB:
