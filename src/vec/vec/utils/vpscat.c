@@ -294,7 +294,7 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
       ierr = MPI_Send_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rev_swaits+i);CHKERRQ(ierr);
     }
 
-    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rr",&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rsend",&flg);CHKERRQ(ierr);
     if (flg) {
       out_to->use_readyreceiver    = PETSC_TRUE;
       out_from->use_readyreceiver  = PETSC_TRUE;
@@ -1763,7 +1763,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     from->rev_requests = rev_swaits;
 
     /* Register the receives that you will use later (sends for scatter reverse) */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rr",&use_rr);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rsend",&use_rr);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_ssend",&use_ssend);CHKERRQ(ierr);
     if (use_rr) {
       ierr = PetscInfo(0,"Using VecScatter ready receiver mode\n");CHKERRQ(ierr);

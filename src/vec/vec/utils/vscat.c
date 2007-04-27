@@ -774,14 +774,31 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
    Output Parameter:
 .  newctx - location to store the new scatter context
 
-   Options Database Keys:
-+  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop 
+   Options Database Keys: (uses regular MPI_Sends by default)
++  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
+.  -vecscatter_rsend           - use ready receiver mode for MPI sends 
+.  -vecscatter_merge        - VecScatterBegin() handles all of the communication, VecScatterEnd() is a nop 
                               eliminates the chance for overlap of computation and communication 
-.  -vecscatter_ssend        - Uses MPI_Ssend_init() instead of MPI_Send_init() 
 .  -vecscatter_sendfirst    - Posts sends before receives 
-.  -vecscatter_rr           - use ready receiver mode for MPI sends 
--  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
-                              ONLY implemented for BLOCK SIZE of 4 and 12! (others easily added)
+.  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
+.  -vecscatter_alltoallv    - Uses MPI all to all communication for scatter
+-  -vecscatter_alltoallw    - Uses MPI 2 all to all communication with MPI data types to avoid buffer of -vecscatter_alltoallv                            
+
+$   Send type      sendfirst    merge    packtogether  uses MPI Datatype (to avoid extra buffers)
+$    ------
+$    Send             X           X          X              p
+$    Rsend          illegal       X          X              p
+$    Ssend            X           X          X              p
+$    alltoallv                    Y          A
+$    alltoallw                    Y                         * 
+$
+$    X - appropriate option
+$    Y - send type is by its nature always merged
+$    p - possible but not implemented
+$    A - always packed together by nature of the MPI call.
+$    * - always uses MPI datatype
+$
+$    Any or all of sendfirst, merge and packtogether may be used together
 
     Level: intermediate
 
@@ -1427,14 +1444,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterGetMerged(VecScatter ctx,PetscTruth 
 
    Level: intermediate
 
-   Options Database
-+   -vecscatter_rr   - use ready receiver mode (i.e. receives are post BEFORE sends)
-.   -vecscatter_ssend  - use MPI_Ssend() instead of MPI_Send()
-.   -vecscatter_packtogether - packs all the message before sending any and receivers all
-                               before sending. Default for the alltoall versions.
-.   -vecscatter_sendfirst - post ALL sends before posting receives (cannot be used with -vecscatter_rr)
-.   -vecscatter_alltoallv - use MPI_Alltoallv() instead of sends and receives
--   -vecscatter_alltoallw  - use MPI_Alltoallw() instead of MPI_Alltoallv() for INSERT_VALUES
+   Options Database: See VecScatterCreate()
 
    Notes:
    The vectors x and y need not be the same vectors used in the call 
