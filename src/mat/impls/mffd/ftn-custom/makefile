@@ -3,12 +3,12 @@
 ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = mffdf.c
+SOURCEC  = zmffdf.c
 OBJSC    = ${SOURCEC:.c=.o}
 SOURCEF  =
 SOURCEH  =
 DIRS     =
 LIBBASE  = libpetscmat
-LOCDIR   = src/snes/mf/ftn-custom/
+LOCDIR   = src/mat/impls/mffd/ftn-custom/
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
