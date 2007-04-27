@@ -37,7 +37,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat mat,Vec b,Vec x,Vec r)
 /* ---------------------------------------------------------------------------*/
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGGetCoarseSolve"
+#define __FUNCT__ "PCMGGetCoarseSolve"
 /*@
    PCMGGetCoarseSolve - Gets the solver context to be used on the coarse grid.
 
@@ -63,7 +63,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetCoarseSolve(PC pc,KSP *ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetResidual"
+#define __FUNCT__ "PCMGSetResidual"
 /*@C
    PCMGSetResidual - Sets the function to be used to calculate the residual 
    on the lth level. 
@@ -95,7 +95,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetInterpolate"
+#define __FUNCT__ "PCMGSetInterpolation"
 /*@
    PCMGSetInterpolation - Sets the function to be used to calculate the 
    interpolation on the lth level. 
@@ -138,7 +138,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetRestriction"
+#define __FUNCT__ "PCMGSetRestriction"
 /*@
    PCMGSetRestriction - Sets the function to be used to restrict vector
    from level l to l-1. 
@@ -181,7 +181,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRestriction(PC pc,PetscInt l,Mat mat)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGGetSmoother"
+#define __FUNCT__ "PCMGGetSmoother"
 /*@
    PCMGGetSmoother - Gets the KSP context to be used as smoother for 
    both pre- and post-smoothing.  Call both PCMGGetSmootherUp() and 
@@ -213,7 +213,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGGetSmoother(PC pc,PetscInt l,KSP *ksp)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGGetSmootherUp"
+#define __FUNCT__ "PCMGGetSmootherUp"
 /*@
    PCMGGetSmootherUp - Gets the KSP context to be used as smoother after 
    coarse grid correction (post-smoother). 
@@ -323,7 +323,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetCyclesOnLevel(PC pc,PetscInt l,PetscInt
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetRhs"
+#define __FUNCT__ "PCMGSetRhs"
 /*@
    PCMGSetRhs - Sets the vector space to be used to store the right-hand side
    on a particular level. 
@@ -361,7 +361,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetRhs(PC pc,PetscInt l,Vec c)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetX"
+#define __FUNCT__ "PCMGSetX"
 /*@
    PCMGSetX - Sets the vector space to be used to store the solution on a 
    particular level.
@@ -399,7 +399,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetX(PC pc,PetscInt l,Vec c)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MGSetR"
+#define __FUNCT__ "PCMGSetR"
 /*@
    PCMGSetR - Sets the vector space to be used to store the residual on a
    particular level. 

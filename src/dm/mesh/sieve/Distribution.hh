@@ -818,6 +818,7 @@ namespace ALECompat {
             const Obj<sieve_type>&                   sieveNew   = new Mesh::sieve_type(subTopology->comm(), subTopology->debug());
             const int                                numCells   = subTopology->heightStratum(patch, 0)->size();
 
+            createPartitionOverlap(subTopology, subSendOverlap, subRecvOverlap);
             subTopologyNew->setPatch(0, sieveNew);
             sieveCompletion::scatterSieve(subTopology, sieve, dim, sieveNew, subSendOverlap, subRecvOverlap, numCells, subAssignment);
             subTopologyNew->stratify();
