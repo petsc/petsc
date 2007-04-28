@@ -1666,7 +1666,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   ctx->destroy = VecScatterDestroy_PtoP;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
+  from->sendfirst = to->sendfirst;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   /* check if the receives are ALL going into contiguous locations; if so can skip indexing */
@@ -1680,14 +1680,14 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     }
   }
 
-  ierr     = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoallw",&to->use_alltoallw);CHKERRQ(ierr);
-  from->use_alltoallw = to->use_alltoallw;
-  if (to->use_alltoallw) {
-    to->use_alltoallv = PETSC_TRUE;
-  } else {
-    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoallv",&to->use_alltoallv);CHKERRQ(ierr);
-  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoall",&to->use_alltoallv);CHKERRQ(ierr);
   from->use_alltoallv = to->use_alltoallv;
+#if defined(PETSC_HAVE_MPI_ALLTOALLW) 
+  if (to->use_alltoallv) {
+    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_nopack",&to->use_alltoallw);CHKERRQ(ierr);
+  }
+  from->use_alltoallw = to->use_alltoallw;
+#endif
 
   if (to->use_alltoallv) {
 
@@ -1753,7 +1753,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     from->use_alltoallw = PETSC_FALSE;
 #endif
   } else {
-    PetscTruth  use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE,use_datatypes = PETSC_FALSE;
+    PetscTruth  use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE;
     PetscInt    *sstarts = to->starts,  *rstarts = from->starts;
     PetscMPIInt *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
@@ -1769,7 +1769,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     /* Register the receives that you will use later (sends for scatter reverse) */
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rsend",&use_rsend);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_ssend",&use_ssend);CHKERRQ(ierr);
-    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_datatypes",&use_datatypes);CHKERRQ(ierr);
     if (use_rsend) {
       ierr = PetscInfo(0,"Using VecScatter ready receiver mode\n");CHKERRQ(ierr);
       to->use_readyreceiver    = PETSC_TRUE;
@@ -1811,9 +1810,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,rev_rwaits+i);CHKERRQ(ierr);
     } 
 
-    if (use_datatypes) {
-      /* take code from alltoallw setup */;
-    }
     ctx->copy      = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(0,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);

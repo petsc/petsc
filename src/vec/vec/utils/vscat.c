@@ -781,38 +781,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
                               eliminates the chance for overlap of computation and communication 
 .  -vecscatter_sendfirst    - Posts sends before receives 
 .  -vecscatter_packtogether - Pack all messages before sending, receive all messages before unpacking
-.  -vecscatter_alltoallv    - Uses MPI all to all communication for scatter
--  -vecscatter_alltoallw    - Uses MPI 2 all to all communication with MPI data types to avoid buffer of -vecscatter_alltoallv                            
+.  -vecscatter_alltoall     - Uses MPI all to all communication for scatter
+-  -vecscatter_nopack       - Avoid packing to work vector when possible (if used with -vecscatter_alltoall then will use MPI_Alltoallw()
 
-$   Send type      sendfirst    merge    packtogether  skip packing/uses MPI Datatype (to avoid extra buffers) 
-$    ------
-$    Send             X           X          X              p
-$    Rsend          illegal       X          X              p
-$    Ssend            X           X          X              p
-$    alltoallv                    Y          A
-$    alltoallw                    Y                         * 
 $
-$    X - appropriate option
-$    Y - send type is by its nature always merged
-$    p - possible but not implemented
-$    A - always packed together by nature of the MPI call.
-$    * - always uses MPI datatype
+$                                                                                    --When packing is used--
+$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether  persistent*    -vecscatter_
 $
-$    Any or all of sendfirst, merge and packtogether may be used together
-
-$   New approach
-$                               
+$    Message passing    Send       p                           X            X           X         always
+$                      Ssend       p                           X            X           X         always          _ssend
+$                      Rsend       p                        nonsense        X           X         always          _rsend
+$    AlltoAll  v or w              X                        nonsense     always         X         never           _alltoall
+$    MPI_Win                       p                        nonsense        p           p         never           _window
 $
-$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether (when Datatypes not used only)   -vecscatter_
-$
-$    Message passing    Send       p                           X            X           X                                         
-$                      Ssend       p                           X            X           X                                            _ssend
-$                      Rsend       p                        nonsense        X           X                                            _rsend
-$    AlltoAll    v or w           X                         nonsense     always         X                                            _alltoall
-$    MPI_Win                      p                         nonsense        p           p                                            _window
-$
-$               -vecscatter_     _nopack                   _sendfirst    _merge      _packtogether
+$               -vecscatter_     _nopack                   _sendfirst    _merge      _packtogether  
 $                              
+$   Since persistent sends and receives require a constant memory address they can only use used when data is packed into the work vector
 
     Level: intermediate
 
