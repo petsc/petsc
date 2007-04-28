@@ -1388,7 +1388,6 @@ PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSiz
 
   /* allocate entire send scatter context */
   ierr = PetscNew(VecScatter_MPI_General,&to);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
   to->n = nsends; 
   for(n = 0, sendSize = 0; n < to->n; n++) {sendSize += sendSizes[n];}
   ierr = PetscMalloc(to->n*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
@@ -1410,7 +1409,6 @@ PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSiz
 
   /* allocate entire receive scatter context */
   ierr = PetscNew(VecScatter_MPI_General,&from);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
   from->n = nrecvs;
   for(n = 0, recvSize = 0; n < from->n; n++) {recvSize += recvSizes[n];}
   ierr = PetscMalloc(from->n*sizeof(MPI_Request),&from->requests);CHKERRQ(ierr);
@@ -1544,7 +1542,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   
   /* allocate entire send scatter context */
   ierr  = PetscNew(VecScatter_MPI_General,&to);CHKERRQ(ierr);
-  ierr  = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
   to->n = nrecvs; 
   ierr = PetscMalloc(nrecvs*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
   ierr  = PetscMalloc4(bs*slen,PetscScalar,&to->values,slen,PetscInt,&to->indices,nrecvs+1,PetscInt,&to->starts,
@@ -1575,7 +1572,6 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
  
   /* allocate entire receive scatter context */
   ierr = PetscNew(VecScatter_MPI_General,&from);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
   from->n        = nsends;
 
   ierr = PetscMalloc(nsends*sizeof(MPI_Request),&from->requests);CHKERRQ(ierr);
@@ -1662,6 +1658,9 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   
   PetscFunctionBegin;
   ctx->destroy = VecScatterDestroy_PtoP;
+
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&from->sendfirst);CHKERRQ(ierr);
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   /* check if the receives are ALL going into contiguous locations; if so can skip indexing */
