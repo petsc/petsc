@@ -220,6 +220,7 @@
       write(*,*)  'final time'
       write(*,*)
 
+      call VecDestroy(app%xold,ierr);CHKR(ierr)
       call DMMGDestroy(dmmg,ierr);CHKR(ierr)
       call PetscFinalize(ierr)
       end
@@ -461,6 +462,7 @@
 
       call DAVecRestoreArrayf90(da,xvc1,xIHX,ierr);CHKR(ierr)
       call DAVecRestoreArrayf90(da,xvc2,xCore,ierr);CHKR(ierr)
+      call DMCompositeRestoreLocalVectors(dm,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
 
       return
       end

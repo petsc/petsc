@@ -745,15 +745,19 @@
 !-----------------------------------------------------------------------
 !     draw it.
 !-----------------------------------------------------------------------
+#if defined(PETSC_HAVE_X11)
       CALL PetscDrawOpenX(PETSC_COMM_WORLD,0,"meshes",PETSC_DECIDE,                  &
      &     PETSC_DECIDE,700,700,draw,ierr)
       CALL PetscDrawSetCoordinates(draw,xmin,ymin,xmax,ymax,ierr)
       CALL PetscDrawZoom(draw,barry_draw_patch,patch,ierr)
+#endif
 !-----------------------------------------------------------------------
 !     clean up.
 !-----------------------------------------------------------------------
       CALL VecRestoreArray(v,va,iv,ierr)
+#if defined(PETSC_HAVE_X11)
       CALL PetscDrawDestroy(draw,ierr)
+#endif
 !-----------------------------------------------------------------------
 !     terminate.
 !-----------------------------------------------------------------------

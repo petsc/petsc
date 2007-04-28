@@ -87,9 +87,9 @@
       call DACreate1d(PETSC_COMM_WORLD,DA_NONPERIODIC,app%nxc,app%nc,1,PETSC_NULL_INTEGER,da,ierr)
       CHKR(ierr)
       call DMCompositeAddDA(dm,da,ierr);CHKR(ierr)
-      call DADestroy(da,ierr);CHKR(ierr)
       call DMCompositeAddArray(dm,0,app%np,ierr);CHKR(ierr)
       call DMCompositeAddDA(dm,da,ierr);CHKR(ierr)
+      call DADestroy(da,ierr);CHKR(ierr)
       call DMCompositeAddArray(dm,0,app%np,ierr);CHKR(ierr)
 
 !       Create solver object and associate it with the unknowns (on the grid)
@@ -153,6 +153,7 @@
       write(*,*)  'final time'
       write(*,*)
 
+      call VecDestroy(app%xold,ierr);CHKR(ierr)
       call DMMGDestroy(dmmg,ierr);CHKR(ierr)
       call PetscFinalize(ierr)
       end
@@ -430,7 +431,7 @@
 
       call DAVecRestoreArrayf90(da,xvc1,xIHX,ierr);CHKR(ierr)
       call DAVecRestoreArrayf90(da,xvc2,xCore,ierr);CHKR(ierr)
-
+      call DMCompositeRestoreLocalVectors(dm,xvc1,xHotPool,xvc2,xColdPool,ierr);CHKR(ierr)
       return
       end
 
