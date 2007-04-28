@@ -929,6 +929,21 @@ namespace ALECompat {
     //
     // Builder methods
     //
+    char *Builder::coord_units = NULL;
+    char *Builder::traction_units = NULL;
+    void Builder::broadcastString(const MPI_Comm comm, const int rank, const char *input, char **output) {
+      int len;
+
+      if (rank == 0) {
+        len = strlen(input);
+      }
+      MPI_Bcast(&len, 1, MPI_INT, 0, comm);
+      *output = new char[len+1];
+      if (rank == 0) {
+        strcpy(*output, input);
+      }
+      MPI_Bcast(*output, len+1, MPI_CHAR, 0, comm);
+    };
     inline void Builder::ignoreComments(char *buf, PetscInt bufSize, FILE *f) {
       while((fgets(buf, bufSize, f) != NULL) && ((buf[0] == '#') || (buf[0] == '\0'))) {}
     };
@@ -1009,6 +1024,7 @@ namespace ALECompat {
       FILE          *f;
       PetscInt       maxVerts = 1024, vertexCount = 0;
       PetscScalar   *coords;
+      const char    *units = NULL;
       double         scaleFactor = 1.0;
       char           buf[2048];
       PetscInt       c;
@@ -1026,7 +1042,7 @@ namespace ALECompat {
         ignoreComments(buf, 2048, f);
         ierr = PetscMalloc(maxVerts*dim * sizeof(PetscScalar), &coords);
         /* Read units */
-        const char *units = strtok(buf, " ");
+        units = strtok(buf, " ");
         if (strcmp(units, "coord_units")) {
           throw ALE::Exception("Invalid coordinate units line");
         }
@@ -1035,10 +1051,10 @@ namespace ALECompat {
           throw ALE::Exception("Invalid coordinate units line");
         }
         units = strtok(NULL, " ");
-        if (!strcmp(units, "km")) {
-          /* Should use Pythia to do units conversion */
-          scaleFactor = 1000.0;
-        }
+      }
+      /* Should use Pythia to do units conversion */
+      Builder::broadcastString(comm, commRank, units, &Builder::coord_units);
+      if (commRank == 0) {
         /* Ignore comments */
         ignoreComments(buf, 2048, f);
         do {
@@ -1189,102 +1205,107 @@ namespace ALECompat {
       PetscInt       maxTractions = 1024, tractionCount = 0;
       PetscInt      *tractionVerts;
       PetscScalar   *tractionVals;
-      double         scaleFactor = 1.0;
+      const char    *units = NULL;
       char           buf[2048];
       PetscInt       c;
       PetscInt       commRank;
+      PetscTruth     found = PETSC_TRUE;
       PetscErrorCode ierr;
 
       ierr = MPI_Comm_rank(comm, &commRank);
       if (dim != 3) {
         throw ALE::Exception("PyLith only works in 3D");
       }
-      if (commRank != 0) return;
-      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
-      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
-      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
-      ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
-      if (PetscExceptionValue(ierr)) {
-        // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
-      } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
-        // File does not exist
-        return;
-      } 
-      /* Logic right now is only good for linear tets and hexes, and should be fixed in the future. */
-      if (corners == 4) {
-        vertsPerFace = 3;
-      } else if (corners == 8) {
-        vertsPerFace = 4;
-      } else {
-        throw ALE::Exception("Unrecognized element type");
-      }
-
-      ierr = PetscViewerASCIIGetPointer(viewer, &f);
-      /* Ignore comments */
-      ignoreComments(buf, 2048, f);
-      /* Read units */
-      const char *units = strtok(buf, " ");
-      if (strcmp(units, "traction_units")) {
-        throw ALE::Exception("Invalid traction units line");
-      }
-      units = strtok(NULL, " ");
-      if (strcmp(units, "=")) {
-        throw ALE::Exception("Invalid traction units line");
-      }
-      units = strtok(NULL, " ");
-      if (!strcmp(units, "MPa")) {
-        /* Should use Pythia to do units conversion */
-        scaleFactor = 1.0e6;
-      }
-      /* Ignore comments */
-      ignoreComments(buf, 2048, f);
-      // Allocate memory.
-      ierr = PetscMalloc2(maxTractions*vertsPerFace,PetscInt,&tractionVerts,maxTractions*dim,PetscScalar,&tractionVals);
-      do {
-        const char *s = strtok(buf, " ");
-
-        if (tractionCount == maxTractions) {
-          PetscInt    *titmp;
-          PetscScalar *tvtmp;
-
-          titmp = tractionVerts;
-          tvtmp = tractionVals;
-          ierr = PetscMalloc2(maxTractions*vertsPerFace*2,PetscInt,&tractionVerts,maxTractions*dim*2,PetscScalar,&tractionVals);
-          ierr = PetscMemcpy(tractionVerts,  titmp, maxTractions*vertsPerFace   * sizeof(PetscInt));
-          ierr = PetscMemcpy(tractionVals, tvtmp, maxTractions*dim * sizeof(PetscScalar));
-          ierr = PetscFree2(titmp,tvtmp);
-          maxTractions *= 2;
+      if (commRank == 0) {
+        ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
+        ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+        ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
+        ierr = PetscExceptionTry1(PetscViewerFileSetName(viewer, filename.c_str()), PETSC_ERR_FILE_OPEN);
+        if (PetscExceptionValue(ierr)) {
+          // this means that a caller above me has also tryed this exception so I don't handle it here, pass it up
+        } else if (PetscExceptionCaught(ierr,PETSC_ERR_FILE_OPEN)) {
+          // File does not exist
+          found = PETSC_FALSE;
+        } 
+        /* Logic right now is only good for linear tets and hexes, and should be fixed in the future. */
+        if (corners == 4) {
+          vertsPerFace = 3;
+        } else if (corners == 8) {
+          vertsPerFace = 4;
+        } else {
+          throw ALE::Exception("Unrecognized element type");
         }
-        /* Get vertices */
-        int v1 = atoi(s);
-        if (!useZeroBase) v1 -= 1;
-        tractionVerts[tractionCount*vertsPerFace+0] = v1;
-        s = strtok(NULL, " ");
-        int v2 = atoi(s);
-        if (!useZeroBase) v2 -= 1;
-        tractionVerts[tractionCount*vertsPerFace+1] = v2;
-        s = strtok(NULL, " ");
-        int v3 = atoi(s);
-        if (!useZeroBase) v3 -= 1;
-        tractionVerts[tractionCount*vertsPerFace+2] = v3;
-        s = strtok(NULL, " ");
-        if (vertsPerFace > 3) {
-          int v4 = atoi(s);
-          if (!useZeroBase) v4 -= 1;
-          tractionVerts[tractionCount*vertsPerFace+3] = v4;
+      }
+      MPI_Bcast(&found, 1, MPI_INT, 0, comm);
+      if (!found) return;
+      if (commRank == 0) {
+        ierr = PetscViewerASCIIGetPointer(viewer, &f);
+        /* Ignore comments */
+        ignoreComments(buf, 2048, f);
+        /* Read units */
+        units = strtok(buf, " ");
+        if (strcmp(units, "traction_units")) {
+          throw ALE::Exception("Invalid traction units line");
+        }
+        units = strtok(NULL, " ");
+        if (strcmp(units, "=")) {
+          throw ALE::Exception("Invalid traction units line");
+        }
+        units = strtok(NULL, " ");
+      }
+      /* Should use Pythia to do units conversion */
+      Builder::broadcastString(comm, commRank, units, &Builder::traction_units);
+      if (commRank == 0) {
+        /* Ignore comments */
+        ignoreComments(buf, 2048, f);
+        // Allocate memory.
+        ierr = PetscMalloc2(maxTractions*vertsPerFace,PetscInt,&tractionVerts,maxTractions*dim,PetscScalar,&tractionVals);
+        do {
+          const char *s = strtok(buf, " ");
+
+          if (tractionCount == maxTractions) {
+            PetscInt    *titmp;
+            PetscScalar *tvtmp;
+
+            titmp = tractionVerts;
+            tvtmp = tractionVals;
+            ierr = PetscMalloc2(maxTractions*vertsPerFace*2,PetscInt,&tractionVerts,maxTractions*dim*2,PetscScalar,&tractionVals);
+            ierr = PetscMemcpy(tractionVerts,  titmp, maxTractions*vertsPerFace   * sizeof(PetscInt));
+            ierr = PetscMemcpy(tractionVals, tvtmp, maxTractions*dim * sizeof(PetscScalar));
+            ierr = PetscFree2(titmp,tvtmp);
+            maxTractions *= 2;
+          }
+          /* Get vertices */
+          int v1 = atoi(s);
+          if (!useZeroBase) v1 -= 1;
+          tractionVerts[tractionCount*vertsPerFace+0] = v1;
           s = strtok(NULL, " ");
-        }
-        /* Get traction values */
-        for(c = 0; c < dim; c++) {
-          tractionVals[tractionCount*dim+c] = atof(s);
+          int v2 = atoi(s);
+          if (!useZeroBase) v2 -= 1;
+          tractionVerts[tractionCount*vertsPerFace+1] = v2;
           s = strtok(NULL, " ");
-        }
-        tractionCount++;
-      } while(fgets(buf, 2048, f) != NULL);
-      ierr = PetscViewerDestroy(viewer);
-      numTractions      = tractionCount;
-      *tractionVertices = tractionVerts;
-      *tractionValues   = tractionVals;
+          int v3 = atoi(s);
+          if (!useZeroBase) v3 -= 1;
+          tractionVerts[tractionCount*vertsPerFace+2] = v3;
+          s = strtok(NULL, " ");
+          if (vertsPerFace > 3) {
+            int v4 = atoi(s);
+            if (!useZeroBase) v4 -= 1;
+            tractionVerts[tractionCount*vertsPerFace+3] = v4;
+            s = strtok(NULL, " ");
+          }
+          /* Get traction values */
+          for(c = 0; c < dim; c++) {
+            tractionVals[tractionCount*dim+c] = atof(s);
+            s = strtok(NULL, " ");
+          }
+          tractionCount++;
+        } while(fgets(buf, 2048, f) != NULL);
+        ierr = PetscViewerDestroy(viewer);
+        numTractions      = tractionCount;
+        *tractionVertices = tractionVerts;
+        *tractionValues   = tractionVals;
+      }
     };
     void Builder::buildTractions(const Obj<real_section_type>& tractionField, const Obj<topology_type>& boundaryTopology, int numCells, int numTractions, int vertsPerFace, int tractionVertices[], double tractionValues[]) {
       const real_section_type::patch_type                  patch = 0;
@@ -1521,7 +1542,7 @@ namespace ALECompat {
         numVertices = mesh->getTopology()->depthStratum(0)->size();
       }
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"coord_units = m\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"coord_units = %s\n", Builder::coord_units);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
@@ -1705,7 +1726,7 @@ namespace ALECompat {
 
       PetscFunctionBegin;
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"coord_units = m\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"coord_units = %s\n", Builder::coord_units);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#  Node      X-coord           Y-coord           Z-coord\n");CHKERRQ(ierr);
@@ -1822,7 +1843,7 @@ namespace ALECompat {
 
       PetscFunctionBegin;
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
-      ierr = PetscViewerASCIIPrintf(viewer,"traction_units = Pa\n");CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer,"traction_units = %s\n", Builder::traction_units);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer,"#\n");CHKERRQ(ierr);
       for(topology_type::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
