@@ -138,8 +138,64 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
   VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
   VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
   PetscErrorCode         ierr;
+  PetscInt               i;
 
   PetscFunctionBegin;
+  if (to->use_readyreceiver) {
+    /*
+       Since we have already posted sends we must cancel them before freeing 
+       the requests
+    */
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
+    }
+  }
+
+  if (to->use_alltoallw) {
+    ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
+    ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
+  }
+
+  if (to->use_alltoallv) {
+    ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
+    ierr = PetscFree2(from->counts,from->displs);CHKERRQ(ierr);
+  }
+
+  /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
+  /* 
+     IBM's PE version of MPI has a bug where freeing these guys will screw up later
+     message passing.
+  */
+#if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
+  if (to->requests) {
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
+    }
+  }
+  if (to->rev_requests) {
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
+    }
+  }
+
+  /*
+      MPICH could not properly cancel requests thus with ready receiver mode we
+    cannot free the requests. It may be fixed now, if not then put the following 
+    code inside a if !to->use_readyreceiver) {
+  */
+  if (from->requests) {
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
+    }
+  }
+
+  if (from->rev_requests) {
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
+    }
+  }  
+#endif
+
   ierr = PetscFree(to->local.vslots);CHKERRQ(ierr);
   ierr = PetscFree(from->local.vslots);CHKERRQ(ierr);
   ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
@@ -1315,64 +1371,6 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
 #define BS 12
 #include "src/vec/vec/utils/vpscat.h"
 
-/* ---------------------------------------------------------------------------------*/
-
-#undef __FUNCT__  
-#define __FUNCT__ "VecScatterDestroy_PtoP_X"
-PetscErrorCode VecScatterDestroy_PtoP_X(VecScatter ctx)
-{
-  VecScatter_MPI_General *to   = (VecScatter_MPI_General*)ctx->todata;
-  VecScatter_MPI_General *from = (VecScatter_MPI_General*)ctx->fromdata;
-  PetscErrorCode         ierr;
-  PetscInt               i;
-
-  PetscFunctionBegin;
-  if (to->use_readyreceiver) {
-    /*
-       Since we have already posted sends we must cancel them before freeing 
-       the requests
-    */
-    for (i=0; i<from->n; i++) {
-      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
-    }
-  }
-
-  if (to->use_alltoallw) {
-    ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
-    ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
-  }
-
-  if (to->use_alltoallv) {
-    ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
-    ierr = PetscFree2(from->counts,from->displs);CHKERRQ(ierr);
-  }
-
-  /* release MPI resources obtained with MPI_Send_init() and MPI_Recv_init() */
-  /* 
-     IBM's PE version of MPI has a bug where freeing these guys will screw up later
-     message passing.
-  */
-#if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
-  for (i=0; i<to->n; i++) {
-    ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
-    ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
-  }
-
-  /*
-      MPICH could not properly cancel requests thus with ready receiver mode we
-    cannot free the requests. It may be fixed now, if not then put the following 
-    code inside a if !to->use_readyreceiver) {
-  */
-  for (i=0; i<from->n; i++) {
-    ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
-    ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
-  }  
-#endif
- 
-  ierr = VecScatterDestroy_PtoP(ctx);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
 /* ==========================================================================================*/
 
 /*              create parallel to sequential scatter context                           */
@@ -1663,6 +1661,8 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ctx->destroy = VecScatterDestroy_PtoP;
+
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   /* check if the receives are ALL going into contiguous locations; if so can skip indexing */
   to->contiq = PETSC_FALSE;
@@ -1685,7 +1685,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   from->use_alltoallv = to->use_alltoallv;
 
   if (to->use_alltoallv) {
-    ctx->destroy = VecScatterDestroy_PtoP;
 
     ierr       = PetscMalloc2(size,PetscMPIInt,&to->counts,size,PetscMPIInt,&to->displs);CHKERRQ(ierr);
     ierr       = PetscMemzero(to->counts,size*sizeof(PetscMPIInt));
@@ -1805,7 +1804,6 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,rev_rwaits+i);CHKERRQ(ierr);
     } 
 
-    ctx->destroy   = VecScatterDestroy_PtoP_X;
     ctx->copy      = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(0,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);
