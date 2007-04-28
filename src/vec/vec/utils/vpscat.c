@@ -1753,7 +1753,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     from->use_alltoallw = PETSC_FALSE;
 #endif
   } else {
-    PetscTruth  use_rr = PETSC_FALSE, use_ssend = PETSC_FALSE;
+    PetscTruth  use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE,use_datatypes = PETSC_FALSE;
     PetscInt    *sstarts = to->starts,  *rstarts = from->starts;
     PetscMPIInt *sprocs  = to->procs,   *rprocs  = from->procs;
     MPI_Request *swaits  = to->requests,*rwaits  = from->requests;
@@ -1767,10 +1767,16 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     from->rev_requests = rev_swaits;
 
     /* Register the receives that you will use later (sends for scatter reverse) */
-    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rsend",&use_rr);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_rsend",&use_rsend);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_ssend",&use_ssend);CHKERRQ(ierr);
-    if (use_rr) {
+    ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_datatypes",&use_datatypes);CHKERRQ(ierr);
+    if (use_rsend) {
       ierr = PetscInfo(0,"Using VecScatter ready receiver mode\n");CHKERRQ(ierr);
+      to->use_readyreceiver    = PETSC_TRUE;
+      from->use_readyreceiver  = PETSC_TRUE;
+    } else {
+      to->use_readyreceiver    = PETSC_FALSE;
+      from->use_readyreceiver  = PETSC_FALSE;
     }
     if (use_ssend) {
       ierr = PetscInfo(0,"Using VecScatter Ssend mode\n");CHKERRQ(ierr);
@@ -1785,17 +1791,13 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       }
     }
 
-    if (use_rr) {
-      to->use_readyreceiver    = PETSC_TRUE;
-      from->use_readyreceiver  = PETSC_TRUE;
+    if (use_rsend) {
       for (i=0; i<to->n; i++) {
         ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
       } 
       if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
     } else {
-      to->use_readyreceiver    = PETSC_FALSE;
-      from->use_readyreceiver  = PETSC_FALSE;
       for (i=0; i<to->n; i++) {
         if (!use_ssend) {
           ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
@@ -1809,6 +1811,9 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,rev_rwaits+i);CHKERRQ(ierr);
     } 
 
+    if (use_datatypes) {
+      /* take code from alltoallw setup */;
+    }
     ctx->copy      = VecScatterCopy_PtoP_X;
   }
   ierr = PetscInfo1(0,"Using blocksize %D scatter\n",bs);CHKERRQ(ierr);

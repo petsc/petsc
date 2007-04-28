@@ -784,7 +784,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateEmpty(MPI_Comm comm,VecScatter
 .  -vecscatter_alltoallv    - Uses MPI all to all communication for scatter
 -  -vecscatter_alltoallw    - Uses MPI 2 all to all communication with MPI data types to avoid buffer of -vecscatter_alltoallv                            
 
-$   Send type      sendfirst    merge    packtogether  uses MPI Datatype (to avoid extra buffers)
+$   Send type      sendfirst    merge    packtogether  skip packing/uses MPI Datatype (to avoid extra buffers) 
 $    ------
 $    Send             X           X          X              p
 $    Rsend          illegal       X          X              p
@@ -799,6 +799,20 @@ $    A - always packed together by nature of the MPI call.
 $    * - always uses MPI datatype
 $
 $    Any or all of sendfirst, merge and packtogether may be used together
+
+$   New approach
+$                               
+$
+$                               MPI Datatypes (no packing)  sendfirst   merge        packtogether (when Datatypes not used only)   -vecscatter_
+$
+$    Message passing    Send       p                           X            X           X                                         
+$                      Ssend       p                           X            X           X                                            _ssend
+$                      Rsend       p                        nonsense        X           X                                            _rsend
+$    AlltoAll    v or w           X                         nonsense     always         X                                            _alltoall
+$    MPI_Win                      p                         nonsense        p           p                                            _window
+$
+$               -vecscatter_     _nopack                   _sendfirst    _merge      _packtogether
+$                              
 
     Level: intermediate
 
