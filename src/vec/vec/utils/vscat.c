@@ -791,12 +791,13 @@ $
 $    Message passing    Send       p                           X            X           X         always
 $                      Ssend       p                           X            X           X         always          _ssend
 $                      Rsend       p                        nonsense        X           X         always          _rsend
-$    AlltoAll  v or w              X                        nonsense     always         X         never           _alltoall
-$    MPI_Win                       p                        nonsense        p           p         never           _window
+$    AlltoAll  v or w              X                        nonsense     always         X         nonsense        _alltoall
+$    MPI_Win                       p                        nonsense        p           p         nonsense        _window
 $
 $               -vecscatter_     _nopack                   _sendfirst    _merge      _packtogether  
 $                              
-$   Since persistent sends and receives require a constant memory address they can only use used when data is packed into the work vector
+$   Since persistent sends and receives require a constant memory address they can only be used when data is packed into the work vector
+$   because the in and out array may be different for each call to VecScatterBegin/End().
 
     Level: intermediate
 
