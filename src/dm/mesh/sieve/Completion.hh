@@ -75,6 +75,21 @@ namespace ALE {
               tmp = current; current = next; next = tmp;
               next->clear();
             }
+            if (height) {
+              current->insert(*e_iter);
+              while(current->size()) {
+                for(typename sieve_type::coneSet::const_iterator p_iter = current->begin(); p_iter != current->end(); ++p_iter) {
+                  const Obj<typename sieve_type::traits::supportSequence>& support = sieve->support(*p_iter);
+            
+                  for(typename sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != support->end(); ++s_iter) {
+                    sieveNew->addArrow(*p_iter, *s_iter, s_iter.color());
+                    next->insert(*s_iter);
+                  }
+                }
+                tmp = current; current = next; next = tmp;
+                next->clear();
+              }
+            }
           }
           e++;
         }
@@ -128,7 +143,7 @@ namespace ALE {
           recvOverlap->view(std::cout, "Receive overlap for points");
         }
         // Receive the point section
-        ALE::New::Completion<bundle_type, value_type>::scatterCones(sieve, sieveNew, sendOverlap, recvOverlap);
+        ALE::New::Completion<bundle_type, value_type>::scatterCones(sieve, sieveNew, sendOverlap, recvOverlap, bundle, height);
         if (height) {
           ALE::New::Completion<bundle_type, value_type>::scatterSupports(sieve, sieveNew, sendOverlap, recvOverlap, bundle, bundle->depth()-height);
         }
