@@ -1379,6 +1379,10 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_M
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterCreateLocal_PtoS"
+/*
+     sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
+   to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
+*/
 PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
 {
   VecScatter_MPI_General *from, *to;
@@ -1399,6 +1403,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSiz
                       PetscMax(to->n,nrecvs),MPI_Status,&to->rstatus);CHKERRQ(ierr);
   to->starts[0] = 0;
   for(n = 0; n < to->n; n++) {
+    if (sendSizes[n] <=0 ) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
     to->starts[n+1] = to->starts[n] + sendSizes[n];
     to->procs[n] = sendProcs[n];
     for(i = to->starts[n]; i < to->starts[n]+sendSizes[n]; i++) {
@@ -1418,6 +1423,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSiz
                       from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
   from->starts[0] = 0;
   for(n = 0; n < from->n; n++) {
+    if (recvSizes[n] <=0 ) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"recvSizes[n=%D] = %D cannot be less than 1",n,recvSizes[n]);
     from->starts[n+1] = from->starts[n] + recvSizes[n];
     from->procs[n] = recvProcs[n];
     for(i = from->starts[n]; i < from->starts[n]+recvSizes[n]; i++) {
@@ -1715,7 +1721,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
       }
 
       for (i=0; i<to->n; i++) {
-        to->wcounts[to->procs[i]] = ((to->starts[i+1] - to->starts[i]) > 0) ? 1 : 0;
+        to->wcounts[to->procs[i]] = 1;
         ierr = MPI_Type_create_indexed_block(to->starts[i+1]-to->starts[i],bs,to->indices+to->starts[i],MPIU_SCALAR,to->types+to->procs[i]);CHKERRQ(ierr);
         ierr = MPI_Type_commit(to->types+to->procs[i]);CHKERRQ(ierr);
       }
@@ -1736,7 +1742,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
         }
       } else {
 	for (i=0; i<from->n; i++) {
-	  from->wcounts[from->procs[i]] = ((from->starts[i+1] - from->starts[i]) > 0) ? 1 : 0;
+	  from->wcounts[from->procs[i]] = 1;
 	  ierr = MPI_Type_create_indexed_block(from->starts[i+1]-from->starts[i],bs,from->indices+from->starts[i],MPIU_SCALAR,from->types+from->procs[i]);CHKERRQ(ierr);
 	  ierr = MPI_Type_commit(from->types+from->procs[i]);CHKERRQ(ierr);
         }
