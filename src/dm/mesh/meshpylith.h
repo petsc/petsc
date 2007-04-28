@@ -67,7 +67,10 @@ namespace ALECompat {
     public:
       Builder() {};
       virtual ~Builder() {};
+      static char *coord_units;
+      static char *traction_units;
     protected:
+      static void broadcastString(const MPI_Comm comm, const int rank, const char input[], char *output[]);
       static inline void ignoreComments(char *buf, PetscInt bufSize, FILE *f);
     public:
       static void readConnectivity(MPI_Comm comm, const std::string& filename, int& corners, const bool useZeroBase, int& numElements, int *vertices[], int *materials[]);
