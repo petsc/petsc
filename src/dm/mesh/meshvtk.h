@@ -1,5 +1,5 @@
 #if 0
-#include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
+#include "private/meshimpl.h"   /*I      "petscmesh.h"   I*/
 #endif
 
 #include <Mesh.hh>

@@ -1,7 +1,7 @@
 #ifndef included_ALE_PCICE_hh
 #define included_ALE_PCICE_hh
 
-#include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
+#include "private/meshimpl.h"   /*I      "petscmesh.h"   I*/
 
 namespace ALE {
   namespace PCICE {

@@ -6,7 +6,7 @@
 #include "src/dm/mesh/sieve/Hierarchy.hh"
 #include <petscda.h>
 #include <petscmesh.h>
-#include "src/dm/mesh/meshimpl.h"
+#include "private/meshimpl.h"
 #include <petscdmmg.h>
 #include "petscviewer.h"
 #include "src/dm/mesh/meshpcice.h"

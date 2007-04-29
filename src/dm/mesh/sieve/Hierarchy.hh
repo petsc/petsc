@@ -8,7 +8,7 @@
 //#include "petscmesh.h"
 #include "petscdmmg.h"
 //#include "petscmat.h"
-#include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
+#include "private/meshimpl.h"   /*I      "petscmesh.h"   I*/
 #include <Distribution.hh>
 #include <Generator.hh>
 //helper functions:
