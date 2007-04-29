@@ -3,8 +3,6 @@ static char help[] = "This example demonstrates partitioning/distributed hexes b
 #include <petscda.h>
 #include <petscmesh.h>
 
-#include <Distribution.hh>
-
 using ALE::Obj;
 
 /*
