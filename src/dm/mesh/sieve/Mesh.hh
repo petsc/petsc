@@ -208,7 +208,7 @@ namespace ALE {
     const labels_type& getLabels() {
       return this->_labels;
     };
-    const Obj<label_sequence>& getLabelStratum(const std::string& name, int value) {
+    virtual const Obj<label_sequence>& getLabelStratum(const std::string& name, int value) {
       this->checkLabel(name);
       return this->_labels[name]->support(value);
     };
@@ -239,11 +239,11 @@ namespace ALE {
       this->_maxHeight = -1;
       this->computeHeight(label, this->_sieve, this->_sieve->leaves(), this->_maxHeight);
     };
-    int height() const {return this->_maxHeight;};
-    int height(const point_type& point) {
+    virtual int height() const {return this->_maxHeight;};
+    virtual int height(const point_type& point) {
       return this->getValue(this->_labels["height"], point, -1);
     };
-    const Obj<label_sequence>& heightStratum(int height) {
+    virtual const Obj<label_sequence>& heightStratum(int height) {
       return this->getLabelStratum("height", height);
     };
     template<class InputPoints>
@@ -272,16 +272,16 @@ namespace ALE {
       this->_maxDepth = -1;
       this->computeDepth(label, this->_sieve, this->_sieve->roots(), this->_maxDepth);
     };
-    int depth() const {return this->_maxDepth;};
-    int depth(const point_type& point) {
+    virtual int depth() const {return this->_maxDepth;};
+    virtual int depth(const point_type& point) {
       return this->getValue(this->_labels["depth"], point, -1);
     };
-    const Obj<label_sequence>& depthStratum(int depth) {
+    virtual const Obj<label_sequence>& depthStratum(int depth) {
       return this->getLabelStratum("depth", depth);
     };
     #undef __FUNCT__
     #define __FUNCT__ "Bundle::stratify"
-    void stratify() {
+    virtual void stratify() {
       ALE_LOG_EVENT_BEGIN;
       this->computeHeights();
       this->computeDepths();

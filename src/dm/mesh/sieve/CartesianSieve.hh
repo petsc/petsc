@@ -1,8 +1,8 @@
 #ifndef included_ALE_CartesianSieve_hh
 #define included_ALE_CartesianSieve_hh
 
-#ifndef  included_ALE_Bundle_hh
-#include <Bundle.hh>
+#ifndef  included_ALE_Mesh_hh
+#include <Mesh.hh>
 #endif
 
 namespace ALE {
@@ -429,6 +429,8 @@ namespace ALE {
     // Backward compatibility
     typedef coneSequence coneArray;
     typedef coneSequence coneSet;
+    typedef supportSequence supportArray;
+    typedef supportSequence supportSet;
   protected:
     int  _dim;
     int *_sizes;
@@ -459,10 +461,16 @@ namespace ALE {
       Obj<baseSequence> base = new baseSequence(0, this->_numCells);
       return base;
     };
+    Obj<baseSequence> leaves() {
+      return this->base();
+    };
     // WARNING: Creating a lot of objects here
     Obj<capSequence> cap() {
        Obj<capSequence> cap = new capSequence(this->_numCells, this->_numCells+this->_numVertices);
        return cap;
+    };
+    Obj<capSequence> roots() {
+       return this->cap();
     };
     // WARNING: Creating a lot of objects here
     Obj<coneSequence> cone(const point_type& p) {
@@ -579,129 +587,166 @@ namespace ALE {
     };
   };
 
-  // We do not just use Topology, because we need to optimize labels
-  template<typename Patch_>
-  class CartesianTopology : public ALE::ParallelObject {
+  // We do not just use Bundle, because we need to optimize labels
+  class CartesianBundle : public ALE::ParallelObject {
   public:
-    typedef Patch_                                          patch_type;
-    typedef CartesianSieve<int>                             sieve_type;
-    typedef typename sieve_type::point_type                 point_type;
-    typedef typename std::map<patch_type, Obj<sieve_type> > sheaf_type;
-    typedef typename std::map<patch_type, int>              max_label_type;
-    typedef typename sieve_type::baseSequence               label_sequence;
-    typedef typename ALE::Sifter<int,point_type,point_type> send_overlap_type;
-    typedef typename ALE::Sifter<point_type,int,point_type> recv_overlap_type;
+    typedef CartesianSieve<int>                                       sieve_type;
+    typedef sieve_type::point_type                                    point_type;
+    typedef Section<point_type, double>                               real_section_type;
+    typedef Section<point_type, int>                                  int_section_type;
+    typedef UniformSection<MinimalArrow<point_type, point_type>, int> arrow_section_type;
+    typedef std::map<std::string, Obj<arrow_section_type> >           arrow_sections_type;
+    typedef std::map<std::string, Obj<real_section_type> >            real_sections_type;
+    typedef std::map<std::string, Obj<int_section_type> >             int_sections_type;
+    typedef sieve_type::baseSequence                                  label_sequence;
+    typedef ALE::Sifter<int,point_type,point_type>                    send_overlap_type;
+    typedef ALE::Sifter<point_type,int,point_type>                    recv_overlap_type;
   protected:
-    sheaf_type             _sheaf;
+    Obj<sieve_type>        _sieve;
     int                    _maxHeight;
-    max_label_type         _maxHeights;
     int                    _maxDepth;
-    max_label_type         _maxDepths;
+    arrow_sections_type    _arrowSections;
+    real_sections_type     _realSections;
+    int_sections_type      _intSections;
     Obj<send_overlap_type> _sendOverlap;
     Obj<recv_overlap_type> _recvOverlap;
+    Obj<send_overlap_type> _distSendOverlap;
+    Obj<recv_overlap_type> _distRecvOverlap;
   public:
-    CartesianTopology(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
+    CartesianBundle(MPI_Comm comm, const int debug = 0) : ALE::ParallelObject(comm, debug), _maxHeight(-1), _maxDepth(-1) {
       this->_sendOverlap = new send_overlap_type(this->comm(), this->debug());
       this->_recvOverlap = new recv_overlap_type(this->comm(), this->debug());
     };
-    virtual ~CartesianTopology() {};
-    public: // Verifiers
-      void checkPatch(const patch_type& patch) {
-        if (this->_sheaf.find(patch) == this->_sheaf.end()) {
-          ostringstream msg;
-          msg << "Invalid topology patch: " << patch << std::endl;
-          throw ALE::Exception(msg.str().c_str());
-        }
-      };
-      bool hasPatch(const patch_type& patch) {
-        if (this->_sheaf.find(patch) != this->_sheaf.end()) {
-          return true;
-        }
-        return false;
-      };
+    virtual ~CartesianBundle() {};
     public: // Accessors
-      const Obj<sieve_type>& getPatch(const patch_type& patch) {
-        this->checkPatch(patch);
-        return this->_sheaf[patch];
-      };
-      void setPatch(const patch_type& patch, const Obj<sieve_type>& sieve) {
-        this->_sheaf[patch] = sieve;
-      };
-      const sheaf_type& getPatches() {
-        return this->_sheaf;
-      };
       void clear() {
-        this->_sheaf.clear();
         this->_maxHeight = -1;
-        this->_maxHeights.clear();
-        this->_maxDepth = -1;
-        this->_maxDepths.clear();
+        this->_maxDepth  = -1;
       };
-      const Obj<send_overlap_type>& getSendOverlap() const {return this->_sendOverlap;};
-      void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
-      const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
-      void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
-      const Obj<send_overlap_type>& getDistSendOverlap() const {return this->_distSendOverlap;};
-      void setDistSendOverlap(const Obj<send_overlap_type>& overlap) {this->_distSendOverlap = overlap;};
-      const Obj<recv_overlap_type>& getDistRecvOverlap() const {return this->_distRecvOverlap;};
-      void setDistRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_distRecvOverlap = overlap;};
+    const Obj<sieve_type>& getSieve() const {return this->_sieve;};
+    void setSieve(const Obj<sieve_type>& sieve) {this->_sieve = sieve;};
+    bool hasArrowSection(const std::string& name) const {
+      return this->_arrowSections.find(name) != this->_arrowSections.end();
+    };
+    const Obj<arrow_section_type>& getArrowSection(const std::string& name) {
+      if (!this->hasArrowSection(name)) {
+        Obj<arrow_section_type> section = new arrow_section_type(this->comm(), this->debug());
+
+        section->setName(name);
+        if (this->_debug) {std::cout << "Creating new arrow section: " << name << std::endl;}
+        this->_arrowSections[name] = section;
+      }
+      return this->_arrowSections[name];
+    };
+    void setArrowSection(const std::string& name, const Obj<arrow_section_type>& section) {
+      this->_arrowSections[name] = section;
+    };
+    Obj<std::set<std::string> > getArrowSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(arrow_sections_type::const_iterator s_iter = this->_arrowSections.begin(); s_iter != this->_arrowSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+    bool hasRealSection(const std::string& name) const {
+      return this->_realSections.find(name) != this->_realSections.end();
+    };
+    const Obj<real_section_type>& getRealSection(const std::string& name) {
+      if (!this->hasRealSection(name)) {
+        Obj<real_section_type> section = new real_section_type(this->comm(), this->debug());
+
+        section->setName(name);
+        if (this->_debug) {std::cout << "Creating new real section: " << name << std::endl;}
+        this->_realSections[name] = section;
+      }
+      return this->_realSections[name];
+    };
+    void setRealSection(const std::string& name, const Obj<real_section_type>& section) {
+      this->_realSections[name] = section;
+    };
+    Obj<std::set<std::string> > getRealSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(real_sections_type::const_iterator s_iter = this->_realSections.begin(); s_iter != this->_realSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+    bool hasIntSection(const std::string& name) const {
+      return this->_intSections.find(name) != this->_intSections.end();
+    };
+    const Obj<int_section_type>& getIntSection(const std::string& name) {
+      if (!this->hasIntSection(name)) {
+        Obj<int_section_type> section = new int_section_type(this->comm(), this->debug());
+
+        section->setName(name);
+        if (this->_debug) {std::cout << "Creating new int section: " << name << std::endl;}
+        this->_intSections[name] = section;
+      }
+      return this->_intSections[name];
+    };
+    void setIntSection(const std::string& name, const Obj<int_section_type>& section) {
+      this->_intSections[name] = section;
+    };
+    Obj<std::set<std::string> > getIntSections() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(int_sections_type::const_iterator s_iter = this->_intSections.begin(); s_iter != this->_intSections.end(); ++s_iter) {
+        names->insert(s_iter->first);
+      }
+      return names;
+    };
+    const Obj<send_overlap_type>& getSendOverlap() const {return this->_sendOverlap;};
+    void setSendOverlap(const Obj<send_overlap_type>& overlap) {this->_sendOverlap = overlap;};
+    const Obj<recv_overlap_type>& getRecvOverlap() const {return this->_recvOverlap;};
+    void setRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_recvOverlap = overlap;};
+    const Obj<send_overlap_type>& getDistSendOverlap() const {return this->_distSendOverlap;};
+    void setDistSendOverlap(const Obj<send_overlap_type>& overlap) {this->_distSendOverlap = overlap;};
+    const Obj<recv_overlap_type>& getDistRecvOverlap() const {return this->_distRecvOverlap;};
+    void setDistRecvOverlap(const Obj<recv_overlap_type>& overlap) {this->_distRecvOverlap = overlap;};
   public: // Stratification
     #undef __FUNCT__
-    #define __FUNCT__ "Topology::stratify"
-    void stratify() {
+    #define __FUNCT__ "Bundle::stratify"
+    virtual void stratify() {
       ALE_LOG_EVENT_BEGIN;
-      this->_maxHeight = -1;
-      this->_maxDepth  = -1;
-      for(typename sheaf_type::iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
-        this->_maxHeights[s_iter->first] = 1;
-        this->_maxHeight                 = 1;
-        this->_maxDepths[s_iter->first]  = 1;
-        this->_maxDepth                  = 1;
-      
-      }
+      this->_maxHeight = 1;
+      this->_maxDepth  = 1;
       ALE_LOG_EVENT_END;
     };
-    int height() const {return this->_maxHeight;};
-    int height(const patch_type& patch) {
-      this->checkPatch(patch);
-      return this->_maxHeights[patch];
-    };
-    int height(const patch_type& patch, const point_type& point) {
-      const int numCells    = this->_sheaf[patch]->getNumCells();
-      const int numVertices = this->_sheaf[patch]->getNumVertices();
+    virtual int height() const {return this->_maxHeight;};
+    virtual int height(const point_type& point) {
+      const int numCells    = this->getSieve()->getNumCells();
+      const int numVertices = this->getSieve()->getNumVertices();
       if ((point >= 0)        && (point < numCells))             return 0;
       if ((point >= numCells) && (point < numCells+numVertices)) return 1;
       return -1;
     };
     // WARNING: Creating a lot of objects here
-    const Obj<label_sequence> heightStratum(const patch_type& patch, int height) {
-      if (height == 0) return this->_sheaf[patch]->base();
-      if (height == 1) return this->_sheaf[patch]->cap();
+    virtual const Obj<label_sequence> heightStratum(int height) {
+      if (height == 0) return this->getSieve()->base();
+      if (height == 1) return this->getSieve()->cap();
       throw ALE::Exception("Invalid height stratum");
     };
-    int depth() const {return this->_maxDepth;};
-    int depth(const patch_type& patch) {
-      this->checkPatch(patch);
-      return this->_maxDepths[patch];
-    };
-    int depth(const patch_type& patch, const point_type& point) {
-      const int numCells    = this->_sheaf[patch]->getNumCells();
-      const int numVertices = this->_sheaf[patch]->getNumVertices();
+    virtual int depth() const {return this->_maxDepth;};
+    virtual int depth(const point_type& point) {
+      const int numCells    = this->getSieve()->getNumCells();
+      const int numVertices = this->getSieve()->getNumVertices();
       if ((point >= 0)        && (point < numCells))             return 1;
       if ((point >= numCells) && (point < numCells+numVertices)) return 0;
       return -1;
     };
     // WARNING: Creating a lot of objects here
-    const Obj<label_sequence> depthStratum(const patch_type& patch, int depth) {
-      if (depth == 0) return this->_sheaf[patch]->cap();
-      if (depth == 1) return this->_sheaf[patch]->base();
+    virtual const Obj<label_sequence> depthStratum(int depth) {
+      if (depth == 0) return this->getSieve()->cap();
+      if (depth == 1) return this->getSieve()->base();
       throw ALE::Exception("Invalid depth stratum");
     };
-    const Obj<label_sequence> getLabelStratum(const patch_type& patch, const std::string& name, int value) {
+    virtual const Obj<label_sequence> getLabelStratum(const std::string& name, int value) {
       if (name == "height") {
-        return this->heightStratum(patch, value);
+        return this->heightStratum(value);
       } else if (name == "depth") {
-        return this->depthStratum(patch, value);
+        return this->depthStratum(value);
       }
       throw ALE::Exception("Invalid label name");
     }
@@ -711,44 +756,32 @@ namespace ALE {
         comm = this->comm();
       }
       if (name == "") {
-        PetscPrintf(comm, "viewing a CartesianTopology\n");
+        PetscPrintf(comm, "viewing a CartesianBundle\n");
       } else {
-        PetscPrintf(comm, "viewing CartesianTopology '%s'\n", name.c_str());
+        PetscPrintf(comm, "viewing CartesianBundle '%s'\n", name.c_str());
       }
       PetscPrintf(comm, "  maximum height %d maximum depth %d\n", this->height(), this->depth());
-      for(typename sheaf_type::const_iterator s_iter = this->_sheaf.begin(); s_iter != this->_sheaf.end(); ++s_iter) {
-        ostringstream txt;
-
-        txt << "Patch " << s_iter->first;
-        s_iter->second->view(txt.str().c_str(), comm);
-        PetscPrintf(comm, "  maximum height %d maximum depth %d\n", this->height(s_iter->first), this->depth(s_iter->first));
-      }
     };
   public:
-    void constructOverlap(const patch_type& patch) {};
+    void constructOverlap() {};
   };
 
-  class CartesianMesh : public Bundle<CartesianTopology<int> > {
+  class CartesianMesh : public CartesianBundle {
   public:
-    typedef int                              point_type;
-    typedef CartesianTopology<int>           topology_type;
-    typedef topology_type::sieve_type        sieve_type;
-    typedef topology_type::patch_type        patch_type;
-    typedef topology_type::send_overlap_type send_overlap_type;
-    typedef topology_type::recv_overlap_type recv_overlap_type;
+    typedef int                                point_type;
+    typedef CartesianBundle::sieve_type        sieve_type;
+    typedef CartesianBundle::label_sequence    label_sequence;
+    typedef CartesianBundle::send_overlap_type send_overlap_type;
+    typedef CartesianBundle::recv_overlap_type recv_overlap_type;
   protected:
     int                    _dim;
     // Discretization
     Obj<Discretization>    _discretization;
     Obj<BoundaryCondition> _boundaryCondition;
   public:
-    CartesianMesh(MPI_Comm comm, int dim, int debug = 0) : Bundle<CartesianTopology<int> >(comm, debug), _dim(dim) {
+    CartesianMesh(MPI_Comm comm, int dim, int debug = 0) : CartesianBundle(comm, debug), _dim(dim) {
       this->_discretization    = new Discretization(comm, debug);
       this->_boundaryCondition = new BoundaryCondition(comm, debug);
-    };
-    CartesianMesh(const Obj<topology_type>& topology, int dim) : Bundle<CartesianTopology<int> >(topology), _dim(dim) {
-      this->_discretization    = new Discretization(topology->comm(), topology->debug());
-      this->_boundaryCondition = new BoundaryCondition(topology->comm(), topology->debug());
     };
     virtual ~CartesianMesh() {};
   public: // Accessors
@@ -758,34 +791,70 @@ namespace ALE {
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
   public: // Discretization
-    void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
-      const std::string& name  = this->_boundaryCondition->getLabelName();
-      const patch_type   patch = 0;
-
-      for(int d = 0; d <= this->getTopology()->depth(); ++d) {
-        s->setFiberDimensionByDepth(patch, d, this->_discretization->getNumDof(d));
-      }
-      if (!name.empty()) {
 #if 0
-        const Obj<topology_type::label_sequence>& boundary = this->_topology->getLabelStratum(patch, name, 1);
+    void markBoundaryCells(const std::string& name) {
+      const Obj<label_type>&     label    = this->getLabel(name);
+      const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);
+      const Obj<sieve_type>&     sieve    = this->getSieve();
 
-        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          s->setFiberDimension(patch, *e_iter, -this->_discretization->getNumDof(this->_topology->depth(patch, *e_iter)));
+      for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+        if (this->height(*e_iter) == 1) {
+          const point_type cell = *sieve->support(*e_iter)->begin();
+
+          this->setValue(label, cell, 2);
         }
+      }
+    };
 #endif
+    void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
+      const std::string& name = this->_boundaryCondition->getLabelName();
+
+      for(int d = 0; d <= this->depth(); ++d) {
+        s->setFiberDimension(this->depthStratum(d), this->_discretization->getNumDof(d));
       }
-      s->allocate(postponeGhosts);
+      if (!name.empty()) {
+        const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);
+
+        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          s->setFiberDimension(*e_iter, -this->_discretization->getNumDof(this->depth(*e_iter)));
+        }
+      }
+      s->allocatePoint();
       if (!name.empty()) {
 #if 0
-        const Obj<real_section_type>&             coordinates = this->getRealSection("coordinates");
-        const Obj<topology_type::label_sequence>& boundary    = this->_topology->getLabelStratum(patch, name, 1);
+        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(name, 2);
+        const Obj<real_section_type>&  coordinates   = this->getRealSection("coordinates");
+        real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, *boundaryCells->begin())];
+        double                        *v0            = new double[this->getDimension()];
+        double                        *J             = new double[this->getDimension()*this->getDimension()];
+        double                         detJ;
 
-        for(topology_type::label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *e_iter);
-          const PetscScalar                    value  = this->_boundaryCondition->evaluate(coords);
+        for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
+          const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
+          const coneArray::iterator end     = closure->end();
+          int                       v       = 0;
 
-          s->updatePointBC(patch, *e_iter, &value);
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+            const int cDim = s->getConstraintDimension(*cl_iter);
+
+            if (cDim) {
+              for(int d = 0; d < cDim; ++d, ++v) {
+                values[v] = this->_boundaryCondition->integrateDual(v0, J, v);
+              }
+            } else {
+              const int dim = s->getFiberDimension(*cl_iter);
+
+              for(int d = 0; d < dim; ++d, ++v) {
+                values[v] = 0.0;
+              }
+            }
+          }
+          this->updateAll(s, *c_iter, values);
         }
+        delete [] values;
+        delete [] v0;
+        delete [] J;
 #endif
       }
     };
@@ -799,7 +868,7 @@ namespace ALE {
       } else {
         PetscPrintf(comm, "viewing CartesianMesh '%s'\n", name.c_str());
       }
-      this->getTopology()->view("");
+      this->getSieve()->view("mesh sieve");
     };
   };
 
@@ -826,18 +895,16 @@ namespace ALE {
         numLocalVertices[d] = numLocalCells[d]+1;
       }
       // Create mesh
-      const Obj<CartesianMesh>                mesh     = new CartesianMesh(comm, dim, debug);
-      const Obj<CartesianMesh::topology_type> topology = mesh->getTopology();
-      const Obj<CartesianMesh::sieve_type>    sieve    = new CartesianMesh::sieve_type(comm, dim, numLocalCells, debug);
-      const CartesianMesh::patch_type         patch    = 0;
+      const Obj<CartesianMesh>             mesh  = new CartesianMesh(comm, dim, debug);
+      const Obj<CartesianMesh::sieve_type> sieve = new CartesianMesh::sieve_type(comm, dim, numLocalCells, debug);
 
-      topology->setPatch(patch, sieve);
-      topology->stratify();
+      mesh->setSieve(sieve);
+      mesh->stratify();
       delete [] numLocalCells;
       // Create overlaps
       //   We overlap anyone within 1 index of us for the entire boundary
-      const Obj<CartesianMesh::send_overlap_type>& sendOverlap = topology->getSendOverlap();
-      const Obj<CartesianMesh::recv_overlap_type>& recvOverlap = topology->getRecvOverlap();
+      const Obj<CartesianMesh::send_overlap_type>& sendOverlap = mesh->getSendOverlap();
+      const Obj<CartesianMesh::recv_overlap_type>& recvOverlap = mesh->getRecvOverlap();
       int *indices  = new int[dim];
       int *code     = new int[dim];
       int *zeroCode = new int[dim];

@@ -43,7 +43,12 @@ namespace ALE {
         Obj<topology_type> topology = new topology_type(recvOverlap->comm(), recvOverlap->debug());
 
         for(recv_overlap_type::traits::capSequence::iterator r_iter = ranks->begin(); r_iter != ranks->end(); ++r_iter) {
-          Obj<dsieve_type> recvSieve = new dsieve_type(recvOverlap->support(*r_iter));
+          Obj<dsieve_type> recvSieve = new dsieve_type();
+          const Obj<recv_overlap_type::supportSequence>& points  = recvOverlap->support(*r_iter);
+
+          for(recv_overlap_type::supportSequence::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+            recvSieve->addPoint(p_iter.color());
+          }
           topology->setPatch(*r_iter, recvSieve);
         }
         topology->stratify();
