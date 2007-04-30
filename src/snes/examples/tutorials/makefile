@@ -383,6 +383,15 @@ runex19_4: #test pc_redundant
 	   if (${DIFF} output/ex19_3.out ex19_4.tmp) then true; \
 	   else echo "Possible problem with ex19_4, diffs above"; fi; \
 	   ${RM} -f ex19_4.tmp
+runex19_5: #test different scatters
+	-@for A in " " -vecscatter_rsend -vecscatter_ssend -vecscatter_alltoall "-vecscatter_alltoall -vecscatter_nopack"; do \
+           for B in " " -vecscatter_merge ; do \
+             ${MPIEXEC} -np 4 ./ex19 -dmmg_nlevels 4 -snes_monitor_short $$A $$B > ex19_5.tmp 2>&1; \
+	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
+	     else echo "Possible problem with ex19_5 " $$A $$B " diffs above"; fi; \
+           done;\
+         done;
+	 ${RM} -f ex19_5.tmp
 testex19: ex19.PETSc
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
            echo "Running with batch filesystem; to test run src/snes/examples/tutorials/ex19 with" ; \
