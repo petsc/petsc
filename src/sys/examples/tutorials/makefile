@@ -40,6 +40,10 @@ ex4f: ex4f.o   chkopts
 ex5: ex5.o   chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_SYS_LIB}
 	${RM} -f ex5.o
+
+ex5f90: ex5f90.o  chkopts
+	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_SYS_LIB}
+	${RM} ex5f90.o
 #
 # ------------------------------------------------------------------------
 #

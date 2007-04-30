@@ -105,8 +105,8 @@ struct _p_SNES {
 
   PetscReal   ttol;           /* used by default convergence test routine */
 
-  Vec             *vwork;            /* more work vectors for Jacobian approx */
-  PetscInt        nvwork;
+  Vec         *vwork;            /* more work vectors for Jacobian approx */
+  PetscInt    nvwork;
 };
 
 /* Context for Eisenstat-Walker convergence criteria for KSP solvers */
@@ -121,7 +121,7 @@ typedef struct {
   PetscReal threshold;           /* threshold for imposing safeguard */
   PetscReal lresid_last;         /* linear residual from last iteration */
   PetscReal norm_last;           /* function norm from last iteration */
-} SNES_KSP_EW_ConvCtx;
+} SNESKSPEW;
 
 #define SNESLogConvHistory(snes,res,its) \
   { if (snes->conv_hist && snes->conv_hist_max > snes->conv_hist_len) \

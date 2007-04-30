@@ -154,10 +154,12 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
     }
   }
 
+#if defined(PETSC_HAVE_MPI_ALLTOALLW)
   if (to->use_alltoallw) {
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
   }
+#endif
 
   if (to->use_alltoallv) {
     ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
@@ -1759,6 +1761,9 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 #else 
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
+#endif
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+  } else if (to->use_window) {
 #endif
   } else {
     PetscTruth  use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE;
