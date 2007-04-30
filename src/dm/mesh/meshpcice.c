@@ -312,7 +312,7 @@ namespace ALE {
 
       ALE::PCICE::Builder::readConnectivity(comm, adjFilename, numCorners, useZeroBase, numCells, &cells);
       ALE::PCICE::Builder::readCoordinates(comm, coordFilename, dim, numVertices, &coordinates);
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, mesh->getArrowSection("orientation"));
       mesh->setSieve(sieve);
       mesh->stratify();
       ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh, dim, coordinates);

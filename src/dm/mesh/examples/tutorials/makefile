@@ -25,10 +25,6 @@ ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_DM_LIB}
 	${RM} -f ex3.o
 
-ex4: ex4.o   chkopts
-	-${CLINKER} -o ex4 ex4.o  ${PETSC_DM_LIB}
-	${RM} -f ex4.o
-
 ex5: ex5.o   chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_DM_LIB}
 	${RM} -f ex5.o
@@ -69,8 +65,12 @@ ex_interpolate_1: ex_interpolate_1.o   chkopts
 	-${CLINKER} -o ex_interpolate_1 ex_interpolate_1.o  ${PETSC_DM_LIB}
 	${RM} -f ex_interpolate_1.o
 
+ionChannel: ionChannel.o chkopts
+	-${CLINKER} -o ionChannel ionChannel.o ${PETSC_DM_LIB}
+	${RM} -f ionChannel.o
+
 subduction: subduction.o chkopts
-	-${CLINKER} -o subduction subduction.o  ${PETSC_DM_LIB}
+	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
 	${RM} -f subduction.o
 
 #-----------------------------------------------------------------
