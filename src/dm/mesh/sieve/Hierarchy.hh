@@ -72,7 +72,6 @@ double Curvature_2D(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type p) {
   if (dim != 2) throw ALE::Exception("Called the 2D curvature routine on a non-2D mesh.");
   if (m->height(p) != 2) throw ALE::Exception("Curvatures available for interpolated meshes only.");
   double pCoords[dim], qCoords[dim], rCoords[dim];
-  const double * tmpCoords;
   double normvec[dim];
   
   const ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbors = m->getSieve()->support(p); //get the set of edges with p as an endpoint
@@ -210,7 +209,7 @@ double Curvature_3D(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type p) {
     }
     //printf("%d ->", curpt);
   }
-  printf("\n");
+  //printf("\n");
   //normalize the normal.
   double normlen = sqrt(normvec[0]*normvec[0] + normvec[1]*normvec[1] + normvec[2]*normvec[2]); 
   if (normlen < 0.000000000001) return 0.; //give up
@@ -343,144 +342,6 @@ PetscErrorCode MeshIDBoundary(Mesh mesh) {
       v_iter++;
     }
   }
-  PetscFunctionReturn(0);
-}
-
-//MeshCoarsenMesh: Do a naive top-level coarsen based upon an assumed spacing function
-//REQUIRES: both meshes initialized, finemesh has section "spacing" initialized with NN info
-//finemesh has the boundary labeled in "marker"
-//O(n_fine * n_coarsest) with n_coarsest assumed to be tuned (through coarsen_factor) to be constant.
-
-PetscErrorCode MeshCoarsenMesh(Mesh finemesh, double coarsen_factor, Mesh * outmesh) {
-  ALE::Obj<ALE::Mesh> m;
-  PetscErrorCode ierr;
-  PetscFunctionBegin;
-  //BOUNDARY Coarsen: pick a nonintersecting set of boundary balls.
-  ierr = MeshGetMesh(finemesh, m);
-  std::list<ALE::Mesh::point_type> incPoints;
-  int dim = m->getDimension();
-  const ALE::Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& spacing = m->getRealSection("spacing");
-  ALE::Obj<ALE::Mesh::label_sequence> boundpoints = m->getLabelStratum("marker", 0);
-  ALE::Mesh::label_sequence::iterator v_iter = boundpoints->begin();
-  ALE::Mesh::label_sequence::iterator v_iter_end = boundpoints->end();
-  double vCoords[dim];
-  const double * tmpCoords;
-  double vSpace;
-  double dist;
-
-  while (v_iter != v_iter_end) {
-    bool can_include = true;
-    tmpCoords = coordinates->restrictPoint(*v_iter);
-    for (int i = 0; i < dim; i++) {
-      vCoords[i] = tmpCoords[i];
-    }
-    vSpace = *spacing->restrictPoint(*v_iter);
-    std::list<ALE::Mesh::point_type>::iterator inc_iter = incPoints.begin();
-    std::list<ALE::Mesh::point_type>::iterator inc_iter_end = incPoints.end();
-    while (inc_iter != inc_iter_end && can_include) {
-      double iSpace = *spacing->restrictPoint(*inc_iter);
-      tmpCoords = coordinates->restrictPoint(*inc_iter);
-      dist = 0;
-      for (int i = 0; i < dim; i++) {
-        dist += (tmpCoords[i] - vCoords[i])*(tmpCoords[i] - vCoords[i]);
-      }
-      dist = sqrt(dist);
-      if (dist < 0.5*coarsen_factor*(vSpace + iSpace)) can_include = false;
-      inc_iter++;
-    }
-    if (can_include) {
-      incPoints.push_front(*v_iter); //include it in the set.
-    }
-   v_iter++;
-  }
-  //now try to include the other points
-  ALE::Obj<ALE::Mesh::label_sequence> vertices = m->depthStratum(0);
-  v_iter = vertices->begin();
-  v_iter_end = vertices->end();
-  while (v_iter != v_iter_end) {
-    bool can_include = true;
-    tmpCoords = coordinates->restrictPoint(*v_iter);
-    for (int i = 0; i < dim; i++) {
-      vCoords[i] = tmpCoords[i];
-    }
-    vSpace = *spacing->restrictPoint(*v_iter);
-    std::list<ALE::Mesh::point_type>::iterator inc_iter = incPoints.begin();
-    std::list<ALE::Mesh::point_type>::iterator inc_iter_end = incPoints.end();
-    while (inc_iter != inc_iter_end && can_include) {
-      double iSpace = *spacing->restrictPoint(*inc_iter);
-      tmpCoords = coordinates->restrictPoint(*inc_iter);
-      dist = 0;
-      for (int i = 0; i < dim; i++) {
-        dist += (tmpCoords[i] - vCoords[i])*(tmpCoords[i] - vCoords[i]);
-      }
-      dist = sqrt(dist);
-      if (dist < 0.5*coarsen_factor*(vSpace + iSpace)) can_include = false;
-      inc_iter++;
-    }
-    if (can_include) {
-      incPoints.push_front(*v_iter); //include it in the set.
-    }
-    v_iter++;
-  }
-  PetscPrintf(MPI_COMM_WORLD, "%d included at the toplevel\n", incPoints.size());
-  //create a coordinate array from the list we have made
-  double coords[dim * incPoints.size()];
-  int indices[dim * incPoints.size()];
-  std::list<ALE::Mesh::point_type>::iterator inc_iter = incPoints.begin();
-  std::list<ALE::Mesh::point_type>::iterator inc_iter_end = incPoints.end();
-  int index = 0;
-  const double * tmpcoords;
-  while (inc_iter != inc_iter_end) {
-    tmpcoords = coordinates->restrictPoint(*inc_iter);
-    for (int i = 0; i < dim; i++) {
-      coords[index*dim+i] = tmpcoords[i];
-    }
-    index++;
-    inc_iter++;
-  }
-  //call triangle or tetgen: turns out the options we want on are the same
-  std::string triangleOptions = "-zQe"; //(z)ero indexing, output (e)dges, Quiet
-  double * finalcoords;
-  int * connectivity;
-  int nelements;
-  int nverts;
-  if (dim == 2) {
-    triangulateio tridata[2];
-    SetupTriangulateio(&tridata[0], &tridata[1]);
-    tridata[0].pointlist = coords;
-    tridata[0].numberofpoints = incPoints.size();
-    tridata[0].pointmarkerlist = indices;
-    //triangulate
-    triangulate((char *)triangleOptions.c_str(), &tridata[0], &tridata[1], NULL);
-    finalcoords = tridata[1].pointlist;
-    connectivity = tridata[1].trianglelist;
-    nelements = tridata[1].numberoftriangles;
-    nverts = tridata[1].numberofpoints;
-  } else if (dim == 3) {
-    tetgenio * tetdata = new tetgenio[2];
-    //push the points into the thing
-    tetdata[0].pointlist = coords;
-    tetdata[0].pointmarkerlist = indices;
-    tetdata[0].numberofpoints = incPoints.size();
-    //tetrahedralize
-    tetrahedralize((char *)triangleOptions.c_str(), &tetdata[0], &tetdata[1]);
-    finalcoords = tetdata[1].pointlist;
-    connectivity = tetdata[1].tetrahedronlist;
-    nelements = tetdata[1].numberoftetrahedra;
-    nverts = tetdata[1].numberofpoints;
-  }
-  //make it into a mesh;
-  ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
-  ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, nelements, connectivity, nverts, false, dim+1, nelements);
-  ALE::Obj<ALE::Mesh> newmesh = new ALE::Mesh(m->comm(), m->debug());
-  newmesh->setDimension(dim);
-  newmesh->setSieve(sieve);
-  newmesh->stratify();
-  ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
-  //remove trivial elements; ie ones where all the tri/tet corners are marked as boundary points.
-  PetscPrintf(m->comm(), "%d points, %d elements in the new mesh.\n", newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size());
-  ierr = MeshSetMesh(*outmesh, newmesh);
   PetscFunctionReturn(0);
 }
 
@@ -766,13 +627,12 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       }
     }
     //call triangle or tetgen: turns out the options we want on are the same
-    std::string triangleOptions = "-zQe"; //(z)ero indexing, output (e)dges, Quiet
+    std::string triangleOptions = "zQe"; //(z)ero indexing, output (e)dges, Quiet
     double * finalcoords;
     int * connectivity;
     int * oldpositions;
     int nelements;
     int nverts;
-    int nboundverts;
     if (dim == 2) {
       //create a segmentlist to keep triangle from doing dumb things.
       triangulateio tridata[2];
