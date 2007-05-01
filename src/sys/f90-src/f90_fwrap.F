@@ -48,7 +48,7 @@
       PetscScalar, pointer :: ptr(:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrScalar(ptr,address)
+      call F90array1dGetAddrScalar(ptr,address)
       end subroutine
 
       subroutine F90Array1dAccessReal(ptr,address)
@@ -57,7 +57,7 @@
       PetscReal, pointer :: ptr(:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrReal(ptr,address)
+      call F90array1dGetAddrReal(ptr,address)
       end subroutine
 
       subroutine F90Array1dAccessInt(ptr,address)
@@ -66,7 +66,7 @@
       PetscInt, pointer :: ptr(:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrInt(ptr,address)
+      call F90array1dGetAddrInt(ptr,address)
       end subroutine
 
       subroutine F90Array1dAccessFortranAddr(ptr,address)
@@ -75,7 +75,7 @@
       PetscFortranAddr, pointer :: ptr(:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrFortranAddr(ptr,address)
+      call F90Array1dGetAddrFortranAddr(ptr,address)
       end subroutine
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -172,7 +172,7 @@
       PetscScalar, pointer :: ptr(:,:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrScalar(ptr,address)
+      call F90Array2dGetAddrScalar(ptr,address)
       end subroutine
 
       subroutine F90Array2dAccessReal(ptr,address)
@@ -181,7 +181,7 @@
       PetscReal, pointer :: ptr(:,:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrReal(ptr,address)
+      call F90Array2dGetAddrReal(ptr,address)
       end subroutine
 
       subroutine F90Array2dAccessInt(ptr,address)
@@ -190,7 +190,7 @@
       PetscInt, pointer :: ptr(:,:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrInt(ptr,address)
+      call F90Array2dGetAddrInt(ptr,address)
       end subroutine
 
       subroutine F90Array2dAccessFortranAddr(ptr,address)
@@ -199,7 +199,7 @@
       PetscFortranAddr, pointer :: ptr(:,:)
       PetscFortranAddr address
 
-      call F90ArrayGetAddrFortranAddr(ptr,address)
+      call F90Array2dGetAddrFortranAddr(ptr,address)
       end subroutine
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
