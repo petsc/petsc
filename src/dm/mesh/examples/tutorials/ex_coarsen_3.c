@@ -6,6 +6,7 @@
 #include "src/dm/mesh/sieve/Hierarchy.hh"
 #include <petscda.h>
 #include <petscmesh.h>
+#include <stdlib.h>
 #include "src/dm/mesh/meshimpl.h"
 #include <petscdmmg.h>
 #include "petscviewer.h"
@@ -62,7 +63,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& mesh, Options *options)
   ALE::LogStage stage = ALE::LogStageRegister("MeshCreation");
   ALE::LogStagePush(stage);
   ierr = PetscPrintf(comm, "Creating mesh\n");CHKERRQ(ierr);
-  mesh = ALE::PCICE::Builder::readMesh(comm, 2, options->baseFilename, options->useZeroBase, true, options->debug);
+  mesh = ALE::PCICE::Builder::readMesh(comm, 3, options->baseFilename, options->useZeroBase, true, options->debug);
   //ALE::Coarsener::IdentifyBoundary(mesh, 2);
   //ALE::Coarsener::make_coarsest_boundary(mesh, 2, options->levels + 1);
   ALE::LogStagePop(stage);
@@ -134,7 +135,11 @@ int main(int argc, char *argv[])
    // Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
    // mesh->getTopology()->setPatch(options.levels, sieve);
    // mesh->getTopology()->stratify();
-    ierr = OutputVTK(mesh_set[4], &options, "testMesh.vtk");CHKERRQ(ierr);
+    char vtkfilename[128];
+    for (int i = 0; i < options.levels; i++) {
+      sprintf(vtkfilename, "testMesh%d.vtk", i);
+      ierr = OutputVTK(mesh_set[i], &options, vtkfilename);CHKERRQ(ierr);
+    }
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
