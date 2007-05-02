@@ -153,7 +153,7 @@ class Configure(config.base.Configure):
       output = output + error
       if output.find('Unrecognised option --help passed to ld') >=0:    # NAG f95 compiler
         return 0
-      if output.find('http://www.sun.com/software') >= 0:
+      if output.find('http://www.sun.com') >= 0 or output.find('http://docs.sun.com') >=0:
         return 1
     except RuntimeError:
       pass
