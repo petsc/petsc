@@ -113,6 +113,7 @@ class VTKViewer {
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
+        ierr = PetscFree(remoteValues);CHKERRQ(ierr);
       }
     } else {
       value_type *localValues;

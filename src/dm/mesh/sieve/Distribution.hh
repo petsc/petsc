@@ -491,8 +491,19 @@ namespace ALE {
       }
 
       // Unify coordinates
-      serialMesh->setRealSection("coordinates", distributeSection(parallelMesh->getRealSection("coordinates"), serialMesh, sendOverlap, recvOverlap));
+      Obj<std::set<std::string> > sections = parallelMesh->getRealSections();
 
+      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+        serialMesh->setRealSection(*name, distributeSection(parallelMesh->getRealSection(*name), serialMesh, sendOverlap, recvOverlap));
+      }
+      sections = parallelMesh->getIntSections();
+      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+        serialMesh->setIntSection(*name, distributeSection(parallelMesh->getIntSection(*name), serialMesh, sendOverlap, recvOverlap));
+      }
+      sections = parallelMesh->getArrowSections();
+      for(std::set<std::string>::iterator name = sections->begin(); name != sections->end(); ++name) {
+        serialMesh->setArrowSection(*name, distributeArrowSection(parallelMesh->getArrowSection(*name), parallelMesh, serialMesh, sendOverlap, recvOverlap));
+      }
       if (serialMesh->debug()) {serialMesh->view("Serial Mesh");}
       ALE_LOG_EVENT_END;
       return serialMesh;

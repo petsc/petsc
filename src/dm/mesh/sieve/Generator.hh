@@ -28,6 +28,7 @@ namespace ALE {
         inputCtx->segmentlist = NULL;
         inputCtx->segmentmarkerlist = NULL;
         inputCtx->numberoftriangleattributes = 0;
+        inputCtx->trianglelist = NULL;
         inputCtx->numberofholes = 0;
         inputCtx->holelist = NULL;
         inputCtx->numberofregions = 0;
@@ -265,6 +266,7 @@ namespace ALE {
         if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
         if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
         if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
         const Obj<Mesh::sieve_type> newSieve = new Mesh::sieve_type(serialMesh->comm(), serialMesh->debug());
         int     numCorners  = 3;
         int     numCells    = out.numberoftriangles;

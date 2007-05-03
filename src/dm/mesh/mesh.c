@@ -255,6 +255,8 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MeshView_Mesh"
 PetscErrorCode PETSCDM_DLLEXPORT MeshView_Mesh(Mesh mesh, PetscViewer viewer)
 {
   PetscErrorCode ierr;
