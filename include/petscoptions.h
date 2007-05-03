@@ -164,4 +164,35 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions();
 PETSC_EXTERN_CXX_END
+
+typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD} OptionType;
+typedef struct _p_Options* PetscOptions;
+struct _p_Options {
+  char         *option;
+  char         *text;
+  void         *data;
+  void         *edata;
+  char         *man;
+  int          arraylength;
+  PetscTruth   set;
+  OptionType   type;
+  PetscOptions next;
+};
+
+typedef struct _p_OptionsHelp* OptionsHelp;
+struct _p_OptionsHelp {
+  char        *prefix;
+  char        *title;
+  char        *mansec;
+  OptionsHelp next;
+};
+
+typedef struct {
+  PetscOptions    next;
+  char            *prefix,*mprefix;  
+  char            *title;
+  MPI_Comm        comm;
+  PetscTruth      printhelp,changedmethod,alreadyprinted;
+  OptionsHelp     help;
+} PetscOptionsObjectType;
 #endif
