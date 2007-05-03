@@ -390,7 +390,7 @@ runex19_5: #test different scatters
 	     if (${DIFF} output/ex19_5.out ex19_5.tmp) then true; \
 	     else echo "Possible problem with ex19_5 " $$A $$B " diffs above"; fi; \
            done;\
-         done;
+         done;\
 	 ${RM} -f ex19_5.tmp
 testex19: ex19.PETSc
 	@if [ "${PETSC_WITH_BATCH}" != "" ]; then \
