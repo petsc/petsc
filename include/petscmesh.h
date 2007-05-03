@@ -4,6 +4,7 @@
 #if !defined(__PETSCMESH_H)
 #define __PETSCMESH_H
 #include <Mesh.hh>
+#include <CartesianSieve.hh>
 #include "petscda.h"
 PETSC_EXTERN_CXX_BEGIN
 
@@ -17,6 +18,9 @@ PETSC_EXTERN_CXX_BEGIN
 .seealso:  MeshCreate(), MeshDestroy(), Section, SectionCreate()
 S*/
 typedef struct _p_Mesh* Mesh;
+#define MeshType const char*
+#define MESHSIEVE     "sieve"
+#define MESHCARTESIAN "cartesian"
 
 /* Logging support */
 extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
@@ -26,10 +30,65 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh, MeshType);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh,Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh, MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh, MatType, Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);
+
+/*MC
+   MeshRegisterDynamic - Adds a type to the Mesh package.
+
+   Synopsis:
+   PetscErrorCode MeshRegisterDynamic(char *name_solver,char *path,char *name_create,PetscErrorCode (*routine_create)(Mesh))
+
+   Not Collective
+
+   Input Parameters:
++  name_solver - name of a new user-defined solver
+.  path - path (either absolute or relative) the library containing this solver
+.  name_create - name of routine to create mesh context
+-  routine_create - routine to create mesh context
+
+   Notes:
+   MeshRegisterDynamic() may be called multiple times to add several user-defined solvers.
+
+   If dynamic libraries are used, then the fourth input argument (routine_create)
+   is ignored.
+
+   Sample usage:
+.vb
+   MeshRegisterDynamic("my_mesh",/home/username/my_lib/lib/libO/solaris/mylib.a,
+               "MyMeshCreate",MyMeshCreate);
+.ve
+
+   Then, your solver can be chosen with the procedural interface via
+$     MeshSetType(mesh,"my_mesh")
+   or at runtime via the option
+$     -mesh_type my_mesh
+
+   Level: advanced
+
+   Notes: Environmental variables such as ${PETSC_ARCH}, ${PETSC_DIR}, ${PETSC_LIB_DIR},
+          and others of the form ${any_environmental_variable} occuring in pathname will be 
+          replaced with appropriate values.
+         If your function is not being put into a shared library then use MeshRegister() instead
+
+.keywords: Mesh, register
+
+.seealso: MeshRegisterAll(), MeshRegisterDestroy()
+
+M*/
+#if defined(PETSC_USE_DYNAMIC_LIBRARIES)
+#define MeshRegisterDynamic(a,b,c,d) MeshRegister(a,b,c,0)
+#else
+#define MeshRegisterDynamic(a,b,c,d) MeshRegister(a,b,c,d)
+#endif
+
+extern PetscFList MeshList;
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterAll(const char[]);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshRegister(const char[],const char[],const char[],PetscErrorCode (*)(Mesh));
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMesh(Mesh,ALE::Obj<ALE::Mesh>&);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh,const ALE::Obj<ALE::Mesh>&);
@@ -60,6 +119,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCSectionRealGetArray(Mesh, const char [
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT BCFUNCGetArray(Mesh, PetscInt *, PetscInt *, PetscScalar *[]);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT WritePCICERestart(Mesh, PetscViewer);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT PCICERenumberBoundary(Mesh);
+
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianGetMesh(Mesh,ALE::Obj<ALE::CartesianMesh>&);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCartesianSetMesh(Mesh,const ALE::Obj<ALE::CartesianMesh>&);
 
 /*S
   SectionReal - Abstract PETSc object that manages distributed field data over a topology (Sieve).

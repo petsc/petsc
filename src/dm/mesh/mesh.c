@@ -11,6 +11,9 @@ PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE = 0;
 PetscEvent  Mesh_View = 0, Mesh_GetGlobalScatter = 0, Mesh_restrictVector = 0, Mesh_assembleVector = 0,
             Mesh_assembleVectorComplete = 0, Mesh_assembleMatrix = 0, Mesh_updateOperator = 0;
 
+PetscTruth MeshRegisterAllCalled = PETSC_FALSE;
+PetscFList MeshList;
+
 EXTERN PetscErrorCode MeshView_Mesh(Mesh, PetscViewer);
 EXTERN PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
 EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh **);
@@ -531,8 +534,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   ierr = DMInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(p,_p_Mesh,struct _MeshOps,MESH_COOKIE,0,"Mesh",comm,MeshDestroy,MeshView);CHKERRQ(ierr);
   p->ops->view               = MeshView_Mesh;
+  p->ops->destroy            = PETSC_NULL;
   p->ops->createglobalvector = MeshCreateGlobalVector;
   p->ops->getcoloring        = PETSC_NULL;
   p->ops->getmatrix          = MeshGetMatrix;
@@ -550,6 +554,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   p->lf            = PETSC_NULL;
   p->lj            = PETSC_NULL;
   p->mcompat       = PETSC_NULL;
+  p->data          = PETSC_NULL;
   *mesh = p;
   PetscFunctionReturn(0);
 }
@@ -577,6 +582,149 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshSetType"
+/*@C
+  MeshSetType - Sets the Mesh type
+
+  Collective on Mesh
+
+  Input Parameters:
++ mesh - the Mesh context
+- type - the type
+
+  Options Database Key:
+. -mesh_type  <method> - Sets the type; use -help for a list 
+    of available types (for instance, cartesian or sieve)
+
+  Notes:
+  See "petsc/include/petscmesh.h" for available types (for instance,
+  MESHCARTESIAN or MESHSIEVE).
+
+  Level: intermediate
+
+.keywords: Mesh, set, typr
+.seealso: MeshGetType(), MeshType
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
+{
+  PetscErrorCode ierr,(*r)(Mesh);
+  PetscTruth     match;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
+  PetscValidCharPointer(type,2);
+
+  ierr = PetscTypeCompare((PetscObject)mesh,type,&match);CHKERRQ(ierr);
+  if (match) PetscFunctionReturn(0);
+
+  ierr =  PetscFListFind(MeshList,mesh->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Mesh type %s",type);
+  /* Destroy the previous private Mesh context */
+  if (mesh->ops->destroy) { ierr = (*mesh->ops->destroy)(mesh);CHKERRQ(ierr); }
+  /* Reinitialize function pointers in MeshOps structure */
+  ierr = PetscMemzero(mesh->ops, sizeof(struct _MeshOps));CHKERRQ(ierr);
+  /* Call the MeshCreate_XXX routine for this particular mesh */
+  ierr = (*r)(mesh);CHKERRQ(ierr);
+  ierr = PetscObjectChangeTypeName((PetscObject) mesh, type);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshGetType"
+/*@C
+  MeshGetType - Gets the Mesh type as a string from the Mesh object.
+
+  Not Collective
+
+  Input Parameter:
+. mesh - Mesh context 
+
+  Output Parameter:
+. name - name of Mesh type 
+
+  Level: intermediate
+
+.keywords: Mesh, get, type
+.seealso: MeshSetType()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,MeshType *type)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
+  PetscValidPointer(type,2);
+  *type = mesh->type_name;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRegister"
+/*@C
+  MeshRegister - See MeshRegisterDynamic()
+
+  Level: advanced
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT MeshRegister(const char sname[],const char path[],const char name[],PetscErrorCode (*function)(Mesh))
+{
+  PetscErrorCode ierr;
+  char           fullname[PETSC_MAX_PATH_LEN];
+
+  PetscFunctionBegin;
+  ierr = PetscFListConcat(path,name,fullname);CHKERRQ(ierr);
+  ierr = PetscFListAdd(&MeshList,sname,fullname,(void (*)(void))function);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+EXTERN_C_BEGIN
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT MeshCreate_Cartesian(Mesh);
+EXTERN_C_END
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRegisterAll"
+/*@C
+  MeshRegisterAll - Registers all of the Mesh types in the Mesh package.
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: Mesh, register, all
+.seealso:  MeshRegisterDestroy()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterAll(const char path[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  MeshRegisterAllCalled = PETSC_TRUE;
+
+  ierr = MeshRegisterDynamic(MESHCARTESIAN, path, "MeshCreate_Cartesian", MeshCreate_Cartesian);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshRegisterDestroy"
+/*@
+  MeshRegisterDestroy - Frees the list of Mesh types that were
+  registered by MeshRegister().
+
+  Not Collective
+
+  Level: advanced
+
+.keywords: Mesh, register, destroy
+.seealso: MeshRegister(), MeshRegisterAll()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshRegisterDestroy(void)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscFListDestroy(&MeshList);CHKERRQ(ierr);
+  MeshRegisterAllCalled = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 

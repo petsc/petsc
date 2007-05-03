@@ -143,9 +143,9 @@ namespace ALE {
           part_type *assignment = scatterBundle<Partitioner>(bundle, dim, bundleNew, sendOverlap, recvOverlap, height);
           if (!subBundle.isNull() && !subBundleNew.isNull()) {
             part_type *subAssignment = GenPartitioner::subordinatePartition(bundle, 1, subBundle, assignment);
-            const Obj<sieve_type>&                   sieve      = subBundle->getSieve();
-            const Obj<sieve_type>&                   sieveNew   = new Mesh::sieve_type(subBundle->comm(), subBundle->debug());
-            const int                                numCells   = subBundle->heightStratum(height)->size();
+            const Obj<sieve_type>& sieve      = subBundle->getSieve();
+            const Obj<sieve_type>& sieveNew   = new Mesh::sieve_type(subBundle->comm(), subBundle->debug());
+            const int              numCells   = subBundle->heightStratum(height)->size();
 
             subBundleNew->setSieve(sieveNew);
             sieveCompletion::scatterSieve(subBundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, height, numCells, subAssignment);
@@ -159,9 +159,21 @@ namespace ALE {
         } else if (partitioner == "parmetis") {
 #ifdef PETSC_HAVE_PARMETIS
           typedef typename ALE::New::ParMetis::Partitioner<bundle_type> Partitioner;
+          typedef typename ALE::New::Partitioner<bundle_type>           GenPartitioner;
           typedef typename Partitioner::part_type                       part_type;
 
           part_type *assignment = scatterBundle<Partitioner>(bundle, dim, bundleNew, sendOverlap, recvOverlap, height);
+          if (!subBundle.isNull() && !subBundleNew.isNull()) {
+            part_type *subAssignment = GenPartitioner::subordinatePartition(bundle, 1, subBundle, assignment);
+            const Obj<sieve_type>& sieve      = subBundle->getSieve();
+            const Obj<sieve_type>& sieveNew   = new Mesh::sieve_type(subBundle->comm(), subBundle->debug());
+            const int              numCells   = subBundle->heightStratum(height)->size();
+
+            subBundleNew->setSieve(sieveNew);
+            sieveCompletion::scatterSieve(subBundle, sieve, dim, sieveNew, sendOverlap, recvOverlap, height, numCells, subAssignment);
+            subBundleNew->stratify();
+            if (subAssignment != NULL) delete [] subAssignment;
+          }
           if (assignment != NULL) delete [] assignment;
 #else
           throw ALE::Exception("ParMetis is not installed. Reconfigure with the flag --download-parmetis");

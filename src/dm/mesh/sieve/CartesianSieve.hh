@@ -773,6 +773,8 @@ namespace ALE {
     typedef CartesianBundle::label_sequence    label_sequence;
     typedef CartesianBundle::send_overlap_type send_overlap_type;
     typedef CartesianBundle::recv_overlap_type recv_overlap_type;
+    typedef sieve_type::coneSequence           coneSequence;
+    typedef sieve_type::supportSequence        supportSequence;
   protected:
     int                    _dim;
     // Discretization
@@ -856,6 +858,154 @@ namespace ALE {
         delete [] v0;
         delete [] J;
 #endif
+      }
+    };
+  public: // Size traversal
+    template<typename Section_>
+    int size(const Obj<Section_>& section, const point_type& p) {
+      const typename Section_::chart_type& chart = section->getChart();
+      const Obj<coneSequence>              cone  = this->getSieve()->cone(p);
+      typename coneSequence::iterator      end   = cone->end();
+      int                                  size  = 0;
+
+      if (chart.count(p)) {
+        size += section->getConstrainedFiberDimension(p);
+      }
+      for(typename coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
+        if (chart.count(*c_iter)) {
+          size += section->getConstrainedFiberDimension(*c_iter);
+        }
+      }
+      return size;
+    };
+    template<typename Section_>
+    int sizeWithBC(const Obj<Section_>& section, const point_type& p) {
+      const typename Section_::chart_type& chart = section->getChart();
+      const Obj<coneSequence>              cone  = this->getSieve()->cone(p);
+      typename coneSequence::iterator      end   = cone->end();
+      int                                  size  = 0;
+
+      if (chart.count(p)) {
+        size += section->getFiberDimension(p);
+      }
+      for(typename coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
+        if (chart.count(*c_iter)) {
+          size += section->getFiberDimension(*c_iter);
+        }
+      }
+      return size;
+    };
+  public: // Allocation
+    template<typename Section_>
+    void allocate(const Obj<Section_>& section) {
+      section->allocatePoint();
+    };
+  public: // Retrieval traversal
+    // Return the values for the closure of this point
+    //   use a smart pointer?
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
+      const int                       size   = this->sizeWithBC(section, p);
+      typename Section_::value_type  *values = section->getRawArray(size);
+      int                             j      = -1;
+
+      const int& dim = section->getFiberDimension(p);
+      const typename Section_::value_type *array = section->restrictPoint(p);
+
+      for(int i = 0; i < dim; ++i) {
+        values[++j] = array[i];
+      }
+      const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+      typename sieve_type::coneSequence::iterator   end  = cone->end();
+
+      for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+        const int& dim = section->getFiberDimension(*p_iter);
+
+        array = section->restrictPoint(*p_iter);
+        for(int i = 0; i < dim; ++i) {
+          values[++j] = array[i];
+        }
+      }
+      if (j != size-1) {
+        ostringstream txt;
+
+        txt << "Invalid restrict to point " << p << std::endl;
+        txt << "  j " << j << " should be " << (size-1) << std::endl;
+        std::cout << txt.str();
+        throw ALE::Exception(txt.str().c_str());
+      }
+      return values;
+    };
+    template<typename Section_>
+    void update(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      int j = 0;
+
+      section->updatePoint(p, &v[j]);
+      j += section->getFiberDimension(p);
+      const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+      for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        section->updatePoint(*p_iter, &v[j]);
+        j += section->getFiberDimension(*p_iter);
+      }
+    };
+    template<typename Section_>
+    void updateAdd(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      int j = 0;
+
+      section->updateAddPoint(p, &v[j]);
+      j += section->getFiberDimension(p);
+      const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+      for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        section->updateAddPoint(*p_iter, &v[j]);
+        j += section->getFiberDimension(*p_iter);
+      }
+    };
+    template<typename Section_>
+    void updateBC(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      int j = 0;
+
+      section->updatePointBC(p, &v[j]);
+      j += section->getFiberDimension(p);
+      const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+      for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        section->updatePointBC(*p_iter, &v[j]);
+        j += section->getFiberDimension(*p_iter);
+      }
+    };
+    template<typename Section_>
+    void updateAll(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
+      int j = 0;
+
+      section->updatePointBC(p, &v[j]);
+      j += section->getFiberDimension(p);
+      const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
+
+      for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        section->updatePointAll(*p_iter, &v[j]);
+        j += section->getFiberDimension(*p_iter);
+      }
+    };
+  public: // Mesh geometry
+    void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrict(coordinates, e);
+      const int     dim    = this->_dim;
+      const int     last   = 1 << dim;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      for(int d = 0; d < dim; ++d) {
+        if (J) {
+          J[d] = 0.5*(coords[last*dim+d] - v0[d]);
+        }
+        if (invJ) {
+          invJ[d] = 1.0/J[d];
+        }
       }
     };
   public: // Viewers
