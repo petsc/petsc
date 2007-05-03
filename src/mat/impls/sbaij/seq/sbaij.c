@@ -376,6 +376,9 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   } else if (format == PETSC_VIEWER_ASCII_FACTOR_INFO) {
      PetscFunctionReturn(0);
   } else {
+    if (A->factor && bs>1){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored. MatView_SeqSBAIJ_ASCII() may not display complete or logically correct entries!\n");CHKERRQ(ierr);
+    }
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<a->mbs; i++) {
       for (j=0; j<bs; j++) {
@@ -492,7 +495,6 @@ static PetscErrorCode MatView_SeqSBAIJ_Draw(Mat A,PetscViewer viewer)
   PetscTruth     isnull;
   
   PetscFunctionBegin; 
-  
   ierr = PetscViewerDrawGetDraw(viewer,0,&draw);CHKERRQ(ierr);
   ierr = PetscDrawIsNull(draw,&isnull);CHKERRQ(ierr); if (isnull) PetscFunctionReturn(0);
   
@@ -513,9 +515,6 @@ PetscErrorCode MatView_SeqSBAIJ(Mat A,PetscViewer viewer)
   PetscTruth     iascii,isdraw;
   
   PetscFunctionBegin;
-  if (A->factor){
-    ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored. MatView_SeqSBAIJ() may not display complete or logically correct entries!\n");CHKERRQ(ierr);
-  }
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
   if (iascii){
@@ -1714,6 +1713,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqSBAIJSetPreallocation(Mat B,PetscInt bs,
    Level: intermediate
 
    Notes:
+   The number of rows and columns must be divisible by blocksize.
+   This matrix type does not support complex Hermitian operation.
 
    Specify the preallocated storage with either nz or nnz (not both).
    Set nz=PETSC_DEFAULT and nnz=PETSC_NULL for PETSc to control dynamic memory 

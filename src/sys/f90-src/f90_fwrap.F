@@ -47,8 +47,10 @@
 #include "include/finclude/petsc.h"
       PetscScalar, pointer :: ptr(:)
       PetscFortranAddr address
+      PetscInt start
 
-      call F90ArrayGetAddrScalar(ptr,address)
+      start = lbound(ptr,1)
+      call F90Array1dGetAddrScalar(ptr(start),address)
       end subroutine
 
       subroutine F90Array1dAccessReal(ptr,address)
@@ -56,8 +58,10 @@
 #include "include/finclude/petsc.h"
       PetscReal, pointer :: ptr(:)
       PetscFortranAddr address
+      PetscInt start
 
-      call F90ArrayGetAddrReal(ptr,address)
+      start = lbound(ptr,1)
+      call F90Array1dGetAddrReal(ptr(start),address)
       end subroutine
 
       subroutine F90Array1dAccessInt(ptr,address)
@@ -65,8 +69,10 @@
 #include "include/finclude/petsc.h"
       PetscInt, pointer :: ptr(:)
       PetscFortranAddr address
+      PetscInt start
 
-      call F90ArrayGetAddrInt(ptr,address)
+      start = lbound(ptr,1)
+      call F90Array1dGetAddrInt(ptr(start),address)
       end subroutine
 
       subroutine F90Array1dAccessFortranAddr(ptr,address)
@@ -74,8 +80,10 @@
 #include "include/finclude/petsc.h"
       PetscFortranAddr, pointer :: ptr(:)
       PetscFortranAddr address
+      PetscInt start
 
-      call F90ArrayGetAddrFortranAddr(ptr,address)
+      start = lbound(ptr,1)
+      call F90Array1dGetAddrFortranAddr(ptr(start),address)
       end subroutine
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -171,8 +179,11 @@
 #include "include/finclude/petsc.h"
       PetscScalar, pointer :: ptr(:,:)
       PetscFortranAddr address
+      PetscInt start1,start2
 
-      call F90ArrayGetAddrScalar(ptr,address)
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      call F90Array2dGetAddrScalar(ptr(start1,start2),address)
       end subroutine
 
       subroutine F90Array2dAccessReal(ptr,address)
@@ -180,8 +191,11 @@
 #include "include/finclude/petsc.h"
       PetscReal, pointer :: ptr(:,:)
       PetscFortranAddr address
+      PetscInt start1,start2
 
-      call F90ArrayGetAddrReal(ptr,address)
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      call F90Array2dGetAddrReal(ptr(start1,start2),address)
       end subroutine
 
       subroutine F90Array2dAccessInt(ptr,address)
@@ -189,8 +203,11 @@
 #include "include/finclude/petsc.h"
       PetscInt, pointer :: ptr(:,:)
       PetscFortranAddr address
+      PetscInt start1,start2
 
-      call F90ArrayGetAddrInt(ptr,address)
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      call F90Array2dGetAddrInt(ptr(start1,start2),address)
       end subroutine
 
       subroutine F90Array2dAccessFortranAddr(ptr,address)
@@ -198,8 +215,11 @@
 #include "include/finclude/petsc.h"
       PetscFortranAddr, pointer :: ptr(:,:)
       PetscFortranAddr address
+      PetscInt start1,start2
 
-      call F90ArrayGetAddrFortranAddr(ptr,address)
+      start1 = lbound(ptr,1)
+      start2 = lbound(ptr,2)
+      call F90Array2dGetAddrFortranAddr(ptr(start1,start2),address)
       end subroutine
       
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

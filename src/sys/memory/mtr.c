@@ -344,7 +344,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTrFreeDefault(void *aa,int line,const char f
 
     Concepts: memory usage
 
-.seealso: PetscMemoryDump(), PetscMemoryGetCurrentUsage()
+.seealso: PetscMallocDump(), PetscMemoryGetCurrentUsage()
  @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMemoryShowUsage(PetscViewer viewer,const char message[])
 {

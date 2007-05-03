@@ -147,7 +147,10 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
        the requests
     */
     for (i=0; i<from->n; i++) {
-      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
+      //      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
+    }
+    for (i=0; i<to->n; i++) {
+      //      ierr = MPI_Cancel(to->rev_requests+i);CHKERRQ(ierr);
     }
   }
 
@@ -167,33 +170,36 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
      message passing.
   */
 #if !defined(PETSC_HAVE_BROKEN_REQUEST_FREE)
-  if (to->requests) {
-    for (i=0; i<to->n; i++) {
-      ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
+  if (!to->use_alltoallv) {   /* currently the to->requests etc are ALWAYS allocated even if not used */
+    if (to->requests) {
+      for (i=0; i<to->n; i++) {
+	ierr = MPI_Request_free(to->requests + i);CHKERRQ(ierr);
+      }
+    }
+    if (to->rev_requests) {
+      for (i=0; i<to->n; i++) {
+	ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
+      }
     }
   }
-  if (to->rev_requests) {
-    for (i=0; i<to->n; i++) {
-      ierr = MPI_Request_free(to->rev_requests + i);CHKERRQ(ierr);
-    }
-  }
-
   /*
       MPICH could not properly cancel requests thus with ready receiver mode we
     cannot free the requests. It may be fixed now, if not then put the following 
     code inside a if !to->use_readyreceiver) {
   */
-  if (from->requests) {
-    for (i=0; i<from->n; i++) {
-      ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
+  if (!to->use_alltoallv) {    /* currently the from->requests etc are ALWAYS allocated even if not used */
+    if (from->requests) {
+      for (i=0; i<from->n; i++) {
+	ierr = MPI_Request_free(from->requests + i);CHKERRQ(ierr);
+      }
     }
-  }
 
-  if (from->rev_requests) {
-    for (i=0; i<from->n; i++) {
-      ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
-    }
-  }  
+    if (from->rev_requests) {
+      for (i=0; i<from->n; i++) {
+	ierr = MPI_Request_free(from->rev_requests + i);CHKERRQ(ierr);
+      }
+    }  
+  }
 #endif
 
   ierr = PetscFree(to->local.vslots);CHKERRQ(ierr);
@@ -363,7 +369,6 @@ PetscErrorCode VecScatterCopy_PtoP_X(VecScatter in,VecScatter out)
     } else {
       out_to->use_readyreceiver    = PETSC_FALSE;
       out_from->use_readyreceiver  = PETSC_FALSE;
-      flg                          = PETSC_FALSE;
       ierr                         = PetscOptionsHasName(PETSC_NULL,"-vecscatter_ssend",&flg);CHKERRQ(ierr);
       if (flg) {
         ierr = PetscInfo(0,"Using VecScatter Ssend mode\n");CHKERRQ(ierr);
@@ -1656,13 +1661,14 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
 PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatter_MPI_General *to,VecScatter ctx)
 {
   MPI_Comm       comm = ctx->comm;
-  PetscMPIInt    tag  = ctx->tag;
+  PetscMPIInt    tag  = ctx->tag, tagr;
   PetscInt       bs   = to->bs;
   PetscMPIInt    size;
   PetscInt       i, n;
   PetscErrorCode ierr;
   
   PetscFunctionBegin;
+  ierr = PetscObjectGetNewTag((PetscObject)ctx,&tagr);CHKERRQ(ierr);
   ctx->destroy = VecScatterDestroy_PtoP;
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_sendfirst",&to->sendfirst);CHKERRQ(ierr);
@@ -1682,11 +1688,13 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_alltoall",&to->use_alltoallv);CHKERRQ(ierr);
   from->use_alltoallv = to->use_alltoallv;
+  if (from->use_alltoallv) PetscInfo(0,"Using MPI_Alltoallv() for scatter\n");
 #if defined(PETSC_HAVE_MPI_ALLTOALLW) 
   if (to->use_alltoallv) {
     ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_nopack",&to->use_alltoallw);CHKERRQ(ierr);
   }
   from->use_alltoallw = to->use_alltoallw;
+  if (from->use_alltoallw) PetscInfo(0,"Using MPI_Alltoallw() for scatter\n");
 #endif
 
   if (to->use_alltoallv) {
@@ -1732,7 +1740,7 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
         from->types[i] = MPIU_SCALAR;
       }
       if (from->contiq) {
-        PetscInfo(0,"Scattered vector entries are stored contiquously, taking advantage of this with -vecscatter_alltoallw");
+        PetscInfo(0,"Scattered vector entries are stored contiquously, taking advantage of this with -vecscatter_alltoall\n");
 	for (i=0; i<from->n; i++) {
 	  from->wcounts[from->procs[i]] = bs*(from->starts[i+1] - from->starts[i]);
         }
@@ -1782,33 +1790,36 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
     }
 
     for (i=0; i<from->n; i++) {
-      ierr = MPI_Recv_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
-      if (!use_ssend) {
-        ierr = MPI_Send_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rev_swaits+i);CHKERRQ(ierr);
+      if (use_rsend) {
+        ierr = MPI_Rsend_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tagr,comm,rev_swaits+i);CHKERRQ(ierr);
+      } else if (use_ssend) {
+        ierr = MPI_Ssend_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tagr,comm,rev_swaits+i);CHKERRQ(ierr);
       } else {
-        ierr = MPI_Ssend_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rev_swaits+i);CHKERRQ(ierr);
+        ierr = MPI_Send_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tagr,comm,rev_swaits+i);CHKERRQ(ierr);
       }
     }
 
+    for (i=0; i<to->n; i++) {
+      if (use_rsend) {
+	ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+      } else if (use_ssend) {
+	ierr = MPI_Ssend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+      } else {
+	ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
+      }
+    }
+    /* Register receives for scatter and reverse */
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Recv_init(Srvalues+bs*rstarts[i],bs*rstarts[i+1]-bs*rstarts[i],MPIU_SCALAR,rprocs[i],tag,comm,rwaits+i);CHKERRQ(ierr);
+    }
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tagr,comm,rev_rwaits+i);CHKERRQ(ierr);
+    } 
     if (use_rsend) {
-      for (i=0; i<to->n; i++) {
-        ierr = MPI_Rsend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
-      } 
+      if (to->n)   {ierr = MPI_Startall_irecv(to->starts[to->n]*to->bs,to->n,to->rev_requests);CHKERRQ(ierr);}
       if (from->n) {ierr = MPI_Startall_irecv(from->starts[from->n]*from->bs,from->n,from->requests);CHKERRQ(ierr);}
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
-    } else {
-      for (i=0; i<to->n; i++) {
-        if (!use_ssend) {
-          ierr = MPI_Send_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
-	} else {
-          ierr = MPI_Ssend_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,swaits+i);CHKERRQ(ierr);
-        }
-      } 
     }
-    /* Register receives for scatter reverse */
-    for (i=0; i<to->n; i++) {
-      ierr = MPI_Recv_init(Ssvalues+bs*sstarts[i],bs*sstarts[i+1]-bs*sstarts[i],MPIU_SCALAR,sprocs[i],tag,comm,rev_rwaits+i);CHKERRQ(ierr);
-    } 
 
     ctx->copy      = VecScatterCopy_PtoP_X;
   }

@@ -1960,6 +1960,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPISBAIJSetPreallocation(Mat B,PetscInt bs,
 
    Notes:
    The number of rows and columns must be divisible by blocksize.
+   This matrix type does not support complex Hermitian operation.
 
    The user MUST specify either the local or global matrix dimensions
    (possibly both).
