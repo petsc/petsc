@@ -147,10 +147,10 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
        the requests
     */
     for (i=0; i<from->n; i++) {
-      //      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
+      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
     }
     for (i=0; i<to->n; i++) {
-      //      ierr = MPI_Cancel(to->rev_requests+i);CHKERRQ(ierr);
+      ierr = MPI_Cancel(to->rev_requests+i);CHKERRQ(ierr);
     }
   }
 
