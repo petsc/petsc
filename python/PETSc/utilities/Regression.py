@@ -44,6 +44,8 @@ class Configure(config.base.Configure):
         jobs.append('C_X11')
       if hasattr(self.compilers, 'FC'):
         jobs.append('Fortran')
+        if self.compilers.fortranIsF90:
+          rjobs.append('F90')
         if self.scalartypes.scalartype.lower() == 'complex':
           rjobs.append('Fortran_Complex')
         else:
