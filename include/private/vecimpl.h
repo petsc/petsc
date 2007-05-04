@@ -233,6 +233,8 @@ typedef struct {
 #endif
   PetscTruth             use_window;
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
+  MPI_Win                window;
+  PetscInt               *winstarts;    /* displacements in the processes I am putting to */
 #endif
 } VecScatter_MPI_General;
 
