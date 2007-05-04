@@ -15,11 +15,13 @@ static char help[] = "Tests PetscRandom functions.\n\n";
 int main(int argc,char **argv)
 {
   PetscInt       i,n = 1000,*values;
-  int            event;
   PetscRandom    rnd;
   PetscScalar    value;
   PetscErrorCode ierr;
   PetscMPIInt    rank,view_rank=-1;
+#if defined (PETSC_USE_LOG)
+  int            event;
+#endif
 
   PetscInitialize(&argc,&argv,(char *)0,help);
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
