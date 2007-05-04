@@ -21,6 +21,9 @@
 !
 #include "include/finclude/petsc.h"
 #include "include/finclude/petsclog.h"
+#if !defined (PETSC_USE_LOG)
+#error "PETSc logging is disabled. This example cannot be used!"
+#endif
 !
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !                   Variable declarations
