@@ -18,6 +18,8 @@ const char *MatOptions[] = {"ROW_ORIENTED","COLUMN_ORIENTED","ROWS_SORTED",
               "USE_COMPRESSEDROW","DO_NOT_USE_COMPRESSEDROW",
               "IGNORE_LOWER_TRIANGULAR","ERROR_LOWER_TRIANGULAR","GETROW_UPPERTRIANGULAR","MatOption","MAT_",0};
 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDInitializePackage(const char[]);
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatInitializePackage"
 /*@C
@@ -42,6 +44,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
+  /* Inialize subpackage */
+  ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
