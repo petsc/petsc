@@ -1,0 +1,12 @@
+PetscBag Object:   
+  nxc = 23; nxc_variable help message
+  x = 155.4; x variable help message
+  t = TRUE; t boolean help message
+  c = a whole new string                                                              ; string help message
+  y = -11; y variable help message
+PetscBag Object:   
+  nxc = 23; nxc_variable help message
+  x = 155.4; x variable help message
+  t = TRUE; t boolean help message
+  c = a whole new string                                                              ; string help message
+  y = -11; y variable help message
