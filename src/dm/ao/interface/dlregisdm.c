@@ -4,7 +4,7 @@
 #include "src/dm/ao/aoimpl.h"
 #include "src/dm/da/daimpl.h"
 #ifdef PETSC_HAVE_SIEVE
-#include "src/dm/mesh/meshimpl.h"
+#include "private/meshimpl.h"
 #endif
 
 #undef __FUNCT__  
@@ -39,6 +39,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   ierr = PetscLogClassRegister(&MESH_COOKIE,       "Mesh");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&SECTIONREAL_COOKIE,"SectionReal");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&SECTIONINT_COOKIE, "SectionInt");CHKERRQ(ierr);
+#endif
+  /* Register Constructors */
+#ifdef PETSC_HAVE_SIEVE
+  ierr = MeshRegisterAll(path);CHKERRQ(ierr);
 #endif
   /* Register Events */
   ierr = PetscLogEventRegister(&AO_PetscToApplication,       "AOPetscToApplication", AO_COOKIE);CHKERRQ(ierr);

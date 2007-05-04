@@ -10,6 +10,7 @@
 typedef struct _MeshOps *MeshOps;
 struct _MeshOps {
   DMOPS(Mesh)
+  PetscErrorCode (*destroy)(Mesh);
 };
 
 struct _p_Mesh {
@@ -19,6 +20,8 @@ struct _p_Mesh {
   PetscErrorCode    (*lf)(Mesh, SectionReal, SectionReal, void *);
   PetscErrorCode    (*lj)(Mesh, SectionReal, Mat, void *);
   ALE::Obj<ALECompat::Mesh> mcompat;
+
+  void *data; // Implementation data
 };
 
 extern PetscCookie MESH_COOKIE;

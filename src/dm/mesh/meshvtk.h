@@ -1,5 +1,5 @@
 #if 0
-#include "src/dm/mesh/meshimpl.h"   /*I      "petscmesh.h"   I*/
+#include "private/meshimpl.h"   /*I      "petscmesh.h"   I*/
 #endif
 
 #include <Mesh.hh>
@@ -113,6 +113,7 @@ class VTKViewer {
           }
           ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
         }
+        ierr = PetscFree(remoteValues);CHKERRQ(ierr);
       }
     } else {
       value_type *localValues;

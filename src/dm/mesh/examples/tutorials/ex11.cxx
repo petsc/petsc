@@ -1,6 +1,6 @@
 static char help[] = "Creates and outputs a structured mesh.\n\n";
 
-#include "petscmesh.h"
+#include <petscmesh.h>
 #include <CartesianSieve.hh>
 #include <Distribution.hh>
 
@@ -64,15 +64,13 @@ PetscErrorCode TraverseCells(const Obj<MeshType>& m, Options *options)
 
   PetscFunctionBegin;
   const int                                 rank        = m->commRank();
-  const MeshType::patch_type                patch       = 0;
   //const Obj<MeshType::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<MeshType::topology_type>&       topology    = m->getTopology();
-  const Obj<MeshType::sieve_type>&          sieve       = topology->getPatch(patch);
+  const Obj<MeshType::sieve_type>&          sieve       = m->getSieve();
     
   // Loop over cells
   ierr = PetscPrintf(PETSC_COMM_WORLD, "Each cell, on each process\n");CHKERRQ(ierr);
-  const Obj<MeshType::topology_type::label_sequence>& cells = topology->heightStratum(patch, 0);
-  for(MeshType::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  const Obj<MeshType::label_sequence>& cells = m->heightStratum(0);
+  for(MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "[%d]Cell %d\n", rank, *c_iter);CHKERRQ(ierr);
     const Obj<MeshType::sieve_type::coneSequence>&     vertices = sieve->cone(*c_iter);
     const MeshType::sieve_type::coneSequence::iterator end      = vertices->end();
@@ -80,7 +78,7 @@ PetscErrorCode TraverseCells(const Obj<MeshType>& m, Options *options)
     for(MeshType::sieve_type::coneSequence::iterator v_iter = vertices->begin(); v_iter != end; ++v_iter) {
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, "      vertex %d, with coordinates ", *v_iter);CHKERRQ(ierr);
 #if 0
-      const MeshType::real_section_type::value_type *array = coordinates->restrict(patch, *v_iter);
+      const MeshType::real_section_type::value_type *array = coordinates->restrict(*v_iter);
 
       ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD, " %d (", *v_iter);CHKERRQ(ierr);
       for(int d = 0; d < m->getDimension(); ++d) {
@@ -100,19 +98,17 @@ PetscErrorCode TraverseCells(const Obj<MeshType>& m, Options *options)
 PetscErrorCode CreateField(const Obj<MeshType>& m, Options *options)
 {
   PetscFunctionBegin;
-  const MeshType::patch_type                          patch    = 0;
-  const Obj<MeshType::real_section_type>&             s        = m->getRealSection("u");
-  const Obj<MeshType::topology_type>&                 topology = m->getTopology();
-  const Obj<MeshType::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
-  const Obj<ALE::Discretization>&                     disc     = m->getDiscretization();
+  const Obj<MeshType::real_section_type>& s     = m->getRealSection("u");
+  const Obj<MeshType::label_sequence>&    cells = m->heightStratum(0);
+  const Obj<ALE::Discretization>&         disc  = m->getDiscretization();
   
-  disc->setNumDof(topology->depth(), 1);
+  disc->setNumDof(m->depth(), 1);
   s->setDebug(options->debug);
   m->setupField(s);
-  for(MeshType::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     const double value = (double) *c_iter;
 
-    s->updatePoint(patch, *c_iter, &value);
+    s->updatePoint(*c_iter, &value);
   }
   s->view("");
   PetscFunctionReturn(0);
@@ -123,30 +119,28 @@ PetscErrorCode CreateField(const Obj<MeshType>& m, Options *options)
 PetscErrorCode UpdateGhosts(const Obj<MeshType>& m, Options *options)
 {
   PetscFunctionBegin;
-  const MeshType::patch_type                          patch    = 0;
-  const Obj<MeshType::real_section_type>&             s        = m->getRealSection("v");
-  const Obj<MeshType::topology_type>&                 topology = m->getTopology();
-  const Obj<MeshType::sieve_type>&                    sieve    = topology->getPatch(patch);
-  const Obj<MeshType::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
-  const Obj<ALE::Discretization>&                     disc     = m->getDiscretization();
+  const Obj<MeshType::real_section_type>& s     = m->getRealSection("v");
+  const Obj<MeshType::sieve_type>&        sieve = m->getSieve();
+  const Obj<MeshType::label_sequence>&    cells = m->heightStratum(0);
+  const Obj<ALE::Discretization>&         disc  = m->getDiscretization();
 
   
   disc->setNumDof(0, 1);
   disc->setNumDof(1, 0);
   s->setDebug(options->debug);
   m->setupField(s);
-  s->zero(patch);
-  for(MeshType::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  s->zero();
+  for(MeshType::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     const Obj<MeshType::sieve_type::coneSequence>&     vertices = sieve->cone(*c_iter);
     const MeshType::sieve_type::coneSequence::iterator end      = vertices->end();
     const MeshType::real_section_type::value_type      value    = 1.0;
     
     for(MeshType::sieve_type::coneSequence::iterator v_iter = vertices->begin(); v_iter != end; ++v_iter) {
-      s->updateAdd(patch, *v_iter, &value);
+      s->updateAddPoint(*v_iter, &value);
     }
   }
   s->view("Uncompleted section");
-  ALE::New::Distribution<MeshType::topology_type>::completeSection(s);
+  ALE::Distribution<MeshType>::completeSection(m, s);
   s->view("Completed section");
   PetscFunctionReturn(0);
 }

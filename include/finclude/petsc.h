@@ -3,6 +3,7 @@
 !  Base include file for Fortran use of the PETSc package.
 !
 #include "petscconf.h"
+#include "petscversion.h"
 
 #if !defined(PETSC_AVOID_MPIF_H) && !defined(PETSC_AVOID_DECLARATIONS)
 #include "mpif.h"

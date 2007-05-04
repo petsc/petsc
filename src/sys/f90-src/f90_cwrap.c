@@ -206,36 +206,66 @@ PetscErrorCode PETSC_DLLEXPORT F90Array2dDestroy(F90Array2d *ptr,PetscDataType t
 
 /*************************************************************************/
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
-#define f90arraygetaddrscalar_            F90ARRAYGETADDRSCALAR
-#define f90arraygetaddrreal_              F90ARRAYGETADDRREAL
-#define f90arraygetaddrint_               F90ARRAYGETADDRINT
-#define f90arraygetaddrfortranaddr_       F90ARRAYGETADDRFORTRANADDR
+#define f90array1dgetaddrscalar_            F90ARRAY1DGETADDRSCALAR
+#define f90array1dgetaddrreal_              F90ARRAY1DGETADDRREAL
+#define f90array1dgetaddrint_               F90ARRAY1DGETADDRINT
+#define f90array1dgetaddrfortranaddr_       F90ARRAY1DGETADDRFORTRANADDR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
-#define f90arraygetaddrscalar_            f90arraygetaddrscalar
-#define f90arraygetaddrreal_              f90arraygetaddrreal
-#define f90arraygetaddrint_               f90arraygetaddrint
-#define f90arraygetaddrfortranaddr_       f90arraygetaddrfortranaddr
+#define f90array1dgetaddrscalar_            f90array1dgetaddrscalar
+#define f90array1dgetaddrreal_              f90array1dgetaddrreal
+#define f90array1dgetaddrint_               f90array1dgetaddrint
+#define f90array1dgetaddrfortranaddr_       f90array1dgetaddrfortranaddr
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL f90arraygetaddrscalar_(void *array, PetscFortranAddr *address)
+void PETSC_STDCALL f90array1dgetaddrscalar_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90arraygetaddrreal_(void *array, PetscFortranAddr *address)
+void PETSC_STDCALL f90array1dgetaddrreal_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90arraygetaddrint_(void *array, PetscFortranAddr *address)
+void PETSC_STDCALL f90array1dgetaddrint_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
-void PETSC_STDCALL f90arraygetaddrfortranaddr_(void *array, PetscFortranAddr *address)
+void PETSC_STDCALL f90array1dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
 {
   *address = (PetscFortranAddr)array;
 }
 EXTERN_C_END
 
 /*************************************************************************/
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define f90array2dgetaddrscalar_            F90ARRAY2DGETADDRSCALAR
+#define f90array2dgetaddrreal_              F90ARRAY2DGETADDRREAL
+#define f90array2dgetaddrint_               F90ARRAY2DGETADDRINT
+#define f90array2dgetaddrfortranaddr_       F90ARRAY2DGETADDRFORTRANADDR
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define f90array2dgetaddrscalar_            f90array2dgetaddrscalar
+#define f90array2dgetaddrreal_              f90array2dgetaddrreal
+#define f90array2dgetaddrint_               f90array2dgetaddrint
+#define f90array2dgetaddrfortranaddr_       f90array2dgetaddrfortranaddr
+#endif
 
+EXTERN_C_BEGIN
+void PETSC_STDCALL f90array2dgetaddrscalar_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+void PETSC_STDCALL f90array2dgetaddrreal_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+void PETSC_STDCALL f90array2dgetaddrint_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+void PETSC_STDCALL f90array2dgetaddrfortranaddr_(void *array, PetscFortranAddr *address)
+{
+  *address = (PetscFortranAddr)array;
+}
+EXTERN_C_END
 
+/*************************************************************************/
