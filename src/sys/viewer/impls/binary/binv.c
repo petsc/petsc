@@ -383,7 +383,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *da
    Concepts: binary files
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerSetFormat(), PetscViewerDestroy(),
-          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(),
+          VecView(), MatView(), VecLoad(), MatLoad(), PetscViewerBinaryGetDescriptor(), PetscDataType
           PetscViewerBinaryGetInfoPointer(), PetscFileMode, PetscViewer, PetscBinaryViewerRead()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *data,PetscInt count,PetscDataType dtype,PetscTruth istemp)
