@@ -1,0 +1,22 @@
+!
+!
+!  Additional System include file for use of PETSc with Fortran 90/HPF
+!
+
+
+      Interface PetscViewerBinaryWrite
+        Subroutine PetscViewerBinaryWriteInt(v,a,cnt,dt,tmp,ierr)
+          PetscViewer v
+          PetscScalar a()
+          PetscInt cnt
+          PetscDataType dt
+          PetscTruth tmp
+          PetscErrorCode ierr
+        End Subroutine
+
+      End Interface
+
+
+!
+!     End of petscsys Fortran 90 include file for the PETSc package
+!
