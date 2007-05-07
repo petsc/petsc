@@ -172,7 +172,7 @@ class CompilerOptions(config.base.Configure):
     flags = []
     if config.setCompilers.Configure.isGNU(compiler):
       if bopt == '':
-        flags.append('-Wall')
+        flags.extend(['-Wall', '-Wno-unused-variable'])
       elif bopt == 'g':
         if self.framework.argDB['with-gcov']:
           flags.extend(['-fprofile-arcs', '-ftest-coverage'])
