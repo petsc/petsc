@@ -147,17 +147,26 @@ PetscErrorCode VecScatterDestroy_PtoP(VecScatter ctx)
        the requests
     */
     for (i=0; i<from->n; i++) {
-      //      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
+      ierr = MPI_Cancel(from->requests+i);CHKERRQ(ierr);
     }
     for (i=0; i<to->n; i++) {
-      //      ierr = MPI_Cancel(to->rev_requests+i);CHKERRQ(ierr);
+      ierr = MPI_Cancel(to->rev_requests+i);CHKERRQ(ierr);
     }
   }
 
+#if defined(PETSC_HAVE_MPI_ALLTOALLW)
   if (to->use_alltoallw) {
     ierr = PetscFree3(to->wcounts,to->wdispls,to->types);CHKERRQ(ierr);
     ierr = PetscFree3(from->wcounts,from->wdispls,from->types);CHKERRQ(ierr);
   }
+#endif
+
+#if defined(PETSC_HAVE_MPI_WINDOW)
+  if (to->use_window) {
+    ierr = MPI_Win_free(&from->window);CHKERRQ(ierr);
+    ierr = MPI_Win_free(&to->window);CHKERRQ(ierr);
+  }
+#endif
 
   if (to->use_alltoallv) {
     ierr = PetscFree2(to->counts,to->displs);CHKERRQ(ierr);
@@ -1387,6 +1396,9 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_M
 /*
      sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
    to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
+
+    Probably does not handle sends to self properly. It should remove those from the counts that are used
+    in allocating space inside of the from struct
 */
 PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
 {
@@ -1554,10 +1566,10 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   /* allocate entire send scatter context */
   ierr  = PetscNew(VecScatter_MPI_General,&to);CHKERRQ(ierr);
   to->n = nrecvs; 
-  ierr = PetscMalloc(nrecvs*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
+  ierr  = PetscMalloc(nrecvs*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
   ierr  = PetscMalloc4(bs*slen,PetscScalar,&to->values,slen,PetscInt,&to->indices,nrecvs+1,PetscInt,&to->starts,
                        nrecvs,PetscMPIInt,&to->procs);CHKERRQ(ierr);
-  ierr = PetscMalloc2(PetscMax(to->n,nsends),MPI_Status,&to->sstatus,PetscMax(to->n,nsends),MPI_Status,
+  ierr  = PetscMalloc2(PetscMax(to->n,nsends),MPI_Status,&to->sstatus,PetscMax(to->n,nsends),MPI_Status,
 		       &to->rstatus);CHKERRQ(ierr);
   ctx->todata   = (void*)to;
   to->starts[0] = 0;
@@ -1586,7 +1598,7 @@ PetscErrorCode VecScatterCreate_PtoS(PetscInt nx,const PetscInt *inidx,PetscInt 
   from->n        = nsends;
 
   ierr = PetscMalloc(nsends*sizeof(MPI_Request),&from->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(ny*bs,PetscScalar,&from->values,ny,PetscInt,&from->indices,
+  ierr = PetscMalloc4((ny-nprocslocal)*bs,PetscScalar,&from->values,ny-nprocslocal,PetscInt,&from->indices,
                       nsends+1,PetscInt,&from->starts,from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
   ctx->fromdata  = (void*)from;
 
@@ -1697,6 +1709,11 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
   if (from->use_alltoallw) PetscInfo(0,"Using MPI_Alltoallw() for scatter\n");
 #endif
 
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+  ierr = PetscOptionsHasName(PETSC_NULL,"-vecscatter_window",&to->use_window);CHKERRQ(ierr);
+  from->use_window = to->use_window;
+#endif
+
   if (to->use_alltoallv) {
 
     ierr       = PetscMalloc2(size,PetscMPIInt,&to->counts,size,PetscMPIInt,&to->displs);CHKERRQ(ierr);
@@ -1759,6 +1776,39 @@ PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *from,VecScatt
 #else 
     to->use_alltoallw   = PETSC_FALSE;
     from->use_alltoallw = PETSC_FALSE;
+#endif
+#if defined(PETSC_HAVE_MPI_WIN_CREATE)
+  } else if (to->use_window) {
+    PetscMPIInt temptag,winsize;
+    MPI_Request *request;
+    MPI_Status  *status;
+    
+    ierr = PetscObjectGetNewTag((PetscObject)ctx,&temptag);CHKERRQ(ierr);
+    winsize = (to->n ? to->starts[to->n] : 0)*sizeof(PetscScalar);
+    ierr = MPI_Win_create(to->values ? to->values : MPI_BOTTOM,winsize,sizeof(PetscScalar),MPI_INFO_NULL,comm,&to->window);CHKERRQ(ierr); 
+    ierr = PetscMalloc(to->n,&to->winstarts);CHKERRQ(ierr);
+    ierr = PetscMalloc2(to->n,MPI_Request,&request,to->n,MPI_Status,&status);CHKERRQ(ierr);
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Irecv(to->winstarts+i,1,MPIU_INT,to->procs[i],temptag,comm,request+i);CHKERRQ(ierr);
+    }
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Send(from->starts+i,1,MPIU_INT,from->procs[i],temptag,comm);CHKERRQ(ierr);
+    }
+    ierr = MPI_Waitall(to->n,request,status);CHKERRQ(ierr);
+    ierr = PetscFree2(request,status);CHKERRQ(ierr);
+
+    winsize = (from->n ? from->starts[from->n] : 0)*sizeof(PetscScalar);
+    ierr = MPI_Win_create(from->values ? from->values : MPI_BOTTOM,winsize,sizeof(PetscScalar),MPI_INFO_NULL,comm,&from->window);CHKERRQ(ierr); 
+    ierr = PetscMalloc(from->n,&from->winstarts);CHKERRQ(ierr);
+    ierr = PetscMalloc2(from->n,MPI_Request,&request,from->n,MPI_Status,&status);CHKERRQ(ierr);
+    for (i=0; i<from->n; i++) {
+      ierr = MPI_Irecv(from->winstarts+i,1,MPIU_INT,from->procs[i],temptag,comm,request+i);CHKERRQ(ierr);
+    }
+    for (i=0; i<to->n; i++) {
+      ierr = MPI_Send(to->starts+i,1,MPIU_INT,to->procs[i],temptag,comm);CHKERRQ(ierr);
+    }
+    ierr = MPI_Waitall(from->n,request,status);CHKERRQ(ierr);
+    ierr = PetscFree2(request,status);CHKERRQ(ierr);
 #endif
   } else {
     PetscTruth  use_rsend = PETSC_FALSE, use_ssend = PETSC_FALSE;

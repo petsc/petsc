@@ -59,7 +59,7 @@ int main(int argc,char **argv)
   PetscInitialize(&argc,&argv,(char *)0,help);
 
   for (i=0; i<2; i++) {
-    PetscLogStagePush(i);
+    ierr = PetscLogStagePush(i);CHKERRQ(ierr);
     user.mx = 4; user.my = 4; user.param = 6.0;
     
     if (i!=0) {

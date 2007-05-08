@@ -183,7 +183,7 @@
 !  Set exact solution; then compute right-hand-side vector.
 
       if (use_random) then
-         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)                        
+         call PetscRandomCreate(PETSC_COMM_WORLD,rctx,ierr)
          call PetscRandomSetFromOptions(rctx,ierr)
          call VecSetRandom(u,rctx,ierr)
       else

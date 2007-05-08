@@ -49,10 +49,11 @@ PetscErrorCode PETSC_DLLEXPORT StageInfoDestroy(StageInfo *stageInfo)
 @*/
 PetscErrorCode PETSC_DLLEXPORT StageLogDestroy(StageLog stageLog) 
 {
-  int stage;
+  int            stage;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!stageLog) PetscFunctionReturn(0);
   ierr = StackDestroy(stageLog->stack);CHKERRQ(ierr);
   ierr = EventRegLogDestroy(stageLog->eventLog);CHKERRQ(ierr);
   ierr = ClassRegLogDestroy(stageLog->classLog);CHKERRQ(ierr);

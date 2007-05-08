@@ -7,7 +7,7 @@ CPPFLAGS        =
 FPPFLAGS        =
 LOCDIR          = src/sys/examples/tutorials/
 EXAMPLESC       = ex1.c ex2.c ex3.c ex5.c
-EXAMPLESF       = ex3f.F
+EXAMPLESF       = ex3f.F ex5f90.F90
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
 
@@ -40,6 +40,10 @@ ex4f: ex4f.o   chkopts
 ex5: ex5.o   chkopts
 	-${CLINKER} -o ex5 ex5.o  ${PETSC_SYS_LIB}
 	${RM} -f ex5.o
+
+ex5f90: ex5f90.o  chkopts
+	-${FLINKER} -o ex5f90 ex5f90.o ${PETSC_SYS_LIB}
+	${RM} ex5f90.o
 #
 # ------------------------------------------------------------------------
 #
@@ -79,12 +83,19 @@ runex5:
 	   else echo "Possible problem with ex5_1, diffs above"; fi; \
 	   ${RM} -f ex5_1.tmp 
 
+runex5f90:
+	-@${MPIEXEC} -np 1 ./ex5f90 > ex5f90_1.tmp 5>&1; \
+	   if (${DIFF} output/ex5f90_1.out ex5f90_1.tmp) then true; \
+	   else echo "Possible problem with ex5f90_1, diffs above"; fi; \
+	   ${RM} -f ex5f90_1.tmp 
+
 TESTEXAMPLES_C		  = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                             ex3.PETSc runex3 ex3.rm ex4.PETSc runex4 ex4.rm \
                             ex5.PETSc runex5 ex5.rm
 TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
                             ex3.PETSc runex3 ex3.rm
 TESTEXAMPLES_FORTRAN	  = ex3f.PETSc runex3f ex3f.rm ex4f.PETSc runex4f ex4f.rm
+TESTEXAMPLES_F90	  = ex5f90.PETSc runex5f90 ex5f90.rm
 
 include ${PETSC_DIR}/bmake/common/test
 

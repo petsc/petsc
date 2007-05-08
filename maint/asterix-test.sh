@@ -6,6 +6,8 @@ set -x
 make PETSC_ARCH=asterix all alltests DATAFILESPATH=/home/balay/datafiles 
 make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_NoComplex
 
+./config/asterix.py --with-clanguage=cxx --with-sieve=1 --download-boost=1 -PETSC_ARCH=asterix-cxx-sieve
+
 ./config/asterix-openmpi.py
 make PETSC_ARCH=asterix-openmpi all alltests DATAFILESPATH=/home/balay/datafiles 
 
@@ -70,7 +72,6 @@ make PETSC_ARCH=asterix-sun-complex-dynamic test
 # basic gcc3 tests
 ./config/asterix-gcc3.py
 make PETSC_ARCH=asterix-gcc3 all test
-#./config/asterix-gcc3.py --with-clanguage=cxx --with-sieve=1 -PETSC_ARCH=asterix-gcc3-cxx
 #make PETSC_ARCH=asterix-gcc3-cxx all test
 ./config/asterix-gcc3.py --with-scalar-type=complex --with-clanguage=cxx -PETSC_ARCH=asterix-gcc3-complex-opt --with-debugging=0
 make PETSC_ARCH=asterix-gcc3-complex-opt all test

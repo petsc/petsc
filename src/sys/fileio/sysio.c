@@ -192,7 +192,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryRead(int fd,void *p,PetscInt n,PetscDa
     err = read(fd,pp,wsize);
     if (err < 0 && errno == EINTR) continue;
     if (!err && wsize > 0) SETERRQ(PETSC_ERR_FILE_READ,"Read past end of file");
-    if (err < 0) SETERRQ(PETSC_ERR_FILE_READ,"Error reading from file");
+    if (err < 0) SETERRQ1(PETSC_ERR_FILE_READ,"Error reading from file, errno %d",errno);
     m  -= err;
     pp += err;
   }

@@ -42,7 +42,7 @@ PetscEvent  SNES_Solve = 0, SNES_LineSearch = 0, SNES_FunctionEval = 0, SNES_Jac
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
 {
-  SNES_KSP_EW_ConvCtx *kctx;
+  SNESKSPEW           *kctx;
   PetscErrorCode      ierr;
   KSP                 ksp;
   SNESType            type;
@@ -81,7 +81,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of linear solver iterations=%D\n",snes->linear_its);CHKERRQ(ierr);
     ierr = PetscViewerASCIIPrintf(viewer,"  total number of function evaluations=%D\n",snes->nfuncs);CHKERRQ(ierr);
     if (snes->ksp_ewconv) {
-      kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
+      kctx = (SNESKSPEW *)snes->kspconvctx;
       if (kctx) {
         ierr = PetscViewerASCIIPrintf(viewer,"  Eisenstat-Walker computation of KSP relative tolerance (version %D)\n",kctx->version);CHKERRQ(ierr);
         ierr = PetscViewerASCIIPrintf(viewer,"    rtol_0=%G, rtol_max=%G, threshold=%G\n",kctx->rtol_0,kctx->rtol_max,kctx->threshold);CHKERRQ(ierr);
@@ -166,7 +166,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 -  -snes_converged_reason - print the reason for convergence/divergence after each solve
 
     Options Database for Eisenstat-Walker method:
-+  -snes_ksp_ew_conv - use Eisenstat-Walker method for determining linear system convergence
++  -snes_ksp_ew - use Eisenstat-Walker method for determining linear system convergence
 .  -snes_ksp_ew_version ver - version of  Eisenstat-Walker method
 .  -snes_ksp_ew_rtol0 <rtol0> - Sets rtol0
 .  -snes_ksp_ew_rtolmax <rtolmax> - Sets rtolmax
@@ -188,7 +188,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESAddOptionsChecker(PetscErrorCode (*snesch
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 {
   KSP                     ksp;
-  SNES_KSP_EW_ConvCtx     *kctx = (SNES_KSP_EW_ConvCtx *)snes->kspconvctx;
+  SNESKSPEW               *kctx = (SNESKSPEW *)snes->kspconvctx;
   PetscTruth              flg;
   PetscErrorCode          ierr;
   PetscInt                i;
@@ -227,16 +227,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
       snes->printreason = PETSC_TRUE;
     }
 
-    ierr = PetscOptionsTruth("-snes_ksp_ew","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-snes_ksp_ew_conv","Use Eisentat-Walker linear system convergence test","SNES_KSP_SetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-snes_ksp_ew","Use Eisentat-Walker linear system convergence test","SNESKSPSetUseEW",snes->ksp_ewconv,&snes->ksp_ewconv,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsInt("-snes_ksp_ew_version","Version 1, 2 or 3","SNES_KSP_SetParametersEW",kctx->version,&kctx->version,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNES_KSP_SetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ksp_ew_rtolmax","0 <= rtolmax < 1","SNES_KSP_SetParametersEW",kctx->rtol_max,&kctx->rtol_max,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ksp_ew_gamma","0 <= gamma <= 1","SNES_KSP_SetParametersEW",kctx->gamma,&kctx->gamma,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ksp_ew_alpha","1 < alpha <= 2","SNES_KSP_SetParametersEW",kctx->alpha,&kctx->alpha,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ksp_ew_alpha2","alpha2","SNES_KSP_SetParametersEW",kctx->alpha2,&kctx->alpha2,0);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-snes_ksp_ew_threshold","0 < threshold < 1","SNES_KSP_SetParametersEW",kctx->threshold,&kctx->threshold,0);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-snes_ksp_ew_version","Version 1, 2 or 3","SNESKSPSetParametersEW",kctx->version,&kctx->version,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_rtol0","0 <= rtol0 < 1","SNESKSPSetParametersEW",kctx->rtol_0,&kctx->rtol_0,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_rtolmax","0 <= rtolmax < 1","SNESKSPSetParametersEW",kctx->rtol_max,&kctx->rtol_max,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_gamma","0 <= gamma <= 1","SNESKSPSetParametersEW",kctx->gamma,&kctx->gamma,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_alpha","1 < alpha <= 2","SNESKSPSetParametersEW",kctx->alpha,&kctx->alpha,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_alpha2","alpha2","SNESKSPSetParametersEW",kctx->alpha2,&kctx->alpha2,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-snes_ksp_ew_threshold","0 < threshold < 1","SNESKSPSetParametersEW",kctx->threshold,&kctx->threshold,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-snes_no_convergence_test","Don't test for convergence","None",&flg);CHKERRQ(ierr);
     if (flg) {snes->ops->converged = 0;}
@@ -731,7 +730,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
 {
   PetscErrorCode      ierr;
   SNES                snes;
-  SNES_KSP_EW_ConvCtx *kctx;
+  SNESKSPEW           *kctx;
 
   PetscFunctionBegin;
   PetscValidPointer(outsnes,2);
@@ -771,8 +770,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxLinearSolveFailures = 1;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  ierr = PetscNew(SNES_KSP_EW_ConvCtx,&kctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(SNES_KSP_EW_ConvCtx));CHKERRQ(ierr);
+  ierr = PetscNew(SNESKSPEW,&kctx);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(snes,sizeof(SNESKSPEW));CHKERRQ(ierr);
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 
@@ -2298,9 +2297,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES snes)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNES_KSP_SetUseEW"
+#define __FUNCT__ "SNESKSPSetUseEW"
 /*@
-   SNES_KSP_SetUseEW - Sets SNES use Eisenstat-Walker method for
+   SNESKSPSetUseEW - Sets SNES use Eisenstat-Walker method for
    computing relative tolerance for linear solvers within an inexact
    Newton method.
 
@@ -2325,9 +2324,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESTestLocalMin(SNES snes)
 
 .keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
 
-.seealso: SNES_KSP_GetUseEW(), SNES_KSP_GetParametersEW(), SNES_KSP_SetParametersEW()
+.seealso: SNESKSPGetUseEW(), SNESKSPGetParametersEW(), SNESKSPSetParametersEW()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetUseEW(SNES snes,PetscTruth flag)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetUseEW(SNES snes,PetscTruth flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -2336,9 +2335,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetUseEW(SNES snes,PetscTruth flag)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNES_KSP_GetUseEW"
+#define __FUNCT__ "SNESKSPGetUseEW"
 /*@
-   SNES_KSP_GetUseEW - Gets if SNES is using Eisenstat-Walker method
+   SNESKSPGetUseEW - Gets if SNES is using Eisenstat-Walker method
    for computing relative tolerance for linear solvers within an
    inexact Newton method.
 
@@ -2365,9 +2364,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetUseEW(SNES snes,PetscTruth flag)
 
 .keywords: SNES, KSP, Eisenstat, Walker, convergence, test, inexact, Newton
 
-.seealso: SNES_KSP_SetUseEW(), SNES_KSP_GetParametersEW(), SNES_KSP_SetParametersEW()
+.seealso: SNESKSPSetUseEW(), SNESKSPGetParametersEW(), SNESKSPSetParametersEW()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetUseEW(SNES snes, PetscTruth *flag)
+PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetUseEW(SNES snes, PetscTruth *flag)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
@@ -2377,9 +2376,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetUseEW(SNES snes, PetscTruth *flag
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNES_KSP_SetParametersEW"
+#define __FUNCT__ "SNESKSPSetParametersEW"
 /*@
-   SNES_KSP_SetParametersEW - Sets parameters for Eisenstat-Walker
+   SNESKSPSetParametersEW - Sets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
    Newton method.
 
@@ -2410,15 +2409,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetUseEW(SNES snes, PetscTruth *flag
 
 .keywords: SNES, KSP, Eisenstat, Walker, set, parameters
 
-.seealso: SNES_KSP_SetUseEW(), SNES_KSP_GetUseEW(), SNES_KSP_GetParametersEW()
+.seealso: SNESKSPSetUseEW(), SNESKSPGetUseEW(), SNESKSPGetParametersEW()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,
+PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPSetParametersEW(SNES snes,PetscInt version,PetscReal rtol_0,PetscReal rtol_max,
 							    PetscReal gamma,PetscReal alpha,PetscReal alpha2,PetscReal threshold)
 {
-  SNES_KSP_EW_ConvCtx *kctx;
+  SNESKSPEW *kctx;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+  kctx = (SNESKSPEW*)snes->kspconvctx;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
 
   if (version != PETSC_DEFAULT)   kctx->version   = version;
@@ -2451,9 +2450,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt v
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNES_KSP_GetParametersEW"
+#define __FUNCT__ "SNESKSPGetParametersEW"
 /*@
-   SNES_KSP_GetParametersEW - Gets parameters for Eisenstat-Walker
+   SNESKSPGetParametersEW - Gets parameters for Eisenstat-Walker
    convergence criteria for the linear solvers within an inexact
    Newton method.
 
@@ -2476,15 +2475,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_SetParametersEW(SNES snes,PetscInt v
 
 .keywords: SNES, KSP, Eisenstat, Walker, get, parameters
 
-.seealso: SNES_KSP_SetUseEW(), SNES_KSP_GetUseEW(), SNES_KSP_SetParametersEW()
+.seealso: SNESKSPSetUseEW(), SNESKSPGetUseEW(), SNESKSPSetParametersEW()
 @*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetParametersEW(SNES snes,PetscInt *version,PetscReal *rtol_0,PetscReal *rtol_max,
+PetscErrorCode PETSCSNES_DLLEXPORT SNESKSPGetParametersEW(SNES snes,PetscInt *version,PetscReal *rtol_0,PetscReal *rtol_max,
 							    PetscReal *gamma,PetscReal *alpha,PetscReal *alpha2,PetscReal *threshold)
 {
-  SNES_KSP_EW_ConvCtx *kctx;
+  SNESKSPEW *kctx;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
+  kctx = (SNESKSPEW*)snes->kspconvctx;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context existing");
   if(version)   *version   = kctx->version;
   if(rtol_0)    *rtol_0    = kctx->rtol_0;
@@ -2497,12 +2496,12 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNES_KSP_GetParametersEW(SNES snes,PetscInt *
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNES_KSP_EW_PreSolve"
-static PetscErrorCode SNES_KSP_EW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
+#define __FUNCT__ "SNESKSPEW_PreSolve"
+static PetscErrorCode SNESKSPEW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
 {
-  PetscErrorCode       ierr;
-  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  PetscReal            rtol=PETSC_DEFAULT,stol;
+  PetscErrorCode ierr;
+  SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
+  PetscReal      rtol=PETSC_DEFAULT,stol;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
@@ -2538,13 +2537,13 @@ static PetscErrorCode SNES_KSP_EW_PreSolve(SNES snes, KSP ksp, Vec b, Vec x)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SNES_KSP_EW_PostSolve"
-static PetscErrorCode SNES_KSP_EW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
+#define __FUNCT__ "SNESKSPEW_PostSolve"
+static PetscErrorCode SNESKSPEW_PostSolve(SNES snes, KSP ksp, Vec b, Vec x)
 {
-  PetscErrorCode      ierr;
-  SNES_KSP_EW_ConvCtx *kctx = (SNES_KSP_EW_ConvCtx*)snes->kspconvctx;
-  PCSide              pcside;
-  Vec                 lres;
+  PetscErrorCode ierr;
+  SNESKSPEW      *kctx = (SNESKSPEW*)snes->kspconvctx;
+  PCSide         pcside;
+  Vec            lres;
 
   PetscFunctionBegin;
   if (!kctx) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"No Eisenstat-Walker context exists");
@@ -2575,8 +2574,8 @@ PetscErrorCode SNES_KSPSolve(SNES snes, KSP ksp, Vec b, Vec x)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (snes->ksp_ewconv) { ierr = SNES_KSP_EW_PreSolve(snes,ksp,b,x);CHKERRQ(ierr);  }
+  if (snes->ksp_ewconv) { ierr = SNESKSPEW_PreSolve(snes,ksp,b,x);CHKERRQ(ierr);  }
   ierr = KSPSolve(ksp,b,x);CHKERRQ(ierr);
-  if (snes->ksp_ewconv) { ierr = SNES_KSP_EW_PostSolve(snes,ksp,b,x);CHKERRQ(ierr); }
+  if (snes->ksp_ewconv) { ierr = SNESKSPEW_PostSolve(snes,ksp,b,x);CHKERRQ(ierr); }
   PetscFunctionReturn(0);
 }

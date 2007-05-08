@@ -628,7 +628,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 
   Input Parameters:
 +  comm - communicator to share bag
--  C struct name - name of the C structure holding the values
+-  size - size of the C structure holding the values
 
   Output Parameter:
 .   bag - the bag of values
