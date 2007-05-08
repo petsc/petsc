@@ -1370,13 +1370,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
     if (globalOrder->isLocal(point)) {
       const ALE::Obj<ALE::Mesh::sieve_type::traits::coneSequence>& adj   = graph->cone(point);
       const ALE::Mesh::order_type::value_type&                     rIdx  = globalOrder->restrictPoint(point)[0];
-      const int                                                           row   = rIdx.prefix;
-      const int                                                           rSize = rIdx.index/bs;
+      const int                                                    row   = rIdx.prefix;
+      const int                                                    rSize = rIdx.index/bs;
 
+      if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
-        const int&                                      cSize    = cIdx.index/bs;
+        const int&                               cSize    = cIdx.index/bs;
 
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {

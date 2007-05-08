@@ -798,6 +798,7 @@ namespace ALE {
     const std::string& getLabelName() {return this->_labelName;};
     void setLabelName(const std::string& name) {this->_labelName = name;};
     void setFunction(function_type func) {this->_func = func;};
+    integrator_type getDualIntegrator() {return this->_integrator;};
     void setDualIntegrator(integrator_type integrator) {this->_integrator = integrator;};
   public:
     double evaluate(const double coords[]) {return this->_func(coords);};

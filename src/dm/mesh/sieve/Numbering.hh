@@ -445,9 +445,10 @@ namespace ALE {
       typedef typename ALE::New::SectionCompletion<dtopology_type, int> completion;
       const Obj<send_section_type> sendSection = new send_section_type(order->comm(), this->debug());
       const Obj<recv_section_type> recvSection = new recv_section_type(order->comm(), sendSection->getTag(), this->debug());
-      const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());
+      //const Obj<constant_sizer>    sizer       = new constant_sizer(order->comm(), 1, this->debug());
 
-      completion::completeSection(sendOverlap, recvOverlap, sizer, order, sendSection, recvSection);
+      //completion::completeSection(sendOverlap, recvOverlap, sizer, order, sendSection, recvSection);
+      completion::completeSection(sendOverlap, recvOverlap, order->getAtlas(), order, sendSection, recvSection);
       Obj<typename recv_overlap_type::traits::baseSequence> recvPoints = recvOverlap->base();
 
       for(typename recv_overlap_type::traits::baseSequence::iterator r_iter = recvPoints->begin(); r_iter != recvPoints->end(); ++r_iter) {
@@ -462,6 +463,7 @@ namespace ALE {
         for(typename recv_overlap_type::traits::coneSequence::iterator p_iter = recvPatches->begin(); p_iter != recvPatches->end(); ++p_iter) {
           const typename recv_section_type::value_type *values = recvSection->getSection(*p_iter)->restrictPoint(*r_iter);
 
+          if (recvSection->getSection(*p_iter)->getFiberDimension(*r_iter) == 0) continue;
           if (values[0].index == 0) continue;
           if (values[0].prefix >= 0) {
             if (order->isLocal(*r_iter)) {

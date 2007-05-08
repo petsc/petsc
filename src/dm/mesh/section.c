@@ -627,8 +627,60 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealClear(SectionReal section)
 {
   PetscFunctionBegin;
-  PetscValidHeaderSpecific(section, SECTIONPAIR_COOKIE, 1);
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   section->s->clear();
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealNorm"
+/*@C
+  SectionRealNorm - Computes the vector norm.
+
+  Collective on Section
+
+  Input Parameters:
++  section - the real Section
+-  type - one of NORM_1, NORM_2, NORM_INFINITY.  Also available
+          NORM_1_AND_2, which computes both norms and stores them
+          in a two element array.
+
+  Output Parameter:
+. val - the norm 
+
+  Notes:
+$     NORM_1 denotes sum_i |x_i|
+$     NORM_2 denotes sqrt(sum_i (x_i)^2)
+$     NORM_INFINITY denotes max_i |x_i|
+
+  Level: intermediate
+
+.seealso VecNorm(), SectionRealCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh, NormType type, PetscReal *val)
+{
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
+  Vec            v, localVec;
+  VecScatter     scatter;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+  ierr = VecCreate(m->comm(), &v);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), &localVec);CHKERRQ(ierr);
+  ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  // This might need to be generalized
+  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(localVec, v, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecScatterEnd(localVec, v, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecNorm(v, type, val);CHKERRQ(ierr);
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = VecDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

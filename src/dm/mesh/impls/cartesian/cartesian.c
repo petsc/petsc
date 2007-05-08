@@ -137,8 +137,10 @@ PetscErrorCode MeshGetInterpolation_Cartesian(Mesh fineMesh, Mesh coarseMesh, Ma
   const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
+#endif
 
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
+#if 0
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
@@ -227,7 +229,9 @@ PetscErrorCode MeshGetSectionReal_Cartesian(Mesh mesh, const char name[], Sectio
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
   ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
+#if 0
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
+#endif
   PetscFunctionReturn(0);
 }
 
