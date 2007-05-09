@@ -185,8 +185,8 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
     ierr = PetscFree(idx_pla);CHKERRQ(ierr);
     ierr = VecScatterCreate(loc_x,lu->is_pla,x,lu->is_petsc,&lu->ctx);CHKERRQ(ierr);
   }
-  ierr = VecScatterBegin(loc_x,x,INSERT_VALUES,SCATTER_FORWARD,lu->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(loc_x,x,INSERT_VALUES,SCATTER_FORWARD,lu->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->ctx,loc_x,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /* Free data */
   ierr = VecDestroy(loc_x);CHKERRQ(ierr);

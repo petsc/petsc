@@ -243,8 +243,8 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
   if ( !lu->scat ) {
     ierr = VecScatterCreate(b,lu->my_cols,lu->vec_dsc,lu->iden_dsc,&lu->scat);CHKERRQ(ierr); 
   }    
-  ierr = VecScatterBegin(b,lu->vec_dsc,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(b,lu->vec_dsc,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(lu->scat,b,lu->vec_dsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->scat,b,lu->vec_dsc,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   if (lu->dsc_id != -1){
     ierr = VecGetArray(lu->vec_dsc,&rhs_vec);CHKERRQ(ierr);    
@@ -265,8 +265,8 @@ PetscErrorCode MatSolve_DSCPACK(Mat A,Vec b,Vec x) {
   } /* end of if (lu->dsc_id != -1) */
 
   /* put permuted local solution solution_vec into x in the original order */
-  ierr = VecScatterBegin(lu->vec_dsc,x,INSERT_VALUES,SCATTER_REVERSE,lu->scat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(lu->vec_dsc,x,INSERT_VALUES,SCATTER_REVERSE,lu->scat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(lu->scat,lu->vec_dsc,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->scat,lu->vec_dsc,x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }

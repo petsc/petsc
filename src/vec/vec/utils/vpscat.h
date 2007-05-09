@@ -11,7 +11,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterBegin_"
-PetscErrorCode PETSCMAP1(VecScatterBegin)(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
   PetscScalar            *xv,*yv,*svalues;
@@ -102,7 +102,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(Vec xin,Vec yin,InsertMode addv,Scatte
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterEnd_"
-PetscErrorCode PETSCMAP1(VecScatterEnd)(Vec xin,Vec yin,InsertMode addv,ScatterMode mode,VecScatter ctx)
+PetscErrorCode PETSCMAP1(VecScatterEnd)(VecScatter ctx,Vec xin,Vec yin,InsertMode addv,ScatterMode mode)
 {
   VecScatter_MPI_General *to,*from;
   PetscScalar            *rvalues,*yv;

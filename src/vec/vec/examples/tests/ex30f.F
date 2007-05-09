@@ -86,11 +86,11 @@
       call ISDestroy(fromis,ierr)
       call ISDestroy(tois,ierr)
       
-      call VecScatterBegin(v1,v2,ADD_VALUES,SCATTER_FORWARD,scat1,ierr)
-      call VecScatterEnd(v1,v2,ADD_VALUES,SCATTER_FORWARD,scat1,ierr)
+      call VecScatterBegin(scat1,v1,v2,ADD_VALUES,SCATTER_FORWARD,ierr)
+      call VecScatterEnd(scat1,v1,v2,ADD_VALUES,SCATTER_FORWARD,ierr)
       
-      call VecScatterBegin(v1,v3,ADD_VALUES,SCATTER_FORWARD,scat2,ierr)
-      call VecScatterEnd(v1,v3,ADD_VALUES,SCATTER_FORWARD,scat2,ierr)
+      call VecScatterBegin(scat2,v1,v3,ADD_VALUES,SCATTER_FORWARD,ierr)
+      call VecScatterEnd(scat2,v1,v3,ADD_VALUES,SCATTER_FORWARD,ierr)
       
       if (rank.eq.0) print *, "V1"
       call VecView(v1,PETSC_VIEWER_STDOUT_WORLD,ierr)

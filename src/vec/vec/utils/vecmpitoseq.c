@@ -26,8 +26,8 @@
 $        VecScatterCreateToAll(vin,&ctx,&vout);
 $
 $        // scatter as many times as you need 
-$        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-$        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+$        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
 $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);
@@ -89,8 +89,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterCreateToAll(Vec vin,VecScatter *ctx,
 $        VecScatterCreateToZero(vin,&ctx,&vout);
 $
 $        // scatter as many times as you need 
-$        VecScatterBegin(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
-$        VecScatterEnd(vin,vout,INSERT_VALUES,SCATTER_FORWARD,ctx);
+$        VecScatterBegin(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
+$        VecScatterEnd(ctx,vin,vout,INSERT_VALUES,SCATTER_FORWARD);
 $
 $        // destroy scatter context and local vector when no longer needed
 $        VecScatterDestroy(ctx);

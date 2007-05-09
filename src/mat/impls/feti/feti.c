@@ -1147,8 +1147,8 @@ int MatFetiScatter(Mat A, Vec lambda, FetiScatterMode mode) /* src the local seq
 
 		    /* VecScatter */
 	VecRestoreArray(matfeti->contrib,&contrib_array);
-	VecScatterBegin(matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD,matfeti->Br_scatter); 
-	VecScatterEnd  (matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD,matfeti->Br_scatter); 
+	VecScatterBegin(matfeti->Br_scatter,matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD);
+	VecScatterEnd  (matfeti->Br_scatter,matfeti->contrib,lambda,ADD_VALUES,SCATTER_FORWARD);
 
     }
     else
@@ -1165,8 +1165,8 @@ int MatFetiScatter(Mat A, Vec lambda, FetiScatterMode mode) /* src the local seq
 
 	            /* VecScatter */
 	    VecSet(matfeti->contrib,zero);  
-	    VecScatterBegin(lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->Br_scatter); 
-	    VecScatterEnd  (lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->Br_scatter); 
+	    VecScatterBegin(matfeti->Br_scatter,lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE);
+	    VecScatterEnd  (matfeti->Br_scatter,lambda,matfeti->contrib,INSERT_VALUES,SCATTER_REVERSE);
 
 	    VecGetArray(matfeti->contrib,&contrib_array);
 
@@ -1237,8 +1237,8 @@ int MatFetiScatterBc(Mat A, Vec ucg, FetiScatterMode mode)  /* uc_ass/ucg here; 
 
 		    /* VecScatter */
 	VecRestoreArray(matfeti->BcT_contrib,&contrib_array);
-	VecScatterBegin(matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD,matfeti->BcT_scatter); 
-	VecScatterEnd  (matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD,matfeti->BcT_scatter); 
+	VecScatterBegin(matfeti->BcT_scatter,matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD);
+	VecScatterEnd  (matfeti->BcT_scatter,matfeti->BcT_contrib,ucg,ADD_VALUES,SCATTER_FORWARD);
 
     }
     else
@@ -1254,8 +1254,8 @@ int MatFetiScatterBc(Mat A, Vec ucg, FetiScatterMode mode)  /* uc_ass/ucg here; 
 	    }
 
 	            /* VecScatter */
-	    VecScatterBegin(ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->BcT_scatter); 
-	    VecScatterEnd  (ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE,matfeti->BcT_scatter); 
+	    VecScatterBegin(matfeti->BcT_scatter,ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE);
+	    VecScatterEnd  (matfeti->BcT_scatter,ucg,matfeti->BcT_contrib,INSERT_VALUES,SCATTER_REVERSE);
 
 	    VecGetArray(matfeti->BcT_contrib,&contrib_array);
 

@@ -495,8 +495,8 @@ PetscErrorCode CreateFieldVector(ALE::Obj<ALE::Mesh> mesh, const char fieldName[
   ierr = MeshGetGlobalScatter(mesh, fieldName, *fieldVec, &injection); CHKERRQ(ierr);
 
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, field->getSize(patch), field->restrict(patch), &locField);CHKERRQ(ierr);
-  ierr = VecScatterBegin(locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-  ierr = VecScatterEnd(locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+  ierr = VecScatterBegin(injection,locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(injection,locField, *fieldVec, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(locField);CHKERRQ(ierr);
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);

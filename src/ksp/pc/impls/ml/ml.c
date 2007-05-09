@@ -558,8 +558,8 @@ int PetscML_comm(double p[],void *ML_data)
   if (size == 1) return 0;
   
   ierr = VecPlaceArray(ml->y,p);CHKERRQ(ierr); 
-  ierr = VecScatterBegin(ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD,a->Mvctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(a->Mvctx,ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(a->Mvctx,ml->y,a->lvec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecResetArray(ml->y);CHKERRQ(ierr);
   ierr = VecGetArray(a->lvec,&array);CHKERRQ(ierr);
   for (i=in_length; i<out_length; i++){

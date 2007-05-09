@@ -199,13 +199,13 @@ PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
   */
   ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
   ierr = MeshCreateLocalVector(mesh, sectionX, &localVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecDestroy(localVec);CHKERRQ(ierr);
   ierr = MeshFormFunction(mesh, sectionX, section, dmmg->user);CHKERRQ(ierr);
   ierr = MeshCreateLocalVector(mesh, section, &localVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(localVec, F, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(localVec, F, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter, localVec, F, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter, localVec, F, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecDestroy(localVec);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
@@ -244,8 +244,8 @@ PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStru
   */
   ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
   ierr = MeshCreateLocalVector(mesh, sectionX, &localVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(X, localVec, INSERT_VALUES, SCATTER_REVERSE, scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecDestroy(localVec);CHKERRQ(ierr);
   ierr = MeshFormJacobian(mesh, sectionX, *B, dmmg->user);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
@@ -912,8 +912,8 @@ PetscErrorCode DMMGFunctioni(void* ctx,PetscInt i,Vec u,PetscScalar* r)
   PetscFunctionBegin;
   /* copy u into interior part of U */
   ierr = DAGetScatter((DA)dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
-  ierr = VecScatterEnd(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
+  ierr = VecScatterBegin(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
   ierr = DAFormFunctioni1((DA)dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -930,8 +930,8 @@ PetscErrorCode DMMGFunctionib(PetscInt i,Vec u,PetscScalar* r,void* ctx)
   PetscFunctionBegin;
   /* copy u into interior part of U */
   ierr = DAGetScatter((DA)dmmg->dm,0,&gtol,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
-  ierr = VecScatterEnd(u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL,gtol);CHKERRQ(ierr);
+  ierr = VecScatterBegin(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
+  ierr = VecScatterEnd(gtol,u,U,INSERT_VALUES,SCATTER_FORWARD_LOCAL);CHKERRQ(ierr);
   ierr = DAFormFunctionib1((DA)dmmg->dm,i,U,r,dmmg->user);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

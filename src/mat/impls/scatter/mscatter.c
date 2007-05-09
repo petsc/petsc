@@ -64,8 +64,8 @@ PetscErrorCode MatMult_Scatter(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_FORWARD,scatter->scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_FORWARD,scatter->scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter->scatter,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter->scatter,x,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -79,8 +79,8 @@ PetscErrorCode MatMultAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionBegin;
   if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
-  ierr = VecScatterBegin(x,z,ADD_VALUES,SCATTER_FORWARD,scatter->scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,z,ADD_VALUES,SCATTER_FORWARD,scatter->scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -93,8 +93,8 @@ PetscErrorCode MatMultTranspose_Scatter(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
-  ierr = VecScatterBegin(x,y,INSERT_VALUES,SCATTER_REVERSE,scatter->scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,y,INSERT_VALUES,SCATTER_REVERSE,scatter->scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter->scatter,x,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter->scatter,x,y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -108,8 +108,8 @@ PetscErrorCode MatMultTransposeAdd_Scatter(Mat A,Vec x,Vec y,Vec z)
   PetscFunctionBegin;
   if (!scatter->scatter) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Need to first call MatScatterSetScatter()");
   if (z != y) {ierr = VecCopy(y,z);CHKERRQ(ierr);}
-  ierr = VecScatterBegin(x,z,ADD_VALUES,SCATTER_REVERSE,scatter->scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,z,ADD_VALUES,SCATTER_REVERSE,scatter->scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter->scatter,x,z,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

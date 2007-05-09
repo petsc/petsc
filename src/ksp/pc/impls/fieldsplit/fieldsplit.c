@@ -208,11 +208,11 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 }
 
 #define FieldSplitSplitSolveAdd(ilink,xx,yy) \
-    (VecScatterBegin(xx,ilink->x,INSERT_VALUES,SCATTER_FORWARD,ilink->sctx) || \
-     VecScatterEnd(xx,ilink->x,INSERT_VALUES,SCATTER_FORWARD,ilink->sctx) || \
+    (VecScatterBegin(ilink->sctx,xx,ilink->x,INSERT_VALUES,SCATTER_FORWARD) || \
+     VecScatterEnd(ilink->sctx,xx,ilink->x,INSERT_VALUES,SCATTER_FORWARD) || \
      KSPSolve(ilink->ksp,ilink->x,ilink->y) || \
-     VecScatterBegin(ilink->y,yy,ADD_VALUES,SCATTER_REVERSE,ilink->sctx) || \
-     VecScatterEnd(ilink->y,yy,ADD_VALUES,SCATTER_REVERSE,ilink->sctx))
+     VecScatterBegin(ilink->sctx,ilink->y,yy,ADD_VALUES,SCATTER_REVERSE) || \
+     VecScatterEnd(ilink->sctx,ilink->y,yy,ADD_VALUES,SCATTER_REVERSE))
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_FieldSplit"
@@ -271,11 +271,11 @@ static PetscErrorCode PCApply_FieldSplit(PC pc,Vec x,Vec y)
 }
 
 #define FieldSplitSplitSolveAddTranspose(ilink,xx,yy) \
-    (VecScatterBegin(xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD,ilink->sctx) || \
-     VecScatterEnd(xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD,ilink->sctx) || \
+    (VecScatterBegin(ilink->sctx,xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD) || \
+     VecScatterEnd(ilink->sctx,xx,ilink->y,INSERT_VALUES,SCATTER_FORWARD) || \
      KSPSolveTranspose(ilink->ksp,ilink->y,ilink->x) || \
-     VecScatterBegin(ilink->x,yy,ADD_VALUES,SCATTER_REVERSE,ilink->sctx) || \
-     VecScatterEnd(ilink->x,yy,ADD_VALUES,SCATTER_REVERSE,ilink->sctx))
+     VecScatterBegin(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE) || \
+     VecScatterEnd(ilink->sctx,ilink->x,yy,ADD_VALUES,SCATTER_REVERSE))
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCApply_FieldSplit"

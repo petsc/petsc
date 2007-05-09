@@ -1650,10 +1650,10 @@ c
 c  load rval from x
 c
       call VecScatterCreate(x,rfrom,rval,rto,scatter,ierr)
-      call VecScatterBegin(x,rval,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
-      call VecScatterEnd(x,rval,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
+      call VecScatterBegin(scatter,x,rval,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
+      call VecScatterEnd(scatter,x,rval,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
       call VecScatterDestroy(scatter,ierr)
 c
 c  plot rval vector
@@ -1670,10 +1670,10 @@ c
 c  load eval from x
 c
       call VecScatterCreate(x,efrom,eval,eto,scatter,ierr)
-      call VecScatterBegin(x,eval,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
-      call VecScatterEnd(x,eval,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
+      call VecScatterBegin(scatter,x,eval,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
+      call VecScatterEnd(scatter,x,eval,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
       call VecScatterDestroy(scatter,ierr)
 c
 c  plot eval vector
@@ -1691,10 +1691,10 @@ c
 c  load ruval from x
 c
       call VecScatterCreate(x,rufrom,ruval,ruto,scatter,ierr)
-      call VecScatterBegin(x,ruval,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
-      call VecScatterEnd(x,ruval,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
+      call VecScatterBegin(scatter,x,ruval,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
+      call VecScatterEnd(scatter,x,ruval,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
       call VecScatterDestroy(scatter,ierr)
 c
 c  create u = ru / r
@@ -1957,10 +1957,10 @@ c
 c  load rese from x
 c
          call VecScatterCreate(x,defrom,rese,deto,scatter,ierr)
-         call VecScatterBegin(x,rese,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
-         call VecScatterEnd(x,rese,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
+         call VecScatterBegin(scatter,x,rese,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
+         call VecScatterEnd(scatter,x,rese,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
          call VecScatterDestroy(scatter,ierr)
 c
 c  apply preconditioner
@@ -1975,10 +1975,10 @@ c
 c load de into y
 c
       call VecScatterCreate(de,deto,y,defrom,scatter,ierr)
-      call VecScatterBegin(de,y,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
-      call VecScatterEnd(de,y,INSERT_VALUES,
-     &                 SCATTER_FORWARD,scatter,ierr)
+      call VecScatterBegin(scatter,de,y,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
+      call VecScatterEnd(scatter,de,y,INSERT_VALUES,
+     &                 SCATTER_FORWARD,ierr)
       call VecScatterDestroy(scatter,ierr)
 
       if (debug) then

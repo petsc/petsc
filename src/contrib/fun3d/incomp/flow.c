@@ -278,8 +278,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
  
    PetscFunctionBegin;
    /* Get X into the local work vector */
-   ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+   ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+   ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
    /* VecCopy(x,localX); */
    /* access the local work f,grad,and input */
    ierr = VecGetArray(f,&res);CHKERRQ(ierr);
@@ -294,8 +294,8 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    grad_time += time_fin - time_ini;
    ierr = VecRestoreArray(grid->grad,&grad);CHKERRQ(ierr);
 
-   ierr = VecScatterBegin(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr);
-   ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD,gradScatter);CHKERRQ(ierr); 
+   ierr = VecScatterBegin(gradScatter,grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+   ierr = VecScatterEnd(gradScatter,grid->grad,localGrad,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
    /*VecCopy(grid->grad,localGrad);*/
 
    ierr = VecGetArray(localGrad,&grad);CHKERRQ(ierr);
@@ -381,9 +381,9 @@ int FormJacobian(SNES snes,Vec x,Mat *Jac,Mat *B,MatStructure *flag,void *dummy)
   int          ierr;
  
   PetscFunctionBegin;
-  /*  ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-      ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr); */
-  /*VecCopy(x,localX);*/
+  /*  ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); */
+  /* VecCopy(x,localX); */
   ierr = MatSetUnfactored(pc_mat);CHKERRQ(ierr); 
  
   ierr = VecGetArray(localX,&qnode);CHKERRQ(ierr);
@@ -489,8 +489,8 @@ int Update(SNES snes,void *ctx)
   ierr = MPI_Allreduce(&cpuloc,&cpuglo,1,MPIU_REAL,MPI_MAX,PETSC_COMM_WORLD);CHKERRQ(ierr);
   c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
   
-  ierr = VecScatterBegin(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   /* VecCopy(grid->qnode,localX); */
 
   ierr = VecGetArray(grid->res,&res);CHKERRQ(ierr);

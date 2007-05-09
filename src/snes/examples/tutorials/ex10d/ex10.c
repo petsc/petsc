@@ -576,8 +576,8 @@ PetscErrorCode FormFunction(SNES snes,Vec X,Vec F,void *ptr)
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
  */
-  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /*
      Get pointers to vector data
@@ -659,8 +659,8 @@ PetscErrorCode FormJacobian(SNES snes,Vec X,Mat *J,Mat *B,MatStructure *flag,voi
      VecScatterBegin() and VecScatterEnd() to overlap the communication with
      computation.
   */
-  ierr = VecScatterBegin(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(X,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,X,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /*
      Get pointer to vector data

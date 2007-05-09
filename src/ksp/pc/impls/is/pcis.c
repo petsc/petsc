@@ -37,10 +37,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
     ierr = MatGetVecs(pc->pmat,&counter,0);CHKERRQ(ierr); /* temporary auxiliar vector */
     ierr = VecSet(counter,0.0);CHKERRQ(ierr);
     ierr = VecSet(pcis->vec1_N,1.0);CHKERRQ(ierr);
-    ierr = VecScatterBegin(pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE,matis->ctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE,matis->ctx);CHKERRQ(ierr);
-    ierr = VecScatterBegin(counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD,matis->ctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD,matis->ctx);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,pcis->vec1_N,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (matis->ctx,counter,pcis->vec1_N,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecDestroy(counter);CHKERRQ(ierr);
   }
   /*
@@ -113,8 +113,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISSetUp(PC pc)
 
   /* Creating scaling "matrix" D, from information in vec1_N */
   ierr = VecDuplicate(pcis->vec1_B,&pcis->D);CHKERRQ(ierr);
-  ierr = VecScatterBegin(pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->N_to_B,pcis->vec1_N,pcis->D,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecReciprocal(pcis->D);CHKERRQ(ierr);    
 
   /* See historical note 01, at the bottom of this file. */
@@ -397,8 +397,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec ve
   */
   /* Setting the RHS vec1_N */
   ierr = VecSet(vec1_N,0.0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(b,vec1_N,INSERT_VALUES,SCATTER_REVERSE,pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (b,vec1_N,INSERT_VALUES,SCATTER_REVERSE,pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,b,vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->N_to_B,b,vec1_N,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   /* Checking for consistency of the RHS */
   {
     PetscTruth flg;
@@ -424,8 +424,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCISApplyInvSchur (PC pc, Vec b, Vec x, Vec ve
   /* Solving the system for vec2_N */
   ierr = KSPSolve(pcis->ksp_N,vec1_N,vec2_N);CHKERRQ(ierr);
   /* Extracting the local interface vector out of the solution */
-  ierr = VecScatterBegin(vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (vec2_N,x,INSERT_VALUES,SCATTER_FORWARD,pcis->N_to_B);CHKERRQ(ierr);
+  ierr = VecScatterBegin(pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (pcis->N_to_B,vec2_N,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

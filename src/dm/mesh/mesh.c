@@ -1067,8 +1067,8 @@ PetscErrorCode restrictVector(Vec g, Vec l, InsertMode mode)
   ierr = PetscLogEventBegin(Mesh_restrictVector,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   if (injection) {
-    ierr = VecScatterBegin(g, l, mode, SCATTER_REVERSE, injection);
-    ierr = VecScatterEnd(g, l, mode, SCATTER_REVERSE, injection);
+    ierr = VecScatterBegin(injection, g, l, mode, SCATTER_REVERSE);
+    ierr = VecScatterEnd(injection, g, l, mode, SCATTER_REVERSE);
   } else {
     if (mode == INSERT_VALUES) {
       ierr = VecCopy(g, l);CHKERRQ(ierr);
@@ -1107,8 +1107,8 @@ PetscErrorCode assembleVectorComplete(Vec g, Vec l, InsertMode mode)
   ierr = PetscLogEventBegin(Mesh_assembleVectorComplete,0,0,0,0);CHKERRQ(ierr);
   ierr = PetscObjectQuery((PetscObject) g, "injection", (PetscObject *) &injection);CHKERRQ(ierr);
   if (injection) {
-    ierr = VecScatterBegin(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
-    ierr = VecScatterEnd(l, g, mode, SCATTER_FORWARD, injection);CHKERRQ(ierr);
+    ierr = VecScatterBegin(injection, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(injection, l, g, mode, SCATTER_FORWARD);CHKERRQ(ierr);
   } else {
     if (mode == INSERT_VALUES) {
       ierr = VecCopy(l, g);CHKERRQ(ierr);

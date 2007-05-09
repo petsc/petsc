@@ -676,8 +676,8 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
   // This might need to be generalized
   ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(localVec, v, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(localVec, v, INSERT_VALUES, SCATTER_FORWARD, scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,localVec, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,localVec, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecNorm(v, type, val);CHKERRQ(ierr);
   ierr = VecDestroy(localVec);CHKERRQ(ierr);
   ierr = VecDestroy(v);CHKERRQ(ierr);

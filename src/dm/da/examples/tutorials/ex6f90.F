@@ -144,10 +144,10 @@
 !-----------------------------------------------------------------------
 !     computations.
 !-----------------------------------------------------------------------
-      CALL VecScatterBegin(g,l,INSERT_VALUES,SCATTER_FORWARD,              &
-     &     fa%vscat,ierr)
-      CALL VecScatterEnd(g,l,INSERT_VALUES,SCATTER_FORWARD,                &
-     &     fa%vscat,ierr)
+      CALL VecScatterBegin(fa%vscat,g,l,INSERT_VALUES,SCATTER_FORWARD,     &
+     &     ierr)
+      CALL VecScatterEnd(fa%vscat,g,l,INSERT_VALUES,SCATTER_FORWARD,       &
+     &     ierr)
 !-----------------------------------------------------------------------
 !     terminate.
 !-----------------------------------------------------------------------
@@ -506,10 +506,10 @@
 !-----------------------------------------------------------------------
 !     scatter PETSc global indices to redundant valued array.
 !-----------------------------------------------------------------------
-      CALL VecScatterBegin(globalvec,tovec,INSERT_VALUES,                            &
-     &     SCATTER_FORWARD,vscat,ierr)
-      CALL VecScatterEnd(globalvec,tovec,INSERT_VALUES,                              &
-     &     SCATTER_FORWARD,vscat,ierr)
+      CALL VecScatterBegin(vscat,globalvec,tovec,INSERT_VALUES,                      &
+     &     SCATTER_FORWARD,ierr)
+      CALL VecScatterEnd(vscat,globalvec,tovec,INSERT_VALUES,                        &
+     &     SCATTER_FORWARD,ierr)
 !-----------------------------------------------------------------------
 !     create local vector as concatenation of local vectors
 !-----------------------------------------------------------------------

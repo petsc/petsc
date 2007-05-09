@@ -134,8 +134,8 @@ PetscErrorCode FAGlobalToLocal(FA fa,Vec g,Vec l)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  ierr = VecScatterBegin(g,l,INSERT_VALUES,SCATTER_FORWARD,fa->vscat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(g,l,INSERT_VALUES,SCATTER_FORWARD,fa->vscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(fa->vscat,g,l,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -427,8 +427,8 @@ PetscErrorCode FACreate(FA *infa)
   ierr = VecRestoreArray(globalvec,&globalarray);CHKERRQ(ierr);
   
   /* scatter PETSc global indices to redundant valueed array */
-  ierr = VecScatterBegin(globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD,vscat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD,vscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(vscat,globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vscat,globalvec,tovec,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /* Create local vector that is the concatenation of the local vectors */
   nlocal = 0;

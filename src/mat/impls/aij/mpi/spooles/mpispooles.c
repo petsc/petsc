@@ -168,8 +168,8 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
     }
     ierr = VecRestoreArray(lu->vec_spooles,&array);CHKERRQ(ierr);
 #endif 
-  ierr = VecScatterBegin(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD,lu->scat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(lu->scat,lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(lu->scat,lu->vec_spooles,x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -525,8 +525,8 @@ PetscErrorCode DataMoveElements(GridData *gdata)
   */
   ierr = VecScatterCreate(veleold,PETSC_NULL,vele,isscat,&vecscat);CHKERRQ(ierr);
   ierr = ISDestroy(isscat);CHKERRQ(ierr);
-  ierr = VecScatterBegin(veleold,vele,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(veleold,vele,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(vecscat,veleold,vele,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vecscat,veleold,vele,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
   ierr = VecDestroy(veleold);CHKERRQ(ierr);
 
@@ -740,8 +740,8 @@ PetscErrorCode DataMoveVertices(GridData *gdata)
   */
   ierr = VecScatterCreate(overt,isscat,vert,PETSC_NULL,&vecscat);CHKERRQ(ierr);
   ierr = ISDestroy(isscat);CHKERRQ(ierr);
-  ierr = VecScatterBegin(overt,vert,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
-  ierr = VecScatterEnd(overt,vert,INSERT_VALUES,SCATTER_FORWARD,vecscat);CHKERRQ(ierr);
+  ierr = VecScatterBegin(vecscat,overt,vert,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(vecscat,overt,vert,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecScatterDestroy(vecscat);CHKERRQ(ierr);
 
   ierr = VecDestroy(overt);CHKERRQ(ierr);

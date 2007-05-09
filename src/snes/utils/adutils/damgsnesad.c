@@ -149,8 +149,8 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(Q*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(Q*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -267,8 +267,8 @@ PetscErrorCode DMMGSolveFASb(DMMG *dmmg,PetscInt level)
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(Q*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(Q*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -409,8 +409,8 @@ PetscErrorCode DMMGSolveFAS4(DMMG *dmmg,PetscInt level)
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(R*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(R*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -530,8 +530,8 @@ PetscErrorCode DMMGSolveFASn(DMMG *dmmg,PetscInt level,PetscInt iter)
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(RI*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(RI*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -686,8 +686,8 @@ PetscErrorCode DMMGSolveFASMCycle(DMMG *dmmg,PetscInt level,PetscTruth* converge
     ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
     /* F(RI*x_fine) */
-    ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-    ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+    ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
     /* residual_coarse = F(RI*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -840,8 +840,8 @@ PetscErrorCode DMMGSolveFASMCycle9(DMMG *dmmg,PetscInt level,PetscTruth* converg
     ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
     /* F(RI*x_fine) */
-    ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-    ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+    ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
     /* residual_coarse = F(RI*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -967,8 +967,8 @@ PetscErrorCode DMMGSolveFASFCycle(DMMG *dmmg,PetscInt l,PetscTruth* converged)
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(RI*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(RI*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -1028,8 +1028,8 @@ PetscErrorCode DMMGSolveFASFCycle9(DMMG *dmmg,PetscInt l,PetscTruth* converged)
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(RI*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD,dmmg[j]->inject);CHKERRQ(ierr);
+      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
       ierr = DMMGFormFunction(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(RI*x_fine) + R*(residual_fine - F(x_fine)) */

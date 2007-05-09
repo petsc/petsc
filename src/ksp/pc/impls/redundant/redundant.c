@@ -189,8 +189,8 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
 
   PetscFunctionBegin;
   /* scatter x to xdup */
-  ierr = VecScatterBegin(x,red->xdup,INSERT_VALUES,SCATTER_FORWARD,red->scatterin);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,red->xdup,INSERT_VALUES,SCATTER_FORWARD,red->scatterin);CHKERRQ(ierr);
+  ierr = VecScatterBegin(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->scatterin,x,red->xdup,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   
   /* place xdup's local array into xsub */
   ierr = VecGetArray(red->xdup,&array);CHKERRQ(ierr);
@@ -206,8 +206,8 @@ static PetscErrorCode PCApply_Redundant(PC pc,Vec x,Vec y)
   ierr = VecPlaceArray(red->ydup,(const PetscScalar*)array);CHKERRQ(ierr);
 
   /* scatter ydup to y */
-  ierr = VecScatterBegin(red->ydup,y,INSERT_VALUES,SCATTER_FORWARD,red->scatterout);CHKERRQ(ierr);
-  ierr = VecScatterEnd(red->ydup,y,INSERT_VALUES,SCATTER_FORWARD,red->scatterout);CHKERRQ(ierr);
+  ierr = VecScatterBegin(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(red->scatterout,red->ydup,y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
   ierr = VecResetArray(red->ydup);CHKERRQ(ierr);
   ierr = VecRestoreArray(red->ysub,&array);CHKERRQ(ierr);
   PetscFunctionReturn(0);

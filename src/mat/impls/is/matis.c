@@ -54,16 +54,16 @@ PetscErrorCode MatMult_IS(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin;
   /*  scatter the global vector x into the local work vector */
-  ierr = VecScatterBegin(x,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* multiply the local matrix */
   ierr = MatMult(is->A,is->x,is->y);CHKERRQ(ierr);
 
   /* scatter product back into global memory */
   ierr = VecSet(y,zero);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->y,y,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(is->y,y,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
@@ -77,18 +77,18 @@ static PetscErrorCode MatMultAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 
   PetscFunctionBegin; /*  v3 = v2 + A * v1.*/
   /*  scatter the global vector v1 into the local work vector */
-  ierr = VecScatterBegin(v1,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (v1,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(v2,is->y,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (v2,is->y,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* multiply the local matrix */
   ierr = MatMultAdd(is->A,is->x,is->y,is->y);CHKERRQ(ierr);
 
   /* scatter result back into global vector */
   ierr = VecSet(v3,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->y,v3,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->y,v3,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -101,16 +101,16 @@ PetscErrorCode MatMultTranspose_IS(Mat A,Vec x,Vec y)
 
   PetscFunctionBegin; /*  y = A' * x */
   /*  scatter the global vector x into the local work vector */
-  ierr = VecScatterBegin(x,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(x,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->ctx,x,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* multiply the local matrix */
   ierr = MatMultTranspose(is->A,is->x,is->y);CHKERRQ(ierr);
 
   /* scatter product back into global vector */
   ierr = VecSet(y,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->y,y,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd(is->y,y,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd(is->ctx,is->y,y,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -123,18 +123,18 @@ PetscErrorCode MatMultTransposeAdd_IS(Mat A,Vec v1,Vec v2,Vec v3)
 
   PetscFunctionBegin; /*  v3 = v2 + A' * v1.*/
   /*  scatter the global vectors v1 and v2  into the local work vectors */
-  ierr = VecScatterBegin(v1,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (v1,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterBegin(v2,is->y,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (v2,is->y,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,v1,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,v2,is->y,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   /* multiply the local matrix */
   ierr = MatMultTransposeAdd(is->A,is->x,is->y,is->y);CHKERRQ(ierr);
 
   /* scatter result back into global vector */
   ierr = VecSet(v3,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->y,v3,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->y,v3,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,is->y,v3,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -281,10 +281,10 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     ierr = VecCreateMPI(A->comm,A->cmap.n,A->cmap.N,&counter);CHKERRQ(ierr);
     ierr = VecSet(counter,zero);CHKERRQ(ierr);
     ierr = VecSet(is->x,one);CHKERRQ(ierr);
-    ierr = VecScatterBegin(is->x,counter,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (is->x,counter,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-    ierr = VecScatterBegin(counter,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
-    ierr = VecScatterEnd  (counter,is->x,INSERT_VALUES,SCATTER_FORWARD,is->ctx);CHKERRQ(ierr);
+    ierr = VecScatterBegin(is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterBegin(is->ctx,counter,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd  (is->ctx,counter,is->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     ierr = VecDestroy(counter);CHKERRQ(ierr);
   }
   if (!n) {
@@ -414,8 +414,8 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 
   /* scatter diagonal back into global vector */
   ierr = VecSet(v,0);CHKERRQ(ierr);
-  ierr = VecScatterBegin(is->x,v,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
-  ierr = VecScatterEnd  (is->x,v,ADD_VALUES,SCATTER_REVERSE,is->ctx);CHKERRQ(ierr);
+  ierr = VecScatterBegin(is->ctx,is->x,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = VecScatterEnd  (is->ctx,is->x,v,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

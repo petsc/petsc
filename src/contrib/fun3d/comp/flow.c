@@ -345,9 +345,9 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
    int          nbface, ires;
    PetscScalar	time_ini, time_fin;
  
-   ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);
+   ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);
    CHKERRQ(ierr);
-   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);
+   ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);
    CHKERRQ(ierr);
    /*{
      PetscScalar qNorm = 0.0, qNorm1 = 0.0;
@@ -370,10 +370,10 @@ int FormFunction(SNES snes,Vec x,Vec f,void *dummy)
      ierr = PetscGetTime(&time_fin); CHKERRQ(ierr);
      grad_time += time_fin - time_ini;
      ierr = VecRestoreArray(grid->grad,&grad); CHKERRQ(ierr);
-     ierr = VecScatterBegin(grid->grad,localGrad,INSERT_VALUES,
-			    SCATTER_FORWARD,gradScatter); CHKERRQ(ierr);
-     ierr = VecScatterEnd(grid->grad,localGrad,INSERT_VALUES,
-			  SCATTER_FORWARD,gradScatter); CHKERRQ(ierr);
+     ierr = VecScatterBegin(gradScatter,grid->grad,localGrad,INSERT_VALUES,
+			    SCATTER_FORWARD); CHKERRQ(ierr);
+     ierr = VecScatterEnd(gradScatter,grid->grad,localGrad,INSERT_VALUES,
+			  SCATTER_FORWARD); CHKERRQ(ierr);
    }
    ierr = VecGetArray(localGrad,&grad); CHKERRQ(ierr);
    if ((!SecondOrder) && (c_info->ntt == 1)) {
@@ -456,8 +456,9 @@ int FormJacobian(SNES snes, Vec x, Mat *Jac, Mat *B,
    int          ierr;
    int          nnodes; 
  
-   /*ierr = VecScatterBegin(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-   ierr = VecScatterEnd(x,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+   /*
+   ierr = VecScatterBegin(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+   ierr = VecScatterEnd(scatter,x,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
    */
    ierr = MatSetUnfactored(jac); CHKERRQ(ierr);
    nnodes = grid->nnodes;
@@ -609,8 +610,8 @@ int Update(SNES snes, void *ctx)
   c_info->tot = cpuglo;    /* Total CPU time used upto this time step */
   
   /* Calculate Aerodynamic coeeficients at the current time step */
-  ierr = VecScatterBegin(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD,scatter);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter,grid->qnode,localX,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
 
   ierr = VecGetArray(grid->res, &res); CHKERRQ(ierr);
   ierr = VecGetArray(localX,&qnode); CHKERRQ(ierr);
@@ -2042,9 +2043,9 @@ int FieldOutput(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
   /* Get the coordinates */
@@ -2080,9 +2081,9 @@ int FieldOutput(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
   if (rank == 0) {
@@ -2160,9 +2161,9 @@ int FieldOutput(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
   /* Get the coordinates */
@@ -2187,9 +2188,9 @@ int FieldOutput(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
   if (rank == 0) {
@@ -2270,9 +2271,9 @@ int FieldOutput(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
   /* Get the coordinates */
@@ -2297,9 +2298,9 @@ int FieldOutput(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,xyzGlo,xyzLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
   ierr = VecDestroy(xyzGlo); CHKERRQ(ierr);
@@ -2405,9 +2406,9 @@ int WriteRestartFile(GRID *grid, int timeStep)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,grid->qnode,qnodeLoc,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
 
@@ -2610,9 +2611,9 @@ int ReadRestartFile(GRID *grid)
                           &scatter); CHKERRQ(ierr);
   ierr = ISDestroy(isglobal); CHKERRQ(ierr);
   ierr = ISDestroy(islocal); CHKERRQ(ierr);
-  ierr = VecScatterBegin(qnodeLoc,grid->qnode,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterBegin(scatter,qnodeLoc,grid->qnode,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
-  ierr = VecScatterEnd(qnodeLoc,grid->qnode,INSERT_VALUES,SCATTER_FORWARD,scatter);
+  ierr = VecScatterEnd(scatter,qnodeLoc,grid->qnode,INSERT_VALUES,SCATTER_FORWARD);
   CHKERRQ(ierr);
   ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
 

@@ -929,8 +929,8 @@ To copy selected components from one vector
 to another, one uses the following set of commands:
 \begin{tabbing}
   VecScatterCreate(Vec x,IS ix,Vec y,IS iy,VecScatter *ctx);\\
-  VecScatterBegin(Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD,VecScatter ctx);\\
-  VecScatterEnd(Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD,VecScatter ctx);\\
+  VecScatterBegin(VecScatter ctx,Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD);\\
+  VecScatterEnd(VecScatter ctx,Vec x,Vec y,INSERT\_VALUES,SCATTER\_FORWARD);\\
   VecScatterDestroy(VecScatter ctx);
 \end{tabbing} 
 Here \trl{ix} denotes the index set of the first vector, while \trl{
@@ -968,8 +968,8 @@ In some cases one may wish to ``undo'' a scatter, that is perform the
 scatter backwards switching the roles of the sender and receiver. This is 
 done by using 
 \begin{tabbing}
-  VecScatterBegin(Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE,VecScatter ctx);\\
-  VecScatterEnd(Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE,VecScatter ctx);
+  VecScatterBegin(VecScatter ctx,Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE);\\
+  VecScatterEnd(VecScatter ctx,Vec y,Vec x,INSERT\_VALUES,SCATTER\_REVERSE);
 \end{tabbing} 
 \findex{SCATTER_REVERSE} Note that the roles of the first 
 two arguments to these routines must be swapped whenever the \trl{SCATTER_REVERSE}
@@ -1010,8 +1010,8 @@ elements it needed, or none by creating an index set with no entries.
    ISCreateGeneral(PETSC\_COMM\_SELF,2,idx\_from,\&from);\\
    ISCreateGeneral(PETSC\_COMM\_SELF,2,idx\_to,\&to);\\
    VecScatterCreate(p,from,x,to,\&scatter);\\
-   VecScatterBegin(p,x,INSERT\_VALUES,SCATTER\_FORWARD,scatter);\\
-   VecScatterEnd(p,x,INSERT\_VALUES,SCATTER\_FORWARD,scatter);\\
+   VecScatterBegin(scatter,p,x,INSERT\_VALUES,SCATTER\_FORWARD);\\
+   VecScatterEnd(scatter,p,x,INSERT\_VALUES,SCATTER\_FORWARD);\\
    VecGetArray(x,\&values);\\
    ISDestroy(from);\\
    ISDestroy(to); \\
@@ -1039,15 +1039,15 @@ vector. In the simplest case this may be written as
 \begin{tabbing}
    Function: (Input Vec globalin, Output Vec globalout)\\
 \\
-  VecScatterBegin(\=Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
-                 \>         ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
-  VecScatterEnd(Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
-                 \>       ScatterMode SCATTER\_FORWARD,VecScatter scatter);\\
+  VecScatterBegin(\=VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
+                 \>         ScatterMode SCATTER\_FORWARD);\\
+  VecScatterEnd(VecScatter scatter,Vec globalin,Vec localin,InsertMode INSERT\_VALUES,\\
+                 \>       ScatterMode SCATTER\_FORWARD);\\
   \trl{/*} For example, do local calculations from localin to localout \trl{*/} \\
-  VecScatterBegin(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
-                 \>         ScatterMode SCATTER\_REVERSE,VecScatter scatter);\\
-  VecScatterEnd(Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
-                 \>       ScatterMode SCATTER\_REVERSE,VecScatter scatter);
+  VecScatterBegin(VecScatter scatter,Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
+                 \>         ScatterMode SCATTER\_REVERSE);\\
+  VecScatterEnd(VecScatter scatter,Vec localout,Vec globalout,InsertMode ADD\_VALUES,\\
+                 \>       ScatterMode SCATTER\_REVERSE);
 \end{tabbing}
 
 % -------------------------------------------------------------------------------
