@@ -512,34 +512,6 @@ PetscErrorCode SectionRealComplete(SectionReal section)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "SectionRealGetLocalVector"
-/*@C
-  SectionRealGetLocalVector - Retrieves the local section storage as a Vec
-
-  Not collective
-
-  Input Parameter:
-. section - the section object
-
-  Output Parameter:
-. lv - the local vector
-
-  Level: advanced
-
-.seealso SectionRealRestrict(), SectionRealCreate(), SectionRealView()
-@*/
-PetscErrorCode SectionRealGetLocalVector(SectionReal section, Vec *lv)
-{
-  Obj<ALE::Mesh::real_section_type> s;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->size(), s->restrict(), lv);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "SectionRealZero"
 /*@C
   SectionRealZero - Zero out the entries
@@ -611,6 +583,73 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealAllocate(SectionReal section)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealCreateLocalVector"
+/*@C
+  SectionRealCreateLocalVector - Creates a vector with the local piece of the Section
+
+  Collective on Mesh
+
+  Input Parameter:
+. section - the Section  
+
+  Output Parameter:
+. localVec - the local vector
+
+  Level: advanced
+
+.seealso MeshDestroy(), MeshCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal section, Vec *localVec)
+{
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), localVec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SectionRealToVec"
+/*@C
+  SectionRealToVec - Maps the given section to a Vec
+
+  Collective on Section
+
+  Input Parameters:
++ section - the real Section
+- mesh - The Mesh
+
+  Output Parameter:
+. vec - the Vec 
+
+  Level: intermediate
+
+.seealso VecCreate(), SectionRealCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh, ScatterMode mode, Vec vec)
+{
+  Vec            localVec;
+  VecScatter     scatter;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  ierr = SectionRealCreateLocalVector(section, &localVec);CHKERRQ(ierr);
+  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  if (mode == SCATTER_FORWARD) {
+    ierr = VecScatterBegin(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterBegin(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SectionRealClear"
 /*@C
   SectionRealClear - Dellocate storage for this section
@@ -661,8 +700,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
 {
   Obj<ALE::Mesh> m;
   Obj<ALE::Mesh::real_section_type> s;
-  Vec            v, localVec;
-  VecScatter     scatter;
+  Vec            v;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -671,15 +709,10 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
   ierr = VecCreate(m->comm(), &v);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), &localVec);CHKERRQ(ierr);
   ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(v);CHKERRQ(ierr);
-  // This might need to be generalized
-  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter,localVec, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter,localVec, v, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = SectionRealToVec(section, mesh, SCATTER_FORWARD, v);CHKERRQ(ierr);
   ierr = VecNorm(v, type, val);CHKERRQ(ierr);
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
   ierr = VecDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

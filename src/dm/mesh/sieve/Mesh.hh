@@ -938,7 +938,7 @@ namespace ALE {
         double xi   = invJ[0*embedDim+0]*(point[0] - v0[0]) + invJ[0*embedDim+1]*(point[1] - v0[1]);
         double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]);
 
-        if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 1.0)) {
+        if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 2.0)) {
           return *c_iter;
         }
       }
@@ -957,7 +957,7 @@ namespace ALE {
         double eta  = invJ[1*embedDim+0]*(point[0] - v0[0]) + invJ[1*embedDim+1]*(point[1] - v0[1]) + invJ[1*embedDim+2]*(point[2] - v0[2]);
         double zeta = invJ[2*embedDim+0]*(point[0] - v0[0]) + invJ[2*embedDim+1]*(point[1] - v0[1]) + invJ[2*embedDim+2]*(point[2] - v0[2]);
 
-        if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 1.0)) {
+        if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 2.0)) {
           return *c_iter;
         }
       }

@@ -186,27 +186,14 @@ PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr)
   DMMG           dmmg = (DMMG) ptr;
   Mesh           mesh = (Mesh) dmmg->dm;
   SectionReal    sectionX, section;
-  Vec            localVec;
-  VecScatter     scatter;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "default", &section);CHKERRQ(ierr);
   ierr = SectionRealDuplicate(section, &sectionX);CHKERRQ(ierr);
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-  */
-  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
-  ierr = MeshCreateLocalVector(mesh, sectionX, &localVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = SectionRealToVec(sectionX, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
   ierr = MeshFormFunction(mesh, sectionX, section, dmmg->user);CHKERRQ(ierr);
-  ierr = MeshCreateLocalVector(mesh, section, &localVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter, localVec, F, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter, localVec, F, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = SectionRealToVec(section, mesh, SCATTER_FORWARD, F);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
   ierr = SectionRealDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
@@ -232,21 +219,11 @@ PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStru
   DMMG           dmmg = (DMMG) ptr;
   Mesh           mesh = (Mesh) dmmg->dm;
   SectionReal    sectionX;
-  Vec            localVec;
-  VecScatter     scatter;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "default", &sectionX);CHKERRQ(ierr);
-  /*
-     Scatter ghost points to local vector, using the 2-step process
-        DAGlobalToLocalBegin(), DAGlobalToLocalEnd().
-  */
-  ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
-  ierr = MeshCreateLocalVector(mesh, sectionX, &localVec);CHKERRQ(ierr);
-  ierr = VecScatterBegin(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecScatterEnd(scatter, X, localVec, INSERT_VALUES, SCATTER_REVERSE);CHKERRQ(ierr);
-  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  ierr = SectionRealToVec(sectionX, mesh, SCATTER_REVERSE, X);CHKERRQ(ierr);
   ierr = MeshFormJacobian(mesh, sectionX, *B, dmmg->user);CHKERRQ(ierr);
   /* Assemble true Jacobian; if it is different */
   if (*J != *B) {
@@ -255,7 +232,7 @@ PetscErrorCode DMMGComputeJacobianMesh(SNES snes, Vec X, Mat *J, Mat *B, MatStru
   }
   ierr  = MatSetOption(*B, MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
   *flag = SAME_NONZERO_PATTERN;
-  ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
+  ierr  = SectionRealDestroy(sectionX);CHKERRQ(ierr);
   PetscFunctionReturn(0); 
 } 
 #endif

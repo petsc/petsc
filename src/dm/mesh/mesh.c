@@ -770,35 +770,6 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MeshCreateLocalVector"
-/*@C
-  MeshCreateLocalVector - Creates a vector with the local piece of the Section
-
-  Collective on Mesh
-
-  Input Parameters:
-+ mesh - the Mesh
-- section - the Section  
-
-  Output Parameter:
-. localVec - the local vector
-
-  Level: advanced
-
-.seealso MeshDestroy(), MeshCreate()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, SectionReal section, Vec *localVec)
-{
-  ALE::Obj<ALE::Mesh::real_section_type> s;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), localVec);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
 #define __FUNCT__ "MeshGetGlobalIndices"
 /*@C
     MeshGetGlobalIndices - Gets the global indices for all the local entries
@@ -1900,7 +1871,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
       }
       refCoords[d] -= 1.0;
     }
-    values[0] = 1.0/3.0 - (refCoords[0] + refCoords[1])/3.0;
+    values[0] = -(refCoords[0] + refCoords[1])/2.0;
     values[1] = 0.5*(refCoords[0] + 1.0);
     values[2] = 0.5*(refCoords[1] + 1.0);
     ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
