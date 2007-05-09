@@ -353,8 +353,11 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   PetscErrorCode ierr;
   ALE::Obj<ALE::Mesh> m;
   PetscFunctionBegin;
+  PetscTruth info;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_coarsen_info", &info);CHKERRQ(ierr);
   ierr = MeshGetMesh(finemesh, m);CHKERRQ(ierr);
   int dim = m->getDimension();
+  if (info)PetscPrintf(m->comm(), "Original Mesh: %d vertices, %d elements\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());
   const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::real_section_type>& spacing = m->getRealSection("spacing");
   const ALE::Obj<ALE::Mesh::label_type> hdepth = m->createLabel("hdepth");
@@ -378,14 +381,14 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   const ALE::Obj<ALE::Mesh::label_sequence>& boundaryvertices = m->getLabelStratum("marker", 1); //boundary
   ALE::Mesh::label_sequence::iterator bv_iter = boundaryvertices->begin();
   ALE::Mesh::label_sequence::iterator bv_iter_end = boundaryvertices->end();
-  PetscPrintf(m->comm(), "NUMBER OF BOUNDARY POINTS: %d\n", boundaryvertices->size());
+ // PetscPrintf(m->comm(), "NUMBER OF BOUNDARY POINTS: %d\n", boundaryvertices->size());
   while (bv_iter != bv_iter_end) {
-    if (Curvature(m, *bv_iter) > 0.01) {
+    if (m->depth(*bv_iter) == 0) if (Curvature(m, *bv_iter) > 0.01) {
       m->setValue(hdepth, *bv_iter, nLevels-1);
     }
     bv_iter++;
   }
-  PetscPrintf(m->comm(), "Forced in %d especially curved boundary nodes.\n", m->getLabelStratum("hdepth", nLevels-1)->size());
+ // PetscPrintf(m->comm(), "Forced in %d especially curved boundary nodes.\n", m->getLabelStratum("hdepth", nLevels-1)->size());
   double bvCoords[dim];
   ALE::Mesh::point_type bvdom;
   std::list<ALE::Mesh::point_type> complist;
@@ -411,7 +414,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
         if (m->getValue(hdepth, bvdom) == curLevel) skip = true; 
       }
       bool canAdd = true;
-      if (m->getValue(hdepth, *bv_iter) == 0 && !skip) { //if not yet included or invalidated
+      if (m->getValue(hdepth, *bv_iter) == 0 && !skip && m->depth(*bv_iter) == 0) { //if not yet included or invalidated
         m->setValue(traversal, *bv_iter, 1);
         double bvSpace = *spacing->restrictPoint(*bv_iter);
         ierr = PetscMemcpy(bvCoords, coordinates->restrictPoint(*bv_iter), dim*sizeof(double));
@@ -497,8 +500,9 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       }
       bv_iter++;
     }
-    PetscPrintf(m->comm(), "Added %d new boundary vertices\n", m->getLabelStratum("hdepth", curLevel)->size());
+ //   PetscPrintf(m->comm(), "Added %d new boundary vertices\n", m->getLabelStratum("hdepth", curLevel)->size());
     //INTERIOR NODES:
+    complist.clear();
     ALE::Obj<ALE::Mesh::label_sequence> intverts = m->depthStratum(0);
     bv_iter = intverts->begin();
     bv_iter_end = intverts->end();
@@ -508,7 +512,6 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       if (bvdom != -1) {
         if (m->getValue(hdepth, bvdom) == curLevel) skip = true; 
       }
-      m->setValue(traversal, *bv_iter, 1);
       bool canAdd = true;
       if ((m->getValue(boundary, *bv_iter) != 1) && (m->getValue(hdepth, *bv_iter) == 0) && !skip) { //if not in the boundary and not included (or excluded)
         double bvSpace = *spacing->restrictPoint(*bv_iter);
@@ -517,8 +520,10 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
         neighbors = m->getSieve()->cone(m->getSieve()->support(*bv_iter));
         n_iter = neighbors->begin();
         n_iter_end = neighbors->end();
+        m->setValue(traversal, *bv_iter, 1);
         while (n_iter != n_iter_end) {
-          if (m->getValue(boundary, *n_iter) != 1) {
+          if (*n_iter != *bv_iter) {
+            //PetscPrintf(m->comm(), "Added %d to the list\n", *n_iter);
             m->setValue(traversal, *n_iter, 1);
             complist.push_front(*n_iter);
           }
@@ -530,6 +535,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
         while ((!complist.empty()) && canAdd) {
           ALE::Mesh::point_type curpt = *complist.begin();
           complist.pop_front();
+          //PetscPrintf(m->comm(), "Comparing %d to %d\n", *bv_iter, curpt);
           dist = 0.;
           double curSpace = *spacing->restrictPoint(curpt);
           const double * curCoords = coordinates->restrictPoint(curpt); 
@@ -597,7 +603,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       }
       bv_iter++;
     }
-    PetscPrintf(m->comm(), "Included %d new points in level %d\n", m->getLabelStratum("hdepth", curLevel)->size(), curLevel);
+  //  PetscPrintf(m->comm(), "Included %d new points in level %d\n", m->getLabelStratum("hdepth", curLevel)->size(), curLevel);
     curmeshsize += m->getLabelStratum("hdepth", curLevel)->size();
     //MESHING AND CONTINUITY CHECKING: MAKE SURE:
     //1. ELIMINATE COMPLETELY CONSTRAINED ELEMENTS, BEING ONES ON WHICH ALL CORNERS ARE BOUNDARY PLACES.
@@ -668,11 +674,11 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     newmesh->setDimension(dim);
     newmesh->setSieve(sieve);
     newmesh->stratify();
-    ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
     //UPDATE THE MARKER AND FINEMESH VERTEX NUMBERING LABELS
     ALE::Obj<ALE::Mesh::label_type> boundary_new = newmesh->createLabel("marker");
     ALE::Obj<ALE::Mesh::label_type> fine_corresponds = newmesh->createLabel("fine");
     ALE::Obj<ALE::Mesh::label_sequence> newverts = newmesh->depthStratum(0);
+    if (info)PetscPrintf(m->comm(), "%d: %d vertices, %d elements\n", curLevel, newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size());
     ALE::Mesh::label_sequence::iterator nv_iter = newverts->begin();
     ALE::Mesh::label_sequence::iterator nv_iter_end = newverts->end();
     while (nv_iter != nv_iter_end) {
@@ -680,69 +686,118 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       if(m->getValue(boundary, oldpositions[*nv_iter - nelements]) == 1) newmesh->setValue(boundary_new, *nv_iter, 1);
       nv_iter++;
     }
-    PetscPrintf(m->comm(), "%d boundary vertices here\n", newmesh->getLabelStratum("marker", 1)->size());
-    //eliminate the completely constrained triangles.
-/*    ALE::Obj<ALE::Mesh::label_sequence> coarsele = newmesh->heightStratum(0);
-    int nRemoved = 0;
-    int intlevels = newmesh->depth(*coarsele->begin());
-    ALE::Mesh::label_sequence::iterator ce_iter = coarsele->begin();
-    ALE::Mesh::label_sequence::iterator ce_iter_end = coarsele->end();
-    std::list<ALE::Mesh::point_type> rempoints;
-    while (ce_iter != ce_iter_end) {
-      ALE::Obj<ALE::Mesh::sieve_type::coneArray> children = newmesh->getSieve()->nCone(*ce_iter, intlevels); //get the vertices here.
-      //printf("%d", children->size());
-      ALE::Mesh::sieve_type::coneArray::iterator ch_iter = children->begin();
-      ALE::Mesh::sieve_type::coneArray::iterator ch_iter_end = children->end();
-      bool canRemove = true;
-      while (ch_iter != ch_iter_end) {
-        //if ANY of them are the interior vertex, OR this is the only simplex supporting the given point, we cannot do this
-        if ((newmesh->getSieve()->nSupport(*ch_iter, intlevels)->size() < 2) || (newmesh->getValue(boundary_new, *ch_iter) != 1)) canRemove = false;
-        //printf(" %d", newmesh->getValue(boundary_new, *ch_iter));
-        ch_iter++;
-      }
-      //printf("\n");
-      if (canRemove) {
-        rempoints.push_front(*ce_iter);
-        nRemoved++;
-      }
-      ce_iter++;
-    }
-    PetscPrintf(m->comm(), "Removed %d trivial cells\n", nRemoved);
-    while (!rempoints.empty()) {
-      ALE::Mesh::point_type currem = *rempoints.begin();
-      rempoints.pop_front();
-     // newmesh->getSieve()->removeBasePoint(currem);
-     // newmesh->getSieve()->removeBasePoint(currem);
-    //  newmesh->getSieve()->removeBasePoint(currem);
-    }
-    //if interpolated remove any lower-dimensional simplices that have been support-orphaned in this process.
-    for (int i = 1; i < intlevels-1; i++) {
-      //at each stage remove the orphaned simplices.
-      ALE::Obj<ALE::Mesh::label_sequence> cursim = newmesh->heightStratum(i);
-      ALE::Mesh::label_sequence::iterator cs_iter = cursim->begin();
-      ALE::Mesh::label_sequence::iterator cs_iter_end = cursim->end();
-      while (cs_iter != cs_iter_end) {
-         if (newmesh->getSieve()->support(*cs_iter)->size() == 0)rempoints.push_front(*cs_iter);
-      }
-      while (!rempoints.empty()) {
-        ALE::Mesh::point_type currem = *rempoints.begin();
-        newmesh->getSieve()->removeCapPoint(currem);
-        newmesh->getSieve()->removeBasePoint(currem);
-      }
-    }
-    */
-    //check the border. LATER
-    //repeat if broken.
     MeshSetMesh(outmeshes[curLevel-1], newmesh);
-    //BUILD THE INTERPOLATION OPERATORS (admittedly for P1.)
-    //MODUS OPERANDI:  TAKE THE DOMINATING POINT OF EVERY POINT IN THIS MESH THAT ISN'T IN THE NEXT MESH UP.  IF THE DOMINATING POINT ALSO ISN'T THERE IT IS A BOUNDARY, SO TAKE *ITS* DOMINATING POINT.
-    //TAKE THE TRIANGLES ON THE PERIPHERY OF THE DOMINATING POINT IN THE NEXT MESH UP AND TEST AGAINST THEM.  IF NOT FOUND THEN TAKE THEIR NEIGHBORS AND DO THE SAME.  REPEAT UNTIL FOUND OR GIVE UP.
-    //DON'T CORRECT THE BOUNDARY
-    //loop over elements
-    //locate each vertex
-    //FUTURE: locate each lagrange basis point by the same magic.
-    //update the operator
+    ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
+    SectionReal section;
+    ALE::Obj<ALE::Mesh::real_section_type> s;
+    ierr = SectionRealCreate(newmesh->comm(), &section);CHKERRQ(ierr);
+    ierr = SectionRealGetBundle(section, newmesh);CHKERRQ(ierr);
+    ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject) section, "default");CHKERRQ(ierr);
+    ierr = MeshSetSectionReal(outmeshes[curLevel-1], section);CHKERRQ(ierr);
+    ierr = SectionRealDestroy(section);
   } //end of level for
+  std::list<ALE::Mesh::point_type> tricomplist;
+  for (int curLevel = 0; curLevel < nLevels-1; curLevel++) {
+    //PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel, curLevel+1);
+    ALE::Obj<ALE::Mesh> c_m;
+    ALE::Obj<ALE::Mesh> f_m;
+    if (curLevel == 0) {
+      f_m = m;
+    } else {
+      ierr = MeshGetMesh(outmeshes[curLevel-1], f_m);CHKERRQ(ierr);
+    }
+    ierr = MeshGetMesh(outmeshes[curLevel], c_m);CHKERRQ(ierr);
+    ALE::Obj<ALE::Mesh::label_type> prolongation = f_m->createLabel("prolongation");
+    ALE::Obj<ALE::Mesh::label_type> coarse_traversal = c_m->createLabel("traversal");
+    ALE::Obj<ALE::Mesh::label_sequence> levelVertices = m->getLabelStratum("hdepth", curLevel);
+   // PetscPrintf(m->comm(), "%d points in level %d\n", levelVertices->size(), curLevel);
+    ALE::Mesh::label_sequence::iterator lv_iter = levelVertices->begin();
+    ALE::Mesh::label_sequence::iterator lv_iter_end = levelVertices->end();
+    int interpolatelevels = c_m->height(*c_m->depthStratum(0)->begin()); //see if the mesh is interpolated or not
+    double lvCoords[dim];
+    while (lv_iter != lv_iter_end) {
+      int ncomps = 0;
+      ierr = PetscMemcpy(lvCoords, coordinates->restrictPoint(*lv_iter), dim*sizeof(double));
+      if (m->getValue(boundary, *lv_iter) != 1) {
+        //get the triangle/tet fan around the dominating point in the next level up
+        ALE::Mesh::point_type dp = m->getValue(dompoint, *lv_iter);
+        if (m->getValue(hdepth, dp) < curLevel+1) dp = m->getValue(dompoint, dp); //if it's a boundary node it can be a dominating point and NOT be in the topmesh
+        ALE::Obj<ALE::Mesh::sieve_type::supportArray> trifan = c_m->getSieve()->nSupport(*c_m->getLabelStratum("fine", dp)->begin(), interpolatelevels);
+        ALE::Mesh::sieve_type::supportArray::iterator tf_iter = trifan->begin();
+        ALE::Mesh::sieve_type::supportArray::iterator tf_iter_end = trifan->end();
+        while (tf_iter != tf_iter_end) {
+          tricomplist.push_front(*tf_iter); //initialize the closest-guess comparison list.
+          c_m->setValue(coarse_traversal, *tf_iter, 1);
+          tf_iter++;
+        }
+        //PetscPrintf(m->comm(), "%d initial guesses\n", trifan->size());
+        bool isFound = false;
+        while (!tricomplist.empty() && !isFound) {
+          ALE::Mesh::point_type curTri = *tricomplist.begin();
+          tricomplist.pop_front();
+          ncomps++;
+          if (PointIsInElement(c_m, curTri, lvCoords)) {
+            ALE::Mesh::point_type fmpoint;
+            if (curLevel == 0) {
+              fmpoint = *lv_iter;
+            } else {
+              fmpoint = *f_m->getLabelStratum("fine", *lv_iter)->begin();
+            } 
+            f_m->setValue(prolongation, fmpoint, curTri);
+            isFound = true;
+          //  PetscPrintf(m->comm(), "%d located in %d\n", *lv_iter, curTri);
+          } else {
+            ALE::Obj<ALE::Mesh::sieve_type::supportSet> trineighbors = c_m->getSieve()->support(c_m->getSieve()->cone(curTri));
+            ALE::Mesh::sieve_type::supportSet::iterator tn_iter = trineighbors->begin();
+            ALE::Mesh::sieve_type::supportSet::iterator tn_iter_end = trineighbors->end();
+            while (tn_iter != tn_iter_end) {
+              if (c_m->getValue(coarse_traversal, *tn_iter) != 1){
+                tricomplist.push_back(*tn_iter);
+                c_m->setValue(coarse_traversal, *tn_iter, 1);
+              }
+              tn_iter++;
+            }
+          }
+        }
+        ALE::Obj<ALE::Mesh::label_sequence> travtris = c_m->getLabelStratum("traversal", 1);
+        ALE::Mesh::label_sequence::iterator tt_iter = travtris->begin();
+        ALE::Mesh::label_sequence::iterator tt_iter_end = travtris->end();
+        while (tt_iter != tt_iter_end) {
+          tricomplist.push_front(*tt_iter);
+          tt_iter++;
+        }
+        while (!tricomplist.empty()) {
+          c_m->setValue(coarse_traversal, *tricomplist.begin(), 0);
+          tricomplist.pop_front();
+        }
+        if (!isFound) {
+          PetscPrintf(m->comm(), "ERROR: Could Not Locate Point %d (%f, %f) in %d comparisons\n", *lv_iter, lvCoords[0], lvCoords[1], ncomps);
+        }
+      }
+      lv_iter++;
+    }
+    //set the prolongation label for the guys in this mesh in such a way that there's an element associated for the points in higher levels also.
+    for (int upLevel = curLevel + 1; upLevel < nLevels - 1; upLevel++) {
+      levelVertices = m->getLabelStratum("hdepth", upLevel);
+      lv_iter = levelVertices->begin();
+      lv_iter_end = levelVertices->end();
+      while (lv_iter != lv_iter_end) {
+        //if (m->getValue(boundary, *lv_iter) != 1) { we CAN correct for the boundary, and should!
+          //nothing complicated, just take the FIRST element of the nSupport of it in the next mesh up.
+          ALE::Mesh::point_type cmpt = *c_m->getLabelStratum("fine", *lv_iter)->begin();
+          ALE::Mesh::point_type fmpoint;
+          if (curLevel == 0) {
+            fmpoint = *lv_iter;
+          } else {
+            fmpoint = *f_m->getLabelStratum("fine", *lv_iter)->begin();
+          } 
+          f_m->setValue(prolongation, fmpoint, *c_m->getSieve()->nSupport(cmpt, interpolatelevels)->begin());
+        //}
+        lv_iter++;
+      }
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -892,20 +947,21 @@ bool PointIsInElement(ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double 
       int dim = mesh->getDimension();
       double v0[dim], J[dim*dim], invJ[dim*dim], detJ;
       mesh->computeElementGeometry(mesh->getRealSection("coordinates"), e, v0, J, invJ, detJ);
-/*      if (dim == 2) {
+      if (dim == 2) {
         double xi   = invJ[0*dim+0]*(point[0] - v0[0]) + invJ[0*dim+1]*(point[1] - v0[1]);
         double eta  = invJ[1*dim+0]*(point[0] - v0[0]) + invJ[1*dim+1]*(point[1] - v0[1]);
-        if ((xi >= 0.0) && (eta >= 0.0) && (xi + eta <= 1.0)) { return true;
+        //PetscPrintf(mesh->comm(), "Location Try: (%d) (%f, %f, %f)\n", e, xi, eta, xi + eta);
+        if ((xi >= -0.000001) && (eta >= -0.000001) && (xi + eta <= 2.000001)) {return true;
         } else return false;
       } else if (dim == 3) {
         double xi   = invJ[0*dim+0]*(point[0] - v0[0]) + invJ[0*dim+1]*(point[1] - v0[1]) + invJ[0*dim+2]*(point[2] - v0[2]);
         double eta  = invJ[1*dim+0]*(point[0] - v0[0]) + invJ[1*dim+1]*(point[1] - v0[1]) + invJ[1*dim+2]*(point[2] - v0[2]);
         double zeta = invJ[2*dim+0]*(point[0] - v0[0]) + invJ[2*dim+1]*(point[1] - v0[1]) + invJ[2*dim+2]*(point[2] - v0[2]);
 
-        if ((xi >= 0.0) && (eta >= 0.0) && (zeta >= 0.0) && (xi + eta + zeta <= 1.0)) { return true;
+        if ((xi >= -0.000001) && (eta >= -0.000001) && (zeta >= -0.000001) && (xi + eta + zeta <= 2.000001)) { return true;
         } else return false;
-      } else throw ALE::Exception("Location only in 2D or 3D");*/
-      double coeffs[dim];
+      } else throw ALE::Exception("Location only in 2D or 3D");
+/*      double coeffs[dim];
       double sum = 0.;
       for (int i = 0; i < dim; i++) {
         coeffs[i] = 0.;
@@ -918,7 +974,7 @@ bool PointIsInElement(ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double 
       for (int i = 0; i < dim; i++) {
         if (coeffs[i] < 0.) return false;
       }
-      return true;
+      return true; */
 }
 
 

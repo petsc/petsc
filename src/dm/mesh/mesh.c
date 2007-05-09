@@ -1762,10 +1762,7 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   PetscFunctionReturn(0);
 }
 
-#if 0
-#include "src/dm/mesh/examples/tutorials/Coarsener.h"
-#include "src/dm/mesh/examples/tutorials/fast_coarsen.h"
-#endif
+#include "Hierarchy.hh"
 
 #undef __FUNCT__  
 #define __FUNCT__ "MeshCoarsenHierarchy"
@@ -1799,6 +1796,13 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
     PetscFunctionReturn(0);
   }
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
+  ierr = PetscMalloc((numLevels+1) * sizeof(Mesh), coarseHierarchy);CHKERRQ(ierr);
+  for (int i = 0; i < numLevels+1; i++) {
+    ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[i]);CHKERRQ(ierr);
+  }
+  ierr = MeshSpacingFunction(mesh);CHKERRQ(ierr);
+  ierr = MeshCreateHierarchyLabel(mesh, coarseningFactor, numLevels+1, *coarseHierarchy);
+  
 #if 0
   if (oldMesh->getDimension() != 2) SETERRQ(PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
   ierr = ALE::Coarsener::IdentifyBoundary(oldMesh, 2);CHKERRQ(ierr);

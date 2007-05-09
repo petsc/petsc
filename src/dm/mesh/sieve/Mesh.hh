@@ -967,8 +967,11 @@ namespace ALE {
       }
       throw ALE::Exception("Could not locate point");
     };
-    point_type locatePoint(const real_section_type::value_type point[]) {
-      if (this->_dim == 2) {
+    point_type locatePoint(const real_section_type::value_type point[], point_type guess = -1) {
+      //guess overrides this by saying that we already know the relation of this point to this mesh.  We will need to make it a more robust "guess" later for more than P1
+      if (guess != -1) {
+        return guess;
+      }else if (this->_dim == 2) {
         return locatePoint_2D(point);
       } else if (this->_dim == 3) {
         return locatePoint_3D(point);
