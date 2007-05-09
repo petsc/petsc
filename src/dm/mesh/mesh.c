@@ -1172,15 +1172,15 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Ob
 
 #undef __FUNCT__
 #define __FUNCT__ "updateOperatorGeneral"
-PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
+PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh>& colM, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  const ALE::Mesh::indices_type rowIndicesBlock = m->getIndices(rowSection, rowE, rowGlobalOrder);
+  const ALE::Mesh::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
   const PetscInt *rowIndices    = rowIndicesBlock.first;
   const int&      numRowIndices = rowIndicesBlock.second;
-  const ALE::Mesh::indices_type colIndicesBlock = m->getIndices(colSection, colE, colGlobalOrder);
+  const ALE::Mesh::indices_type colIndicesBlock = colM->getIndices(colSection, colE, colGlobalOrder);
   const PetscInt *colIndices    = colIndicesBlock.first;
   const int&      numColIndices = colIndicesBlock.second;
 
@@ -1750,13 +1750,15 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   ierr = MeshGetMesh(mesh, oldMesh);CHKERRQ(ierr);
   ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
   refinementLimit = oldMesh->getMaxVolume()/2.0;
-  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, false);
+  ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, refinementLimit, true);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
 
   newMesh->setDiscretization(oldMesh->getDiscretization());
   newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
   newMesh->setupField(s);
+  newMesh->view("Refined Mesh");
+  s->view("Refined Default Section");
   PetscFunctionReturn(0);
 }
 
@@ -1833,7 +1835,7 @@ PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarse
 /*
   This method only handle P_1 discretizations at present.
 */
-PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interpolation, Vec *scaling)
+PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling)
 {
   ALE::Obj<ALE::Mesh> coarse;
   ALE::Obj<ALE::Mesh> fine;
@@ -1855,6 +1857,8 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
+  sCoarse->setDebug(1);
+  sFine->setDebug(1);
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
@@ -1874,7 +1878,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmFine, Mesh dmCoarse, Mat *interp
     values[0] = -(refCoords[0] + refCoords[1])/2.0;
     values[1] = 0.5*(refCoords[0] + 1.0);
     values[2] = 0.5*(refCoords[1] + 1.0);
-    ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
+    ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, coarse, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

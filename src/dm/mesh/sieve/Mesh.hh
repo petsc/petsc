@@ -918,11 +918,15 @@ namespace ALE {
     double getMaxVolume() {
       const Obj<real_section_type>& coordinates = this->getRealSection("coordinates");
       const Obj<label_sequence>&    cells       = this->heightStratum(0);
-      double v0[3], J[9], invJ[9], detJ, maxVolume = 0.0;
+      const int                     dim         = this->getDimension();
+      double v0[3], J[9], invJ[9], detJ, refVolume = 0.0, maxVolume = 0.0;
 
+      if (dim == 1) refVolume = 2.0;
+      if (dim == 2) refVolume = 2.0;
+      if (dim == 3) refVolume = 4.0/3.0;
       for(label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
         this->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
-        maxVolume = std::max(maxVolume, detJ);
+        maxVolume = std::max(maxVolume, detJ*refVolume);
       }
       return maxVolume;
     };
