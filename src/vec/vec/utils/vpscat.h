@@ -17,7 +17,7 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
   PetscScalar            *xv,*yv,*svalues;
   MPI_Request            *rwaits,*swaits;
   PetscErrorCode         ierr;
-  PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs,cnt;
+  PetscInt               i,*indices,*sstarts,nrecvs,nsends,bs;
 
   PetscFunctionBegin;
   CHKMEMQ;
@@ -60,6 +60,8 @@ PetscErrorCode PETSCMAP1(VecScatterBegin)(VecScatter ctx,Vec xin,Vec yin,InsertM
         ierr = MPI_Alltoallv(to->values,to->counts,to->displs,MPIU_SCALAR,from->values,from->counts,from->displs,MPIU_SCALAR,ctx->comm);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_MPI_WIN_CREATE)
       } else if (to->use_window) {
+        PetscInt cnt;
+
         ierr = MPI_Win_fence(0,from->window);CHKERRQ(ierr);
         for (i=0; i<nsends; i++) {
           cnt  = bs*(to->starts[i+1]-to->starts[i]);
