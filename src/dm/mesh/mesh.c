@@ -1861,8 +1861,6 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
-  sCoarse->setDebug(1);
-  sFine->setDebug(1);
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);

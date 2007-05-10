@@ -3,7 +3,6 @@
 #include <Mesh.hh>
 #include <stdlib.h>
 #include <string>
-//#include <triangle.h>
 
 //#include "petscmesh.h"
 #include "petscdmmg.h"
@@ -13,9 +12,6 @@
 #include <Generator.hh>
 //helper functions:
 
-void SetupTriangulateio(triangulateio *, triangulateio *);
-void TeardownTriangulateio(triangulateio *, triangulateio *);
-//void SetupTetgenio(tetgenio *, tetgenio *);
 bool PointIsInElement(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type element, double * point);
 //double PointDist(double * pointA, double * pointB, int dim);
 
@@ -28,8 +24,8 @@ PetscErrorCode MeshIDBoundary(Mesh mesh); //finds the boundary of the mesh.
 
 PetscErrorCode DMMGFunctionBasedCoarsen(Mesh finemesh, int levels, double coarsen_factor, DMMG dmmg);  //sets up the DMMG object to do this
 
+#ifdef PETSC_HAVE_TRIANGLE
 //SetupTriangulateio: set all the fields of the triangulateio structures to be good for initial input/output
-
 void SetupTriangulateio(triangulateio * input, triangulateio * output) {
   input->numberofsegments = 0;
   input->segmentlist = NULL;
@@ -63,6 +59,7 @@ void SetupTriangulateio(triangulateio * input, triangulateio * output) {
   output->normlist = NULL;
   return;
 }
+#endif
 
 double Curvature_2D(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type p) {
   PetscErrorCode ierr;
@@ -640,6 +637,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     int nelements;
     int nverts;
     if (dim == 2) {
+#ifdef PETSC_HAVE_TRIANGLE
       //create a segmentlist to keep triangle from doing dumb things.
       triangulateio tridata[2];
       SetupTriangulateio(&tridata[0], &tridata[1]);
@@ -653,7 +651,11 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       oldpositions = tridata[1].pointmarkerlist;
       nelements = tridata[1].numberoftriangles;
       nverts = tridata[1].numberofpoints;
+#else
+      SETERRQ(PETSC_ERR_SUP, "Must have Triangle installed to use this method. Reconfigure with --download-triangle");
+#endif
     } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
       tetgenio * tetdata = new tetgenio[2];
       //push the points into the thing
       tetdata[0].pointlist = coords;
@@ -666,6 +668,9 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       oldpositions = tetdata[1].pointmarkerlist;
       nelements = tetdata[1].numberoftetrahedra;
       nverts = tetdata[1].numberofpoints;
+#else
+      SETERRQ(PETSC_ERR_SUP, "Must have TetGen installed to use this method. Reconfigure with --download-tetgen");
+#endif
     }
     //make it into a mesh;
     ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
