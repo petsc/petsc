@@ -1858,6 +1858,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fine->getRealSection("default");
   const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
   const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
+
   const int dim = coarse->getDimension();
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
@@ -1867,7 +1868,13 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
   for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
-    const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(coords);
+
+    ALE::Mesh::point_type cellguess = -1;
+    if (fine->hasLabel("prolongation")) {
+      cellguess = fine->getValue(fine->getLabel("prolongation"), *v_iter);
+    }
+
+    const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(coords, cellguess);
 
     coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
     for(int d = 0; d < dim; ++d) {

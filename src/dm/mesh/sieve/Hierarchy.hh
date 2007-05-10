@@ -673,11 +673,13 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
 #endif
     }
     //make it into a mesh;
-    ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
-    ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, nelements, connectivity, nverts, false, dim+1, nelements);
     ALE::Obj<ALE::Mesh> newmesh = new ALE::Mesh(m->comm(), m->debug());
     newmesh->setDimension(dim);
+    ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+    ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, nelements, connectivity, nverts, true, dim+1, -1, newmesh->getArrowSection("orientation"));
     newmesh->setSieve(sieve);
+    newmesh->setDiscretization(m->getDiscretization());
+    newmesh->setBoundaryCondition(m->getBoundaryCondition());
     newmesh->stratify();
     //UPDATE THE MARKER AND FINEMESH VERTEX NUMBERING LABELS
     ALE::Obj<ALE::Mesh::label_type> boundary_new = newmesh->createLabel("marker");
