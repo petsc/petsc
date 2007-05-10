@@ -917,9 +917,9 @@ PetscErrorCode MatTranspose_MPIDense(Mat A,Mat *matout)
   ierr = MatMPIDenseSetPreallocation(B,PETSC_NULL);CHKERRQ(ierr);
 
   m = a->A->rmap.n; n = a->A->cmap.n; v = Aloc->v;
-  ierr = PetscMalloc(n*sizeof(PetscInt),&rwork);CHKERRQ(ierr);
+  ierr = PetscMalloc(m*sizeof(PetscInt),&rwork);CHKERRQ(ierr);
+  for (i=0; i<m; i++) rwork[i] = rstart + i;
   for (j=0; j<n; j++) {
-    for (i=0; i<m; i++) rwork[i] = rstart + i;
     ierr = MatSetValues(B,1,&j,m,rwork,v,INSERT_VALUES);CHKERRQ(ierr);
     v   += m;
   } 
