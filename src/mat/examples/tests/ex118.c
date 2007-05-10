@@ -1,11 +1,4 @@
-static char help[] = "Test LAPACK routine DSYEV() or DSYEVX(). \n\
-Reads PETSc matrix A \n\
-then computes selected eigenvalues, and optionally, eigenvectors of \n\
-a real generalized symmetric-definite eigenproblem \n\
- A*x = lambda*x \n\
-Input parameters include\n\
-  -f <input_file> : file to load\n\
-e.g. ./ex116 -f /home/petsc/datafiles/matrices/small  \n\n";
+static char help[] = "Test LAPACK routine DSTEBZ() and DTEIN().  \n\n";
 
 #include "petscmat.h"
 #include "petscblaslapack.h"
@@ -16,93 +9,68 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  Mat            A,A_dense; //,mats[2],A_sp;    
-  Vec            *evecs;
-  PetscViewer    fd;                /* viewer */
-  char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     flg,flgA=PETSC_FALSE,flgB=PETSC_FALSE,TestSYEVX=PETSC_TRUE; 
   PetscErrorCode ierr;
-  PetscTruth     isSymmetric;
-  PetscScalar    sigma,*arrayA,*arrayB,*evecs_array,*work,*evals;
+  PetscReal      *D,*E,vl=0.0,vu=4.0,*evals,*work,tol=1.e-10,tols[2];
+  PetscInt       i,j,n,il=1,iu=5,nsplit,*iblock,*isplit,*iwork,info,nevs,*ifail,cklvl=2;
   PetscMPIInt    size;
-  PetscInt       m,n,i,j,nevs,il,iu,cklvl=2; 
-  PetscReal      vl,vu,abstol=1.e-8; 
-  PetscBLASInt   *iwork,*ifail,lwork,lierr,bn;
-  PetscReal      tols[2];
-  PetscInt       nzeros[2],nz;
-  PetscReal      ratio;
+  PetscTruth     flg;
+  Vec            *evecs;
+  PetscScalar    *evecs_array;
+  Mat            T;
   
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
-  ierr = PetscOptionsHasName(PETSC_NULL, "-test_syev", &flg);CHKERRQ(ierr);
-  if (flg){
-    TestSYEVX = PETSC_FALSE; 
-  }
+  n    = 100;
+  nevs = iu - il;
+  ierr = PetscMalloc((3*n+1)*sizeof(PetscReal),&D);CHKERRQ(ierr);
+  E     = D + n;
+  evals = E + n;
+  ierr = PetscMalloc((5*n+1)*sizeof(PetscReal),&work);CHKERRQ(ierr);
+  ierr = PetscMalloc((3*n+1)*sizeof(PetscInt),&iwork);CHKERRQ(ierr);
+  ierr = PetscMalloc((3*n+1)*sizeof(PetscInt),&iblock);CHKERRQ(ierr);
+  isplit = iblock + n;
 
-  /* Determine files from which we read the two matrices */
-  ierr = PetscOptionsGetString(PETSC_NULL,"-f",file[0],PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  /* Set symmetric tridiagonal matrix */
+  for(i=0; i<n; i++){
+    D[i] = 2.0;
+    E[i] = 1.0;
+  } 
 
-  /* Load matrix A */
-  ierr = PetscViewerBinaryOpen(PETSC_COMM_WORLD,file[0],FILE_MODE_READ,&fd);CHKERRQ(ierr);
-  ierr  = MatLoad(fd,MATSEQAIJ,&A);CHKERRQ(ierr);
-  ierr = PetscViewerDestroy(fd);CHKERRQ(ierr); 
-  ierr = MatGetSize(A,&m,&n);CHKERRQ(ierr);    
+  /* Solve eigenvalue problem: A*evec = eval*evec */
+  printf(" LAPACKstebz_: compute %d eigenvalues...\n",nevs);    
+  LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,D,E,&nevs,&nsplit,evals,iblock,isplit,work,iwork,&info);
+  if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info); 
 
-  /* Check whether A is symmetric */
-  ierr = PetscOptionsHasName(PETSC_NULL, "-check_symmetry", &flg);CHKERRQ(ierr);
-  if (flg) {
-    Mat Trans;
-    ierr = MatTranspose(A, &Trans);
-    ierr = MatEqual(A, Trans, &isSymmetric);
-    if (!isSymmetric) SETERRQ(PETSC_ERR_USER,"A must be symmetric");
-    ierr = MatDestroy(Trans);CHKERRQ(ierr);
-  }
-
-  /* Convert aij matrix to MatSeqDense for LAPACK */
-  ierr = PetscTypeCompare((PetscObject)A,MATSEQDENSE,&flg); CHKERRQ(ierr);
-  if (!flg) {
-    ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr); 
-  }
-
-  /* Solve eigenvalue problem: A*x = lambda*B*x */
-  /*============================================*/
-  lwork = 8*n;
-  bn    = (PetscBLASInt)n;
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&evals);CHKERRQ(ierr);
-  ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-  ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
-
-  if (!TestSYEVX){ /* test syev() */
-    printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
-    LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,&lierr); 
-    evecs_array = arrayA;
-    nevs = m;
-    il=1; iu=m; 
-  } else { /* test syevx()  */
-    il = 1; iu=(PetscBLASInt)(0.2*m); /* request 1 to 20%m evalues */
-    printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
-    ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
-    ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
-    ifail = iwork + 5*n;
-      
-    /* in the case "I", vl and vu are not referenced */
-    vl = 0.0; vu = 8.0;
-    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,iwork,ifail,&lierr);    
-    ierr = PetscFree(iwork);CHKERRQ(ierr);
-  }
-  ierr = MatRestoreArray(A,&arrayA);CHKERRQ(ierr);
-  if (nevs <= 0 ) SETERRQ1(PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
+  printf(" LAPACKstein_: compute %d eigenvectors...\n",nevs); 
+  ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
+  ierr = PetscMalloc(nevs*sizeof(PetscInt),&ifail);CHKERRQ(ierr);
+  LAPACKstein_(&n,D,E,&nevs,evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
+  if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info); 
 
   /* View evals */
   ierr = PetscOptionsHasName(PETSC_NULL, "-eig_view", &flg);CHKERRQ(ierr);
   if (flg){
     printf(" %d evals: \n",nevs);
-    for (i=0; i<nevs; i++) printf("%d  %G\n",i+il,evals[i]); 
+    for (i=0; i<nevs; i++) printf("%d  %G\n",i,evals[i]); 
   }
 
-  /* Check residuals and orthogonality */   
+  /* Check residuals and orthogonality */ 
+  ierr = MatCreate(PETSC_COMM_SELF,&T);CHKERRQ(ierr);
+  ierr = MatSetSizes(T,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
+  ierr = MatSetType(T,MATSBAIJ);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(T);CHKERRQ(ierr);
+  for (i=0; i<n; i++){
+    ierr = MatSetValues(T,1,&i,1,&i,&D[i],INSERT_VALUES);CHKERRQ(ierr);
+    if (i != n-1){
+      j = i+1;
+      ierr = MatSetValues(T,1,&i,1,&j,&E[i],INSERT_VALUES);CHKERRQ(ierr);
+    }
+  }
+  ierr = MatAssemblyBegin(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(T,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+
   ierr = PetscMalloc((nevs+1)*sizeof(Vec),&evecs);CHKERRQ(ierr);
   for (i=0; i<nevs; i++){
     ierr = VecCreate(PETSC_COMM_SELF,&evecs[i]);CHKERRQ(ierr);
@@ -112,18 +80,18 @@ PetscInt main(PetscInt argc,char **args)
   }
     
   tols[0] = 1.e-8;  tols[1] = 1.e-8;
-  ierr = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
+  ierr = CkEigenSolutions(cklvl,T,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
+  
+  /* free space */
+  ierr = MatDestroy(T);CHKERRQ(ierr);
   for (i=0; i<nevs; i++){ ierr = VecDestroy(evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
-    
-  /* Free work space. */
-  if (TestSYEVX){ierr = PetscFree(evecs_array);CHKERRQ(ierr);}
-    
-  ierr = PetscFree(evals);CHKERRQ(ierr);
+  ierr = PetscFree(D);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
-
-  ierr = MatDestroy(A_dense);CHKERRQ(ierr); 
-  ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = PetscFree(iwork);CHKERRQ(ierr);
+  ierr = PetscFree(iblock);CHKERRQ(ierr);
+  ierr = PetscFree(evecs_array);CHKERRQ(ierr);
+  ierr = PetscFree(ifail);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

@@ -22,6 +22,9 @@ EXTERN_C_BEGIN
 #  define BLASswap_    SSWAP
 #  define BLASaxpy_    SAXPY
 #  define BLASasum_    SASUM
+#  define LAPACKpttrf_ SPTTRF
+#  define LAPACKpttrs_ SPTTRS
+#  define LAPACKstein_ STEIN
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ SORMQR
 #  define LAPACKtrtrs_ STRTRS
@@ -37,6 +40,7 @@ EXTERN_C_BEGIN
 #  define LAPACKsygv_  SSYGV
 #  define LAPACKsygvx_ SSYGVX
 #  define BLASgemm_    SGEMM
+#  define LAPACKstebz_ SSTEBZ
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ DGEQRF
@@ -48,6 +52,9 @@ EXTERN_C_BEGIN
 #  define BLASswap_    DSWAP
 #  define BLASaxpy_    DAXPY
 #  define BLASasum_    DASUM
+#  define LAPACKpttrf_ DPTTRF
+#  define LAPACKpttrs_ DPTTRS 
+#  define LAPACKstein_ DSTEIN
 /* Real double precision with character string arguments. */
 #  define LAPACKormqr_ DORMQR
 #  define LAPACKtrtrs_ DTRTRS
@@ -63,6 +70,7 @@ EXTERN_C_BEGIN
 #  define LAPACKsygv_  DSYGV
 #  define LAPACKsygvx_ DSYGVX
 #  define BLASgemm_    DGEMM
+#  define LAPACKstebz_ DSTEBZ
 # endif
 
 #else
@@ -77,6 +85,8 @@ EXTERN_C_BEGIN
 #  define BLASswap_    CSWAP
 #  define BLASaxpy_    CAXPY
 #  define BLASasum_    SCASUM
+#  define LAPACKpttrf_ CPTTRF
+#  define LAPACKstein_ CSTEIN
 /* Complex single precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ CTRTRS
@@ -92,6 +102,8 @@ EXTERN_C_BEGIN
 #  define LAPACKsyevx_ CSYEVX
 #  define LAPACKsygv_  CSYGV
 #  define LAPACKsygvx_ CSYGVX
+#  define LAPACKpttrs_ CPTTRS 
+/* LAPACKstebz_ does not exist for complex. */
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
@@ -103,6 +115,8 @@ EXTERN_C_BEGIN
 #  define BLASswap_    ZSWAP
 #  define BLASaxpy_    ZAXPY
 #  define BLASasum_    DZASUM
+#  define LAPACKpttrf_ ZPTTRF
+#  define LAPACKstein_ ZSTEIN
 /* Complex double precision with character string arguments */
 /* LAPACKormqr_ does not exist for complex. */
 #  define LAPACKtrtrs_ ZTRTRS
@@ -118,6 +132,8 @@ EXTERN_C_BEGIN
 #  define LAPACKsyevx_ ZSYEVX
 #  define LAPACKsygv_  ZSYGV
 #  define LAPACKsygvx_ ZSYGVX
+#  define LAPACKpttrs_ ZPTTRS 
+/* LAPACKstebz_ does not exist for complex. */
 # endif
 #endif
 
@@ -131,7 +147,8 @@ EXTERN void      BLAScopy_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*
 EXTERN void      BLASswap_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 EXTERN void      BLASaxpy_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 EXTERN PetscReal BLASasum_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
-
+EXTERN void LAPACKpttrf_(PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*);
+EXTERN void LAPACKstein_(PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKormqr_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKtrtrs_(const char*,const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKpotrf_(const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
@@ -140,6 +157,7 @@ EXTERN void LAPACKgetrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,Pe
 EXTERN void BLASgemv_(const char*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
 EXTERN void BLAStrmv_(const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 EXTERN void BLASgemm_(const char*,const char*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
+
 
 #if !defined(PETSC_USE_COMPLEX)
 EXTERN void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscReal*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
@@ -150,6 +168,8 @@ EXTERN void LAPACKsyevx_(const char*,const char*,const char*,PetscBLASInt*,Petsc
 
 EXTERN void LAPACKsygv_(PetscBLASInt*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKsygvx_(PetscBLASInt*,const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void  LAPACKpttrs_(PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void LAPACKstebz_(const char*,const char*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
 #else
 EXTERN void LAPACKgeev_(const char*,const char*,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 
@@ -159,6 +179,7 @@ EXTERN void LAPACKsyevx_(const char*,const char*,const char*,PetscBLASInt*,Petsc
 EXTERN void LAPACKsygv_(PetscBLASInt*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKsygvx_(PetscBLASInt*,const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgesvd_(const char*,const char*,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+EXTERN void  LAPACKpttrs_(const char*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #endif
 
 EXTERN_C_END
