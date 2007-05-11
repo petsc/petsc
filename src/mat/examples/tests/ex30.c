@@ -14,7 +14,7 @@ directly.\n\n";
 #define __FUNCT__ "main"
 int main(int argc,char **args)
 {
-  Mat            C,A,sC,sA;; 
+  Mat            C,A,sC,sA;
   PetscInt       i,j,m = 5,n = 5,Ii,J,lf = 0;
   PetscErrorCode ierr;
   PetscTruth     LU=PETSC_FALSE,flg;
@@ -25,6 +25,7 @@ int main(int argc,char **args)
   Vec            x,y,b,ytmp;
   PetscReal      norm2,norm2_inplace;
   PetscRandom    rdm;
+  PetscInt       *ii;
 
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
@@ -73,7 +74,6 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-no_rowperm",&flg);CHKERRQ(ierr);
   if (flg){
     ierr = ISDestroy(row);CHKERRQ(ierr);
-    PetscInt *ii;
     ierr = PetscMalloc(m*n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<m*n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,m*n,ii,&row);CHKERRQ(ierr);
@@ -84,7 +84,6 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-no_colperm",&flg);CHKERRQ(ierr);
   if (flg){
     ierr = ISDestroy(col);CHKERRQ(ierr);
-    PetscInt *ii;
     ierr = PetscMalloc(m*n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<m*n; i++) ii[i] = i;
     ierr = ISCreateGeneral(PETSC_COMM_SELF,m*n,ii,&col);CHKERRQ(ierr);
