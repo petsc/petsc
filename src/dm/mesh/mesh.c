@@ -1869,25 +1869,31 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
 
+    ALE::Mesh::point_type coarseCell;
     ALE::Mesh::point_type cellguess = -1;
     if (fine->hasLabel("prolongation")) {
       cellguess = fine->getValue(fine->getLabel("prolongation"), *v_iter);
+      coarseCell = coarse->locatePoint(coords, cellguess);
+    } else {
+      coarseCell = coarse->locatePoint(coords);
     }
-
-    const ALE::Mesh::point_type                     coarseCell = coarse->locatePoint(coords, cellguess);
-
-    coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
-    for(int d = 0; d < dim; ++d) {
-      refCoords[d] = 0.0;
-      for(int e = 0; e < dim; ++e) {
-        refCoords[d] += invJ[d*dim+e]*(coords[e] - v0[e]);
+//      coarseCell = coarse->locatePoint(coords);
+    if (coarseCell == -1) {
+     // do NO CORRECTION!
+    } else {
+      coarse->computeElementGeometry(coarseCoordinates, coarseCell, v0, J, invJ, detJ);
+      for(int d = 0; d < dim; ++d) {
+        refCoords[d] = 0.0;
+        for(int e = 0; e < dim; ++e) {
+          refCoords[d] += invJ[d*dim+e]*(coords[e] - v0[e]);
+        }
+        refCoords[d] -= 1.0;
       }
-      refCoords[d] -= 1.0;
+      values[0] = -(refCoords[0] + refCoords[1])/2.0;
+      values[1] = 0.5*(refCoords[0] + 1.0);
+      values[2] = 0.5*(refCoords[1] + 1.0);
+      ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, coarse, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
     }
-    values[0] = -(refCoords[0] + refCoords[1])/2.0;
-    values[1] = 0.5*(refCoords[0] + 1.0);
-    values[2] = 0.5*(refCoords[1] + 1.0);
-    ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, coarse, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree5(v0,J,invJ,refCoords,values);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
