@@ -1757,8 +1757,6 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   newMesh->setDiscretization(oldMesh->getDiscretization());
   newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
   newMesh->setupField(s);
-  newMesh->view("Refined Mesh");
-  s->view("Refined Default Section");
   PetscFunctionReturn(0);
 }
 

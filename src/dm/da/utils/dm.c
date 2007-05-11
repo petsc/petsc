@@ -98,7 +98,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 
     Input Parameter:
 +   dm1 - the DM object
--   dm2 - the second, coarser DM object
+-   dm2 - the second, finer DM object
 
     Output Parameter:
 +  mat - the interpolation
@@ -127,7 +127,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *
 
     Input Parameter:
 +   dm1 - the DM object
--   dm2 - the second, coarser DM object
+-   dm2 - the second, finer DM object
 
     Output Parameter:
 .   ctx - the injection

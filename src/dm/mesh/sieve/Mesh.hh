@@ -872,6 +872,38 @@ namespace ALE {
         invJ[3] =  invDet*J[0];
       }
     };
+    void computeQuadrilateralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrict(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        double x_1 = coords[2] - coords[0];
+        double y_1 = coords[3] - coords[1];
+        double x_2 = coords[6] - coords[0];
+        double y_2 = coords[7] - coords[1];
+        double x_3 = coords[4] - coords[0];
+        double y_3 = coords[5] - coords[1];
+
+        J[0] = x_1 + (x_3 - x_1 - x_2)*point[1];
+        J[1] = x_2 + (x_3 - x_1 - x_2)*point[0];
+        J[2] = y_1 + (y_3 - y_1 - y_2)*point[1];
+        J[3] = y_1 + (y_3 - y_1 - y_2)*point[0];
+        detJ = J[0]*J[3] - J[1]*J[2];
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
+        invJ[0] =  invDet*J[3];
+        invJ[1] = -invDet*J[1];
+        invJ[2] = -invDet*J[2];
+        invJ[3] =  invDet*J[0];
+      }
+    };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double *coords = this->restrict(coordinates, e);
       const int     dim    = 3;
@@ -895,6 +927,68 @@ namespace ALE {
       }
       if (invJ) {
         invDet  = -1.0/detJ;
+         invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
+         invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
+         invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
+         invJ[1*3+0] = invDet*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]);
+         invJ[1*3+1] = invDet*(J[0*3+0]*J[2*3+2] - J[0*3+2]*J[2*3+0]);
+         invJ[1*3+2] = invDet*(J[0*3+2]*J[1*3+0] - J[0*3+0]*J[1*3+2]);
+         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
+         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
+         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
+      }
+    };
+    void computeHexahedralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
+      const double *coords = this->restrict(coordinates, e);
+      const int     dim    = 3;
+      double        invDet;
+
+      if (v0) {
+        for(int d = 0; d < dim; d++) {
+          v0[d] = coords[d];
+        }
+      }
+      if (J) {
+        double x_1 = coords[3]  - coords[0];
+        double y_1 = coords[4]  - coords[1];
+        double z_1 = coords[5]  - coords[2];
+        double x_2 = coords[6]  - coords[0];
+        double y_2 = coords[7]  - coords[1];
+        double z_2 = coords[8]  - coords[2];
+        double x_3 = coords[9]  - coords[0];
+        double y_3 = coords[10] - coords[1];
+        double z_3 = coords[11] - coords[2];
+        double x_4 = coords[12] - coords[0];
+        double y_4 = coords[13] - coords[1];
+        double z_4 = coords[14] - coords[2];
+        double x_5 = coords[15] - coords[0];
+        double y_5 = coords[16] - coords[1];
+        double z_5 = coords[17] - coords[2];
+        double x_6 = coords[18] - coords[0];
+        double y_6 = coords[19] - coords[1];
+        double z_6 = coords[20] - coords[2];
+        double x_7 = coords[21] - coords[0];
+        double y_7 = coords[22] - coords[1];
+        double z_7 = coords[23] - coords[2];
+        double g_x = x_1 - x_2 + x_3 + x_4 - x_5 + x_6 - x_7;
+        double g_y = y_1 - y_2 + y_3 + y_4 - y_5 + y_6 - y_7;
+        double g_z = z_1 - z_2 + z_3 + z_4 - z_5 + z_6 - z_7;
+
+        J[0] = x_1 + (x_2 - x_1 - x_3)*point[1] + (x_5 - x_1 - x_4)*point[2] + g_x*point[1]*point[2];
+        J[1] = x_3 + (x_2 - x_1 - x_3)*point[0] + (x_7 - x_3 - x_4)*point[2] + g_x*point[2]*point[0];
+        J[2] = x_4 + (x_7 - x_3 - x_4)*point[1] + (x_5 - x_1 - x_4)*point[0] + g_x*point[0]*point[1];
+        J[3] = y_1 + (y_2 - y_1 - y_3)*point[1] + (y_5 - y_1 - y_4)*point[2] + g_y*point[1]*point[2];
+        J[4] = y_3 + (y_2 - y_1 - y_3)*point[0] + (y_7 - y_3 - y_4)*point[2] + g_y*point[2]*point[0];
+        J[5] = y_4 + (y_7 - y_3 - y_4)*point[1] + (y_5 - y_1 - y_4)*point[0] + g_y*point[0]*point[1];
+        J[6] = z_1 + (z_2 - z_1 - z_3)*point[1] + (z_5 - z_1 - z_4)*point[2] + g_z*point[1]*point[2];
+        J[7] = z_3 + (z_2 - z_1 - z_3)*point[0] + (z_7 - z_3 - z_4)*point[2] + g_z*point[2]*point[0];
+        J[8] = z_4 + (z_7 - z_3 - z_4)*point[1] + (z_5 - z_1 - z_4)*point[0] + g_z*point[0]*point[1];
+        detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
+                J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
+                J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
+      }
+      if (invJ) {
+        invDet  = 1.0/detJ;
          invJ[0*3+0] = invDet*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]);
          invJ[0*3+1] = invDet*(J[0*3+2]*J[2*3+1] - J[0*3+1]*J[2*3+2]);
          invJ[0*3+2] = invDet*(J[0*3+1]*J[1*3+2] - J[0*3+2]*J[1*3+1]);
@@ -1100,6 +1194,89 @@ namespace ALE {
         }
       }
       return output.str();
+    };
+  };
+  class DiscretizationNew : public ALE::ParallelObject {
+  public:
+    typedef std::vector<Obj<DiscretizationNew> > children_type;
+  protected:
+    children_type _children;
+    std::map<int,int> _dim2dof;
+    std::map<int,int> _dim2class;
+    const double *_points;
+    const double *_weights;
+    const double *_basis;
+    const double *_basisDer;
+    const int    *_indices;
+  public:
+    DiscretizationNew(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _points(NULL), _weights(NULL), _basis(NULL), _basisDer(NULL), _indices(NULL) {};
+    virtual ~DiscretizationNew() {
+      if (this->_indices) {delete [] this->_indices;}
+    };
+  public:
+    const double *getQuadraturePoints() {return this->_points;};
+    void          setQuadraturePoints(const double *points) {this->_points = points;};
+    const double *getQuadratureWeights() {return this->_weights;};
+    void          setQuadratureWeights(const double *weights) {this->_weights = weights;};
+    const double *getBasis() {return this->_basis;};
+    void          setBasis(const double *basis) {this->_basis = basis;};
+    const double *getBasisDerivatives() {return this->_basisDer;};
+    void          setBasisDerivatives(const double *basisDer) {this->_basisDer = basisDer;};
+    int  getNumDof(const int dim) {return this->_dim2dof[dim];};
+    void setNumDof(const int dim, const int numDof) {this->_dim2dof[dim] = numDof;};
+    int  getDofClass(const int dim) {return this->_dim2class[dim];};
+    void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
+  public:
+    void addChild(const Obj<DiscretizationNew>& child) {this->_children.push_back(child);};
+    const int *getIndices() {return this->_indices;};
+    void       setIndices(const int *indices) {this->_indices = indices;};
+    // These functions belong in Mesh, or takes a Mesh?
+    int  size(const Obj<Mesh>& mesh) {
+      const Obj<Mesh::label_sequence>& cells   = mesh->heightStratum(0);
+      const Obj<Mesh::coneArray>       closure = ALE::SieveAlg<ALE::Mesh>::closure(mesh, *cells->begin());
+      const Mesh::coneArray::iterator  end     = closure->end();
+      int                              size    = 0;
+
+      for(Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+        size += this->_dim2dof[mesh->depth(*cl_iter)];
+      }
+      return size;
+    };
+    void calculateIndices(const Obj<Mesh>& mesh) {
+      // Should have an iterator over the whole tree
+      children_type discs;
+      std::map<DiscretizationNew*, std::pair<int, int*> > indices;
+      Obj<DiscretizationNew> me = this;
+      me.addRef();
+
+      discs.push_back(me.obj());
+      for(children_type::iterator c_iter = this->_children.begin(); c_iter != this->_children.end(); ++c_iter) {
+        discs.push_back((*c_iter).obj());
+      }
+      for(children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
+        indices[*c_iter] = std::pair<int, int*>(0, new int[(*c_iter)->size(mesh)]);
+      }
+      const Obj<Mesh::label_sequence>& cells   = mesh->heightStratum(0);
+      const Obj<Mesh::coneArray>       closure = ALE::SieveAlg<ALE::Mesh>::closure(mesh, *cells->begin());
+      const Mesh::coneArray::iterator  end     = closure->end();
+      int                              offset  = 0;
+
+      for(Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+        const int dim = mesh->depth(*cl_iter);
+
+        for(children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
+          for(int o = offset; o < offset + (*c_iter)->getNumDof(dim); ++o) {
+            indices[*c_iter].second[indices[*c_iter].first++] = o;
+          }
+        }
+      }
+      for(children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
+        std::cout << "Discretization " << (*c_iter)->getName() << " indices:";
+        for(int i = 0; i < indices[*c_iter].first; ++i) {
+          std::cout << " " << indices[*c_iter].second[i];
+        }
+        std::cout << std::endl;
+      }
     };
   };
   class MeshOld : public ALE::ParallelObject {
