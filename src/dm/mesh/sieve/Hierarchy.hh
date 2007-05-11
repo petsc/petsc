@@ -678,8 +678,6 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
     ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, nelements, connectivity, nverts, true, dim+1, -1, newmesh->getArrowSection("orientation"));
     newmesh->setSieve(sieve);
-    newmesh->setDiscretization(m->getDiscretization());
-    newmesh->setBoundaryCondition(m->getBoundaryCondition());
     newmesh->stratify();
     //UPDATE THE MARKER AND FINEMESH VERTEX NUMBERING LABELS
     ALE::Obj<ALE::Mesh::label_type> boundary_new = newmesh->createLabel("marker");
@@ -693,16 +691,20 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       if(m->getValue(boundary, oldpositions[*nv_iter - nelements]) == 1) newmesh->setValue(boundary_new, *nv_iter, 1);
       nv_iter++;
     }
+    ALE::Obj<ALE::Mesh::real_section_type> s = newmesh->getRealSection("default");
+    //set up the default section
+    newmesh->setDiscretization(m->getDiscretization());
+    newmesh->setBoundaryCondition(m->getBoundaryCondition());
+    newmesh->setupField(s);
+
     MeshSetMesh(outmeshes[curLevel-1], newmesh);
     ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
-    SectionReal section;
-    ALE::Obj<ALE::Mesh::real_section_type> s;
-    ierr = SectionRealCreate(newmesh->comm(), &section);CHKERRQ(ierr);
+/*    ierr = SectionRealCreate(newmesh->comm(), &section);CHKERRQ(ierr);
     ierr = SectionRealGetBundle(section, newmesh);CHKERRQ(ierr);
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
     ierr = PetscObjectSetName((PetscObject) section, "default");CHKERRQ(ierr);
     ierr = MeshSetSectionReal(outmeshes[curLevel-1], section);CHKERRQ(ierr);
-    ierr = SectionRealDestroy(section);
+    ierr = SectionRealDestroy(section);*/
   } //end of level for
   std::list<ALE::Mesh::point_type> tricomplist;
   for (int curLevel = 0; curLevel < nLevels-1; curLevel++) {
@@ -781,6 +783,14 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
         if (!isFound) {
           PetscPrintf(m->comm(), "ERROR: Could Not Locate Point %d (%f, %f) in %d comparisons\n", *lv_iter, lvCoords[0], lvCoords[1], ncomps);
         }
+      } else { //DO NOT correct the boundary nodes only added on this level. (might break neumann)
+        ALE::Mesh::point_type fmpoint;
+        if (curLevel == 0) {
+          fmpoint = *lv_iter;
+        } else {
+          fmpoint = *f_m->getLabelStratum("fine", *lv_iter)->begin();
+        } 
+        f_m->setValue(prolongation, fmpoint, -1);
       }
       lv_iter++;
     }
