@@ -83,8 +83,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp,PetscReal *norm_d)
      M is the positive definite preconditioner matrix.
 
    KSPConvergedReason may be
-$  KSP_CONVERGED_STCG_NEG_CURVE if convergence is reached along a negative curvature direction,
-$  KSP_CONVERGED_STCG_CONSTRAINED if convergence is reached along a constrained step,
+$  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvature direction,
+$  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
 
 
@@ -152,19 +152,32 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /* Check for numerical problems with the preconditioner */
   ierr = STCG_VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
   if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
+    /* In this case, either the right-hand side contains infinity or not a  */
+    /* number or the precontioner contains intinity or not a number.   We   */
+    /* just take the gradient step.  These tests for numerical problems     */
+    /* need to be performed only once since the preconditioner does not     */
+    /* change.                                                              */
+
     ksp->reason = KSP_DIVERGED_NAN;
-    ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+    ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+    if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
+      /* In this case, the right-hand side contains not a number or an      */
+      /* infinite value.  The gradient step does not work; return a zero    */
+      /* value for the step.                                                */
 
-    /* In this case, the preconditioner produced not a number or an         */
-    /* infinite value.  We just take the gradient step.                     */
-    /* Only needs to be checked once.                                       */
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad right-hand side: rz=%g\n", rz); CHKERRQ(ierr);
+    }
+    else {
+      /* In this case, the preconditioner contains not a number or an       */
+      /* infinite value.                                                    */
 
-    if (cg->radius) {
-      ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-      alpha = sqrt(r2 / rz);
-      ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-      cg->norm_d = cg->radius;
+      if (cg->radius) {
+        alpha = sqrt(r2 / rz);
+        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r  */
+        cg->norm_d = cg->radius;
+      }
     }
     PetscFunctionReturn(0);
   }
@@ -173,23 +186,26 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   if (rz <= 0.0) {
     ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
     if (rz < 0.0 || norm_r > 0.0) {
+      /* In this case, the preconditioner is indefinite, so we cannot        */
+      /* measure the direction in the preconditioned norm.  Therefore, we    */
+      /* must use an unpreconditioned calculation.  The direction in this    */
+      /* case uses the right-hand side, which should be the negative         */
+      /* gradient intersected with the trust region.                         */
+
       ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-      /* In this case, the preconditioner is indefinite, so we cannot measure */
-      /* the direction in the preconditioned norm.  Therefore, we must use    */
-      /* an unpreconditioned calculation.  The direction in this case is      */
-      /* uses the right hand side, which should be the negative gradient      */
-      /* intersected with the trust region.                                   */
-
       if (cg->radius) {
         ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
-  
+
         alpha = sqrt(r2 / rz);
         ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
         cg->norm_d = cg->radius;
       }
       PetscFunctionReturn(0);
+    }
+    else {
+      /* rz == 0 and norm_r == 0, so we have converged                       */
     }
   }
 
@@ -234,15 +250,15 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   }
 
   /* Compute the direction */
-  ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* Qp = Q * p   */
-  ierr = STCG_VecDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T Qp */
+  ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
+  ierr = STCG_VecDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T z */
 
   if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
+    /* In this case, the matrix Q contains an infinite value or not a number */
+    /* We just take the gradient step.  Only needs to be checked once.       */
     ksp->reason = KSP_DIVERGED_NAN;
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", kappa); CHKERRQ(ierr);
 
-    /* In this case, the matrix produced not a number or an infinite value. */
-    /* We just take the gradient step.  Only needs to be checked once.      */
     if (cg->radius) {
       ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
 
@@ -259,12 +275,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     /* Check for negative curvature */
     if (kappa <= 0.0) {
-      ksp->reason = KSP_CONVERGED_STCG_NEG_CURVE;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
-
       /* In this case, the matrix is indefinite and we have encountered     */
       /* a direction of negative curvature.  Follow the direction to the    */
       /* boundary of the trust region.                                      */
+
+      ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
+
       if (cg->radius) {
         alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);	/* d = d + alpha p */
@@ -281,12 +298,12 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* First test if the new direction intersects the trust region. */
     norm_dp1 = norm_d + alpha*(2.0*dMp + alpha*norm_p);
     if (cg->radius && norm_dp1 >= r2) {
-      ksp->reason = KSP_CONVERGED_STCG_CONSTRAINED;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", cg->radius); CHKERRQ(ierr);
-
       /* In this case, the matrix is  positive definite as far as we know.  */
       /* However, the direction does beyond the trust region.  Follow the   */
       /* direction to the boundary of the trust region.                     */
+
+      ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", cg->radius); CHKERRQ(ierr);
 
       alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
       ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);	/* d = d + alpha p */
@@ -296,7 +313,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     /* Update the direction and residual */
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);		/* d = d + alpha p */
-    ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha Qp */
+    ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha z */
     ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
 
     if (STCG_PRECONDITIONED_DIRECTION == cg->dtype) {
@@ -313,13 +330,16 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     if (rz <= 0.0) {
       ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
       if (rz < 0.0 || norm_r > 0.0) {
+        /* In this case, the preconditioner is indefinite.  We could follow  */
+        /* the direction to the boundary of the trust region, but it seems   */
+        /* best to stop at the current point.                                */
+
         ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
         ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
-
-        /* In this case, the preconditioner is indefinite.  We could follow   */
-        /* the direction to the boundary of the trust region, but it seems    */
-        /* best to stop at the current point.                                 */
         break;
+      }
+      else {
+        /* rz == 0 and norm_r == 0; converged */
       }
     }
 
@@ -365,8 +385,8 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
 
     /* Compute new direction */
-    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);/* Qp = Q * p   */
-    ierr = STCG_VecDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T Qp */
+    ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr); /* z = Q * p   */
+    ierr = STCG_VecDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T z */
   }
 
   if (!ksp->reason) {

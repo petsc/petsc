@@ -3,15 +3,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cg.c cgeig.c cgtype.c
+SOURCEC  = gltr.c
 SOURCEF  =
-SOURCEH  = cgctx.h 
-OBJSC    = cg.o cgeig.o cgtype.o
+SOURCEH  =
+OBJSC    = gltr.o
 OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = cgne gltr stcg
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/cg/
+LOCDIR   = src/ksp/ksp/impls/cg/gltr/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test
