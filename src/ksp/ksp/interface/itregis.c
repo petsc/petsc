@@ -8,6 +8,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_TCQMR(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGS(KSP);
@@ -56,6 +57,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPRegisterAll(const char path[])
   ierr = KSPRegisterDynamic(KSPCG,         path,"KSPCreate_CG",        KSPCreate_CG);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPCGNE,       path,"KSPCreate_CGNE",      KSPCreate_CGNE);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPSTCG,       path,"KSPCreate_STCG",      KSPCreate_STCG);CHKERRQ(ierr);
+  ierr = KSPRegisterDynamic(KSPGLTR,       path,"KSPCreate_GLTR",      KSPCreate_GLTR);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPRICHARDSON, path,"KSPCreate_Richardson",KSPCreate_Richardson);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPCHEBYCHEV,  path,"KSPCreate_Chebychev", KSPCreate_Chebychev);CHKERRQ(ierr);
   ierr = KSPRegisterDynamic(KSPGMRES,      path,"KSPCreate_GMRES",     KSPCreate_GMRES);CHKERRQ(ierr);

@@ -34,6 +34,7 @@ E*/
 #define KSPCG         "cg"
 #define   KSPCGNE       "cgne"
 #define   KSPSTCG       "stcg"
+#define   KSPGLTR       "gltr"
 #define KSPGMRES      "gmres"
 #define   KSPFGMRES     "fgmres" 
 #define   KSPLGMRES     "lgmres"
@@ -346,8 +347,8 @@ typedef enum {/* converged */
               KSP_CONVERGED_RTOL               =  2,
               KSP_CONVERGED_ATOL               =  3,
               KSP_CONVERGED_ITS                =  4,
-              KSP_CONVERGED_STCG_NEG_CURVE     =  5,
-              KSP_CONVERGED_STCG_CONSTRAINED   =  6,
+              KSP_CONVERGED_CG_NEG_CURVE       =  5,
+              KSP_CONVERGED_CG_CONSTRAINED     =  6,
               KSP_CONVERGED_STEP_LENGTH        =  7,
               KSP_CONVERGED_HAPPY_BREAKDOWN    =  8,
               /* diverged */
@@ -506,8 +507,14 @@ typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
 extern const char *KSPCGTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
+
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP,PetscReal *);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetMaxCGIters(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetMaxLanczosIters(KSP,PetscInt);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP,PetscReal *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPreSolve(PC,KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCPostSolve(PC,KSP);

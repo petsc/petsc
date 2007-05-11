@@ -37,7 +37,12 @@ class Configure(PETSc.package.Package):
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
-    g.write('ORDERINGSC = -Dpord\n')
+    # Disable threads on BGL
+    if self.libraryOptions.isBGL():
+      g.write('ORDERINGSC = -DWITHOUT_PTHREAD -Dpord\n')
+    else:
+      g.write('ORDERINGSC = -Dpord\n')
+
     # assume AIX if fortranPreprocess=0
     if self.compilers.fortranPreprocess:
       g.write('ORDERINGSF = -Dpord\n')
