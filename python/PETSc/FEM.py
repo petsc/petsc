@@ -74,12 +74,12 @@ class QuadratureGenerator(script.Script):
          |   \                                e1| | \e0
          v0--v1                                 | \  \
            e2                                   |  |e5\
-                                                |  |   \
-                                                |  |    \
-                                                |  v4    \
+                                                |f1|   \
+                                                |  | f0 \
+                                                |  v3    \
                                                 | /  \e4  \
                                                 | |e3 ----\\
-                                                |/         \\
+                                                |/    f2   \\
                                                 v0-----------v1
                                                     e2
     '''
