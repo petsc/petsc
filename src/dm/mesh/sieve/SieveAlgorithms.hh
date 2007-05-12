@@ -164,10 +164,11 @@ namespace ALE {
               for(typename sieve_type::traits::coneSequence::reverse_iterator c_iter = pCone->rbegin(); c_iter != pCone->rend(); ++c_iter) {
                 if (seen.find(*c_iter) == seen.end()) {
                   const arrow_type newArrow(*c_iter, arrow.source);
+                  int              pointO = orientation->restrictPoint(newArrow)[0];
 
                   seen.insert(*c_iter);
                   cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(newArrow)[0]));
+                  closure->push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
                 }
               }
             } else {
@@ -178,10 +179,11 @@ namespace ALE {
                 if (count < numSkip) continue;
                 if (seen.find(*c_iter) == seen.end()) {
                   const arrow_type newArrow(*c_iter, arrow.source);
+                  int              pointO = orientation->restrictPoint(newArrow)[0];
 
                   seen.insert(*c_iter);
                   cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(newArrow)[0]));
+                  closure->push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
                 }
               }
               count = 0;
@@ -189,10 +191,11 @@ namespace ALE {
                 if (count >= numSkip) break;
                 if (seen.find(*c_iter) == seen.end()) {
                   const arrow_type newArrow(*c_iter, arrow.source);
+                  int              pointO = orientation->restrictPoint(newArrow)[0];
 
                   seen.insert(*c_iter);
                   cone->push_back(oriented_arrow_type(newArrow, o));
-                  closure->push_back(oriented_point_type(*c_iter, orientation->restrictPoint(newArrow)[0]));
+                  closure->push_back(oriented_point_type(*c_iter, pointO ? -(pointO+1): pointO));
                 }
               }
             }
