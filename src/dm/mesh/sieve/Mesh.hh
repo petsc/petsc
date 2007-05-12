@@ -767,21 +767,94 @@ namespace ALE {
     };
   };
   class Discretization : public ALE::ParallelObject {
+  public:
+    typedef std::vector<Obj<Discretization> > children_type;
   protected:
+    children_type _children;
     std::map<int,int> _dim2dof;
     std::map<int,int> _dim2class;
+    const double *_points;
+    const double *_weights;
+    const double *_basis;
+    const double *_basisDer;
+    const int    *_indices;
   public:
-    Discretization(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {};
-    ~Discretization() {};
+    Discretization(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _points(NULL), _weights(NULL), _basis(NULL), _basisDer(NULL), _indices(NULL) {};
+    virtual ~Discretization() {
+      if (this->_indices) {delete [] this->_indices;}
+    };
   public:
-    const double *getQuadraturePoints() {return NULL;};
-    const double *getQuadratureWeights() {return NULL;};
-    const double *getBasis() {return NULL;};
-    const double *getBasisDerivatives() {return NULL;};
+    const double *getQuadraturePoints() {return this->_points;};
+    void          setQuadraturePoints(const double *points) {this->_points = points;};
+    const double *getQuadratureWeights() {return this->_weights;};
+    void          setQuadratureWeights(const double *weights) {this->_weights = weights;};
+    const double *getBasis() {return this->_basis;};
+    void          setBasis(const double *basis) {this->_basis = basis;};
+    const double *getBasisDerivatives() {return this->_basisDer;};
+    void          setBasisDerivatives(const double *basisDer) {this->_basisDer = basisDer;};
     int  getNumDof(const int dim) {return this->_dim2dof[dim];};
     void setNumDof(const int dim, const int numDof) {this->_dim2dof[dim] = numDof;};
     int  getDofClass(const int dim) {return this->_dim2class[dim];};
     void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
+  public:
+    void addChild(const Obj<Discretization>& child) {this->_children.push_back(child);};
+    const int *getIndices() {return this->_indices;};
+    void       setIndices(const int *indices) {this->_indices = indices;};
+    template<typename Bundle>
+    int size(const Obj<Bundle>& mesh) {
+      const Obj<typename Bundle::label_sequence>& cells   = mesh->heightStratum(0);
+      const Obj<typename Bundle::coneArray>       closure = ALE::SieveAlg<Bundle>::closure(mesh, *cells->begin());
+      const typename Bundle::coneArray::iterator  end     = closure->end();
+      int                                         size    = 0;
+
+      for(typename Bundle::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+        size += this->_dim2dof[mesh->depth(*cl_iter)];
+      }
+      return size;
+    };
+    template<typename Bundle>
+    void calculateIndices(const Obj<Bundle>& mesh) {
+      // Should have an iterator over the whole tree
+      children_type discs;
+      std::map<Discretization*, std::pair<int, int*> > indices;
+      Obj<Discretization> me = this;
+      me.addRef();
+
+      discs.push_back(me.obj());
+      for(typename children_type::iterator c_iter = this->_children.begin(); c_iter != this->_children.end(); ++c_iter) {
+        discs.push_back((*c_iter).obj());
+      }
+      for(typename children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
+        indices[*c_iter] = std::pair<int, int*>(0, new int[(*c_iter)->size(mesh)]);
+        (*c_iter)->setIndices(indices[*c_iter].second);
+      }
+      const Obj<typename Bundle::label_sequence>& cells   = mesh->heightStratum(0);
+      const Obj<typename Bundle::coneArray>       closure = ALE::SieveAlg<Bundle>::closure(mesh, *cells->begin());
+      const typename Bundle::coneArray::iterator  end     = closure->end();
+      int                                         offset  = 0;
+
+      std::cout << "Closure for first element" << std::endl;
+      for(typename Bundle::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+        const int dim = mesh->depth(*cl_iter);
+
+        std::cout << "  point " << *cl_iter << " depth " << dim << std::endl;
+        for(typename children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
+          const int num = (*c_iter)->getNumDof(dim);
+
+          std::cout << "    disc " << (*c_iter)->getName() << " numDof " << num << std::endl;
+          for(int o = 0; o < num; ++o) {
+            indices[*c_iter].second[indices[*c_iter].first++] = offset++;
+          }
+        }
+      }
+      for(typename children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
+        std::cout << "Discretization " << (*c_iter)->getName() << " indices:";
+        for(int i = 0; i < indices[*c_iter].first; ++i) {
+          std::cout << " " << indices[*c_iter].second[i];
+        }
+        std::cout << std::endl;
+      }
+    };
   };
   class BoundaryCondition : public ALE::ParallelObject {
   public:
@@ -1194,89 +1267,6 @@ namespace ALE {
         }
       }
       return output.str();
-    };
-  };
-  class DiscretizationNew : public ALE::ParallelObject {
-  public:
-    typedef std::vector<Obj<DiscretizationNew> > children_type;
-  protected:
-    children_type _children;
-    std::map<int,int> _dim2dof;
-    std::map<int,int> _dim2class;
-    const double *_points;
-    const double *_weights;
-    const double *_basis;
-    const double *_basisDer;
-    const int    *_indices;
-  public:
-    DiscretizationNew(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _points(NULL), _weights(NULL), _basis(NULL), _basisDer(NULL), _indices(NULL) {};
-    virtual ~DiscretizationNew() {
-      if (this->_indices) {delete [] this->_indices;}
-    };
-  public:
-    const double *getQuadraturePoints() {return this->_points;};
-    void          setQuadraturePoints(const double *points) {this->_points = points;};
-    const double *getQuadratureWeights() {return this->_weights;};
-    void          setQuadratureWeights(const double *weights) {this->_weights = weights;};
-    const double *getBasis() {return this->_basis;};
-    void          setBasis(const double *basis) {this->_basis = basis;};
-    const double *getBasisDerivatives() {return this->_basisDer;};
-    void          setBasisDerivatives(const double *basisDer) {this->_basisDer = basisDer;};
-    int  getNumDof(const int dim) {return this->_dim2dof[dim];};
-    void setNumDof(const int dim, const int numDof) {this->_dim2dof[dim] = numDof;};
-    int  getDofClass(const int dim) {return this->_dim2class[dim];};
-    void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
-  public:
-    void addChild(const Obj<DiscretizationNew>& child) {this->_children.push_back(child);};
-    const int *getIndices() {return this->_indices;};
-    void       setIndices(const int *indices) {this->_indices = indices;};
-    // These functions belong in Mesh, or takes a Mesh?
-    int  size(const Obj<Mesh>& mesh) {
-      const Obj<Mesh::label_sequence>& cells   = mesh->heightStratum(0);
-      const Obj<Mesh::coneArray>       closure = ALE::SieveAlg<ALE::Mesh>::closure(mesh, *cells->begin());
-      const Mesh::coneArray::iterator  end     = closure->end();
-      int                              size    = 0;
-
-      for(Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-        size += this->_dim2dof[mesh->depth(*cl_iter)];
-      }
-      return size;
-    };
-    void calculateIndices(const Obj<Mesh>& mesh) {
-      // Should have an iterator over the whole tree
-      children_type discs;
-      std::map<DiscretizationNew*, std::pair<int, int*> > indices;
-      Obj<DiscretizationNew> me = this;
-      me.addRef();
-
-      discs.push_back(me.obj());
-      for(children_type::iterator c_iter = this->_children.begin(); c_iter != this->_children.end(); ++c_iter) {
-        discs.push_back((*c_iter).obj());
-      }
-      for(children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
-        indices[*c_iter] = std::pair<int, int*>(0, new int[(*c_iter)->size(mesh)]);
-      }
-      const Obj<Mesh::label_sequence>& cells   = mesh->heightStratum(0);
-      const Obj<Mesh::coneArray>       closure = ALE::SieveAlg<ALE::Mesh>::closure(mesh, *cells->begin());
-      const Mesh::coneArray::iterator  end     = closure->end();
-      int                              offset  = 0;
-
-      for(Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-        const int dim = mesh->depth(*cl_iter);
-
-        for(children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
-          for(int o = offset; o < offset + (*c_iter)->getNumDof(dim); ++o) {
-            indices[*c_iter].second[indices[*c_iter].first++] = o;
-          }
-        }
-      }
-      for(children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
-        std::cout << "Discretization " << (*c_iter)->getName() << " indices:";
-        for(int i = 0; i < indices[*c_iter].first; ++i) {
-          std::cout << " " << indices[*c_iter].second[i];
-        }
-        std::cout << std::endl;
-      }
     };
   };
   class MeshOld : public ALE::ParallelObject {

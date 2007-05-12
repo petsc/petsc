@@ -91,6 +91,10 @@ overlap2: overlap2.o chkopts
 closure1: closure1.o chkopts
 	-${CLINKER} -o closure1 closure1.o ${PETSC_DM_LIB}
 	${RM} -f closure1.o
+
+discretization1: discretization1.o chkopts
+	-${CLINKER} -o discretization1 discretization1.o ${PETSC_DM_LIB}
+	${RM} -f discretization1.o
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}
