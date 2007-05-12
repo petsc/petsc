@@ -37,6 +37,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidHeaderSpecific(c,VEC_COOKIE,2);
+  if (da->coordinates) {
+    ierr = VecDestroy(da->coordinates);CHKERRQ(ierr);
+  }
   da->coordinates = c;
   ierr = VecSetBlockSize(c,da->dim);CHKERRQ(ierr);
   PetscFunctionReturn(0);

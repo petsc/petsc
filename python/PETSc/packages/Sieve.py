@@ -37,7 +37,7 @@ class Configure(PETSc.package.Package):
   def configure(self):
     '''Determines if the package should be configured for, then calls the configure'''
     if not self.languages.clanguage == 'Cxx':
-      raise RuntimeError('Sieve requires C++. Sugest using --with-clanguage=cxx')
+      raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
     if not self.boost.found:
-      raise RuntimeError('Sieve requires boost, and configure could not locate it. Sugest using --download-boost=1')
+      raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
     return PETSc.package.Package.configure(self)
