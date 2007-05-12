@@ -12,7 +12,6 @@ class Configure(PETSc.package.Package):
     self.archIndependent = 1
     self.cxx             = 1
     self.complex         = 1
-    self.required        = 1
     return
 
   def setupDependencies(self, framework):
@@ -36,8 +35,9 @@ class Configure(PETSc.package.Package):
 
   def configure(self):
     '''Determines if the package should be configured for, then calls the configure'''
-    if not self.languages.clanguage == 'Cxx':
-      raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
-    if not self.boost.found:
-      raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
+    if 'with-sieve' in self.framework.argDB and self.framework.argDB['with-sieve'] == 1:
+      if not self.languages.clanguage == 'Cxx':
+        raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
+      if not self.boost.found:
+        raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
     return PETSc.package.Package.configure(self)
