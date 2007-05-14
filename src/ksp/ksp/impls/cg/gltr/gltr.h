@@ -17,6 +17,8 @@ typedef struct {
 
   PetscReal radius;
   PetscReal norm_d;
+  PetscReal e_min;
+  PetscReal o_fcn;
 
   PetscReal init_pert;		/* Initial perturbation for solve            */
   PetscReal eigen_tol;		/* Tolerance used when computing eigenvalue  */
