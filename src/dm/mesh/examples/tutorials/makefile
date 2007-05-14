@@ -73,6 +73,10 @@ subduction: subduction.o chkopts
 	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
 	${RM} -f subduction.o
 
+stokes: stokes_quadrature.h stokes.o chkopts
+	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
+	${RM} -f stokes.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
