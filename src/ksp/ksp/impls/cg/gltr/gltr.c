@@ -177,6 +177,9 @@ PetscErrorCode GLTR_VecDot(Vec x, Vec y, PetscReal *a)
 
 PetscErrorCode KSPSolve_GLTR(KSP ksp)
 {
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "GLTR is not available for complex systems");
+#else
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
   PetscReal *t_soln, *t_diag, *t_offd, *e_valu, *e_vect, *e_rwrk;
   PetscInt  *e_iblk, *e_splt, *e_iwrk;
@@ -1079,6 +1082,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   ksp->reason = reason;
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__
