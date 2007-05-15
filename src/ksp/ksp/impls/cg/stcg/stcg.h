@@ -12,7 +12,8 @@
 typedef struct {
   PetscReal radius;
   PetscReal norm_d;
-  int dtype;
+  PetscReal o_fcn;
+  PetscInt dtype;
 } KSP_STCG;
 
 #endif

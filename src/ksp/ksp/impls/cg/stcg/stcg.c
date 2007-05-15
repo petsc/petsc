@@ -64,6 +64,34 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp,PetscReal *norm_d)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "KSPSTCGGetObjFcn"
+/*@
+    KSPSTCGGetObjFcn - Get objective function value.
+
+    Collective on KSP
+
+    Input Parameters:
++   ksp   - the iterative context
+-   o_fcn - the objective function value
+
+    Level: advanced
+
+.keywords: KSP, STCG, get, objective function
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp,PetscReal *o_fcn)
+{
+  PetscErrorCode ierr, (*f)(KSP, PetscReal *);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
+  ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGGetObjFcn_C", (void (**)(void))&f); CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(ksp, o_fcn); CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "KSPSolve_STCG"
 /*
   KSPSolve_STCG - Use preconditioned conjugate gradient to compute
@@ -111,12 +139,12 @@ PetscErrorCode STCG_VecDot(Vec x, Vec y, PetscReal *a)
 
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
+  KSP_STCG *cg = (KSP_STCG *)ksp->data;
   PetscErrorCode ierr;
   MatStructure  pflag;
   Mat Qmat, Mmat;
   Vec r, z, p, d;
   PC  pc;
-  KSP_STCG *cg;
   PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal alpha, beta, kappa, rz, rzm1;
   PetscReal r2;
@@ -127,6 +155,10 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   ierr = PCDiagonalScale(ksp->pc, &diagonalscale); CHKERRQ(ierr);
   if (diagonalscale) SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ksp->type_name);
 
+  if (cg->radius < 0.0) {
+    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
+  }
+
   cg       = (KSP_STCG *)ksp->data;
   r2       = cg->radius * cg->radius;
   maxit    = ksp->max_it;
@@ -136,13 +168,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   d        = ksp->vec_sol;
   pc       = ksp->pc;
 
-  ksp->its = 0;
-  if (cg->radius < 0.0) {
-    SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
-  }
-
   /* Initialize variables */
   ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag); CHKERRQ(ierr);
+
+  ksp->its = 0;
+  cg->o_fcn = 0.0;
 
   ierr = VecSet(d, 0.0); CHKERRQ(ierr);			/* d = 0        */
   ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad    */
@@ -177,36 +207,40 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
         alpha = sqrt(r2 / rz);
         ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r  */
         cg->norm_d = cg->radius;
+
+        ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
+        ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
+        ierr = STCG_VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+        cg->o_fcn = -cg->o_fcn;
       }
     }
     PetscFunctionReturn(0);
   }
 
   /* Check that the preconditioner is positive definite */
-  if (rz <= 0.0) {
+  if (rz < 0.0) {
     ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
-    if (rz < 0.0 || norm_r > 0.0) {
-      /* In this case, the preconditioner is indefinite, so we cannot        */
-      /* measure the direction in the preconditioned norm.  Therefore, we    */
-      /* must use an unpreconditioned calculation.  The direction in this    */
-      /* case uses the right-hand side, which should be the negative         */
-      /* gradient intersected with the trust region.                         */
+    /* In this case, the preconditioner is indefinite, so we cannot        */
+    /* measure the direction in the preconditioned norm.  Therefore, we    */
+    /* must use an unpreconditioned calculation.  The direction in this    */
+    /* case uses the right-hand side, which should be the negative         */
+    /* gradient intersected with the trust region.                         */
 
-      ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
+    ksp->reason = KSP_DIVERGED_INDEFINITE_PC;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-      if (cg->radius) {
-        ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+    if (cg->radius) {
+      ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+      alpha = sqrt(r2 / rz);
+      ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
+      cg->norm_d = cg->radius;
 
-        alpha = sqrt(r2 / rz);
-        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
-        cg->norm_d = cg->radius;
-      }
-      PetscFunctionReturn(0);
+      ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
+      ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
+      ierr = STCG_VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+      cg->o_fcn = -cg->o_fcn;
     }
-    else {
-      /* rz == 0 and norm_r == 0, so we have converged                       */
-    }
+    PetscFunctionReturn(0);
   }
 
   /* As far as we know, the preconditioner is positive definite.  Compute   */
@@ -265,6 +299,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       alpha = sqrt(r2 / rz);
       ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
       cg->norm_d = cg->radius;
+
+      ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
+      ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
+      ierr = STCG_VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+      cg->o_fcn = -cg->o_fcn;
     }
     PetscFunctionReturn(0);
   }
@@ -286,6 +325,8 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
         alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
         ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);	/* d = d + alpha p */
         cg->norm_d = cg->radius;
+
+        cg->o_fcn += alpha * (0.5 * alpha * kappa - rz);
       }
       break;
     }
@@ -308,6 +349,8 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       alpha = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
       ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);	/* d = d + alpha p */
       cg->norm_d = cg->radius;
+
+      cg->o_fcn += alpha * (0.5 * alpha * kappa - rz);
       break;
     }
 
@@ -323,6 +366,8 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ierr = STCG_VecDot(d, d, &norm_d); CHKERRQ(ierr);
     }
     cg->norm_d = sqrt(norm_d);
+
+    cg->o_fcn -= 0.5 * alpha * rz;
 
     /* Check that the preconditioner is positive semidefinite */
     rzm1 = rz;
@@ -428,6 +473,7 @@ PetscErrorCode KSPDestroy_STCG(KSP ksp)
   /* clear composed functions */
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -451,6 +497,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD_STCG(KSP ksp,PetscReal *norm_d
 
   PetscFunctionBegin;
   *norm_d = cg->norm_d;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPSTCGGetObjFcn_STCG"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn_STCG(KSP ksp,PetscReal *o_fcn){
+  KSP_STCG *cg = (KSP_STCG *)ksp->data;
+
+  PetscFunctionBegin;
+  *o_fcn = cg->o_fcn;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
@@ -486,7 +542,7 @@ PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
 
    Level: developer
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSTCGSetRadius(), KSPSTCGGetNormD()
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPSTCGSetRadius(), KSPSTCGGetNormD(), KSPSTCGGetObjFcn()
 M*/
 
 EXTERN_C_BEGIN
@@ -516,12 +572,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
   ksp->ops->buildresidual        = KSPDefaultBuildResidual;
   ksp->ops->view                 = 0;
 
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGSetRadius_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
+				    "KSPSTCGSetRadius_C",
                                     "KSPSTCGSetRadius_STCG",
                                      KSPSTCGSetRadius_STCG); CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPSTCGGetNormD_C",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
+				    "KSPSTCGGetNormD_C",
                                     "KSPSTCGGetNormD_STCG",
                                      KSPSTCGGetNormD_STCG); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
+                                    "KSPSTCGGetObjFcn_C",
+                                    "KSPSTCGGetObjFcn_STCG",
+                                     KSPSTCGGetObjFcn_STCG); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
