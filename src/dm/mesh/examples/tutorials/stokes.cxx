@@ -97,24 +97,24 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->bcType           = DIRICHLET;
   options->operatorAssembly = ASSEMBLY_FULL;
 
-  ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMG");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "bratu.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMMG");CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "stokes.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     run = options->run;
-    ierr = PetscOptionsEList("-run", "The run type", "bratu.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-run", "The run type", "stokes.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
     options->run = (RunType) run;
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "bratu.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-structured", "Use a structured mesh", "bratu.cxx", options->structured, &options->structured, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "bratu.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "bratu.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
-    filename << "data/bratu_" << options->dim <<"d";
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "stokes.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-structured", "Use a structured mesh", "stokes.cxx", options->structured, &options->structured, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "stokes.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "stokes.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "stokes.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    filename << "data/stokes_" << options->dim <<"d";
     ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "bratu.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "stokes.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     bc = options->bcType;
-    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","bratu.cxx",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","stokes.cxx",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
     options->bcType = (BCType) bc;
     as = options->operatorAssembly;
-    ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","bratu.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","stokes.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
     options->operatorAssembly = (AssemblyType) as;
   ierr = PetscOptionsEnd();
 
@@ -269,7 +269,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       m->markBoundaryCells("marker");
     }
     ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-    if (view) {ierr = ViewMesh(mesh, "bratu.vtk");CHKERRQ(ierr);}
+    if (view) {ierr = ViewMesh(mesh, "stokes.vtk");CHKERRQ(ierr);}
     ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
     if (view) {
       Obj<ALE::Mesh> m;
@@ -1314,8 +1314,9 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       options->integrateP = IntegrateDualBasis_gen_0;
       options->integrateV = IntegrateDualBasis_gen_1;
     } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_3(dm, options);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_2(dm, options);CHKERRQ(ierr);
       options->integrateP = IntegrateDualBasis_gen_2;
+      ierr = CreateProblem_gen_3(dm, options);CHKERRQ(ierr);
       options->integrateV = IntegrateDualBasis_gen_3;
     } else if (options->dim == 3) {
       ierr = CreateProblem_gen_5(dm, options);CHKERRQ(ierr);
