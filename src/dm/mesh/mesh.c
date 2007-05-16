@@ -1826,9 +1826,10 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
 PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarseHierarchy)
 {
   PetscErrorCode ierr;
-
+  double cfactor = 1.5;
   PetscFunctionBegin;
-  ierr = MeshCoarsenHierarchy(mesh, numLevels, 1.41, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-dmmg_coarsen_factor", "The coarsening factor", PETSC_NULL, cfactor, &cfactor, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MeshCoarsenHierarchy(mesh, numLevels, cfactor, PETSC_FALSE, coarseHierarchy);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1863,6 +1864,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
+  ierr = MatSetUpPreallocation(P);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
   for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
     const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
