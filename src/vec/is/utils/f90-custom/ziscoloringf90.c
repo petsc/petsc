@@ -4,7 +4,7 @@
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define iscoloringgetisf90_        ISCOLORINGGETISF90
-#define iscoloringrestoreisf90_    ISCOLORINGRESTOREF90
+#define iscoloringrestoreisf90_    ISCOLORINGRESTOREISF90
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define iscoloringgetisf90_        iscoloringgetisf90
 #define iscoloringrestoreisf90_    iscoloringrestoreisf90
