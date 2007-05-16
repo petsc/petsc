@@ -127,7 +127,7 @@ class Configure(PETSc.package.Package):
     self.deps = []
     return
 
-  def Install(self):
+  def InstallOld(self):
     import os, sys
     tetgenDir = self.getDir()
     installDir = os.path.join(tetgenDir, self.arch.arch)
@@ -156,3 +156,67 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('Error running configure on TetGen: '+str(e))
     self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
     return tetgenDir
+
+  def Install(self):
+    import os, sys
+    # Get the ParMetis directories
+    tetgenDir      = self.getDir()
+    installDir     = os.path.join(tetgenDir, self.arch.arch)
+    libDir         = os.path.join(installDir, 'lib')
+    includeDir     = os.path.join(installDir, 'include')
+    makeinc        = os.path.join(tetgenDir, 'make.inc')
+    installmakeinc = os.path.join(installDir, 'make.inc')
+    configheader   = os.path.join(tetgenDir, 'configureheader.h')
+
+    # Configure ParMetis 
+    if os.path.isfile(makeinc):
+      os.unlink(makeinc)
+    g = open(makeinc,'w')
+    g.write('SHELL          = '+self.programs.SHELL+'\n')
+    g.write('CP             = '+self.programs.cp+'\n')
+    g.write('RM             = '+self.programs.RM+'\n')
+    g.write('MKDIR          = '+self.programs.mkdir+'\n')
+
+    g.write('AR             = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR_LIB_SUFFIX  = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
+
+    g.write('TETGEN_ROOT    = '+tetgenDir+'\n')
+    g.write('PREFIX         = '+installDir+'\n')
+    g.write('LIBDIR         = '+libDir+'\n')
+    g.write('TETGENLIB      = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
+    
+    self.setCompilers.pushLanguage('C')
+    cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
+    cflags += ' '+self.headers.toString('.')
+        
+    g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
+    g.write('CFLAGS         = '+cflags)
+    self.setCompilers.popLanguage()
+    g.close()
+
+    # Now compile & install
+    if not os.path.isdir(installDir):
+      os.mkdir(installDir)
+    if not os.path.isdir(libDir):
+      os.mkdir(libDir)
+    if not os.path.isdir(includeDir):
+      os.mkdir(includeDir)
+    
+    if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
+      self.framework.log.write('Have to rebuild TetGen, make.inc != '+installmakeinc+'\n')
+      self.framework.outputHeader(configheader)
+      try:
+        import config.base
+        self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
+        output  = config.base.Configure.executeShellCommand('cd '+tetgenDir+'; make clean; make tetlib; make clean', timeout=2500, log = self.framework.log)[0]
+      except RuntimeError, e:
+        raise RuntimeError('Error running make on TetGen: '+str(e))
+    else:
+      self.framework.log.write('Did not need to compile downloaded TetGen\n')
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(tetgenDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
+    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.framework.log)[0]
+    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
+
+    return self.getDir()
