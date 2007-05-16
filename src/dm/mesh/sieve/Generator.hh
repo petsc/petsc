@@ -528,7 +528,33 @@ namespace ALE {
             }
           }
         }
-        // TODO: I should add in the boundary if I have it
+        if (serialMesh->depth() == 3) {
+          const Obj<Mesh::label_sequence>& boundary = serialMesh->getLabelStratum("marker", 1);
+
+          in.numberoftrifaces = 0;
+          for(Mesh::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
+            if (serialMesh->height(*b_iter) == 1) {
+              in.numberoftrifaces++;
+            }
+          }
+          if (in.numberoftrifaces > 0) {
+            int f = 0;
+
+            in.trifacelist       = new int[in.numberoftrifaces*3];
+            in.trifacemarkerlist = new int[in.numberoftrifaces];
+            for(Mesh::label_sequence::iterator b_iter = boundary->begin(); b_iter != boundary->end(); ++b_iter) {
+              if (serialMesh->height(*b_iter) == 1) {
+                const Obj<Mesh::coneArray>& cone = sieve_alg_type::nCone(serialMesh, *b_iter, 2);
+                int                         p    = 0;
+
+                for(Mesh::coneArray::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
+                  in.trifacelist[f*3 + (p++)] = vNumbering->getIndex(*v_iter);
+                }
+                in.trifacemarkerlist[f++] = serialMesh->getValue(markers, *b_iter);
+              }
+            }
+          }
+        }
 
         in.numberofholes = 0;
         if (serialMesh->commRank() == 0) {

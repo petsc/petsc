@@ -228,8 +228,8 @@ PetscErrorCode MeshGetSectionReal_Cartesian(Mesh mesh, const char name[], Sectio
   ierr = MeshCartesianGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealCreate(m->comm(), section);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *section, name);CHKERRQ(ierr);
-  ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
 #if 0
+  ierr = SectionRealSetSection(*section, m->getRealSection(std::string(name)));CHKERRQ(ierr);
   ierr = SectionRealSetBundle(*section, m);CHKERRQ(ierr);
 #endif
   PetscFunctionReturn(0);

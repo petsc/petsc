@@ -4,6 +4,7 @@
 
 #include <Mesh.hh>
 #include <Distribution.hh>
+#include "petscdmmg.h"
 
 using ALE::Obj;
 
@@ -237,6 +238,102 @@ class VTKViewer {
     PetscFunctionReturn(0);
   };
 
+#undef __FUNCT__  
+#define __FUNCT__ "VTKWriteHierarchyVertices"
+
+  static PetscErrorCode writeHierarchyVertices(DMMG * dmmg, PetscViewer viewer, double * offset) {
+
+    PetscErrorCode ierr;
+    ALE::Obj<ALE::Mesh> mesh;
+    int nlevels = dmmg[0]->nlevels;
+    PetscFunctionBegin;
+    int totalpoints = 0;
+    int embedDim = -1;
+    for(int i = 0; i < nlevels; i++) {
+      ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+      if (embedDim == -1) {
+        embedDim = mesh->getDimension();
+      }
+      totalpoints += mesh->depthStratum(0)->size();
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "POINTS %d double\n", totalpoints);CHKERRQ(ierr);
+    for (int i = 0; i < nlevels; i++) {
+      ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+      Obj<ALE::Mesh::label_sequence> vertices = mesh->depthStratum(0);
+      Obj<ALE::Mesh::real_section_type> coordinates = mesh->getRealSection("coordinates");
+      for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        const ALE::Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
+        for(int d = 0; d < embedDim; d++) {
+          if (d > 0) {
+            ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "%G", array[d]+(double)i*offset[d]);CHKERRQ(ierr);
+        }
+        for(int d = embedDim; d < 3; d++) {
+          ierr = PetscViewerASCIIPrintf(viewer, " %G", (double) i*offset[d]);CHKERRQ(ierr);
+        }
+        ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
+    }
+    PetscFunctionReturn(0);
+  };
+
+  #undef __FUNCT__  
+  #define __FUNCT__ "VTKWriteHierarchyElements"
+
+  static PetscErrorCode writeHierarchyElements(DMMG * dmmg, PetscViewer viewer) {
+
+    int            numElements = 0;
+    int            numVertices = 0;
+    int            embedDim = -1;
+    int            corners = -1;
+    int            depth;
+    ALE::Obj<ALE::Mesh> mesh;
+    PetscErrorCode ierr;
+    PetscFunctionBegin;
+    int nlevels = dmmg[0]->nlevels;
+    //PetscPrintf(PETSC_COMM_WORLD, "LEVELS: %d\n", nlevels);
+    for(int i = 0; i < nlevels; i++) {
+      ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+      if (embedDim == -1) {
+        embedDim = mesh->getDimension();
+      }
+      if (corners == -1) {
+        ALE::Mesh::point_type firstcell = *mesh->heightStratum(0)->begin();
+        depth = mesh->depth(firstcell);
+        corners = mesh->getSieve()->nCone(firstcell, depth)->size();
+      }
+      numElements += mesh->heightStratum(0)->size();
+    }
+    ierr = PetscViewerASCIIPrintf(viewer,"CELLS %d %d\n", numElements, numElements*(corners+1));CHKERRQ(ierr);
+    if (mesh->commRank() == 0) {
+      for(int i = 0; i < nlevels; i++) {
+        ierr = MeshGetMesh((Mesh)dmmg[i]->dm, mesh);CHKERRQ(ierr);
+        Obj<ALE::Mesh::sieve_type>     sieve      = mesh->getSieve();
+        Obj<ALE::Mesh::label_sequence> elements   = mesh->heightStratum(0);
+        Obj<ALE::Mesh::numbering_type> vNumbering = mesh->getFactory()->getLocalNumbering(mesh, 0);
+
+        for(ALE::Mesh::label_sequence::iterator e_iter = elements->begin(); e_iter != elements->end(); ++e_iter) {
+          Obj<ALE::Mesh::sieve_type::coneArray> cone = sieve->nCone(*e_iter, depth);
+
+          ierr = PetscViewerASCIIPrintf(viewer, "%d ", corners);CHKERRQ(ierr);
+          for(ALE::Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+            ierr = PetscViewerASCIIPrintf(viewer, " %d", vNumbering->getIndex(*c_iter) + numVertices);CHKERRQ(ierr);
+          }
+          ierr = PetscViewerASCIIPrintf(viewer, "\n");CHKERRQ(ierr);
+        }
+        numVertices += mesh->depthStratum(0)->size();
+      }
+    }
+    ierr = PetscViewerASCIIPrintf(viewer, "CELL_TYPES %d\n", numElements);CHKERRQ(ierr);
+    const int cellType = getCellType(mesh->getDimension(), corners);
+    for(int e = 0; e < numElements; e++) {
+      ierr = PetscViewerASCIIPrintf(viewer, "%d\n", cellType);CHKERRQ(ierr);
+    }
+    PetscFunctionReturn(0);
+  };
+
+
 #if 0
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteHierarchyVertices"
@@ -278,6 +375,7 @@ class VTKViewer {
     }
     PetscFunctionReturn(0);
   };
+
 
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteHierarchyElements"

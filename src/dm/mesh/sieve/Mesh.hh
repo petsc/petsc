@@ -798,6 +798,18 @@ namespace ALE {
     void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
   public:
     void addChild(const Obj<Discretization>& child) {this->_children.push_back(child);};
+    children_type getDiscs() {
+      children_type       discs;
+      Obj<Discretization> me = this;
+      me.addRef();
+
+      discs.push_back(me);
+      for(children_type::iterator c_iter = this->_children.begin(); c_iter != this->_children.end(); ++c_iter) {
+        const children_type childDiscs = (*c_iter)->getDiscs();
+        discs.insert(discs.end(), childDiscs.begin(), childDiscs.end());
+      }
+      return discs;
+    };
     const int *getIndices() {return this->_indices;};
     void       setIndices(const int *indices) {this->_indices = indices;};
     template<typename Bundle>
@@ -815,15 +827,9 @@ namespace ALE {
     template<typename Bundle>
     void calculateIndices(const Obj<Bundle>& mesh) {
       // Should have an iterator over the whole tree
-      children_type discs;
+      children_type discs = this->getDiscs();
       std::map<Discretization*, std::pair<int, int*> > indices;
-      Obj<Discretization> me = this;
-      me.addRef();
 
-      discs.push_back(me.obj());
-      for(typename children_type::iterator c_iter = this->_children.begin(); c_iter != this->_children.end(); ++c_iter) {
-        discs.push_back((*c_iter).obj());
-      }
       for(typename children_type::iterator c_iter = discs.begin(); c_iter != discs.end(); ++c_iter) {
         indices[*c_iter] = std::pair<int, int*>(0, new int[(*c_iter)->size(mesh)]);
         (*c_iter)->setIndices(indices[*c_iter].second);
@@ -1165,6 +1171,64 @@ namespace ALE {
 
       for(int d = 0; d <= this->_dim; ++d) {
         s->setFiberDimension(this->depthStratum(d), this->_discretization->getNumDof(d));
+      }
+      if (!name.empty()) {
+        const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);
+
+        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          s->setConstraintDimension(*e_iter, this->_discretization->getNumDof(this->depth(*e_iter)));
+        }
+      }
+      if (postponeGhosts) throw ALE::Exception("Not implemented yet");
+      this->allocate(s);
+      s->defaultConstraintDof();
+      if (!name.empty()) {
+        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(name, 2);
+        const Obj<real_section_type>&  coordinates   = this->getRealSection("coordinates");
+        real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, *boundaryCells->begin())];
+        double                        *v0            = new double[this->getDimension()];
+        double                        *J             = new double[this->getDimension()*this->getDimension()];
+        double                         detJ;
+
+        for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
+          const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
+          const coneArray::iterator end     = closure->end();
+          int                       v       = 0;
+
+          this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+            const int cDim = s->getConstraintDimension(*cl_iter);
+
+            if (cDim) {
+              for(int d = 0; d < cDim; ++d, ++v) {
+                values[v] = this->_boundaryCondition->integrateDual(v0, J, v);
+              }
+            } else {
+              const int dim = s->getFiberDimension(*cl_iter);
+
+              for(int d = 0; d < dim; ++d, ++v) {
+                values[v] = 0.0;
+              }
+            }
+          }
+          this->updateAll(s, *c_iter, values);
+        }
+        delete [] values;
+        delete [] v0;
+        delete [] J;
+      }
+    };
+    void setupFieldMultiple(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
+      const std::string& name = this->_boundaryCondition->getLabelName();
+      const Discretization::children_type discs = this->_discretization->getDiscs();
+
+      for(int d = 0; d <= this->_dim; ++d) {
+        int numDof = 0;
+
+        for(Discretization::children_type::const_iterator d_iter = discs.begin(); d_iter != discs.end(); ++d_iter) {
+          numDof += (*d_iter)->getNumDof(d);
+        }
+        s->setFiberDimension(this->depthStratum(d), numDof);
       }
       if (!name.empty()) {
         const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);

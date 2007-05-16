@@ -962,7 +962,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
 
 bool PointIsInElement(ALE::Obj<ALE::Mesh> mesh, ALE::Mesh::point_type e, double * point) {
       int dim = mesh->getDimension();
-      double v0[dim], J[dim*dim], invJ[dim*dim], detJ;
+      static double v0[3], J[9], invJ[9], detJ;
       mesh->computeElementGeometry(mesh->getRealSection("coordinates"), e, v0, J, invJ, detJ);
       if (dim == 2) {
         double xi   = invJ[0*dim+0]*(point[0] - v0[0]) + invJ[0*dim+1]*(point[1] - v0[1]);
