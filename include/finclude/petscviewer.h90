@@ -20,7 +20,8 @@
           PetscTruth tmp
           PetscErrorCode ierr
         End Subroutine
-        
+
+#if defined(PETSC_USE_COMPLEX)        
         Subroutine PetscViewerBinaryWriteReal(v,a,cnt,tmp,ierr)
           PetscViewer v
           PetscReal a(*)
@@ -28,6 +29,7 @@
           PetscTruth tmp
           PetscErrorCode ierr
         End Subroutine
+#endif
         
         Subroutine PetscViewerBinaryReadInt(v,a,cnt,ierr)
           PetscViewer v
@@ -43,12 +45,14 @@
           PetscErrorCode ierr
         End Subroutine
 
+#if defined(PETSC_USE_COMPLEX)        
         Subroutine PetscViewerBinaryReadReal(v,a,cnt,ierr)
           PetscViewer v
           PetscReal a(*)
           PetscInt cnt
           PetscErrorCode ierr
         End Subroutine
+#endif
 
       End Interface
 

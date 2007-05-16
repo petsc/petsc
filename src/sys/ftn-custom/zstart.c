@@ -347,7 +347,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   /*
      PetscInitializeFortran() is called twice. Here it initializes
-     PETSC_NULLCHARACTER_Fortran. Below it initializes the PETSC_VIEWERs.
+     PETSC_NULL_CHARACTER_Fortran. Below it initializes the PETSC_VIEWERs.
      The PETSC_VIEWERs have not been created yet, so they must be initialized
      below.
   */

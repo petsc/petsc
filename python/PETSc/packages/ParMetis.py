@@ -66,7 +66,7 @@ class Configure(PETSc.package.Package):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+'; make clean; make lib; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
     else:
