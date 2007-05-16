@@ -49,6 +49,15 @@ void constant(const double x[], double f[]) {
   f[2] =  0.0;
 }
 
+void quadratic_2d_v(const double x[], double f[]) {
+  f[0] = x[0]*x[0] - 2.0*x[0]*x[1];
+  f[1] = x[1]*x[1] - 2.0*x[0]*x[1];
+}
+
+void quadratic_2d_p(const double x[], double f[]) {
+  f[0] = x[0] + x[1] - 1.0;
+}
+
 void quadratic_2d(const double x[], double f[]) {
   f[0] = x[0]*x[0] - 2.0*x[0]*x[1];
   f[1] = x[1]*x[1] - 2.0*x[0]*x[1];
@@ -1309,14 +1318,17 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   if (options->structured) {
     // The DA defines most of the problem during creation
   } else {
+    Mesh mesh = (Mesh) dm;
+
+    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     if (options->dim == 1) {
       ierr = CreateProblem_gen_1(dm, options);CHKERRQ(ierr);
       options->integrateP = IntegrateDualBasis_gen_0;
       options->integrateV = IntegrateDualBasis_gen_1;
     } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_2(dm, options);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_2(dm, quadratic_2d_p);CHKERRQ(ierr);
       options->integrateP = IntegrateDualBasis_gen_2;
-      ierr = CreateProblem_gen_3(dm, options);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_3(dm, quadratic_2d_v);CHKERRQ(ierr);
       options->integrateV = IntegrateDualBasis_gen_3;
     } else if (options->dim == 3) {
       ierr = CreateProblem_gen_5(dm, options);CHKERRQ(ierr);
@@ -1325,6 +1337,10 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
+    const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
+    s->setDebug(options->debug);
+    m->setupField(s);
+    if (options->debug) {s->view("Default field");}
   }
   PetscFunctionReturn(0);
 }
@@ -1385,12 +1401,15 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
 
       m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
       for(ALE::Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-        // Need to get size from Discretization here
-        const int pointDim = s->getFiberDimension(*cl_iter);
+        const Obj<ALE::Mesh::discretizations_type>& discs = m->getDiscretizations();
 
-        if (pointDim) {
-          for(int d = 0; d < pointDim; ++d, ++v) {
-            //values[v] = (*options->integrateV)(v0, J, v, options->exactFunc);
+        for(ALE::Mesh::discretizations_type::iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+          const int pointDim = (*f_iter)->getNumDof(m->depth(*cl_iter));
+
+          if (pointDim) {
+            for(int d = 0; d < pointDim; ++d, ++v) {
+              values[v] = (*(*f_iter)->getBoundaryCondition()->getDualIntegrator())(v0, J, v, (*f_iter)->getBoundaryCondition()->getFunction());
+            }
           }
         }
       }
