@@ -892,6 +892,8 @@ class Configure(config.base.Configure):
     # if user specified nof90src, then guess the compilerand set the correct c-f90 variant
     if self.stripquotes(self.framework.argDB['with-f90-interface']) == 'nof90src':
       self.f90Guess = self.getFortran90SourceGuesses()
+      if not self.f90Guess:
+        raise RuntimeError('Could not autodetect f90interface for this compiler [with option -with-f90-interface=nof90src].\nRecommend using the default option: -with-f90-interface=f90src')
       self.logPrint('Using f90 interface guess: '+self.f90Guess)
     elif self.framework.argDB['with-f90-interface'] != 'f90src':
       self.f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])            
