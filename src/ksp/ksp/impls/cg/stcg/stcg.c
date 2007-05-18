@@ -120,25 +120,11 @@ $  other KSP converged/diverged reasons
   The preconditioner supplied should be symmetric and positive definite.
 */
 
-#ifdef PETSC_USE_COMPLEX
-PetscErrorCode STCG_VecDot(Vec x, Vec y, PetscReal *a)
-{
-  PetscScalar ca;
-  PetscErrorCode ierr;
-
-  ierr = VecDot(x,y,&ca);
-  *a = PetscRealPart(ca);
-  return ierr;
-}
-#else
-PetscErrorCode STCG_VecDot(Vec x, Vec y, PetscReal *a)
-{
-  return VecDot(x,y,a);
-}
-#endif
-
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
+#ifdef PETSC_USE_COMPLEX
+  SETERRQ(PETSC_ERR_SUP, "STCG is not available for complex systems");
+#else
   KSP_STCG *cg = (KSP_STCG *)ksp->data;
   PetscErrorCode ierr;
   MatStructure  pflag;
@@ -180,7 +166,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   cg->norm_d = 0.0;
 
   /* Check for numerical problems with the preconditioner */
-  ierr = STCG_VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
+  ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
   if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
     /* In this case, either the right-hand side contains infinity or not a  */
     /* number or the precontioner contains intinity or not a number.   We   */
@@ -189,7 +175,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     /* change.                                                              */
 
     ksp->reason = KSP_DIVERGED_NAN;
-    ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+    ierr = VecDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
     if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
       /* In this case, the right-hand side contains not a number or an      */
       /* infinite value.  The gradient step does not work; return a zero    */
@@ -210,7 +196,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
         ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
         ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
-        ierr = STCG_VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+        ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
         cg->o_fcn = -cg->o_fcn;
       }
     }
@@ -230,14 +216,14 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
     if (cg->radius) {
-      ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+      ierr = VecDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
       alpha = sqrt(r2 / rz);
       ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
       cg->norm_d = cg->radius;
 
       ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
-      ierr = STCG_VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+      ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
     }
     PetscFunctionReturn(0);
@@ -279,13 +265,13 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   }
   else {
     dMp = 0.0;
-    ierr = STCG_VecDot(p, p, &norm_p); CHKERRQ(ierr);
+    ierr = VecDot(p, p, &norm_p); CHKERRQ(ierr);
     norm_d = 0.0;
   }
 
   /* Compute the direction */
   ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
-  ierr = STCG_VecDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T z */
+  ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T z */
 
   if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
     /* In this case, the matrix Q contains an infinite value or not a number */
@@ -294,7 +280,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", kappa); CHKERRQ(ierr);
 
     if (cg->radius) {
-      ierr = STCG_VecDot(r, r, &rz); CHKERRQ(ierr);	/* rz = r^T r   */
+      ierr = VecDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
 
       alpha = sqrt(r2 / rz);
       ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r */
@@ -302,7 +288,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
       ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
-      ierr = STCG_VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+      ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
     }
     PetscFunctionReturn(0);
@@ -363,7 +349,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       norm_d = norm_dp1;
     }
     else {
-      ierr = STCG_VecDot(d, d, &norm_d); CHKERRQ(ierr);
+      ierr = VecDot(d, d, &norm_d); CHKERRQ(ierr);
     }
     cg->norm_d = sqrt(norm_d);
 
@@ -371,7 +357,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     /* Check that the preconditioner is positive semidefinite */
     rzm1 = rz;
-    ierr = STCG_VecDot(r, z, &rz); CHKERRQ(ierr);	/* rz = r^T z   */
+    ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
     if (rz <= 0.0) {
       ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);
       if (rz < 0.0 || norm_r > 0.0) {
@@ -425,19 +411,20 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       norm_p = beta*(rzm1 + beta*norm_p);
     }
     else {
-      ierr = STCG_VecDot(d, p, &dMp); CHKERRQ(ierr);
-      ierr = STCG_VecDot(p, p, &norm_p); CHKERRQ(ierr);
+      ierr = VecDot(d, p, &dMp); CHKERRQ(ierr);
+      ierr = VecDot(p, p, &norm_p); CHKERRQ(ierr);
     }
 
     /* Compute new direction */
     ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr); /* z = Q * p   */
-    ierr = STCG_VecDot(p, z, &kappa); CHKERRQ(ierr);	/* kappa = p^T z */
+    ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T z */
   }
 
   if (!ksp->reason) {
     ksp->reason = KSP_DIVERGED_ITS;
   }
   PetscFunctionReturn(0);
+#endif
 }
 
 #undef __FUNCT__
