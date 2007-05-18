@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 #
-# BGL has broken 'libc' dependencies. The option 'LIBS' is 
-# used to workarround this problem. Another workarround is to
-# modify mpicc/mpif77 scripts and make them link with these
-# additional libraries.
+# BGL has broken 'libc' dependencies. The option 'LIBS' is used to
+# workarround this problem.
 #
-# Also the default fortran namemangling changed - so the usage
-# of iarg_()/getargc_() internal compiler symbols does not work
-# without a minor manual hack to zstart.c sourcefile
+# LIBS="-lc -lnss_files -lnss_dns -lresolv"
+#
+# Another workarround is to modify mpicc/mpif77 scripts and make them
+# link with the corresponding compilers, and these additional
+# libraries. The following tarball has the modified compiler scripts
+#
+# ftp://ftp.mcs.anl.gov/pub/petsc/tmp/petsc-bgl-tools.tar.gz 
 #
 configure_options = [
   '-LIBS=-lc -lc -lnss_files -lnss_dns -lresolv',
