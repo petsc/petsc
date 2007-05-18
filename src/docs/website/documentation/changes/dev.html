@@ -99,7 +99,16 @@ etc.</li>
         <li> Changed the use of mpirun throughout the source to
 mpiexec; this includes
 petscmpirun -&gt; petscmpiexec. Of course, PETSc will still work fine
-with MPI implementations that use mpirun. </li>
+with MPI implementations that use mpirun.</li>
+      </ul>
+      <u><b>config/configure.py:</b></u>
+      <ul>
+        <li>F90 interface is now enabled by default [if the compiler is
+detected to be a f90 compiler]. i.e --with-f90-interface options is not
+required. The f90 interface impl used is a new universal one. However
+if you wish to use the old compiler specific one, then specify
+--with-f90-interface=nof90src [for configure to autodetect] or specify
+the appropriate one - like: --with-f90-interface=intel8</li>
       </ul>
       <p><u><b>IS:</b></u></p>
       <ul>
@@ -113,21 +122,26 @@ with MPI implementations that use mpirun. </li>
 [now the first argument is VecScatter]<br>
         </li>
       </ul>
-      <p><u><b><br>
-      </b></u> </p>
       <ul>
       </ul>
-      <p><u><b>Mat:</b></u></p>
-      <li>moved most of SNESMF implementation into mat/impls/mffd </li>
-      <li>MatMFFD is now a regular matrix type registered in
+      <p><u><b>Mat:</b></u><br>
+      </p>
+      <ul>
+        <li>moved most of SNESMF implementation into mat/impls/mffd</li>
+        <li>MatMFFD is now a regular matrix type registered in
 MatRegisterAll() </li>
-      <li>changed SNESMF to MFFD for all previous SNESMF routines,
+        <li>changed SNESMF to MFFD for all previous SNESMF routines,
 except MatCreateSNESMF() </li>
-      <li>-snes_mf_option changed to -mat_mffd_option except for
+        <li>-snes_mf_option changed to -mat_mffd_option except for
 -snes_mf and -snes_mf_operator </li>
-      <li>SNES_KSP_EW... changed to SNESKSPWE... and
+        <li>SNES_KSP_EW... changed to SNESKSPWE... and
 SNES_KSP_EW_ConvCtx to SNESKSPEW</li>
-      <p><u><b>PC: &nbsp;</b></u></p>
+        <li>MatGetRowIJ(), MatGetColumnIJ(),&nbsp; MatRestoreRowIJ(),
+MatRestoreColumnIJ() now take an extra argument<br>
+        </li>
+      </ul>
+      <p><u><b>PC:<br>
+      </b></u></p>
       <ul>
         <li>changed PCMGSetCycles() and PCMGSetCyclesOnLevel() to
 PCMGSetCycleType() and PCMGSetCycleTypeOnLevel() that take a
@@ -145,12 +159,6 @@ PCMGCycleType as argument and changed -pc_mg_cycle_type 1 or 2 to
       <p><u><b>KSP:</b></u><br>
       </p>
       <ul>
-      </ul>
-      <p><u><b>config/configure.py:<br>
-      </b></u></p>
-      <ul>
-        <li><br>
-        </li>
       </ul>
       <p> </p>
       <ul>
@@ -177,14 +185,24 @@ TSSetMatrices()</li>
       </ul>
       <p><u><b>SYS:</b></u><br>
       </p>
-      <p><u><b>AO:</b></u></p>
+      <p><u><b>AO:<br>
+      </b></u></p>
+      <ul>
+        <li>AOData object and corresponding functionality is now
+removed for PETSc<br>
+        </li>
+      </ul>
       <p><u><b>Fortran:</b></u><br>
       </p>
       <ul>
       </ul>
       <p><u><b><a
  href="http:/www-unix.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
-      <br>
+      <ul>
+        <li>Hypre interface is updated to use version 2.0.0</li>
+        <li>Mumps interface is updated to use version 4.7.3<br>
+        </li>
+      </ul>
       </td>
     </tr>
     <tr>
