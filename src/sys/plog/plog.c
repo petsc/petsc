@@ -4,8 +4,6 @@
 */
 #include "petsc.h"        /*I    "petsc.h"   I*/
 #include "petsctime.h"
-#include "petscmachineinfo.h"
-#include "petscconfiginfo.h"
 #if defined(PETSC_HAVE_MPE)
 #include "mpe.h"
 #endif
@@ -24,6 +22,8 @@
 PetscEvent  PETSC_LARGEST_EVENT  = PETSC_EVENT;
 
 #if defined(PETSC_USE_LOG)
+#include "petscmachineinfo.h"
+#include "petscconfiginfo.h"
 
 /* used in the MPI_XXX() count macros in petsclog.h */
 int PETSC_DLLEXPORT PETSC_DUMMY_SIZE = 0;
@@ -511,7 +511,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogStageSetActive(int stage, PetscTruth isAc
 
 .seealso: PetscLogStagePush(), PetscLogStagePop(), PetscLogEventBegin(), PetscLogEventEnd(), PreLoadBegin(), PreLoadEnd(), PreLoadStage()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(int stage, PetscTruth *isActive) \
+PetscErrorCode PETSC_DLLEXPORT PetscLogStageGetActive(int stage, PetscTruth *isActive)
 {
   StageLog       stageLog;
   PetscErrorCode ierr;
@@ -1853,18 +1853,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char f
   PetscFunctionReturn(0);
 }
 
-#else /* end of -DPETSC_USE_LOG section */
-
-#undef __FUNCT__  
-#define __FUNCT__ "PetscLogObjectState"
-PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char format[], ...)
-{
-  PetscFunctionBegin;
-  PetscFunctionReturn(0);
-}
-
-#endif /* PETSC_USE_LOG*/
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLogGetStageLog"
 /*@
@@ -2189,3 +2177,16 @@ PetscErrorCode StackCreate(IntStack *stack)
   *stack = s;
   PetscFunctionReturn(0);
 }
+
+#else /* end of -DPETSC_USE_LOG section */
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscLogObjectState"
+PetscErrorCode PETSC_DLLEXPORT PetscLogObjectState(PetscObject obj, const char format[], ...)
+{
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#endif /* PETSC_USE_LOG*/
+

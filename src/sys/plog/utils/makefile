@@ -1,17 +1,19 @@
+#requirespackage    'PETSC_USE_LOG'
+
 ALL: lib 
 
 CFLAGS    =
 FFLAGS    =
 CPPFLAGS  =
-SOURCEC	  = plog.c plogmpe.c
+SOURCEC	  = classLog.c stageLog.c eventLog.c
 SOURCEF	  =
-SOURCEH	  = plog.h ../../../include/petsclog.h
+SOURCEH	  = 
 OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Profiling
 LIBBASE	  = libpetsc
-DIRS	  = utils
-LOCDIR	  = src/sys/plog/
+DIRS	  = 
+LOCDIR	  = src/sys/plog/utils/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

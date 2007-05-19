@@ -356,7 +356,7 @@ getmpiexec:
 #
 #  These rules are for compiling the test examples.
 #
-.cpp.rm .cc.rm .C.rm .F.rm .f.rm .c.rm:
+.cpp.rm .cc.rm .C.rm .F.rm .F90.rm .f.rm .c.rm:
 	-@${RM} $* *.o $*.mon.* gmon.out mon.out
 	-@if test -e $*.exe; then ${RM} $*.exe; fi
 	-@if test -e $*.ilk; then ${RM} $*.ilk; fi

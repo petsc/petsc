@@ -430,7 +430,7 @@
 
 !  Input/output variables:
       type (userctx)         user
-      PetscScalar  x(user%gxs:user%gxe,                                     &
+      PetscScalar  x(user%gxs:user%gxe,                                         &
      &              user%gys:user%gye)
       integer ierr
 
@@ -485,9 +485,9 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar  x(user%gxs:user%gxe,                                     &
+      PetscScalar  x(user%gxs:user%gxe,                                         &
      &              user%gys:user%gye)
-      PetscScalar  f(user%xs:user%xe,                                       &
+      PetscScalar  f(user%xs:user%xe,                                           &
      &              user%ys:user%ye)
       integer  ierr
 
@@ -707,7 +707,7 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar  x(user%gxs:user%gxe,                                     &
+      PetscScalar  x(user%gxs:user%gxe,                                         &
      &              user%gys:user%gye)
       Mat      jac,jac_prec
       integer  ierr

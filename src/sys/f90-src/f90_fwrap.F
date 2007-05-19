@@ -121,52 +121,52 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      subroutine F90Array2dCreateScalar(array,start1,len1,                    &
+      subroutine F90Array2dCreateScalar(array,start1,len1,                        &
      &     start2,len2,ptr)
       implicit none
 #include "include/finclude/petsc.h"
       PetscInt start1,len1
       PetscInt start2,len2
-      PetscScalar, target ::                                                  &
+      PetscScalar, target ::                                                      &
      &     array(start1+len1-1,start2+len2-1)
       PetscScalar, pointer :: ptr(:,:)
 
       ptr => array(start1:len1,start2:len2)
       end subroutine
 
-      subroutine F90Array2dCreateReal(array,start1,len1,                      &
+      subroutine F90Array2dCreateReal(array,start1,len1,                          &
      &     start2,len2,ptr)
       implicit none
 #include "include/finclude/petsc.h"
       PetscInt start1,len1
       PetscInt start2,len2
-      PetscReal, target ::                                                    &
+      PetscReal, target ::                                                        &
      &     array(start1+len1-1,start2+len2-1)
       PetscReal, pointer :: ptr(:,:)
 
       ptr => array(start1:len1,start2:len2)
       end subroutine
 
-      subroutine F90Array2dCreateInt(array,start1,len1,                       &
+      subroutine F90Array2dCreateInt(array,start1,len1,                           &
      &     start2,len2,ptr)
       implicit none
 #include "include/finclude/petsc.h"
       PetscInt start1,len1
       PetscInt start2,len2
-      PetscInt, target ::                                                     &
+      PetscInt, target ::                                                         &
      &     array(start1+len1-1,start2+len2-1)
       PetscInt, pointer :: ptr(:,:)
 
       ptr => array(start1:len1,start2:len2)
       end subroutine
 
-      subroutine F90Array2dCreateFortranAddr(array,start1,len1,               &
+      subroutine F90Array2dCreateFortranAddr(array,start1,len1,                   &
      &     start2,len2,ptr)
       implicit none
 #include "include/finclude/petsc.h"
       PetscInt start1,len1
       PetscInt start2,len2
-      PetscFortranAddr, target ::                                             &
+      PetscFortranAddr, target ::                                                 &
      &     array(start1+len1-1,start2+len2-1)
       PetscFortranAddr, pointer :: ptr(:,:)
 
