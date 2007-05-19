@@ -456,6 +456,25 @@ class Configure(config.package.Package):
         except RuntimeError, e:
           self.framework.logPrint('Error trying to run mpdboot:'+str(e))
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
+
+    # Reset compilers to MPI compilers. Perhaps there should be self.setCompilers.reintializeCompilers()?
+    mpicc = os.path.join(installDir,"bin","mpicc")
+    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    self.setCompilers.CC = mpicc
+    if hasattr(self.compilers, 'CXX'):
+      mpicxx = os.path.join(installDir,"bin","mpicxx")
+      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+      self.setCompilers.CXX = mpicxx
+    if hasattr(self.compilers, 'FC'):
+      if self.compilers.fortranIsF90:
+        mpif90 = os.path.join(installDir,"bin","mpif90")
+        if not os.path.isfile(mpif90): raise RuntimeError('Could not locate installed MPI compiler: '+mpif90)
+        self.setCompilers.FC = mpif90
+      else:
+        mpif77 = os.path.join(installDir,"bin","mpif77")
+        if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
+        self.setCompilers.FC = mpif77
+      self.setCompilers.usedMPICompilers=1
     return self.getDir()
 
   def addExtraLibraries(self):
@@ -504,8 +523,8 @@ class Configure(config.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
-    self.addExtraLibraries()
     config.package.Package.configureLibrary(self)
+    self.addExtraLibraries()
     # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
     # if not then set it to None
 
