@@ -82,13 +82,11 @@ EXTERN_C_END
     b = a = 0; \
   } else { \
     while((n > 0) && (a[n-1] == ' ')) n--; \
-    if (a[n] != 0) { \
-      *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
-      if(*ierr) return; \
-      *ierr = PetscStrncpy(b,a,n); \
-      if(*ierr) return; \
-      b[n] = 0; \
-    } else b = a;\
+    *ierr = PetscMalloc((n+1)*sizeof(char),&b); \
+    if(*ierr) return; \
+    *ierr = PetscStrncpy(b,a,n); \
+    if(*ierr) return; \
+    b[n] = 0; \
   } \
 }
 

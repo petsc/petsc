@@ -418,7 +418,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagSetFromOptions(PetscBag bag)
       name[0] = '-';
       name[1] = 0;
       ierr    = PetscStrcat(name,nitem->name);CHKERRQ(ierr);
-      if (nitem->dtype == PETSC_CHAR) {
+      if (nitem->dtype == PETSC_CHAR) { /* special handling for fortran required? [due to space padding vs null termination] */
         char *value = (char*)(((char*)bag) + nitem->offset);
         ierr = PetscOptionsString(name,nitem->help,"",value,value,nitem->msize,PETSC_NULL);CHKERRQ(ierr);
       } else if (nitem->dtype == PETSC_REAL) {
@@ -481,7 +481,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagView(PetscBag bag,PetscViewer view)
     while (nitem) {
       if (nitem->dtype == PETSC_CHAR) {
         char* value = (char*)(((char*)bag) + nitem->offset);
+        char tmp = value[nitem->msize-1];  /* special handling for fortran chars wihout null terminator */
+        value[nitem->msize-1] =0;
         ierr = PetscViewerASCIIPrintf(view,"  %s = %s; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
+        value[nitem->msize-1] =tmp;        
       } else if (nitem->dtype == PETSC_REAL) {
         PetscReal value = *(PetscReal*)(((char*)bag) + nitem->offset);
         ierr = PetscViewerASCIIPrintf(view,"  %s = %G; %s\n",nitem->name,value,nitem->help);CHKERRQ(ierr);
