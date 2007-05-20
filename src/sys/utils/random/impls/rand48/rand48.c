@@ -4,7 +4,6 @@
 #include "petscfix.h"
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
-EXTERN_C_END
 #endif
 
 #undef __FUNCT__  
