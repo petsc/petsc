@@ -1,13 +1,9 @@
 #define PETSC_DLL
 
 #include "src/sys/utils/random/randomimpl.h"
+#include "petscfix.h"
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>
-#else
-/* maybe the protypes are missing */
-EXTERN_C_BEGIN
-extern double drand48();
-extern void   srand48(long);
 EXTERN_C_END
 #endif
 
