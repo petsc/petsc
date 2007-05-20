@@ -379,9 +379,8 @@ class Configure(config.package.Package):
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
-        if config.setCompilers.Configure.isDarwin():
-          args.append('--enable-sharedlibs=gcc-osx')
-        else:        
+        # disable dylibs on mac due to mpich build issues
+        if not config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc')
       else:
         args.append('--enable-sharedlibs=libtool')
