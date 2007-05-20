@@ -1317,7 +1317,11 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorCancel(TS ts)
 #define __FUNCT__ "TSMonitorDefault"
 /*@
    TSMonitorDefault - Sets the Default monitor
-@*/
+
+   Level: intermediate                                                                                                                                    
+.keywords: TS, set, monitor                                                                                                                     
+
+.seealso: TSMonitorDefault(), TSMonitorSet()                                                                                                             @*/
 PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *ctx)
 {
   PetscErrorCode          ierr;

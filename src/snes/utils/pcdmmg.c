@@ -147,6 +147,8 @@ EXTERN_C_END
 +  pc - the preconditioner context
 -  dmmg - the DMMG object
 
+   Level: Intermediate
+
    Concepts: DMMG preconditioner
 
 .seealso: PCDMMG
