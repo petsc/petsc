@@ -1,17 +1,17 @@
-#requirespackage 'PETSC_HAVE_DRAND48'
+#requirespackage 'PETSC_HAVE_RAND'
 
 ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = rand48.c
+SOURCEC  = rand.c
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = rand48.o 
+OBJSC    = rand.o
 OBJSF    =
 LIBBASE  = libpetsc
 DIRS     = 
-LOCDIR   = src/sys/utils/random/impls/rand48/
+LOCDIR   = src/sys/random/impls/rand/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

@@ -11,7 +11,7 @@ OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
 DIRS	  = 
-LOCDIR	  = src/sys/utils/random/interface/
+LOCDIR	  = src/sys/random/interface/
 
 include ${PETSC_DIR}/bmake/common/base
 include ${PETSC_DIR}/bmake/common/test

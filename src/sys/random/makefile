@@ -1,9 +1,9 @@
 
 ALL: lib 
 
-SOURCEH  = randomimpl.h ../../../../include/petscsys.h
+SOURCEH  = randomimpl.h ../../../include/petscsys.h
 DIRS     = interface examples impls 
-LOCDIR   = src/sys/utils/random/
+LOCDIR   = src/sys/random/
 MANSEC   = Sys
 
 include ${PETSC_DIR}/bmake/common/base

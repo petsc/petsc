@@ -1,6 +1,6 @@
 #define PETSC_DLL
 
-#include "src/sys/utils/random/randomimpl.h"
+#include "src/sys/random/randomimpl.h"
 #include "petscfix.h"
 #if defined (PETSC_HAVE_STDLIB_H)
 #include <stdlib.h>

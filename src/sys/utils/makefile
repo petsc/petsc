@@ -13,7 +13,7 @@ OBJSC	  = ${SOURCEC:.c=.o}
 OBJSF	  =
 MANSEC	  = Sys
 LIBBASE	  = libpetsc
-DIRS	  = random
+DIRS	  =
 LOCDIR	  = src/sys/utils/
 
 include ${PETSC_DIR}/bmake/common/base
