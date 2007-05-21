@@ -37,8 +37,6 @@ typedef struct {
   void        (*exactFunc)(const double [], double []);       // The exact solution function
   ExactSolType  exactSol;                                     // The discrete exact solution
   AssemblyType  operatorAssembly;                             // The type of operator assembly 
-  double (*integrateV)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
-  double (*integrateP)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
 } Options;
 
 #include "stokes_quadrature.h"
@@ -49,13 +47,16 @@ void constant(const double x[], double f[]) {
   f[2] =  0.0;
 }
 
-void quadratic_2d_v(const double x[], double f[]) {
-  f[0] = x[0]*x[0] - 2.0*x[0]*x[1];
-  f[1] = x[1]*x[1] - 2.0*x[0]*x[1];
+double quadratic_2d_u(const double x[]) {
+  return x[0]*x[0] - 2.0*x[0]*x[1];
 }
 
-void quadratic_2d_p(const double x[], double f[]) {
-  f[0] = x[0] + x[1] - 1.0;
+double quadratic_2d_v(const double x[]) {
+  return x[1]*x[1] - 2.0*x[0]*x[1];
+}
+
+double quadratic_2d_p(const double x[]) {
+  return x[0] + x[1] - 1.0;
 }
 
 void quadratic_2d(const double x[], double f[]) {
@@ -1319,27 +1320,23 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     // The DA defines most of the problem during creation
   } else {
     Mesh mesh = (Mesh) dm;
+    Obj<ALE::Mesh> m;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     if (options->dim == 1) {
       ierr = CreateProblem_gen_1(dm, options);CHKERRQ(ierr);
-      options->integrateP = IntegrateDualBasis_gen_0;
-      options->integrateV = IntegrateDualBasis_gen_1;
     } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_2(dm, quadratic_2d_p);CHKERRQ(ierr);
-      options->integrateP = IntegrateDualBasis_gen_2;
-      ierr = CreateProblem_gen_3(dm, quadratic_2d_v);CHKERRQ(ierr);
-      options->integrateV = IntegrateDualBasis_gen_3;
+      ierr = CreateProblem_gen_2(dm, "p", PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_3(dm, "u", quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_3(dm, "v", quadratic_2d_v, quadratic_2d_u);CHKERRQ(ierr);
     } else if (options->dim == 3) {
       ierr = CreateProblem_gen_5(dm, options);CHKERRQ(ierr);
-      options->integrateP = IntegrateDualBasis_gen_4;
-      options->integrateV = IntegrateDualBasis_gen_5;
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
     s->setDebug(options->debug);
-    m->setupField(s);
+    m->setupFieldMultiple(s);
     if (options->debug) {s->view("Default field");}
   }
   PetscFunctionReturn(0);
@@ -1385,7 +1382,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
     ierr = SectionRealGetSection(options->exactSol.section, s);CHKERRQ(ierr);
-    m->setupField(s);
+    m->setupFieldMultiple(s);
     const Obj<ALE::Mesh::label_sequence>&     cells       = m->heightStratum(0);
     const Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
     const int                                 localDof    = m->sizeWithBC(s, *cells->begin());
@@ -1393,22 +1390,28 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     double                                   *v0          = new double[dim];
     double                                   *J           = new double[dim*dim];
     double                                    detJ;
+    const Obj<std::set<std::string> >&        discs       = m->getDiscretizations();
+    const int                                 numFields   = discs->size();
+    int                                      *v           = new int[numFields];
 
     for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
       const Obj<ALE::Mesh::coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *c_iter);
       const ALE::Mesh::coneArray::iterator end     = closure->end();
-      int                                  v       = 0;
 
       m->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+      for(int f = 0; f < numFields; ++f) v[f] = 0;
       for(ALE::Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
-        const Obj<ALE::Mesh::discretizations_type>& discs = m->getDiscretizations();
+        int f = 0;
 
-        for(ALE::Mesh::discretizations_type::iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-          const int pointDim = (*f_iter)->getNumDof(m->depth(*cl_iter));
+        for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+          const Obj<ALE::DiscretizationNew>& disc     = m->getDiscretization(*f_iter);
+          const Obj<ALE::BoundaryCondition>& bc       = disc->getExactSolution();
+          const int                          pointDim = disc->getNumDof(m->depth(*cl_iter));
+          const int                         *indices  = disc->getIndices();
 
           if (pointDim) {
-            for(int d = 0; d < pointDim; ++d, ++v) {
-              values[v] = (*(*f_iter)->getBoundaryCondition()->getDualIntegrator())(v0, J, v, (*f_iter)->getBoundaryCondition()->getFunction());
+            for(int d = 0; d < pointDim; ++d, ++v[f]) {
+              //values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
             }
           }
         }

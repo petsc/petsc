@@ -40,7 +40,6 @@
       PetscBag bag
       PetscErrorCode ierr
       type(AppCtx), pointer :: ctx
-      type(AppCtx) :: ctx2
       PetscViewer viewer
       PetscInt sizeofctx,sizeofint
       PetscInt sizeofscalar,sizeoftruth
