@@ -1,18 +1,20 @@
 
       module MyModule
+#define PETSC_AVOID_DECLARATIONS
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscbag.h"
 #include "include/finclude/petscviewer.h"
-
+#undef PETSC_AVOID_DECLARATIONS
 !   Data structure used to contain information about the problem
 !   You can add physical values etc here
 
       type appctx
-        PetscInt :: nxc
         PetscScalar :: x
+        PetscReal :: y
+        PetscInt :: nxc
         PetscTruth :: t
         character*(80) :: c
-        PetscReal :: y
+
       end type appctx
       end module MyModule
 
@@ -31,7 +33,6 @@
       use MyModule
       use MyInterface
       implicit none
-#define PETSC_AVOID_DECLARATIONS
 #include "include/finclude/petsc.h"
 #include "include/finclude/petscbag.h"
 #include "include/finclude/petscviewer.h"
@@ -40,9 +41,24 @@
       PetscErrorCode ierr
       type(AppCtx), pointer :: ctx
       PetscViewer viewer
+      PetscInt sizeofctx,sizeofint
+      PetscInt sizeofscalar,sizeoftruth
+      PetscInt sizeofchar,sizeofreal
       
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call PetscBagCreate(PETSC_COMM_WORLD,sizeof(ctx),bag,ierr)
+
+!      compute size of ctx
+      call PetscDataTypeGetSize(PETSC_INT,sizeofint,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+      call PetscDataTypeGetSize(PETSC_TRUTH,sizeoftruth,ierr)
+      call PetscDataTypeGetSize(PETSC_CHAR,sizeofchar,ierr)
+      call PetscDataTypeGetSize(PETSC_REAL,sizeofreal,ierr)
+
+!     really need a sizeof(ctx) operator here. There could be padding inside the
+!     structure due to alignment issues - so, this computed value cold be wrong.
+      sizeofctx = sizeofint + sizeofscalar+sizeoftruth+sizeofchar*80+sizeofreal
+
+      call PetscBagCreate(PETSC_COMM_WORLD,sizeofctx,bag,ierr)
       call PetscBagGetData(bag,ctx,ierr)
       call PetscBagRegisterInt(bag,ctx%nxc ,56,'nxc','nxc_variable help message',ierr)
       call PetscBagRegisterScalar(bag,ctx%x ,103.2d0,'x','x variable help message',ierr)

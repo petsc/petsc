@@ -4,9 +4,11 @@
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define petscviewerfilesetmode_    PETSCVIEWERFILESETMODE
 #define petscviewerbinaryopen_     PETSCVIEWERBINARYOPEN
+#define petscviewerbinarygetdescriptor_     PETSCVIEWERBINARYGETDESCRIPTOR
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscviewerfilesetmode_    petscviewerfilesetmode
 #define petscviewerbinaryopen_     petscviewerbinaryopen
+#define petscviewerbinarygetdescriptor_     petscviewerbinarygetdescriptor
 #endif
 
 EXTERN_C_BEGIN
@@ -24,6 +26,13 @@ void PETSC_STDCALL petscviewerbinaryopen_(MPI_Comm *comm,CHAR name PETSC_MIXED_L
   FIXCHAR(name,len,c1);
   *ierr = PetscViewerBinaryOpen((MPI_Comm)PetscToPointerComm(*comm),c1,*type,binv);
   FREECHAR(name,c1);
+}
+
+void PETSC_STDCALL  petscviewerbinarygetdescriptor_(PetscViewer *viewer,int *fd,PetscErrorCode *ierr)
+{
+  PetscViewer v;
+  PetscPatchDefaultViewers_Fortran(viewer,v);
+  *ierr = PetscViewerBinaryGetDescriptor(v,fd);
 }
 
 EXTERN_C_END
