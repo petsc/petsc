@@ -583,7 +583,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const
   PetscErrorCode  ierr;
   PetscInt        i,j,ii,jj,row,col;
   PetscInt        rstart=baij->rstartbs;
-  PetscInt        rend=mat->rmap.rend,stepval,bs=mat->rmap.bs,bs2=baij->bs2;
+  PetscInt        rend=mat->rmap.rend,stepval,bs=mat->rmap.bs,bs2=baij->bs2,nbs2=n*bs2;
   PetscInt        h1,key,size=baij->ht_size,idx,*HT=baij->ht,Nbs=baij->Nbs;
   PetscReal       tmp;
   MatScalar       **HD = baij->hd,*baij_a;
@@ -605,7 +605,7 @@ PetscErrorCode MatSetValuesBlocked_MPIBAIJ_HT_MatScalar(Mat mat,PetscInt m,const
     if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",im[i],baij->Mbs-1);
 #endif
     row   = im[i];
-    v_t   = v + i*bs2;
+    v_t   = v + i*nbs2;
     if (row >= rstart && row < rend) {
       for (j=0; j<n; j++) {
         col = in[j];          
