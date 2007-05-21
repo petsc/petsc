@@ -8,9 +8,17 @@
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define petscoffsetfortran_        petscoffsetfortran     
 #define chkmemfortran_             chkmemfortran
+#define flush__                     flush_
 #endif
 
 EXTERN_C_BEGIN
+
+#if defined(PETSC_MISSING_FORTRAN_FLUSH_)
+void flush__(int unit)
+{
+}
+#endif
+
 
 void PETSC_STDCALL petscoffsetfortran_(PetscScalar *x,PetscScalar *y,size_t *shift,PetscErrorCode *ierr)
 {

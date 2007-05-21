@@ -23,9 +23,9 @@ if ischar(inarg)
 else if isnumeric(inarg)
        fd = sreader(inarg)
      else
+% otherwise assume it is a freader or sreader and handles read()
        fd = inarg
      end
-% otherwise assume it is a freader or sreader and handles read()
 end
 
 if comp == 'cell'
