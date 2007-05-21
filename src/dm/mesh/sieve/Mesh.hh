@@ -883,6 +883,55 @@ namespace ALE {
     double evaluate(const double coords[]) {return this->_func(coords);};
     double integrateDual(const double v0[], const double J[], const int dualIndex) {return this->_integrator(v0, J, dualIndex, this->_func);};
   };
+  class DiscretizationNew : public ALE::ParallelObject {
+  protected:
+    Obj<BoundaryCondition> _boundaryCondition;
+    Obj<BoundaryCondition> _exactSolution;
+    std::map<int,int> _dim2dof;
+    std::map<int,int> _dim2class;
+    const double *_points;
+    const double *_weights;
+    const double *_basis;
+    const double *_basisDer;
+    const int    *_indices;
+  public:
+    DiscretizationNew(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _points(NULL), _weights(NULL), _basis(NULL), _basisDer(NULL), _indices(NULL) {};
+    virtual ~DiscretizationNew() {
+      if (this->_indices) {delete [] this->_indices;}
+    };
+  public:
+    const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
+    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
+    const Obj<BoundaryCondition>& getExactSolution() {return this->_exactSolution;};
+    void setExactSolution(const Obj<BoundaryCondition>& exactSolution) {this->_exactSolution = exactSolution;};
+    const double *getQuadraturePoints() {return this->_points;};
+    void          setQuadraturePoints(const double *points) {this->_points = points;};
+    const double *getQuadratureWeights() {return this->_weights;};
+    void          setQuadratureWeights(const double *weights) {this->_weights = weights;};
+    const double *getBasis() {return this->_basis;};
+    void          setBasis(const double *basis) {this->_basis = basis;};
+    const double *getBasisDerivatives() {return this->_basisDer;};
+    void          setBasisDerivatives(const double *basisDer) {this->_basisDer = basisDer;};
+    int  getNumDof(const int dim) {return this->_dim2dof[dim];};
+    void setNumDof(const int dim, const int numDof) {this->_dim2dof[dim] = numDof;};
+    int  getDofClass(const int dim) {return this->_dim2class[dim];};
+    void setDofClass(const int dim, const int dofClass) {this->_dim2class[dim] = dofClass;};
+  public:
+    const int *getIndices() {return this->_indices;};
+    void       setIndices(const int *indices) {this->_indices = indices;};
+    template<typename Bundle>
+    int size(const Obj<Bundle>& mesh) {
+      const Obj<typename Bundle::label_sequence>& cells   = mesh->heightStratum(0);
+      const Obj<typename Bundle::coneArray>       closure = ALE::SieveAlg<Bundle>::closure(mesh, *cells->begin());
+      const typename Bundle::coneArray::iterator  end     = closure->end();
+      int                                         size    = 0;
+
+      for(typename Bundle::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+        size += this->_dim2dof[mesh->depth(*cl_iter)];
+      }
+      return size;
+    };
+  };
 }
 
 namespace ALE {
@@ -906,11 +955,13 @@ namespace ALE {
     typedef base_type::send_overlap_type     send_overlap_type;
     typedef base_type::recv_overlap_type     recv_overlap_type;
     typedef base_type::sieve_alg_type        sieve_alg_type;
+    typedef std::map<std::string, Obj<DiscretizationNew> > discretizations_type;
   protected:
     int                   _dim;
     // Discretization
     Obj<Discretization>    _discretization;
     Obj<BoundaryCondition> _boundaryCondition;
+    discretizations_type   _discretizations;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = NumberingFactory::singleton(debug);
@@ -924,6 +975,16 @@ namespace ALE {
     void setDiscretization(const Obj<Discretization>& discretization) {this->_discretization = discretization;};
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
+    const Obj<DiscretizationNew>& getDiscretization(const std::string& name) {return this->_discretizations[name];};
+    void setDiscretization(const std::string& name, const Obj<DiscretizationNew>& disc) {this->_discretizations[name] = disc;};
+    Obj<std::set<std::string> > getDiscretizations() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(discretizations_type::const_iterator d_iter = this->_discretizations.begin(); d_iter != this->_discretizations.end(); ++d_iter) {
+        names->insert(d_iter->first);
+      }
+      return names;
+    };
   public: // Mesh geometry
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
       const double    *coords = this->restrict(coordinates, e);
@@ -1166,6 +1227,49 @@ namespace ALE {
         }
       }
     };
+    void calculateIndices() {
+      // Should have an iterator over the whole tree
+      Obj<std::set<std::string> > discs = this->getDiscretizations();
+      Obj<Mesh>                   mesh  = this;
+      std::map<std::string, std::pair<int, int*> > indices;
+
+      mesh.addRef();
+      for(std::set<std::string>::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        const Obj<DiscretizationNew>& disc = this->getDiscretization(*d_iter);
+
+        indices[*d_iter] = std::pair<int, int*>(0, new int[disc->size(mesh)]);
+        disc->setIndices(indices[*d_iter].second);
+      }
+      const Obj<label_sequence>& cells   = this->heightStratum(0);
+      const Obj<coneArray>       closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *cells->begin());
+      const coneArray::iterator  end     = closure->end();
+      int                                         offset  = 0;
+
+      std::cout << "Closure for first element" << std::endl;
+      for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
+        const int dim = this->depth(*cl_iter);
+
+        std::cout << "  point " << *cl_iter << " depth " << dim << std::endl;
+        for(std::set<std::string>::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+          const Obj<DiscretizationNew>& disc = this->getDiscretization(*d_iter);
+          const int                  num  = disc->getNumDof(dim);
+
+          std::cout << "    disc " << disc->getName() << " numDof " << num << std::endl;
+          for(int o = 0; o < num; ++o) {
+            indices[*d_iter].second[indices[*d_iter].first++] = offset++;
+          }
+        }
+      }
+      for(std::set<std::string>::const_iterator d_iter = discs->begin(); d_iter != discs->end(); ++d_iter) {
+        const Obj<DiscretizationNew>& disc = this->getDiscretization(*d_iter);
+
+        std::cout << "Discretization " << disc->getName() << " indices:";
+        for(int i = 0; i < indices[*d_iter].first; ++i) {
+          std::cout << " " << indices[*d_iter].second[i];
+        }
+        std::cout << std::endl;
+      }
+    };
     void setupField(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
       const std::string& name = this->_boundaryCondition->getLabelName();
 
@@ -1219,29 +1323,33 @@ namespace ALE {
       }
     };
     void setupFieldMultiple(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
-      const std::string& name = this->_boundaryCondition->getLabelName();
-      const Discretization::children_type discs = this->_discretization->getDiscs();
+      const Obj<std::set<std::string> >& discs = this->getDiscretizations();
+      std::set<std::string> names;
 
       for(int d = 0; d <= this->_dim; ++d) {
         int numDof = 0;
 
-        for(Discretization::children_type::const_iterator d_iter = discs.begin(); d_iter != discs.end(); ++d_iter) {
-          numDof += (*d_iter)->getNumDof(d);
+        for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+          const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
+          const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
+
+          numDof += disc->getNumDof(d);
+          if (!bc.isNull()) {
+            const Obj<label_sequence>& boundary = this->getLabelStratum(bc->getLabelName(), 1);
+
+            names.insert(bc->getLabelName());
+            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+              //s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
+            }
+          }
         }
         s->setFiberDimension(this->depthStratum(d), numDof);
-      }
-      if (!name.empty()) {
-        const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);
-
-        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          s->setConstraintDimension(*e_iter, this->_discretization->getNumDof(this->depth(*e_iter)));
-        }
       }
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       s->defaultConstraintDof();
-      if (!name.empty()) {
-        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(name, 2);
+      for(std::set<std::string>::const_iterator n_iter = names.begin(); n_iter != names.end(); ++n_iter) {
+        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(*n_iter, 2);
         const Obj<real_section_type>&  coordinates   = this->getRealSection("coordinates");
         real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, *boundaryCells->begin())];
         double                        *v0            = new double[this->getDimension()];

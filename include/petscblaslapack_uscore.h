@@ -101,7 +101,7 @@ EXTERN_C_BEGIN
 # define LAPACKsyevx_ zsyevx_
 # define LAPACKsygv_  zsygv_
 # define LAPACKsygvx_ zsygvx_
-#  define LAPACKpttrs_ zpttrs_ 
+# define LAPACKpttrs_ zpttrs_ 
 /* LAPACKstebz_ does not exist for complex. */
 #endif
 
