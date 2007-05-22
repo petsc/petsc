@@ -73,8 +73,8 @@ EXTERN void  DSYGVX(PetscBLASInt*,_fcd,_fcd,_fcd,PetscBLASInt*,PetscScalar*,Pets
 
 #define LAPACKstebz_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) DSTEBZ(_cptofcd((a),1),_cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r))
 EXTERN void DSTEBZ(_fcd,_fcd,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
-
 #define BLAStrmv_    DTRMV
+EXTERN void LAPACKpttrs_(PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #else
 /* Complex double precision without character string arguments. */
 #define LAPACKgeqrf_ ZGEQRF

@@ -63,6 +63,7 @@ EXTERN void PETSC_STDCALL                           SSYGVX(PetscBLASInt*,const c
 
 #  define LAPACKstebz_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) SSTEBZ((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r))
 EXTERN void PETSC_STDCALL                          SSTEBZ(const char*,int,const char*,int,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void PETSC_STDCALL                          SPTTRS(PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # else
 /* Real double precision without character string arguments. */
 #  define LAPACKgeqrf_ DGEQRF
@@ -109,6 +110,7 @@ EXTERN void PETSC_STDCALL                           DSYGV(PetscBLASInt*,const ch
 EXTERN void PETSC_STDCALL                           DSYGVX(PetscBLASInt*,const char*,int,const char*,int,const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKstebz_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r) DSTEBZ((a),1,(b),1,(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r))
 EXTERN void PETSC_STDCALL                           DSTEBZ(const char*,int,const char*,int,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void PETSC_STDCALL                           DPTTRS(PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # endif
 #else
 # if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_SINGLE)
@@ -152,9 +154,8 @@ EXTERN void PETSC_STDCALL                           CSYEVX(const char*,const cha
 EXTERN void PETSC_STDCALL                           CSYGV(PetscBLASInt*,const char*,int,const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 #  define LAPACKsygvx_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w) CSYGVX((a),(b),1,(c),1,(d),1,(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u),(v),(w))
 EXTERN void PETSC_STDCALL                           CSYGVX(PetscBLASInt*,const char*,int,const char*,int,const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
-// --- new
-#  define LAPACKpttrs_(a,b,c,d,e,f,g,h) CPTTRS((a),1),(b),(c),(d),(e),(f),(g),(h))
-EXTERN void PETSC_STDCALL                           CPTTRS(const char*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKpttrs_(a,b,c,d,e,f,g,h) CPTTRS((a),1,(b),(c),(d),(e),(f),(g),(h))
+EXTERN void PETSC_STDCALL                           CPTTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # else
 /* Complex double precision without character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
@@ -197,13 +198,17 @@ EXTERN void PETSC_STDCALL                           ZSYGV(PetscBLASInt*,const ch
 #  define LAPACKsygvx_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w)    ZSYGVX((a),(b),1,(c),1,(d),1,(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u),(v),(w))
 EXTERN void PETSC_STDCALL                           ZSYGVX(PetscBLASInt*,const char*,int,const char*,int,const char*,int,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 
-#  define LAPACKpttrs_(a,b,c,d,e,f,g,h)             ZPTTRS((a),(b),(c),(d),(e),(f),(g),(h))
-EXTERN void PETSC_STDCALL                           ZPTTRS(const char*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+#  define LAPACKpttrs_(a,b,c,d,e,f,g,h)             ZPTTRS((a),1,(b),(c),(d),(e),(f),(g),(h))
+EXTERN void PETSC_STDCALL                           ZPTTRS(const char*,int,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 # endif
 #endif
 
 EXTERN void      PETSC_STDCALL LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void      PETSC_STDCALL LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void      PETSC_STDCALL LAPACKpttrf_(PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*);
+EXTERN void      PETSC_STDCALL LAPACKstein_(PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+
+
 EXTERN PetscReal PETSC_STDCALL BLASdot_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 EXTERN PetscReal PETSC_STDCALL BLASnrm2_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 EXTERN void      PETSC_STDCALL BLASscal_(PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*);
