@@ -9,7 +9,7 @@ make PETSC_ARCH=cygwin-ms-cxx all alltests DATAFILESPATH=/home/balay/datafiles
 ./config/cygwin-borland.py
 make PETSC_ARCH=cygwin-borland all test
 
-basic cygwin gnu test
+# basic cygwin gnu test
 ./config/cygwin.py
 make PETSC_ARCH=cygwin all test
 
