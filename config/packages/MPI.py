@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env python
 from __future__ import generators
 import user
@@ -25,7 +27,7 @@ class Configure(config.package.Package):
                              ['fmpich2.lib','mpich2.lib'],
                              ['mpich2.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
-                             ['mpich.lib']]
+                             ['mpich.lib'],[os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
     self.liblist_lam      = [['liblamf77mpi.a','libmpi++.a','libmpi.a','liblam.a'],
                              ['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
@@ -111,6 +113,7 @@ class Configure(config.package.Package):
           if os.path.isdir(dir):
             yield (dir)
     # Try MPICH install locations under Windows
+    yield(os.path.join('/cygdrive','c','Program Files','Microsoft Compute Cluster Pack'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH2'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH','SDK.gcc'))
