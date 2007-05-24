@@ -15,7 +15,7 @@
       </ul>
       </td>
       <td width="75%"><!--##begin-->
-      <h1> Docs:&nbsp;Changes: Development</h1>
+      <h1> Docs:&nbsp;Changes: 2.3.3</h1>
 <!--##end--> </td>
     </tr>
     <tr>
@@ -38,14 +38,10 @@ PETSc</strong></a></li>
               </strong></li>
             <li><strong><a href="index.html">Changes</a></strong>
               <ul>
-                <li><font color="#ff0000">Development</font></li>
-                <li><a href="233.html">2.3.3</a></li>
-                <li><a href="2.3.2">2.3.2</a><br>
-                </li>
+                <li><font color="#ff0000">2.3.3</font></li>
+                <li><a href="232.html">2.3.2</a></li>
                 <li><a href="231.html">2.3.1</a><br>
                 </li>
-              </ul>
-              <ul>
                 <li><a href="230.html">2.3.0</a></li>
                 <li><a href="221.html">2.2.1</a></li>
                 <li><a href="220.html">2.2.0</a></li>
@@ -83,20 +79,83 @@ Software</strong></a></li>
       </td>
       <td valign="top" width="75%"><!--##begin-->
       <p align="center"><font color="#ff0000" size="5"><a name="CHANGES">CHANGES</a>
-in the PETSc Development Version</font></p>
+in the PETSc 2.3.3</font></p>
       <p><u><b>General:</b></u><br>
       </p>
+      <ul>
+        <li>&nbsp;PetscInitialize() will now also check for options
+in .petscrc unless -skip_petscrc is used (note that since the file
+options are checked before the command line you cannot pass
+-skip_petscrc on the command line it must be passed in the file passed
+into PetscInitialize().</li>
+        <li>When a filename is passed into PetscInitialize() ~/.petscrc
+and .petscrc are checked ALSO (they used to be skipped when a filename
+was passed in) unless -skip_petscrc is passed in the input file</li>
+        <li>PetscMapInitialize() has been split into
+PetscMapInitialize() that
+is called before the Map is ever used and then PetscMapSetUp() which is
+called
+after the blocksize and local or global size is set and determines the
+ranges
+etc.</li>
+        <li> Changed the use of mpirun throughout the source to
+mpiexec; this includes
+petscmpirun -&gt; petscmpiexec. Of course, PETSc will still work fine
+with MPI implementations that use mpirun.</li>
+        <li>Add fortran interface to PetscBag routines<br>
+        </li>
+      </ul>
       <u><b>config/configure.py:</b></u>
+      <ul>
+        <li>F90 interface is now enabled by default [if the compiler is
+detected to be a f90 compiler]. i.e --with-f90-interface options is not
+required. The f90 interface impl used is a new universal one. However
+if you wish to use the old compiler specific one, then specify
+--with-f90-interface=nof90src [for configure to autodetect] or specify
+the appropriate one - like: --with-f90-interface=intel8</li>
+      </ul>
       <p><u><b>IS:</b></u></p>
+      <ul>
+        <li>changed IS_COLORING_LOCAL to IS_COLORING_GLOBAL<u><b></b></u></li>
+      </ul>
       <p><u><b>Vec:</b></u></p>
       <p><u><b>VecScatter:<br>
       </b></u></p>
       <ul>
+        <li>Change prototype for VecScatterBegin() and VecScatterEnd()
+[now the first argument is VecScatter]<br>
+        </li>
+      </ul>
+      <ul>
       </ul>
       <p><u><b>Mat:</b></u><br>
       </p>
+      <ul>
+        <li>moved most of SNESMF implementation into mat/impls/mffd</li>
+        <li>MatMFFD is now a regular matrix type registered in
+MatRegisterAll() </li>
+        <li>changed SNESMF to MFFD for all previous SNESMF routines,
+except MatCreateSNESMF() </li>
+        <li>-snes_mf_option changed to -mat_mffd_option except for
+-snes_mf and -snes_mf_operator </li>
+        <li>SNES_KSP_EW... changed to SNESKSPWE... and
+SNES_KSP_EW_ConvCtx to SNESKSPEW</li>
+        <li>MatGetRowIJ(), MatGetColumnIJ(),&nbsp; MatRestoreRowIJ(),
+MatRestoreColumnIJ() now take an extra argument<br>
+        </li>
+      </ul>
       <p><u><b>PC:<br>
       </b></u></p>
+      <ul>
+        <li>changed PCMGSetCycles() and PCMGSetCyclesOnLevel() to
+PCMGSetCycleType() and PCMGSetCycleTypeOnLevel() that take a
+PCMGCycleType as argument and changed -pc_mg_cycle_type 1 or 2 to
+-pc_mg_cycles v or w</li>
+        <li>added PCMGMultiplicativeSetCycles() and
+-pc_mg_multiplicative_cycles</li>
+        <li>added PCREDUNDANT type, PCRedundantSetNumber() and
+-pc_redundant_number</li>
+      </ul>
       <ul>
       </ul>
       <ul>
@@ -113,7 +172,13 @@ in the PETSc Development Version</font></p>
       </ul>
       <ul>
       </ul>
-      <p><u><b>TS:</b></u></p>
+      <p><u><b>TS:</b></u><br>
+      </p>
+      <ul>
+        <li>TSSetRHSMatrix() and TSSetLHSMatrix() were replaced by
+TSSetMatrices()</li>
+        <li>TSGetRHSMatrix() was replaced by TSGetMatrices()</li>
+      </ul>
       <p><u><b>DA:</b></u><br>
       </p>
       <ul>
@@ -126,13 +191,34 @@ in the PETSc Development Version</font></p>
       </p>
       <p><u><b>AO:<br>
       </b></u></p>
-      <p><u><b>Sieve:</b></u></p>
+      <ul>
+        <li>AOData object and corresponding functionality is now
+removed for PETSc<br>
+        </li>
+      </ul>
+      <p><u><b>Sieve:</b></u><br>
+      </p>
+      <ul>
+        <li>Added support for 2D and 3D mesh generation and refinement</li>
+        <li>Added support for mesh partitioning and distribution</li>
+        <li>Added support for partitioning based upon arbitrary
+dimensional entities, e.g. vertices, faces, etc.</li>
+        <li>Added support for FIAT element generation</li>
+        <li>Added support for higher order elements</li>
+        <li>Added Poisson problem example in separate repository</li>
+      </ul>
       <p><u><b>Fortran:</b></u><br>
       </p>
       <ul>
       </ul>
       <p><u><b><a
  href="http:/www-unix.mcs.anl.gov/petsc/petsc-as/miscellaneous/external.html">ExternalPackages</a>:</b></u></p>
+      <ul>
+        <li>Hypre interface is updated to use version 2.0.0</li>
+        <li>Mumps interface is updated to use version 4.7.3</li>
+        <li>fftw interface is updated to use v3.2alpha2<br>
+        </li>
+      </ul>
       </td>
     </tr>
     <tr>
