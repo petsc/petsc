@@ -1730,6 +1730,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "DACreate"
 /*@C
    DACreate - Creates an object that will manage the communication of regular array data that is distributed across some processors
        in 1, 2 or 3 dimensions
