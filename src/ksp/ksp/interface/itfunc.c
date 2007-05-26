@@ -264,7 +264,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
 .  -ksp_plot_eigenvalues_explicitly - plot the explicitly computing eigenvalues
 .  -ksp_view_binary - save matrix and right hand side that define linear system to the default binary viewer (can be
                                 read later with src/ksp/examples/tutorials/ex10.c for testing solvers)
-.  -ksp_converged_reason - print reason for converged or diverged
+.  -ksp_converged_reason - print reason for converged or diverged, also prints number of iterations
 .  -ksp_final_residual - print 2-norm of true linear system residual at the end of the solution process
 -  -ksp_view - print the ksp data structure at the end of the system solution
 
@@ -382,9 +382,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   }
   if (ksp->printreason) {
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s\n",KSPConvergedReasons[ksp->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s\n",KSPConvergedReasons[ksp->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     }
   }
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
