@@ -27,10 +27,10 @@ PetscInt               PetscOptionsPublishCount = 0;
 #define __FUNCT__ "PetscOptionsHelpAddList"
 PetscErrorCode PetscOptionsHelpAddList(const char prefix[],const char title[],const char mansec[])
 {
-  int          ierr;
-  OptionsHelp  newhelp;
+  int               ierr;
+  PetscOptionsHelp  newhelp;
   PetscFunctionBegin;
-  ierr = PetscNew(struct _p_OptionsHelp,&newhelp);CHKERRQ(ierr);
+  ierr = PetscNew(struct _p_PetscOptionsHelp,&newhelp);CHKERRQ(ierr);
   ierr = PetscStrallocpy(prefix,&newhelp->prefix);CHKERRQ(ierr);
   ierr = PetscStrallocpy(title,&newhelp->title);CHKERRQ(ierr);
   ierr = PetscStrallocpy(mansec,&newhelp->mansec);CHKERRQ(ierr);
@@ -49,8 +49,8 @@ PetscErrorCode PetscOptionsHelpAddList(const char prefix[],const char title[],co
 #define __FUNCT__ "PetscOptionsHelpDestroyList"
 PetscErrorCode PetscOptionsHelpDestroyList(void)
 {
-  PetscErrorCode ierr;
-  OptionsHelp    help = PetscOptionsObject.help, next;
+  PetscErrorCode   ierr;
+  PetscOptionsHelp help = PetscOptionsObject.help, next;
 
   PetscFunctionBegin;
   while (help) {
@@ -69,9 +69,9 @@ PetscErrorCode PetscOptionsHelpDestroyList(void)
 #define __FUNCT__ "PetscOptionsHelpFindList"
 PetscErrorCode PetscOptionsHelpFindList(const char prefix[],const char title[],const char mansec[],PetscTruth *flg)
 {
-  PetscErrorCode ierr;
-  PetscTruth     flg1,flg2,flg3;
-  OptionsHelp help = PetscOptionsObject.help;
+  PetscErrorCode   ierr;
+  PetscTruth       flg1,flg2,flg3;
+  PetscOptionsHelp help = PetscOptionsObject.help;
   PetscFunctionBegin;
   while (help) {
     ierr = PetscStrcmp(help->prefix,prefix,&flg1);CHKERRQ(ierr);
@@ -134,13 +134,13 @@ PetscErrorCode PetscOptionsBegin_Private(MPI_Comm comm,const char prefix[],const
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PetscOptionsCreate_Private"
-static int PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],OptionType t,PetscOptions *amsopt)
+static int PetscOptionsCreate_Private(const char opt[],const char text[],const char man[],PetscOptionType t,PetscOptions *amsopt)
 {
   int          ierr;
   PetscOptions next;
 
   PetscFunctionBegin;
-  ierr             = PetscNew(struct _p_Options,amsopt);CHKERRQ(ierr);
+  ierr             = PetscNew(struct _p_PetscOptions,amsopt);CHKERRQ(ierr);
   (*amsopt)->next  = 0;
   (*amsopt)->set   = PETSC_FALSE;
   (*amsopt)->type  = t;
