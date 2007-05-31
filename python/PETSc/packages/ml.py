@@ -12,7 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions = ['ML_Set_PrintLevel']
     self.includes  = ['ml_include.h']
     self.liblist   = [['libml.a']]
-    self.license   = 'http://software.sandia.gov/trilinos/downloads.html'
+    self.license   = 'http://trilinos.sandia.gov/'
     return
 
   def setupDependencies(self, framework):

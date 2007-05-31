@@ -1176,8 +1176,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogDump(const char sname[])
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscLogPrintSummary(MPI_Comm comm, const char filename[]) 
 {
-  FILE          *fd   = stdout;
-  PetscScalar    zero = 0.0;
+  FILE           *fd   = stdout;
+  PetscLogDouble zero = 0.0;
   StageLog       stageLog;
   StageInfo     *stageInfo = PETSC_NULL;
   EventPerfInfo *eventInfo = PETSC_NULL;

@@ -264,7 +264,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /***************************************************************************/
 
   ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T inv(M) r */
-  if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
+  if (rz - rz != 0.0) {
     /*************************************************************************/
     /* The preconditioner produced not-a-number or an infinite value.  This  */
     /* can appear either due to r having numerical problems or M having      */
@@ -274,7 +274,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     ksp->reason = KSP_DIVERGED_NAN;
     ierr = VecDot(r, r, &rr); CHKERRQ(ierr);		/* rr = r^T r        */
-    if ((rr != rr) || (rr && (rr / rr != rr / rr))) {
+    if (rr - rr != 0.0) {
       /***********************************************************************/
       /* The right-hand side contains not-a-number or an infinite value.     */
       /* The gradient step does not work; return a zero value for the step.  */
@@ -364,7 +364,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   ierr = VecCopy(z, p); CHKERRQ(ierr);			/* p = z             */
   ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p         */
   ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T Q p   */
-  if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
+  if (kappa - kappa != 0.0) {
     /*************************************************************************/
     /* The matrix produced not-a-number or an infinite value.  In this case, */
     /* we must stop and use the gradient direction.  This condition need     */
