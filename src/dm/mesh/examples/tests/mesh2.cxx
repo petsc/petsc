@@ -5,7 +5,6 @@ static char help[] = "Mesh Tests.\n\n";
 #include <src/dm/mesh/meshvtk.h>
 
 using ALE::Obj;
-using ALE::Mesh;
 
 typedef struct {
   int        debug;           // The debugging level
@@ -38,15 +37,15 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 #undef __FUNCT__
 #define __FUNCT__ "CreatePartition"
 // Creates a field whose value is the processor rank on each element
-PetscErrorCode CreatePartition(const Obj<Mesh>& m, const Obj<Mesh::int_section_type>& s)
+PetscErrorCode CreatePartition(const Obj<ALE::Mesh>& m, const Obj<ALE::Mesh::int_section_type>& s)
 {
   PetscFunctionBegin;
-  const Obj<Mesh::label_sequence>&         cells = m->heightStratum(0);
-  const Mesh::int_section_type::value_type rank  = s->commRank();
+  const Obj<ALE::Mesh::label_sequence>&         cells = m->heightStratum(0);
+  const ALE::Mesh::int_section_type::value_type rank  = s->commRank();
 
   s->setFiberDimension(m->heightStratum(0), 1);
   m->allocate(s);
-  for(Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
     s->updatePoint(*c_iter, &rank);
   }
   PetscFunctionReturn(0);
@@ -54,9 +53,9 @@ PetscErrorCode CreatePartition(const Obj<Mesh>& m, const Obj<Mesh::int_section_t
 
 #undef __FUNCT__
 #define __FUNCT__ "ViewMesh"
-PetscErrorCode ViewMesh(const Obj<Mesh>& m, const char filename[])
+PetscErrorCode ViewMesh(const Obj<ALE::Mesh>& m, const char filename[])
 {
-  const Obj<Mesh::int_section_type>& partition = m->getIntSection("partition");
+  const Obj<ALE::Mesh::int_section_type>& partition = m->getIntSection("partition");
   PetscViewer                        viewer;
   PetscErrorCode                     ierr;
 
@@ -77,9 +76,9 @@ PetscErrorCode ViewMesh(const Obj<Mesh>& m, const char filename[])
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, Obj<Mesh>& m, Options *options)
+PetscErrorCode CreateMesh(MPI_Comm comm, Obj<ALE::Mesh>& m, Options *options)
 {
-  Obj<Mesh>      mB;
+  Obj<ALE::Mesh> mB;
   PetscTruth     view;
   PetscErrorCode ierr;
 
@@ -105,11 +104,11 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<Mesh>& m, Options *options)
   m = ALE::Generator::generateMesh(mB, options->interpolate);
   if (view) {m->view("Mesh");}
   if (options->refinementLimit > 0.0) {
-    Obj<Mesh> refMesh = ALE::Generator::refineMesh(m, options->refinementLimit, options->interpolate);
+    Obj<ALE::Mesh> refMesh = ALE::Generator::refineMesh(m, options->refinementLimit, options->interpolate);
     if (view) {refMesh->view("Refined Mesh");}
     m = refMesh;
   } else if (m->commSize() > 1) {
-    Obj<Mesh> newMesh = ALE::Distribution<Mesh>::distributeMesh(m);
+    Obj<ALE::Mesh> newMesh = ALE::Distribution<ALE::Mesh>::distributeMesh(m);
     if (view) {newMesh->view("Parallel Mesh");}
     m = newMesh;
   }
@@ -120,17 +119,17 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Obj<Mesh>& m, Options *options)
 
 #undef __FUNCT__
 #define __FUNCT__ "ClosureTest"
-PetscErrorCode ClosureTest(const Obj<Mesh>& m, Options *options)
+PetscErrorCode ClosureTest(const Obj<ALE::Mesh>& m, Options *options)
 {
-  const Obj<Mesh::label_sequence>& cells = m->heightStratum(0);
+  const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
 
   PetscFunctionBegin;
-  for(Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
-    const Obj<Mesh::coneArray> closure = ALE::Closure::closure(m, *c_iter);
-    Mesh::coneArray::iterator  end     = closure->end();
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    const Obj<ALE::Mesh::coneArray> closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *c_iter);
+    ALE::Mesh::coneArray::iterator  end     = closure->end();
 
     std::cout << "Closure of " << *c_iter << std::endl;
-    for(Mesh::coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+    for(ALE::Mesh::coneArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
       std::cout << "  " << *p_iter << std::endl;
     }
   }
@@ -150,7 +149,7 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-    Obj<Mesh> m;
+    Obj<ALE::Mesh> m;
 
     ierr = CreateMesh(comm, m, &options);CHKERRQ(ierr);
     ierr = ClosureTest(m, &options);CHKERRQ(ierr);

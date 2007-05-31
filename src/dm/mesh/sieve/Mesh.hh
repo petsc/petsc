@@ -504,6 +504,46 @@ namespace ALE {
       return values;
     };
     template<typename Section_>
+    const typename Section_::value_type *restrictNew(const Obj<Section_>& section, const point_type& p) {
+      const int                       size    = this->sizeWithBC(section, p);
+      typename Section_::value_type  *values  = section->getRawArray(size);
+      const Obj<oConeArray>           closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+      typename oConeArray::iterator   end     = closure->end();
+      int                             j       = -1;
+
+      for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
+        const typename Section_::value_type *array = section->restrictPoint(p_iter->first);
+
+        if (p_iter->second >= 0) {
+          const int& dim = section->getFiberDimension(p_iter->first);
+
+          for(int i = 0; i < dim; ++i) {
+            values[++j] = array[i];
+          }
+        } else {
+          int offset = 0;
+
+          for(int space = 0; space < section->getNumSpaces(); ++space) {
+            const int& dim = section->getFiberDimension(p_iter->first, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              values[++j] = array[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      }
+      if (j != size-1) {
+        ostringstream txt;
+
+        txt << "Invalid restrict to point " << p << std::endl;
+        txt << "  j " << j << " should be " << (size-1) << std::endl;
+        std::cout << txt.str();
+        throw ALE::Exception(txt.str().c_str());
+      }
+      return values;
+    };
+    template<typename Section_>
     void update(const Obj<Section_>& section, const point_type& p, const typename Section_::value_type v[]) {
       int j = 0;
 
@@ -673,6 +713,7 @@ namespace ALE {
         remotePoints = new point_type[offsets[this->commSize()]];
       }
       MPI_Gatherv(sendBuf, size, MPI_INT, remotePoints, sizes, offsets, MPI_INT, 0, this->comm());
+      delete [] sendBuf;
       std::map<int, std::map<int, std::set<point_type> > > overlapInfo; // Maps (p,q) to their set of overlap points
 
       if (this->commRank() == 0) {
@@ -876,6 +917,7 @@ namespace ALE {
   public:
     const std::string& getLabelName() {return this->_labelName;};
     void setLabelName(const std::string& name) {this->_labelName = name;};
+    function_type getFunction() {return this->_func;};
     void setFunction(function_type func) {this->_func = func;};
     integrator_type getDualIntegrator() {return this->_integrator;};
     void setDualIntegrator(integrator_type integrator) {this->_integrator = integrator;};
@@ -889,13 +931,15 @@ namespace ALE {
     Obj<BoundaryCondition> _exactSolution;
     std::map<int,int> _dim2dof;
     std::map<int,int> _dim2class;
+    int           _quadSize;
     const double *_points;
     const double *_weights;
+    int           _basisSize;
     const double *_basis;
     const double *_basisDer;
     const int    *_indices;
   public:
-    DiscretizationNew(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _points(NULL), _weights(NULL), _basis(NULL), _basisDer(NULL), _indices(NULL) {};
+    DiscretizationNew(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug), _quadSize(0), _points(NULL), _weights(NULL), _basisSize(0), _basis(NULL), _basisDer(NULL), _indices(NULL) {};
     virtual ~DiscretizationNew() {
       if (this->_indices) {delete [] this->_indices;}
     };
@@ -904,10 +948,14 @@ namespace ALE {
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
     const Obj<BoundaryCondition>& getExactSolution() {return this->_exactSolution;};
     void setExactSolution(const Obj<BoundaryCondition>& exactSolution) {this->_exactSolution = exactSolution;};
+    const int     getQuadratureSize() {return this->_quadSize;};
+    void          setQuadratureSize(const int size) {this->_quadSize = size;};
     const double *getQuadraturePoints() {return this->_points;};
     void          setQuadraturePoints(const double *points) {this->_points = points;};
     const double *getQuadratureWeights() {return this->_weights;};
     void          setQuadratureWeights(const double *weights) {this->_weights = weights;};
+    const int     getBasisSize() {return this->_basisSize;};
+    void          setBasisSize(const int size) {this->_basisSize = size;};
     const double *getBasis() {return this->_basis;};
     void          setBasis(const double *basis) {this->_basis = basis;};
     const double *getBasisDerivatives() {return this->_basisDer;};
@@ -1325,25 +1373,36 @@ namespace ALE {
     void setupFieldMultiple(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
       const Obj<std::set<std::string> >& discs = this->getDiscretizations();
       std::set<std::string> names;
+      int maxDof = 0;
 
       for(int d = 0; d <= this->_dim; ++d) {
         int numDof = 0;
+        int f      = 0;
 
-        for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+        for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
           const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
-          const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
 
           numDof += disc->getNumDof(d);
-          if (!bc.isNull()) {
-            const Obj<label_sequence>& boundary = this->getLabelStratum(bc->getLabelName(), 1);
-
-            names.insert(bc->getLabelName());
-            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-              //s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
-            }
-          }
+          s->addSpace();
+          s->setFiberDimension(this->depthStratum(d), disc->getNumDof(d), f);
         }
         s->setFiberDimension(this->depthStratum(d), numDof);
+        maxDof = std::max(maxDof, numDof);
+      }
+      int f = 0;
+      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
+        const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
+
+        if (!bc.isNull()) {
+          const Obj<label_sequence>& boundary = this->getLabelStratum(bc->getLabelName(), 1);
+
+          names.insert(bc->getLabelName());
+          for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+            s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
+            s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+          }
+        }
       }
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
@@ -1355,25 +1414,68 @@ namespace ALE {
         double                        *v0            = new double[this->getDimension()];
         double                        *J             = new double[this->getDimension()*this->getDimension()];
         double                         detJ;
+        const Obj<std::set<std::string> >& discs     = this->getDiscretizations();
+        const int                          numFields = discs->size();
+        int                               *v         = new int[numFields];
+
+        const Obj<label_sequence>& boundary = this->getLabelStratum(*n_iter, 1);
+        int                       *dofs     = new int[maxDof];
+
+        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+          const int cDim = s->getConstraintDimension(*e_iter);
+          int offset = 0;
+          int f      = 0;
+          int i      = -1;
+
+          for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+            const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
+            const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
+            const int                          fDim = s->getFiberDimension(*e_iter, f);
+
+            if (!bc.isNull() && (*n_iter == bc->getLabelName())) {
+              for(int d = 0; d < fDim; ++d) {
+                dofs[++i] = offset+d;
+              }
+            }
+            offset += fDim;
+          }
+          if (i != cDim-1) {
+            throw ALE::Exception("Invalid constraint initialization");
+          }
+          s->setConstraintDof(*e_iter, dofs);
+        }
+        delete [] dofs;
 
         for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
           const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
           const coneArray::iterator end     = closure->end();
-          int                       v       = 0;
 
           this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
+          for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             const int cDim = s->getConstraintDimension(*cl_iter);
+            int       f    = 0;
 
             if (cDim) {
-              for(int d = 0; d < cDim; ++d, ++v) {
-                values[v] = this->_boundaryCondition->integrateDual(v0, J, v);
+              for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+                const Obj<ALE::DiscretizationNew>& disc     = this->getDiscretization(*f_iter);
+                const Obj<ALE::BoundaryCondition>& bc       = disc->getExactSolution();
+                const int                          pointDim = disc->getNumDof(this->depth(*cl_iter));
+                const int                         *indices  = disc->getIndices();
+
+                for(int d = 0; d < pointDim; ++d, ++v[f]) {
+                  values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                }
               }
             } else {
-              const int dim = s->getFiberDimension(*cl_iter);
+              for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+                const Obj<ALE::DiscretizationNew>& disc     = this->getDiscretization(*f_iter);
+                const int                          pointDim = disc->getNumDof(this->depth(*cl_iter));
+                const int                         *indices  = disc->getIndices();
 
-              for(int d = 0; d < dim; ++d, ++v) {
-                values[v] = 0.0;
+                for(int d = 0; d < pointDim; ++d, ++v[f]) {
+                  values[indices[v[f]]] = 0.0;
+                }
               }
             }
           }

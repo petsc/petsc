@@ -448,7 +448,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Mesh *mesh, Options *options)
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   ierr = CreateMeshBoundary(comm, &boundary, options);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-boundary_view_vtk", &view);CHKERRQ(ierr);
-  if (view) {ierr = ViewMesh(*mesh, "ionChannelBoundary.vtk", options);CHKERRQ(ierr);}
+  if (view) {ierr = ViewMesh(boundary, "ionChannelBoundary.vtk", options);CHKERRQ(ierr);}
   ierr = MeshGenerate(boundary, options->interpolate, mesh);CHKERRQ(ierr);
   ierr = MeshDestroy(boundary);CHKERRQ(ierr);
   if (options->refinementLimit > 0.0) {
