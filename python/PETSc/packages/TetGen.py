@@ -124,7 +124,9 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.deps = []
+    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
+    self.arch     = framework.require('PETSc.utilities.arch', self)
+    self.deps     = [self.petscdir, self.arch]
     return
 
   def InstallOld(self):
@@ -159,6 +161,7 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     import os, sys
+    import config.base
     # Get the ParMetis directories
     tetgenDir      = self.getDir()
     installDir     = os.path.join(tetgenDir, self.arch.arch)
@@ -172,6 +175,7 @@ class Configure(PETSc.package.Package):
     if os.path.isfile(makeinc):
       os.unlink(makeinc)
     g = open(makeinc,'w')
+    g.write('include '+os.path.join(self.petscdir.dir, 'bmake', 'common', 'rules.shared.basic')+'\n')
     g.write('SHELL          = '+self.programs.SHELL+'\n')
     g.write('CP             = '+self.programs.cp+'\n')
     g.write('RM             = '+self.programs.RM+'\n')
@@ -186,6 +190,7 @@ class Configure(PETSc.package.Package):
     g.write('PREFIX         = '+installDir+'\n')
     g.write('LIBDIR         = '+libDir+'\n')
     g.write('TETGENLIB      = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
+    g.write('SHLIB          = $(LIBDIR)/libtetgen.'+self.setCompilers.sharedLibraryExt+'\n')
     
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
@@ -194,6 +199,18 @@ class Configure(PETSc.package.Package):
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
     g.write('CFLAGS         = '+cflags)
     self.setCompilers.popLanguage()
+
+    if self.useShared:
+      import config.setCompilers
+
+      g.write('BUILDSHAREDLIB = yes\n')
+      if config.setCompilers.Configure.isSolaris() and config.setCompilers.Configure.isGNU(self.framework.getCompiler()):
+        g.write('shared_arch: shared_'+self.arch.hostOsBase+'gnu\n')
+      else:
+        g.write('shared_arch: shared_'+self.arch.hostOsBase+'\n')
+    else:
+      g.write('BUILDSHAREDLIB = no\n')
+      g.write('shared_arch:\n')
     g.close()
 
     # Now compile & install
@@ -208,7 +225,6 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild TetGen, make.inc != '+installmakeinc+'\n')
       self.framework.outputHeader(configheader)
       try:
-        import config.base
         self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+tetgenDir+'; make clean; make tetlib; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
