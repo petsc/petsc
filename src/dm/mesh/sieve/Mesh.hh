@@ -451,9 +451,14 @@ namespace ALE {
     //   use a smart pointer?
     template<typename Section_>
     const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
-      const int                       size   = this->sizeWithBC(section, p);
-      typename Section_::value_type  *values = section->getRawArray(size);
-      int                             j      = -1;
+      const int size = this->sizeWithBC(section, p);
+      return this->restrict(section, p, section->getRawArray(size), size);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p, typename Section_::value_type  *values, const int valuesSize) {
+      const int size = this->sizeWithBC(section, p);
+      int       j    = -1;
+      if (valuesSize < size) throw ALE::Exception("Input array too small");
 
       // We could actually ask for the height of the individual point
       if (this->height() < 2) {

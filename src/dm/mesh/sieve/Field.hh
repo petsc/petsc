@@ -1112,6 +1112,33 @@ namespace ALE {
         }
       }
     };
+    // Add two sections and put the result in a third
+    void add(const Obj<GeneralSection>& x, const Obj<GeneralSection>& y) {
+      // Check atlases
+      const chart_type& chart = this->getChart();
+
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        value_type       *array  = (value_type *) this->restrictPoint(*c_iter);
+        const value_type *xArray = x->restrictPoint(*c_iter);
+        const value_type *yArray = y->restrictPoint(*c_iter);
+        const int&        dim    = this->getFiberDimension(*c_iter);
+        const int&        cDim   = this->getConstraintDimension(*c_iter);
+
+        if (!cDim) {
+          for(int i = 0; i < dim; ++i) {
+            array[i] = xArray[i] + yArray[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = xArray[i] + yArray[i];
+          }
+        }
+      }
+    };
     // Return the free values on a point
     const value_type *restrict() const {
       return this->_array;
