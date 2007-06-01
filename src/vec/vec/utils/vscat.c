@@ -1506,8 +1506,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecScatterBegin(VecScatter inctx,Vec x,Vec y,I
       if (to_n != inctx->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter reverse and vector to != ctx from size)",to_n,inctx->from_n);
       if (from_n != inctx->to_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter reverse and vector from != ctx to size)",from_n,inctx->to_n);
     } else {
-      if (to_n != inctx->to_n)     SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector wrong size % for scatter %D (scatter forward and vector to != ctx to size)",to_n,inctx->to_n);
-      if (from_n != inctx->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector wrong size % for scatter %D (scatter forward and vector from != ctx from size)",from_n,inctx->from_n);
+      if (to_n != inctx->to_n)     SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter forward and vector to != ctx to size)",to_n,inctx->to_n);
+      if (from_n != inctx->from_n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Vector wrong size %D for scatter %D (scatter forward and vector from != ctx from size)",from_n,inctx->from_n);
     }
   }
 #endif

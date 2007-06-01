@@ -16,7 +16,7 @@ foreach CONF ($*)
 
   echo "start build at `date`:$SSH $USR@$MACH $DASHN $LOC/maint/buildtest $CONF" 
   if ("${MERCURIAL}" == "yes") then
-    $SSH $USR@$MACH $DASHN "cd $LOC ; hg revert; hg pull; hg update; $LOC/maint/buildtest $CONF" &
+    $SSH $USR@$MACH $DASHN "cd $LOC ; hg revert -a; hg pull; hg update; $LOC/maint/buildtest $CONF" &
   else
     rsync -e ssh -az --delete  $pdir/ ${USR}@${MACH}:${LOC}
     $SSH $USR@$MACH $DASHN "cd $LOC; $LOC/maint/buildtest $CONF" &

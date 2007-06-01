@@ -146,6 +146,11 @@ namespace ALE {
       }
       return *_singleton;
     };
+    void clear() {
+      this->_localNumberings.clear();
+      this->_numberings.clear();
+      this->_orders.clear();
+    };
   public: // Dof ordering
     template<typename Section_>
     void orderPointNew(const Obj<Section_>& section, const Obj<sieve_type>& sieve, const typename Section_::point_type& point, value_type& offset, value_type& bcOffset, const Obj<send_overlap_type>& sendOverlap = NULL) {

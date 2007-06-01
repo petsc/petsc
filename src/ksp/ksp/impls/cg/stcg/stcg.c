@@ -167,7 +167,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   /* Check for numerical problems with the preconditioner */
   ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z   */
-  if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
+  if (rz - rz != 0.0) {
     /* In this case, either the right-hand side contains infinity or not a  */
     /* number or the precontioner contains intinity or not a number.   We   */
     /* just take the gradient step.  These tests for numerical problems     */
@@ -176,7 +176,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     ksp->reason = KSP_DIVERGED_NAN;
     ierr = VecDot(r, r, &rz); CHKERRQ(ierr);		/* rz = r^T r   */
-    if ((rz != rz) || (rz && (rz / rz != rz / rz))) {
+    if (rz - rz != 0.0) {
       /* In this case, the right-hand side contains not a number or an      */
       /* infinite value.  The gradient step does not work; return a zero    */
       /* value for the step.                                                */
@@ -273,7 +273,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p   */
   ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T z */
 
-  if ((kappa != kappa) || (kappa && (kappa / kappa != kappa / kappa))) {
+  if (kappa - kappa != 0.0) {
     /* In this case, the matrix Q contains an infinite value or not a number */
     /* We just take the gradient step.  Only needs to be checked once.       */
     ksp->reason = KSP_DIVERGED_NAN;

@@ -2,8 +2,8 @@
 #include "private/meshimpl.h"   /*I      "petscmesh.h"   I*/
 #endif
 
-#include <Mesh.hh>
 #include <Distribution.hh>
+#include "petscmesh.h"
 #include "petscdmmg.h"
 
 using ALE::Obj;
