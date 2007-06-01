@@ -254,7 +254,7 @@ class Configure(config.package.Package):
         
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
-      if config.setCompilers.Configure.isCygwin():
+      if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
       self.download     = self.download_mpich
