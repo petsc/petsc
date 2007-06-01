@@ -4536,9 +4536,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatZeroRowsLocal"
+#define __FUNCT__ "MatZeroRowsLocalIS"
 /*@C 
-   MatZeroRowsLocal - Zeros all entries (except possibly the main diagonal)
+   MatZeroRowsLocalIS - Zeros all entries (except possibly the main diagonal)
    of a set of rows of a matrix; using local numbering of rows.
 
    Collective on Mat
@@ -4549,7 +4549,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
 -  diag - value put in all diagonals of eliminated rows
 
    Notes:
-   Before calling MatZeroRowsLocal(), the user must first set the
+   Before calling MatZeroRowsLocalIS(), the user must first set the
    local-to-global mapping by calling MatSetLocalToGlobalMapping().
 
    For the AIJ matrix formats this removes the old nonzero structure,
