@@ -583,7 +583,7 @@ class Configure(config.base.Configure):
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in library list')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
-        
+
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
@@ -709,6 +709,9 @@ class Configure(config.base.Configure):
           if founddir:
             continue
         if arg.find('quickfit.o')>=0:
+          flibs.append(arg)
+        # gcc+pgf90 might require pgi.dl
+        if arg.find('pgi.ld')>=0:
           flibs.append(arg)
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
