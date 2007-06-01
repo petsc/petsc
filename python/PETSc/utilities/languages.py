@@ -28,12 +28,16 @@ class Configure(config.base.Configure):
     return
 
   def packagesHaveCxx(self):
-    if 'download-prometheus' in self.framework.argDB and self.framework.argDB['download-prometheus']:
-      return 1
-    if 'download-hypre' in self.framework.argDB and self.framework.argDB['download-hypre']:
-      return 1
-    if 'download-ml' in self.framework.argDB and self.framework.argDB['download-ml']:
-      return 1
+    packages = ['prometheus','hypre','ml']
+    options = []
+    for package in packages:
+      options.append('download-'+package)
+      options.append('with-'+package+'-dir')
+      options.append('with-'+package+'-lib')
+      
+    for option in options:
+      if option in self.framework.argDB and self.framework.argDB[option]:
+        return 1
     return 0
 
   def configureCLanguage(self):
