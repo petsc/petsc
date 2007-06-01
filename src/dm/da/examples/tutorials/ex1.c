@@ -9,7 +9,7 @@ static char help[] = "Tests VecView() contour plotting for 2d DAs.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
-  PetscInt       M = 10,N = 8,m = PETSC_DECIDE,n = PETSC_DECIDE;
+  PetscInt       M = -10,N = -8;
   PetscErrorCode ierr;
   PetscTruth     flg;
   DA             da;
@@ -28,16 +28,17 @@ int main(int argc,char **argv)
   ierr = PetscViewerMatlabOpen(PETSC_COMM_WORLD,"tmp.mat",FILE_MODE_WRITE,&mviewer);CHKERRQ(ierr);
 #endif
 
-  /* Read options */
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-N",&N,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-star_stencil",&flg);CHKERRQ(ierr);
   if (flg) stype = DA_STENCIL_STAR;
 
+  /* Use the options
+     -da_grid_x <nx> - number of grid points in x direction, if M < 0
+     -da_grid_y <ny> - number of grid points in y direction, if N < 0
+     -da_processors_x <MX> number of processors in x directio
+     -da_processors_y <MY> number of processors in x direction
+  */       
   /* Create distributed array and get vectors */
-  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,m,n,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate2d(PETSC_COMM_WORLD,ptype,stype,M,N,PETSC_DECIDE,PETSC_DECIDE,1,1,PETSC_NULL,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);
 
