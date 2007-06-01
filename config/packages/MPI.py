@@ -247,7 +247,7 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-lam']:
       if config.setCompilers.Configure.isCygwin():
         raise RuntimeError('Sorry, cannot download-install LAM on Windows. Sugest installing windows version of MPICH manually')
-      self.liblist      = self.liblist_lam   # only generate LAM MPI guesses
+      self.liblist      = [[]]
       self.download     = self.download_lam
       self.downloadname = 'lam'
       return config.package.Package.checkDownload(self, requireDownload)
@@ -256,7 +256,7 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin():
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
-      self.liblist      = self.liblist_mpich   # only generate MPICH guesses
+      self.liblist      = [[]]
       self.download     = self.download_mpich
       self.downloadname = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
