@@ -58,7 +58,9 @@ class CompilerOptions(config.base.Configure):
           flags.extend(['-MT','-O3', '-QxW'])
       # Windows Microsoft
       elif compiler.find('win32fe cl') >= 0:
-        if bopt == 'g':
+        if bopt == '':
+          flags.append('-wd4996')
+        elif bopt == 'g':
           flags.extend(['-MT','-Z7'])
         elif bopt == 'O':
           flags.extend(['-MT','-O3', '-QxW'])

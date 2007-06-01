@@ -1,3 +1,5 @@
+
+
 #!/usr/bin/env python
 from __future__ import generators
 import user
@@ -25,7 +27,7 @@ class Configure(config.package.Package):
                              ['fmpich2.lib','mpich2.lib'],
                              ['mpich2.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
-                             ['mpich.lib']]
+                             ['mpich.lib'],[os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
     self.liblist_lam      = [['liblamf77mpi.a','libmpi++.a','libmpi.a','liblam.a'],
                              ['liblammpi++.a','libmpi.a','liblam.a'],
                              ['libmpi.a','libmpi++.a'],['libmpi.a'],
@@ -111,6 +113,7 @@ class Configure(config.package.Package):
           if os.path.isdir(dir):
             yield (dir)
     # Try MPICH install locations under Windows
+    yield(os.path.join('/cygdrive','c','Program Files','Microsoft Compute Cluster Pack'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH2'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH'))
     yield(os.path.join('/cygdrive','c','Program Files','MPICH','SDK.gcc'))
@@ -244,7 +247,7 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-lam']:
       if config.setCompilers.Configure.isCygwin():
         raise RuntimeError('Sorry, cannot download-install LAM on Windows. Sugest installing windows version of MPICH manually')
-      self.liblist      = self.liblist_lam   # only generate LAM MPI guesses
+      self.liblist      = [[]]
       self.download     = self.download_lam
       self.downloadname = 'lam'
       return config.package.Package.checkDownload(self, requireDownload)
@@ -253,7 +256,7 @@ class Configure(config.package.Package):
     if self.framework.argDB['download-mpich']:
       if config.setCompilers.Configure.isCygwin():
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
-      self.liblist      = self.liblist_mpich   # only generate MPICH guesses
+      self.liblist      = [[]]
       self.download     = self.download_mpich
       self.downloadname = 'mpich'
       return config.package.Package.checkDownload(self, requireDownload)
@@ -379,9 +382,8 @@ class Configure(config.package.Package):
       if self.setCompilers.staticLibraries:
         raise RuntimeError('Configuring with shared libraries - but the system/compilers do not support this')
       if self.compilers.isGCC or config.setCompilers.Configure.isIntel(compiler):
-        if config.setCompilers.Configure.isDarwin():
-          args.append('--enable-sharedlibs=gcc-osx')
-        else:        
+        # disable dylibs on mac due to mpich build issues
+        if not config.setCompilers.Configure.isDarwin():
           args.append('--enable-sharedlibs=gcc')
       else:
         args.append('--enable-sharedlibs=libtool')
@@ -456,6 +458,25 @@ class Configure(config.package.Package):
         except RuntimeError, e:
           self.framework.logPrint('Error trying to run mpdboot:'+str(e))
       self.framework.actions.addArgument('MPI', 'Install', 'Installed MPICH into '+installDir)
+
+    # Reset compilers to MPI compilers. Perhaps there should be self.setCompilers.reintializeCompilers()?
+    mpicc = os.path.join(installDir,"bin","mpicc")
+    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    self.setCompilers.CC = mpicc
+    if hasattr(self.compilers, 'CXX'):
+      mpicxx = os.path.join(installDir,"bin","mpicxx")
+      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+      self.setCompilers.CXX = mpicxx
+    if hasattr(self.compilers, 'FC'):
+      if self.compilers.fortranIsF90:
+        mpif90 = os.path.join(installDir,"bin","mpif90")
+        if not os.path.isfile(mpif90): raise RuntimeError('Could not locate installed MPI compiler: '+mpif90)
+        self.setCompilers.FC = mpif90
+      else:
+        mpif77 = os.path.join(installDir,"bin","mpif77")
+        if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
+        self.setCompilers.FC = mpif77
+      self.setCompilers.usedMPICompilers=1
     return self.getDir()
 
   def addExtraLibraries(self):
@@ -504,8 +525,8 @@ class Configure(config.package.Package):
     '''Calls the regular package configureLibrary and then does an additional test needed by MPI'''
     if 'with-'+self.package+'-shared' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
-    self.addExtraLibraries()
     config.package.Package.configureLibrary(self)
+    self.addExtraLibraries()
     # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
     # if not then set it to None
 
