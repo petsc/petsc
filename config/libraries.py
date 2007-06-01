@@ -160,7 +160,12 @@ extern "C" {
           self.setCompilers.LIBS += ' -L'+dir
       # new libs may/will depend on system libs so list new libs first!
       # Matt, do not change this without talking to me
-      self.setCompilers.LIBS = ' '+self.toString(libName+otherLibs) +' '+ self.setCompilers.LIBS
+      if libName and otherLibs:
+        self.setCompilers.LIBS = ' '+self.toString(libName+otherLibs) +' '+ self.setCompilers.LIBS
+      elif otherLibs:
+        self.setCompilers.LIBS = ' '+self.toString(otherLibs) +' '+ self.setCompilers.LIBS
+      elif libName:
+        self.setCompilers.LIBS = ' '+self.toString(libName) +' '+ self.setCompilers.LIBS
       self.pushLanguage(self.language[-1])
       found = 0
       if self.checkLink(includes, body):
