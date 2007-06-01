@@ -352,6 +352,14 @@ class Configure(config.base.Configure):
       self.addDefine('USE_GCOV','1')
     return
 
+  def configureFortranFlush(self):
+    if hasattr(self.compilers, 'FC'):
+      for baseName in ['flush','flush_']:
+        if self.libraries.check(0, baseName, otherLibs = 0, fortranMangle = 1):
+          self.addDefine('HAVE_'+baseName.upper(), 1)
+          return
+
+
   def configure(self):
     if not os.path.samefile(self.petscdir.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
@@ -371,6 +379,7 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)
+    self.executeTest(self.configureFortranFlush)
     # dummy rules, always needed except for remote builds
     self.addMakeRule('remote','')
     self.addMakeRule('remoteclean','')
