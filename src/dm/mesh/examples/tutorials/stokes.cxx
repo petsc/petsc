@@ -96,7 +96,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug            = 0;
   options->run              = RUN_FULL;
   options->dim              = 2;
-  options->generateMesh     = PETSC_FALSE;
+  options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
   options->bcType           = DIRICHLET;
@@ -917,7 +917,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
   m->calculateIndices();
-  m->setupFieldMultiple(s);
+  m->setupFieldMultiple(s, 1, 1, 2);
   if (options->debug) {s->view("Default field");}
   PetscFunctionReturn(0);
 }
@@ -939,7 +939,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
   ierr = SectionRealGetSection(options->exactSol.section, s);CHKERRQ(ierr);
-  m->setupFieldMultiple(s);
+  m->setupFieldMultiple(s, 1, 1, 2);
   const Obj<ALE::Mesh::label_sequence>&     cells       = m->heightStratum(0);
   const Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
   const int                                 localDof    = m->sizeWithBC(s, *cells->begin());

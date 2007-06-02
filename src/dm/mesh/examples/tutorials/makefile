@@ -69,10 +69,6 @@ ionChannel: ionChannel.o chkopts
 	-${CLINKER} -o ionChannel ionChannel.o ${PETSC_DM_LIB}
 	${RM} -f ionChannel.o
 
-subduction: subduction.o chkopts
-	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
-	${RM} -f subduction.o
-
 stokes: stokes_quadrature.h stokes.o chkopts
 	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
 	${RM} -f stokes.o
@@ -80,6 +76,10 @@ stokes: stokes_quadrature.h stokes.o chkopts
 bratu: bratu_quadrature.h bratu.o chkopts
 	-${CLINKER} -o bratu bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
+
+subduction: subduction_quadrature.h subduction.o chkopts
+	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
+	${RM} -f subduction.o
 
 #-----------------------------------------------------------------
 runex1:

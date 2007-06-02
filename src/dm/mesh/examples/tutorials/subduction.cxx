@@ -25,11 +25,13 @@ static char help[] =
   FOR OTHER PARAMETER OPTIONS AND THEIR DEFAULT VALUES, see SetParams() in ex30.c.\n\
 -------------------------------subduction help---------------------------------\n";
 
-#include <petscda.h>
+#include <petscdmmg.h>
 #include <petscmesh.h>
 #include <Distribution.hh>
 
-typedef enum {SLAB_LID, SLAB, BOTTOM, RIGHT, RIGHT_LID, TOP, LID} BCType;
+using ALE::Obj;
+
+typedef enum {SLAB_LID, SLAB, BOTTOM, RIGHT, RIGHT_LID, TOP, LID, NUM_BC} BCType;
 
 typedef enum {MANTLE_MAT, LID_MAT} MaterialType;
  
@@ -44,7 +46,15 @@ typedef struct {
   PetscReal  lidDepth;          // The depth of the lid (m)
   PetscReal  slabDip;           // The dip of the wedge (radians)
   PetscReal  featureSize;       // An initial discretization size (m)
+
+  double   (*funcs[4])(const double []); // The function to project
 } Options;
+
+#include "subduction_quadrature.h"
+
+double zero(const double x[]) {
+  return 0.0;
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
@@ -101,15 +111,13 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 */
 PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *options)
 {
-  const int           dim = 1;
-  ALE::Obj<ALE::Mesh> m   = new ALE::Mesh(comm, dim, options->debug);
-  PetscErrorCode      ierr;
+  const int      dim = 1;
+  Obj<ALE::Mesh> m   = new ALE::Mesh(comm, dim, options->debug);
+  PetscErrorCode ierr;
 
   ierr = MeshCreate(comm, meshBoundary);CHKERRQ(ierr);
   ierr = MeshSetMesh(*meshBoundary, m);CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::sieve_type>      sieve    = new ALE::Mesh::sieve_type(m->comm(), m->debug());
-  const ALE::Obj<ALE::Mesh::topology_type>   topology = new ALE::Mesh::topology_type(m->comm(), m->debug());
-  const ALE::Mesh::topology_type::patch_type patch    = 0;
+  const Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
   const int       embedDim   = 2;
   const PetscReal h          = options->featureSize;
   const PetscReal depth      = options->depth;
@@ -221,92 +229,91 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
     sieve->addArrow(lidEnd,          e, 1);
     if (numVertices != v) SETERRQ2(PETSC_ERR_PLIB, "Mismatch in number of vertices %d should be %d", v, numVertices);
   }
-  topology->setPatch(patch, sieve);
-  topology->stratify();
-  m->setTopology(topology);
-  ALE::New::SieveBuilder<ALE::Mesh::sieve_type>::buildCoordinates(m->getRealSection("coordinates"), dim+1, coords);
+  m->setSieve(sieve);
+  m->stratify();
+  ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim+1, coords);
   // Create boundary conditions
-  const ALE::Obj<ALE::Mesh::topology_type::patch_label_type>& markers = topology->createLabel(patch, "marker");
+  const Obj<ALE::Mesh::label_type>& markers = m->createLabel("marker");
 
   if (m->commRank() == 0) {
     for(int v = 12; v < 20; v++) {
-      topology->setValue(markers, v, 1);
+      m->setValue(markers, v, 1);
     }
     for(int e = 0; e < 8; e++) {
-      topology->setValue(markers, e, 1);
+      m->setValue(markers, e, 1);
     }
     int v = 0, e = -1, tmpV, lidStart, lidEnd;
     // Slab lid boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) slabLidLen/h; ++v, ++e, ++tmpV) {
-      topology->setValue(markers, v+numVertices-1, SLAB_LID);
-      topology->setValue(markers, v+numVertices,   SLAB_LID);
-      topology->setValue(markers, e,               SLAB_LID);
+      m->setValue(markers, v+numVertices-1, SLAB_LID);
+      m->setValue(markers, v+numVertices,   SLAB_LID);
+      m->setValue(markers, e,               SLAB_LID);
     }
     lidStart = v+numVertices;
-    topology->setValue(markers, v+numVertices-1, SLAB_LID);
-    topology->setValue(markers, v+numVertices,   SLAB_LID);
-    topology->setValue(markers, e,               SLAB_LID);
+    m->setValue(markers, v+numVertices-1, SLAB_LID);
+    m->setValue(markers, v+numVertices,   SLAB_LID);
+    m->setValue(markers, e,               SLAB_LID);
     // Slab boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) slabLen/h; ++v, ++e, ++tmpV) {
-      topology->setValue(markers, v+numVertices-1, SLAB);
-      topology->setValue(markers, v+numVertices,   SLAB);
-      topology->setValue(markers, e,               SLAB);
+      m->setValue(markers, v+numVertices-1, SLAB);
+      m->setValue(markers, v+numVertices,   SLAB);
+      m->setValue(markers, e,               SLAB);
     }
-    topology->setValue(markers, v+numVertices-1, SLAB);
-    topology->setValue(markers, v+numVertices,   SLAB);
-    topology->setValue(markers, e,               SLAB);
+    m->setValue(markers, v+numVertices-1, SLAB);
+    m->setValue(markers, v+numVertices,   SLAB);
+    m->setValue(markers, e,               SLAB);
     // Bottom boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) botWidth/h; ++v, ++e, ++tmpV) {
-      topology->setValue(markers, v+numVertices-1, BOTTOM);
-      topology->setValue(markers, v+numVertices,   BOTTOM);
-      topology->setValue(markers, e,               BOTTOM);
+      m->setValue(markers, v+numVertices-1, BOTTOM);
+      m->setValue(markers, v+numVertices,   BOTTOM);
+      m->setValue(markers, e,               BOTTOM);
     }
-    topology->setValue(markers, v+numVertices-1, BOTTOM);
-    topology->setValue(markers, v+numVertices,   BOTTOM);
-    topology->setValue(markers, e,               BOTTOM);
+    m->setValue(markers, v+numVertices-1, BOTTOM);
+    m->setValue(markers, v+numVertices,   BOTTOM);
+    m->setValue(markers, e,               BOTTOM);
     // Right boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) (depth - lidDepth)/h; ++v, ++e, ++tmpV) {
-      topology->setValue(markers, v+numVertices-1, RIGHT);
-      topology->setValue(markers, v+numVertices,   RIGHT);
-      topology->setValue(markers, e,               RIGHT);
+      m->setValue(markers, v+numVertices-1, RIGHT);
+      m->setValue(markers, v+numVertices,   RIGHT);
+      m->setValue(markers, e,               RIGHT);
     }
     lidEnd = v+numVertices;
-    topology->setValue(markers, v+numVertices-1, RIGHT);
-    topology->setValue(markers, v+numVertices,   RIGHT);
-    topology->setValue(markers, e,               RIGHT);
+    m->setValue(markers, v+numVertices-1, RIGHT);
+    m->setValue(markers, v+numVertices,   RIGHT);
+    m->setValue(markers, e,               RIGHT);
     // Right lid boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) lidDepth/h; ++v, ++e, ++tmpV) {
-      topology->setValue(markers, v+numVertices-1, RIGHT_LID);
-      topology->setValue(markers, v+numVertices,   RIGHT_LID);
-      topology->setValue(markers, e,               RIGHT_LID);
+      m->setValue(markers, v+numVertices-1, RIGHT_LID);
+      m->setValue(markers, v+numVertices,   RIGHT_LID);
+      m->setValue(markers, e,               RIGHT_LID);
     }
-    topology->setValue(markers, v+numVertices-1, RIGHT_LID);
-    topology->setValue(markers, v+numVertices,   RIGHT_LID);
-    topology->setValue(markers, e,               RIGHT_LID);
+    m->setValue(markers, v+numVertices-1, RIGHT_LID);
+    m->setValue(markers, v+numVertices,   RIGHT_LID);
+    m->setValue(markers, e,               RIGHT_LID);
     // Top boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) topWidth/h; ++v, ++e, ++tmpV) {
-      topology->setValue(markers, v+numVertices-1, TOP);
-      topology->setValue(markers, v+numVertices,   TOP);
-      topology->setValue(markers, e,               TOP);
+      m->setValue(markers, v+numVertices-1, TOP);
+      m->setValue(markers, v+numVertices,   TOP);
+      m->setValue(markers, e,               TOP);
     }
-    topology->setValue(markers, v+numVertices-1, TOP);
-    topology->setValue(markers, 0+numVertices,   TOP);
-    topology->setValue(markers, e,               TOP);
+    m->setValue(markers, v+numVertices-1, TOP);
+    m->setValue(markers, 0+numVertices,   TOP);
+    m->setValue(markers, e,               TOP);
     // Lid boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) (topWidth - lidStartX)/h; ++v, ++e, ++tmpV) {
       if (tmpV == 1) {
-        topology->setValue(markers, lidStart,        LID);
-        topology->setValue(markers, v+numVertices,   LID);
-        topology->setValue(markers, e,               LID);
+        m->setValue(markers, lidStart,        LID);
+        m->setValue(markers, v+numVertices,   LID);
+        m->setValue(markers, e,               LID);
       } else {
-        topology->setValue(markers, v+numVertices-1, LID);
-        topology->setValue(markers, v+numVertices,   LID);
-        topology->setValue(markers, e,               LID);
+        m->setValue(markers, v+numVertices-1, LID);
+        m->setValue(markers, v+numVertices,   LID);
+        m->setValue(markers, e,               LID);
       }
     }
-    topology->setValue(markers, v+numVertices-1, LID);
-    topology->setValue(markers, lidEnd,          LID);
-    topology->setValue(markers, e,               LID);
+    m->setValue(markers, v+numVertices-1, LID);
+    m->setValue(markers, lidEnd,          LID);
+    m->setValue(markers, e,               LID);
   }
   PetscFunctionReturn(0);
 }
@@ -316,21 +323,19 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
 // Creates a field whose value is the processor rank on each element
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 {
-  ALE::Obj<ALE::Mesh::int_section_type> section;
+  Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *partition, "partition");CHKERRQ(ierr);
-  ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
-  const ALE::Mesh::int_section_type::patch_type             patch    = 0;
-  const ALE::Obj<ALE::Mesh::topology_type>&                 topology = section->getTopology();
-  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
-  const ALE::Mesh::topology_type::label_sequence::iterator  end      = cells->end();
-  const ALE::Mesh::int_section_type::value_type             rank     = section->commRank();
+  const Obj<ALE::Mesh::label_sequence>&     cells = m->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator end   = cells->end();
+  const int                                 rank  = m->commRank();
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
-    section->updatePoint(patch, *c_iter, &rank);
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    ierr = SectionIntUpdate(*partition, *c_iter, &rank);
   }
   PetscFunctionReturn(0);
 }
@@ -340,24 +345,22 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 // Creates a field whose value is the material on each element
 PetscErrorCode CreateMaterialField(Mesh mesh, Options *options, SectionInt *material)
 {
-  ALE::Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh> m;
   SectionReal    coordinates;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, material);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *material, "material");CHKERRQ(ierr);
   ierr = MeshGetSectionReal(mesh, "coordinates", &coordinates);CHKERRQ(ierr);
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const ALE::Mesh::int_section_type::patch_type             patch    = 0;
-  const ALE::Obj<ALE::Mesh::topology_type>&                 topology = m->getTopology();
-  const ALE::Obj<ALE::Mesh::topology_type::label_sequence>& cells    = topology->heightStratum(patch, 0);
-  const ALE::Mesh::topology_type::label_sequence::iterator  end      = cells->end();
-  const int dim     = m->getDimension();
-  const int corners = topology->getPatch(patch)->nCone(*cells->begin(), topology->depth())->size();
+  const Obj<ALE::Mesh::label_sequence>&     cells = m->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator end   = cells->end();
+  const int dim      = m->getDimension();
+  const int corners  = m->getSieve()->nCone(*cells->begin(), m->depth())->size();
   double   *centroid = new double[dim];
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     double *coords;
     int     mat;
 
@@ -437,13 +440,16 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     ierr = MeshDestroy(mesh);CHKERRQ(ierr);
     mesh = refinedMesh;
   }
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
-  if (view) {
-    ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh> m;
 
-    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-    m->view("Mesh");
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  for(int bc = 0; bc < NUM_BC; ++bc) {
+    m->markBoundaryCells("marker", bc, NUM_BC);
   }
+  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
+  if (view) {m->view("Mesh");}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
+  if (view) {ierr = ViewMesh(mesh, "subduction.vtk", options);CHKERRQ(ierr);}
   *dm = (DM) mesh;
   PetscFunctionReturn(0);
 }
@@ -452,13 +458,37 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 #define __FUNCT__ "DestroyMesh"
 PetscErrorCode DestroyMesh(DM dm, Options *options)
 {
-  PetscTruth     view;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-  if (view) {ierr = ViewMesh((Mesh) dm, "subduction.vtk", options);CHKERRQ(ierr);}
   ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "CreateProblem"
+PetscErrorCode CreateProblem(DM dm, Options *options)
+{
+  Mesh           mesh = (Mesh) dm;
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  options->funcs[0]  = zero;
+  options->funcs[1]  = zero;
+  options->funcs[2]  = zero;
+  options->funcs[3]  = zero;
+  ierr = CreateProblem_gen_0(dm, "p", PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "u", zero, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "v", zero, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "T", zero, PETSC_NULL);CHKERRQ(ierr);
+
+  const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
+  s->setDebug(options->debug);
+  m->calculateIndices();
+  m->setupFieldMultiple(s, SLAB_LID, LID, NUM_BC);
+  if (options->debug) {s->view("Default field");}
   PetscFunctionReturn(0);
 }
 
@@ -477,6 +507,7 @@ int main(int argc, char *argv[])
     comm = PETSC_COMM_WORLD;
     ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
     ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
+    ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cout << "ERROR: " << e.msg() << std::endl;

@@ -1269,16 +1269,16 @@ namespace ALE {
       }
     };
   public: // Discretization
-    void markBoundaryCells(const std::string& name) {
+    void markBoundaryCells(const std::string& name, const int marker = 1, const int newMarker = 2) {
       const Obj<label_type>&     label    = this->getLabel(name);
-      const Obj<label_sequence>& boundary = this->getLabelStratum(name, 1);
+      const Obj<label_sequence>& boundary = this->getLabelStratum(name, marker);
       const Obj<sieve_type>&     sieve    = this->getSieve();
 
       for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
         if (this->height(*e_iter) == 1) {
           const point_type cell = *sieve->support(*e_iter)->begin();
 
-          this->setValue(label, cell, 2);
+          this->setValue(label, cell, newMarker);
         }
       }
     };
@@ -1377,7 +1377,7 @@ namespace ALE {
         delete [] J;
       }
     };
-    void setupFieldMultiple(const Obj<real_section_type>& s, const bool postponeGhosts = false) {
+    void setupFieldMultiple(const Obj<real_section_type>& s, const int startMarker, const int endMarker, const int cellMarker = 2, const bool postponeGhosts = false) {
       const Obj<std::set<std::string> >& discs = this->getDiscretizations();
       std::set<std::string> names;
       int maxDof = 0;
@@ -1404,18 +1404,21 @@ namespace ALE {
         const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
 
         if (!bc.isNull()) {
-          const Obj<label_sequence>& boundary = this->getLabelStratum(bc->getLabelName(), 1);
+          for(int b = startMarker; b <= endMarker; ++b) {
+            const Obj<label_sequence>& boundary = this->getLabelStratum(bc->getLabelName(), b);
 
-          names.insert(bc->getLabelName());
-          for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-            s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
-            s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+            names.insert(bc->getLabelName());
+            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+              s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
+              s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+            }
           }
         }
       }
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       s->defaultConstraintDof();
+      s->view("");
       for(std::set<std::string>::const_iterator n_iter = names.begin(); n_iter != names.end(); ++n_iter) {
         const Obj<real_section_type>&      coordinates = this->getRealSection("coordinates");
         double                            *v0          = new double[this->getDimension()];
@@ -1424,34 +1427,37 @@ namespace ALE {
         const Obj<std::set<std::string> >& discs       = this->getDiscretizations();
         const int                          numFields   = discs->size();
         int                               *v           = new int[numFields];
-        const Obj<label_sequence>&         boundary    = this->getLabelStratum(*n_iter, 1);
         int                               *dofs        = new int[maxDof];
 
-        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-          const int cDim = s->getConstraintDimension(*e_iter);
-          int offset = 0;
-          int f      = 0;
-          int i      = -1;
+        for(int b = startMarker; b <= endMarker; ++b) {
+          const Obj<label_sequence>& boundary = this->getLabelStratum(*n_iter, b);
 
-          for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-            const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
-            const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
-            const int                          fDim = s->getFiberDimension(*e_iter, f);
+          for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+            const int cDim = s->getConstraintDimension(*e_iter);
+            int offset = 0;
+            int f      = 0;
+            int i      = -1;
 
-            if (!bc.isNull() && (*n_iter == bc->getLabelName())) {
-              for(int d = 0; d < fDim; ++d) {
-                dofs[++i] = offset+d;
+            for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+              const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
+              const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
+              const int                          fDim = s->getFiberDimension(*e_iter, f);
+
+              if (!bc.isNull() && (*n_iter == bc->getLabelName())) {
+                for(int d = 0; d < fDim; ++d) {
+                  dofs[++i] = offset+d;
+                }
               }
+              offset += fDim;
             }
-            offset += fDim;
+            if (i != cDim-1) {
+              throw ALE::Exception("Invalid constraint initialization");
+            }
+            s->setConstraintDof(*e_iter, dofs);
           }
-          if (i != cDim-1) {
-            throw ALE::Exception("Invalid constraint initialization");
-          }
-          s->setConstraintDof(*e_iter, dofs);
         }
         delete [] dofs;
-        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(*n_iter, 2);
+        const Obj<label_sequence>&     boundaryCells = this->getLabelStratum(*n_iter, cellMarker);
         real_section_type::value_type *values        = new real_section_type::value_type[this->sizeWithBC(s, *boundaryCells->begin())];
 
         for(label_sequence::iterator c_iter = boundaryCells->begin(); c_iter != boundaryCells->end(); ++c_iter) {
@@ -1467,12 +1473,18 @@ namespace ALE {
             if (cDim) {
               for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::DiscretizationNew>& disc     = this->getDiscretization(*f_iter);
-                const Obj<ALE::BoundaryCondition>& bc       = disc->getExactSolution();
+                const Obj<ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition();
                 const int                          pointDim = disc->getNumDof(this->depth(*cl_iter));
                 const int                         *indices  = disc->getIndices();
 
-                for(int d = 0; d < pointDim; ++d, ++v[f]) {
-                  values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                if (!bc.isNull()) {
+                  for(int d = 0; d < pointDim; ++d, ++v[f]) {
+                    values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                  }
+                } else {
+                  for(int d = 0; d < pointDim; ++d, ++v[f]) {
+                    values[indices[v[f]]] = 0.0;
+                  }
                 }
               }
             } else {
