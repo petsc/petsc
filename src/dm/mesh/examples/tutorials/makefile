@@ -77,6 +77,10 @@ stokes: stokes_quadrature.h stokes.o chkopts
 	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
 	${RM} -f stokes.o
 
+bratu: bratu_quadrature.h bratu.o chkopts
+	-${CLINKER} -o bratu bratu.o ${PETSC_SNES_LIB}
+	${RM} -f bratu.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
