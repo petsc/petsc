@@ -355,7 +355,7 @@ class Configure(config.base.Configure):
   def configureFortranFlush(self):
     if hasattr(self.compilers, 'FC'):
       for baseName in ['flush','flush_']:
-        if self.libraries.check(0, baseName, otherLibs = 0, fortranMangle = 1):
+        if self.libraries.check('', baseName, otherLibs = self.compilers.flibs, fortranMangle = 1):
           self.addDefine('HAVE_'+baseName.upper(), 1)
           return
 
