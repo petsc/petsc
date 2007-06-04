@@ -622,7 +622,7 @@ namespace ALE {
       int j = 0;
 
       if (this->height() < 2) {
-        section->updatePointBC(p, &v[j]);
+        section->updatePointAll(p, &v[j]);
         j += section->getFiberDimension(p);
         const Obj<typename sieve_type::coneSequence>& cone = this->getSieve()->cone(p);
 
