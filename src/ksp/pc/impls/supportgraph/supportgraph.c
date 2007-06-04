@@ -388,8 +388,8 @@ M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreate_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC pc)
+#define __FUNCT__ "PCCreate_SupportGraph"
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
 {
   PC_Jacobi      *jac;
   PetscErrorCode ierr;

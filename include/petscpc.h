@@ -64,6 +64,7 @@ E*/
 #define PCPROMETHEUS      "prometheus"
 #define PCGALERKIN        "galerkin"
 #define PCOPENMP          "openmp"
+#define PCSUPPORTGRAPH    "supportgraph"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
