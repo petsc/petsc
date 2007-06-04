@@ -908,7 +908,7 @@ namespace ALE {
 
       for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         if (this->getConstraintDimension(*p_iter)) {
-          this->updatePointBC(*p_iter, section->restrictPoint(*p_iter));
+          this->updatePointBCFull(*p_iter, section->restrictPoint(*p_iter));
         }
       }
       this->copyFibration(section);
@@ -1280,8 +1280,49 @@ namespace ALE {
       }
     };
     // Update only the constrained dofs on a point
-    //   This takes an array with ALL values, not just BC
+    //   This takes an array with ONLY bc values
     void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (cDim) {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if (cInd == cDim) break;
+            if (i == cDof[cInd]) {
+              array[i] = v[cInd];
+              ++cInd;
+            }
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = (dim - tDim)-1;
+
+            for(int i = 0; i < dim; ++i, ++j) {
+              if (cInd < 0) break;
+              if (j == cDof[cInd+cOffset]) {
+                array[j] = v[cInd+cOffset];
+                --cInd;
+              }
+            }
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update only the constrained dofs on a point
+    //   This takes an array with ALL values, not just BC
+    void updatePointBCFull(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  cDim  = this->getConstraintDimension(p);
 
