@@ -5,8 +5,6 @@
 #include "include/petscblaslapack.h"
 #include "src/ksp/ksp/impls/cg/gltr/gltr.h"
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRSetRadius"
 /*@
     KSPGLTRSetRadius - Sets the radius of the trust region.
 
@@ -23,6 +21,9 @@
 
 .keywords: KSP, GLTR, set, trust region radius
 @*/
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRSetRadius"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal);
@@ -37,8 +38,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetNormD"
 /*@
     KSPGLTRGetNormD - Get norm of the direction.
 
@@ -52,7 +51,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 
 .keywords: KSP, GLTR, get, norm direction
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp,PetscReal *norm_d)
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetNormD"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
@@ -65,8 +67,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp,PetscReal *norm_d)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetObjFcn"
 /*@
     KSPGLTRGetObjFcn - Get objective function value.
 
@@ -80,7 +80,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp,PetscReal *norm_d)
 
 .keywords: KSP, GLTR, get, objective function
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp,PetscReal *o_fcn)
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetObjFcn"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
@@ -93,8 +96,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp,PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetMinEig"
 /*@
     KSPGLTRGetMinEig - Get minimum eigenvalue.
 
@@ -108,7 +109,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp,PetscReal *o_fcn)
 
 .keywords: KSP, GLTR, get, minimum eigenvalue
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp,PetscReal *e_min)
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetMinEig"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
@@ -121,8 +125,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp,PetscReal *e_min)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetLambda"
 /*@
     KSPGLTRGetLambda - Get multiplier on trust-region constraint.
 
@@ -136,7 +138,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp,PetscReal *e_min)
 
 .keywords: KSP, GLTR, get, multiplier
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp,PetscReal *lambda)
+
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetLambda"
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
 
@@ -149,9 +154,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp,PetscReal *lambda)
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_GLTR"
-/*
+/*@
   KSPSolve_GLTR - Use preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
 
@@ -173,11 +176,12 @@ $  KSP_CONVERGED_CG_NEG_CURVE if convergence is reached along a negative curvatu
 $  KSP_CONVERGED_CG_CONSTRAINED if convergence is reached along a constrained step,
 $  other KSP converged/diverged reasons
 
-
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
-*/
+@*/
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPSolve_GLTR"
 PetscErrorCode KSPSolve_GLTR(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX
@@ -307,7 +311,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  if (rz < 0.0) {
+  if (rz <= 0.0) {
     /*************************************************************************/
     /* The preconditioner is indefinite.  Because this is the first          */
     /* and we do not have a direction yet, we use the gradient step.  Note   */
@@ -338,14 +342,28 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   /***************************************************************************/
   /* As far as we know, the preconditioner is positive semidefinite.  Compute*/
-  /* the residual and check for convergence.  Note that there is no choice   */
-  /* in the residual that can be used; we must always use the natural        */
-  /* residual because this is the only one that can be used by the           */
-  /* preconditioned Lanzcos method.                                          */
+  /* the residual and check for convergence.                                 */
   /***************************************************************************/
 
-  norm_r = sqrt(rz);					/* norm_r = |r|_M    */
-  cg->norm_r[0] = norm_r;
+  cg->norm_r[0] = sqrt(rz);				/* norm_r = |r|_M    */
+
+  switch(ksp->normtype) {
+  case KSP_NORM_PRECONDITIONED:
+    ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |z|      */
+    break;
+
+  case KSP_NORM_UNPRECONDITIONED:
+    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |r|      */
+    break;
+
+  case KSP_NORM_NATURAL:
+    norm_r = cg->norm_r[0];				/* norm_r = |r|_M    */
+    break;
+
+  default:
+    norm_r = 0.0;
+    break;
+  }
 
   KSPLogResidualHistory(ksp, norm_r);
   KSPMonitor(ksp, 0, norm_r);
@@ -400,7 +418,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   if (fabs(kappa) <= 0.0) {
     /*************************************************************************/
     /* The curvature is zero.  In this case, we must stop and use the        */
-    /* since there the Lanczos matrix is not available.                      */
+    /* gradient since there the Lanczos matrix is not available.             */
     /*************************************************************************/
     ksp->reason = KSP_DIVERGED_BREAKDOWN;
     ierr = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: kappa=%g\n", kappa); CHKERRQ(ierr);
@@ -431,8 +449,16 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /***************************************************************************/
 
   dMp = 0.0;
-  norm_p = rz;
   norm_d = 0.0;
+  switch(cg->dtype) {
+  case GLTR_PRECONDITIONED_DIRECTION:
+    norm_p = rz;
+    break;
+
+  default:
+    ierr = VecDot(p, p, &norm_p); CHKERRQ(ierr);
+    break;
+  }
 
   cg->diag[t_size] = kappa / rz;
   cg->offd[t_size] = 0.0;
@@ -523,7 +549,15 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha Q p */
     ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
 
-    norm_d = norm_dp1;
+    switch(cg->dtype) {
+    case GLTR_PRECONDITIONED_DIRECTION:
+      norm_d = norm_dp1;
+      break;
+
+    default:
+      ierr = VecDot(d, d, &norm_d); CHKERRQ(ierr);
+      break;
+    }
     cg->norm_d = sqrt(norm_d);
 
     cg->o_fcn -= 0.5 * alpha * rz;
@@ -534,7 +568,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     rzm1 = rz;
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z        */
-    if (rz < 0.0) {
+    if (rz <= 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
@@ -545,15 +579,29 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
 
     /*************************************************************************/
-    /* As far as we know, the preconditioner is positive definite.  Compute  */
-    /* the residual and check for convergence.  Note that there is no choice */
-    /* in the residual that can be used; we must always use the natural      */
-    /* residual because this is the only one that can be used by the         */
-    /* preconditioned Lanzcos method.                                        */
+    /* As far as we know, the preconditioner is positive semidefinite.       */
+    /* Compute the residual and check for convergence.                       */
     /*************************************************************************/
 
-    norm_r = sqrt(rz);					/* norm_r = |r|_M   */
-    cg->norm_r[ksp->its+1] = norm_r;
+    cg->norm_r[ksp->its+1] = sqrt(rz);			/* norm_r = |r|_M   */
+
+    switch(ksp->normtype) {
+    case KSP_NORM_PRECONDITIONED:
+      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |z|      */
+      break;
+
+    case KSP_NORM_UNPRECONDITIONED:
+      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |r|      */
+      break;
+
+    case KSP_NORM_NATURAL:
+      norm_r = cg->norm_r[ksp->its+1];			/* norm_r = |r|_M    */
+      break;
+
+    default:
+      norm_r = 0.0;
+      break;
+    }
 
     KSPLogResidualHistory(ksp, norm_r);
     KSPMonitor(ksp, 0, norm_r);
@@ -566,15 +614,35 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
 
     /*************************************************************************/
-    /* We have not converged yet, update p and the norms.                    */
+    /* We have not converged yet.  Check for breakdown, then update p and    */
+    /* the norms.                                                            */
     /*************************************************************************/
 
     beta = rz / rzm1;
+    if (fabs(beta) <= 0.0) {
+      /***********************************************************************/
+      /* Conjugate gradients has broken down.                                */
+      /***********************************************************************/
+
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: beta=%g\n", beta); CHKERRQ(ierr);
+      break;
+    }
+
     cg->beta[ksp->its] = beta;
     ierr = VecAYPX(p, beta, z); CHKERRQ(ierr);          /* p = z + beta p    */
 
-    dMp = beta*(dMp + alpha*norm_p);
-    norm_p = beta*(rzm1 + beta*norm_p);
+    switch(cg->dtype) {
+    case GLTR_PRECONDITIONED_DIRECTION:
+      dMp = beta*(dMp + alpha*norm_p);
+      norm_p = beta*(rzm1 + beta*norm_p);
+      break;
+
+    default:
+      ierr = VecDot(d, p, &dMp); CHKERRQ(info);
+      ierr = VecDot(p, p, &norm_p); CHKERRQ(info);
+      break;
+    }
 
     /*************************************************************************/
     /* Compute the new direction                                             */
@@ -632,21 +700,27 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  if ((KSP_CONVERGED_CG_CONSTRAINED != ksp->reason) &&
-      (KSP_CONVERGED_CG_NEG_CURVE != ksp->reason)) {
+  if (KSP_CONVERGED_CG_NEG_CURVE != ksp->reason) {
     /*************************************************************************/
-    /* The method either converged to an interior point or the iteration     */
-    /* limit was reached.                                                    */
+    /* The method either converged to an interior point, hit the boundary of */
+    /* the trust-region without encountering a direction of negative         */
+    /* curvature or the iteration limit was reached.                         */
     /*************************************************************************/
 
     PetscFunctionReturn(0);
   }
+
+  /***************************************************************************/
+  /* Store the reason for converging, will be reset later.                   */
+  /***************************************************************************/
+
   reason = ksp->reason;
 
   /***************************************************************************/
   /* Switch to contructing the Lanczos basis by way of the conjugate         */
   /* directions.                                                             */
   /***************************************************************************/
+
   for (i = 0; i < max_lanczos_its; ++i) {
     /*************************************************************************/
     /* Check for breakdown of the conjugate gradient method; this occurs     */
@@ -674,7 +748,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     rzm1 = rz;
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z        */
-    if (rz < 0.0) {
+    if (rz <= 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
@@ -686,14 +760,28 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     /*************************************************************************/
     /* As far as we know, the preconditioner is positive definite.  Compute  */
-    /* the residual and check for convergence.  Note that there is no choice */
-    /* in the residual that can be used; we must always use the natural      */
-    /* residual because this is the only one that can be used by the         */
-    /* preconditioned Lanzcos method.                                        */
+    /* the residual and check for convergence.                               */
     /*************************************************************************/
 
-    norm_r = sqrt(rz);					/* norm_r = |r|_M   */
-    cg->norm_r[ksp->its+1] = norm_r;
+    cg->norm_r[ksp->its+1] = sqrt(rz);			/* norm_r = |r|_M    */
+
+    switch(ksp->normtype) {
+    case KSP_NORM_PRECONDITIONED:
+      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |z|      */
+      break;
+
+    case KSP_NORM_UNPRECONDITIONED:
+      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |r|      */
+      break;
+
+    case KSP_NORM_NATURAL:
+      norm_r = cg->norm_r[ksp->its+1];			/* norm_r = |r|_M    */
+      break;
+
+    default:
+      norm_r = 0.0;
+      break;
+    }
 
     KSPLogResidualHistory(ksp, norm_r);
     KSPMonitor(ksp, 0, norm_r);
@@ -706,10 +794,20 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     }
 
     /*************************************************************************/
-    /* Update p and the norms.                                               */
+    /* Check for breakdown, then update p and the norms.                     */
     /*************************************************************************/
 
     beta = rz / rzm1;
+    if (fabs(beta) <= 0.0) {
+      /***********************************************************************/
+      /* Conjugate gradients has broken down.                                */
+      /***********************************************************************/
+
+      ksp->reason = KSP_DIVERGED_BREAKDOWN;
+      ierr = PetscInfo1(ksp, "KSPSolve_GLTR: breakdown: beta=%g\n", beta); CHKERRQ(ierr);
+      break;
+    }
+
     cg->beta[ksp->its] = beta;
     ierr = VecAYPX(p, beta, z); CHKERRQ(ierr);          /* p = z + beta p    */
 
@@ -729,8 +827,6 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     cg->offd[t_size] = sqrt(beta) / fabs(alpha);
     cg->diag[t_size] = kappa / rz + beta / alpha;
     ++t_size;
-
-    norm_r = sqrt(rz);					/* norm_r = |r|_M   */
   }
 
   /***************************************************************************/
@@ -738,6 +834,9 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   /* to obtain the Lanczos direction.  We know that the solution lies on     */
   /* the boundary of the trust region.  We start by checking that the        */
   /* workspace allocated is large enough.                                    */
+  /***************************************************************************/
+  /* Note that the current version only computes the solution by using the   */   /* preconditioned direction.  Need to think about how to do the            */
+  /* unpreconditioned direction calculation.                                 */
   /***************************************************************************/
 
   if (t_size > cg->alloced) {
@@ -1174,9 +1273,12 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  /* This implementation of CG only handles left preconditioning
-   * so generate an error otherwise.
-   */
+
+  /***************************************************************************/
+  /* This implementation of CG only handles left preconditioning so generate */
+  /* an error otherwise.                                                     */
+  /***************************************************************************/
+
   if (ksp->pc_side == PC_RIGHT) {
     SETERRQ(PETSC_ERR_SUP, "No right preconditioning for KSPGLTR");
   }
@@ -1184,16 +1286,24 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
     SETERRQ(PETSC_ERR_SUP, "No symmetric preconditioning for KSPGLTR");
   }
 
-  /* get work vectors needed by CG */
+  /***************************************************************************/
+  /* Determine the total maximum number of iterations.                       */
+  /***************************************************************************/
+
+  cg->max_its = cg->max_cg_its + cg->max_lanczos_its + 1;
+
+  /***************************************************************************/
+  /* Set work vectors needed by conjugate gradient method and allocate       */
+  /* workspace for Lanczos matrix.                                           */
+  /***************************************************************************/
+
   ierr = KSPDefaultGetWork(ksp, 3); CHKERRQ(ierr);
 
-  /* allocate workspace for Lanczos matrix */
-  cg->max_its = cg->max_cg_its + cg->max_lanczos_its + 1;
   size = 5*cg->max_its*sizeof(PetscReal);
-
   ierr = PetscMalloc(size, &cg->diag); CHKERRQ(ierr);
   ierr = PetscMemzero(cg->diag, size); CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp, size); CHKERRQ(ierr);
+
   cg->offd   = cg->diag  + cg->max_its;
   cg->alpha  = cg->offd  + cg->max_its;
   cg->beta   = cg->alpha + cg->max_its;
@@ -1209,26 +1319,38 @@ PetscErrorCode KSPDestroy_GLTR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+
+  /***************************************************************************/
+  /* Free memory allocated for the data.                                     */
+  /***************************************************************************/
+
   ierr = PetscFree(cg->diag); CHKERRQ(ierr);
   if (cg->alloced) {
-    ierr = PetscFree(cg->rwork);
-    ierr = PetscFree(cg->iwork);
+    ierr = PetscFree(cg->rwork); CHKERRQ(ierr);
+    ierr = PetscFree(cg->iwork); CHKERRQ(ierr);
   }
 
+  /***************************************************************************/
+  /* Clear composed functions                                                */
+  /***************************************************************************/
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRSetRadius_C","",PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetNormD_C","",PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetObjFcn_C","",PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetMinEig_C","",PETSC_NULL); CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetLambda_C","",PETSC_NULL); CHKERRQ(ierr);
+
+  /***************************************************************************/
+  /* Destroy KSP object.                                                     */
+  /***************************************************************************/
   ierr = KSPDefaultDestroy(ksp);CHKERRQ(ierr);
-  /* clear composed functions */
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRSetRadius_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetNormD_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetObjFcn_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetMinEig_C","",PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,"KSPGLTRGetLambda_C","",PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 EXTERN_C_BEGIN
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRSetRadius_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius_GLTR(KSP ksp,PetscReal radius)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius_GLTR(KSP ksp, PetscReal radius)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1239,7 +1361,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius_GLTR(KSP ksp,PetscReal radius
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetNormD_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD_GLTR(KSP ksp,PetscReal *norm_d)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD_GLTR(KSP ksp, PetscReal *norm_d)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1250,7 +1372,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD_GLTR(KSP ksp,PetscReal *norm_d
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetObjFcn_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn_GLTR(KSP ksp,PetscReal *o_fcn)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn_GLTR(KSP ksp, PetscReal *o_fcn)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1261,7 +1383,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn_GLTR(KSP ksp,PetscReal *o_fcn
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetMinEig_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig_GLTR(KSP ksp,PetscReal *e_min)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig_GLTR(KSP ksp, PetscReal *e_min)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1272,7 +1394,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig_GLTR(KSP ksp,PetscReal *e_min
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPGLTRGetLambda_GLTR"
-PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda_GLTR(KSP ksp,PetscReal *lambda)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda_GLTR(KSP ksp, PetscReal *lambda)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
 
@@ -1281,6 +1403,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda_GLTR(KSP ksp,PetscReal *lambd
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
+
+static const char *DType_Table[64] = {
+  "preconditioned", "unpreconditioned"
+};
 
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_GLTR"
@@ -1301,6 +1427,9 @@ PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
   ierr = PetscOptionsInt("-ksp_gltr_max_cg_its", "Maximum Conjugate Gradient Iters", "", cg->max_cg_its, &cg->max_cg_its, PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, PETSC_NULL); CHKERRQ(ierr);
+
+  ierr = PetscOptionsEList("-ksp_gltr_dtype", "Norm used for direction", "", DType_Table, GLTR_DIRECTION_TYPES, DType_Table[cg->dtype], &cg->dtype, PETSC_NULL); CHKERRQ(ierr);
+
   ierr = PetscOptionsTail(); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1334,6 +1463,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
   ierr = PetscLogObjectMemory(ksp, sizeof(KSP_GLTR)); CHKERRQ(ierr);
 
   cg->radius = PETSC_MAX;
+  cg->dtype = GLTR_UNPRECONDITIONED_DIRECTION;
 
   cg->init_pert = 1.0e-8;
   cg->eigen_tol = 1.0e-10;
@@ -1351,9 +1481,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
   ksp->data = (void *) cg;
   ksp->pc_side = PC_LEFT;
 
-  /* Sets the functions that are associated with this data structure
-   * (in C++ this is the same as defining virtual functions)
-   */
+  /***************************************************************************/
+  /* Sets the functions that are associated with this data structure         */
+  /* (in C++ this is the same as defining virtual functions).                */
+  /***************************************************************************/
+
   ksp->ops->setup          = KSPSetUp_GLTR;
   ksp->ops->solve          = KSPSolve_GLTR;
   ksp->ops->destroy        = KSPDestroy_GLTR;
@@ -1363,25 +1495,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
   ksp->ops->view           = 0;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                    "KSPGLTRSetRadius_C",
-                                    "KSPGLTRSetRadius_GLTR",
-                                     KSPGLTRSetRadius_GLTR); CHKERRQ(ierr);
+                                           "KSPGLTRSetRadius_C",
+                                           "KSPGLTRSetRadius_GLTR",
+                                            KSPGLTRSetRadius_GLTR); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                    "KSPGLTRGetNormD_C",
-                                    "KSPGLTRGetNormD_GLTR",
-                                     KSPGLTRGetNormD_GLTR); CHKERRQ(ierr);
+                                           "KSPGLTRGetNormD_C",
+                                           "KSPGLTRGetNormD_GLTR",
+                                            KSPGLTRGetNormD_GLTR); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                    "KSPGLTRGetObjFcn_C",
-                                    "KSPGLTRGetObjFcn_GLTR",
-                                     KSPGLTRGetObjFcn_GLTR); CHKERRQ(ierr);
+                                           "KSPGLTRGetObjFcn_C",
+                                           "KSPGLTRGetObjFcn_GLTR",
+                                            KSPGLTRGetObjFcn_GLTR); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                    "KSPGLTRGetMinEig_C",
-                                    "KSPGLTRGetMinEig_GLTR",
-                                     KSPGLTRGetMinEig_GLTR); CHKERRQ(ierr);
+                                           "KSPGLTRGetMinEig_C",
+                                           "KSPGLTRGetMinEig_GLTR",
+                                            KSPGLTRGetMinEig_GLTR); CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)ksp,
-                                    "KSPGLTRGetLambda_C",
-                                    "KSPGLTRGetLambda_GLTR",
-                                     KSPGLTRGetLambda_GLTR); CHKERRQ(ierr);
+                                           "KSPGLTRGetLambda_C",
+                                           "KSPGLTRGetLambda_GLTR",
+                                            KSPGLTRGetLambda_GLTR); CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

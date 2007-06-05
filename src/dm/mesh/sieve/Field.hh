@@ -908,7 +908,7 @@ namespace ALE {
 
       for(typename chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         if (this->getConstraintDimension(*p_iter)) {
-          this->updatePointBC(*p_iter, section->restrictPoint(*p_iter));
+          this->updatePointBCFull(*p_iter, section->restrictPoint(*p_iter));
         }
       }
       this->copyFibration(section);
@@ -1006,25 +1006,34 @@ namespace ALE {
       this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly);
     };
     void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
-      const int& dim   = this->getFiberDimension(p);
-      const int& cDim  = this->getConstraintDimension(p);
-      const int  end   = start + dim;
+      const int& cDim = this->getConstraintDimension(p);
 
       if (!cDim) {
         if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+          const int  end = start + dim;
+
           for(int i = start; i < end; ++i) {
             indices[(*indx)++] = i;
           }
         } else {
-          for(int i = end-1; i >= start; --i) {
-            indices[(*indx)++] = i;
+          int offset = start;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = offset+dim-1; i >= offset; --i) {
+              indices[(*indx)++] = i;
+            }
+            offset += dim;
           }
         }
       } else {
-        const typename bc_type::value_type *cDof = this->getConstraintDof(p);
-        int                                 cInd = 0;
-
         if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
           for(int i = start, k = 0; k < dim; ++k) {
             if ((cInd < cDim) && (k == cDof[cInd])) {
               if (!freeOnly) indices[(*indx)++] = -(k+1);
@@ -1034,15 +1043,26 @@ namespace ALE {
             }
           }
         } else {
-          const int tEnd = start + this->getConstrainedFiberDimension(p);
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
 
-          for(int i = tEnd-1, k = 0; k < dim; ++k) {
-            if ((cInd < cDim) && (k == cDof[cInd])) {
-              if (!freeOnly) indices[(*indx)++] = -(dim-k+1);
-              ++cInd;
-            } else {
-              indices[(*indx)++] = i--;
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = (dim - tDim)-1;
+
+            for(int i = 0, k = start+tDim+offset; i < dim; ++i, ++j) {
+              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {
+                if (!freeOnly) indices[(*indx)++] = -(offset+i+1);
+                --cInd;
+              } else {
+                indices[(*indx)++] = --k;
+              }
             }
+            offset  += dim;
+            cOffset += dim - tDim;
           }
         }
       }
@@ -1152,7 +1172,6 @@ namespace ALE {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  cDim  = this->getConstraintDimension(p);
 
-
       if (!cDim) {
         if (orientation >= 0) {
           const int& dim = this->getFiberDimension(p);
@@ -1177,10 +1196,10 @@ namespace ALE {
         if (orientation >= 0) {
           const int&                          dim  = this->getFiberDimension(p);
           const typename bc_type::value_type *cDof = this->getConstraintDof(p);
-          int                                 cInd = cDim-1;
+          int                                 cInd = 0;
 
           for(int i = 0, k = -1; i < dim; ++i) {
-            if ((cInd >= 0) && (i == cDof[cInd])) {--cInd; continue;}
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
             array[i] = v[++k];
           }
         } else {
@@ -1233,10 +1252,10 @@ namespace ALE {
         if (orientation >= 0) {
           const int&                          dim  = this->getFiberDimension(p);
           const typename bc_type::value_type *cDof = this->getConstraintDof(p);
-          int                                 cInd = cDim-1;
+          int                                 cInd = 0;
 
           for(int i = 0, k = -1; i < dim; ++i) {
-            if ((cInd < cDim) && (i == cDof[cInd])) {--cInd; continue;}
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
             array[i] += v[++k];
           }
         } else {
@@ -1261,21 +1280,85 @@ namespace ALE {
       }
     };
     // Update only the constrained dofs on a point
+    //   This takes an array with ONLY bc values
     void updatePointBC(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
-      const int&  dim   = this->getFiberDimension(p);
       const int&  cDim  = this->getConstraintDimension(p);
 
       if (cDim) {
-        const typename bc_type::value_type *cDof = this->getConstraintDof(p);
-        int                                 cInd = 0;
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
 
-        for(int i = 0, k = 0; i < dim; ++i) {
-          if (cInd == cDim) break;
-          if (i == cDof[cInd]) {
-            array[i] = v[k];
-            ++cInd;
-            ++k;
+          for(int i = 0; i < dim; ++i) {
+            if (cInd == cDim) break;
+            if (i == cDof[cInd]) {
+              array[i] = v[cInd];
+              ++cInd;
+            }
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = (dim - tDim)-1;
+
+            for(int i = 0; i < dim; ++i, ++j) {
+              if (cInd < 0) break;
+              if (j == cDof[cInd+cOffset]) {
+                array[j] = v[cInd+cOffset];
+                --cInd;
+              }
+            }
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update only the constrained dofs on a point
+    //   This takes an array with ALL values, not just BC
+    void updatePointBCFull(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (cDim) {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if (cInd == cDim) break;
+            if (i == cDof[cInd]) {
+              array[i] = v[i];
+              ++cInd;
+            }
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = (dim - tDim)-1;
+
+            for(int i = 0, k = dim+offset; i < dim; ++i, ++j, --k) {
+              if (cInd < 0) break;
+              if (j == cDof[cInd+cOffset]) {
+                array[j] = v[k];
+                --cInd;
+              }
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
           }
         }
       }

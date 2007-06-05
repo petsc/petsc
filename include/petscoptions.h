@@ -162,7 +162,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsRealArray(const char[],const c
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsIntArray(const char[],const char[],const char[],PetscInt[],PetscInt*,PetscTruth*);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsStringArray(const char[],const char[],const char[],char*[],PetscInt*,PetscTruth*);
 
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions();
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void);
 PETSC_EXTERN_CXX_END
 
 typedef enum {OPTION_INT,OPTION_LOGICAL,OPTION_REAL,OPTION_LIST,OPTION_STRING,OPTION_REAL_ARRAY,OPTION_HEAD} PetscOptionType;

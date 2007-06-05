@@ -124,9 +124,11 @@ class Configure(PETSc.package.Package):
 
   def setupDependencies(self, framework):
     PETSc.package.Package.setupDependencies(self, framework)
-    self.petscdir = framework.require('PETSc.utilities.petscdir', self)
-    self.arch     = framework.require('PETSc.utilities.arch', self)
-    self.deps     = [self.petscdir, self.arch]
+    self.petscdir        = framework.require('PETSc.utilities.petscdir', self)
+    self.arch            = framework.require('PETSc.utilities.arch', self)
+    self.sharedLibraries = framework.require('PETSc.utilities.sharedLibraries', self)
+    self.make            = framework.require('PETSc.utilities.Make', self)
+    self.deps            = []
     return
 
   def InstallOld(self):
@@ -176,31 +178,35 @@ class Configure(PETSc.package.Package):
       os.unlink(makeinc)
     g = open(makeinc,'w')
     g.write('include '+os.path.join(self.petscdir.dir, 'bmake', 'common', 'rules.shared.basic')+'\n')
-    g.write('SHELL          = '+self.programs.SHELL+'\n')
-    g.write('CP             = '+self.programs.cp+'\n')
-    g.write('RM             = '+self.programs.RM+'\n')
-    g.write('MKDIR          = '+self.programs.mkdir+'\n')
+    g.write('SHELL            = '+self.programs.SHELL+'\n')
+    g.write('CP               = '+self.programs.cp+'\n')
+    g.write('RM               = '+self.programs.RM+'\n')
+    g.write('MKDIR            = '+self.programs.mkdir+'\n')
+    g.write('OMAKE            = '+self.make.make+' '+self.make.flags+'\n')
 
-    g.write('AR             = '+self.setCompilers.AR+'\n')
-    g.write('ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n')
-    g.write('AR_LIB_SUFFIX  = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
-    g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
+    g.write('CLINKER          = '+self.setCompilers.getLinker()+'\n')
+    g.write('AR               = '+self.setCompilers.AR+'\n')
+    g.write('ARFLAGS          = '+self.setCompilers.AR_FLAGS+'\n')
+    g.write('AR_LIB_SUFFIX    = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
+    g.write('RANLIB           = '+self.setCompilers.RANLIB+'\n')
+    g.write('SL_LINKER_SUFFIX = '+self.setCompilers.sharedLibraryExt+'\n')
 
-    g.write('TETGEN_ROOT    = '+tetgenDir+'\n')
-    g.write('PREFIX         = '+installDir+'\n')
-    g.write('LIBDIR         = '+libDir+'\n')
-    g.write('TETGENLIB      = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
-    g.write('SHLIB          = $(LIBDIR)/libtetgen.'+self.setCompilers.sharedLibraryExt+'\n')
+    g.write('TETGEN_ROOT      = '+tetgenDir+'\n')
+    g.write('PREFIX           = '+installDir+'\n')
+    g.write('LIBDIR           = '+libDir+'\n')
+    g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
+    g.write('TETGENLIB        = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
+    g.write('SHLIB            = libtetgen\n')
     
     self.setCompilers.pushLanguage('C')
     cflags = self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')
     cflags += ' '+self.headers.toString('.')
         
     g.write('CC             = '+self.setCompilers.getCompiler()+'\n')
-    g.write('CFLAGS         = '+cflags)
+    g.write('CFLAGS         = '+cflags+'\n')
     self.setCompilers.popLanguage()
 
-    if self.useShared:
+    if self.sharedLibraries.useShared:
       import config.setCompilers
 
       g.write('BUILDSHAREDLIB = yes\n')
@@ -208,9 +214,42 @@ class Configure(PETSc.package.Package):
         g.write('shared_arch: shared_'+self.arch.hostOsBase+'gnu\n')
       else:
         g.write('shared_arch: shared_'+self.arch.hostOsBase+'\n')
+        g.write('''
+tetgen_shared: 
+	-@if [ "${BUILDSHAREDLIB}" = "no" ]; then \\
+	    echo "Shared libraries disabled"; \\
+	  else \
+	    echo "making shared libraries in ${INSTALL_LIB_DIR}"; \\
+	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+	    mkdir ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+            cwd=`pwd`; \\
+	    for LIBNAME in ${SHLIB}; \\
+	    do \\
+	      if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX} -o -f ${INSTALL_LIB_DIR}/lt_$$LIBNAME.${AR_LIB_SUFFIX}; then \\
+	        if test -f ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX}; then \\
+	          flag=`find ${INSTALL_LIB_DIR} -type f -name $$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \\
+	          if [ "$$flag" = "" ]; then \\
+	            flag=`find ${INSTALL_LIB_DIR} -type f -name lt_$$LIBNAME.${AR_LIB_SUFFIX} -newer ${INSTALL_LIB_DIR}/$$LIBNAME.${SL_LINKER_SUFFIX} -print`; \\
+	          fi; \\
+	        else \\
+	          flag="build"; \\
+	        fi; \\
+	        if [ "$$flag" != "" ]; then \\
+                echo "building $$LIBNAME.${SL_LINKER_SUFFIX}"; \\
+                  ${RM} -f ${INSTALL_LIB_DIR}/tmp-tetgen-shlib/*; \\
+	          cd  ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+	          ${AR} x ${INSTALL_LIB_DIR}/$$LIBNAME.${AR_LIB_SUFFIX}; \\
+                  cd $$cwd;\\
+	          ${OMAKE} LIBNAME=$$LIBNAME SHARED_LIBRARY_TMPDIR=${INSTALL_LIB_DIR}/tmp-tetgen-shlib shared_arch; \\
+	        fi; \\
+	      fi; \\
+	    done; \\
+	    ${RM} -rf ${INSTALL_LIB_DIR}/tmp-tetgen-shlib; \\
+	  fi\n''')
     else:
       g.write('BUILDSHAREDLIB = no\n')
       g.write('shared_arch:\n')
+      g.write('shared:\n')
     g.close()
 
     # Now compile & install
@@ -226,7 +265,7 @@ class Configure(PETSc.package.Package):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing TetGen; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+tetgenDir+'; make clean; make tetlib; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+tetgenDir+'; make clean; make tetlib tetgen_shared; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on TetGen: '+str(e))
     else:

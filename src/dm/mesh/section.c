@@ -718,6 +718,52 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal section, Mesh mesh,
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SectionRealAXPY"
+/*@C
+  SectionRealAXPY - 
+
+  Collective on Section
+
+  Input Parameters:
++  section - the real Section
+.  alpha - a scalar
+-  X - the other real Section
+
+  Output Parameter:
+. section - the difference 
+
+  Level: intermediate
+
+.seealso VecNorm(), SectionRealCreate()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal section, Mesh mesh, PetscScalar alpha, SectionReal X)
+{
+  Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh::real_section_type> s;
+  Obj<ALE::Mesh::real_section_type> sX;
+  Vec            v, x;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, s->getName(), s);
+  ierr = VecCreate(m->comm(), &v);CHKERRQ(ierr);
+  ierr = VecSetSizes(v, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  ierr = VecDuplicate(v, &x);CHKERRQ(ierr);
+  ierr = SectionRealToVec(section, mesh, SCATTER_FORWARD, v);CHKERRQ(ierr);
+  ierr = SectionRealToVec(X,       mesh, SCATTER_FORWARD, x);CHKERRQ(ierr);
+  ierr = VecAXPY(v, alpha, x);CHKERRQ(ierr);
+  ierr = SectionRealToVec(section, mesh, SCATTER_REVERSE, v);CHKERRQ(ierr);
+  ierr = VecDestroy(v);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshGetVertexSectionReal"
 /*@C
   MeshGetVertexSectionReal - Create a Section over the vertices with the specified fiber dimension

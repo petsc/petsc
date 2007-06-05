@@ -363,7 +363,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsert(int *argc,char ***args,const c
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
 
   options->argc     = (argc) ? *argc : 0;
-  options->args     = (args) ? *args : 0;
+  options->args     = (args) ? *args : PETSC_NULL;
 
   if (file) {
     ierr = PetscOptionsInsertFile(file);CHKERRQ(ierr);
@@ -1666,7 +1666,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
 .keywords: set, options, database
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
 {
   PetscTruth          flg;
   PetscErrorCode      ierr;
