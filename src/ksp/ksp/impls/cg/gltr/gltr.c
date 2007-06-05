@@ -5,6 +5,8 @@
 #include "include/petscblaslapack.h"
 #include "src/ksp/ksp/impls/cg/gltr/gltr.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRSetRadius"
 /*@
     KSPGLTRSetRadius - Sets the radius of the trust region.
 
@@ -21,9 +23,6 @@
 
 .keywords: KSP, GLTR, set, trust region radius
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRSetRadius"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal);
@@ -38,6 +37,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetNormD"
 /*@
     KSPGLTRGetNormD - Get norm of the direction.
 
@@ -51,9 +52,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRSetRadius(KSP ksp, PetscReal radius)
 
 .keywords: KSP, GLTR, get, norm direction
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetNormD"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
@@ -67,6 +65,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetObjFcn"
 /*@
     KSPGLTRGetObjFcn - Get objective function value.
 
@@ -80,9 +80,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetNormD(KSP ksp, PetscReal *norm_d)
 
 .keywords: KSP, GLTR, get, objective function
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetObjFcn"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
@@ -96,6 +93,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetMinEig"
 /*@
     KSPGLTRGetMinEig - Get minimum eigenvalue.
 
@@ -109,9 +108,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
 .keywords: KSP, GLTR, get, minimum eigenvalue
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetMinEig"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
@@ -125,6 +121,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPGLTRGetLambda"
 /*@
     KSPGLTRGetLambda - Get multiplier on trust-region constraint.
 
@@ -138,9 +136,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetMinEig(KSP ksp, PetscReal *e_min)
 
 .keywords: KSP, GLTR, get, multiplier
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPGLTRGetLambda"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
@@ -154,7 +149,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGLTRGetLambda(KSP ksp, PetscReal *lambda)
   PetscFunctionReturn(0);
 }
 
-/*@
+#undef __FUNCT__
+#define __FUNCT__ "KSPSolve_GLTR"
+/*
   KSPSolve_GLTR - Use preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
 
@@ -178,10 +175,7 @@ $  other KSP converged/diverged reasons
 
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
-@*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_GLTR"
+*/
 PetscErrorCode KSPSolve_GLTR(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX

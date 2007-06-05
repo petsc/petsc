@@ -3,6 +3,8 @@
 #include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/cg/stcg/stcg.h"
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPSTCGSetRadius"
 /*@
     KSPSTCGSetRadius - Sets the radius of the trust region.
 
@@ -19,9 +21,6 @@
 
 .keywords: KSP, STCG, set, trust region radius
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGSetRadius"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal);
@@ -36,6 +35,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPSTCGGetNormD"
 /*@
     KSPSTCGGetNormD - Got norm of the direction.
 
@@ -49,9 +50,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 
 .keywords: KSP, STCG, get, norm direction
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetNormD"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
@@ -65,6 +63,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "KSPSTCGGetObjFcn"
 /*@
     KSPSTCGGetObjFcn - Get objective function value.
 
@@ -78,9 +78,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP ksp, PetscReal *norm_d)
 
 .keywords: KSP, STCG, get, objective function
 @*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSTCGGetObjFcn"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 {
   PetscErrorCode ierr, (*f)(KSP, PetscReal *);
@@ -94,7 +91,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
   PetscFunctionReturn(0);
 }
 
-/*@
+#undef __FUNCT__
+#define __FUNCT__ "KSPSolve_STCG"
+/*
   KSPSolve_STCG - Use preconditioned conjugate gradient to compute
   an approximate minimizer of the quadratic function
 
@@ -118,10 +117,7 @@ $  other KSP converged/diverged reasons
 
   Notes:
   The preconditioner supplied should be symmetric and positive definite.
-@*/
-
-#undef __FUNCT__
-#define __FUNCT__ "KSPSolve_STCG"
+*/
 PetscErrorCode KSPSolve_STCG(KSP ksp)
 {
 #ifdef PETSC_USE_COMPLEX
