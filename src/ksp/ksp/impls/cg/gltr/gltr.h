@@ -5,6 +5,10 @@
 #ifndef __GLTR
 #define __GLTR
 
+#define GLTR_PRECONDITIONED_DIRECTION	0
+#define GLTR_UNPRECONDITIONED_DIRECTION	1
+#define GLTR_DIRECTION_TYPES		2
+
 typedef struct {
   PetscReal *diag;		/* Diagonal part of Lanczos matrix           */
   PetscReal *offd;		/* Off-diagonal part of Lanczos matrix       */ 
@@ -32,6 +36,7 @@ typedef struct {
   PetscInt  max_cg_its;		/* Maximum conjugate gradient iterations     */
   PetscInt  max_lanczos_its;	/* Maximum lanczos iterations		     */
   PetscInt  max_newton_its;	/* Maximum newton iterations                 */
+  PetscInt  dtype;              /* Method used to measure the norm of step   */
 } KSP_GLTR;
 
 #endif

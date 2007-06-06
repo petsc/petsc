@@ -23,6 +23,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC);
 #if defined(PETSC_HAVE_ML)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC);
 #endif
@@ -42,7 +43,6 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC);
 #if defined(PETSC_HAVE_PROMETHEUS)
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Prometheus(PC);
 #endif
-
 
 EXTERN_C_END
 
@@ -90,6 +90,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char path[])
   ierr = PCRegisterDynamic(PCFIELDSPLIT   ,path,"PCCreate_FieldSplit",PCCreate_FieldSplit);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCGALERKIN     ,path,"PCCreate_Galerkin",PCCreate_Galerkin);CHKERRQ(ierr);
   ierr = PCRegisterDynamic(PCOPENMP       ,path,"PCCreate_OpenMP",PCCreate_OpenMP);CHKERRQ(ierr);
+  ierr = PCRegisterDynamic(PCSUPPORTGRAPH ,path,"PCCreate_SupportGraph",PCCreate_SupportGraph);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_ML)
   ierr = PCRegisterDynamic(PCML           ,path,"PCCreate_ML",PCCreate_ML);CHKERRQ(ierr);
 #endif

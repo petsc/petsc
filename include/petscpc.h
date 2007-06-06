@@ -64,6 +64,7 @@ E*/
 #define PCPROMETHEUS      "prometheus"
 #define PCGALERKIN        "galerkin"
 #define PCOPENMP          "openmp"
+#define PCSUPPORTGRAPH    "supportgraph"
 
 /* Logging support */
 extern PetscCookie PETSCKSP_DLLEXPORT PC_COOKIE;
@@ -92,6 +93,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCHasApplyTranspose(PC,PetscTruth*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCApplyBAorABTranspose(PC,PCSide,Vec,Vec,Vec);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardson(PC,Vec,Vec,Vec,PetscReal,PetscReal,PetscReal,PetscInt);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCApplyRichardsonExists(PC,PetscTruth*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetInitialGuessNonzero(PC,PetscTruth);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterDestroy(void);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCRegisterAll(const char[]);

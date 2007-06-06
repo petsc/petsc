@@ -18,6 +18,7 @@ static PetscErrorCode PCApply_KSP(PC pc,Vec x,Vec y)
   PC_KSP         *jac = (PC_KSP*)pc->data;
 
   PetscFunctionBegin;
+  ierr      = KSPSetInitialGuessNonzero(jac->ksp,pc->nonzero_guess);CHKERRQ(ierr);
   ierr      = KSPSolve(jac->ksp,x,y);CHKERRQ(ierr);
   ierr      = KSPGetIterationNumber(jac->ksp,&its);CHKERRQ(ierr);
   jac->its += its;

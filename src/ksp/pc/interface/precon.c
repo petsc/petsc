@@ -1488,6 +1488,40 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCSetInitialGuessNonzero"
+/*@
+   PCSetInitialGuessNonzero - Tells the iterative solver that the 
+   initial guess is nonzero; otherwise PC assumes the initial guess
+   is to be zero (and thus zeros it out before solving).
+
+   Collective on PC
+
+   Input Parameters:
++  pc - iterative context obtained from PCCreate()
+-  flg - PETSC_TRUE indicates the guess is non-zero, PETSC_FALSE indicates the guess is zero
+
+   Level: Developer
+
+   Notes:
+    This is a weird function. Since PC's are linear operators on the right hand side they
+    CANNOT use an initial guess. This function is for the "pass-through" preconditioners
+    PCKSP, PCREDUNDANT and PCOPENMP and causes the inner KSP object to use the nonzero
+    initial guess. Not currently working for PCREDUNDANT, that has to be rewritten to use KSP.
+
+
+.keywords: PC, set, initial guess, nonzero
+
+.seealso: PCGetInitialGuessNonzero(), PCSetInitialGuessKnoll(), PCGetInitialGuessKnoll()
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT PCSetInitialGuessNonzero(PC pc,PetscTruth flg)
+{
+  PetscFunctionBegin;
+  pc->nonzero_guess   = flg;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "PCRegister"
 /*@C

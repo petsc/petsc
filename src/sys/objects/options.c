@@ -1666,7 +1666,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCreate(void)
 
 .keywords: set, options, database
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions()
+PetscErrorCode PETSC_DLLEXPORT PetscOptionsSetFromOptions(void)
 {
   PetscTruth          flg;
   PetscErrorCode      ierr;

@@ -13,6 +13,7 @@ typedef struct {
   Mat          gmat;                 /* matrix known only to process 0 in the local world */
   Vec          x,y,xdummy,ydummy;
   VecScatter   scatter;
+  PetscTruth   nonzero_guess; 
 } PC_OpenMP;
 
 
@@ -245,6 +246,7 @@ static PetscErrorCode PCApply_OpenMP_1(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = KSPSetInitialGuessNonzero(red->ksp,pc->nonzero_guess);CHKERRQ(ierr);
   ierr = KSPSolve(red->ksp,x,y);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -343,6 +345,11 @@ static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscFunctionBegin;
   ierr = VecScatterBegin(red->scatter,red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatter,red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  if (red->nonzero_guess) {
+    ierr = VecScatterBegin(red->scatter,red->ydummy,red->y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+    ierr = VecScatterEnd(red->scatter,red->ydummy,red->y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  }
+  ierr = KSPSetInitialGuessNonzero(red->ksp,red->nonzero_guess);CHKERRQ(ierr);
 
   ierr = KSPSolve(red->ksp,red->x,red->y);CHKERRQ(ierr);
 
@@ -359,8 +366,10 @@ static PetscErrorCode PCApply_OpenMP(PC pc,Vec x,Vec y)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  red->xdummy = x;
-  red->ydummy = y;
+  red->xdummy        = x;
+  red->ydummy        = y;
+  red->nonzero_guess = pc->nonzero_guess;
+  ierr = MPI_Bcast(&red->nonzero_guess,1,MPIU_INT,0,red->comm);CHKERRQ(ierr);
   ierr = PetscOpenMPRun(red->comm,PCApply_OpenMP_MP,red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
