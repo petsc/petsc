@@ -167,7 +167,7 @@ PetscErrorCode MatSetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   PetscErrorCode ierr;
   PetscInt       *aj = a->j,nonew = a->nonew,lastcol = -1;
   PetscScalar    *ap,value,*aa = a->a;
-  PetscTruth     ignorezeroentries = ((a->ignorezeroentries && is == ADD_VALUES) ? PETSC_TRUE:PETSC_FALSE);
+  PetscTruth     ignorezeroentries = a->ignorezeroentries;
   PetscTruth     roworiented = a->roworiented;
 
   PetscFunctionBegin;  
@@ -3412,7 +3412,7 @@ void PETSC_STDCALL matsetvaluesseqaij_(Mat *AA,PetscInt *mm,const PetscInt im[],
   PetscErrorCode ierr;
   PetscInt       *aj,nonew = a->nonew,lastcol = -1;
   PetscScalar    *ap,value,*aa;
-  PetscTruth     ignorezeroentries = ((a->ignorezeroentries && is == ADD_VALUES) ? PETSC_TRUE:PETSC_FALSE);
+  PetscTruth     ignorezeroentries = a->ignorezeroentries;
   PetscTruth     roworiented = a->roworiented;
 
   PetscFunctionBegin;  
