@@ -164,7 +164,7 @@ class Configure(PETSc.package.Package):
   def Install(self):
     import os, sys
     import config.base
-    # Get the ParMetis directories
+    # Get the TetGen directories
     tetgenDir      = self.getDir()
     installDir     = os.path.join(tetgenDir, self.arch.arch)
     libDir         = os.path.join(installDir, 'lib')
