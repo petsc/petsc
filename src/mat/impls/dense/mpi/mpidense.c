@@ -584,14 +584,76 @@ PetscErrorCode MatDestroy_MPIDense(Mat mat)
 #define __FUNCT__ "MatView_MPIDense_Binary"
 static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
 {
-  Mat_MPIDense   *mdn = (Mat_MPIDense*)mat->data;
-  PetscErrorCode ierr;
+  Mat_MPIDense      *mdn = (Mat_MPIDense*)mat->data;
+  PetscErrorCode    ierr;
+  PetscViewerFormat format;
+  int               fd;
+  PetscInt          header[4],mmax,N = mat->cmap.N,i,j,m,k;
+  PetscMPIInt       rank,tag  = ((PetscObject)viewer)->tag,size;
+  PetscScalar       *work,*v;
+  Mat_SeqDense      *a = (Mat_SeqDense*)mdn->A->data;
+  MPI_Status        status;
 
   PetscFunctionBegin;
   if (mdn->size == 1) {
     ierr = MatView(mdn->A,viewer);CHKERRQ(ierr);
+  } else {
+    ierr = PetscViewerBinaryGetDescriptor(viewer,&fd);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(mat->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr);
+
+    ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
+    if (format == PETSC_VIEWER_BINARY_NATIVE) {
+
+      if (!rank) {
+	/* store the matrix as a dense matrix */
+	header[0] = MAT_FILE_COOKIE;
+	header[1] = mat->rmap.N;
+	header[2] = N;
+	header[3] = MATRIX_BINARY_FORMAT_DENSE;
+	ierr = PetscBinaryWrite(fd,header,4,PETSC_INT,PETSC_TRUE);CHKERRQ(ierr);
+
+	/* get largest work array needed for transposing array */
+        mmax = mat->rmap.n;
+        for (i=1; i<size; i++) {
+          mmax = PetscMax(mmax,mat->rmap.range[i+1] - mat->rmap.range[i]);
+        }
+	ierr = PetscMalloc(mmax*N*sizeof(PetscScalar),&work);CHKERRQ(ierr);
+
+	/* write out local array, by rows */
+        m    = mat->rmap.n;
+	v    = a->v;
+        for (j=0; j<N; j++) {
+	  for (i=0; i<m; i++) {
+	    work[i + j*N] = *v++;
+	  }
+	}
+	ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+
+        /* get largest work array to receive messages from other processes, excludes process zero */
+        mmax = 0;
+        for (i=1; i<size; i++) {
+          mmax = PetscMax(mmax,mat->rmap.range[i+1] - mat->rmap.range[i]);
+        }
+	ierr = PetscMalloc(mmax*N*sizeof(PetscScalar),&v);CHKERRQ(ierr);
+        for (k=1; k<size; k++) {
+          m    = mat->rmap.range[k+1] - mat->rmap.range[k];
+          ierr = MPI_Recv(v,m*N,MPIU_SCALAR,k,tag,mat->comm,&status);CHKERRQ(ierr);
+
+	  for (j=0; j<N; j++) {
+	    for (i=0; i<m; i++) {
+	      work[i + j*N] = *v++;
+	    }
+	  }
+	  ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
+        }
+        ierr = PetscFree(work);CHKERRQ(ierr);
+        ierr = PetscFree(v);CHKERRQ(ierr);
+      } else {
+        ierr = MPI_Send(a->v,mat->rmap.n*mat->cmap.N,MPIU_SCALAR,0,tag,mat->comm);CHKERRQ(ierr);
+      }
+    }
   }
-  else SETERRQ(PETSC_ERR_SUP,"Only uniprocessor output supported");
   PetscFunctionReturn(0);
 }
 
