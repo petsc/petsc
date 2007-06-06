@@ -2,7 +2,7 @@
 
 /*  -------------------------------------------------------------------- 
 
-     This file implements a Jacobi preconditioner in PETSc as part of PC.
+     This file implements a SupportGraph preconditioner in PETSc as part of PC.
      You can use this as a starting point for implementing your own 
      preconditioner that is not provided with PETSc. (You might also consider
      just using PCSHELL)
@@ -13,7 +13,7 @@
           PCApply_XXX()           - Applies the preconditioner
           PCDestroy_XXX()         - Destroys the preconditioner context
      where the suffix "_XXX" denotes a particular implementation, in
-     this case we use _Jacobi (e.g., PCCreate_Jacobi, PCApply_Jacobi).
+     this case we use _SupportGraph (e.g., PCCreate_SupportGraph, PCApply_SupportGraph).
      These routines are actually called via the common user interface
      routines PCCreate(), PCSetFromOptions(), PCApply(), and PCDestroy(), 
      so the application code interface remains identical for all 
@@ -39,20 +39,20 @@
 
      Additional optional functionality unique to preconditioners is left and
      right symmetric preconditioner application via PCApplySymmetricLeft() 
-     and PCApplySymmetricRight().  The Jacobi implementation is 
-     PCApplySymmetricLeftOrRight_Jacobi().
+     and PCApplySymmetricRight().  The SupportGraph implementation is 
+     PCApplySymmetricLeftOrRight_SupportGraph().
 
     -------------------------------------------------------------------- */
 
 /* 
-   Include files needed for the Jacobi preconditioner:
+   Include files needed for the SupportGraph preconditioner:
      pcimpl.h - private include file intended for use by all preconditioners 
 */
 
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 
 /* 
-   Private context (data structure) for the Jacobi preconditioner.  
+   Private context (data structure) for the SupportGraph preconditioner.  
 */
 typedef struct {
   Vec        diag;               /* vector containing the reciprocals of the diagonal elements
@@ -63,17 +63,17 @@ typedef struct {
   PetscTruth userowmax;
   PetscTruth userowsum;
   PetscTruth useabs;             /* use the absolute values of the diagonal entries */
-} PC_Jacobi;
+} PC_SupportGraph;
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseRowMax_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax_Jacobi(PC pc)
+#define __FUNCT__ "PCSupportGraphSetUseRowMax_SupportGraph"
+PetscErrorCode PETSCKSP_DLLEXPORT PCSupportGraphSetUseRowMax_SupportGraph(PC pc)
 {
-  PC_Jacobi *j;
+  PC_SupportGraph *j;
 
   PetscFunctionBegin;
-  j            = (PC_Jacobi*)pc->data;
+  j            = (PC_SupportGraph*)pc->data;
   j->userowmax = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -81,13 +81,13 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseRowSum_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowSum_Jacobi(PC pc)
+#define __FUNCT__ "PCSupportGraphSetUseRowSum_SupportGraph"
+PetscErrorCode PETSCKSP_DLLEXPORT PCSupportGraphSetUseRowSum_SupportGraph(PC pc)
 {
-  PC_Jacobi *j;
+  PC_SupportGraph *j;
 
   PetscFunctionBegin;
-  j            = (PC_Jacobi*)pc->data;
+  j            = (PC_SupportGraph*)pc->data;
   j->userowsum = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -95,13 +95,13 @@ EXTERN_C_END
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseAbs_Jacobi"
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs_Jacobi(PC pc)
+#define __FUNCT__ "PCSupportGraphSetUseAbs_SupportGraph"
+PetscErrorCode PETSCKSP_DLLEXPORT PCSupportGraphSetUseAbs_SupportGraph(PC pc)
 {
-  PC_Jacobi *j;
+  PC_SupportGraph *j;
 
   PetscFunctionBegin;
-  j         = (PC_Jacobi*)pc->data;
+  j         = (PC_SupportGraph*)pc->data;
   j->useabs = PETSC_TRUE;
   PetscFunctionReturn(0);
 }
@@ -109,7 +109,7 @@ EXTERN_C_END
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_Jacobi - Prepares for the use of the Jacobi preconditioner
+   PCSetUp_SupportGraph - Prepares for the use of the SupportGraph preconditioner
                     by setting data structures and options.   
 
    Input Parameter:
@@ -122,10 +122,10 @@ EXTERN_C_END
    the user, but instead is called by PCApply() if necessary.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Jacobi"
-static PetscErrorCode PCSetUp_Jacobi(PC pc)
+#define __FUNCT__ "PCSetUp_SupportGraph"
+static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 {
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
   Vec            diag,diagsqrt;
   PetscErrorCode ierr;
   PetscInt       n,i;
@@ -146,8 +146,8 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
     (for symmetric preconditioning).  Hence we do not allocate space here, since we
     don't know at this point which will be needed (diag and/or diagsqrt) until the user
     applies the preconditioner, and we don't want to allocate BOTH unless we need
-    them both.  Thus, the diag and diagsqrt are allocated in PCSetUp_Jacobi_NonSymmetric()
-    and PCSetUp_Jacobi_Symmetric(), respectively.
+    them both.  Thus, the diag and diagsqrt are allocated in PCSetUp_SupportGraph_NonSymmetric()
+    and PCSetUp_SupportGraph_Symmetric(), respectively.
   */
 
   /*
@@ -207,51 +207,51 @@ static PetscErrorCode PCSetUp_Jacobi(PC pc)
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_Jacobi_Symmetric - Allocates the vector needed to store the
+   PCSetUp_SupportGraph_Symmetric - Allocates the vector needed to store the
    inverse of the square root of the diagonal entries of the matrix.  This
-   is used for symmetric application of the Jacobi preconditioner.
+   is used for symmetric application of the SupportGraph preconditioner.
 
    Input Parameter:
 .  pc - the preconditioner context
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Jacobi_Symmetric"
-static PetscErrorCode PCSetUp_Jacobi_Symmetric(PC pc)
+#define __FUNCT__ "PCSetUp_SupportGraph_Symmetric"
+static PetscErrorCode PCSetUp_SupportGraph_Symmetric(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&jac->diagsqrt,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(pc,jac->diagsqrt);CHKERRQ(ierr);
-  ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
+  ierr = PCSetUp_SupportGraph(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_Jacobi_NonSymmetric - Allocates the vector needed to store the
+   PCSetUp_SupportGraph_NonSymmetric - Allocates the vector needed to store the
    inverse of the diagonal entries of the matrix.  This is used for left of
-   right application of the Jacobi preconditioner.
+   right application of the SupportGraph preconditioner.
 
    Input Parameter:
 .  pc - the preconditioner context
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_Jacobi_NonSymmetric"
-static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
+#define __FUNCT__ "PCSetUp_SupportGraph_NonSymmetric"
+static PetscErrorCode PCSetUp_SupportGraph_NonSymmetric(PC pc)
 {
   PetscErrorCode ierr;
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
 
   PetscFunctionBegin;
   ierr = MatGetVecs(pc->pmat,&jac->diag,0);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(pc,jac->diag);CHKERRQ(ierr);
-  ierr = PCSetUp_Jacobi(pc);CHKERRQ(ierr);
+  ierr = PCSetUp_SupportGraph(pc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCApply_Jacobi - Applies the Jacobi preconditioner to a vector.
+   PCApply_SupportGraph - Applies the SupportGraph preconditioner to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -263,22 +263,22 @@ static PetscErrorCode PCSetUp_Jacobi_NonSymmetric(PC pc)
    Application Interface Routine: PCApply()
  */
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_Jacobi"
-static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_SupportGraph"
+static PetscErrorCode PCApply_SupportGraph(PC pc,Vec x,Vec y)
 {
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   if (!jac->diag) {
-    ierr = PCSetUp_Jacobi_NonSymmetric(pc);CHKERRQ(ierr);
+    ierr = PCSetUp_SupportGraph_NonSymmetric(pc);CHKERRQ(ierr);
   }
   ierr = VecPointwiseMult(y,x,jac->diag);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCApplySymmetricLeftOrRight_Jacobi - Applies the left or right part of a
+   PCApplySymmetricLeftOrRight_SupportGraph - Applies the left or right part of a
    symmetric preconditioner to a vector.
 
    Input Parameters:
@@ -291,23 +291,23 @@ static PetscErrorCode PCApply_Jacobi(PC pc,Vec x,Vec y)
    Application Interface Routines: PCApplySymmetricLeft(), PCApplySymmetricRight()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCApplySymmetricLeftOrRight_Jacobi"
-static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApplySymmetricLeftOrRight_SupportGraph"
+static PetscErrorCode PCApplySymmetricLeftOrRight_SupportGraph(PC pc,Vec x,Vec y)
 {
   PetscErrorCode ierr;
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
 
   PetscFunctionBegin;
   if (!jac->diagsqrt) {
-    ierr = PCSetUp_Jacobi_Symmetric(pc);CHKERRQ(ierr);
+    ierr = PCSetUp_SupportGraph_Symmetric(pc);CHKERRQ(ierr);
   }
   VecPointwiseMult(y,x,jac->diagsqrt);
   PetscFunctionReturn(0);
 }
 /* -------------------------------------------------------------------------- */
 /*
-   PCDestroy_Jacobi - Destroys the private context for the Jacobi preconditioner
-   that was created with PCCreate_Jacobi().
+   PCDestroy_SupportGraph - Destroys the private context for the SupportGraph preconditioner
+   that was created with PCCreate_SupportGraph().
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -315,10 +315,10 @@ static PetscErrorCode PCApplySymmetricLeftOrRight_Jacobi(PC pc,Vec x,Vec y)
    Application Interface Routine: PCDestroy()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_Jacobi"
-static PetscErrorCode PCDestroy_Jacobi(PC pc)
+#define __FUNCT__ "PCDestroy_SupportGraph"
+static PetscErrorCode PCDestroy_SupportGraph(PC pc)
 {
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -333,19 +333,19 @@ static PetscErrorCode PCDestroy_Jacobi(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetFromOptions_Jacobi"
-static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
+#define __FUNCT__ "PCSetFromOptions_SupportGraph"
+static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 {
-  PC_Jacobi      *jac = (PC_Jacobi*)pc->data;
+  PC_SupportGraph      *jac = (PC_SupportGraph*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHead("Jacobi options");CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_jacobi_rowmax","Use row maximums for diagonal","PCJacobiSetUseRowMax",jac->userowmax,
+  ierr = PetscOptionsHead("SupportGraph options");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_supportgraph_rowmax","Use row maximums for diagonal","PCSupportGraphSetUseRowMax",jac->userowmax,
                           &jac->userowmax,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_jacobi_rowsum","Use row sums for diagonal","PCJacobiSetUseRowSum",jac->userowsum,
+    ierr = PetscOptionsTruth("-pc_supportgraph_rowsum","Use row sums for diagonal","PCSupportGraphSetUseRowSum",jac->userowsum,
                           &jac->userowsum,PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-pc_jacobi_abs","Use absolute values of diagaonal entries","PCJacobiSetUseAbs",jac->useabs,
+    ierr = PetscOptionsTruth("-pc_supportgraph_abs","Use absolute values of diagaonal entries","PCSupportGraphSetUseAbs",jac->useabs,
                           &jac->useabs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -353,7 +353,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreate_Jacobi - Creates a Jacobi preconditioner context, PC_Jacobi, 
+   PCCreate_SupportGraph - Creates a SupportGraph preconditioner context, PC_SupportGraph, 
    and sets this as the private data within the generic preconditioning 
    context, PC, that was created within PCCreate().
 
@@ -364,18 +364,18 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
 */
 
 /*MC
-     PCJACOBI - Jacobi (i.e. diagonal scaling preconditioning)
+     PCSUPPORTGRAPH - SupportGraph (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
-+    -pc_jacobi_rowmax - use the maximum absolute value in each row as the scaling factor,
++    -pc_supportgraph_rowmax - use the maximum absolute value in each row as the scaling factor,
                         rather than the diagonal
-.    -pc_jacobi_rowsum - use the maximum absolute value in each row as the scaling factor,
+.    -pc_supportgraph_rowsum - use the maximum absolute value in each row as the scaling factor,
                         rather than the diagonal
--    -pc_jacobi_abs - use the absolute value of the diagaonl entry
+-    -pc_supportgraph_abs - use the absolute value of the diagaonl entry
 
    Level: beginner
 
-  Concepts: Jacobi, diagonal scaling, preconditioners
+  Concepts: SupportGraph, diagonal scaling, preconditioners
 
   Notes: By using KSPSetPreconditionerSide(ksp,PC_SYMMETRIC) or -ksp_symmetric_pc you 
          can scale each side of the matrix by the squareroot of the diagonal entries.
@@ -383,7 +383,7 @@ static PetscErrorCode PCSetFromOptions_Jacobi(PC pc)
          Zero entries along the diagonal are replaced with the value 1.0
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCJacobiSetUseRowMax(), PCJacobiSetUseRowSum(), PCJacobiSetUseAbs()
+           PCSupportGraphSetUseRowMax(), PCSupportGraphSetUseRowSum(), PCSupportGraphSetUseAbs()
 M*/
 
 EXTERN_C_BEGIN
@@ -391,7 +391,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PCCreate_SupportGraph"
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
 {
-  PC_Jacobi      *jac;
+  PC_SupportGraph      *jac;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -399,14 +399,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_Jacobi,&jac);CHKERRQ(ierr);
+  ierr      = PetscNew(PC_SupportGraph,&jac);CHKERRQ(ierr);
   pc->data  = (void*)jac;
 
   /*
      Logs the memory usage; this is not needed but allows PETSc to 
      monitor how much memory is being used for various purposes.
   */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Jacobi));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_SupportGraph));CHKERRQ(ierr);
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store
@@ -425,27 +425,27 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
       choose not to provide a couple of these functions since they are
       not needed.
   */
-  pc->ops->apply               = PCApply_Jacobi;
-  pc->ops->applytranspose      = PCApply_Jacobi;
-  pc->ops->setup               = PCSetUp_Jacobi;
-  pc->ops->destroy             = PCDestroy_Jacobi;
-  pc->ops->setfromoptions      = PCSetFromOptions_Jacobi;
+  pc->ops->apply               = PCApply_SupportGraph;
+  pc->ops->applytranspose      = PCApply_SupportGraph;
+  pc->ops->setup               = PCSetUp_SupportGraph;
+  pc->ops->destroy             = PCDestroy_SupportGraph;
+  pc->ops->setfromoptions      = PCSetFromOptions_SupportGraph;
   pc->ops->view                = 0;
   pc->ops->applyrichardson     = 0;
-  pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_Jacobi;
-  pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_Jacobi;
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowMax_C","PCJacobiSetUseRowMax_Jacobi",PCJacobiSetUseRowMax_Jacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseRowSum_C","PCJacobiSetUseRowSum_Jacobi",PCJacobiSetUseRowSum_Jacobi);CHKERRQ(ierr);
-  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCJacobiSetUseAbs_C","PCJacobiSetUseAbs_Jacobi",PCJacobiSetUseAbs_Jacobi);CHKERRQ(ierr);
+  pc->ops->applysymmetricleft  = PCApplySymmetricLeftOrRight_SupportGraph;
+  pc->ops->applysymmetricright = PCApplySymmetricLeftOrRight_SupportGraph;
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSupportGraphSetUseRowMax_C","PCSupportGraphSetUseRowMax_SupportGraph",PCSupportGraphSetUseRowMax_SupportGraph);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSupportGraphSetUseRowSum_C","PCSupportGraphSetUseRowSum_SupportGraph",PCSupportGraphSetUseRowSum_SupportGraph);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSupportGraphSetUseAbs_C","PCSupportGraphSetUseAbs_SupportGraph",PCSupportGraphSetUseAbs_SupportGraph);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseAbs"
-/*@
-   PCJacobiSetUseAbs - Causes the Jacobi preconditioner to use the 
+#define __FUNCT__ "PCSupportGraphSetUseAbs"
+/*@C
+   PCSupportGraphSetUseAbs - Causes the SupportGraph preconditioner to use the 
       absolute value of the diagonal to for the preconditioner
 
    Collective on PC
@@ -455,22 +455,22 @@ EXTERN_C_END
 
 
    Options Database Key:
-.  -pc_jacobi_abs
+.  -pc_supportgraph_abs
 
    Level: intermediate
 
-   Concepts: Jacobi preconditioner
+   Concepts: SupportGraph preconditioner
 
-.seealso: PCJacobiaUseRowMax(), PCJacobiaUseRowSum()
+.seealso: PCSupportGraphaUseRowMax(), PCSupportGraphaUseRowSum()
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSupportGraphSetUseAbs(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseAbs_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSupportGraphSetUseAbs_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -478,9 +478,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseRowMax"
-/*@
-   PCJacobiSetUseRowMax - Causes the Jacobi preconditioner to use the 
+#define __FUNCT__ "PCSupportGraphSetUseRowMax"
+/*@C
+   PCSupportGraphSetUseRowMax - Causes the SupportGraph preconditioner to use the 
       maximum entry in each row as the diagonal preconditioner, instead of
       the diagonal entry
 
@@ -491,21 +491,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseAbs(PC pc)
 
 
    Options Database Key:
-.  -pc_jacobi_rowmax 
+.  -pc_supportgraph_rowmax 
 
    Level: intermediate
 
-   Concepts: Jacobi preconditioner
+   Concepts: SupportGraph preconditioner
 
-.seealso: PCJacobiaUseAbs()
+.seealso: PCSupportGraphaUseAbs()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSupportGraphSetUseRowMax(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseRowMax_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSupportGraphSetUseRowMax_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
@@ -513,9 +513,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCJacobiSetUseRowSum"
-/*@
-   PCJacobiSetUseRowSum - Causes the Jacobi preconditioner to use the 
+#define __FUNCT__ "PCSupportGraphSetUseRowSum"
+/*@C
+   PCSupportGraphSetUseRowSum - Causes the SupportGraph preconditioner to use the 
       sum of each row as the diagonal preconditioner, instead of
       the diagonal entry
 
@@ -526,21 +526,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowMax(PC pc)
 
 
    Options Database Key:
-.  -pc_jacobi_rowsum
+.  -pc_supportgraph_rowsum
 
    Level: intermediate
 
-   Concepts: Jacobi preconditioner
+   Concepts: SupportGraph preconditioner
 
-.seealso: PCJacobiaUseAbs(), PCJacobiaUseRowSum()
+.seealso: PCSupportGraphaUseAbs(), PCSupportGraphaUseRowSum()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCJacobiSetUseRowSum(PC pc)
+PetscErrorCode PETSCKSP_DLLEXPORT PCSupportGraphSetUseRowSum(PC pc)
 {
   PetscErrorCode ierr,(*f)(PC);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCJacobiSetUseRowSum_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCSupportGraphSetUseRowSum_C",(void (**)(void))&f);CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(pc);CHKERRQ(ierr);
   } 
