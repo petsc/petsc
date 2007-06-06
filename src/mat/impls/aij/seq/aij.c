@@ -783,6 +783,9 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
     case MAT_IGNORE_ZERO_ENTRIES:
       a->ignorezeroentries = PETSC_TRUE;
       break;
+    case MAT_DO_NOT_IGNORE_ZERO_ENTRIES:
+      a->ignorezeroentries = PETSC_FALSE;
+      break;
     case MAT_USE_COMPRESSEDROW:
       a->compressedrow.use = PETSC_TRUE;
       break;
