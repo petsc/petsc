@@ -146,7 +146,7 @@ PetscErrorCode MatSetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt im[],PetscI
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data; 
   PetscInt       *aimax = a->imax,*ai = a->i,*ailen = a->ilen,*aj = a->j;
   PetscScalar    *aa = a->a;
-  PetscTruth     ignorezeroentries = (((a->ignorezeroentries)&&(addv==ADD_VALUES))?PETSC_TRUE:PETSC_FALSE); 
+  PetscTruth     ignorezeroentries = a->ignorezeroentries;
   Mat            B = aij->B;
   Mat_SeqAIJ     *b = (Mat_SeqAIJ*)B->data; 
   PetscInt       *bimax = b->imax,*bi = b->i,*bilen = b->ilen,*bj = b->j,bm = aij->B->rmap.n,am = aij->A->rmap.n;
