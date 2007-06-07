@@ -583,7 +583,7 @@ class Configure(config.base.Configure):
       # somehow doing this hacky thing appears to get rid of error with undefined __hpf_exit
       self.logPrint('Adding -lpgftnrtl before -lpgf90rtl in library list')
       output = output.replace(' -lpgf90rtl -lpgftnrtl',' -lpgftnrtl -lpgf90rtl -lpgftnrtl')
-        
+
     # The easiest thing to do for xlf output is to replace all the commas
     # with spaces.  Try to only do that if the output is really from xlf,
     # since doing that causes problems on other systems.
@@ -709,6 +709,9 @@ class Configure(config.base.Configure):
           if founddir:
             continue
         if arg.find('quickfit.o')>=0:
+          flibs.append(arg)
+        # gcc+pgf90 might require pgi.dl
+        if arg.find('pgi.ld')>=0:
           flibs.append(arg)
         self.logPrint('Unknown arg '+arg, 4, 'compilers')
     except StopIteration:
@@ -892,6 +895,8 @@ class Configure(config.base.Configure):
     # if user specified nof90src, then guess the compilerand set the correct c-f90 variant
     if self.stripquotes(self.framework.argDB['with-f90-interface']) == 'nof90src':
       self.f90Guess = self.getFortran90SourceGuesses()
+      if not self.f90Guess:
+        raise RuntimeError('Could not autodetect f90interface for this compiler [with option -with-f90-interface=nof90src].\nRecommend using the default option: -with-f90-interface=f90src')
       self.logPrint('Using f90 interface guess: '+self.f90Guess)
     elif self.framework.argDB['with-f90-interface'] != 'f90src':
       self.f90Guess = self.stripquotes(self.framework.argDB['with-f90-interface'])            
