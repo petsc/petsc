@@ -51,6 +51,9 @@ class Configure(config.base.Configure):
     self.mpi           = framework.require('config.packages.MPI',        self)
     self.mpi.archProvider             = self.arch
     self.mpi.languageProvider         = self.languages
+    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
+    self.umfpack.archProvider         = self.arch
+    self.umfpack.languageProvider     = self.languages
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
