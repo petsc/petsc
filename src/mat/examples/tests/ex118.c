@@ -174,5 +174,6 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   }
   ierr = VecDestroy(vt2); 
   ierr = VecDestroy(vt1);
+  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
