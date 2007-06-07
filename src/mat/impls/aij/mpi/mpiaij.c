@@ -1213,6 +1213,7 @@ PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op)
   case MAT_USE_INODES:
   case MAT_DO_NOT_USE_INODES:
   case MAT_IGNORE_ZERO_ENTRIES:
+  case MAT_DO_NOT_IGNORE_ZERO_ENTRIES:
     ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
     break;
