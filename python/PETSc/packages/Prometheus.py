@@ -41,6 +41,8 @@ class Configure(PETSc.package.Package):
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
+    args += 'AR      = '+self.setCompilers.AR+'\n'
+    args += 'ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n'
     self.framework.pushLanguage('C++')
     args += 'CXX = '+self.framework.getCompiler()
     args += ' -DPROM_HAVE_METIS'

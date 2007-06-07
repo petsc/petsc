@@ -395,7 +395,7 @@ extern PetscErrorCode PetscExceptionTmp;
 #define CHKERRQ(n)     ;
 #define CHKERRABORT(comm,n) ;
 #define CHKERRCONTINUE(n) ;
-
+#define CHKFPQ(f) ;
 #define CHKMEMQ        ;
 
 #if !defined(PETSC_SKIP_UNDERSCORE_CHKERR)
@@ -403,7 +403,11 @@ extern PetscErrorCode PetscExceptionTmp;
 #define ___  
 #endif 
 
+#define PetscExceptionPush(a)       0
+#define PetscExceptionPop(a)
 #define PetscErrorSetCatchable(a,b) 0
+#define PetscErrorIsCatchable(a)    PETSC_FALSE
+
 #define PetscExceptionCaught(a,b)   PETSC_FALSE
 #define PetscExceptionValue(a)      PETSC_FALSE
 #define PetscExceptionTry1(a,b)     a
