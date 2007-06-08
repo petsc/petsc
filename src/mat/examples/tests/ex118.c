@@ -122,7 +122,8 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 {
   PetscInt     ierr,i,j,nev; 
   Vec          vt1,vt2; /* tmp vectors */
-  PetscReal    norm,tmp,dot,norm_max,dot_max;  
+  PetscReal    norm,tmp,norm_max;  
+  PetscScalar  dot,dot_max;
 
   PetscFunctionBegin;
   nev = iu - il;
