@@ -369,7 +369,7 @@ class Configure(config.base.Configure):
     '''Return standard library name guesses for a given installation root'''
     libs = ['ts', 'snes', 'ksp', 'dm', 'mat', 'vec', '']
     if root:
-      d = os.path.join(root, 'lib', self.arch)
+      d = os.path.join(root, self.arch, 'lib')
       if not os.path.isdir(d):
         self.logPrint('', 3, 'petsc')
         return
