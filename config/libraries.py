@@ -171,9 +171,10 @@ extern "C" {
       if self.checkLink(includes, body):
         found = 1
         # add to list of found libraries
-        for lib in libName:
-          shortlib = self.getShortLibName(lib)
-          if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
+        if libName:
+          for lib in libName:
+            shortlib = self.getShortLibName(lib)
+            if shortlib: self.addDefine(self.getDefineName(shortlib), 1)
       self.setCompilers.LIBS = oldLibs
       self.popLanguage()
       if not found: return 0

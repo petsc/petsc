@@ -67,6 +67,8 @@ class Package(config.base.Configure):
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-dir=<dir>',nargs.ArgDir(None,None,'Indicate the root directory of the '+self.name+' installation'))
     if self.download and not self.download[0] == 'redefine':
       help.addArgument(self.PACKAGE, '-download-'+self.package+'=<no,yes,ifneeded,filename>', nargs.ArgDownload(None, 0, 'Download and install '+self.name))
+    if hasattr(self, 'usePkgConfig'):
+      help.addArgument(self.PACKAGE, '-with-'+self.package+'-pkg-config=<dir>', nargs.ArgDir(None, None, 'Indicate the root directory of the '+self.name+' installation'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-include=<dir>',nargs.ArgDir(None,None,'Indicate the directory of the '+self.name+' include files'))
     help.addArgument(self.PACKAGE,'-with-'+self.package+'-lib=<libraries: e.g. [/Users/..../lib'+self.package+'.a,...]>',nargs.ArgLibrary(None,None,'Indicate the '+self.name+' libraries'))    
     return
@@ -371,6 +373,9 @@ class Package(config.base.Configure):
       self.framework.argDB['with-'+self.package] = 1
     if 'with-'+self.package+'-dir' in self.framework.argDB or 'with-'+self.package+'-include' in self.framework.argDB or 'with-'+self.package+'-lib' in self.framework.argDB:
       self.framework.argDB['with-'+self.package] = 1
+    if hasattr(self, 'usePkgConfig') and 'with-'+self.package+'-pkg-config' in self.framework.argDB:
+      self.framework.argDB['with-'+self.package] = 1
+      self.usePkgConfig()
 
     self.consistencyChecks()
     if self.framework.argDB['with-'+self.package]:

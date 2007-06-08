@@ -11,7 +11,7 @@ from stat import *
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.1.tar.gz']
+    self.download_lam     = ['http://www.lam-mpi.org/download/files/lam-7.1.3.tar.gz']
     self.download_mpich   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/mpich2-1.0.5p4.tar.gz']
     self.download         = ['redefine']
     self.functions        = ['MPI_Init', 'MPI_Comm_create']
@@ -254,7 +254,7 @@ class Configure(config.package.Package):
         
     # Check for MPICH
     if self.framework.argDB['download-mpich']:
-      if config.setCompilers.Configure.isCygwin():
+      if config.setCompilers.Configure.isCygwin() and not config.setCompilers.Configure.isGNU(self.setCompilers.CC):
         raise RuntimeError('Sorry, cannot download-install MPICH on Windows. Sugest installing windows version of MPICH manually')
       self.liblist      = [[]]
       self.download     = self.download_mpich
@@ -338,7 +338,24 @@ class Configure(config.package.Package):
       except:
         pass
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed LAM/MPI into '+installDir)
-    return installDir
+
+    # Reset compilers to MPI compilers. Perhaps there should be self.setCompilers.reintializeCompilers()?
+    mpicc = os.path.join(installDir,"bin","mpicc")
+    if not os.path.isfile(mpicc): raise RuntimeError('Could not locate installed MPI compiler: '+mpicc)
+    self.setCompilers.CC = mpicc
+    if hasattr(self.compilers, 'CXX'):
+      mpicxx = os.path.join(installDir,"bin","mpic++")
+      if not os.path.isfile(mpicxx): raise RuntimeError('Could not locate installed MPI compiler: '+mpicxx)
+      self.setCompilers.CXX = mpicxx
+    if hasattr(self.compilers, 'FC'):
+      mpif77 = os.path.join(installDir,"bin","mpif77")
+      if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
+      self.setCompilers.FC = mpif77
+    # redo the shared and dynamic linker check
+    self.setCompilers.checkSharedLinker()
+    self.setCompilers.checkDynamicLinker()
+    self.setCompilers.usedMPICompilers=1
+    return self.getDir()
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
@@ -478,8 +495,11 @@ class Configure(config.package.Package):
         mpif77 = os.path.join(installDir,"bin","mpif77")
         if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
         self.setCompilers.FC = mpif77
-      self.setCompilers.usedMPICompilers=1
-    return installDir
+    # redo the shared and dynamic linker check
+    self.setCompilers.checkSharedLinker()
+    self.setCompilers.checkDynamicLinker()
+    self.setCompilers.usedMPICompilers=1
+    return self.getDir()
 
   def addExtraLibraries(self):
     '''Check for various auxiliary libraries we may need'''
