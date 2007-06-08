@@ -23,10 +23,10 @@ all:
       echo "********************************************************************"; \
       exit 1; fi
 	@${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir
-	-@${OMAKE} all_build 2>&1 | tee make_log_${PETSC_ARCH}
-	-@egrep -i "( error | error:)" make_log_${PETSC_ARCH} > /dev/null; if [ "$$?" = "0" ]; then \
+	-@${OMAKE} all_build 2>&1 | tee ${PETSC_ARCH}/make_log
+	-@egrep -i "( error | error:)" ${PETSC_ARCH}/make_log > /dev/null; if [ "$$?" = "0" ]; then \
            echo "********************************************************************"; \
-           echo "  Error during compile, check make_log_${PETSC_ARCH}"; \
+           echo "  Error during compile, check ${PETSC_ARCH}/make_log"; \
            echo "  Send it and configure.log to petsc-maint@mcs.anl.gov";\
            echo "********************************************************************"; \
            exit 1; fi
@@ -61,7 +61,7 @@ info:
 	-@echo "-----------------------------------------"
 	-@echo "Using configure Options: ${CONFIGURE_OPTIONS}"
 	-@echo "Using configuration flags:"
-	-@grep "\#define " ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h
+	-@grep "\#define " ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "------------------------------------------"
@@ -83,7 +83,7 @@ info:
 	-@echo "=========================================="
 #
 #
-MINFO = ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscmachineinfo.h
+MINFO = ${PETSC_DIR}/${PETSC_ARCH}/include/petscmachineinfo.h
 info_h:
 	-@$(RM) -f ${MINFO} MINFO
 	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
@@ -426,7 +426,7 @@ alladiclib:
 	-@echo "Using PETSc flags: ${PETSCFLAGS} ${PCONF}"
 	-@echo "-----------------------------------------"
 	-@echo "Using configuration flags:"
-	-@grep "define " bmake/${INLUDE_ARCH}/petscconf.h
+	-@grep "define " ${PETSC_ARCH}/include/petscconf.h
 	-@echo "-----------------------------------------"
 	-@echo "Using include paths: ${PETSC_INCLUDE}"
 	-@echo "-----------------------------------------"

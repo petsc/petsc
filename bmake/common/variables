@@ -82,7 +82,7 @@ PETSC_CONTRIB     = ${C_SH_LIB_PATH} -L${PETSC_LIB_DIR} ${PETSC_CONTRIB_BASIC}
 PETSC_FORTRAN_LIB = 
 
 #-----------------------------------------------------------------------------------------
-PETSC_LIB_DIR_COMPLEX = ${PETSC_DIR}/lib/${PETSC_ARCH}
+PETSC_LIB_DIR_COMPLEX = ${PETSC_DIR}/${PETSC_ARCH}/lib
 PETSC_SYS_LIB_BASIC_COMPLEX      = -lpetsc 
 PETSC_VEC_LIB_BASIC_COMPLEX      = -lpetscvec ${PETSC_SYS_LIB_BASIC_COMPLEX}
 PETSC_MAT_LIB_BASIC_COMPLEX      = -lpetscmat ${PETSC_VEC_LIB_BASIC_COMPLEX}

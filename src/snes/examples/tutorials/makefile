@@ -411,7 +411,7 @@ testex19: ex19.PETSc
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
 	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
-        D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h`; \
+        D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
 	if [ "$${D2}" != "" ]; then havex="1"; fi;\
 	if [ $${havex} = "1" ]; then \
            ${MPIEXEC} -np 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \

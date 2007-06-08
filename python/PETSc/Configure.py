@@ -51,9 +51,9 @@ class Configure(config.base.Configure):
     self.mpi           = framework.require('config.packages.MPI',        self)
     self.mpi.archProvider             = self.arch
     self.mpi.languageProvider         = self.languages
-    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
-    self.umfpack.archProvider         = self.arch
-    self.umfpack.languageProvider     = self.languages
+#    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
+#    self.umfpack.archProvider         = self.arch
+#    self.umfpack.languageProvider     = self.languages
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
@@ -83,7 +83,7 @@ class Configure(config.base.Configure):
     return
     
   def Dump(self):
-    ''' Actually put the values into the bmake files '''
+    ''' Actually put the values into the configuration files '''
     # eventually everything between -- should be gone
 #-----------------------------------------------------------------------------------------------------    
 
@@ -207,7 +207,7 @@ class Configure(config.base.Configure):
 
   def dumpConfigInfo(self):
     import time
-    fd = file(os.path.join('bmake',self.arch.arch,'petscconfiginfo.h'),'w')
+    fd = file(os.path.join(self.arch.arch,'include','petscconfiginfo.h'),'w')
     fd.write('static const char *petscconfigureruntime = "'+time.ctime(time.time())+'";\n')
     fd.write('static const char *petscconfigureoptions = "'+self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"')+'";\n')
     fd.close()
@@ -300,25 +300,11 @@ class Configure(config.base.Configure):
     return
 
 #-----------------------------------------------------------------------------------------------------
-  def configureDefaults(self):
-    if self.framework.argDB['with-default-arch']:
-      fd = file(os.path.join('bmake', 'petscconf'), 'w')
-      fd.write('PETSC_ARCH='+self.arch.arch+'\n')
-      fd.write('include '+os.path.join('${PETSC_DIR}','bmake',self.arch.arch,'petscconf')+'\n')
-      fd.close()
-      self.framework.actions.addArgument('PETSc', 'Build', 'Set default architecture to '+self.arch.arch+' in bmake/petscconf')
-    elif os.path.isfile(os.path.join('bmake', 'petscconf')):
-      try:
-        os.unlink(os.path.join('bmake', 'petscconf'))
-      except:
-        raise RuntimeError('Unable to remove file '+os.path.join('bmake', 'petscconf')+'. Did a different user create it?')
-    return
-
   def configureScript(self):
-    '''Output a script in the bmake directory which will reproduce the configuration'''
+    '''Output a script in the conf directory which will reproduce the configuration'''
     import nargs
 
-    scriptName = os.path.join(self.bmakedir.bmakeDir, 'configure.py')
+    scriptName = os.path.join(self.arch.arch,'conf', 'configure.py')
     args = dict([(nargs.Arg.parseArgument(arg)[0], arg) for arg in self.framework.clArgs])
     if 'configModules' in args:
       del args['configModules']
@@ -366,10 +352,10 @@ class Configure(config.base.Configure):
   def configure(self):
     if not os.path.samefile(self.petscdir.dir, os.getcwd()):
       raise RuntimeError('Wrong PETSC_DIR option specified: '+str(self.petscdir.dir) + '\n  Configure invoked in: '+os.path.realpath(os.getcwd()))
-    self.framework.header          = 'bmake/'+self.arch.arch+'/petscconf.h'
-    self.framework.cHeader         = 'bmake/'+self.arch.arch+'/petscfix.h'
-    self.framework.makeMacroHeader = 'bmake/'+self.arch.arch+'/petscconf'
-    self.framework.makeRuleHeader  = 'bmake/'+self.arch.arch+'/petscrules'
+    self.framework.header          = self.arch.arch+'/include/petscconf.h'
+    self.framework.cHeader         = self.arch.arch+'/include/petscfix.h'
+    self.framework.makeMacroHeader = self.arch.arch+'/conf/petscconf'
+    self.framework.makeRuleHeader  = self.arch.arch+'/conf/petscrules'
     if self.libraries.math is None:
       raise RuntimeError('PETSc requires a functional math library. Please send configure.log to petsc-maint@mcs.anl.gov.')
     if self.languages.clanguage == 'Cxx' and not hasattr(self.compilers, 'CXX'):
@@ -378,7 +364,6 @@ class Configure(config.base.Configure):
     self.executeTest(self.configureSolaris)
     self.executeTest(self.configureLinux)
     self.executeTest(self.configureWin32)
-    self.executeTest(self.configureDefaults)
     self.executeTest(self.configureScript)
     self.executeTest(self.configureInstall)
     self.executeTest(self.configureGCOV)

@@ -6,8 +6,8 @@
 #define __PETSC_H
 /* ========================================================================== */
 /* 
-   petscconf.h is contained in bmake/${PETSC_ARCH}/petscconf.h it is 
-   found automatically by the compiler due to the -I${PETSC_DIR}/bmake/${PETSC_ARCH}
+   petscconf.h is contained in ${PETSC_ARCH}/conf/petscconf.h it is 
+   found automatically by the compiler due to the -I${PETSC_DIR}/${PETSC_ARCH}/include
    in the bmake/common/variables definition of PETSC_INCLUDE
 */
 #include "petscconf.h"
