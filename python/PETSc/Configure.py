@@ -198,8 +198,8 @@ class Configure(config.base.Configure):
     self.addMakeMacro('INSTALL_DIR',self.installdir)
     self.addMakeMacro('top_builddir',self.installdir)                
 
-    if not os.path.exists(os.path.join(self.petscdir.dir,'lib')):
-      os.makedirs(os.path.join(self.petscdir.dir,'lib'))
+    if not os.path.exists(os.path.join(self.petscdir.dir,self.arch.arch,'lib')):
+      os.makedirs(os.path.join(self.petscdir.dir,self.arch.arch,'lib'))
 
     # add a makefile entry for configure options
     self.addMakeMacro('CONFIGURE_OPTIONS', self.framework.getOptionsString(['configModules', 'optionsModule']).replace('\"','\\"'))

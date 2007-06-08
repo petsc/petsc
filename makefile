@@ -193,7 +193,7 @@ ranlib:
 
 # Deletes PETSc libraries
 deletelibs: 
-	-${RM} -f ${PETSC_LIB_DIR}/lib*.*
+	-${RM} -f ${PETSC_LIB_DIR}/libpetsc*.*
 
 # Cleans up build
 allclean: deletelibs
