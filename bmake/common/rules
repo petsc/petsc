@@ -123,7 +123,7 @@ tree: ${ACTION}
             if [ -d $$dir ]; then \
 	      r=`egrep requirespackage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-		HCONF=`grep PETSC_ ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h | cut -d" " -f2`; \
+		HCONF=`grep PETSC_ ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | cut -d" " -f2`; \
                 HPCONF=`echo ${PCONF} | sed s/-D//g`; \
                 f=0; \
                 for l in $${HPCONF} foo $${HCONF}; do \
@@ -274,7 +274,7 @@ getmpiexec:
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
         fi
 	-@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
-          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h > /dev/null;\
+          egrep PETSC_HAVE_ADIC ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null;\
           if [ "$$?" = 0 ]; then \
             haveadic=1; \
           else \
@@ -805,6 +805,6 @@ push:
 	-@cd ${PETSC_DIR}/python/BuildSystem; hg push
 
 
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscrules
+include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
 # some systems like this line between the two includes
 include ${PETSC_DIR}/bmake/common/rules.shared.basic

@@ -8,8 +8,8 @@
 # PETSC_[C,F]CPPFLAGS    -  preprocessor flags for *.c, *.F preprocessing
 # PETSC_[C,F]SH_LIB_PATH - linker_add_sh_lib_path:sh_lib_path pairs for all the shared library locations
 #
-PETSC_LIB_DIR	    = ${PETSC_DIR}/lib/${PETSC_ARCH}
-PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/bmake/${PETSC_ARCH} -I${PETSC_DIR}/include \
+PETSC_LIB_DIR	    = ${PETSC_DIR}/${PETSC_ARCH}/lib
+PETSC_INCLUDE	    = -I${PETSC_DIR} -I${PETSC_DIR}/${PETSC_ARCH}/include -I${PETSC_DIR}/include \
                         ${PACKAGES_INCLUDES} ${TAU_DEFS} ${TAU_INCLUDE} ${PETSC_BLASLAPACK_FLAGS}
 
 PETSC_CC_INCLUDES = ${PETSC_INCLUDE}
@@ -116,4 +116,4 @@ SHLIBS   = libpetsc libpetscvec libpetscmat libpetscdm libpetscksp libpetscsnes 
 # The following include files set customized site, optimization, and version
 # options.
 #
-include ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf
+include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscconf
