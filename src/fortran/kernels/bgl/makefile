@@ -22,7 +22,7 @@ LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/fortran/kernels/bgl/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 

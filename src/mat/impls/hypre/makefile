@@ -17,6 +17,6 @@ LIBBASE  = libpetscmat
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/hypre/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

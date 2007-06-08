@@ -7,7 +7,7 @@ LOCDIR          = src/sys/viewer/examples/tests/
 EXAMPLESC       = ex3.c
 MANSEC          = Viewer
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex3: ex3.o   chkopts
 	-${CLINKER} -o ex3 ex3.o  ${PETSC_SYS_LIB}
@@ -19,5 +19,5 @@ runex3:
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_C_X11_MPIUNI = ex3.PETSc runex3 ex3.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 

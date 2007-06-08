@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex3.c ex4.c ex6.c ex7.c ex10.c \
 EXAMPLESCH      = 
 EXAMPLESF       = ex5f.F ex12f.F ex16f.F
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -383,4 +383,4 @@ TESTEXAMPLES_BLOCKSOLVE95      = ex6.PETSc runex6_6 ex6.rm
 TESTEXAMPLES_FORTRAN_NOCOMPLEX = ex16f.PETSc runex16f ex16f.rm  ex12f.PETSc runex12f ex12f.rm 
 TESTEXAMPLES_13		       = ex18.PETSc ex18.rm ex20.PETSc runex20 ex20.rm ex5f.PETSc ex5f.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

@@ -139,9 +139,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if self.archIndependent:
-      return os.path.abspath(self.Install())
-    return os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+    return os.path.abspath(self.Install())
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''

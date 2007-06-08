@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c
 EXAMPLESF       = ex8f.F
 MANSEC          = PC
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_KSP_LIB}
@@ -87,6 +87,6 @@ TESTEXAMPLES_FORTRAN	  = ex8f.PETSc runex8f ex8f.rm
 TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex3.PETSc runex3 ex3.rm \
                             ex4.PETSc runex4 ex4.rm ex5.PETSc runex5 ex5.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 
 

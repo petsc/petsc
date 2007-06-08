@@ -297,9 +297,9 @@ getmpiexec:
                   echo '#include "petscdmmg.h"' >> $*.ad.c ;\
 	          echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
                   if [ "foo${ADIC_CC}" != "foo" ]; then \
-                    echo ${ADIC_CC}  -i ${PETSC_DIR}/bmake/adic.init $<.tmp1; \
-	            ${ADIC_CC} -F -z -t -i ${PETSC_DIR}/bmake/adic.init  $<.tmp1 ; \
-	            ${ADIC_CC} -F -z -t -h -i ${PETSC_DIR}/bmake/adicmf.init   $<.tmp2 ; \
+                    echo ${ADIC_CC}  -i ${PETSC_DIR}/conf/adic.init $<.tmp1; \
+	            ${ADIC_CC} -F -z -t -i ${PETSC_DIR}/conf/adic.init  $<.tmp1 ; \
+	            ${ADIC_CC} -F -z -t -h -i ${PETSC_DIR}/conf/adicmf.init   $<.tmp2 ; \
                   else \
                     echo "You need to run the ADIC server on $<.tmp1 and $<.tmp2, then rerun make";\
                     exit;\
@@ -323,7 +323,7 @@ getmpiexec:
                   ${PETSC_DIR}/bin/adprocess.py $< $${r}; \
                   echo "#undef ad_GRAD_MAX" >> $*.ad.c ;\
                   echo '#define ad_GRAD_MAX ' $${c} >> $*.ad.c ;\
-                  ${ADIC_CC} -t -h -i ${PETSC_DIR}/bmake/adicmfb.init   $<.tmp1 ; \
+                  ${ADIC_CC} -t -h -i ${PETSC_DIR}/conf/adicmfb.init   $<.tmp1 ; \
                   echo "typedef struct {double value;double  grad[ad_GRAD_MAX];} mfbDERIV_TYPE;"  >> $*.ad.c ;\
 	          sed -e "s/DERIV_TYPE/mfbDERIV_TYPE/g" $<.ad.tmp1 >> $*.ad.c ;\
                 fi;\
@@ -807,4 +807,4 @@ push:
 
 include ${PETSC_DIR}/${PETSC_ARCH}/conf/petscrules
 # some systems like this line between the two includes
-include ${PETSC_DIR}/bmake/common/rules.shared.basic
+

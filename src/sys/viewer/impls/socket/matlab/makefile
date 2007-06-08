@@ -31,8 +31,8 @@ DIRS      =
 LOCDIR    = src/sys/viewer/impls/socket/matlab/
 NOADIC    = true
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 sread:  
 	-@${MATLAB_MEX} -g CC=${CC} CFLAGS='${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS}' sread.c bread.c -lc

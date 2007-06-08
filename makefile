@@ -231,11 +231,11 @@ install:
           cp -fr ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
           cp -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
           ${RANLIB} ${INSTALL_DIR}/lib/*.a ;\
-          cd ${INSTALL_DIR}; ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
+          ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
           echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
-          echo "sh/bash: unset PETSC_ARCH ;\
-          echo "csh/tcsh: setenv PETSC_DIR "${INSTALL_DIR} ;\
-          echo "csh/tcsh: unsetenv PETSC_ARCH; \
+          echo "sh/bash: unset PETSC_ARCH" ;\
+          echo "csh/tcsh: setenv PETSC_DIR " ${INSTALL_DIR} ;\
+          echo "csh/tcsh: unsetenv PETSC_ARCH"; \
           echo "Then do make test to verify correct install";\
         fi;
 

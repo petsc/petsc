@@ -12,6 +12,6 @@ LIBBASE  = libpetscts
 MANSEC   = TS
 LOCDIR   = src/ts/impls/explicit/rk/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

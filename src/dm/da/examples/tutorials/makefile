@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c
 EXAMPLESF       = ex6f90.F
 MANSEC          = DA
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
@@ -70,4 +70,4 @@ TESTEXAMPLES_C_COMPLEX	  =
 TESTEXAMPLES_C_NOCOMPLEX  = ex2.PETSc runex2 ex2.rm ex6.PETSc ex6.rm
 TESTEXAMPLES_13		  = 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

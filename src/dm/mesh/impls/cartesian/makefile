@@ -12,5 +12,5 @@ DIRS     =
 MANSEC   = Mesh
 LOCDIR   = src/dm/mesh/impls/cartesian/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

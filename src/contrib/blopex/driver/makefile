@@ -9,7 +9,7 @@ EXAMPLESF        =
 MANSEC           = KSP
 
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 driver: driver.o  chkopts
 	-${CLINKER} -o driver driver.o  ${PETSC_KSP_LIB}

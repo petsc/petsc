@@ -18,7 +18,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB} 
@@ -1139,4 +1139,4 @@ TESTEXAMPLES_13		       = ex58f.PETSc ex58f.rm ex70.PETSc ex70.rm ex72.PETSc ex7
 TESTEXAMPLES_PARMETIS	       = ex73.PETSc ex73.rm
 TESTEXAMPLES_FFTW	       = ex112.PETSc runex112 runex112_2 runex112_3 runex112_4 ex112.rm 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

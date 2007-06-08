@@ -19,7 +19,7 @@ EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
 DIRS		 = ex10d
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
@@ -486,4 +486,4 @@ TESTEXAMPLES_AMS	       =
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 ex19.rm 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

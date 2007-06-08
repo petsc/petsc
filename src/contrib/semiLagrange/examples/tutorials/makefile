@@ -15,7 +15,7 @@ EXAMPLESFH     =
 EXAMPLESMATLAB =
 DIRS		   =
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB} ${PETSC_CONTRIB}
@@ -49,4 +49,4 @@ runex4:
 
 TESTEXAMPLES_C_NOCOMPLEX = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 ex4.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

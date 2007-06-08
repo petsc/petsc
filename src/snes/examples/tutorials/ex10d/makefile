@@ -8,7 +8,7 @@ EXAMPLESC	 = ex10.c
 EXAMPLESF	 =
 MANSEC          = SNES
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex10: ex10.o  chkopts
 	-$(CLINKER) -o ex10 ex10.o $(PETSC_LIB)
@@ -22,7 +22,7 @@ runex10:
 
 TESTEXAMPLES_C_NOCOMPLEX	 = ex10.PETSc runex10 ex10.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 
 
 

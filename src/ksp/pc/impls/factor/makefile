@@ -11,6 +11,6 @@ DIRS     = lu ilu icc cholesky
 LOCDIR   = src/ksp/pc/impls/factor/
 MANSEC   = PC
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

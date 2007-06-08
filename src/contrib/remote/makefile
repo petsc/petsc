@@ -16,8 +16,8 @@ PETSCPORTABLE   = true
 DIRS     = 
 LOCDIR   = src/contrib/remote/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 
 ${EXECUTABLE}: chkopts ${OBJSC} ${OBJSF}

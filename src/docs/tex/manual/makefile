@@ -7,8 +7,8 @@ NOADIC    = true
 GONULL    = > /dev/null 2>&1
 LOCDIR    = src/docs/tex/manual/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 # Build the entire manual as well as the intro part
 
