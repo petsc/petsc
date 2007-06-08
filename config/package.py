@@ -131,9 +131,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if self.archIndependent:
-      return os.path.abspath(self.Install())
-    return os.path.abspath(os.path.join(self.Install(), self.arch))
+    return os.path.abspath(self.Install())
 
   def generateLibList(self, directory):
     '''Generates full path list of libraries from self.liblist'''

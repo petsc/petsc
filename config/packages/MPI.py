@@ -274,7 +274,8 @@ class Configure(config.package.Package):
     lamDir = self.getDir()
 
     # Get the LAM directories
-    installDir = os.path.join(lamDir, self.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch,'conf')
     # Configure and Build LAM
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, '--with-rsh=ssh','CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
@@ -298,7 +299,7 @@ class Configure(config.package.Package):
     args = ' '.join(args)
 
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(confDir,'LAM'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -323,7 +324,7 @@ class Configure(config.package.Package):
         self.framework.log.write('********End of Output of running make on LAM *******\n')
         raise RuntimeError('Error running make on LAM, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(confDir,'LAM'), 'w')
       fd.write(args)
       fd.close()
       #need to run ranlib on the libraries using the full path
@@ -337,11 +338,12 @@ class Configure(config.package.Package):
       except:
         pass
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed LAM/MPI into '+installDir)
-    return self.getDir()
+    return installDir
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
-    installDir = os.path.join(mpichDir, self.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch,'conf')
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
       
@@ -392,7 +394,7 @@ class Configure(config.package.Package):
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)
-    configArgsFilename = os.path.join(installDir,'config.args')
+    configArgsFilename = os.path.join(confDir,'MPICH')
     try:
       fd      = file(configArgsFilename)
       oldargs = fd.readline()
@@ -477,7 +479,7 @@ class Configure(config.package.Package):
         if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
         self.setCompilers.FC = mpif77
       self.setCompilers.usedMPICompilers=1
-    return self.getDir()
+    return installDir
 
   def addExtraLibraries(self):
     '''Check for various auxiliary libraries we may need'''

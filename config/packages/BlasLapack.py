@@ -279,6 +279,7 @@ class Configure(config.package.Package):
         raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler - install blas/lapack compiled with g77 instead')
       self.setCompilers.popLanguage()
     libdir = os.path.join(self.petscdir.dir,self.arch,'lib')
+    confdir = os.path.join(self.petscdir.dir,self.arch,'conf')
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
@@ -363,7 +364,7 @@ class Configure(config.package.Package):
       line = f.readline()
     f.close()
     g.close()
-    if os.path.isfile(os.path.join(libdir,'tmpmakefile')) and (SourceDB.getChecksum(os.path.join(libdir,'tmpmakefile')) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
+    if os.path.isfile(os.path.join(confdir,'blaslapack')) and (SourceDB.getChecksum(os.path.join(confdir,'blaslapack')) == SourceDB.getChecksum(os.path.join(confDir,'blaslapack'))):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
