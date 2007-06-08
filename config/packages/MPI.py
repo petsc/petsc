@@ -350,6 +350,9 @@ class Configure(config.package.Package):
       mpif77 = os.path.join(installDir,"bin","mpif77")
       if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
       self.setCompilers.FC = mpif77
+    # redo the shared and dynamic linker check
+    self.setCompilers.checkSharedLinker()
+    self.setCompilers.checkDynamicLinker()
     self.setCompilers.usedMPICompilers=1
     return self.getDir()
 
@@ -490,6 +493,9 @@ class Configure(config.package.Package):
         mpif77 = os.path.join(installDir,"bin","mpif77")
         if not os.path.isfile(mpif77): raise RuntimeError('Could not locate installed MPI compiler: '+mpif77)
         self.setCompilers.FC = mpif77
+    # redo the shared and dynamic linker check
+    self.setCompilers.checkSharedLinker()
+    self.setCompilers.checkDynamicLinker()
     self.setCompilers.usedMPICompilers=1
     return self.getDir()
 
