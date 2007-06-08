@@ -355,7 +355,7 @@ class Configure(config.package.Package):
     self.setCompilers.checkSharedLinker()
     self.setCompilers.checkDynamicLinker()
     self.setCompilers.usedMPICompilers=1
-    return self.getDir()
+    return installDir
 
   def InstallMPICH(self):
     mpichDir = self.getDir()
@@ -499,7 +499,7 @@ class Configure(config.package.Package):
     self.setCompilers.checkSharedLinker()
     self.setCompilers.checkDynamicLinker()
     self.setCompilers.usedMPICompilers=1
-    return self.getDir()
+    return installDir
 
   def addExtraLibraries(self):
     '''Check for various auxiliary libraries we may need'''
