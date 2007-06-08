@@ -110,7 +110,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRetrieve(MPI_Comm comm,const char l
 
   PetscFunctionBegin;
   /* 
-     make copy of library name and replace $PETSC_ARCH and and 
+     make copy of library name and replace $PETSC_ARCH and 
      so we can add to the end of it to look for something like .so.1.0 etc.
   */
   ierr = PetscStrlen(libname,&len);CHKERRQ(ierr);

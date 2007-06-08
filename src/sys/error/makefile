@@ -3,7 +3,7 @@ ALL: lib
 
 CFLAGS    =
 FFLAGS    =
-CPPFLAGS  = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib/${PETSC_ARCH}"'
+CPPFLAGS  = -DPETSC_LIB_DIR='"${INSTALL_DIR}/lib"'
 SOURCEC	  = adebug.c err.c errtrace.c errabort.c errstop.c fp.c signal.c stack.c
 SOURCEF	  =
 SOURCEH	  = ../../../include/petscerror.h 

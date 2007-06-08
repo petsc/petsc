@@ -35,6 +35,30 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListGetPathAndFunction(const char name[],ch
 PetscDLLibrary DLLibrariesLoaded = 0;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscLoadDynamicLibrary"
+static PetscErrorCode PETSC_DLLEXPORT PetscLoadDynamicLibrary(const char *name,PetscTruth *found)
+{
+  char           libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}/libpetsc");CHKERRQ(ierr);
+  ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
+  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
+  if (*found) {
+    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,dlib);CHKERRQ(ierr);
+  } else {
+    ierr = PetscStrcpy(libs,"${PETSC_DIR}/${PETSC_ARCH}/lib/libpetsc");CHKERRQ(ierr);
+    ierr = PetscStrcat(libs,name);CHKERRQ(ierr);
+    ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,found);CHKERRQ(ierr);
+    if (*found) {
+      ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,dlib);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscInitialize_DynamicLibraries"
 /*
     PetscInitialize_DynamicLibraries - Adds the default dynamic link libraries to the 
@@ -42,7 +66,7 @@ PetscDLLibrary DLLibrariesLoaded = 0;
 */ 
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
 {
-  char           *libname[32],libs[PETSC_MAX_PATH_LEN],dlib[PETSC_MAX_PATH_LEN];
+  char           *libname[32];
   PetscErrorCode ierr;
   PetscInt       nmax,i;
   PetscTruth     found;
@@ -56,77 +80,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
 
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetsc");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library %s \n You cannot move the dynamic libraries!\n or remove USE_DYNAMIC_LIBRARIES from ${PETSC_DIR}/bmake/$PETSC_ARCH/petscconf.h\n and rebuild libraries before moving",libs);
-  }
+  ierr = PetscLoadDynamicLibrary("",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("vec",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("mat",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("dm",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("ksp",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("snes",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
+  ierr = PetscLoadDynamicLibrary("ts",&found);CHKERRQ(ierr);
+  if (!found) SETERRQ(PETSC_ERR_FILE_OPEN,"Unable to locate PETSc dynamic library \n You cannot move the dynamic libraries!");
 
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscvec");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscmat");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscdm");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscksp");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscsnes");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscts");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscdm");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetscmesh");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
-
-  ierr = PetscStrcpy(libs,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
-  ierr = PetscStrcat(libs,"/libpetsccontrib");CHKERRQ(ierr);
-  ierr = PetscDLLibraryRetrieve(PETSC_COMM_WORLD,libs,dlib,1024,&found);CHKERRQ(ierr);
-  if (found) {
-    ierr = PetscDLLibraryAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libs);CHKERRQ(ierr);
-  }
+  ierr = PetscLoadDynamicLibrary("mesh",&found);CHKERRQ(ierr);
+  ierr = PetscLoadDynamicLibrary("contrib",&found);CHKERRQ(ierr);
 
   nmax = 32;
   ierr = PetscOptionsGetStringArray(PETSC_NULL,"-dll_append",libname,&nmax,PETSC_NULL);CHKERRQ(ierr);
@@ -135,7 +105,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize_DynamicLibraries(void)
     ierr = PetscDLLibraryCCAAppend(PETSC_COMM_WORLD,&DLLibrariesLoaded,libname[i]);CHKERRQ(ierr);
     ierr = PetscFree(libname[i]);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
