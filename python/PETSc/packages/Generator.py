@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
+    import os
     generatorDir = self.getDir()
     # We could make a check of the md5 of the current configure framework
     self.logPrintBox('Generator needs no installation')
@@ -20,16 +21,17 @@ class Configure(PETSc.package.Package):
 
   def configureLibrary(self):
     '''Find an installation ando check if it can work with PETSc'''
-    import os, sys
     self.framework.log.write('==================================================================================\n')
     self.framework.log.write('Checking for a functional '+self.name+'\n')
 
     for location, dir, lib, incl in self.generateGuesses():
       try:
-        sys.path.insert(0, os.path.dirname(dir))
+        import sys
+        sys.path.insert(0, dir)
         import Cxx
         import CxxHelper
         return
       except ImportError, e:
         self.framework.logPrint('ERROR: Could not import Generator: '+str(e))
+        self.framework.logPrint('  from directory '+str(dir))
     raise RuntimeError('Could not find a functional '+self.name+'\n')

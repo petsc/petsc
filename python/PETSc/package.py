@@ -172,6 +172,8 @@ class Package(config.base.Configure):
     if d:
       for l in self.generateLibList(os.path.join(d, self.libdir)):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
+      for l in self.generateLibList(os.path.join(d, self.arch.arch, self.libdir)):
+        yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
     if 'with-'+self.package+'-dir' in self.framework.argDB:     
@@ -321,6 +323,7 @@ class Package(config.base.Configure):
       elif not isinstance(lib, list): lib = [lib]
       if incl == '': incl = []
       elif not isinstance(incl, list): incl = [incl]
+      incl.append(os.path.join(os.path.dirname(incl[0]),self.arch.arch,os.path.basename(incl[0])))
       # keep incl at the end so that ${SUNDIALS_INCLUDE}/sundials can be done
       incl = self.compilers.fincs + incl
       self.framework.log.write('Checking for library in '+location+': '+str(lib)+'\n')

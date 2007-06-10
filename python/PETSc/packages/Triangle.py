@@ -69,7 +69,7 @@ class Configure(PETSc.package.Package):
     if os.path.isfile(makeinc):
       os.unlink(makeinc)
     g = open(makeinc,'w')
-    g.write('include '+os.path.join(self.petscdir.dir, 'bmake', 'common', 'rules.shared.basic')+'\n')
+    g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules.shared.basic')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
     g.write('CP               = '+self.programs.cp+'\n')
     g.write('RM               = '+self.programs.RM+'\n')
