@@ -13,5 +13,5 @@ SCRIPTS  = ../../../../bin/mpiexec.uni
 LIBBASE	 = libmpiuni
 LOCDIR   = src/sys/mpiuni/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

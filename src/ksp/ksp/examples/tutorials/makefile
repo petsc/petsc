@@ -12,7 +12,7 @@ CLEANFILES       = rhs.vtk solution.vtk
 NP               = 1
 DISPLAY          = :0.0
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -709,4 +709,4 @@ TESTEXAMPLES_MUMPS             = ex10.PETSc runex10_mumps_lu_1 runex10_mumps_lu_
                                  runex10_mumps_cholesky_2 runex10_mumps_redundant ex10.rm 
 TESTEXAMPLES_PLAPACK           = ex5.PETSc runex5_plapack_1 5_plapack_2 5_plapack_3 5_plapack_4 ex5.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

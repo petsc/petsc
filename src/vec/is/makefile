@@ -9,6 +9,6 @@ DIRS	 = interface impls  examples utils
 LOCDIR   = src/vec/is/
 MANSEC   = IS
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

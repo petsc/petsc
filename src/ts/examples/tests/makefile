@@ -9,7 +9,7 @@ EXAMPLESF       = ex1f.F
 EXAMPLESFH      = ex1f.h
 MANSEC          = TS
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_TS_LIB}
@@ -179,4 +179,4 @@ TESTEXAMPLES_FORTRAN	  = ex1f.PETSc runex1f ex1f.rm
 TESTEXAMPLES_C_X11_MPIUNI = 
 TESTEXAMPLES_13		  = ex2.PETSc ex2.rm ex4.PETSc ex4.rm 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

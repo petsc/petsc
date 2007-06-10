@@ -374,6 +374,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm comm,const char *libna
   if (!flg1 && !flg2 && (!par || len != 3)) {
     ierr = PetscStrncpy(llibname,libname,llen);CHKERRQ(ierr);
     ierr = PetscTestFile(libname,'r',found);CHKERRQ(ierr);
+    if (*found) {
+      ierr = PetscInfo1(PETSC_NULL,"Found file %s\n",libname);
+    } else {
+      ierr = PetscInfo1(PETSC_NULL,"Did not find file %s\n",libname);
+    }
     PetscFunctionReturn(0);
   }
 

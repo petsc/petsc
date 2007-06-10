@@ -139,9 +139,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if self.archIndependent:
-      return os.path.abspath(self.Install())
-    return os.path.abspath(os.path.join(self.Install(),self.arch.arch))
+    return os.path.abspath(self.Install())
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
@@ -391,6 +389,7 @@ class NewPackage(config.package.Package):
     self.languages      = framework.require('PETSc.utilities.languages', self)
     self.scalartypes    = self.framework.require('PETSc.utilities.scalarTypes',self)
     self.libraryOptions = framework.require('PETSc.utilities.libraryOptions', self)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir', self.setCompilers)
     return
 
   def consistencyChecks(self):

@@ -8,7 +8,7 @@ EXAMPLESC       = ex1.c ex2.c ex4.c ex5.c ex6.c
 EXAMPLESF       =
 MANSEC          = Mat
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER}  -o ex1 ex1.o ${PETSC_MAT_LIB} 
@@ -46,5 +46,5 @@ TESTEXAMPLES_FORTRAN_MPIUNI =
 TESTEXAMPLES_13		    = ex1.PETSc ex1.rm
 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 

@@ -12,6 +12,6 @@ LIBBASE  = libpetscvec
 MANSEC   = Vec
 LOCDIR   = src/vec/vec/impls/seq/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 

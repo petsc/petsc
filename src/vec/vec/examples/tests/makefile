@@ -10,7 +10,7 @@ EXAMPLESC       = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c \
 EXAMPLESF       = ex17f.F ex19f.F ex20f.F ex30f.F ex32f.F
 MANSEC          = Vec
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts 
 	-${CLINKER} -o ex1 ex1.o ${PETSC_VEC_LIB}
@@ -362,4 +362,4 @@ TESTEXAMPLES_FORTRAN_MPIUNI = ex19f.PETSc runex19f ex19f.rm
 TESTEXAMPLES_C_X11_MPIUNI   = ex2.PETSc runex2 ex2.rm ex4.PETSc ex4.rm ex6.PETSc runex6 ex6.rm ex7.PETSc runex7 \
                               ex7.rm ex8.PETSc runex8 ex8.rm ex14.PETSc ex14.rm 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

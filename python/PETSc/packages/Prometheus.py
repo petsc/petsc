@@ -37,7 +37,7 @@ class Configure(PETSc.package.Package):
     if not os.path.isdir(os.path.join(installDir,'lib')):
       os.mkdir(os.path.join(installDir,'lib'))
       os.mkdir(os.path.join(installDir,'include'))            
-    args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,'bmake',self.arch.arch)+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
+    args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'

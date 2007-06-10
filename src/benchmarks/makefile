@@ -15,8 +15,8 @@ TESTS         = PetscTime PetscGetTime MPI_Wtime PLogEvent PetscMalloc \
 		PetscGetCPUTime sizeof
 MANSEC        = Sys
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 PetscTime: PetscTime.o  chkopts 
 	-${CLINKER} -o PetscTime PetscTime.o ${PETSC_LIB}

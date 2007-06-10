@@ -19,7 +19,7 @@ EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
 DIRS		 = ex10d
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
@@ -411,7 +411,7 @@ testex19: ex19.PETSc
            echo "See http://www.mcs.anl.gov/petsc/petsc-as/documentation/troubleshooting.html";\
            cat ex19_1.tmp; fi; fi; \
 	if [ "${PETSC_HAVE_X11}" != "" ]; then havex="1"; else havex="0"; fi;\
-        D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h`; \
+        D2=`grep "#define PETSC_HAVE_X11 1" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h`; \
 	if [ "$${D2}" != "" ]; then havex="1"; fi;\
 	if [ $${havex} = "1" ]; then \
            ${MPIEXEC} -np 1 ./ex19 -dmmg_nlevels 4 -snes_monitor_draw  > ex19_1.tmp 2>&1; \
@@ -486,4 +486,4 @@ TESTEXAMPLES_AMS	       =
 TESTEXAMPLES_ADIFOR	       = ex5f.PETSc runex5f_2 ex5f.rm
 TESTEXAMPLES_MUMPS             = ex19.PETSc runex19_3 runex19_4 ex19.rm 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

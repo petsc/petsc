@@ -7,7 +7,7 @@ LOCDIR           = src/vec/is/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c
 EXAMPLESF        = ex1f.F ex2f.F ex1f90.F ex3f90.F
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_VEC_LIB}
@@ -91,4 +91,4 @@ TESTEXAMPLES_C_X11_MPIUNI   =
 TESTEXAMPLES_F90	    = ex1f90.PETSc runex1f90 ex1f90.rm ex3f90.PETSc runex3f90 ex3f90.rm
 TESTEXAMPLES_13		    = ex4.PETSc ex4.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

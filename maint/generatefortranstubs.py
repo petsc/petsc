@@ -67,8 +67,8 @@ def FixDir(dir):
     outbuf +=  'DIRS     =\n'
     outbuf +=  libbase + '\n'
     outbuf +=  locdir + '\n'
-    outbuf +=  'include ${PETSC_DIR}/bmake/common/base\n'
-    outbuf +=  'include ${PETSC_DIR}/bmake/common/test\n'
+    outbuf +=  'include ${PETSC_DIR}/conf/base\n'
+    outbuf +=  'include ${PETSC_DIR}/conf/test\n'
     
     ff = open(os.path.join(dir, 'makefile'), 'w')
     ff.write(outbuf)

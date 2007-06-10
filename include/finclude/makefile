@@ -14,8 +14,8 @@ MANSEC    = Sys
 LOCDIR    = include/finclude/
 NOADIC    = true
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 
 
@@ -112,5 +112,5 @@ allinone.h: modorder
 
 
 ipath:
-	echo "-I/usr/include ${PETSC_DIR}/bmake/${PETSC_ARCH} ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include ${PETSC_DIR} ${PACKAGES_INCLUDES}  "|sed 's/-I//g' > ipath
+	echo "-I/usr/include ${PETSC_DIR}/${PETSC_ARCH}/include ${PETSC_DIR}/include/finclude ${PETSC_DIR}/include ${PETSC_DIR} ${PACKAGES_INCLUDES}  "|sed 's/-I//g' > ipath
 

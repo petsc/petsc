@@ -24,11 +24,14 @@ class Configure(config.base.Configure):
     return
 
   def configureBmakeDir(self):
-    '''Makes bmake/$PETSC_ARCH if it does not exist'''
-    self.bmakeDir = os.path.join('bmake', self.arch.arch)
+    '''Makes $PETSC_ARCH and subdirectories if it does not exist'''
+    self.bmakeDir = os.path.join(self.arch.arch)
     if not os.path.exists(self.bmakeDir):
       os.makedirs(self.bmakeDir)
-      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created '+self.bmakeDir+' for configuration data')
+    for i in ['include','lib','bin','conf']:
+      self.bmakeDir = os.path.join(self.arch.arch,i)
+      if not os.path.exists(self.bmakeDir):
+        os.makedirs(self.bmakeDir)
     if os.path.isfile(self.framework.argDB.saveFilename):
       os.remove(self.framework.argDB.saveFilename)
     self.framework.argDB.saveFilename = os.path.abspath(os.path.join(self.bmakeDir, 'RDict.db'))

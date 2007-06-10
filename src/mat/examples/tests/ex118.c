@@ -10,12 +10,12 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*
 PetscInt main(PetscInt argc,char **args)
 {
   PetscErrorCode ierr;
-  PetscReal      *D,*E,vl=0.0,vu=4.0,*evals,*work,tol=1.e-10,tols[2];
+  PetscReal      vl=0.0,vu=4.0,*evals,*work,tol=1.e-10,tols[2];
   PetscInt       i,j,n,il=1,iu=5,nsplit,*iblock,*isplit,*iwork,info,nevs,*ifail,cklvl=2;
   PetscMPIInt    size;
   PetscTruth     flg;
   Vec            *evecs;
-  PetscScalar    *evecs_array;
+  PetscScalar    *evecs_array,*D,*E;
   Mat            T;
   
   PetscInitialize(&argc,&args,(char *)0,help);
@@ -24,7 +24,7 @@ PetscInt main(PetscInt argc,char **args)
 
   n    = 100;
   nevs = iu - il;
-  ierr = PetscMalloc((3*n+1)*sizeof(PetscReal),&D);CHKERRQ(ierr);
+  ierr = PetscMalloc((3*n+1)*sizeof(PetscScalar),&D);CHKERRQ(ierr);
   E     = D + n;
   evals = E + n;
   ierr = PetscMalloc((5*n+1)*sizeof(PetscReal),&work);CHKERRQ(ierr);
@@ -54,7 +54,7 @@ PetscInt main(PetscInt argc,char **args)
   if (flg){
     printf(" %d evals: \n",nevs);
     for (i=0; i<nevs; i++) printf("%d  %G\n",i,evals[i]); 
-  }
+  } 
 
   /* Check residuals and orthogonality */ 
   ierr = MatCreate(PETSC_COMM_SELF,&T);CHKERRQ(ierr);
@@ -81,9 +81,15 @@ PetscInt main(PetscInt argc,char **args)
     
   tols[0] = 1.e-8;  tols[1] = 1.e-8;
   ierr = CkEigenSolutions(cklvl,T,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
-  
+
+  for (i=0; i<nevs; i++){
+    ierr = VecResetArray(evecs[i]);CHKERRQ(ierr);
+  }
+
   /* free space */
+
   ierr = MatDestroy(T);CHKERRQ(ierr);
+
   for (i=0; i<nevs; i++){ ierr = VecDestroy(evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
   ierr = PetscFree(D);CHKERRQ(ierr);
@@ -116,13 +122,13 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
 {
   PetscInt     ierr,i,j,nev; 
   Vec          vt1,vt2; /* tmp vectors */
-  PetscReal    norm,tmp,dot,norm_max,dot_max;  
+  PetscReal    norm,tmp,norm_max;  
+  PetscScalar  dot,dot_max;
 
   PetscFunctionBegin;
   nev = iu - il;
   if (nev <= 0) PetscFunctionReturn(0);
 
-  //ierr = VecView(evec[0],PETSC_VIEWER_STDOUT_WORLD);
   ierr = VecDuplicate(evec[0],&vt1);
   ierr = VecDuplicate(evec[0],&vt2);
 
@@ -172,8 +178,8 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   default:
     ierr = PetscPrintf(PETSC_COMM_SELF,"Error: cklvl=%d is not supported \n",cklvl);
   }
+
   ierr = VecDestroy(vt2); 
   ierr = VecDestroy(vt1);
-  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

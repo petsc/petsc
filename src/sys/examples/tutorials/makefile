@@ -11,7 +11,7 @@ EXAMPLESF       = ex3f.F ex5f90.F90
 MANSEC          = Sys
 CLEANFILES      = binaryoutput binaryoutput.info
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_SYS_LIB}
@@ -97,5 +97,5 @@ TESTEXAMPLES_C_X11_MPIUNI = ex1.PETSc runex1 ex1.rm ex2.PETSc runex2 ex2.rm \
 TESTEXAMPLES_FORTRAN	  = ex3f.PETSc runex3f ex3f.rm ex4f.PETSc runex4f ex4f.rm
 TESTEXAMPLES_F90	  = ex5f90.PETSc runex5f90 ex5f90.rm
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 

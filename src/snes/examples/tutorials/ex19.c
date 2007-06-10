@@ -94,7 +94,7 @@ int main(int argc,char **argv)
   SNES           snes;
   DA             da;
 
-  PetscInitialize(&argc,&argv,(char *)0,help);
+  ierr = PetscInitialize(&argc,&argv,(char *)0,help);if (ierr) return(1);
   comm = PETSC_COMM_WORLD;
 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-nlevels",&nlevels,PETSC_NULL);CHKERRQ(ierr);

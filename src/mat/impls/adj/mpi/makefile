@@ -13,5 +13,5 @@ DIRS     =
 MANSEC   = Mat
 LOCDIR   = src/mat/impls/adj/mpi/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

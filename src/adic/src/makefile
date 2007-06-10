@@ -14,5 +14,5 @@ LIBBASE  = libpetscmat
 MANSEC   = 1
 LOCDIR   = src/adic/src/
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 

@@ -9,7 +9,7 @@ EXAMPLESF       = ex1f.F ex12f.F
 DIRS	        = 
 MANSEC          = SNES
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_SNES_LIB}
@@ -252,4 +252,4 @@ TESTEXAMPLES_FORTRAN_NOCOMPLEX =
 TESTEXAMPLES_FORTRAN_MPIUNI    = ex1f.PETSc runex1f ex1f.rm
 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

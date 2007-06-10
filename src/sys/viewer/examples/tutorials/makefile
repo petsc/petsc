@@ -18,10 +18,10 @@ runex1f90:
 	   else echo "Possible problem with ex1f90_1, diffs above"; fi; \
 	   ${RM} -f ex1f90_1.tmp 
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 TESTEXAMPLES_C_X11	  = 
 TESTEXAMPLES_C_X11_MPIUNI = 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
 

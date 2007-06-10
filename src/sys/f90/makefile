@@ -17,7 +17,7 @@ MANSEC   = Sys
 DIRS     = 
 LOCDIR   = src/sys/f90/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test
 
 

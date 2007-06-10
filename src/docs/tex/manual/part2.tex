@@ -6818,7 +6818,7 @@ with the C++ compiler, one should use the config/configure.py option \trl{--with
 The directory \trl{${PETSC_DIR}/bmake} contains virtually all
 makefile commands and customizations to enable portability across
 different architectures.  Most makefile commands for maintaining the
-PETSc system are defined in the file \trl{${PETSC_DIR}/bmake/common}.  
+PETSc system are defined in the file \trl{${PETSC_DIR}/conf}.  
 These commands, which process all appropriate files within the
 directory of execution, include
 \begin{itemize}
@@ -6859,7 +6859,7 @@ three makefiles:
 \end{itemize}
 
 The architecture independent makefiles, are located in
-\trl{${PETSC_DIR}/bmake/common}, and the machine-spcecific
+\trl{${PETSC_DIR}/conf}, and the machine-spcecific
 makefiles get included from here.
 
 \section{PETSc Flags}
@@ -6889,7 +6889,7 @@ The first is a ``minimum'' makefile for maintaining
 a single program that uses the PETSc libraires.
 The most important line in this makefile is the line starting with \trl{include}:
 \begin{tabbing}
-   include \$\trl{{PETSC_DIR}/bmake/common/base}
+   include \$\trl{{PETSC_DIR}/conf/base}
 \end{tabbing}
 This line includes other makefiles that provide the needed definitions
 and rules for the particular base PETSc installation (specified by
@@ -6909,7 +6909,7 @@ within the makefile.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/bmake/common/base
+   include ${PETSC_DIR}/conf/base
 
    ex2: ex2.o chkopts
            ${CLINKER} -o ex2 ex2.o  ${PETSC_LIB}
@@ -6942,7 +6942,7 @@ controls the generation of several example programs.
    CPPFLAGS =
    FPPFLAGS =
 
-   include ${PETSC_DIR}/bmake/common/base
+   include ${PETSC_DIR}/conf/base
 
    ex1: ex1.o 
         -${CLINKER} -o ex1 ex1.o  ${PETSC_LIB}
@@ -6975,7 +6975,7 @@ controls the generation of several example programs.
    EXAMPLES_2    = ex4
    EXAMPLES_3    = ex3
 
-   include ${PETSC_DIR}/bmake/common/test
+   include ${PETSC_DIR}/conf/test
 \end{verbatim}
 }
 \caption{Sample PETSc Makefile for Several Example Programs}
@@ -7040,7 +7040,7 @@ makefiles, they are also easily used.
    LIBBASE  = libpetscmat\\
    MANSEC   = Mat\\
 
-   include \$\trl{{PETSC_DIR}/bmake/common/base}
+   include \$\trl{{PETSC_DIR}/conf/base}
 \end{tabbing}
 }
 \caption{Sample PETSc Makefile for Library Maintenance}

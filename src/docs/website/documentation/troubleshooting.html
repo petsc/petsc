@@ -225,20 +225,20 @@ PETSC_ARCH=sun4 example4 </font></p>
   <font face="Terminal"> <li><font face="Terminal"><strong>Symptom:
 alder&gt; make</strong>&nbsp;</font>
     <p><font face="Terminal"> makefile:12:
-/bmake/common/base: No such file or directory<br>
+/conf/base: No such file or directory<br>
 
-makefile:13: /bmake/common/test: No such file or directory<br>
+makefile:13: /conf/test: No such file or directory<br>
 
-make: *** No rule to make target `/bmake/common/test'.&nbsp; Stop.</font>
+make: *** No rule to make target `/conf/test'.&nbsp; Stop.</font>
     </p>
 
 or makefile:12:
-home/joe/bmake/common/base: No such file or directory<br>
+home/joe/conf/base: No such file or directory<br>
 
-makefile:13: home/joe/bmake/common/test: No such file or directory<br>
+makefile:13: home/joe/conf/test: No such file or directory<br>
 
 make: *** No rule to make target
-`home/joe/bmake/common/test'.&nbsp; Stop.<br>
+`home/joe/conf/test'.&nbsp; Stop.<br>
 
     <p><font color="#ff0000"><strong>Problem: </strong></font>The
 variable&nbsp; PETSC_DIR is not set or does not point to the PETSc
