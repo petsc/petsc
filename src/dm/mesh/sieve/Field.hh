@@ -998,14 +998,14 @@ namespace ALE {
       ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
     };
     void setIndexBC(const point_type& p, const int& index) {};
-    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
-      this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly);
+    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
+      this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
     template<typename Order_>
-    void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
-      this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly);
+    void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
+      this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
-    void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+    void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       const int& cDim = this->getConstraintDimension(p);
 
       if (!cDim) {
@@ -1037,6 +1037,7 @@ namespace ALE {
           for(int i = start, k = 0; k < dim; ++k) {
             if ((cInd < cDim) && (k == cDof[cInd])) {
               if (!freeOnly) indices[(*indx)++] = -(k+1);
+              if (skipConstraints) ++i;
               ++cInd;
             } else {
               indices[(*indx)++] = i++;
@@ -1056,6 +1057,7 @@ namespace ALE {
             for(int i = 0, k = start+tDim+offset; i < dim; ++i, ++j) {
               if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {
                 if (!freeOnly) indices[(*indx)++] = -(offset+i+1);
+                if (skipConstraints) --k;
                 --cInd;
               } else {
                 indices[(*indx)++] = --k;

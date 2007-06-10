@@ -66,6 +66,46 @@ PetscErrorCode GeneralSectionTest(MPI_Comm comm, Options *options)
     }
   }
   section->view("Constrained section");
+  // Map this to a vector and back
+  //   Create a mesh
+  Vec        localVec, vecIn, vecOut;
+  VecScatter scatter;
+  Obj<ALE::Mesh::real_section_type> newSection = new ALE::Mesh::real_section_type(section->comm(), section->debug());
+  Obj<ALE::Mesh>                    m          = new ALE::Mesh(section->comm(), 1, section->debug());
+  const Obj<ALE::Mesh::sieve_type>  sieve      = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+  PetscErrorCode ierr;
+
+  newSection->setAtlas(section->getAtlas());
+  newSection->allocateStorage();
+  newSection->copyBC(section);
+  newSection->view("Before");
+
+  m->setSieve(sieve);
+  for(int p = 0; p < 9; ++p) sieve->addArrow(p, 9, p);
+  m->stratify();
+
+  const Obj<ALE::Mesh::order_type>& order      = m->getFactory()->getGlobalOrder(m, "default", section);
+  ierr = VecCreate(section->comm(), &vecIn);CHKERRQ(ierr);
+  ierr = VecSetSizes(vecIn, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(vecIn);CHKERRQ(ierr);
+  ierr = VecDuplicate(vecIn, &vecOut);CHKERRQ(ierr);
+
+  ierr = MeshCreateGlobalScatter(m, section, &scatter);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, section->sizeWithBC(), section->restrict(), &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter, localVec, vecIn, INSERT_VALUES, SCATTER_FORWARD);CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter, localVec, vecIn, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+  ierr = VecDestroy(localVec); CHKERRQ(ierr);
+  ierr = VecView(vecIn, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  ierr = VecCopy(vecIn, vecOut); CHKERRQ(ierr);
+  ierr = VecView(vecOut, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, newSection->sizeWithBC(),  newSection->restrict(), &localVec);CHKERRQ(ierr);
+  ierr = VecScatterBegin(scatter, vecOut, localVec, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+  ierr = VecScatterEnd(scatter, vecOut, localVec, INSERT_VALUES, SCATTER_REVERSE); CHKERRQ(ierr);
+  ierr = VecDestroy(localVec); CHKERRQ(ierr);
+  ierr = VecDestroy(vecIn); CHKERRQ(ierr);
+  ierr = VecDestroy(vecOut); CHKERRQ(ierr);
+  ierr = VecScatterDestroy(scatter); CHKERRQ(ierr);
+  newSection->view("After");
   PetscFunctionReturn(0);
 }
 

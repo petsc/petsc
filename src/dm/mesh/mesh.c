@@ -836,9 +836,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mes
   ierr = PetscMalloc(localSize*sizeof(int), &globalIndices); CHKERRQ(ierr);
   for(ALE::Mesh::real_section_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
     // Map local indices to global indices
-    s->getIndices(*p_iter, localIndices, &localIndx, 0, true);
-    s->getIndices(*p_iter, globalOrder, globalIndices, &globalIndx, 0, true);
+    s->getIndices(*p_iter, localIndices, &localIndx, 0, true, true);
+    s->getIndices(*p_iter, globalOrder, globalIndices, &globalIndx, 0, true, false);
+    //numConstraints += s->getConstraintDimension(*p_iter);
   }
+  // Local arrays also have constraints, which are not mapped
   if (localIndx  != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of local indices %d, should be %d", localIndx, localSize);
   if (globalIndx != localSize) SETERRQ2(PETSC_ERR_ARG_SIZ, "Invalid number of global indices %d, should be %d", globalIndx, localSize);
   if (m->debug()) {
@@ -1344,12 +1346,14 @@ PetscErrorCode preallocateOperator(const ALE::Obj<ALE::Mesh>& mesh, const int bs
       const int                                                    row   = rIdx.prefix;
       const int                                                    rSize = rIdx.index/bs;
 
+      //if (rIdx.index%bs) std::cout << "["<<graph->commRank()<<"]: row "<<row<<": size " << rIdx.index << " bs "<<bs<<std::endl;
       if (rSize == 0) continue;
       for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = adj->begin(); v_iter != adj->end(); ++v_iter) {
         const ALE::Mesh::point_type&             neighbor = *v_iter;
         const ALE::Mesh::order_type::value_type& cIdx     = globalOrder->restrictPoint(neighbor)[0];
         const int&                               cSize    = cIdx.index/bs;
 
+        //if (cIdx.index%bs) std::cout << "["<<graph->commRank()<<"]:   col "<<cIdx.prefix<<": size " << cIdx.index << " bs "<<bs<<std::endl;
         if (cSize > 0) {
           if (globalOrder->isLocal(neighbor)) {
             for(int r = 0; r < rSize; ++r) {dnz[(row - firstRow)/bs + r] += cSize;}
