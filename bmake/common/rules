@@ -273,7 +273,7 @@ getmpiexec:
         if [ $${mypwd} != $${newpwd} ]; then \
 	  ${OMAKE}  PETSC_ARCH=${PETSC_ARCH}  chkpetsc_dir;\
         fi
-	-@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
+	${PETSC_STOP_ON_ERROR}@if [ "${PETSC_HAVE_ADIC}" = "" ]; then \
           egrep PETSC_HAVE_ADIC ${PETSC_DIR}/bmake/${PETSC_ARCH}/petscconf.h > /dev/null;\
           if [ "$$?" = 0 ]; then \
             haveadic=1; \
