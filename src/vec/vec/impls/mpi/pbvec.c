@@ -45,17 +45,13 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecSetOption_MPI"
-PetscErrorCode VecSetOption_MPI(Vec v,VecOption op)
+PetscErrorCode VecSetOption_MPI(Vec v,VecOption op,PetscTruth flag)
 {
   PetscFunctionBegin;
   if (op == VEC_IGNORE_OFF_PROC_ENTRIES) {
-    v->stash.donotstash = PETSC_TRUE;
-  } else if (op == VEC_TREAT_OFF_PROC_ENTRIES) {
-    v->stash.donotstash = PETSC_FALSE;
+    v->stash.donotstash = flag;
   } else if (op == VEC_IGNORE_NEGATIVE_INDICES) {
-    v->stash.ignorenegidx = PETSC_TRUE;
-  } else if (op == VEC_TREAT_NEGATIVE_INDICES) {
-    v->stash.ignorenegidx = PETSC_FALSE;
+    v->stash.ignorenegidx = flag;
   }
   PetscFunctionReturn(0);
 }

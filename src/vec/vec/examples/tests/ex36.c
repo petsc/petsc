@@ -40,9 +40,7 @@ int main(int argc,char **argv)
   ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
   /* If we want to use negative indices, set the option */
-  if (set_option_negidx == PETSC_TRUE) {
-      ierr = VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES); CHKERRQ(ierr);
-  }
+  ierr = VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,set_option_negidx); CHKERRQ(ierr);
 
   ierr = VecGetOwnershipRange(x,&istart,&iend);CHKERRQ(ierr);
   m = iend - istart;
