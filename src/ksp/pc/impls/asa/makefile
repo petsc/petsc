@@ -13,5 +13,5 @@ DIRS     =
 MANSEC   = PC
 LOCDIR   = src/ksp/pc/impls/asa/
 
-include ${PETSC_DIR}/bmake/common/base
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/conf/test

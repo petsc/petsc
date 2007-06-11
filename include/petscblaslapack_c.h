@@ -14,6 +14,7 @@ EXTERN_C_BEGIN
 # if defined(PETSC_USE_SINGLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ sgeqrf
+#  define LAPACKungqr_ sorgqr
 #  define LAPACKgetrf_ sgetrf
 #  define LAPACKgetf2_ sgetf2
 #  define BLASdot_     sdot
@@ -28,6 +29,7 @@ EXTERN_C_BEGIN
 #  define LAPACKstein_ sstein /* eigenvectors of real symm tridiagonal matrix */
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ sormqr
+#  define LAPACKungqr_ dorgqr
 #  define LAPACKtrtrs_ strtrs
 #  define LAPACKpotrf_ spotrf
 #  define LAPACKpotrs_ spotrs
@@ -77,6 +79,7 @@ EXTERN_C_BEGIN
 #else
 /* Complex double precision with no character string arguments */
 # define LAPACKgeqrf_ zgeqrf
+# define LAPACKungqr_ zungqr
 # define LAPACKgetrf_ zgetrf
 # define LAPACKgetf2_ zgetf2
 
@@ -109,6 +112,7 @@ EXTERN_C_BEGIN
 #endif
 
 EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgetf2_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 

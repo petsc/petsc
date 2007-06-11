@@ -15,6 +15,7 @@ EXTERN_C_BEGIN
 # if defined(PETSC_USE_SINGLE)
 /* Real single precision with no character string arguments */
 #  define LAPACKgeqrf_ sgeqrf_
+#  define LAPACKungqr_ sorgqr_
 #  define LAPACKgetrf_ sgetrf_
 #  define BLASdot_     sdot_
 #  define BLASnrm2_    snrm2_
@@ -46,6 +47,7 @@ EXTERN_C_BEGIN
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ dgeqrf_
 #  define LAPACKgetrf_ dgetrf_
+#  define LAPACKungqr_ dorgqr_
 #  define BLASdot_     ddot_
 #  define BLASnrm2_    dnrm2_
 #  define BLASscal_    dscal_
@@ -76,6 +78,7 @@ EXTERN_C_BEGIN
 #else
 /* Complex double precision with no character string arguments */
 # define LAPACKgeqrf_ zgeqrf_
+# define LAPACKungqr_ zungqr_
 # define LAPACKgetrf_ zgetrf_
 # define BLASdot_     zdotc_
 # define BLASnrm2_    dznrm2_
@@ -107,6 +110,7 @@ EXTERN_C_BEGIN
 
 EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
+EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 
 EXTERN PetscReal BLASdot_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
 EXTERN PetscReal BLASnrm2_(PetscBLASInt*,PetscScalar*,PetscBLASInt*);

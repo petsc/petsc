@@ -9,6 +9,23 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolationScale"
+/*@
+    DMGetInterpolationScale - Forms L = R*1/diag(R*1) - L.*v is like a coarse grid average of the 
+      nearby fine grid points.
+
+  Input Parameters:
++      dac - DM that defines a coarse mesh
+.      daf - DM that defines a fine mesh
+-      mat - the restriction (or interpolation operator) from fine to coarse
+
+  Output Parameter:
+.    scale - the scaled vector
+
+  Level: developer
+
+.seealso: DMGetInterpolation()
+
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolationScale(DM dac,DM daf,Mat mat,Vec *scale)
 {
   PetscErrorCode ierr;
@@ -1010,3 +1027,129 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
   PetscFunctionReturn(0);
 } 
 
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetAggregates"
+/*@C
+   DAGetAggregates - Gets the aggregates that map between 
+   grids associated with two DAs.
+
+   Collective on DA
+
+   Input Parameters:
++  dac - the coarse grid DA
+-  daf - the fine grid DA
+
+   Output Parameters:
+.  rest - the restriction matrix (transpose of the projection matrix)
+
+   Level: intermediate
+
+.keywords: interpolation, restriction, multigrid 
+
+.seealso: DARefine(), DAGetInjection(), DAGetInterpolation()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
+{
+  PetscErrorCode ierr;
+  PetscInt       dimc,Mc,Nc,Pc,mc,nc,pc,dofc,sc;
+  PetscInt       dimf,Mf,Nf,Pf,mf,nf,pf,doff,sf;
+  DAPeriodicType wrapc,wrapf;
+  DAStencilType  stc,stf;
+/*   PetscReal      r_x, r_y, r_z; */
+
+  PetscInt       i,j,l;
+  PetscInt       i_start,j_start,l_start, m_f,n_f,p_f;
+  PetscInt       i_start_ghost,j_start_ghost,l_start_ghost,m_ghost,n_ghost,p_ghost;
+  PetscInt       *idx_f;
+  PetscInt       i_c,j_c,l_c;
+  PetscInt       i_start_c,j_start_c,l_start_c, m_c,n_c,p_c;
+  PetscInt       i_start_ghost_c,j_start_ghost_c,l_start_ghost_c,m_ghost_c,n_ghost_c,p_ghost_c;
+  PetscInt       *idx_c;
+  PetscInt       d;
+  PetscInt       a;
+  PetscInt       max_agg_size;
+  PetscInt       *fine_nodes;
+  PetscScalar    *one_vec;
+  PetscInt       fn_idx;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(dac,DA_COOKIE,1);
+  PetscValidHeaderSpecific(daf,DA_COOKIE,2);
+  PetscValidPointer(rest,3);
+
+  ierr = DAGetInfo(dac,&dimc,&Mc,&Nc,&Pc,&mc,&nc,&pc,&dofc,&sc,&wrapc,&stc);CHKERRQ(ierr);
+  ierr = DAGetInfo(daf,&dimf,&Mf,&Nf,&Pf,&mf,&nf,&pf,&doff,&sf,&wrapf,&stf);CHKERRQ(ierr);
+  if (dimc != dimf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Dimensions of DA do not match %D %D",dimc,dimf);CHKERRQ(ierr);
+  if (dofc != doff) SETERRQ2(PETSC_ERR_ARG_INCOMP,"DOF of DA do not match %D %D",dofc,doff);CHKERRQ(ierr);
+  if (sc != sf) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Stencil width of DA do not match %D %D",sc,sf);CHKERRQ(ierr);
+  if (wrapc != wrapf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Periodic type different in two DAs");CHKERRQ(ierr);
+  if (stc != stf) SETERRQ(PETSC_ERR_ARG_INCOMP,"Stencil type different in two DAs");CHKERRQ(ierr);
+
+  if( Mf < Mc ) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Mc %D, Mf %D", Mc, Mf);
+  if( Nf < Nc ) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Nc %D, Nf %D", Nc, Nf);
+  if( Pf < Pc ) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Coarse grid has more points than fine grid, Pc %D, Pf %D", Pc, Pf);
+
+  ierr = DAGetCorners(daf,&i_start,&j_start,&l_start,&m_f,&n_f,&p_f);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(daf,&i_start_ghost,&j_start_ghost,&l_start_ghost,&m_ghost,&n_ghost,&p_ghost);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(daf,PETSC_NULL,&idx_f);CHKERRQ(ierr);
+
+  ierr = DAGetCorners(dac,&i_start_c,&j_start_c,&l_start_c,&m_c,&n_c,&p_c);CHKERRQ(ierr);
+  ierr = DAGetGhostCorners(dac,&i_start_ghost_c,&j_start_ghost_c,&l_start_ghost_c,&m_ghost_c,&n_ghost_c,&p_ghost_c);CHKERRQ(ierr);
+  ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
+
+  /* 
+     Basic idea is as follows. Here's a 2D example, suppose r_x, r_y are the ratios
+     for dimension 1 and 2 respectively.
+     Let (i,j) be a coarse grid node. All the fine grid nodes between r_x*i and r_x*(i+1)
+     and r_y*j and r_y*(j+1) will be grouped into the same coarse grid agregate.
+     Each specific dof on the fine grid is mapped to one dof on the coarse grid.
+  */
+
+  max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
+
+  /* create the matrix that will contain the restriction operator */
+  ierr = MatCreateMPIAIJ( daf->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest); CHKERRQ(ierr);
+
+  /* store nodes in the fine grid here */
+  ierr = PetscMalloc(sizeof(PetscInt)*max_agg_size, &fine_nodes); CHKERRQ(ierr);
+  /* these are the values to set to, a collection of 1's */
+  ierr = PetscMalloc(sizeof(PetscScalar)*max_agg_size, &one_vec); CHKERRQ(ierr);
+  for(i=0; i<max_agg_size; i++) one_vec[i] = 1.0;  
+  
+  /* loop over all coarse nodes */
+  for (l_c=l_start_c; l_c<l_start_c+p_c; l_c++) {
+    for (j_c=j_start_c; j_c<j_start_c+n_c; j_c++) {
+      for (i_c=i_start_c; i_c<i_start_c+m_c; i_c++) {
+	for(d=0; d<dofc; d++) {
+	  /* convert to local "natural" numbering and then to PETSc global numbering */
+	  a = idx_c[dofc*(m_ghost_c*n_ghost_c*(l_c-l_start_ghost_c) + m_ghost_c*(j_c-j_start_ghost_c) + (i_c-i_start_ghost_c))] + d;
+
+	  fn_idx = 0;
+	  /* Corresponding fine points are all points (i_f, j_f, l_f) such that
+	     i_c*Mf/Mc <= i_f < (i_c+1)*Mf/Mc
+	     (same for other dimensions)
+	  */
+	  for (l=l_c*Pf/Pc; l<PetscMin((l_c+1)*Pf/Pc,Pf); l++) {
+	    for (j=j_c*Nf/Nc; j<PetscMin((j_c+1)*Nf/Nc,Nf); j++) {
+	      for (i=i_c*Mf/Mc; i<PetscMin((i_c+1)*Mf/Mc,Mf); i++) {
+		fine_nodes[fn_idx] = idx_f[doff*(m_ghost*n_ghost*(l-l_start_ghost) + m_ghost*(j-j_start_ghost) + (i-i_start_ghost))] + d;
+		fn_idx++;
+	      }
+	    }
+	  }
+	  /* add all these points to one aggregate */
+	  ierr = MatSetValues(*rest, 1, &a, fn_idx, fine_nodes, one_vec, INSERT_VALUES); CHKERRQ(ierr);
+	}
+      }
+    }
+  }
+
+  ierr = PetscFree(fine_nodes); CHKERRQ(ierr);
+  ierr = PetscFree(one_vec); CHKERRQ(ierr);
+
+  ierr = MatAssemblyBegin(*rest, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  ierr = MatAssemblyEnd(*rest, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+  
+  PetscFunctionReturn(0);
+} 

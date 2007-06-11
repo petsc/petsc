@@ -315,3 +315,32 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, int nlevels, DM **dmc
   ierr = (*dm->ops->coarsenhierarchy)(dm, nlevels, dmc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGetAggregates"
+/*@C
+   DMGetAggregates - Gets the aggregates that map between 
+   grids associated with two DMs.
+
+   Collective on DM
+
+   Input Parameters:
++  dmc - the coarse grid DM
+-  dmf - the fine grid DM
+
+   Output Parameters:
+.  rest - the restriction matrix (transpose of the projection matrix)
+
+   Level: intermediate
+
+.keywords: interpolation, restriction, multigrid 
+
+.seealso: DMRefine(), DMGetInjection(), DMGetInterpolation()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates(DM dmc, DM dmf, Mat *rest) {
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dmc->ops->getaggregates)(dmc, dmf, rest);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}

@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
 EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
-                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c
+                   ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F
 MANSEC           = KSP
 CLEANFILES       = rhs.vtk solution.vtk
@@ -189,6 +189,10 @@ ex36: ex36.o chkopts
 ex37: ex37.o chkopts
 	-${CLINKER} -o ex37 ex37.o ${PETSC_SNES_LIB}
 	${RM} ex37.o
+
+ex38: ex38.o chkopts
+	-${CLINKER} -o ex38 ex38.o ${PETSC_SNES_LIB}
+	${RM} ex38.o
 
 #----------------------------------------------------------------------------
 runex1:

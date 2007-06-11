@@ -304,7 +304,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->getcoloring        = DAGetColoring;
   da->ops->getmatrix          = DAGetMatrix;
   da->ops->refine             = DARefine;
+  da->ops->coarsen            = DACoarsen;
   da->ops->getinjection       = DAGetInjection;
+  da->ops->getaggregates      = DAGetAggregates;
   da->ops->getelements        = DAGetElements_2d_P1;
   da->elementtype             = DA_ELEMENT_P1;
 
@@ -843,6 +845,99 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
     P = da->refine_z*da->P;
   } else {
     P = 1 + da->refine_z*(da->P - 1);
+  }
+  ierr = DACreate(da->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
+
+  /* allow overloaded (user replaced) operations to be inherited by refinement clones */
+  da2->ops->getmatrix        = da->ops->getmatrix;
+  da2->ops->getinterpolation = da->ops->getinterpolation;
+  da2->ops->getcoloring      = da->ops->getcoloring;
+  da2->interptype            = da->interptype;
+  
+  /* copy fill information if given */
+  if (da->dfill) {
+    ierr = PetscMalloc((da->dfill[da->w]+da->w+1)*sizeof(PetscInt),&da2->dfill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->dfill,da->dfill,(da->dfill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  if (da->ofill) {
+    ierr = PetscMalloc((da->ofill[da->w]+da->w+1)*sizeof(PetscInt),&da2->ofill);CHKERRQ(ierr);
+    ierr = PetscMemcpy(da2->ofill,da->ofill,(da->ofill[da->w]+da->w+1)*sizeof(PetscInt));CHKERRQ(ierr);
+  }
+  /* copy the refine information */
+  da2->refine_x = da->refine_x;
+  da2->refine_y = da->refine_y;
+  da2->refine_z = da->refine_z;
+  *daref = da2;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DACoarsen"
+/*@
+   DACoarsen - Creates a new distributed array that is a coarsenment of a given
+   distributed array.
+
+   Collective on DA
+
+   Input Parameter:
++  da - initial distributed array
+-  comm - communicator to contain coarsend DA. Currently ignored
+
+   Output Parameter:
+.  daref - coarsend distributed array
+
+   Level: advanced
+
+   Note:
+   Currently, coarsenment consists of just dividing the number of grid spaces
+   in each dimension of the DA by refinex_x, refinex_y, ....
+
+.keywords:  distributed array, coarsen
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
+{
+  PetscErrorCode ierr;
+  PetscInt       M,N,P;
+  DA             da2;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  PetscValidPointer(daref,3);
+
+  if (DAXPeriodic(da->wrap) || da->interptype == DA_Q0){
+    if(da->refine_x)
+      M = da->M / da->refine_x;
+    else
+      M = da->M;
+  } else {
+    if(da->refine_x)
+      M = 1 + (da->M - 1) / da->refine_x;
+    else
+      M = da->M;
+  }
+  if (DAYPeriodic(da->wrap) || da->interptype == DA_Q0){
+    if(da->refine_y)
+      N = da->N / da->refine_y;
+    else
+      N = da->N;
+  } else {
+    if(da->refine_y)
+      N = 1 + (da->N - 1) / da->refine_y;
+    else
+      N = da->M;
+  }
+  if (DAZPeriodic(da->wrap) || da->interptype == DA_Q0){
+    if(da->refine_z)
+      P = da->P / da->refine_z;
+    else
+      P = da->P;
+  } else {
+    if(da->refine_z)
+      P = 1 + (da->P - 1) / da->refine_z;
+    else
+      P = da->P;
   }
   ierr = DACreate(da->comm,da->dim,da->wrap,da->stencil_type,M,N,P,da->m,da->n,da->p,da->w,da->s,0,0,0,&da2);CHKERRQ(ierr);
 

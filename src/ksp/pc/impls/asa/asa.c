@@ -2,10 +2,10 @@
 
 /*  -------------------------------------------------------------------- 
 
-     This file implements a aSA preconditioner in PETSc as part of PC.
+     This file implements a ASA preconditioner in PETSc as part of PC.
 
      The adaptive smoothed aggregation algorithm is described in the paper
-     "Adaptive Smoothed Aggregation (aSA)", M. Brezina, R. Falgout, S. MacLachlan,
+     "Adaptive Smoothed Aggregation (ASA)", M. Brezina, R. Falgout, S. MacLachlan,
      T. Manteuffel, S. McCormick, and J. Ruge, SIAM Journal on Scientific Computing,
      SISC Volume 25 Issue 6, Pages 1896-1920.
 
@@ -15,11 +15,11 @@
 
      This code is still somewhat experimental. A number of improvements would be
      - keep vectors allocated on each level, instead of destroying them
-       (see mainly PCApplyVcycleOnLevel_aSA)
-     - in PCCreateTransferOp_aSA we get all of the submatrices at once, this could
+       (see mainly PCApplyVcycleOnLevel_ASA)
+     - in PCCreateTransferOp_ASA we get all of the submatrices at once, this could
        be optimized by differentiating between local and global matrices
      - the code does not handle it gracefully if there is just one level
-     - if relaxation is sufficient, exit of PCInitializationStage_aSA is not
+     - if relaxation is sufficient, exit of PCInitializationStage_ASA is not
        completely clean
      - default values could be more reasonable, especially for parallel solves,
        where we need a parallel LU or similar
@@ -38,22 +38,10 @@
 
     -------------------------------------------------------------------- */
 
-/* 
-   Include files needed for the aSA preconditioner:
-   pcimpl.h - private include file intended for use by all preconditioners 
-*/
-
-#include "private/pcimpl.h"   /*I "petscpc.h" I*/
-
 /*
   This defines the data structures for the smoothed aggregation procedure
 */
-#include "asa.h"
-
-/*
-  For the geometric coarsening, uses DM interface to DA or ADDA
-*/
-#include "petscda.h"
+#include "src/ksp/pc/impls/asa/asa.h"
 
 /*
   We need the QR algorithm from LAPACK
@@ -64,13 +52,13 @@
 
 /* Event logging */
 
-PetscEvent PC_InitializationStage_aSA, PC_GeneralSetupStage_aSA;
-PetscEvent PC_CreateTransferOp_aSA, PC_CreateVcycle_aSA;
+PetscEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
+PetscEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
 PetscTruth asa_events_registered = PETSC_FALSE;
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetUp_aSA - Prepares for the use of the aSA preconditioner
+   PCSetUp_ASA - Prepares for the use of the ASA preconditioner
                     by setting data structures and options.   
 
    Input Parameter:
@@ -83,10 +71,10 @@ PetscTruth asa_events_registered = PETSC_FALSE;
    the user, but instead is called by PCApply() if necessary.
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_aSA"
-static PetscErrorCode PCSetUp_aSA(PC pc)
+#define __FUNCT__ "PCSetUp_ASA"
+static PetscErrorCode PCSetUp_ASA(PC pc)
 {
-  PC_aSA         *asa = (PC_aSA*)pc->data;
+  PC_ASA         *asa = (PC_ASA*)pc->data;
   PetscErrorCode ierr;
   const char     *prefix;
 
@@ -100,9 +88,9 @@ static PetscErrorCode PCSetUp_aSA(PC pc)
     PetscFunctionReturn(0);
   }
 
-  /* Create new PC_aSA object */
-  ierr = PetscMalloc(sizeof(PC_aSA),&asa);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_aSA));CHKERRQ(ierr);
+  /* Create new PC_ASA object */
+  ierr = PetscMalloc(sizeof(PC_ASA),&asa);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_ASA));CHKERRQ(ierr);
   pc->data = asa;
 
   /* WORK: find some better initial values  */
@@ -159,9 +147,9 @@ static PetscErrorCode PCSetUp_aSA(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCaSASetDM"
+#define __FUNCT__ "PCASASetDM"
 /*@C
-    PCaSASetDM - Sets the coarse grid information for the grids
+    PCASASetDM - Sets the coarse grid information for the grids
 
     Collective on PC
 
@@ -172,10 +160,10 @@ static PetscErrorCode PCSetUp_aSA(PC pc)
     Level: advanced
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetDM(PC pc, DM dm)
+PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc, DM dm)
 {
   PetscErrorCode ierr;
-  PC_aSA         *asa;
+  PC_ASA         *asa;
   PCType         type;
   PetscTruth     isasa;
 
@@ -184,12 +172,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetDM(PC pc, DM dm)
   ierr = PCGetType(pc, &type); CHKERRQ(ierr);
   ierr = PetscStrncmp(type, PCASA, 5, &isasa); CHKERRQ(ierr);
   if( !isasa ) {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "PCaSASetDM expected PC of type asa, got %s\n", type);
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "PCASASetDM expected PC of type asa, got %s\n", type);
   }
-  asa = (PC_aSA *) pc->data;
+  asa = (PC_ASA *) pc->data;
   if (!asa) {
-    ierr = PCSetUp_aSA(pc);CHKERRQ(ierr);
-    asa = (PC_aSA*)pc->data;
+    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
+    asa = (PC_ASA*)pc->data;
   }
 
   /* Set DM data structure */
@@ -199,9 +187,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetDM(PC pc, DM dm)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCaSASetTolerances"
+#define __FUNCT__ "PCASASetTolerances"
 /*@C
-    PCaSASetTolerances - Sets the convergence thresholds for aSA algorithm
+    PCASASetTolerances - Sets the convergence thresholds for ASA algorithm
 
     Collective on PC
 
@@ -221,11 +209,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetDM(PC pc, DM dm)
 
     Level: advanced
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,
+PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,
 						     PetscReal dtol, PetscInt maxits)
 {
   PetscErrorCode ierr;
-  PC_aSA         *asa;
+  PC_ASA         *asa;
   PCType         type;
   PetscTruth     isasa;
 
@@ -234,12 +222,12 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetTolerances(PC pc, PetscReal rtol, Pets
   ierr = PCGetType(pc, &type); CHKERRQ(ierr);
   ierr = PetscStrncmp(type, PCASA, 5, &isasa); CHKERRQ(ierr);
   if( !isasa ) {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "PCaSASetTolerances expected PC of type asa, got %s\n", type);
+    SETERRQ1(PETSC_ERR_ARG_WRONG, "PCASASetTolerances expected PC of type asa, got %s\n", type);
   }
-  asa = (PC_aSA *) pc->data;
+  asa = (PC_ASA *) pc->data;
   if (!asa) {
-    ierr = PCSetUp_aSA(pc);CHKERRQ(ierr);
-    asa = (PC_aSA*)pc->data;
+    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
+    asa = (PC_ASA*)pc->data;
   }
 
   if (rtol != PETSC_DEFAULT)   asa->rtol   = rtol;
@@ -250,9 +238,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetTolerances(PC pc, PetscReal rtol, Pets
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreateLevel_aSA"
+#define __FUNCT__ "PCCreateLevel_ASA"
 /*@C
-   PCCreateLevel_aSA - Creates one level for the aSA algorithm
+   PCCreateLevel_ASA - Creates one level for the ASA algorithm
 
    Input Parameters:
 +  level - current level
@@ -265,18 +253,18 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCaSASetTolerances(PC pc, PetscReal rtol, Pets
    Output Parameters:
 .  new_asa_lev - the newly created level
 
-.keywords: aSA, create, levels, multigrid
+.keywords: ASA, create, levels, multigrid
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreateLevel_aSA(PC_aSA_level **new_asa_lev, int level,
-						    MPI_Comm comm, PC_aSA_level *prev, PC_aSA_level *next,
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreateLevel_ASA(PC_ASA_level **new_asa_lev, int level,
+						    MPI_Comm comm, PC_ASA_level *prev, PC_ASA_level *next,
 						    KSPType ksptype, PCType pctype)
 {
   PetscErrorCode ierr;
-  PC_aSA_level   *asa_lev;
+  PC_ASA_level   *asa_lev;
   PetscFunctionBegin;
 
-  /* Create new PC_aSA_level object */
-  ierr = PetscMalloc(sizeof(PC_aSA_level), new_asa_lev);CHKERRQ(ierr);
+  /* Create new PC_ASA_level object */
+  ierr = PetscMalloc(sizeof(PC_ASA_level), new_asa_lev);CHKERRQ(ierr);
 
   asa_lev = *new_asa_lev;
 
@@ -389,15 +377,15 @@ PetscErrorCode PrintEnergyNormOfDiff(Mat A, Vec x, Vec y)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCDestroyLevel_aSA - Destroys one level of the aSA preconditioner
+   PCDestroyLevel_ASA - Destroys one level of the ASA preconditioner
 
    Input Parameter:
 .  asa_lev - pointer to level that should be destroyed
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroyLevel_aSA"
-PetscErrorCode PCDestroyLevel_aSA(PC_aSA_level *asa_lev)
+#define __FUNCT__ "PCDestroyLevel_ASA"
+PetscErrorCode PCDestroyLevel_ASA(PC_ASA_level *asa_lev)
 {
   PetscErrorCode ierr;
 
@@ -433,15 +421,15 @@ PetscErrorCode PCDestroyLevel_aSA(PC_aSA_level *asa_lev)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCComputeSpectralRadius_aSA - Computes the spectral radius of asa_lev->A
+   PCComputeSpectralRadius_ASA - Computes the spectral radius of asa_lev->A
    and stores it it asa_lev->spec_rad
 
    Input Parameters:
 .  asa_lev - the level we are treating
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCComputeSpectralRadius_aSA"
-PetscErrorCode PCComputeSpectralRadius_aSA(PC_aSA_level *asa_lev) {
+#define __FUNCT__ "PCComputeSpectralRadius_ASA"
+PetscErrorCode PCComputeSpectralRadius_ASA(PC_ASA_level *asa_lev) {
   PetscErrorCode ierr;
   PetscReal      norm_1, norm_inf;
   PetscFunctionBegin;
@@ -454,8 +442,8 @@ PetscErrorCode PCComputeSpectralRadius_aSA(PC_aSA_level *asa_lev) {
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetRichardsonScale_aSA"
-PetscErrorCode PCSetRichardsonScale_aSA(KSP ksp, PetscReal spec_rad, PetscReal richardson_scale) {
+#define __FUNCT__ "PCSetRichardsonScale_ASA"
+PetscErrorCode PCSetRichardsonScale_ASA(KSP ksp, PetscReal spec_rad, PetscReal richardson_scale) {
   PetscErrorCode ierr;
   PC             pc;
   PetscTruth     flg;
@@ -480,8 +468,8 @@ PetscErrorCode PCSetRichardsonScale_aSA(KSP ksp, PetscReal spec_rad, PetscReal r
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetSORomega_aSA"
-PetscErrorCode PCSetSORomega_aSA(PC pc, PetscReal sor_omega) {
+#define __FUNCT__ "PCSetSORomega_ASA"
+PetscErrorCode PCSetSORomega_ASA(PC pc, PetscReal sor_omega) {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = PCSORSetSymmetric(pc, SOR_SYMMETRIC_SWEEP); CHKERRQ(ierr);
@@ -494,17 +482,17 @@ PetscErrorCode PCSetSORomega_aSA(PC pc, PetscReal sor_omega) {
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetupSmoothersOnLevel_aSA - Creates the smoothers of the level.
+   PCSetupSmoothersOnLevel_ASA - Creates the smoothers of the level.
    We assume that asa_lev->A and asa_lev->spec_rad are correctly computed
 
    Input Parameters:
-+  asa - the data structure for the aSA preconditioner
++  asa - the data structure for the ASA preconditioner
 .  asa_lev - the level we are treating
 -  maxits - maximum number of iterations to use
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetupSmoothersOnLevel_aSA"
-PetscErrorCode PCSetupSmoothersOnLevel_aSA(PC_aSA *asa, PC_aSA_level *asa_lev, PetscInt maxits)
+#define __FUNCT__ "PCSetupSmoothersOnLevel_ASA"
+PetscErrorCode PCSetupSmoothersOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, PetscInt maxits)
 {
   PetscErrorCode    ierr;
   PetscTruth        flg;
@@ -535,10 +523,10 @@ PetscErrorCode PCSetupSmoothersOnLevel_aSA(PC_aSA *asa, PC_aSA_level *asa_lev, P
     ierr = KSPGetPC(asa_lev->smoothd, &pc); CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject)pc, PCSOR, &flg); CHKERRQ(ierr);
     if(flg) {
-      ierr = PCSetSORomega_aSA(pc, asa->sor_omega); CHKERRQ(ierr);
+      ierr = PCSetSORomega_ASA(pc, asa->sor_omega); CHKERRQ(ierr);
     } else {
       /* just set asa->richardson_scale to get some very basic smoother */
-      ierr = PCSetRichardsonScale_aSA(asa_lev->smoothd, asa_lev->spec_rad, asa->richardson_scale); CHKERRQ(ierr);
+      ierr = PCSetRichardsonScale_ASA(asa_lev->smoothd, asa_lev->spec_rad, asa->richardson_scale); CHKERRQ(ierr);
     }
     /* this would be the place to add support for other preconditioners */
   }
@@ -552,17 +540,17 @@ PetscErrorCode PCSetupSmoothersOnLevel_aSA(PC_aSA *asa, PC_aSA_level *asa_lev, P
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSetupDirectSolversOnLevel_aSA - Creates the direct solvers on the coarsest level.
+   PCSetupDirectSolversOnLevel_ASA - Creates the direct solvers on the coarsest level.
    We assume that asa_lev->A and asa_lev->spec_rad are correctly computed
 
    Input Parameters:
-+  asa - the data structure for the aSA preconditioner
++  asa - the data structure for the ASA preconditioner
 .  asa_lev - the level we are treating
 -  maxits - maximum number of iterations to use
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetupDirectSolversOnLevel_aSA"
-PetscErrorCode PCSetupDirectSolversOnLevel_aSA(PC_aSA *asa, PC_aSA_level *asa_lev, PetscInt maxits)
+#define __FUNCT__ "PCSetupDirectSolversOnLevel_ASA"
+PetscErrorCode PCSetupDirectSolversOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, PetscInt maxits)
 {
   PetscErrorCode    ierr;
   PetscTruth        flg;
@@ -608,15 +596,15 @@ PetscErrorCode PCSetupDirectSolversOnLevel_aSA(PC_aSA *asa, PC_aSA_level *asa_le
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreateAggregates_aSA - Creates the aggregates
+   PCCreateAggregates_ASA - Creates the aggregates
 
    Input Parameters:
 .  asa_lev - the level for which we should create the projection matrix
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreateAggregates_aSA"
-PetscErrorCode PCCreateAggregates_aSA(PC_aSA_level *asa_lev)
+#define __FUNCT__ "PCCreateAggregates_ASA"
+PetscErrorCode PCCreateAggregates_ASA(PC_ASA_level *asa_lev)
 {
   PetscInt m,n, m_loc,n_loc;
   PetscInt m_loc_s, m_loc_e;
@@ -629,7 +617,7 @@ PetscErrorCode PCCreateAggregates_aSA(PC_aSA_level *asa_lev)
   /* we use the DM grid information for that */
   if(asa_lev->dm) {
     /* coarsen DM and get the restriction matrix */
-    ierr = DMCoarsen(asa_lev->dm, &(asa_lev->next->dm)); CHKERRQ(ierr);
+    ierr = DMCoarsen(asa_lev->dm, PETSC_NULL, &(asa_lev->next->dm)); CHKERRQ(ierr);
     ierr = DMGetAggregates(asa_lev->next->dm, asa_lev->dm, &(asa_lev->agg)); CHKERRQ(ierr);
     ierr = MatGetSize(asa_lev->agg, &m, &n); CHKERRQ(ierr);
     ierr = MatGetLocalSize(asa_lev->agg, &m_loc, &n_loc); CHKERRQ(ierr);
@@ -658,7 +646,7 @@ PetscErrorCode PCCreateAggregates_aSA(PC_aSA_level *asa_lev)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreateTransferOp_aSA - Creates the transfer operator P_{l+1}^l for current level
+   PCCreateTransferOp_ASA - Creates the transfer operator P_{l+1}^l for current level
 
    Input Parameters:
 +  asa_lev - the level for which should create the transfer operator
@@ -674,8 +662,8 @@ PetscErrorCode PCCreateAggregates_aSA(PC_aSA_level *asa_lev)
    for the bridging prolongator constructions.
 */
 #undef __FUNCT__
-#define __FUNCT__ "PCCreateTransferOp_aSA"
-PetscErrorCode PCCreateTransferOp_aSA(PC_aSA_level *asa_lev, PetscTruth construct_bridge)
+#define __FUNCT__ "PCCreateTransferOp_ASA"
+PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construct_bridge)
 {
   PetscErrorCode ierr;
 
@@ -721,7 +709,7 @@ PetscErrorCode PCCreateTransferOp_aSA(PC_aSA_level *asa_lev, PetscTruth construc
 
   PetscFunctionBegin;
 
-  ierr = PetscLogEventBegin(PC_CreateTransferOp_aSA,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_CreateTransferOp_ASA,0,0,0,0);CHKERRQ(ierr);
 
   ierr = MatGetSize(asa_lev->B, &nodes_on_lev, PETSC_NULL); CHKERRQ(ierr);
 
@@ -863,9 +851,9 @@ PetscErrorCode PCCreateTransferOp_aSA(PC_aSA_level *asa_lev, PetscTruth construc
 
        /* orthogonalize b_submat_tp using the QR algorithm from LAPACK */
        LAPACKgeqrf_(cand_vec_length+a, new_loc_agg_dofs+a, b_submat_tp, cand_vec_length+a, tau, work, new_loc_agg_dofs+a, &info);
-       if( info != 0 ) SETERRQ(PETSC_ERR_LIB, "LAPACK routine failed in PCCreateTransferOp_aSA\n");
+       if( info != 0 ) SETERRQ(PETSC_ERR_LIB, "LAPACK routine failed in PCCreateTransferOp_ASA\n");
        LAPACKungqr_(cand_vec_length+a, new_loc_agg_dofs+a, new_loc_agg_dofs+a, b_submat_tp, cand_vec_length+a, tau, work, new_loc_agg_dofs+a, &info);
-       if( info != 0 ) SETERRQ(PETSC_ERR_LIB, "LAPACK routine failed in PCCreateTransferOp_aSA\n");
+       if( info != 0 ) SETERRQ(PETSC_ERR_LIB, "LAPACK routine failed in PCCreateTransferOp_ASA\n");
 
        /* Transpose b_submat_tp and store it in b_orth_arr[a]. If we are constructing a
 	  bridging restriction/interpolation operator, we could end up with less dofs than
@@ -1019,21 +1007,21 @@ PetscErrorCode PCCreateTransferOp_aSA(PC_aSA_level *asa_lev, PetscTruth construc
   ierr = PetscFree(b_orth_arr); CHKERRQ(ierr);
   ierr = PetscFree(agg_arr); CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(PC_CreateTransferOp_aSA, 0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_CreateTransferOp_ASA, 0,0,0,0); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSmoothProlongator_aSA - Computes the smoothed prolongators I and It on the level
+   PCSmoothProlongator_ASA - Computes the smoothed prolongators I and It on the level
 
    Input Parameters:
 .  asa_lev - the level for which the smoothed prolongator is constructed
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSmoothProlongator_aSA"
-PetscErrorCode PCSmoothProlongator_aSA(PC_aSA_level *asa_lev)
+#define __FUNCT__ "PCSmoothProlongator_ASA"
+PetscErrorCode PCSmoothProlongator_ASA(PC_ASA_level *asa_lev)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -1053,29 +1041,29 @@ PetscErrorCode PCSmoothProlongator_aSA(PC_aSA_level *asa_lev)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreateVcycle_aSA - Creates the V-cycle, when aggregates are already defined
+   PCCreateVcycle_ASA - Creates the V-cycle, when aggregates are already defined
 
    Input Parameters:
 .  asa - the preconditioner context
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreateVcycle_aSA"
-PetscErrorCode PCCreateVcycle_aSA(PC_aSA *asa)
+#define __FUNCT__ "PCCreateVcycle_ASA"
+PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
 {
   PetscErrorCode ierr;
 
-  PC_aSA_level   *asa_lev, *asa_next_lev;
+  PC_ASA_level   *asa_lev, *asa_next_lev;
   Mat            AI;
 
   PetscFunctionBegin;
 
-  ierr = PetscLogEventBegin(PC_CreateVcycle_aSA, 0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_CreateVcycle_ASA, 0,0,0,0); CHKERRQ(ierr);
 
   if(!asa) SETERRQ(PETSC_ERR_ARG_NULL, "asa pointer is NULL");
   if(! (asa->levellist)) SETERRQ(PETSC_ERR_ARG_NULL, "no levels found");
   asa_lev = asa->levellist;
-  ierr = PCComputeSpectralRadius_aSA(asa_lev); CHKERRQ(ierr);
-  ierr = PCSetupSmoothersOnLevel_aSA(asa, asa_lev, asa->nu); CHKERRQ(ierr);
+  ierr = PCComputeSpectralRadius_ASA(asa_lev); CHKERRQ(ierr);
+  ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->nu); CHKERRQ(ierr);
 
   while(asa_lev->next) {
     asa_next_lev = asa_lev->next;
@@ -1083,7 +1071,7 @@ PetscErrorCode PCCreateVcycle_aSA(PC_aSA *asa)
 
     /* (b) construct B_{l+1} and P_{l+1}^l using (2.11) */
     /* construct P_{l+1}^l */
-    ierr = PCCreateTransferOp_aSA(asa_lev, PETSC_FALSE); CHKERRQ(ierr);
+    ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE); CHKERRQ(ierr);
 
     /* construct B_{l+1} */
     ierr = SafeMatDestroy(&(asa_next_lev->B)); CHKERRQ(ierr);
@@ -1091,7 +1079,7 @@ PetscErrorCode PCCreateVcycle_aSA(PC_aSA *asa)
     asa_next_lev->cand_vecs = asa_lev->cand_vecs;
 
     /* (c) construct smoothed prolongator */
-    ierr = PCSmoothProlongator_aSA(asa_lev); CHKERRQ(ierr);
+    ierr = PCSmoothProlongator_ASA(asa_lev); CHKERRQ(ierr);
     
     /* (d) construct coarse matrix */
     /* Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
@@ -1101,8 +1089,8 @@ PetscErrorCode PCCreateVcycle_aSA(PC_aSA *asa)
     ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);
 /*     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size)); CHKERRQ(ierr);
-    ierr = PCComputeSpectralRadius_aSA(asa_next_lev); CHKERRQ(ierr);
-    ierr = PCSetupSmoothersOnLevel_aSA(asa, asa_next_lev, asa->nu); CHKERRQ(ierr);
+    ierr = PCComputeSpectralRadius_ASA(asa_next_lev); CHKERRQ(ierr);
+    ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->nu); CHKERRQ(ierr);
     /* create corresponding vectors x_{l+1}, b_{l+1}, r_{l+1} */
     ierr = SafeVecDestroy(&(asa_next_lev->x)); CHKERRQ(ierr);
     ierr = SafeVecDestroy(&(asa_next_lev->b)); CHKERRQ(ierr);
@@ -1114,17 +1102,17 @@ PetscErrorCode PCCreateVcycle_aSA(PC_aSA *asa)
     asa_lev = asa_lev->next;
   } /* end of while loop over the levels */
   /* asa_lev now points to the coarsest level, set up direct solver there */
-  ierr = PCComputeSpectralRadius_aSA(asa_lev); CHKERRQ(ierr);
-  ierr = PCSetupDirectSolversOnLevel_aSA(asa, asa_lev, asa->nu); CHKERRQ(ierr);
+  ierr = PCComputeSpectralRadius_ASA(asa_lev); CHKERRQ(ierr);
+  ierr = PCSetupDirectSolversOnLevel_ASA(asa, asa_lev, asa->nu); CHKERRQ(ierr);
 
-  ierr = PetscLogEventEnd(PC_CreateVcycle_aSA, 0,0,0,0); CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_CreateVcycle_ASA, 0,0,0,0); CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCAddCandidateToB_aSA - Inserts a candidate vector in B
+   PCAddCandidateToB_ASA - Inserts a candidate vector in B
 
    Input Parameters:
 +  B - the matrix to insert into
@@ -1141,8 +1129,8 @@ PetscErrorCode PCCreateVcycle_aSA(PC_aSA *asa)
    because of the definition of P in (2.11).
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCAddCandidateToB_aSA"
-PetscErrorCode PCAddCandidateToB_aSA(Mat B, PetscInt col_idx, Vec x, Mat A) {
+#define __FUNCT__ "PCAddCandidateToB_ASA"
+PetscErrorCode PCAddCandidateToB_ASA(Mat B, PetscInt col_idx, Vec x, Mat A) {
   PetscErrorCode ierr;
   Vec            Ax;
   PetscScalar    dotprod;
@@ -1169,19 +1157,19 @@ PetscErrorCode PCAddCandidateToB_aSA(Mat B, PetscInt col_idx, Vec x, Mat A) {
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCInitializationStage_aSA - Applies the aSA preconditioner to a vector.
+   PCInitializationStage_ASA - Applies the ASA preconditioner to a vector.
 
    Input Parameters:
-+  asa - the aSA data structure
++  asa - the ASA data structure
 -  x - a starting guess for a hard to approximate vector, if PETSC_NULL, will be generated
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCInitializationStage_aSA"
-PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
+#define __FUNCT__ "PCInitializationStage_ASA"
+PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 {
   PetscErrorCode ierr;
   PetscInt       l;
-  PC_aSA_level   *asa_lev, *asa_next_lev;
+  PC_ASA_level   *asa_lev, *asa_next_lev;
   PetscRandom    rctx;     /* random number generator context */
 
   Vec            ax;
@@ -1205,18 +1193,18 @@ PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
 
   PetscFunctionBegin;
 
-  ierr = PetscLogEventBegin(PC_InitializationStage_aSA,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_InitializationStage_ASA,0,0,0,0);CHKERRQ(ierr);
   l=1;
   /* create first level */
-  ierr = PCCreateLevel_aSA(&(asa->levellist), l, asa->comm, 0, 0, asa->ksptype_smooth, asa->pctype_smooth); CHKERRQ(ierr);
+  ierr = PCCreateLevel_ASA(&(asa->levellist), l, asa->comm, 0, 0, asa->ksptype_smooth, asa->pctype_smooth); CHKERRQ(ierr);
   asa_lev = asa->levellist;
 
   /* Set matrix */
   asa_lev->A = asa->A;
   ierr = MatGetSize(asa_lev->A, &i, &j); CHKERRQ(ierr);
   asa_lev->size = i;
-  ierr = PCComputeSpectralRadius_aSA(asa_lev); CHKERRQ(ierr);
-  ierr = PCSetupSmoothersOnLevel_aSA(asa, asa_lev, asa->mu_initial); CHKERRQ(ierr);
+  ierr = PCComputeSpectralRadius_ASA(asa_lev); CHKERRQ(ierr);
+  ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->mu_initial); CHKERRQ(ierr);
 
   /* Set DM */
   asa_lev->dm = asa->dm;
@@ -1266,7 +1254,7 @@ PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
 	    "Use relaxation or decrease epsilon with -pc_asa_epsilon");
   } else {
     /* set the number of relaxations to asa->mu from asa->mu_initial */
-    ierr = PCSetupSmoothersOnLevel_aSA(asa, asa_lev, asa->mu); CHKERRQ(ierr);
+    ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_lev, asa->mu); CHKERRQ(ierr);
 
     /* Let's do some multigrid ! */
     sufficiently_coarsened = PETSC_FALSE;
@@ -1284,26 +1272,26 @@ PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
       /* create matrix for candidates */
       ierr = MatCreateMPIDense(asa_lev->comm, vec_loc_size, PETSC_DECIDE, vec_size, asa->max_cand_vecs, PETSC_NULL, &(asa_lev->B)); CHKERRQ(ierr);
       /* set the first column */
-      ierr = PCAddCandidateToB_aSA(asa_lev->B, 0, asa_lev->x, asa_lev->A); CHKERRQ(ierr);
+      ierr = PCAddCandidateToB_ASA(asa_lev->B, 0, asa_lev->x, asa_lev->A); CHKERRQ(ierr);
       asa_lev->cand_vecs = 1;
 
       /* create next level */
-      ierr = PCCreateLevel_aSA( &(asa_lev->next), asa_lev->level+1,  asa_lev->comm, asa_lev, PETSC_NULL, asa->ksptype_smooth, asa->pctype_smooth); CHKERRQ(ierr);
+      ierr = PCCreateLevel_ASA( &(asa_lev->next), asa_lev->level+1,  asa_lev->comm, asa_lev, PETSC_NULL, asa->ksptype_smooth, asa->pctype_smooth); CHKERRQ(ierr);
       asa_next_lev = asa_lev->next;
 
       /* (b) Create nodal aggregates A_i^l */
-      ierr = PCCreateAggregates_aSA(asa_lev); CHKERRQ(ierr);
+      ierr = PCCreateAggregates_ASA(asa_lev); CHKERRQ(ierr);
       
       /* (c) Define tentatative prolongator P_{l+1}^l and candidate matrix B_{l+1}
 	     using P_{l+1}^l B_{l+1} = B_l and (P_{l+1}^l)^T P_{l+1}^l = I */
-      ierr = PCCreateTransferOp_aSA(asa_lev, PETSC_FALSE); CHKERRQ(ierr);
+      ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE); CHKERRQ(ierr);
 
       /* future WORK: set correct fill ratios for all the operations below */
       ierr = MatMatMult(asa_lev->Pt, asa_lev->B, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->B)); CHKERRQ(ierr);
       asa_next_lev->cand_vecs = asa_lev->cand_vecs;
 
       /* (d) Define prolongator I_{l+1}^l = S_l P_{l+1}^l */
-      ierr = PCSmoothProlongator_aSA(asa_lev); CHKERRQ(ierr);
+      ierr = PCSmoothProlongator_ASA(asa_lev); CHKERRQ(ierr);
 
       /* (e) Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
       ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
@@ -1311,8 +1299,8 @@ PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
       ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);
 /*       ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); */
       ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size)); CHKERRQ(ierr);
-      ierr = PCComputeSpectralRadius_aSA(asa_next_lev); CHKERRQ(ierr);
-      ierr = PCSetupSmoothersOnLevel_aSA(asa, asa_next_lev, asa->mu); CHKERRQ(ierr);
+      ierr = PCComputeSpectralRadius_ASA(asa_next_lev); CHKERRQ(ierr);
+      ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu); CHKERRQ(ierr);
 
       /* coarse enough for direct solver? */
       ierr = MatGetSize(asa_next_lev->A, &i, &j); CHKERRQ(ierr);
@@ -1378,7 +1366,7 @@ PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
     ierr = KSPGetPC(asa_next_lev->smoothd, &coarse_pc); CHKERRQ(ierr);
     ierr = PCSetType(coarse_pc, asa->pctype_direct); CHKERRQ(ierr);
     asa_next_lev->smoothu = asa_next_lev->smoothd;
-    ierr = PCSetupDirectSolversOnLevel_aSA(asa, asa_next_lev, asa->nu); CHKERRQ(ierr);
+    ierr = PCSetupDirectSolversOnLevel_ASA(asa, asa_next_lev, asa->nu); CHKERRQ(ierr);
 
     /* update finest-level candidate matrix B_1 = I_2^1 I_3^2 ... I_{L-1}^{L-2} x_{L-1} */
     if( ! asa_lev->prev ) {
@@ -1405,13 +1393,13 @@ PetscErrorCode PCInitializationStage_aSA(PC_aSA *asa, Vec x)
       }
     }
     /* set the first column of B1 */
-    ierr = PCAddCandidateToB_aSA(asa_lev->B, 0, cand_vec, asa_lev->A); CHKERRQ(ierr);
+    ierr = PCAddCandidateToB_ASA(asa_lev->B, 0, cand_vec, asa_lev->A); CHKERRQ(ierr);
     ierr = SafeVecDestroy(&(cand_vec)); CHKERRQ(ierr);    
 
     /* Step 6. Create V-cycle */
-    ierr = PCCreateVcycle_aSA(asa); CHKERRQ(ierr);
+    ierr = PCCreateVcycle_ASA(asa); CHKERRQ(ierr);
   }
-  ierr = PetscLogEventEnd(PC_InitializationStage_aSA,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_InitializationStage_ASA,0,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1435,7 +1423,7 @@ PetscErrorCode computeExactSol(Mat A, Vec b, Vec *correct_sol) {
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApplyVcycleOnLevel_aSA - Applies current V-cycle
+   PCApplyVcycleOnLevel_ASA - Applies current V-cycle
 
    Input Parameters:
 +  asa_lev - the current level we should recurse on
@@ -1443,16 +1431,16 @@ PetscErrorCode computeExactSol(Mat A, Vec b, Vec *correct_sol) {
 
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCApplyVcycleOnLevel_aSA"
-PetscErrorCode PCApplyVcycleOnLevel_aSA(PC_aSA_level *asa_lev, PetscInt gamma)
+#define __FUNCT__ "PCApplyVcycleOnLevel_ASA"
+PetscErrorCode PCApplyVcycleOnLevel_ASA(PC_ASA_level *asa_lev, PetscInt gamma)
 {
   PetscErrorCode ierr;
-  PC_aSA_level   *asa_next_lev;
+  PC_ASA_level   *asa_next_lev;
   PetscInt       g;
 
   PetscFunctionBegin;
 
-  if(asa_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "Level is empty in PCApplyVcycleOnLevel_aSA");
+  if(asa_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "Level is empty in PCApplyVcycleOnLevel_ASA");
   asa_next_lev = asa_lev->next;
 
   if( asa_next_lev != 0 ) {
@@ -1470,7 +1458,7 @@ PetscErrorCode PCApplyVcycleOnLevel_aSA(PC_aSA_level *asa_lev, PetscInt gamma)
 
       /* (b) Set x_{l+1} = 0 and recurse */
       ierr = VecSet(asa_next_lev->x, 0.0); CHKERRQ(ierr);
-      ierr = PCApplyVcycleOnLevel_aSA(asa_next_lev, gamma); CHKERRQ(ierr);
+      ierr = PCApplyVcycleOnLevel_ASA(asa_next_lev, gamma); CHKERRQ(ierr);
 
       /* (c) correct solution x_l = x_l + I_{l+1}^l x_{l+1} */
       ierr = MatMultAdd(asa_lev->I, asa_next_lev->x, asa_lev->x, asa_lev->x); CHKERRQ(ierr);
@@ -1494,22 +1482,22 @@ PetscErrorCode PCApplyVcycleOnLevel_aSA(PC_aSA_level *asa_lev, PetscInt gamma)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCGeneralSetupStage_aSA - Applies the aSA preconditioner to a vector. Algorithm
-                             4 from the aSA paper
+   PCGeneralSetupStage_ASA - Applies the ASA preconditioner to a vector. Algorithm
+                             4 from the ASA paper
 
    Input Parameters:
-+  asa - the data structure for the aSA algorithm
++  asa - the data structure for the ASA algorithm
 -  cand - a possible candidate vector, if PETSC_NULL, will be constructed randomly
 
    Output Parameters:
 .  cand_added - PETSC_TRUE, if new candidate vector added, PETSC_FALSE otherwise
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCGeneralSetupStage_aSA"
-PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_added)
+#define __FUNCT__ "PCGeneralSetupStage_ASA"
+PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_added)
 {
   PetscErrorCode ierr;
-  PC_aSA_level   *asa_lev, *asa_next_lev;
+  PC_ASA_level   *asa_lev, *asa_next_lev;
 
   PetscRandom    rctx;     /* random number generator context */
   PetscReal      r;
@@ -1538,13 +1526,13 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
   *cand_added = PETSC_FALSE;
   
   asa_lev = asa->levellist;
-  if(asa_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "No levels found in PCGeneralSetupStage_aSA");
+  if(asa_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "No levels found in PCGeneralSetupStage_ASA");
   asa_next_lev = asa_lev->next;
   if(asa_next_lev == 0) SETERRQ(PETSC_ERR_ARG_NULL, "Just one level, not implemented yet");
   
   ierr = PetscPrintf(asa_lev->comm, "General setup stage\n"); CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(PC_GeneralSetupStage_aSA,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(PC_GeneralSetupStage_ASA,0,0,0,0);CHKERRQ(ierr);
 
   /* 1. If max. dof per node on level 2 equals K, stop */
   if( asa_next_lev->cand_vecs >= asa->max_dof_lev_2 ) {
@@ -1584,7 +1572,7 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
   nd_fast = PETSC_FALSE;
   ierr = MatGetVecs(asa_lev->A, 0, &ax); CHKERRQ(ierr);
   for(c=0; c<asa->mu; c++) {
-    ierr = PCApplyVcycleOnLevel_aSA(asa_lev, asa->gamma); CHKERRQ(ierr);
+    ierr = PCApplyVcycleOnLevel_ASA(asa_lev, asa->gamma); CHKERRQ(ierr);
     
     ierr = MatMult(asa_lev->A, asa_lev->x, ax); CHKERRQ(ierr);
     ierr = VecDot(asa_lev->x, ax, &tmp); CHKERRQ(ierr);
@@ -1611,7 +1599,7 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
   } else {
     ierr = PetscPrintf(asa_lev->comm, "Adding candidate vector %d\n", asa_lev->cand_vecs+1); CHKERRQ(ierr);
   }
-  ierr = PCAddCandidateToB_aSA(asa_lev->B, asa_lev->cand_vecs, asa_lev->x, asa_lev->A); CHKERRQ(ierr);
+  ierr = PCAddCandidateToB_ASA(asa_lev->B, asa_lev->cand_vecs, asa_lev->x, asa_lev->A); CHKERRQ(ierr);
   *cand_added = PETSC_TRUE;
   asa_lev->cand_vecs++;
 
@@ -1620,7 +1608,7 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
     ierr = PetscPrintf(asa_lev->comm, "General setup stage: processing level %d\n", asa_next_lev->level); CHKERRQ(ierr);
     /* (a) define B_{l+1} and P_{l+1}^L */
     /* construct P_{l+1}^l */
-    ierr = PCCreateTransferOp_aSA(asa_lev, PETSC_FALSE); CHKERRQ(ierr);
+    ierr = PCCreateTransferOp_ASA(asa_lev, PETSC_FALSE); CHKERRQ(ierr);
 
     /* construct B_{l+1} */
     ierr = SafeMatDestroy(&(asa_next_lev->B)); CHKERRQ(ierr);
@@ -1628,7 +1616,7 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
     /* do not increase asa_next_lev->cand_vecs until step (j) */
     
     /* (b) construct prolongator I_{l+1}^l = S_l P_{l+1}^l */
-    ierr = PCSmoothProlongator_aSA(asa_lev); CHKERRQ(ierr);
+    ierr = PCSmoothProlongator_ASA(asa_lev); CHKERRQ(ierr);
 							
     /* (c) construct coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
     ierr = SafeMatDestroy(&(asa_next_lev->A)); CHKERRQ(ierr);
@@ -1637,8 +1625,8 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
     ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);
 /*     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size)); CHKERRQ(ierr);
-    ierr = PCComputeSpectralRadius_aSA(asa_next_lev); CHKERRQ(ierr);
-    ierr = PCSetupSmoothersOnLevel_aSA(asa, asa_next_lev, asa->mu); CHKERRQ(ierr);
+    ierr = PCComputeSpectralRadius_ASA(asa_next_lev); CHKERRQ(ierr);
+    ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu); CHKERRQ(ierr);
 
     if( ! skip_steps_d_j ) {
       /* (d) get vector x_{l+1} from last column in B_{l+1} */
@@ -1664,10 +1652,10 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
     
       /* (e) create bridge transfer operator P_{l+2}^{l+1}, by using the previously
 	 computed candidates */
-      ierr = PCCreateTransferOp_aSA(asa_next_lev, PETSC_TRUE); CHKERRQ(ierr);
+      ierr = PCCreateTransferOp_ASA(asa_next_lev, PETSC_TRUE); CHKERRQ(ierr);
 
       /* (f) construct bridging prolongator I_{l+2}^{l+1} = S_{l+1} P_{l+2}^{l+1} */
-      ierr = PCSmoothProlongator_aSA(asa_next_lev); CHKERRQ(ierr);
+      ierr = PCSmoothProlongator_ASA(asa_next_lev); CHKERRQ(ierr);
 
       /* (g) compute <A_{l+1} x_{l+1}, x_{l+1}> and save it */
       ierr = MatGetVecs(asa_next_lev->A, 0, &ax); CHKERRQ(ierr);
@@ -1682,7 +1670,7 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
       ierr = VecSet(asa_next_lev->b, 0.0);
       /* apply V-cycle */
       for(c=0; c<asa->mu; c++) {
-	ierr = PCApplyVcycleOnLevel_aSA(asa_next_lev, asa->gamma); CHKERRQ(ierr);
+	ierr = PCApplyVcycleOnLevel_ASA(asa_next_lev, asa->gamma); CHKERRQ(ierr);
       }
 
       /* (i) check convergence */
@@ -1697,7 +1685,7 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
 	skip_steps_d_j = PETSC_TRUE;
    
       /* (j) update candidate B_{l+1} */
-      ierr = PCAddCandidateToB_aSA(asa_next_lev->B, asa_next_lev->cand_vecs, asa_next_lev->x, asa_next_lev->A); CHKERRQ(ierr);
+      ierr = PCAddCandidateToB_ASA(asa_next_lev->B, asa_next_lev->cand_vecs, asa_next_lev->x, asa_next_lev->A); CHKERRQ(ierr);
       asa_next_lev->cand_vecs++;
     }
     /* go to next level */
@@ -1729,20 +1717,20 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
     }
   }
   /* 8. update B_1 by setting the last column of B_1 */
-  ierr = PCAddCandidateToB_aSA(asa_lev->B, asa_lev->cand_vecs-1, cand_vec, asa_lev->A); CHKERRQ(ierr);
+  ierr = PCAddCandidateToB_ASA(asa_lev->B, asa_lev->cand_vecs-1, cand_vec, asa_lev->A); CHKERRQ(ierr);
   ierr = SafeVecDestroy(&(cand_vec)); CHKERRQ(ierr);    
 
   /* 9. create V-cycle */
-  ierr = PCCreateVcycle_aSA(asa); CHKERRQ(ierr);
+  ierr = PCCreateVcycle_ASA(asa); CHKERRQ(ierr);
   
-  ierr = PetscLogEventEnd(PC_GeneralSetupStage_aSA,0,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(PC_GeneralSetupStage_ASA,0,0,0,0);CHKERRQ(ierr);
 
   PetscFunctionReturn(0);
 }
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCConstructMultigrid_aSA - creates the multigrid preconditionier, this is a fairly
+   PCConstructMultigrid_ASA - creates the multigrid preconditionier, this is a fairly
    involved process, which runs extensive testing to compute good candidate vectors
 
    Input Parameters:
@@ -1750,11 +1738,11 @@ PetscErrorCode PCGeneralSetupStage_aSA(PC_aSA *asa, Vec cand, PetscTruth *cand_a
 
  */
 #undef __FUNCT__  
-#define __FUNCT__ "PCConstructMultigrid_aSA"
-PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
+#define __FUNCT__ "PCConstructMultigrid_ASA"
+PetscErrorCode PCConstructMultigrid_ASA(PC pc) {
   PetscErrorCode ierr;
-  PC_aSA         *asa;
-  PC_aSA_level   *asa_lev;
+  PC_ASA         *asa;
+  PC_ASA_level   *asa_lev;
   PetscInt       i, ls, le;
   PetscScalar    *d;
   PetscTruth     zeroflag = PETSC_FALSE;
@@ -1766,8 +1754,8 @@ PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
 
   PetscFunctionBegin;
 
-  /* get aSA data structure */
-  asa = (PC_aSA*)pc->data;
+  /* get ASA data structure */
+  asa = (PC_ASA*)pc->data;
 
   /* check if we should scale with diagonal */
   if(asa->scale_diag) {
@@ -1800,7 +1788,7 @@ PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
     asa->A = pc->pmat;
   }
   /* Initialization stage */
-  ierr = PCInitializationStage_aSA(asa, PETSC_NULL); CHKERRQ(ierr);
+  ierr = PCInitializationStage_ASA(asa, PETSC_NULL); CHKERRQ(ierr);
   
   /* get first level */
   asa_lev = asa->levellist;
@@ -1826,7 +1814,7 @@ PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
       break;
     }
     /* apply V-cycle */
-    ierr = PCApplyVcycleOnLevel_aSA(asa_lev, asa->gamma); CHKERRQ(ierr);
+    ierr = PCApplyVcycleOnLevel_ASA(asa_lev, asa->gamma); CHKERRQ(ierr);
     /* check convergence */
     ierr = MatMult(asa_lev->A, asa_lev->x, asa_lev->r);CHKERRQ(ierr);
     ierr = VecNorm(asa_lev->r, NORM_2, &rnorm); CHKERRQ(ierr);
@@ -1843,7 +1831,7 @@ PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
     /* test Rayleigh quotient decrease and add more candidate vectors if necessary */
     if( i && (rq > asa->rq_improve*rq_prev) ) {
       /* improve interpolation by adding another candidate vector */
-      ierr = PCGeneralSetupStage_aSA(asa, asa_lev->r, &cand_added); CHKERRQ(ierr);
+      ierr = PCGeneralSetupStage_ASA(asa, asa_lev->r, &cand_added); CHKERRQ(ierr);
       if( !cand_added ) {
 	/* either too many candidates for storage or cycle is already effective */
 	ierr = PetscPrintf(asa->comm, "either too many candidates for storage or cycle is already effective\n"); CHKERRQ(ierr);
@@ -1869,7 +1857,7 @@ PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCApply_aSA - Applies the aSA preconditioner to a vector.
+   PCApply_ASA - Applies the ASA preconditioner to a vector.
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -1881,25 +1869,25 @@ PetscErrorCode PCConstructMultigrid_aSA(PC pc) {
    Application Interface Routine: PCApply()
  */
 #undef __FUNCT__  
-#define __FUNCT__ "PCApply_aSA"
-PetscErrorCode PCApply_aSA(PC pc,Vec x,Vec y)
+#define __FUNCT__ "PCApply_ASA"
+PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
 {
-  PC_aSA         *asa;
-  PC_aSA_level   *asa_lev;
+  PC_ASA         *asa;
+  PC_ASA_level   *asa_lev;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  asa = (PC_aSA*)pc->data;
+  asa = (PC_ASA*)pc->data;
   /* check if data structure is initialized */
   if (!asa) {
-    ierr = PCSetUp_aSA(pc);CHKERRQ(ierr);
-    asa = (PC_aSA*)pc->data;
+    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
+    asa = (PC_ASA*)pc->data;
   }
 
   if( ! asa->multigrid_constructed ) {
-    ierr = PCConstructMultigrid_aSA(pc); CHKERRQ(ierr);
+    ierr = PCConstructMultigrid_ASA(pc); CHKERRQ(ierr);
   }    
 
   /* get first level */
@@ -1916,7 +1904,7 @@ PetscErrorCode PCApply_aSA(PC pc,Vec x,Vec y)
   asa_lev->x = asa->x;
   asa_lev->b = asa->b;
 
-  ierr = PCApplyVcycleOnLevel_aSA(asa_lev, asa->gamma); CHKERRQ(ierr);
+  ierr = PCApplyVcycleOnLevel_ASA(asa_lev, asa->gamma); CHKERRQ(ierr);
   
   /* Return solution */
   ierr = VecCopy(asa->x, y); CHKERRQ(ierr);
@@ -1932,7 +1920,7 @@ PetscErrorCode PCApply_aSA(PC pc,Vec x,Vec y)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCSolve_aSA - Applies the aSA iteration to solve a linear system
+   PCSolve_ASA - Applies the ASA iteration to solve a linear system
 
    Input Parameters:
 .  pc - the preconditioner context
@@ -1943,11 +1931,11 @@ PetscErrorCode PCApply_aSA(PC pc,Vec x,Vec y)
 
  */
 #undef __FUNCT__  
-#define __FUNCT__ "PCSolve_aSA"
-PetscErrorCode PCSolve_aSA(PC pc, Vec b, Vec x)
+#define __FUNCT__ "PCSolve_ASA"
+PetscErrorCode PCSolve_ASA(PC pc, Vec b, Vec x)
 {
-  PC_aSA         *asa;
-  PC_aSA_level   *asa_lev;
+  PC_ASA         *asa;
+  PC_ASA_level   *asa_lev;
   PetscInt       i;
   PetscReal      rnorm, rnorm_start;
   PetscErrorCode ierr;
@@ -1955,15 +1943,15 @@ PetscErrorCode PCSolve_aSA(PC pc, Vec b, Vec x)
   PetscFunctionBegin;
 
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  asa = (PC_aSA*)pc->data;
+  asa = (PC_ASA*)pc->data;
   /* check if data structure is initialized */
   if (!asa) {
-    ierr = PCSetUp_aSA(pc);CHKERRQ(ierr);
-    asa = (PC_aSA*)pc->data;
+    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
+    asa = (PC_ASA*)pc->data;
   }
 
   if( ! asa->multigrid_constructed ) {
-    ierr = PCConstructMultigrid_aSA(pc); CHKERRQ(ierr);
+    ierr = PCConstructMultigrid_ASA(pc); CHKERRQ(ierr);
   }    
 
   /* get first level */
@@ -1994,7 +1982,7 @@ PetscErrorCode PCSolve_aSA(PC pc, Vec b, Vec x)
   /* **************** Full algorithm loop *********************************** */
   for(i=0; i<asa->max_it; i++) {
     /* apply V-cycle */
-    ierr = PCApplyVcycleOnLevel_aSA(asa_lev, asa->gamma); CHKERRQ(ierr);
+    ierr = PCApplyVcycleOnLevel_ASA(asa_lev, asa->gamma); CHKERRQ(ierr);
     /* check convergence */
     ierr = MatMult(asa->A, asa->x, asa->r);CHKERRQ(ierr);
     ierr = VecAYPX(asa->r, -1.0, asa->b);CHKERRQ(ierr);
@@ -2029,8 +2017,8 @@ PetscErrorCode PCSolve_aSA(PC pc, Vec b, Vec x)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCDestroy_aSA - Destroys the private context for the aSA preconditioner
-   that was created with PCCreate_aSA().
+   PCDestroy_ASA - Destroys the private context for the ASA preconditioner
+   that was created with PCCreate_ASA().
 
    Input Parameter:
 .  pc - the preconditioner context
@@ -2038,17 +2026,17 @@ PetscErrorCode PCSolve_aSA(PC pc, Vec b, Vec x)
    Application Interface Routine: PCDestroy()
 */
 #undef __FUNCT__  
-#define __FUNCT__ "PCDestroy_aSA"
-static PetscErrorCode PCDestroy_aSA(PC pc)
+#define __FUNCT__ "PCDestroy_ASA"
+static PetscErrorCode PCDestroy_ASA(PC pc)
 {
-  PC_aSA         *asa;
-  PC_aSA_level   *asa_lev;
-  PC_aSA_level   *asa_next_level;
+  PC_ASA         *asa;
+  PC_ASA_level   *asa_lev;
+  PC_ASA_level   *asa_next_level;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  asa = (PC_aSA*)pc->data;
+  asa = (PC_ASA*)pc->data;
   asa_lev = asa->levellist;
 
   /* Delete top level data */
@@ -2070,7 +2058,7 @@ static PetscErrorCode PCDestroy_aSA(PC pc)
   /* Destroy each of the levels */
   while( asa_lev ) {
     asa_next_level = asa_lev->next;
-    ierr = PCDestroyLevel_aSA(asa_lev); CHKERRQ(ierr);
+    ierr = PCDestroyLevel_ASA(asa_lev); CHKERRQ(ierr);
     asa_lev = asa_next_level;
   }
 
@@ -2081,10 +2069,10 @@ static PetscErrorCode PCDestroy_aSA(PC pc)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCSetFromOptions_aSA"
-static PetscErrorCode PCSetFromOptions_aSA(PC pc)
+#define __FUNCT__ "PCSetFromOptions_ASA"
+static PetscErrorCode PCSetFromOptions_ASA(PC pc)
 {
-  PC_aSA         *asa = (PC_aSA*)pc->data;
+  PC_ASA         *asa = (PC_ASA*)pc->data;
   PetscTruth     flg;
   PetscErrorCode ierr;
   char           type[20];
@@ -2092,11 +2080,11 @@ static PetscErrorCode PCSetFromOptions_aSA(PC pc)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if( !asa ) {
-    ierr = PCSetUp_aSA(pc);CHKERRQ(ierr);
-    asa = (PC_aSA*)pc->data;
+    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
+    asa = (PC_ASA*)pc->data;
   }
 
-  ierr = PetscOptionsHead("aSA options");CHKERRQ(ierr);
+  ierr = PetscOptionsHead("ASA options");CHKERRQ(ierr);
   /* convergence parameters */
   ierr = PetscOptionsInt("-pc_asa_nu","Number of cycles to run smoother","No manual page yet",asa->nu,&(asa->nu),&flg);CHKERRQ(ierr);
   ierr = PetscOptionsInt("-pc_asa_gamma","Number of cycles to run coarse grid correction","No manual page yet",asa->gamma,&(asa->gamma),&flg);CHKERRQ(ierr);
@@ -2147,7 +2135,7 @@ static PetscErrorCode PCSetFromOptions_aSA(PC pc)
 
 /* -------------------------------------------------------------------------- */
 /*
-   PCCreate_aSA - Creates a aSA preconditioner context, PC_aSA, 
+   PCCreate_ASA - Creates a ASA preconditioner context, PC_ASA, 
    and sets this as the private data within the generic preconditioning 
    context, PC, that was created within PCCreate().
 
@@ -2158,8 +2146,8 @@ static PetscErrorCode PCSetFromOptions_aSA(PC pc)
 */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
-#define __FUNCT__ "PCCreate_aSA"
-PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_aSA(PC pc)
+#define __FUNCT__ "PCCreate_ASA"
+PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
@@ -2175,21 +2163,21 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_aSA(PC pc)
 
   /* Set the operators. Do we have to zero all other unsupported ops? */
   ierr = PetscMemzero(pc->ops, sizeof(struct _PCOps)); CHKERRQ(ierr);
-  pc->ops->apply               = PCApply_aSA;
-  pc->ops->applytranspose      = PCApply_aSA;
-  pc->ops->setup               = PCSetUp_aSA;
-  pc->ops->destroy             = PCDestroy_aSA;
-  pc->ops->setfromoptions      = PCSetFromOptions_aSA;
+  pc->ops->apply               = PCApply_ASA;
+  pc->ops->applytranspose      = PCApply_ASA;
+  pc->ops->setup               = PCSetUp_ASA;
+  pc->ops->destroy             = PCDestroy_ASA;
+  pc->ops->setfromoptions      = PCSetFromOptions_ASA;
 
   /* Set the data to pointer to 0 */
   pc->data                = (void*)0;
 
   /* register events */
   if( ! asa_events_registered ) {
-    ierr = PetscLogEventRegister(&PC_InitializationStage_aSA, "PCInitializationStage_aSA", PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_GeneralSetupStage_aSA,   "PCGeneralSetupStage_aSA",   PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_CreateTransferOp_aSA,    "PCCreateTransferOp_aSA",    PC_COOKIE);CHKERRQ(ierr);
-    ierr = PetscLogEventRegister(&PC_CreateVcycle_aSA,        "PCCreateVcycle_aSA",   PC_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&PC_InitializationStage_ASA, "PCInitializationStage_ASA", PC_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&PC_GeneralSetupStage_ASA,   "PCGeneralSetupStage_ASA",   PC_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&PC_CreateTransferOp_ASA,    "PCCreateTransferOp_ASA",    PC_COOKIE);CHKERRQ(ierr);
+    ierr = PetscLogEventRegister(&PC_CreateVcycle_ASA,        "PCCreateVcycle_ASA",   PC_COOKIE);CHKERRQ(ierr);
     asa_events_registered = PETSC_TRUE;
   }
 

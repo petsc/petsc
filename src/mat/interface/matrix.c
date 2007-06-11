@@ -4657,6 +4657,41 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetLocalSize(Mat mat,PetscInt *m,PetscInt* 
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetOwnershipRangeColumn"
+/*@
+   MatGetOwnershipRangeColumn - Returns the range of matrix columns owned by
+   this processor.
+
+   Not Collective
+
+   Input Parameters:
+.  mat - the matrix
+
+   Output Parameters:
++  m - the global index of the first local column
+-  n - one more than the global index of the last local column
+
+   Notes: both output parameters can be PETSC_NULL on input.
+
+   Level: developer
+
+   Concepts: matrices^column ownership
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetOwnershipRangeColumn(Mat mat,PetscInt *m,PetscInt* n)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (m) PetscValidIntPointer(m,2);
+  if (n) PetscValidIntPointer(n,3);
+  ierr = MatPreallocated(mat);CHKERRQ(ierr);
+  if (m) *m = mat->cmap.rstart;
+  if (n) *n = mat->cmap.rend;
+  PetscFunctionReturn(0);
+}
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetOwnershipRange"

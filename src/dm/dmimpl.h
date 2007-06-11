@@ -16,6 +16,7 @@
   PetscErrorCode (*getcoloring)(type,ISColoringType,ISColoring*);\
   PetscErrorCode (*getmatrix)(type, MatType,Mat*);\
   PetscErrorCode (*getinterpolation)(type,type,Mat*,Vec*);\
+  PetscErrorCode (*getaggregates)(type,type,Mat*);\
   PetscErrorCode (*getinjection)(type,type,VecScatter*);\
 \
   PetscErrorCode (*refine)(type,MPI_Comm,type*);\

@@ -4,19 +4,18 @@
 #if !defined(__ASA_IMPL)
 #define __ASA_IMPL
 #include "private/pcimpl.h"
-#include "petscksp.h"
-#include "petscda.h"
+#include "petscasa.h"
 
 /*
      Structure for adaptive smoothed aggregation solver. 
 */
 
 /* 
-   Private context (data structure) for the aSA preconditioner.
+   Private context (data structure) for the ASA preconditioner.
 
    This is one level in the multigrid hierarchy
 */
-struct __PC_aSA_level {
+struct __PC_ASA_level {
   PetscInt   level;                        /* current level: 1 original level, 2 coarser, ... */
   PetscInt   size;                         /* The size of the matrices and vectors for the
 					      current level */
@@ -58,15 +57,15 @@ struct __PC_aSA_level {
   KSP        smoothd;                      /* pre smoother */
   KSP        smoothu;                      /* post smoother */
 
-  struct __PC_aSA_level *prev, *next;      /* next and previous levels */
+  struct __PC_ASA_level *prev, *next;      /* next and previous levels */
 };
 
-typedef struct __PC_aSA_level  PC_aSA_level;
+typedef struct __PC_ASA_level  PC_ASA_level;
 
 /* 
-   Private context (data structure) for the aSA preconditioner.
+   Private context (data structure) for the ASA preconditioner.
 
-   This is the abstract object that contains the global data for the aSA object
+   This is the abstract object that contains the global data for the ASA object
 */
 typedef struct {
   /* parameters for the algorithm */
@@ -127,11 +126,11 @@ typedef struct {
 
   /* the actual levels */
   PetscInt   levels;                       /* number of active levels used */
-  PC_aSA_level *levellist;                 /* linked list of all levels */
+  PC_ASA_level *levellist;                 /* linked list of all levels */
 
-  MPI_Comm   comm;                         /* communicator object for aSA */
+  MPI_Comm   comm;                         /* communicator object for ASA */
 
-} PC_aSA;
+} PC_ASA;
 
 #endif
 
