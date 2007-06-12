@@ -227,7 +227,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
 -  dummy - unused monitor context 
 
    Options Database Key:
-.  -ksp_monitor_true_residual_norm - Activates KSPMonitorTrueResidualNorm()
+.  -ksp_monitor_true_residual - Activates KSPMonitorTrueResidualNorm()
 
    Notes:
    When using right preconditioning, these values are equivalent.
