@@ -78,7 +78,8 @@ void PETSC_STDCALL davecgetarrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscError
     *ierr = PETSC_ERR_ARG_INCOMP;
   }
   *ierr = VecGetArray(*v,&aa);if (*ierr) return;
-  *ierr = F90Array1dCreate(aa,(PetscDataType)(-dof*sizeof(PetscScalar)),gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
+  if (dof > 1) dof = -1*dof;
+  *ierr = F90Array1dCreate(aa,(PetscDataType)(dof*sizeof(PetscScalar)),gxs,gxs+gxm-1,a PETSC_F90_2PTR_PARAM(ptrd));
 }
 
 void PETSC_STDCALL davecrestorearrayf90user1_(DA *da,Vec *v,F90Array1d *a,PetscErrorCode *ierr PETSC_F90_2PTR_PROTO(ptrd))
