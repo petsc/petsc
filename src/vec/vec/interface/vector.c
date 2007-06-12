@@ -853,24 +853,22 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOwnershipRange(Vec x,PetscInt *low,Petsc
 
    Input Parameter:
 +  x - the vector
--  op - the option
+.  op - the option
+-  flag - turn the option on or off
 
    Supported Options:
 +     VEC_IGNORE_OFF_PROC_ENTRIES, which causes VecSetValues() to ignore 
           entries destined to be stored on a separate processor. This can be used
           to eliminate the global reduction in the VecAssemblyXXXX() if you know 
           that you have only used VecSetValues() to set local elements
-.     VEC_TREAT_OFF_PROC_ENTRIES restores the treatment of off processor entries.
 .     VEC_IGNORE_NEGATIVE_INDICES, which means you can pass negative indices
           in ix in calls to VecSetValues or VecGetValues. These rows are simply
           ignored.
--     VEC_TREAT_NEGATIVE_INDICES restores the treatment of negative indices in ix in
-          VecSetValues/VecGetValues.
 
    Level: intermediate
 
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op)
+PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op,PetscTruth flag)
 {
   PetscErrorCode ierr;
 
@@ -878,7 +876,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetOption(Vec x,VecOption op)
   PetscValidHeaderSpecific(x,VEC_COOKIE,1);
   PetscValidType(x,1);
   if (x->ops->setoption) {
-    ierr = (*x->ops->setoption)(x,op);CHKERRQ(ierr);
+    ierr = (*x->ops->setoption)(x,op,flag);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

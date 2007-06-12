@@ -661,7 +661,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecWAXPY(Vec w,PetscScalar alpha,Vec x,Vec y)
 
    VecSetValues() uses 0-based indices in Fortran as well as in C.
 
-   If you call VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES), 
+   If you call VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE), 
    negative indices may be passed in ix. These rows are 
    simply ignored. This allows easily inserting element load matrices
    with homogeneous Dirchlet boundary conditions that you don't want represented
@@ -715,7 +715,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSetValues(Vec x,PetscInt ni,const PetscInt 
 
    VecGetValues() uses 0-based indices in Fortran as well as in C.
 
-   If you call VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES),
+   If you call VecSetOption(x, VEC_IGNORE_NEGATIVE_INDICES,PETSC_TRUE),
    negative indices may be passed in ix. These rows are
    simply ignored.
 

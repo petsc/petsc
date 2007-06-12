@@ -6,7 +6,7 @@ PetscFList PetscViewerList              = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerCreate" 
-/*@C
+/*@
    PetscViewerCreate - Creates a viewing context
 
    Collective on MPI_Comm

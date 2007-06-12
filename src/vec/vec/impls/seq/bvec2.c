@@ -817,13 +817,11 @@ PetscErrorCode VecDuplicate_Seq(Vec win,Vec *V)
 
 #undef __FUNCT__
 #define __FUNCT__ "VecSetOption_Seq"
-PetscErrorCode VecSetOption_Seq(Vec v,VecOption op)
+PetscErrorCode VecSetOption_Seq(Vec v,VecOption op,PetscTruth flag)
 {
   PetscFunctionBegin;
   if (op == VEC_IGNORE_NEGATIVE_INDICES) {
-    v->stash.ignorenegidx = PETSC_TRUE;
-  } else if (op == VEC_TREAT_NEGATIVE_INDICES) {
-    v->stash.ignorenegidx = PETSC_FALSE;
-  }
+    v->stash.ignorenegidx = flag;
+  } 
   PetscFunctionReturn(0);
 }

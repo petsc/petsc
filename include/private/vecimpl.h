@@ -69,7 +69,7 @@ struct _VecOps {
   PetscErrorCode (*max)(Vec,PetscInt*,PetscReal*);      /* z = max(x); idx=index of max(x) */
   PetscErrorCode (*min)(Vec,PetscInt*,PetscReal*);      /* z = min(x); idx=index of min(x) */
   PetscErrorCode (*setrandom)(Vec,PetscRandom);         /* set y[j] = random numbers */
-  PetscErrorCode (*setoption)(Vec,VecOption);
+  PetscErrorCode (*setoption)(Vec,VecOption,PetscTruth);
   PetscErrorCode (*setvaluesblocked)(Vec,PetscInt,const PetscInt[],const PetscScalar[],InsertMode);
   PetscErrorCode (*destroy)(Vec);
   PetscErrorCode (*view)(Vec,PetscViewer);
