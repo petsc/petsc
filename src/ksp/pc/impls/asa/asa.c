@@ -784,7 +784,6 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   ierr = SafeMatDestroy(&logical_agg); CHKERRQ(ierr);
 
   /* get the entries for aggregate from B */
-  ierr = PetscMalloc(sizeof(Mat)*mat_agg_loc_size, &b_submat_arr); CHKERRQ(ierr);
   ierr = MatGetSubMatrices(asa_lev->B, mat_agg_loc_size, idxm_is_B_arr, idxn_is_B_arr, MAT_INITIAL_MATRIX, &b_submat_arr); CHKERRQ(ierr);
   
   /* clean up all the index sets */
@@ -1213,20 +1212,21 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
   if( x ) {
     /* use starting guess */
+    ierr = SafeVecDestroy(&(asa_lev->x)); CHKERRQ(ierr);
     ierr = VecDuplicate(x, &(asa_lev->x)); CHKERRQ(ierr);
     ierr = VecCopy(x, asa_lev->x); CHKERRQ(ierr);
   } else {
     /* select random starting vector */
+    ierr = SafeVecDestroy(&(asa_lev->x)); CHKERRQ(ierr);
     ierr = MatGetVecs(asa_lev->A, &(asa_lev->x), 0); CHKERRQ(ierr);
     ierr = PetscRandomCreate(asa_lev->comm,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(asa_lev->x, rctx);CHKERRQ(ierr);
-    ierr = VecAssemblyBegin(asa_lev->x); CHKERRQ(ierr);
-    ierr = VecAssemblyEnd(asa_lev->x); CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
   }
 
   /* create right hand side */
+  ierr = SafeVecDestroy(&(asa_lev->b)); CHKERRQ(ierr);
   ierr = MatGetVecs(asa_lev->A, &(asa_lev->b), 0);
   ierr = VecSet(asa_lev->b, 0.0);
 
@@ -1313,6 +1313,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
       if( skip_steps_f_i == PETSC_FALSE ) {
 	/* (f) Set x_{l+1} = B_{l+1}, we just compute it again */
+        ierr = SafeVecDestroy(&(asa_next_lev->x)); CHKERRQ(ierr);
 	ierr = MatGetVecs(asa_lev->P, &(asa_next_lev->x), 0); CHKERRQ(ierr);
 	ierr = MatMult(asa_lev->Pt, asa_lev->x, asa_next_lev->x); CHKERRQ(ierr);
 
@@ -1321,6 +1322,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 /* 	ierr = VecCopy(asa_next_lev->x, xhat);CHKERRQ(ierr); */
 	
 	/* Create b_{l+1} */
+        ierr = SafeVecDestroy(&(asa_next_lev->b)); CHKERRQ(ierr);
 	ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->b), 0);
 	ierr = VecSet(asa_next_lev->b, 0.0);
 
@@ -1547,6 +1549,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   
   if( !cand ) {
     /* 3. Select a random x_1 */
+    ierr = SafeVecDestroy(&(asa_lev->x)); CHKERRQ(ierr);
     ierr = MatGetVecs(asa_lev->A, &(asa_lev->x), 0);
     ierr = PetscRandomCreate(asa_lev->comm,&rctx);CHKERRQ(ierr);
     ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
@@ -1565,6 +1568,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
   }
 
   /* create right hand side */
+  ierr = SafeVecDestroy(&(asa_lev->b)); CHKERRQ(ierr);
   ierr = MatGetVecs(asa_lev->A, &(asa_lev->b), 0);
   ierr = VecSet(asa_lev->b, 0.0);
   
@@ -1630,6 +1634,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
 
     if( ! skip_steps_d_j ) {
       /* (d) get vector x_{l+1} from last column in B_{l+1} */
+      ierr = SafeVecDestroy(&(asa_next_lev->x)); CHKERRQ(ierr);
       ierr = MatGetVecs(asa_next_lev->B, 0, &(asa_next_lev->x)); CHKERRQ(ierr);
 
       ierr = VecGetOwnershipRange(asa_next_lev->x, &loc_vec_low, &loc_vec_high); CHKERRQ(ierr);
@@ -1666,6 +1671,8 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
 
       /* (h) apply mu iterations of current V-cycle */
       /* set asa_next_lev->b */
+      ierr = SafeVecDestroy(&(asa_next_lev->b)); CHKERRQ(ierr);
+      ierr = SafeVecDestroy(&(asa_next_lev->r)); CHKERRQ(ierr);
       ierr = MatGetVecs(asa_next_lev->A, &(asa_next_lev->b), &(asa_next_lev->r));
       ierr = VecSet(asa_next_lev->b, 0.0);
       /* apply V-cycle */
@@ -1798,6 +1805,7 @@ PetscErrorCode PCConstructMultigrid_ASA(PC pc) {
   ierr = VecSetRandom(asa_lev->x,rctx);CHKERRQ(ierr);
 
   /* compute starting residual */
+  ierr = SafeVecDestroy(&(asa_lev->r)); CHKERRQ(ierr);
   ierr = MatGetVecs(asa_lev->A, PETSC_NULL, &(asa_lev->r)); CHKERRQ(ierr);
   ierr = MatMult(asa_lev->A, asa_lev->x, asa_lev->r);CHKERRQ(ierr);
   /* starting residual norm */
@@ -1897,6 +1905,7 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
   ierr = VecDuplicate(x, &(asa->b)); CHKERRQ(ierr);
   ierr = VecCopy(x, asa->b); CHKERRQ(ierr);
   /* set starting vector */
+  ierr = SafeVecDestroy(&(asa->x)); CHKERRQ(ierr);
   ierr = MatGetVecs(asa->A, &(asa->x), PETSC_NULL); CHKERRQ(ierr);
   ierr = VecSet(asa->x, 0.0); CHKERRQ(ierr);
   
@@ -1969,6 +1978,7 @@ PetscErrorCode PCSolve_ASA(PC pc, Vec b, Vec x)
   ierr = VecCopy(x, asa->x); CHKERRQ(ierr);
   
   /* compute starting residual */
+  ierr = SafeVecDestroy(&(asa->r)); CHKERRQ(ierr);
   ierr = MatGetVecs(asa->A, &(asa->r), PETSC_NULL); CHKERRQ(ierr);
   ierr = MatMult(asa->A, asa->x, asa->r);CHKERRQ(ierr);
   ierr = VecAYPX(asa->r, -1.0, asa->b);CHKERRQ(ierr);

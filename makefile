@@ -222,14 +222,18 @@ install:
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
-          cp -fr include ${INSTALL_DIR};\
-          cp  ${PETSC_ARCH}/include/* ${INSTALL_DIR}/include;\
+          ${CP} -fr include ${INSTALL_DIR};\
+          ${CP}  ${PETSC_ARCH}/include/* ${INSTALL_DIR}/include;\
           if [ ! -d ${INSTALL_DIR}/conf ]; then \
 	    ${MKDIR} ${INSTALL_DIR}/conf ; \
           fi;\
-          cp -fr conf ${INSTALL_DIR} ; \
-          cp -fr ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
-          cp -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
+          ${CP} -fr conf ${INSTALL_DIR} ; \
+          ${RM} -fr ${INSTALL_DIR}/conf/docsonly ;\
+          sed -i "" 's?$${PETSC_DIR}?TMP_INSTALL_DIR?g' ${INSTALL_DIR}/conf/* ;\
+          sed -i "" s?TMP_INSTALL_DIR?${INSTALL_DIR}?g ${INSTALL_DIR}/conf/* ;\
+          sed -i "" 's?/$${PETSC_ARCH}??g' ${INSTALL_DIR}/conf/* ;\
+          ${CP} -fr ${PETSC_ARCH}/conf/* ${INSTALL_DIR}/conf;\
+          ${CP} -fr ${PETSC_ARCH}/lib ${INSTALL_DIR} ;\
           ${RANLIB} ${INSTALL_DIR}/lib/*.a ;\
           ${OMAKE} PETSC_ARCH="" PETSC_DIR=${INSTALL_DIR} shared; \
           echo "sh/bash: PETSC_DIR="${INSTALL_DIR}"; export PETSC_DIR";\
@@ -250,7 +254,7 @@ install_src:
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
-          cp -fr src ${INSTALL_DIR};\
+          ${CP} -fr src ${INSTALL_DIR};\
         fi;
 
 install_docs:
@@ -264,7 +268,7 @@ install_docs:
           if [ ! -d ${INSTALL_DIR} ]; then \
 	    ${MKDIR} ${INSTALL_DIR} ; \
           fi;\
-          cp -fr docs ${INSTALL_DIR};\
+          ${CP} -fr docs ${INSTALL_DIR};\
           ${RM} -fr docs/tex;\
         fi;
 # ------------------------------------------------------------------

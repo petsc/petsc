@@ -53,24 +53,11 @@ int main(int Argc,char **Args)
                       Solve the linear system
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-  ierr = PCSolve_ASA(pcmg,b,x);CHKERRQ(ierr);
-  
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Solution vector:\n"); CHKERRQ(ierr);
-  ierr = VecView(x, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)); CHKERRQ(ierr);
-
-  Vec r;
-  ierr = MatGetVecs(cmat, PETSC_NULL, &r); CHKERRQ(ierr);
-  ierr = MatMult(cmat, x, r);CHKERRQ(ierr);
-  ierr = VecAYPX(r, -1.0, b);CHKERRQ(ierr);
-
-  ierr = PetscPrintf(PETSC_COMM_WORLD, "Residual vector:\n"); CHKERRQ(ierr);
-  ierr = VecView(r, PETSC_VIEWER_STDOUT_(PETSC_COMM_WORLD)); CHKERRQ(ierr);
-
+  ierr = KSPSolve(kspmg,b,x);CHKERRQ(ierr);
   ierr = KSPDestroy(kspmg);CHKERRQ(ierr);
   ierr = VecDestroy(x);CHKERRQ(ierr);
-  /*   seems to be destroyed by KSPDestroy */
-/*   ierr = VecDestroy(b);CHKERRQ(ierr); */
-/*   ierr = MatDestroy(cmat);CHKERRQ(ierr); */
+  ierr = VecDestroy(b);CHKERRQ(ierr); 
+  ierr = MatDestroy(cmat);CHKERRQ(ierr); 
 
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
