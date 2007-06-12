@@ -588,14 +588,14 @@ namespace ALE {
     void setIndexBC(const point_type& p, const int& index) {
       this->setIndex(p, index);
     };
-    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
-      this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly);
+    void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
+      this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
     template<typename Order_>
-    void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
-      this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly);
+    void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
+      this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
-    void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false) {
+    void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       const int& dim   = this->getFiberDimension(p);
       const int& cDim  = this->getConstraintDimension(p);
       const int  end   = start + dim;
