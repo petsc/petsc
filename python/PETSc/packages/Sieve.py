@@ -26,6 +26,12 @@ class Configure(PETSc.package.Package):
 
   def getSearchDirectories(self):
     return [self.petscdir.dir]
+    
+  def setupHelp(self, help):
+    PETSc.package.Package.setupHelp(self, help)
+    import nargs
+    help.addArgument('Sieve', '-with-new-section=<bool>', nargs.ArgBool(None, 0, 'Use GeneralSections which allow flexible BC'))
+    return
 
   def Install(self):
     import sys
@@ -40,4 +46,6 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Sieve requires C++. Suggest using --with-clanguage=cxx')
       if not self.boost.found:
         raise RuntimeError('Sieve requires boost, and configure could not locate it. Suggest using --download-boost=1')
+      if 'with-new-section' in self.argDB:
+        self.framework.addDefine('NEW_SECTION', 1)
     return PETSc.package.Package.configure(self)

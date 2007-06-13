@@ -672,7 +672,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     PetscErrorCode (*func)(void);
     char lib[PETSC_MAX_PATH_LEN];
 
-    ierr = PetscStrcpy(lib,"${PETSC_LIB_DIR}");CHKERRQ(ierr);
+    ierr = PetscStrcpy(lib,PETSC_LIB_DIR);CHKERRQ(ierr);
     ierr = PetscStrcat(lib,"/libpetscdm");CHKERRQ(ierr);
     ierr = PetscDLLibrarySym(PETSC_COMM_WORLD,&DLLibrariesLoaded,lib,"DMFinalizePackage",(void **) &func);CHKERRQ(ierr);
     if (func) {
