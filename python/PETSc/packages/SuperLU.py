@@ -12,7 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions  = ['set_default_options']
     self.includes   = ['slu_ddefs.h']
     self.libdir     = ''
-    self.includedir = 'SRC'
+    self.includedir = 'include'
     self.liblist    = [['libsuperlu_3.0.a']]
     self.complex    = 1
     self.excludename = ['SuperLU_DIST']
@@ -27,7 +27,8 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the SUPERLU directories
     superluDir = self.getDir()
-    installDir = os.path.join(superluDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
     # Configure and Build SUPERLU
     if os.path.isfile(os.path.join(superluDir,'make.inc')):
@@ -66,25 +67,25 @@ class Configure(PETSc.package.Package):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'make.inc')) or not (self.getChecksum(os.path.join(installDir,'make.inc')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):
-      self.framework.log.write('Have to rebuild SuperLU, make.inc != '+installDir+'/make.inc\n')
+    if not os.path.isfile(os.path.join(confDir,'SuperLU')) or not (self.getChecksum(os.path.join(confDir,'SuperLU')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):
+      self.framework.log.write('Have to rebuild SuperLU, make.inc != '+confDir+'/SuperLU\n')
       try:
         self.logPrintBox('Compiling superlu; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+installDir+'; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv *.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv *.a '+os.path.join(installDir,'lib')+';  cp SRC/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
     else:
       self.framework.log.write('Do NOT need to compile SuperLU downloaded libraries\n')  
-    if not os.path.isfile(os.path.join(installDir,self.libdir,'libsuperlu_3.0.a')):
+    if not os.path.isfile(os.path.join(installDir,'lib','libsuperlu_3.0.a')):
         self.framework.log.write('Error running make on SUPERLU   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on SUPERLU follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on SUPERLU *******\n')
         raise RuntimeError('Error running make on SUPERLU, libraries not installed')
       
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU into '+installDir)
-    return self.getDir()
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+confDir+'/SuperLU', timeout=5, log = self.framework.log)[0]
+    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU into '+installDir+'/lib')
+    return installDir
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU'''
