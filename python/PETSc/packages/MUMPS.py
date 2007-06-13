@@ -28,7 +28,9 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the MUMPS directories
     mumpsDir = self.getDir()
-    installDir = os.path.join(mumpsDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+
     
     # Configure and Build MUMPS
     if os.path.isfile(os.path.join(mumpsDir,'Makefile.inc')):
@@ -86,8 +88,8 @@ class Configure(PETSc.package.Package):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'Makefile.inc')) or not (self.getChecksum(os.path.join(installDir,'Makefile.inc')) == self.getChecksum(os.path.join(mumpsDir,'Makefile.inc'))):
-      self.framework.log.write('Have to rebuild MUMPS, Makefile.inc != '+installDir+'/Makefile.inc\n')
+    if not os.path.isfile(os.path.join(confDir,'MUMPS')) or not (self.getChecksum(os.path.join(confDir,'MUMPS')) == self.getChecksum(os.path.join(mumpsDir,'Makefile.inc'))):
+      self.framework.log.write('Have to rebuild MUMPS, Makefile.inc != '+confDir+'/MUMPS\n')
       try:
         output  = config.base.Configure.executeShellCommand('cd '+mumpsDir+';make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
@@ -113,10 +115,10 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('********End of Output of running make on MUMPS *******\n')
       raise RuntimeError('Error running make on MUMPS, libraries not installed')
     
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+confDir+'/MUMPS', timeout=5, log = self.framework.log)[0]
 
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MUMPS into '+installDir)
-    return self.getDir()
+    return installDir
 
 if __name__ == '__main__':
   import config.framework
