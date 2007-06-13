@@ -24,7 +24,8 @@ class Configure(PETSc.package.Package):
     # Get the MPE directories
     self.downloadname = 'mpe2'
     mpeDir = self.getDir()
-    installDir  = os.path.join(mpeDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
         
     # Configure MPE 
     args = ['--prefix='+installDir]
@@ -49,7 +50,7 @@ class Configure(PETSc.package.Package):
     args = ' '.join(args)
     
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(confDir,'MPE'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -74,12 +75,12 @@ class Configure(PETSc.package.Package):
         self.framework.log.write('********End of Output of running make on MPE *******\n')
         raise RuntimeError('Error running make on MPE, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(confDir,'MPE'), 'w')
       fd.write(args)
       fd.close()
 
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MPE into '+installDir)
-    return self.getDir()
+    return installDir
   
 if __name__ == '__main__':
   import config.framework
