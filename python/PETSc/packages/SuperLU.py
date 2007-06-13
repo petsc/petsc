@@ -11,8 +11,6 @@ class Configure(PETSc.package.Package):
     self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/SuperLU_3.0-Jan_5_2006.tar.gz']
     self.functions  = ['set_default_options']
     self.includes   = ['slu_ddefs.h']
-    self.libdir     = ''
-    self.includedir = 'include'
     self.liblist    = [['libsuperlu_3.0.a']]
     self.complex    = 1
     self.excludename = ['SuperLU_DIST']
