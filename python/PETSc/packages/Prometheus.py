@@ -43,6 +43,7 @@ class Configure(PETSc.package.Package):
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     args += 'AR      = '+self.setCompilers.AR+'\n'
     args += 'ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n'
+    args += 'RM      = '+self.programs.RM+'\n'
     self.framework.pushLanguage('C++')
     args += 'CXX = '+self.framework.getCompiler()
     args += ' -DPROM_HAVE_METIS'
