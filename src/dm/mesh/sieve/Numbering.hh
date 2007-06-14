@@ -550,6 +550,21 @@ namespace ALE {
       }
       return this->_numberings[bundle.ptr()][depth];
     };
+    template<typename ABundle_>
+    const Obj<numbering_type>& getNumbering(const Obj<ABundle_>& bundle, const std::string& labelname, const int value) {
+      if ((this->_numberings.find(bundle.ptr()) == this->_numberings.end()) ||
+          (this->_numberings[bundle.ptr()].find(value) == this->_numberings[bundle.ptr()].end())) {
+        bundle->constructOverlap();
+        Obj<numbering_type>    numbering   = new numbering_type(bundle->comm(), bundle->debug());
+        Obj<send_overlap_type> sendOverlap = bundle->getSendOverlap();
+        Obj<recv_overlap_type> recvOverlap = bundle->getRecvOverlap();
+
+        this->constructNumbering(numbering, sendOverlap, recvOverlap, bundle->getLabelStratum(labelname, value));
+        if (this->_debug) {std::cout << "Creating new numbering: labelname " << labelname << " value " << value << std::endl;}
+        this->_numberings[bundle.ptr()][value] = numbering;
+      }
+      return this->_numberings[bundle.ptr()][value];
+    };
     template<typename ABundle_, typename Section_>
     const Obj<order_type>& getGlobalOrder(const Obj<ABundle_>& bundle, const std::string& name, const Obj<Section_>& section) {
       if ((this->_orders.find(bundle.ptr()) == this->_orders.end()) ||

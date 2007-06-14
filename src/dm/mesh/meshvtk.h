@@ -170,10 +170,17 @@ class VTKViewer {
   {
     typedef ALE::SieveAlg<ALE::Mesh> sieve_alg_type;
     const Obj<ALE::Mesh::sieve_type>&     sieve      = mesh->getSieve();
-    const Obj<ALE::Mesh::label_sequence>& elements   = mesh->heightStratum(0);
-    int                                          depth      = mesh->depth();
+    int                                   depth      = mesh->depth();
     const Obj<ALE::Mesh::numbering_type>& vNumbering = mesh->getFactory()->getNumbering(mesh, 0);
-    const Obj<ALE::Mesh::numbering_type>& cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
+    Obj<ALE::Mesh::numbering_type> cNumbering;
+    Obj<ALE::Mesh::label_sequence> elements;
+    if (mesh->hasLabel("censored depth")) {
+      cNumbering = mesh->getFactory()->getNumbering(mesh, "censored depth", depth);
+      elements   = mesh->getLabelStratum("censored depth", depth);
+    } else {
+      cNumbering = mesh->getFactory()->getNumbering(mesh, depth);
+      elements   = mesh->heightStratum(0);
+    }
     int            corners = sieve->nCone(*elements->begin(), depth)->size();
     int            numElements;
     PetscErrorCode ierr;
