@@ -87,22 +87,28 @@ test</font></div>
 only) Install</a> <a href="#Cygwin:">cygwin</a>
 package (including <font color="#ff1a8b">make,
 python </font>modules<strong></strong>) and use
-cygwin shell.<br>
+cygwin shell.</li>
+        <li>Sugest downloading and installing PETSc as a <span
+ style="font-weight: bold;">regular/non-root user,</span> perhaps in <span
+ style="font-weight: bold;">/home/username/soft</span></li>
+        <li><a href="../download/index.html">Download</a> latest PETSc
+release tarball: petsc-2.3.3.tar.gz<br>
         </li>
-        <li>In the directory you wish PETSc installed: <font
- color="#ff0000">gunzip -c <a href="../download/index.html">petsc-2.3.3.tar.gz</a>
+        <li><font color="#ff0000">cd /home/username/soft</font></li>
+        <li><font color="#ff0000">gunzip -c petsc-2.3.3.tar.gz
 | tar -xof -</font></li>
         <li><font color="#ff0000">cd petsc-2.3.3-p0</font></li>
-        <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=`pwd`;
-export PETSC_DIR</font>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (note the
-backquote)<br>
+        <li>sh/bash shell:&nbsp;&nbsp; <font color="#ff0000">PETSC_DIR=$PWD;
+export PETSC_DIR</font><br>
 csh/tcsh shell:&nbsp; <font color="#ff0000">setenv
-PETSC_DIR `pwd`</font></li>
+PETSC_DIR $PWD</font></li>
         <li><font color="#ff0000">./config/configure.py</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-(use --help for options)</li>
-        <li> <font color="#ff0000">make all</font></li>
-        <li><font color="#ff0000">make test</font></li>
+(use --help for options or the <a href="#ExampleUsage">example usages</a>
+below)</li>
+        <li> <font color="#ff0000">make all</font><br>
+        </li>
+        <li><font color="#ff0000">make test</font><br>
+        </li>
       </ul>
       <h3>Encounter problems?</h3>
       <ul>
@@ -131,7 +137,7 @@ bug-reporting</a> section</li>
     <tr>
       <td valign="top" width="75%">
       <hr>
-      <h3><b>Example Usages:</b></h3>
+      <h3><b><a name="ExampleUsage"></a>Example Usages:</b></h3>
       <ul>
         <li>Examples are at <span style="font-weight: bold;">config/*.py</span>.
 We use some of these scripts locally for testing - <span
@@ -187,28 +193,25 @@ make <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 make test</font><font color="#ff0000"> </font></li>
         <li>Using csh shell, install 2 variants of PETSc, one with gnu,
-the other with intel compilers:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font color="#ff0000">setenv
-PETSC_ARCH linux-gnu<br>
+the other with intel compilers<font color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 ./config/configure.py
---with-vendor-compilers=0 --with-mpi-dir=/usr/local/mpich-gnu<br>
+PETSC_ARCH=linux-gnu CC=gcc FC=g77 --download-mpich=1<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make<br>
+make </font><font color="#ff0000">PETSC_ARCH=linux-gnu</font><br>
+          <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+make </font><font color="#ff0000">PETSC_ARCH=linux-gnu test</font><font
+ color="#ff0000"><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make test<br>
+./config/configure.py </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel
+          </font><font color="#ff0000">CC=icc FC=ifort </font><font
+ color="#ff0000">--download-mpich=1</font><font color="#ff0000">
+--with-blas-lapack-dir=/usr/local/mkl<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-setenv PETSC_ARCH
-linux-gnu-intel<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-./config/configure.py
---with-vendor-compilers=intel --with-gnu-compilers=0
---with-blas-lapack-dir=/usr/local/mkl
---with-mpi-dir=/usr/local/mpich-intel<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-make test </font></li>
+make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel</font><br>
+          <font color="#ff0000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+make </font><font color="#ff0000">PETSC_ARCH=linux-gnu-intel </font><font
+ color="#ff0000">test </font></li>
       </ul>
       <hr>
       <p>Several variables control the configuration and build
@@ -748,7 +751,52 @@ and associated tools - to enable building PETSc libraries using make
 and other UNIX tools. For additional info, run
 ${PETSC_DIR}/bin/win32/win32fe without any options.</p>
       <p><font color="#551a8b"><b><a href="#Docs:%20%20Installation">Return
-to Installation Instructions</a></b></font> </p>
+to Installation Instructions</a><br>
+      </b></font></p>
+      <hr>
+      <h3 style="font-weight: bold;"><a name="root"><font
+ color="#551a8b">Installing PETSc in /usr/local or /opt where sudo or
+root previledges are required:</font></a></h3>
+      <p>If one wants to install PETSc [with sources] in a common
+system location like /usr/local or /opt, then sugest creating a dir for
+PETSc in the required location with user previledges, and then do the
+PETSc install [as a <span style="font-weight: bold;">regular/non-root
+user</span>]. i.e<br>
+      </p>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">sudo mkdir /opt/petsc</span></li>
+        <li><span style="color: rgb(255, 0, 0);">sudo chown user:group </span><span
+ style="color: rgb(255, 0, 0);">/opt/petsc</span></li>
+        <li><span style="color: rgb(255, 0, 0);">cd </span><span
+ style="color: rgb(255, 0, 0);"></span><span
+ style="color: rgb(255, 0, 0);">/opt/petsc</span></li>
+        <li><span style="color: rgb(255, 0, 0);">tar -xzf
+petsc-2.3.3.tar.gz</span></li>
+        <li><span style="color: rgb(255, 0, 0);">cd petsc-2.3.3</span></li>
+        <li><span style="color: rgb(255, 0, 0);">./config/configure.py</span></li>
+        <li><span style="color: rgb(255, 0, 0);">make<br>
+          </span></li>
+      </ul>
+      <p>&nbsp;One can also use the gnu
+prefix-install mode.<br>
+      </p>
+      <ul>
+        <li><span style="color: rgb(255, 0, 0);">[untar PETSc in a
+non-root regular location - say /home/username]</span></li>
+        <li><span style="color: rgb(255, 0, 0);">setenv PETSC_DIR $PWD<br>
+          </span></li>
+        <li><span style="color: rgb(255, 0, 0);">./config/configure.py
+--prefix=/opt/petsc/petsc-2.3.3&nbsp; [other configure options]<br>
+          </span></li>
+        <li><span style="color: rgb(255, 0, 0);">make</span></li>
+        <li><span style="color: rgb(255, 0, 0);">sudo make install
+PETSC_DIR=$PWD<br>
+          </span></li>
+      </ul>
+After the install is done, one has to switch to using <span
+ style="color: rgb(255, 0, 0);">PETSC_DIR=/opt/petsc/petsc-2.3.3</span>.
+However this is experimental mode - and currently does not support
+installing external packages correctly.<br>
       <hr>
       <h3 style="font-weight: bold;"><a name="SP"><font color="#551a8b">Installing
 on machine requiring cross compiler or a job scheduler:</font></a></h3>
