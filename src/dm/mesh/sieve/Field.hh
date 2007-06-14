@@ -1170,7 +1170,122 @@ namespace ALE {
       return &(this->_array[this->_atlas->restrictPoint(p)[0].index]);
     };
     // Update the free values on a point
+    //   Takes a full array and ignores constrained values
     void updatePoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] = v[i];
+          }
+        } else {
+          int offset = 0;
+          int j      = -1;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              array[++j] = v[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      } else {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] = v[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = (dim - tDim)-1;
+
+            for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
+              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {--cInd; continue;}
+              array[j] = v[k];
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update the free values on a point
+    //   Takes a full array and ignores constrained values
+    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+      const int&  cDim  = this->getConstraintDimension(p);
+
+      if (!cDim) {
+        if (orientation >= 0) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = 0; i < dim; ++i) {
+            array[i] += v[i];
+          }
+        } else {
+          int offset = 0;
+          int j      = -1;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int& dim = this->getFiberDimension(p, space);
+
+            for(int i = dim-1; i >= 0; --i) {
+              array[++j] += v[i+offset];
+            }
+            offset += dim;
+          }
+        }
+      } else {
+        if (orientation >= 0) {
+          const int&                          dim  = this->getFiberDimension(p);
+          const typename bc_type::value_type *cDof = this->getConstraintDof(p);
+          int                                 cInd = 0;
+
+          for(int i = 0; i < dim; ++i) {
+            if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
+            array[i] += v[i];
+          }
+        } else {
+          const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
+          int                                 offset  = 0;
+          int                                 cOffset = 0;
+          int                                 j       = 0;
+
+          for(int space = 0; space < this->getNumSpaces(); ++space) {
+            const int  dim = this->getFiberDimension(p, space);
+            const int tDim = this->getConstrainedFiberDimension(p, space);
+            int       cInd = (dim - tDim)-1;
+
+            for(int i = 0, k = dim+offset; i < dim; ++i, ++j, --k) {
+              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {--cInd; continue;}
+              array[j] += v[k];
+            }
+            offset  += dim;
+            cOffset += dim - tDim;
+          }
+        }
+      }
+    };
+    // Update the free values on a point
+    //   Takes ONLY unconstrained values
+    void updateFreePoint(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  cDim  = this->getConstraintDimension(p);
 
@@ -1226,7 +1341,8 @@ namespace ALE {
       }
     };
     // Update the free values on a point
-    void updateAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
+    //   Takes ONLY unconstrained values
+    void updateFreeAddPoint(const point_type& p, const value_type v[], const int orientation = 1) {
       value_type *array = (value_type *) this->restrictPoint(p);
       const int&  cDim  = this->getConstraintDimension(p);
 

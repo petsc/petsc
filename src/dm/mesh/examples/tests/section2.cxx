@@ -53,7 +53,7 @@ PetscErrorCode GeneralSectionTest(MPI_Comm comm, Options *options)
         if (v == p/3) continue;
         values[++i] = p*3+v;
       }
-      section->updatePoint(p, values);
+      section->updateFreePoint(p, values);
       values[0] = -(p*3+p/3);
       section->updatePointBC(p, values);
     } else {
