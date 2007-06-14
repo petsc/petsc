@@ -12,9 +12,7 @@ class Configure(PETSc.package.Package):
     self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/PLAPACKR32-Sept_2005.tar.gz']
     self.functions  = ['PLA_LU']
     self.includes   = ['PLA.h']
-    self.libdir     = ''
     self.liblist    = [['libPLAPACK.a']]
-    self.includedir = 'INCLUDE'
     self.complex    = 1
     return
 
@@ -28,10 +26,12 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the PLAPACK directories
     plapackDir = self.getDir()
-    installDir = os.path.join(plapackDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+
     # Configure and Build PLAPACK
     plapackMakefile        = os.path.join(plapackDir,'Make.include')
-    plapackInstallMakefile = os.path.join(installDir,'Make.include')
+    plapackInstallMakefile = os.path.join(confDir,'PLAPACK')
     if os.path.isfile(plapackMakefile): os.remove(plapackMakefile)
     g = open(plapackMakefile,'w')
     g.write('PLAPACK_ROOT = '+installDir+'\n')
@@ -57,7 +57,7 @@ class Configure(PETSc.package.Package):
     g.write('AR           = '+self.setCompilers.AR+'\n')
     g.write('SED          = sed\n')
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
-    g.write('PLAPACKLIB   =  $(PLAPACK_ROOT)/libPLAPACK.a\n')
+    g.write('PLAPACKLIB   =  $(PLAPACK_ROOT)/lib/libPLAPACK.a\n')
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
@@ -65,14 +65,13 @@ class Configure(PETSc.package.Package):
       self.framework.log.write('Have to rebuild PLAPACK, Make.include != '+plapackInstallMakefile+'\n')
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
-        incDir = os.path.join(plapackDir,self.includedir)
+        incDir = os.path.join(plapackDir,'INCLUDE')
         installIncDir = os.path.join(installDir,self.includedir)
-        if os.path.isdir(installIncDir): shutil.rmtree(installIncDir)
-        shutil.copytree(incDir,installIncDir);
+        output  = config.base.Configure.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
         output  = config.base.Configure.executeShellCommand('cd '+plapackDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
-      if not os.path.isfile(os.path.join(installDir,'libPLAPACK.a')):
+      if not os.path.isfile(os.path.join(installDir,self.libdir,'libPLAPACK.a')):
         self.framework.log.write('Error running make on PLAPACK   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on PLAPACK follows *******\n')        
         self.framework.log.write(output)
@@ -81,7 +80,7 @@ class Configure(PETSc.package.Package):
       
       output  = shutil.copy(plapackMakefile,plapackInstallMakefile)
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+installDir)
-    return self.getDir()
+    return installDir
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by PLAPACK'''
