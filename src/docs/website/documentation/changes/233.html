@@ -168,6 +168,29 @@ KSP_NO_NORM -&gt; KSP_NORM_NO<br>
 KSP_PRECONDITIONED_NORM -&gt; KSP_NORM_PRECONDITIONED<br>
 KSP_UNPRECONDITIONED_NORM -&gt; KSP_NORM_UNPRECONDITIONED<br>
 KSP_NATURAL_NORM -&gt; KSP_NORM_NATURAL<br>
+          <br>
+        </li>
+        <li>The following function names are changed to be consistant:<br>
+KSPSetMonitor&nbsp; -&gt; KSPMonitorSet<br>
+KSPClearMonitor -&gt; KSPMonitorCancel<br>
+KSPSingularValueMonitor -&gt; KSPMonitorSingularValue<br>
+KSPDefaultMonitor -&gt; KSPMonitorDefault<br>
+KSPTrueMonitor -&gt; KSPMonitorTrueResidualNorm<br>
+KSPDefaultSMonitor -&gt; KSPMonitorDefaultShort<br>
+KSPVecViewMonitor -&gt; KSPMonitorSolution<br>
+KSPGMRESKrylovMonitor -&gt; KSPGMRESMonitorKrylov<br>
+KSPLGMonitorCreate -&gt; KSPMonitorLGCreate<br>
+KSPLGMonitor -&gt; KSPMonitorLG<br>
+KSPLGMonitorDestroy -&gt; KSPMonitorLGDestroy<br>
+KSPLGTrueMonitorCreate -&gt; KSPMonitorLGTrueResidualNormCreate<br>
+KSPLGTrueMonitor -&gt; KSPMonitorLGTrueResidualNorm<br>
+KSPLGTrueMonitorDestroy -&gt; KSPMonitorLGTrueResidualNormDestroy<br>
+          <br>
+        </li>
+        <li>Following names are changed<br>
+KSP_CONVERGED_STCG_NEG_CURVE -&gt; KSP_CONVERGED_CG_NEG_CURVE<br>
+KSP_CONVERGED_STCG_CONSTRAINED -&gt; KSP_CONVERGED_CG_CONSTRAINED<br>
+          <br>
         </li>
       </ul>
       <p> </p>
