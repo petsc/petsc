@@ -38,7 +38,8 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the ML directories
     mlDir = self.getDir()
-    installDir  = os.path.join(mlDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure ML 
     args = ['--prefix='+installDir]
@@ -79,7 +80,7 @@ class Configure(PETSc.package.Package):
 
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(confDir,'ml'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -104,7 +105,7 @@ class Configure(PETSc.package.Package):
         self.framework.log.write('********End of Output of running make on ML *******\n')
         raise RuntimeError('Error running make on ML, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(confDir,'ml'), 'w')
       fd.write(args)
       fd.close()
 
@@ -114,7 +115,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed ML into '+installDir)
-    return self.getDir()
+    return installDir
   
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by ML'''
