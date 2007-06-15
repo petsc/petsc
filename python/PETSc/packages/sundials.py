@@ -26,7 +26,8 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the SUNDIALS directories
     sundialsDir = self.getDir()
-    installDir  = os.path.join(sundialsDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure SUNDIALS 
     self.framework.pushLanguage('C')
