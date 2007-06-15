@@ -3,22 +3,27 @@ static char help[] = "Test LAPACK routine DSTEBZ() and DTEIN().  \n\n";
 #include "petscmat.h"
 #include "petscblaslapack.h"
 
-extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*,Vec*,PetscReal*);
+extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscScalar*,Vec*,PetscReal*);
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
+#if !defined(PETSC_USE_COMPLEX)
   PetscErrorCode ierr;
-  PetscReal      vl=0.0,vu=4.0,*evals,*work,tol=1.e-10,tols[2];
+  PetscReal      vl=0.0,vu=4.0,*work,tol=1.e-10,tols[2];
   PetscInt       i,j,n,il=1,iu=5,nsplit,*iblock,*isplit,*iwork,info,nevs,*ifail,cklvl=2;
   PetscMPIInt    size;
   PetscTruth     flg;
   Vec            *evecs;
-  PetscScalar    *evecs_array,*D,*E;
+  PetscScalar    *evecs_array,*D,*E,*evals;
   Mat            T;
+#endif
   
   PetscInitialize(&argc,&args,(char *)0,help);
+#if defined(PETSC_USE_COMPLEX)
+  SETERRQ(1,"This example does not work with complex numbers");
+#else
   ierr = MPI_Comm_size(PETSC_COMM_WORLD,&size);CHKERRQ(ierr);
   if (size != 1) SETERRQ(PETSC_ERR_SUP,"This is a uniprocessor example only!");
 
@@ -40,13 +45,13 @@ PetscInt main(PetscInt argc,char **args)
 
   /* Solve eigenvalue problem: A*evec = eval*evec */
   printf(" LAPACKstebz_: compute %d eigenvalues...\n",nevs);    
-  LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,D,E,&nevs,&nsplit,evals,iblock,isplit,work,iwork,&info);
+  LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,(PetscReal*)D,(PetscReal*)E,&nevs,&nsplit,(PetscReal*)evals,iblock,isplit,work,iwork,&info);
   if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstebz_ fails. info %d",info); 
 
-  printf(" LAPACKstein_: compute %d eigenvectors...\n",nevs); 
+  printf(" LAPACKstein_: compute %d found eigenvectors...\n",nevs); 
   ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
   ierr = PetscMalloc(nevs*sizeof(PetscInt),&ifail);CHKERRQ(ierr);
-  LAPACKstein_(&n,D,E,&nevs,evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
+  LAPACKstein_(&n,(PetscReal*)D,(PetscReal*)E,&nevs,(PetscReal*)evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
   if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info); 
 
   /* View evals */
@@ -99,6 +104,7 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscFree(evecs_array);CHKERRQ(ierr);
   ierr = PetscFree(ifail);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
+#endif
   return 0;
 }
 /*------------------------------------------------
@@ -118,12 +124,13 @@ PetscInt main(PetscInt argc,char **args)
 #undef DEBUG_CkEigenSolutions
 #undef __FUNCT__
 #define __FUNCT__ "CkEigenSolutions"
-PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscReal *eval,Vec *evec,PetscReal *tols)
+PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,PetscScalar *eval,Vec *evec,PetscReal *tols)
 {
   PetscInt     ierr,i,j,nev; 
   Vec          vt1,vt2; /* tmp vectors */
-  PetscReal    norm,tmp,norm_max;  
-  PetscScalar  dot,dot_max;
+  PetscReal    norm,norm_max;  
+  PetscScalar  dot,tmp;
+  PetscReal    dot_max;
 
   PetscFunctionBegin;
   nev = iu - il;
@@ -145,7 +152,7 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
         } else {
           dot = PetscAbsScalar(dot);
         }
-        if (dot > dot_max) dot_max = dot;
+        if (PetscAbsScalar(dot) > dot_max) dot_max = PetscAbsScalar(dot);
 #ifdef DEBUG_CkEigenSolutions
         if (dot > tols[1] ) {
           ierr = VecNorm(evec[i],NORM_INFINITY,&norm);
