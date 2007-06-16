@@ -24,8 +24,9 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the FFTW directories
     fftwDir = self.getDir()
-    installDir = os.path.join(fftwDir, self.arch.arch) #fftw-3.1.1/$PETSC_ARCH
-
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+    
     # Configure FFTW 
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
@@ -40,7 +41,7 @@ class Configure(PETSc.package.Package):
 
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(confDir,'fftw'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -65,12 +66,12 @@ class Configure(PETSc.package.Package):
         self.framework.log.write('********End of Output of running make on FFTW *******\n')
         raise RuntimeError('Error running make on FFTW, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(confDir,'fftw'), 'w')
       fd.write(args)
       fd.close()
 
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed FFTW into '+installDir)
-    return self.getDir()
+    return installDir
   
 if __name__ == '__main__':
   import config.framework

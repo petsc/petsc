@@ -10,10 +10,8 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-June_2006.tar.gz']
     self.functions  = ['InpMtx_init']
-    self.includes   = ['MPI/spoolesMPI.h']
-    self.liblist    = [[os.path.join('MPI','src','spoolesMPI.a'),'spooles.a']]
-    self.libdir     = ''
-    self.includedir = ''
+    self.includes   = ['spoolesMPI.h']
+    self.liblist    = [['spoolesMPI.a','spooles.a']]
     self.complex    = 1
     return
 
@@ -27,7 +25,8 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the SPOOLES directories
     spoolesDir = self.getDir()
-    installDir = os.path.join(spoolesDir, self.arch.arch)
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure and Build SPOOLES
     if os.path.isfile(os.path.join(spoolesDir,'Make.inc')):
@@ -45,28 +44,27 @@ class Configure(PETSc.package.Package):
     g.close()
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'Make.inc')) or not (self.getChecksum(os.path.join(installDir,'Make.inc')) == self.getChecksum(os.path.join(spoolesDir,'Make.inc'))):
-      self.framework.log.write('Have to rebuild SPOOLES, Make.inc != '+installDir+'/Make.inc\n')
+    if not os.path.isfile(os.path.join(confDir,'spooles')) or not (self.getChecksum(os.path.join(confDir,'spooles')) == self.getChecksum(os.path.join(spoolesDir,'Make.inc'))):
+      self.framework.log.write('Have to rebuild SPOOLES, Make.inc != '+confDir+'/spooles\n')
       try:
         self.logPrintBox('Compiling spooles; this may take several minutes')
-        if os.path.isfile(os.path.join(installDir,'Make.inc')):
-          output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; rm -rf '+installDir, timeout=2500, log = self.framework.log)[0]
-          os.mkdir(installDir)          
-        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib; HLISTS=`ls *.h`; cd '+self.arch.arch+'; for hlist in $HLISTS; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir $dir; cp ../$dir/*.h $dir/.; done; cp ../*.h .; cd ..; cd '+self.arch.arch+'; mv ../*.a .; mkdir MPI/src; mv ../MPI/src/*.a MPI/src/.;rm -f MPI.h', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; cp -f *.h '+installDir+'/include; HLISTS=`ls *.h`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir '+installDir+'/include/$dir; cp -f $dir/*.h '+installDir+'/include/$dir/.; done; mv -f *.a MPI/src/*.a '+installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
-      else:
-        self.framework.log.write('Do NOT need to compile SPOOLES downloaded libraries\n')  
-      if not os.path.isfile(os.path.join(installDir,self.libdir,'spooles.a')):
-        self.framework.log.write('Error running make on SPOOLES   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on SPOOLES follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on SPOOLES *******\n')
-        raise RuntimeError('Error running make on SPOOLES, libraries not installed')
-
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(spoolesDir,'Make.inc')+' '+installDir, timeout=5, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(spoolesDir,'Make.inc')+' '+confDir+'/spooles', timeout=5, log = self.framework.log)[0]
+      #include "../
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SPOOLES into '+installDir)
-    return self.getDir()
+    else:
+      self.framework.log.write('Do NOT need to compile SPOOLES downloaded libraries\n')  
+    if not os.path.isfile(os.path.join(installDir,self.libdir,'spooles.a')):
+       self.framework.log.write('Error running make on SPOOLES   ******(libraries not installed)*******\n')
+       self.framework.log.write('********Output of running make on SPOOLES follows *******\n')        
+       self.framework.log.write(output)
+       self.framework.log.write('********End of Output of running make on SPOOLES *******\n')
+       raise RuntimeError('Error running make on SPOOLES, libraries not installed')
+
+    return installDir
 
 if __name__ == '__main__':
   import config.framework

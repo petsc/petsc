@@ -39,7 +39,8 @@ class Configure(PETSc.package.Package):
     # Get the sprng directories
     sprngDir = self.getDir()  #~sprng-1.0
     srcDir = os.path.join(sprngDir,'SRC') #~sprng-1.0/SRC
-    installDir = os.path.join(sprngDir, self.arch.arch) #~sprng-1.0/$PETSC_ARCH
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure and Build sprng
     if os.path.isfile(os.path.join(srcDir,'make.PETSC')):
@@ -72,11 +73,11 @@ class Configure(PETSc.package.Package):
 
     if not os.path.isdir(installDir):
       os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(installDir,'make.PETSC')) or not (self.getChecksum(os.path.join(installDir,'make.PETSC')) == self.getChecksum(os.path.join(srcDir,'make.PETSC'))):  
+    if not os.path.isfile(os.path.join(confDir,'sprng')) or not (self.getChecksum(os.path.join(confDir,'sprng')) == self.getChecksum(os.path.join(srcDir,'make.PETSC'))):  
       self.framework.log.write('Have to rebuild SPRNG, make.PETSC != '+installDir+'/make.PETSC\n')
       try:
         self.logPrintBox('Compiling SPRNG; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+sprngDir+';SPRNG_INSTALL_DIR='+installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..; mkdir '+os.path.join(installDir,self.libdir)+'; cp lib/*.a '+os.path.join(installDir,self.libdir)+'; mkdir '+os.path.join(installDir,self.includedir)+'; cp include/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+sprngDir+';SPRNG_INSTALL_DIR='+installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..;  cp lib/*.a '+os.path.join(installDir,self.libdir)+'; cp include/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPRNG: '+str(e))
       if not os.path.isfile(os.path.join(installDir,self.libdir,'libcmrg.a')):
@@ -86,9 +87,9 @@ class Configure(PETSc.package.Package):
         self.framework.log.write('********End of Output of running make on SPRNG *******\n')
         raise RuntimeError('Error running make on SPRNG, libraries not installed')
       
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(srcDir,'make.PETSC')+' '+installDir, timeout=5, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(srcDir,'make.PETSC')+' '+confDir+'/sprng', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SPRNG into '+installDir)
-    return self.getDir()
+    return installDir
 
 if __name__ == '__main__':
   import config.framework

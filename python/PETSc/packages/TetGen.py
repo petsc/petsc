@@ -274,4 +274,4 @@ tetgen_shared:
     output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.framework.log)[0]
     self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
 
-    return self.getDir()
+    return os.path.join(self.getDir(),self.arch.arch)
