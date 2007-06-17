@@ -81,6 +81,10 @@ subduction: subduction_quadrature.h subduction.o chkopts
 	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
 	${RM} -f subduction.o
 
+dolfin: dolfin.o chkopts
+	-${CLINKER} -o dolfin dolfin.o ${PETSC_DM_LIB}
+	${RM} -f dolfin.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}

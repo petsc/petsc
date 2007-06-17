@@ -157,11 +157,15 @@ namespace ALE {
       // Parse values
       std::string type = parseString(name, attrs, "celltype");
       this->embedDim = parseUnsignedInt(name, attrs, "dim");
+      int tdim = 0;
 
-      // Only allow triangles for now
-      if (type != "triangle") return;
-      int tdim = 2;
-
+      if (type == "interval") {
+        tdim = 1;
+      } else if (type == "triangle") {
+        tdim = 2;
+      } else if (type == "tetrahedron") {
+        tdim = 3;
+      }
       mesh->setDimension(tdim);
     };
     void XMLMesh::readVertices(const xmlChar *name, const xmlChar **attrs) {
@@ -172,19 +176,19 @@ namespace ALE {
     };
     void XMLMesh::readCells(const xmlChar *name, const xmlChar **attrs) {
       // Parse values
-      unsigned int num_cells = parseUnsignedInt(name, attrs, "size");
+      this->numCells = parseUnsignedInt(name, attrs, "size");
     };
     void XMLMesh::readVertex(const xmlChar *name, const xmlChar **attrs) {
       // Read index
       uint v = parseUnsignedInt(name, attrs, "index");
 
       switch (this->embedDim) {
-      case 1:
-        this->coords[v*this->embedDim+0] = parseReal(name, attrs, "x");
-      case 2:
-        this->coords[v*this->embedDim+1] = parseReal(name, attrs, "y");
       case 3:
         this->coords[v*this->embedDim+2] = parseReal(name, attrs, "z");
+      case 2:
+        this->coords[v*this->embedDim+1] = parseReal(name, attrs, "y");
+      case 1:
+        this->coords[v*this->embedDim+0] = parseReal(name, attrs, "x");
         break;
       default:
         error("Dimension of mesh must be 1, 2 or 3.");
@@ -196,8 +200,8 @@ namespace ALE {
         error("Mesh entity (interval) does not match dimension of mesh (%d).", mesh->getDimension());
       // Parse values
       unsigned int c  = parseUnsignedInt(name, attrs, "index");
-      unsigned int v0 = parseUnsignedInt(name, attrs, "v0");
-      unsigned int v1 = parseUnsignedInt(name, attrs, "v1");
+      unsigned int v0 = parseUnsignedInt(name, attrs, "v0") + this->numCells;
+      unsigned int v1 = parseUnsignedInt(name, attrs, "v1") + this->numCells;
       // Add cell
       mesh->getSieve()->addArrow(v0, c, 0);
       mesh->getSieve()->addArrow(v1, c, 1);
@@ -208,9 +212,9 @@ namespace ALE {
         error("Mesh entity (triangle) does not match dimension of mesh (%d).", mesh->getDimension());
       // Parse values
       unsigned int c  = parseUnsignedInt(name, attrs, "index");
-      unsigned int v0 = parseUnsignedInt(name, attrs, "v0");
-      unsigned int v1 = parseUnsignedInt(name, attrs, "v1");
-      unsigned int v2 = parseUnsignedInt(name, attrs, "v2");
+      unsigned int v0 = parseUnsignedInt(name, attrs, "v0") + this->numCells;
+      unsigned int v1 = parseUnsignedInt(name, attrs, "v1") + this->numCells;
+      unsigned int v2 = parseUnsignedInt(name, attrs, "v2") + this->numCells;
       // Add cell
       mesh->getSieve()->addArrow(v0, c, 0);
       mesh->getSieve()->addArrow(v1, c, 1);
@@ -222,10 +226,10 @@ namespace ALE {
         error("Mesh entity (tetrahedron) does not match dimension of mesh (%d).", mesh->getDimension());
       // Parse values
       unsigned int c  = parseUnsignedInt(name, attrs, "index");
-      unsigned int v0 = parseUnsignedInt(name, attrs, "v0");
-      unsigned int v1 = parseUnsignedInt(name, attrs, "v1");
-      unsigned int v2 = parseUnsignedInt(name, attrs, "v2");
-      unsigned int v3 = parseUnsignedInt(name, attrs, "v3");
+      unsigned int v0 = parseUnsignedInt(name, attrs, "v0") + this->numCells;
+      unsigned int v1 = parseUnsignedInt(name, attrs, "v1") + this->numCells;
+      unsigned int v2 = parseUnsignedInt(name, attrs, "v2") + this->numCells;
+      unsigned int v3 = parseUnsignedInt(name, attrs, "v3") + this->numCells;
       // Add cell
       mesh->getSieve()->addArrow(v0, c, 0);
       mesh->getSieve()->addArrow(v1, c, 1);
@@ -233,6 +237,7 @@ namespace ALE {
       mesh->getSieve()->addArrow(v3, c, 3);
     };
     void XMLMesh::closeMesh() {
+      mesh->stratify();
       ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(mesh, this->embedDim, this->coords);
       delete [] this->coords;
     };
