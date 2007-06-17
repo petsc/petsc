@@ -33,11 +33,9 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     prometheusDir = self.getDir()
-    installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
-    if not os.path.isdir(os.path.join(installDir,'lib')):
-      os.mkdir(os.path.join(installDir,'lib'))
-      os.mkdir(os.path.join(installDir,'include'))            
+    if not os.path.isdir(os.path.join(self.installDir,'lib')):
+      os.mkdir(os.path.join(self.installDir,'lib'))
+      os.mkdir(os.path.join(self.installDir,'include'))            
     args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
@@ -69,7 +67,7 @@ class Configure(PETSc.package.Package):
     args += '\nPETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
     try:
-      fd      = file(os.path.join(confDir,'Prometheus'))
+      fd      = file(os.path.join(self.confDir,'Prometheus'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -77,7 +75,7 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+'\n new args = '+args+'\n')
       self.logPrintBox('Configuring Prometheus; this may take a minute')
-      fd = file(os.path.join(confDir,'Prometheus'),'w')
+      fd = file(os.path.join(self.confDir,'Prometheus'),'w')
       fd.write(args)
       fd.close()
       fd = file(os.path.join(prometheusDir,'makefile.petsc'),'w')
@@ -88,8 +86,7 @@ class Configure(PETSc.package.Package):
       fd.close()
       self.compilePrometheus = 1
       self.prometheusDir     = prometheusDir
-      self.installDir        = installDir
-    return installDir
+    return self.installDir
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by Prometheus'''

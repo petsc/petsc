@@ -139,6 +139,9 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
+    self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
+    self.confDir     = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+    self.packageDir  = os.path.join(self.petscdir.dir,self.arch.arch,'conf')    # downloaded package is here
     return os.path.abspath(self.Install())
 
   def checkDownload(self,preOrPost):
@@ -151,21 +154,18 @@ class Package(config.base.Configure):
     elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
       dowork=1
 
-    if not self.download:
+    if not dowork:
       raise RuntimeError('URL missing for package'+self.package+'. perhaps a PETSc bug\n')
     
-    if dowork:
-      if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
-        self.framework.logClear()
-        self.logPrint("**************************************************************************************************", debugSection='screen')
-        self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
-        self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
-        self.logPrint("**************************************************************************************************\n", debugSection='screen')
-        fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
-        fd.close()
-      return self.getInstallDir()
-    else:
-      return ''
+    if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
+      self.framework.logClear()
+      self.logPrint("**************************************************************************************************", debugSection='screen')
+      self.logPrint('You must register to use '+self.downloadname+' at '+self.license, debugSection='screen')
+      self.logPrint('    Once you have registered, config/configure.py will continue and download and install '+self.downloadname+' for you', debugSection='screen')
+      self.logPrint("**************************************************************************************************\n", debugSection='screen')
+      fd = open(os.path.expanduser(os.path.join('~','.'+self.package+'_license')),'w')
+      fd.close()
+    return self.getInstallDir()
 
   def generateGuesses(self):
     d = self.checkDownload(1)
@@ -264,9 +264,6 @@ class Package(config.base.Configure):
         raise RuntimeError('Unable to download '+self.downloadname)
       self.downLoad()
       return self.getDir(retry = 0)
-    if not self.archIndependent:
-      if not os.path.isdir(os.path.join(packages,Dir,self.arch.arch)):
-        os.mkdir(os.path.join(packages,Dir,self.arch.arch))
     return os.path.join(packages, Dir)
 
   def checkInclude(self, incl, hfiles, otherIncludes = [], timeout = 600.0):

@@ -26,11 +26,9 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     spaiDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
-    if not os.path.isdir(os.path.join(installDir,'lib')):
-      os.mkdir(os.path.join(installDir,'lib'))      
+    if not os.path.isdir(os.path.join(self.installDir,'lib')):
+      os.mkdir(os.path.join(self.installDir,'lib'))      
     self.framework.pushLanguage('C')
     if self.compilers.fortranMangling == 'underscore':
       FTNOPT = ''
@@ -44,7 +42,7 @@ class Configure(PETSc.package.Package):
                                   
     self.framework.popLanguage()
     try:
-      fd      = file(os.path.join(confDir,'SPAI'))
+      fd      = file(os.path.join(self.confDir,'SPAI'))
       oldargs = '/n'.join(fd.readlines())
       fd.close()
     except:
@@ -52,20 +50,20 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild Spai oldargs = '+oldargs+'\n new args ='+args+'\n')
       self.logPrintBox('Configuring and compiling Spai; this may take several minutes')
-      fd = file(os.path.join(confDir,'SPAI'),'w')
+      fd = file(os.path.join(self.confDir,'SPAI'),'w')
       fd.write(args)
       fd.close()
       fd = file(os.path.join(spaiDir,'lib','Makefile.in'),'w')
       fd.write(args)
       fd.close()
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make clean; make ; mv libspai.a '+os.path.join(installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
-      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; cp *.h '+os.path.join(installDir,'include'),timeout=250, log = self.framework.log)[0]      
+      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make clean; make ; mv libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; cp *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
         
-    return installDir
+    return self.installDir
 
 
   def configureLibrary(self):

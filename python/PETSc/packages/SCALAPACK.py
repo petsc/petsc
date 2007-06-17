@@ -31,8 +31,6 @@ class Configure(PETSc.package.Package):
 
     # Get the SCALAPACK directories
     scalapackDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
     # Configure and build SCALAPACK
     g = open(os.path.join(scalapackDir,'SLmake.inc'),'w')
@@ -47,7 +45,7 @@ class Configure(PETSc.package.Package):
     g.write('BLACSDBGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSLIB     = '+self.libraries.toString(self.blacs.lib)+'\n') 
     g.write('SMPLIB       = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SCALAPACKLIB = '+os.path.join(installDir,self.libdir,'libscalapack.a')+' \n')
+    g.write('SCALAPACKLIB = '+os.path.join(self.installDir,self.libdir,'libscalapack.a')+' \n')
     g.write('CBLACSLIB    = $(BLACSCINIT) $(BLACSLIB) $(BLACSCINIT)\n')
     g.write('FBLACSLIB    = $(BLACSFINIT) $(BLACSLIB) $(BLACSFINIT)\n')
     if self.compilers.fortranManglingDoubleUnderscore:
@@ -79,10 +77,10 @@ class Configure(PETSc.package.Package):
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')    
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')    
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(confDir,'SCALAPACK')) or not (self.getChecksum(os.path.join(confDir,'SCALAPACK')) == self.getChecksum(os.path.join(scalapackDir,'SLmake.inc'))):
-      self.framework.log.write('Have to rebuild SCALAPACK, SLmake.inc != '+confDir+'/SCALAPACK\n')
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
+    if not os.path.isfile(os.path.join(self.confDir,'SCALAPACK')) or not (self.getChecksum(os.path.join(self.confDir,'SCALAPACK')) == self.getChecksum(os.path.join(scalapackDir,'SLmake.inc'))):
+      self.framework.log.write('Have to rebuild SCALAPACK, SLmake.inc != '+self.confDir+'/SCALAPACK\n')
       try:
         output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
@@ -94,17 +92,17 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
     else:
       self.framework.log.write('Did not need to compile downloaded SCALAPACK\n')
-    if not os.path.isfile(os.path.join(installDir,self.libdir,'libscalapack.a')):
+    if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libscalapack.a')):
       self.framework.log.write('Error running make on SCALAPACK   ******(libraries not installed)*******\n')
       self.framework.log.write('********Output of running make on SCALAPACK follows *******\n')        
       self.framework.log.write(output)
       self.framework.log.write('********End of Output of running make on SCALAPACK *******\n')
       raise RuntimeError('Error running make on SCALAPACK, libraries not installed')
     
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+confDir+'/SCALAPACK', timeout=5, log = self.
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+self.confDir+'/SCALAPACK', timeout=5, log = self.
 framework.log)[0]
-    self.framework.actions.addArgument('scalapack', 'Install', 'Installed scalapack into '+installDir)
-    return installDir
+    self.framework.actions.addArgument('scalapack', 'Install', 'Installed scalapack into '+self.installDir)
+    return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):
     oldLibs = self.compilers.LIBS

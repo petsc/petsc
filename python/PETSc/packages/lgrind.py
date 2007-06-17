@@ -18,10 +18,9 @@ class Configure(PETSc.package.Package):
   def Install(self):
     lgrindDir = self.getDir()
     # Get the LGRIND directories
-    installDir = os.path.join(lgrindDir, self.arch.arch)
-    if os.path.isfile(os.path.join(installDir,'lgrind')) or os.path.isfile(os.path.join(installDir,'lgrind.exe')):
+    if os.path.isfile(os.path.join(self.installDir,'bin','lgrind')) or os.path.isfile(os.path.join(self.installDir,'bin','lgrind.exe')):
       self.framework.log.write('Found Lgrind executable; skipping compile\n')
-      lgrindexe = os.path.join(installDir,'source','lgrind')
+      lgrindexe = os.path.join(self.installDir,'source','lgrind')
       if os.path.exists(lgrindexe+'.exe'):
         lgrindexe = lgrindexe+'.exe'
         lgrind    = 'lgrind.exe'
@@ -44,13 +43,13 @@ class Configure(PETSc.package.Package):
           lgrindexe = lgrindexe+'.exe'
           lgrind    = 'lgrind.exe'
         else: lgrind = 'lgrind'
-        output  = config.base.Configure.executeShellCommand('mv '+lgrindexe+' '+installDir, timeout=25, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('mv '+lgrindexe+' '+os.path.join(self.installDir,'bin'), timeout=25, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error copying lgrind executable: '+str(e))
     output = config.base.Configure.executeShellCommand('cd '+os.path.join(lgrindDir,'source')+'; make clean',timeout=25, log = self.framework.log)[0]
-    self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+installDir)
+    self.framework.actions.addArgument('lgrind', 'Install', 'Installed lgrind into '+self.installDir)
     self.lgrind = lgrindexe
-    self.addMakeMacro('LGRIND',os.path.join(installDir,lgrind))
+    self.addMakeMacro('LGRIND',os.path.join(self.installDir,'bin',lgrind))
     self.addMakeMacro('LGRIND_DIR',lgrindDir)
     return
 
@@ -59,6 +58,7 @@ class Configure(PETSc.package.Package):
     if self.petscdir.isClone:
       if self.framework.argDB['with-lgrind']:
         self.framework.logPrint('PETSc clone, checking for Lgrind\n')
+        self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
         self.Install()
       else:
         self.framework.logPrint('Disabled Lgrind\n')

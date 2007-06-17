@@ -26,15 +26,13 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the PLAPACK directories
     plapackDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
     # Configure and Build PLAPACK
     plapackMakefile        = os.path.join(plapackDir,'Make.include')
-    plapackInstallMakefile = os.path.join(confDir,'PLAPACK')
+    plapackInstallMakefile = os.path.join(self.confDir,'PLAPACK')
     if os.path.isfile(plapackMakefile): os.remove(plapackMakefile)
     g = open(plapackMakefile,'w')
-    g.write('PLAPACK_ROOT = '+installDir+'\n')
+    g.write('PLAPACK_ROOT = '+self.installDir+'\n')
     g.write('MANUFACTURE  = 50\n')  #PC
     g.write('MACHINE_TYPE = 500\n')  #LINUX
     g.write('BLASLIB      = '+self.libraries.toString(self.blasLapack.dlib)+'\n')
@@ -59,19 +57,19 @@ class Configure(PETSc.package.Package):
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     g.write('PLAPACKLIB   =  $(PLAPACK_ROOT)/lib/libPLAPACK.a\n')
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     if not os.path.isfile(plapackInstallMakefile) or not (self.getChecksum(plapackInstallMakefile) == self.getChecksum(plapackMakefile)):  
       self.framework.log.write('Have to rebuild PLAPACK, Make.include != '+plapackInstallMakefile+'\n')
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
         incDir = os.path.join(plapackDir,'INCLUDE')
-        installIncDir = os.path.join(installDir,self.includedir)
+        installIncDir = os.path.join(self.installDir,self.includedir)
         output  = config.base.Configure.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
         output  = config.base.Configure.executeShellCommand('cd '+plapackDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
-      if not os.path.isfile(os.path.join(installDir,self.libdir,'libPLAPACK.a')):
+      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libPLAPACK.a')):
         self.framework.log.write('Error running make on PLAPACK   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on PLAPACK follows *******\n')        
         self.framework.log.write(output)
@@ -79,8 +77,8 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on PLAPACK, libraries not installed')
       
       output  = shutil.copy(plapackMakefile,plapackInstallMakefile)
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+installDir)
-    return installDir
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+self.installDir)
+    return self.installDir
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by PLAPACK'''

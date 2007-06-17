@@ -134,9 +134,9 @@ class Configure(PETSc.package.Package):
   def InstallOld(self):
     import os, sys
     tetgenDir = self.getDir()
-    installDir = os.path.join(tetgenDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    self.installDir = os.path.join(tetgenDir, self.arch.arch)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     # We could make a check of the md5 of the current configure framework
     self.logPrintBox('Configuring and compiling TetGen; this may take several minutes')
     try:
@@ -149,7 +149,7 @@ class Configure(PETSc.package.Package):
       logger.Logger.defaultLog = file(os.path.join(tetgenDir, 'build.log'), 'w')
       mod  = self.getModule(tetgenDir, 'make')
       make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)),module = mod)
-      make.prefix = installDir
+      make.prefix = self.installDir
       make.framework.argDB['with-petsc'] = 1
       make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
@@ -158,7 +158,7 @@ class Configure(PETSc.package.Package):
       os.chdir(oldDir)
     except RuntimeError, e:
       raise RuntimeError('Error running configure on TetGen: '+str(e))
-    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
+    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+self.installDir)
     return tetgenDir
 
   def Install(self):
@@ -166,11 +166,11 @@ class Configure(PETSc.package.Package):
     import config.base
     # Get the TetGen directories
     tetgenDir      = self.getDir()
-    installDir     = os.path.join(tetgenDir, self.arch.arch)
-    libDir         = os.path.join(installDir, 'lib')
-    includeDir     = os.path.join(installDir, 'include')
+    self.installDir     = os.path.join(tetgenDir, self.arch.arch)
+    libDir         = os.path.join(self.installDir, 'lib')
+    includeDir     = os.path.join(self.installDir, 'include')
     makeinc        = os.path.join(tetgenDir, 'make.inc')
-    installmakeinc = os.path.join(installDir, 'make.inc')
+    installmakeinc = os.path.join(self.installDir, 'make.inc')
     configheader   = os.path.join(tetgenDir, 'configureheader.h')
 
     # Configure ParMetis 
@@ -192,7 +192,7 @@ class Configure(PETSc.package.Package):
     g.write('SL_LINKER_SUFFIX = '+self.setCompilers.sharedLibraryExt+'\n')
 
     g.write('TETGEN_ROOT      = '+tetgenDir+'\n')
-    g.write('PREFIX           = '+installDir+'\n')
+    g.write('PREFIX           = '+self.installDir+'\n')
     g.write('LIBDIR           = '+libDir+'\n')
     g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
     g.write('TETGENLIB        = $(LIBDIR)/libtetgen.$(AR_LIB_SUFFIX)\n')
@@ -253,8 +253,8 @@ tetgen_shared:
     g.close()
 
     # Now compile & install
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     if not os.path.isdir(libDir):
       os.mkdir(libDir)
     if not os.path.isdir(includeDir):
@@ -271,7 +271,7 @@ tetgen_shared:
     else:
       self.framework.log.write('Did not need to compile downloaded TetGen\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(tetgenDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
+    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+self.installDir, timeout=5, log = self.framework.log)[0]
+    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+self.installDir)
 
     return os.path.join(self.getDir(),self.arch.arch)

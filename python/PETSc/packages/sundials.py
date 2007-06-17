@@ -26,13 +26,11 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the SUNDIALS directories
     sundialsDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure SUNDIALS 
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
-    args = ['--prefix='+installDir, 'CC="'+self.framework.getCompiler()+'"']
+    args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+'"']
     args.append('--with-cflags="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
@@ -80,8 +78,8 @@ class Configure(PETSc.package.Package):
     
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
-      oldargs = fd.readline()
+      fd      = file(os.path.join(self.confDir,'sundials'))
+      oldargs = '/n'.join(fd.readlines())
       fd.close()
     except:
       oldargs = ''
@@ -99,19 +97,19 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+sundialsDir+'; make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUNDIALS: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
+      if not os.path.isfile(os.path.join(self.installDir,'lib',self.liblist[0][0])):
         self.framework.log.write('Error running make on SUNDIALS   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on SUNDIALS follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on SUNDIALS *******\n')
         raise RuntimeError('Error running make on SUNDIALS, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(self.confDir,'sundials'), 'w')
       fd.write(args)
       fd.close()
 
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUNDIALS into '+installDir)
-    return self.getDir()
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUNDIALS into '+self.installDir)
+    return self.installDir
   
 if __name__ == '__main__':
   import config.framework

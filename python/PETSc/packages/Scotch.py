@@ -137,11 +137,11 @@ class Configure(config.base.Configure):
     self.framework.actions.addArgument('Scotch', 'Download', 'Downloaded Scotch into '+self.getDir())
     # Get the Scotch directories
     scotchDir = self.getDir()  #~scotch_3.4
-    installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    lib = self.libraryGuesses(installDir) 
-    include = [[installDir]]
+    self.installDir = os.path.join(scotchDir, 'bin/i586_pc_linux2') #~scotch_3.4/bin/i586_pc_linux2
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
+    lib = self.libraryGuesses(self.installDir) 
+    include = [[self.installDir]]
     return ('Downloaded Scotch', lib, include)
 
   def configureVersion(self):

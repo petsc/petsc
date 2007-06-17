@@ -12,14 +12,13 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     sowingDir = self.getDir()
-    installDir = os.path.join(sowingDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     # Configure and Build sowing
-    args = ['--prefix='+installDir]
+    args = ['--prefix='+self.installDir]
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(self.confDir,'sowing'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -40,11 +39,11 @@ class Configure(PETSc.package.Package):
           return
         else:
           raise RuntimeError('Error running make; make install on Sowing: '+str(e))
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(self.confDir,'sowing'), 'w')
       fd.write(args)
       fd.close()
-      self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+installDir)
-    self.binDir   = os.path.join(installDir, 'bin')
+      self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.installDir)
+    self.binDir   = os.path.join(self.installDir, 'bin')
     self.bfort    = os.path.join(self.binDir, 'bfort')
     self.doctext  = os.path.join(self.binDir, 'doctext')
     self.mapnames = os.path.join(self.binDir, 'mapnames')
@@ -85,6 +84,8 @@ class Configure(PETSc.package.Package):
     '''Determine whether the Sowing exist or not'''
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for Sowing\n')
+      self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
+      self.confDir     = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
       self.Install()
       self.buildFortranStubs()
     else:

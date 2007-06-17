@@ -26,8 +26,6 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the pARMS directories
     parmsDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure and Build pARMS
     if os.path.isfile(os.path.join(parmsDir,'makefile.in')):
@@ -74,7 +72,7 @@ class Configure(PETSc.package.Package):
     g.write('ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')
 
     # pARMS lib and its directory
-    g.write('LIBDIR     = '+installDir+'/lib\n') 
+    g.write('LIBDIR     = '+self.installDir+'/lib\n') 
     g.write('LIB        = ${LIBDIR}/libparms.a\n') 
     g.write('LIBFLAGS   = -L${LIBDIR}\n') 
     g.write('PARMS_LIBS = -lparms\n') 
@@ -89,25 +87,25 @@ class Configure(PETSc.package.Package):
     g.write('	${FC} ${FFLAGS} $< -c -o $(@F) \n')
     #-----------------------------------------
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(confDir,'pARMS')) or not (self.getChecksum(os.path.join(confDir,'pARMS')) == self.getChecksum(os.path.join(parmsDir,'makefile.in'))):  
-      self.framework.log.write('Have to rebuild pARMS, makefile.in != '+confDir+'/pARMS\n')
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
+    if not os.path.isfile(os.path.join(self.confDir,'pARMS')) or not (self.getChecksum(os.path.join(self.confDir,'pARMS')) == self.getChecksum(os.path.join(parmsDir,'makefile.in'))):  
+      self.framework.log.write('Have to rebuild pARMS, makefile.in != '+self.confDir+'/pARMS\n')
       try:
         self.logPrintBox('Compiling pARMS; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+parmsDir+';PARMS_INSTALL_DIR='+installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(installDir,self.libdir)+'; make clean; make; cp include/*.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+parmsDir+';PARMS_INSTALL_DIR='+self.installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(self.installDir,self.libdir)+'; make clean; make; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
-      if not os.path.isfile(os.path.join(installDir,self.libdir,'libparms.a')):
+      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libparms.a')):
         self.framework.log.write('Error running make on pARMS   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on pARMS follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on pARMS *******\n')
         raise RuntimeError('Error running make on pARMS, libraries not installed')
       
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(parmsDir,'makefile.in')+' '+confDir+'/PARMS', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed pARMS into '+installDir)
-    return installDir
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(parmsDir,'makefile.in')+' '+self.confDir+'/pARMS', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed pARMS into '+self.installDir)
+    return self.installDir
 
 if __name__ == '__main__':
   import config.framework

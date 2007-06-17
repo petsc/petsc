@@ -32,12 +32,10 @@ class Configure(PETSc.package.Package):
         
   def Install(self):
     hypreDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
     # Configure and Build HYPRE
     self.framework.pushLanguage('C')
-    args = ['--prefix='+installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
       self.framework.pushLanguage('Cxx')
@@ -81,7 +79,7 @@ class Configure(PETSc.package.Package):
     args = ' '.join(args)
 
     try:
-      fd      = file(os.path.join(confDir,'hypre'))
+      fd      = file(os.path.join(self.confDir,'hypre'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -95,27 +93,27 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running configure on HYPRE: '+str(e))
       try:
         self.logPrintBox('Compiling hypre; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+self.installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
+      if not os.path.isdir(os.path.join(self.installDir,'lib')):
         self.framework.log.write('Error running make on HYPRE   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on HYPRE follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on HYPRE *******\n')
         raise RuntimeError('Error running make on HYPRE, libraries not installed')
       
-      fd = file(os.path.join(confDir,'hypre'), 'w')
+      fd = file(os.path.join(self.confDir,'hypre'), 'w')
       fd.write(args)
       fd.close()
 
       #need to run ranlib on the libraries using the full path
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+installDir)
-    return installDir
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+self.installDir)
+    return self.installDir
   
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by hypre'''

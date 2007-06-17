@@ -24,13 +24,11 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the FFTW directories
     fftwDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure FFTW 
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
-    args = ['--prefix='+installDir, 'CC="'+self.framework.getCompiler()+'"']
+    args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+'"']
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
     if hasattr(self.compilers, 'CXX'):
@@ -41,7 +39,7 @@ class Configure(PETSc.package.Package):
 
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(confDir,'fftw'))
+      fd      = file(os.path.join(self.confDir,'fftw'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -59,19 +57,19 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on FFTW: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
+      if not os.path.isdir(os.path.join(self.installDir,'lib')):
         self.framework.log.write('Error running make on FFTW   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on FFTW follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on FFTW *******\n')
         raise RuntimeError('Error running make on FFTW, libraries not installed')
       
-      fd = file(os.path.join(confDir,'fftw'), 'w')
+      fd = file(os.path.join(self.confDir,'fftw'), 'w')
       fd.write(args)
       fd.close()
 
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed FFTW into '+installDir)
-    return installDir
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed FFTW into '+self.installDir)
+    return self.installDir
   
 if __name__ == '__main__':
   import config.framework

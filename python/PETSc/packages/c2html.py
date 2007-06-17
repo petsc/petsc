@@ -12,12 +12,11 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     c2htmlDir = self.getDir()
-    installDir = os.path.join(c2htmlDir, self.arch.arch)
     # Configure and Build c2html
-    args = ['--prefix='+installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
+    args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(self.installDir,'config.args'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -36,11 +35,11 @@ class Configure(PETSc.package.Package):
         if self.framework.argDB['with-batch']:
           self.logPrintBox('Batch build that could not generate c2html, you will not be able to generate document')
         raise RuntimeError('Error running make; make install on C2html: '+str(e))
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(self.installDir,'config.args'), 'w')
       fd.write(args)
       fd.close()
-      self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+installDir)
-    self.binDir = os.path.join(installDir, 'bin')
+      self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.installDir)
+    self.binDir = os.path.join(self.installDir, 'bin')
     self.c2html = os.path.join(self.binDir, 'c2html')
     self.addMakeMacro('C2HTML',self.c2html)
     return
@@ -49,6 +48,7 @@ class Configure(PETSc.package.Package):
     '''Determine whether the c2html exist or not'''
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for c2html\n')
+      self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
       self.Install()
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need c2html\n")

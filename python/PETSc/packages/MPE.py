@@ -24,11 +24,9 @@ class Configure(PETSc.package.Package):
     # Get the MPE directories
     self.downloadname = 'mpe2'
     mpeDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
         
     # Configure MPE 
-    args = ['--prefix='+installDir]
+    args = ['--prefix='+self.installDir]
     
     self.framework.pushLanguage('C')
     args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
@@ -50,7 +48,7 @@ class Configure(PETSc.package.Package):
     args = ' '.join(args)
     
     try:
-      fd      = file(os.path.join(confDir,'MPE'))
+      fd      = file(os.path.join(self.confDir,'MPE'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -68,19 +66,19 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPE: '+str(e))
-      if not os.path.isdir(os.path.join(installDir,'lib')):
+      if not os.path.isdir(os.path.join(self.installDir,'lib')):
         self.framework.log.write('Error running make on MPE   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on MPE follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on MPE *******\n')
         raise RuntimeError('Error running make on MPE, libraries not installed')
       
-      fd = file(os.path.join(confDir,'MPE'), 'w')
+      fd = file(os.path.join(self.confDir,'MPE'), 'w')
       fd.write(args)
       fd.close()
 
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MPE into '+installDir)
-    return installDir
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MPE into '+self.installDir)
+    return self.installDir
   
 if __name__ == '__main__':
   import config.framework

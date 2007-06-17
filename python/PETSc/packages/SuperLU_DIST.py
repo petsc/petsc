@@ -25,8 +25,6 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the SUPERLU_DIST directories
     superluDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure and Build SUPERLU_DIST
     if os.path.isfile(os.path.join(superluDir,'make.inc')):
@@ -65,25 +63,25 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('SuperLU_DIST requires a fortran compiler! No fortran compiler configured!')
     g.write('NOOPTS       =  -O0\n')
     g.close()
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(confDir,'SuperLU_DIST')) or not (self.getChecksum(os.path.join(confDir,'SuperLU_DIST')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):  
-      self.framework.log.write('Have to rebuild SUPERLU_DIST, make.inc != '+confDir+'/SuperLU_DIST\n')
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
+    if not os.path.isfile(os.path.join(self.confDir,'SuperLU_DIST')) or not (self.getChecksum(os.path.join(self.confDir,'SuperLU_DIST')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):  
+      self.framework.log.write('Have to rebuild SUPERLU_DIST, make.inc != '+self.confDir+'/SuperLU_DIST\n')
       try:
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+superluDir+';SUPERLU_DIST_INSTALL_DIR='+installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv *.a '+os.path.join(installDir,'lib')+'; cp SRC/*.h '+os.path.join(installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+superluDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv *.a '+os.path.join(self.installDir,'lib')+'; cp SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU_DIST: '+str(e))
-      if not os.path.isfile(os.path.join(installDir,'lib','libsuperlu_dist_2.0.a')):
+      if not os.path.isfile(os.path.join(self.installDir,'lib','libsuperlu_dist_2.0.a')):
         self.framework.log.write('Error running make on SUPERLU_DIST   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on SUPERLU_DIST follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on SUPERLU_DIST *******\n')
         raise RuntimeError('Error running make on SUPERLU_DIST, libraries not installed')
       
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+confDir+'/SuperLU_DIST', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU_DIST into '+installDir)
-    return installDir
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+self.confDir+'/SuperLU_DIST', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU_DIST into '+self.installDir)
+    return self.installDir
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by SuperLU_DIST'''

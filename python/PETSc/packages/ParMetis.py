@@ -24,10 +24,10 @@ class Configure(PETSc.package.Package):
     import sys
     # Get the ParMetis directories
     parmetisDir    = self.getDir()
-    installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+    self.installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
+    self.confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     makeinc        = os.path.join(parmetisDir,'make.inc')
-    installmakeinc = os.path.join(confDir,'PARMETIS')
+    installmakeinc = os.path.join(self.confDir,'ParMetis')
     configheader   = os.path.join(parmetisDir,'ParMETISLib','configureheader.h')
 
     # Configure ParMetis 
@@ -45,7 +45,7 @@ class Configure(PETSc.package.Package):
     g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
 
     g.write('PARMETIS_ROOT  = '+parmetisDir+'\n')
-    g.write('PREFIX         = '+installDir+'\n')
+    g.write('PREFIX         = '+self.installDir+'\n')
     g.write('METISLIB       = $(PARMETIS_ROOT)/libmetis.$(AR_LIB_SUFFIX)\n')
     g.write('PARMETISLIB    = $(PARMETIS_ROOT)/libparmetis.$(AR_LIB_SUFFIX)\n')
     
@@ -59,8 +59,8 @@ class Configure(PETSc.package.Package):
     g.close()
 
     # Now compile & install
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     
     if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
       self.framework.log.write('Have to rebuild ParMetis, make.inc != '+installmakeinc+'\n')
@@ -73,8 +73,8 @@ class Configure(PETSc.package.Package):
     else:
       self.framework.log.write('Did not need to compile downloaded ParMetis\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installmakeinc, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+installDir)
-    return installDir
+    self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+self.installDir)
+    return self.installDir
   
 if __name__ == '__main__':
   import config.framework

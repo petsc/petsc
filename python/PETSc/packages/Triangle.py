@@ -25,9 +25,9 @@ class Configure(PETSc.package.Package):
   def InstallOld(self):
     import sys
     triangleDir = self.getDir()
-    installDir = os.path.join(triangleDir, self.arch.arch)
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    self.installDir = os.path.join(triangleDir, self.arch.arch)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     # We could make a check of the md5 of the current configure framework
     self.logPrintBox('Configuring and compiling Triangle; this may take several minutes')
     try:
@@ -41,7 +41,7 @@ class Configure(PETSc.package.Package):
       mod  = self.getModule(triangleDir, 'make')
       #make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)), module = mod)
       make = mod.Make(configureParent = cPickle.loads(cPickle.dumps(self.framework)))
-      make.prefix = installDir
+      make.prefix = self.installDir
       make.framework.argDB['with-petsc'] = 1
       make.builder.argDB['ignoreCompileOutput'] = 1
       make.run()
@@ -50,7 +50,7 @@ class Configure(PETSc.package.Package):
       os.chdir(oldDir)
     except RuntimeError, e:
       raise RuntimeError('Error running configure on Triangle: '+str(e))
-    self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+installDir)
+    self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+self.installDir)
     return triangleDir
 
   def Install(self):
@@ -58,11 +58,11 @@ class Configure(PETSc.package.Package):
     import config.base
     # Get the Triangle directories
     triangleDir    = self.getDir()
-    installDir     = os.path.join(triangleDir, self.arch.arch)
-    libDir         = os.path.join(installDir, 'lib')
-    includeDir     = os.path.join(installDir, 'include')
+    self.installDir     = os.path.join(triangleDir, self.arch.arch)
+    libDir         = os.path.join(self.installDir, 'lib')
+    includeDir     = os.path.join(self.installDir, 'include')
     makeinc        = os.path.join(triangleDir, 'make.inc')
-    installmakeinc = os.path.join(installDir, 'make.inc')
+    installmakeinc = os.path.join(self.installDir, 'make.inc')
     configheader   = os.path.join(triangleDir, 'configureheader.h')
 
     # Configure ParMetis 
@@ -84,7 +84,7 @@ class Configure(PETSc.package.Package):
     g.write('SL_LINKER_SUFFIX = '+self.setCompilers.sharedLibraryExt+'\n')
 
     g.write('TRIANGLE_ROOT    = '+triangleDir+'\n')
-    g.write('PREFIX           = '+installDir+'\n')
+    g.write('PREFIX           = '+self.installDir+'\n')
     g.write('LIBDIR           = '+libDir+'\n')
     g.write('INSTALL_LIB_DIR  = '+libDir+'\n')
     g.write('TRIANGLELIB      = $(LIBDIR)/libtriangle.$(AR_LIB_SUFFIX)\n')
@@ -145,8 +145,8 @@ triangle_shared:
     g.close()
 
     # Now compile & install
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
     if not os.path.isdir(libDir):
       os.mkdir(libDir)
     if not os.path.isdir(includeDir):
@@ -164,7 +164,7 @@ triangle_shared:
       self.framework.log.write('Did not need to compile downloaded Triangle\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(triangleDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(triangleDir, 'config.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+installDir)
+    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+self.installDir, timeout=5, log = self.framework.log)[0]
+    self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+self.installDir)
 
     return self.getDir()

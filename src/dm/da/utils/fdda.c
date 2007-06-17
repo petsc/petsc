@@ -614,15 +614,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetMatrix(DA da, MatType mtype,Mat *J)
       ierr = DAGetMatrix1d_MPIAIJ(da,A);CHKERRQ(ierr);
     } else if (dim == 2) {
       if (da->ofill) {
-        DAGetMatrix2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix2d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        DAGetMatrix2d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix2d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     } else if (dim == 3) {
       if (da->ofill) {
-        DAGetMatrix3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix3d_MPIAIJ_Fill(da,A);CHKERRQ(ierr);
       } else {
-        DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
+        ierr = DAGetMatrix3d_MPIAIJ(da,A);CHKERRQ(ierr);
       }
     }
   } else if (baij) {

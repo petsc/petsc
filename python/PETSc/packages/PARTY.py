@@ -18,8 +18,6 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the PARTY directories
     partyDir = self.getDir()
-    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
-    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     
     # Configure and Build PARTY
     if os.path.isfile(os.path.join(partyDir,'make.inc')):
@@ -30,25 +28,25 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
     g.close()
     
-    if not os.path.isdir(installDir):
-      os.mkdir(installDir)
-    if not os.path.isfile(os.path.join(confDir,'PARTY')) or not (self.getChecksum(os.path.join(confDir,'PARTY')) == self.getChecksum(os.path.join(partyDir,'make.inc'))):
-      self.framework.log.write('Have to rebuild Party, make.inc != '+confDir+'/PARTY\n')
+    if not os.path.isdir(self.installDir):
+      os.mkdir(self.installDir)
+    if not os.path.isfile(os.path.join(self.confDir,'PARTY')) or not (self.getChecksum(os.path.join(self.confDir,'PARTY')) == self.getChecksum(os.path.join(partyDir,'make.inc'))):
+      self.framework.log.write('Have to rebuild Party, make.inc != '+self.confDir+'/PARTY\n')
       try:
         self.logPrintBox('Compiling party; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(partyDir,'src')+'; PARTY_INSTALL_DIR='+installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv *.a '+os.path.join(installDir,self.libdir)+'/.; cp party_lib.h '+os.path.join(installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(partyDir,'src')+'; PARTY_INSTALL_DIR='+self.installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv *.a '+os.path.join(self.installDir,self.libdir)+'/.; cp party_lib.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PARTY: '+str(e))
-      if not os.path.isfile(os.path.join(installDir,self.libdir,'libparty.a')):
+      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libparty.a')):
         self.framework.log.write('Error running make on PARTY   ******(libraries not installed)*******\n')
         self.framework.log.write('********Output of running make on PARTY follows *******\n')        
         self.framework.log.write(output)
         self.framework.log.write('********End of Output of running make on PARTY *******\n')
         raise RuntimeError('Error running make on PARTY, libraries not installed')
 
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(partyDir,'make.inc')+' '+confDir+'/PARTY', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PARTY into '+installDir)
-    return self.getDir()
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(partyDir,'make.inc')+' '+self.confDir+'/PARTY', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PARTY into '+self.installDir)
+    return self.installDir
 
 if __name__ == '__main__':
   import config.framework
