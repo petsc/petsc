@@ -706,6 +706,8 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   PetscInt       loc_agg_dofs_sum;
   PetscInt       row, col;
   PetscScalar    val;
+  PetscInt       comm_size, comm_rank;
+  PetscInt       *loc_cols = 0;
 
   PetscFunctionBegin;
 
@@ -841,11 +843,11 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 	   }
 	   new_loc_agg_dofs[a]++;
 	 }
-	 //#ifdef PCASA_VERBOSE
+	 /* #ifdef PCASA_VERBOSE */
 	 else {
 	   ierr = PetscPrintf(asa_lev->comm, "Cutoff criteria invoked\n"); CHKERRQ(ierr);
 	 }
-	 //#endif
+	 /* #endif */
        }
 
        /* orthogonalize b_submat_tp using the QR algorithm from LAPACK */
@@ -901,8 +903,6 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   ierr = MatGetLocalSize(asa_lev->A, &a_loc_m, &a_loc_n); CHKERRQ(ierr);
 
   /* determine local range */
-  PetscInt comm_size, comm_rank;
-  PetscInt *loc_cols = 0;
   ierr = MPI_Comm_size(asa_lev->comm, &comm_size); CHKERRQ(ierr);
   ierr = MPI_Comm_rank(asa_lev->comm, &comm_rank); CHKERRQ(ierr);
   ierr = PetscMalloc(comm_size*sizeof(PetscInt), &loc_cols); CHKERRQ(ierr);
