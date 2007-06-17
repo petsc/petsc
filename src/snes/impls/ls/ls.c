@@ -278,7 +278,7 @@ PetscErrorCode SNESSetUp_LS(SNES snes)
   PetscFunctionBegin;
   if (!snes->work) {
     snes->nwork = 4;
-    ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(snes->vec_sol_always,snes->nwork,&snes->work);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(snes,snes->nwork,snes->work);CHKERRQ(ierr);
     snes->vec_sol_update_always = snes->work[3];
   }
