@@ -33,7 +33,8 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     prometheusDir = self.getDir()
-    installDir = os.path.join(prometheusDir, self.arch.arch)
+    installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     if not os.path.isdir(os.path.join(installDir,'lib')):
       os.mkdir(os.path.join(installDir,'lib'))
       os.mkdir(os.path.join(installDir,'include'))            
@@ -43,6 +44,7 @@ class Configure(PETSc.package.Package):
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     args += 'AR      = '+self.setCompilers.AR+'\n'
     args += 'ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n'
+    args += 'RM      = '+self.programs.RM+'\n'
     self.framework.pushLanguage('C++')
     args += 'CXX = '+self.framework.getCompiler()
     args += ' -DPROM_HAVE_METIS'
@@ -67,7 +69,7 @@ class Configure(PETSc.package.Package):
     args += '\nPETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
     try:
-      fd      = file(os.path.join(installDir,'makefile.petsc'))
+      fd      = file(os.path.join(confDir,'Prometheus'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -75,7 +77,7 @@ class Configure(PETSc.package.Package):
     if not oldargs == args:
       self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+'\n new args = '+args+'\n')
       self.logPrintBox('Configuring Prometheus; this may take a minute')
-      fd = file(os.path.join(installDir,'makefile.petsc'),'w')
+      fd = file(os.path.join(confDir,'Prometheus'),'w')
       fd.write(args)
       fd.close()
       fd = file(os.path.join(prometheusDir,'makefile.petsc'),'w')
@@ -87,7 +89,7 @@ class Configure(PETSc.package.Package):
       self.compilePrometheus = 1
       self.prometheusDir     = prometheusDir
       self.installDir        = installDir
-    return prometheusDir
+    return installDir
 
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by Prometheus'''

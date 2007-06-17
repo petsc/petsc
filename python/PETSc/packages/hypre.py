@@ -32,9 +32,9 @@ class Configure(PETSc.package.Package):
         
   def Install(self):
     hypreDir = self.getDir()
+    installDir = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
-    # Get the HYPRE directories
-    installDir = os.path.join(hypreDir, self.arch.arch)
     # Configure and Build HYPRE
     self.framework.pushLanguage('C')
     args = ['--prefix='+installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
@@ -81,7 +81,7 @@ class Configure(PETSc.package.Package):
     args = ' '.join(args)
 
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(confDir,'hypre'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -105,7 +105,7 @@ class Configure(PETSc.package.Package):
         self.framework.log.write('********End of Output of running make on HYPRE *******\n')
         raise RuntimeError('Error running make on HYPRE, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(confDir,'hypre'), 'w')
       fd.write(args)
       fd.close()
 
@@ -115,7 +115,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+installDir)
-    return self.getDir()
+    return installDir
   
   def configureLibrary(self):
     '''Calls the regular package configureLibrary and then does an additional test needed by hypre'''

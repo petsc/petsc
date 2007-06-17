@@ -24,9 +24,10 @@ class Configure(PETSc.package.Package):
     import sys
     # Get the ParMetis directories
     parmetisDir    = self.getDir()
-    installDir     = os.path.join(parmetisDir, self.arch.arch)
+    installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
     makeinc        = os.path.join(parmetisDir,'make.inc')
-    installmakeinc = os.path.join(installDir,'make.inc')
+    installmakeinc = os.path.join(confDir,'PARMETIS')
     configheader   = os.path.join(parmetisDir,'ParMETISLib','configureheader.h')
 
     # Configure ParMetis 
@@ -71,12 +72,9 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on ParMetis: '+str(e))
     else:
       self.framework.log.write('Did not need to compile downloaded ParMetis\n')
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.
-framework.log)[0]
+    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installmakeinc, timeout=5, log = self.framework.log)[0]
     self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+installDir)
-
-
-    return self.getDir()
+    return installDir
   
 if __name__ == '__main__':
   import config.framework

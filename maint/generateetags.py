@@ -81,7 +81,7 @@ def processDir(tagfile,dirname,names):
     if exname in names and dirname.find('src') <0:
       names.remove(exname)
   # One-level unique dirs
-  for exname in ['SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
+  for exname in ['.hg','SCCS', 'output', 'BitKeeper', 'externalpackages', 'bilinear', 'ftn-auto','lib','bmake','bin','maint']:
     if exname in names:
       names.remove(exname)
   #  Multi-level unique dirs - specify from toplevel
@@ -90,6 +90,11 @@ def processDir(tagfile,dirname,names):
       filename=os.path.join(dirname,name)
       if filename.find(exname) >=0:
         names.remove(name)
+  # check for configure generated PETSC_ARCHes
+  for name in names:
+    petscconf = os.path.join(name,'conf','petscconf')
+    if os.path.isfile(petscconf):
+      names.remove(name)
   return
 
 def processFiles(dirname,tagfile):

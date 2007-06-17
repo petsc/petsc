@@ -102,15 +102,15 @@ fi
 # Before Creating the final tarfile, make changes to the bmakefiles/makefiles,
 # create tagfiles etc. permissions etc.
 #
-# Eliminate chmods in the makefile & bmake/common/rules
+# Eliminate chmods in the makefile & conf/rules
 cd $tmpdir/petsc$version
 /bin/mv makefile makefile.bak
 /bin/grep -v 'chmod' makefile.bak > makefile
 /bin/rm -f makefile.bak
 
-/bin/mv bmake/common/rules bmake/common/rules.bak
-/bin/grep -v 'chmod' bmake/common/rules.bak > bmake/common/rules
-/bin/rm -f  bmake/common/rules.bak
+/bin/mv conf/rules conf/rules.bak
+/bin/grep -v 'chmod' conf/rules.bak > conf/rules
+/bin/rm -f  conf/rules.bak
 
 #add in PETSC_VERSION_PATCH_DATE and PETSC_VERSION_HG
 echo Using PETSC_VERSION_PATCH_DATE: ${version_patch_date}

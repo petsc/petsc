@@ -27,7 +27,9 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the ZOLTAN directories
     zoltanDir  = self.getDir()
-    installDir = os.path.join(zoltanDir, self.arch.arch)
+    installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
+    confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+
     # Build ZOLTAN 
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
@@ -55,7 +57,7 @@ class Configure(PETSc.package.Package):
         args.append('PARMETIS_LIBPATH="'+' '.join([self.libraries.getLibArgument(lib) for lib in self.parmetis.lib])+'"')
     args = ' '.join(args)
     try:
-      fd      = file(os.path.join(installDir, 'config.args'))
+      fd      = file(os.path.join(confDir, 'Zoltan'))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -91,17 +93,13 @@ GL_LIBS    = -lGL -lGLU
         self.framework.log.write('********End of Output of running make on ZOLTAN *******\n')
         raise RuntimeError('Error running make on ZOLTAN, libraries not installed')
       import shutil
-      if os.path.isdir(os.path.join(installDir, 'lib')):
-        shutil.rmtree(os.path.join(installDir, 'lib'))
-      shutil.copytree(os.path.join(zoltanDir, 'Obj_'+self.arch.arch), os.path.join(installDir, 'lib'))
-      if os.path.isdir(os.path.join(installDir, 'include')):
-        shutil.rmtree(os.path.join(installDir, 'include'))
-      shutil.copytree(os.path.join(zoltanDir, 'include'), os.path.join(installDir, 'include'))
-      fd = file(os.path.join(installDir, 'config.args'), 'w')
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(zoltanDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(installDir, 'lib'))
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(zoltanDir, 'include')+'/* '+os.path.join(installDir, 'include'))
+      fd = file(os.path.join(confDir, 'Zoltan'), 'w')
       fd.write(args)
       fd.close()
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed ZOLTAN into '+installDir)
-    return self.getDir()
+    return installDir
   
 if __name__ == '__main__':
   import config.framework
