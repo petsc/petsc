@@ -145,7 +145,10 @@ class Configure(config.package.Package):
       if hasattr(self.compilers, 'FC') and not (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
-      yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
+      f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
+      if self.libraries.math:
+        f2cLibs = f2cLibs+self.libraries.math
+      yield ('Downloaded BLAS/LAPACK library', f2cLibs, os.path.join(libdir,'libf2clapack.a'), 0)
       raise RuntimeError('Could not use downloaded c-blas-lapack?')
     if self.framework.argDB['download-f-blas-lapack'] == 1  or isinstance(self.framework.argDB['download-f-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-f-blas-lapack'], str):
@@ -171,7 +174,10 @@ class Configure(config.package.Package):
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
-      yield ('User specified installation root (F2C)', [os.path.join(dir, 'libf2cblas.a')]+self.libraries.math, os.path.join(dir, 'libf2clapack.a'), 1)
+      f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
+      if self.libraries.math:
+        f2cLibs = f2cLibs+self.libraries.math
+      yield ('User specified installation root (F2C)', f2cLibs, os.path.join(dir, 'libf2clapack.a'), 1)
       yield ('User specified installation root', os.path.join(dir, 'libfblas.a'),   os.path.join(dir, 'libflapack.a'), 1)
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libcblas.a'),os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
       yield ('User specified ATLAS Linux installation root', [os.path.join(dir, 'libf77blas.a'), os.path.join(dir, 'libatlas.a')],  [os.path.join(dir, 'liblapack.a')], 1)
@@ -250,7 +256,10 @@ class Configure(config.package.Package):
       if hasattr(self.compilers, 'FC'):
         raise RuntimeError('Should request f-blas-lapack, not --download-c-blas-lapack=yes since you have a fortran compiler?')
       libdir = self.downLoadBlasLapack('f2c', 'c')
-      yield ('Downloaded BLAS/LAPACK library', [os.path.join(libdir,'libf2cblas.a')]+self.libraries.math, os.path.join(libdir,'libf2clapack.a'), 0)
+      f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
+      if self.libraries.math:
+        f2cLibs = f2cLibs+self.libraries.math
+      yield ('Downloaded BLAS/LAPACK library', f2cLibs, os.path.join(libdir,'libf2clapack.a'), 0)
     if self.framework.argDB['download-f-blas-lapack'] == 2:
       if not hasattr(self.compilers, 'FC'):
         raise RuntimeError('Cannot request f-blas-lapack without Fortran compiler, maybe you want --download-c-blas-lapack=1?')
