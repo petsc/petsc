@@ -33,7 +33,7 @@ for the suggested interaction of a new build system with the Framework. If a
 module requires another, it merely executes a require(). For instance, the PETSc
 configure module for HYPRE requires information about MPI, and thus contains
 
-      self.mpi = self.framework.require("PETSc.packages.MPI", self)
+      self.mpi = self.framework.require("config.packages.MPI", self)
 
 Notice that passing self for the last arguments means that the MPI module will
 run before the HYPRE module. Furthermore, we save the resulting object as

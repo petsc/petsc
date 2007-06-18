@@ -19,6 +19,7 @@ class Configure(config.package.Package):
     self.missingRoutines  = []
     self.separateBlas     = 1
     self.defaultPrecision = 'double'
+    self.defaultInstallDir= os.path.abspath('externalpackages')
     return
 
   def __str__(self):
@@ -45,6 +46,20 @@ class Configure(config.package.Package):
     self._defaultPrecision = defaultPrecision
     return
   defaultPrecision = property(getDefaultPrecision, setDefaultPrecision, doc = 'The precision of the library')
+
+  def getDefaultInstallDir(self):
+    '''The installation directroy of the library'''
+    if hasattr(self, 'installDirProvider'):
+      if hasattr(self.installDirProvider, 'dir'):
+        return self.installDirProvider.dir
+    elif not self.framework.externalPackagesDir is None:
+      return self.framework.externalPackagesDir
+    return self._defaultInstallDir
+  def setDefaultInstallDir(self, defaultInstallDir):
+    '''The installation directroy of the library'''
+    self._defaultInstallDir = defaultInstallDir
+    return
+  defaultInstallDir = property(getDefaultInstallDir, setDefaultInstallDir, doc = 'The installation directory of the library')
 
   def getOtherLibs(self, foundBlas = None, blasLibrary = None, separateBlas = None):
     if foundBlas is None:
@@ -287,8 +302,8 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
         raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler - install blas/lapack compiled with g77 instead')
       self.setCompilers.popLanguage()
-    libdir = os.path.join(self.petscdir.dir,self.arch,'lib')
-    confdir = os.path.join(self.petscdir.dir,self.arch,'conf')
+    libdir = os.path.join(self.defaultInstallDir,self.arch,'lib')
+    confdir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
