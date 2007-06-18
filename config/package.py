@@ -57,6 +57,7 @@ class Package(config.base.Configure):
     self.libraries     = framework.require('config.libraries', self)
     self.programs      = framework.require('config.programs', self)
     self.sourceControl = framework.require('config.sourceControl',self)
+    self.petscdir      = framework.require('PETSc.utilities.petscdir', self)
     return
 
   def setupHelp(self,help):
@@ -132,9 +133,7 @@ class Package(config.base.Configure):
     return []
 
   def getInstallDir(self):
-    if self.archIndependent:
-      return os.path.abspath(self.Install())
-    return os.path.abspath(os.path.join(self.Install(), self.arch))
+    return os.path.abspath(self.Install())
 
   def generateLibList(self, directory):
     '''Generates full path list of libraries from self.liblist'''

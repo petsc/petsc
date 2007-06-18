@@ -287,7 +287,8 @@ class Configure(config.package.Package):
       if config.setCompilers.Configure.isNAG(self.setCompilers.getLinker()):
         raise RuntimeError('Cannot compile fortran blaslapack with NAG compiler - install blas/lapack compiled with g77 instead')
       self.setCompilers.popLanguage()
-    libdir = os.path.join(packages,f2c+'blaslapack',self.arch)
+    libdir = os.path.join(self.petscdir.dir,self.arch,'lib')
+    confdir = os.path.join(self.petscdir.dir,self.arch,'conf')
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
       import urllib
@@ -372,7 +373,7 @@ class Configure(config.package.Package):
       line = f.readline()
     f.close()
     g.close()
-    if os.path.isfile(os.path.join(libdir,'tmpmakefile')) and (SourceDB.getChecksum(os.path.join(libdir,'tmpmakefile')) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
+    if os.path.isfile(os.path.join(confdir,'blaslapack')) and (SourceDB.getChecksum(os.path.join(confdir,'blaslapack')) == SourceDB.getChecksum(os.path.join(confDir,'blaslapack'))):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
@@ -381,7 +382,7 @@ class Configure(config.package.Package):
     except RuntimeError, e:
       raise RuntimeError('Error running make on '+l+'blaslapack: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+self.arch, timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';mv -f lib'+f2c+'blas.'+self.setCompilers.AR_LIB_SUFFIX+' lib'+f2c+'lapack.'+self.setCompilers.AR_LIB_SUFFIX+' '+ libdir, timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
       raise RuntimeError('Error moving '+l+'blaslapack libraries: '+str(e))
     try:
