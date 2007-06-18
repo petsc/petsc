@@ -28,8 +28,6 @@ class Configure(PETSc.package.Package):
     parmsDir = self.getDir()
     
     # Configure and Build pARMS
-    if os.path.isfile(os.path.join(parmsDir,'makefile.in')):
-      output  = config.base.Configure.executeShellCommand('cd '+parmsDir+'; rm -f makefile.in', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(parmsDir,'makefile.in'),'w')
     g.write('SHELL =	/bin/sh\n')
     g.write('.SUFFIXES:\n')
@@ -87,8 +85,6 @@ class Configure(PETSc.package.Package):
     g.write('	${FC} ${FFLAGS} $< -c -o $(@F) \n')
     #-----------------------------------------
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'pARMS')) or not (self.getChecksum(os.path.join(self.confDir,'pARMS')) == self.getChecksum(os.path.join(parmsDir,'makefile.in'))):  
       self.framework.log.write('Have to rebuild pARMS, makefile.in != '+self.confDir+'/pARMS\n')
       try:
@@ -96,13 +92,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+parmsDir+';PARMS_INSTALL_DIR='+self.installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(self.installDir,self.libdir)+'; make clean; make; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
-      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libparms.a')):
-        self.framework.log.write('Error running make on pARMS   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on pARMS follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on pARMS *******\n')
-        raise RuntimeError('Error running make on pARMS, libraries not installed')
-      
+      self.checkInstall(output)
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(parmsDir,'makefile.in')+' '+self.confDir+'/pARMS', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed pARMS into '+self.installDir)
     return self.installDir

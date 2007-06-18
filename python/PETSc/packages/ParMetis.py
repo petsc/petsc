@@ -31,8 +31,6 @@ class Configure(PETSc.package.Package):
     configheader   = os.path.join(parmetisDir,'ParMETISLib','configureheader.h')
 
     # Configure ParMetis 
-    if os.path.isfile(makeinc):
-      os.unlink(makeinc)
     g = open(makeinc,'w')
     g.write('SHELL          = '+self.programs.SHELL+'\n')
     g.write('CP             = '+self.programs.cp+'\n')
@@ -59,9 +57,6 @@ class Configure(PETSc.package.Package):
     g.close()
 
     # Now compile & install
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
-    
     if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
       self.framework.log.write('Have to rebuild ParMetis, make.inc != '+installmakeinc+'\n')
       self.framework.outputHeader(configheader)
@@ -70,6 +65,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
+      self.checkInstall(output)
     else:
       self.framework.log.write('Did not need to compile downloaded ParMetis\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installmakeinc, timeout=5, log = self.framework.log)[0]

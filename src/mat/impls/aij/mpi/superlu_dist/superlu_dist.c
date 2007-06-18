@@ -6,7 +6,7 @@
 
 #include "src/mat/impls/aij/seq/aij.h"
 #include "src/mat/impls/aij/mpi/mpiaij.h"
-#if defined(PETSC_HAVE_STDLIB_H) /* This is to get arround weird problem with SuperLU on cray */
+#if defined(PETSC_HAVE_STDLIB_H) /* This is to get around weird problem with SuperLU on cray */
 #include "stdlib.h"
 #endif
 

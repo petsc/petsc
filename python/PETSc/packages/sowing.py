@@ -12,8 +12,6 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     sowingDir = self.getDir()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     # Configure and Build sowing
     args = ['--prefix='+self.installDir]
     args = ' '.join(args)

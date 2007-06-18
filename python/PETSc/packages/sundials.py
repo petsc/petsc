@@ -97,12 +97,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+sundialsDir+'; make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUNDIALS: '+str(e))
-      if not os.path.isfile(os.path.join(self.installDir,'lib',self.liblist[0][0])):
-        self.framework.log.write('Error running make on SUNDIALS   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on SUNDIALS follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on SUNDIALS *******\n')
-        raise RuntimeError('Error running make on SUNDIALS, libraries not installed')
+      self.checkInstall(output)
       
       fd = file(os.path.join(self.confDir,'sundials'), 'w')
       fd.write(args)

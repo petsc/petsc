@@ -30,8 +30,6 @@ class Configure(PETSc.package.Package):
     blacsDir   = self.getDir()
 
     # Configure and build BLACS
-    if os.path.isfile(os.path.join(blacsDir,'Bmake.Inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+blacsDir+'; rm -f Bmake.Inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
     g.write('SHELL     = /bin/sh\n')
     g.write('COMMLIB   = MPI\n')
@@ -82,8 +80,6 @@ class Configure(PETSc.package.Package):
     g.write('ARCHFLAGS   = '+self.setCompilers.AR_FLAGS+'\n')    
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')    
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'blacs')) or not (self.getChecksum(os.path.join(self.confDir,'blacs')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
       self.framework.log.write('Have to rebuild blacs, Bmake.Inc != '+self.confDir+'/blacs\n')
       try:
@@ -91,17 +87,11 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
+      self.checkInstall(output)
+      output = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+self.confDir+'/blacs', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+self.installDir)
     else:
       self.framework.log.write('Do NOT need to compile BLACS downloaded libraries\n')
-    if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libblacs.a')):
-      self.framework.log.write('Error running make on BLACS   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on BLACS follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on BLACS *******\n')
-      raise RuntimeError('Error running make on BLACS, libraries not installed')
-    
-    output = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+self.confDir+'/blacs', timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+self.installDir)
     return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):

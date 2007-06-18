@@ -33,9 +33,6 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     prometheusDir = self.getDir()
-    if not os.path.isdir(os.path.join(self.installDir,'lib')):
-      os.mkdir(os.path.join(self.installDir,'lib'))
-      os.mkdir(os.path.join(self.installDir,'include'))            
     args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
     args += 'BUILD_DIR  = '+prometheusDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
@@ -66,24 +63,16 @@ class Configure(PETSc.package.Package):
  
     args += '\nPETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
-    try:
-      fd      = file(os.path.join(self.confDir,'Prometheus'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild Prometheus oldargs = '+oldargs+'\n new args = '+args+'\n')
+    fd = file(os.path.join(prometheusDir,'makefile.petsc'),'w')
+    fd.write(args)
+    fd.close()
+
+    if not os.path.isfile(os.path.join(self.confDir,'Prometheus')) or not (self.getChecksum(os.path.join(self.confDir,'Prometheus')) == self.getChecksum(os.path.join(prometheusDir,'makefile.petsc'))):
       self.logPrintBox('Configuring Prometheus; this may take a minute')
-      fd = file(os.path.join(self.confDir,'Prometheus'),'w')
-      fd.write(args)
-      fd.close()
-      fd = file(os.path.join(prometheusDir,'makefile.petsc'),'w')
-      fd.write(args)
-      fd.close()
       fd = file(os.path.join(prometheusDir,'makefile.in'),'a')
       fd.write('include makefile.petsc\n')
       fd.close()
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(prometheusDir,'makefile.petsc')+' '+self.confDir+'/Prometheus', timeout=5, log = self.framework.log)[0]
       self.compilePrometheus = 1
       self.prometheusDir     = prometheusDir
     return self.installDir

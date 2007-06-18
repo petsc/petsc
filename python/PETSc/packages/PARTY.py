@@ -20,16 +20,12 @@ class Configure(PETSc.package.Package):
     partyDir = self.getDir()
     
     # Configure and Build PARTY
-    if os.path.isfile(os.path.join(partyDir,'make.inc')):
-      output = config.base.Configure.executeShellCommand('cd '+partyDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(partyDir,'make.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC = '+self.setCompilers.getCompiler()+' '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     g.close()
     
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'PARTY')) or not (self.getChecksum(os.path.join(self.confDir,'PARTY')) == self.getChecksum(os.path.join(partyDir,'make.inc'))):
       self.framework.log.write('Have to rebuild Party, make.inc != '+self.confDir+'/PARTY\n')
       try:
@@ -37,12 +33,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(partyDir,'src')+'; PARTY_INSTALL_DIR='+self.installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv *.a '+os.path.join(self.installDir,self.libdir)+'/.; cp party_lib.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PARTY: '+str(e))
-      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libparty.a')):
-        self.framework.log.write('Error running make on PARTY   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on PARTY follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on PARTY *******\n')
-        raise RuntimeError('Error running make on PARTY, libraries not installed')
+      self.checkInstall(output)
 
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(partyDir,'make.inc')+' '+self.confDir+'/PARTY', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PARTY into '+self.installDir)

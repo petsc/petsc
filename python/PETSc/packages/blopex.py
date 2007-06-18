@@ -34,8 +34,6 @@ class Configure(PETSc.package.Package):
     blopexDir = self.getDir()
     
     # Configure and Build BLOPEX
-    if os.path.isfile(os.path.join(blopexDir,'Makefile.inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+blopexDir+'; rm -f Makefile.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(blopexDir,'Makefile.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC          = '+self.setCompilers.getCompiler()+'\n') 
@@ -44,8 +42,6 @@ class Configure(PETSc.package.Package):
     g.write('AR          = '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+'\n')
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'blopex')) or not (self.getChecksum(os.path.join(self.confDir,'blopex')) == self.getChecksum(os.path.join(blopexDir,'Makefile.inc'))):
       self.framework.log.write('Have to rebuild BLOPEX, Makefile.inc != '+self.confDir+'/blopex\n')
       try:
@@ -53,18 +49,12 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+blopexDir+';BLOPEX_INSTALL_DIR='+self.installDir+';export BLOPEX_INSTALL_DIR; make clean; make; mv -f lib/* '+os.path.join(self.installDir,self.libdir)+'; cp -fp multivector/temp_multivector.h include/.; mv -f include/* '+os.path.join(self.installDir,self.includedir)+'', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLOPEX: '+str(e))
-      else:
-        self.framework.log.write('Do NOT need to compile BLOPEX downloaded libraries\n')  
-      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libBLOPEX.a')):
-        self.framework.log.write('Error running make on BLOPEX   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on BLOPEX follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on BLOPEX *******\n')
-        raise RuntimeError('Error running make on BLOPEX, libraries not installed')
-
+      self.checkInstall(output)
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blopexDir,'Makefile.inc')+' '+self.confDir+'/blopex', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed BLOPEX into '+self.installDir)
-    return self.getDir()
+    else:
+      self.framework.log.write('Do NOT need to compile BLOPEX downloaded libraries\n')  
+    return installDir
 
 if __name__ == '__main__':
   import config.framework

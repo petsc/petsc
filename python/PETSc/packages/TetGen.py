@@ -174,8 +174,6 @@ class Configure(PETSc.package.Package):
     configheader   = os.path.join(tetgenDir, 'configureheader.h')
 
     # Configure ParMetis 
-    if os.path.isfile(makeinc):
-      os.unlink(makeinc)
     g = open(makeinc,'w')
     g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules.shared.basic')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
@@ -253,13 +251,6 @@ tetgen_shared:
     g.close()
 
     # Now compile & install
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
-    if not os.path.isdir(libDir):
-      os.mkdir(libDir)
-    if not os.path.isdir(includeDir):
-      os.mkdir(includeDir)
-    
     if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
       self.framework.log.write('Have to rebuild TetGen, make.inc != '+installmakeinc+'\n')
       self.framework.outputHeader(configheader)

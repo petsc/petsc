@@ -27,8 +27,6 @@ class Configure(PETSc.package.Package):
     superluDir = self.getDir()
 
     # Configure and Build SUPERLU
-    if os.path.isfile(os.path.join(superluDir,'make.inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+superluDir+'; rm -f make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(superluDir,'make.inc'),'w')
     g.write('TMGLIB       = tmglib.a\n')
     g.write('SUPERLULIB   = libsuperlu_3.0.a\n')
@@ -61,8 +59,6 @@ class Configure(PETSc.package.Package):
     g.write('MATLAB       =\n')
     g.write('NOOPTS       =  -O0\n')
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'SuperLU')) or not (self.getChecksum(os.path.join(self.confDir,'SuperLU')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):
       self.framework.log.write('Have to rebuild SuperLU, make.inc != '+self.confDir+'/SuperLU\n')
       try:
@@ -70,14 +66,9 @@ class Configure(PETSc.package.Package):
         output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv *.a '+os.path.join(self.installDir,'lib')+';  cp SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
+      self.checkInstall(output)
     else:
       self.framework.log.write('Do NOT need to compile SuperLU downloaded libraries\n')  
-    if not os.path.isfile(os.path.join(self.installDir,'lib','libsuperlu_3.0.a')):
-        self.framework.log.write('Error running make on SUPERLU   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on SUPERLU follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on SUPERLU *******\n')
-        raise RuntimeError('Error running make on SUPERLU, libraries not installed')
       
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+self.confDir+'/SuperLU', timeout=5, log = self.framework.log)[0]
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU into '+self.installDir+'/lib')

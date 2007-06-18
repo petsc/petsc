@@ -77,8 +77,6 @@ class Configure(PETSc.package.Package):
     g.write('ARCHFLAGS    = '+self.setCompilers.AR_FLAGS+'\n')    
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')    
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'SCALAPACK')) or not (self.getChecksum(os.path.join(self.confDir,'SCALAPACK')) == self.getChecksum(os.path.join(scalapackDir,'SLmake.inc'))):
       self.framework.log.write('Have to rebuild SCALAPACK, SLmake.inc != '+self.confDir+'/SCALAPACK\n')
       try:
@@ -90,14 +88,9 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
+      self.checkInstall(output)
     else:
       self.framework.log.write('Did not need to compile downloaded SCALAPACK\n')
-    if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libscalapack.a')):
-      self.framework.log.write('Error running make on SCALAPACK   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on SCALAPACK follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on SCALAPACK *******\n')
-      raise RuntimeError('Error running make on SCALAPACK, libraries not installed')
     
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+self.confDir+'/SCALAPACK', timeout=5, log = self.
 framework.log)[0]

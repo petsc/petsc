@@ -11,6 +11,7 @@ class Configure(PETSc.package.Package):
     self.download  = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/sprng-1.0.tar.gz']
     self.functions = ['make_new_seed_mpi'] 
     self.includes  = ['sprng.h'] 
+    self.liblist   = [['libcmrg.a','liblcg64.a','liblcg.a','liblfg.a','libmlfg.a']]
     return
 
   def setupDependencies(self, framework):
@@ -19,30 +20,12 @@ class Configure(PETSc.package.Package):
     self.deps       = [self.mpi]
     return
 
-  def generateLibList(self,dir):
-    '''Normally the one in package.py is used, but sprng requires the extra library'''
-    libs = ['libcmrg',
-	    'liblcg64',
-	    'liblcg',
-	    'liblfg',
-	    'libmlfg'
-            ]
-    alllibs = []
-    for l in libs:
-      alllibs.append(l+'.a')
-    
-    # Now specify -L sprng-lib-path only to the first library
-    alllibs[0] = os.path.join(dir,alllibs[0])
-    return [alllibs]
-        
   def Install(self):    
     # Get the sprng directories
     sprngDir = self.getDir()  #~sprng-1.0
     srcDir = os.path.join(sprngDir,'SRC') #~sprng-1.0/SRC
     
     # Configure and Build sprng
-    if os.path.isfile(os.path.join(srcDir,'make.PETSC')):
-      output = config.base.Configure.executeShellCommand('cd '+srcDir+'; rm -f make.PETSC', timeout = 2500, log = self.framework.log)[0]
     g = open(os.path.join(srcDir,'make.PETSC'),'w')
     g.write('AR         = ar\n')
     g.write('ARFLAGS 	= cr\n')
@@ -68,9 +51,6 @@ class Configure(PETSc.package.Package):
     g.write('FFLAGS 	= -O3 $(PMLCGDEF) $(MPIDEF) -D$(PLAT) $(MPI_INCLUDE)\n')
     g.write('F77LDFLAGS = -O3\n')
     g.close()
-
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'sprng')) or not (self.getChecksum(os.path.join(self.confDir,'sprng')) == self.getChecksum(os.path.join(srcDir,'make.PETSC'))):  
       self.framework.log.write('Have to rebuild SPRNG, make.PETSC != '+self.installDir+'/make.PETSC\n')
       try:
@@ -78,13 +58,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+sprngDir+';SPRNG_INSTALL_DIR='+self.installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..;  cp lib/*.a '+os.path.join(self.installDir,self.libdir)+'; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPRNG: '+str(e))
-      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libcmrg.a')):
-        self.framework.log.write('Error running make on SPRNG   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on SPRNG follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on SPRNG *******\n')
-        raise RuntimeError('Error running make on SPRNG, libraries not installed')
-      
+      self.checkInstall(output)
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(srcDir,'make.PETSC')+' '+self.confDir+'/sprng', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SPRNG into '+self.installDir)
     return self.installDir

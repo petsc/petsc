@@ -26,43 +26,31 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
     spaiDir = self.getDir()
-
-    if not os.path.isdir(os.path.join(self.installDir,'lib')):
-      os.mkdir(os.path.join(self.installDir,'lib'))      
     self.framework.pushLanguage('C')
-    if self.compilers.fortranMangling == 'underscore':
-      FTNOPT = ''
-    elif self.compilers.fortranMangling == 'capitalize':
-      FTNOPT = ''
-    else:
-      FTNOPT = '-DSP2'
+    if self.compilers.fortranMangling == 'underscore':  FTNOPT = ''
+    elif self.compilers.fortranMangling == 'capitalize':FTNOPT = ''
+    else:                                               FTNOPT = '-DSP2'
+    
     args = 'CC = '+self.framework.getCompiler()+'\nCFLAGS = -DMPI '+FTNOPT+' '+self.framework.getCompilerFlags()+' '+self.headers.toString(self.mpi.include)+'\n'
     args = args+'AR         = '+self.setCompilers.AR+'\n'
     args = args+'ARFLAGS    = '+self.setCompilers.AR_FLAGS+'\n'
                                   
+    fd = file(os.path.join(spaiDir,'lib','Makefile.in'),'w')
+    fd.write(args)
     self.framework.popLanguage()
-    try:
-      fd      = file(os.path.join(self.confDir,'SPAI'))
-      oldargs = '/n'.join(fd.readlines())
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild Spai oldargs = '+oldargs+'\n new args ='+args+'\n')
+    fd.close()
+
+    if not os.path.isfile(os.path.join(self.confDir,'spai')) or not (self.getChecksum(os.path.join(self.confDir,'spai')) == self.getChecksum(os.path.join(spaiDir,'lib','Makefile.in'))):
+      self.framework.log.write('Have to rebuild SPAI, Makefile.in != '+self.confDir+'/spai\n')
       self.logPrintBox('Configuring and compiling Spai; this may take several minutes')
-      fd = file(os.path.join(self.confDir,'SPAI'),'w')
-      fd.write(args)
-      fd.close()
-      fd = file(os.path.join(spaiDir,'lib','Makefile.in'),'w')
-      fd.write(args)
-      fd.close()
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make clean; make ; mv libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; cp *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
       try:
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/libspai.a', timeout=250, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on SPAI libraries: '+str(e))
-        
+      self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(spaiDir,'lib','Makefile.in')+' '+self.confDir+'/spai', timeout=5, log = self.framework.log)[0]
     return self.installDir
 
 

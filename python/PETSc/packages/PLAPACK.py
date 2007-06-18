@@ -30,7 +30,6 @@ class Configure(PETSc.package.Package):
     # Configure and Build PLAPACK
     plapackMakefile        = os.path.join(plapackDir,'Make.include')
     plapackInstallMakefile = os.path.join(self.confDir,'PLAPACK')
-    if os.path.isfile(plapackMakefile): os.remove(plapackMakefile)
     g = open(plapackMakefile,'w')
     g.write('PLAPACK_ROOT = '+self.installDir+'\n')
     g.write('MANUFACTURE  = 50\n')  #PC
@@ -57,8 +56,6 @@ class Configure(PETSc.package.Package):
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     g.write('PLAPACKLIB   =  $(PLAPACK_ROOT)/lib/libPLAPACK.a\n')
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(plapackInstallMakefile) or not (self.getChecksum(plapackInstallMakefile) == self.getChecksum(plapackMakefile)):  
       self.framework.log.write('Have to rebuild PLAPACK, Make.include != '+plapackInstallMakefile+'\n')
       try:
@@ -69,13 +66,8 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+plapackDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
-      if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libPLAPACK.a')):
-        self.framework.log.write('Error running make on PLAPACK   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on PLAPACK follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on PLAPACK *******\n')
-        raise RuntimeError('Error running make on PLAPACK, libraries not installed')
-      
+      self.checkInstall(output)
+
       output  = shutil.copy(plapackMakefile,plapackInstallMakefile)
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+self.installDir)
     return self.installDir

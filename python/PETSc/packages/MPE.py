@@ -66,12 +66,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPE: '+str(e))
-      if not os.path.isdir(os.path.join(self.installDir,'lib')):
-        self.framework.log.write('Error running make on MPE   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on MPE follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on MPE *******\n')
-        raise RuntimeError('Error running make on MPE, libraries not installed')
+      self.checkInstall(output)
       
       fd = file(os.path.join(self.confDir,'MPE'), 'w')
       fd.write(args)

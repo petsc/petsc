@@ -96,12 +96,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
-      if not os.path.isdir(os.path.join(self.installDir,'lib')):
-        self.framework.log.write('Error running make on ML   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on ML follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on ML *******\n')
-        raise RuntimeError('Error running make on ML, libraries not installed')
+      self.checkInstall(output)
       
       fd = file(os.path.join(self.confDir,'ml'), 'w')
       fd.write(args)

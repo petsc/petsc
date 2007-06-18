@@ -30,8 +30,6 @@ class Configure(PETSc.package.Package):
     mumpsDir = self.getDir()
     
     # Configure and Build MUMPS
-    if os.path.isfile(os.path.join(mumpsDir,'Makefile.inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; rm -f Makefile.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(mumpsDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
@@ -83,8 +81,6 @@ class Configure(PETSc.package.Package):
     g.write('LIB = $(LIBPAR)\n')
     g.write('LIBSEQNEEDED =\n')
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'MUMPS')) or not (self.getChecksum(os.path.join(self.confDir,'MUMPS')) == self.getChecksum(os.path.join(mumpsDir,'Makefile.inc'))):
       self.framework.log.write('Have to rebuild MUMPS, Makefile.inc != '+self.confDir+'/MUMPS\n')
       try:
@@ -96,22 +92,13 @@ class Configure(PETSc.package.Package):
         output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; make all',timeout=2500, log = self.framework.log)[0]
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
-        if not os.path.isdir(libDir):
-          os.mkdir(libDir)
-        if not os.path.isdir(includeDir):
-          os.mkdir(includeDir)        
         output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; mv lib/*.* '+libDir+'/.; cp include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
+      self.checkInstall(output)
     else:
       self.framework.log.write('Do not need to compile downloaded MUMPS\n')
-    if not os.path.isfile(os.path.join(self.installDir,self.libdir,'libdmumps.a')):
-      self.framework.log.write('Error running make on MUMPS   ******(libraries not installed)*******\n')
-      self.framework.log.write('********Output of running make on MUMPS follows *******\n')        
-      self.framework.log.write(output)
-      self.framework.log.write('********End of Output of running make on MUMPS *******\n')
-      raise RuntimeError('Error running make on MUMPS, libraries not installed')
-    
+        
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+self.confDir+'/MUMPS', timeout=5, log = self.framework.log)[0]
 
     self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MUMPS into '+self.installDir)

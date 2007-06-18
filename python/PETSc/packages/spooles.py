@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-June_2006.tar.gz']
+    self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-June_2007.tar.gz']
     self.functions  = ['InpMtx_init']
     self.includes   = ['spoolesMPI.h']
     self.liblist    = [['spoolesMPI.a','spooles.a']]
@@ -27,8 +27,6 @@ class Configure(PETSc.package.Package):
     spoolesDir = self.getDir()
     
     # Configure and Build SPOOLES
-    if os.path.isfile(os.path.join(spoolesDir,'Make.inc')):
-      output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; rm -f Make.inc', timeout=2500, log = self.framework.log)[0]
     g = open(os.path.join(spoolesDir,'Make.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC          = '+self.setCompilers.getCompiler()+'\n') 
@@ -40,8 +38,6 @@ class Configure(PETSc.package.Package):
     g.write('MPI_LIBS    = '+self.libraries.toString(self.mpi.lib)+'\n') 
     g.write('MPI_INCLUDE_DIR = '+self.headers.toString(self.mpi.include)+'\n') 
     g.close()
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     if not os.path.isfile(os.path.join(self.confDir,'spooles')) or not (self.getChecksum(os.path.join(self.confDir,'spooles')) == self.getChecksum(os.path.join(spoolesDir,'Make.inc'))):
       self.framework.log.write('Have to rebuild SPOOLES, Make.inc != '+self.confDir+'/spooles\n')
       try:
@@ -52,16 +48,10 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(spoolesDir,'Make.inc')+' '+self.confDir+'/spooles', timeout=5, log = self.framework.log)[0]
       #include "../
+      self.checkInstall(output)
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SPOOLES into '+self.installDir)
     else:
       self.framework.log.write('Do NOT need to compile SPOOLES downloaded libraries\n')  
-    if not os.path.isfile(os.path.join(self.installDir,self.libdir,'spooles.a')):
-       self.framework.log.write('Error running make on SPOOLES   ******(libraries not installed)*******\n')
-       self.framework.log.write('********Output of running make on SPOOLES follows *******\n')        
-       self.framework.log.write(output)
-       self.framework.log.write('********End of Output of running make on SPOOLES *******\n')
-       raise RuntimeError('Error running make on SPOOLES, libraries not installed')
-
     return self.installDir
 
 if __name__ == '__main__':

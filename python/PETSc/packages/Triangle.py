@@ -26,8 +26,6 @@ class Configure(PETSc.package.Package):
     import sys
     triangleDir = self.getDir()
     self.installDir = os.path.join(triangleDir, self.arch.arch)
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
     # We could make a check of the md5 of the current configure framework
     self.logPrintBox('Configuring and compiling Triangle; this may take several minutes')
     try:
@@ -66,8 +64,6 @@ class Configure(PETSc.package.Package):
     configheader   = os.path.join(triangleDir, 'configureheader.h')
 
     # Configure ParMetis 
-    if os.path.isfile(makeinc):
-      os.unlink(makeinc)
     g = open(makeinc,'w')
     g.write('include '+os.path.join(self.petscdir.dir, 'conf', 'rules.shared.basic')+'\n')
     g.write('SHELL            = '+self.programs.SHELL+'\n')
@@ -145,13 +141,6 @@ triangle_shared:
     g.close()
 
     # Now compile & install
-    if not os.path.isdir(self.installDir):
-      os.mkdir(self.installDir)
-    if not os.path.isdir(libDir):
-      os.mkdir(libDir)
-    if not os.path.isdir(includeDir):
-      os.mkdir(includeDir)
-    
     if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
       self.framework.log.write('Have to rebuild Triangle, make.inc != '+installmakeinc+'\n')
       self.framework.outputHeader(configheader)

@@ -101,10 +101,6 @@ class Configure(config.base.Configure):
 
   def getDir(self):
     '''Find the directory containing Jostle'''
-    packages = self.petscdir.externalPackagesDir 
-    if not os.path.isdir(packages):
-      os.mkdir(packages)
-      self.framework.actions.addArgument('PETSc', 'Directory creation', 'Created the packages directory: '+packages)
     jostleDir = None
     for dir in os.listdir(packages):
       if dir.startswith('jostle') and os.path.isdir(os.path.join(packages, dir)):

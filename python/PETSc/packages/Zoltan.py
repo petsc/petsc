@@ -86,15 +86,10 @@ GL_LIBS    = -lGL -lGLU
         output  = config.base.Configure.executeShellCommand('cd '+zoltanDir+'; make clean; make '+args+' zoltan', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
-      if not os.path.isdir(os.path.join(zoltanDir, 'Obj_'+self.arch.arch)):
-        self.framework.log.write('Error running make on ZOLTAN   ******(libraries not installed)*******\n')
-        self.framework.log.write('********Output of running make on ZOLTAN follows *******\n')        
-        self.framework.log.write(output)
-        self.framework.log.write('********End of Output of running make on ZOLTAN *******\n')
-        raise RuntimeError('Error running make on ZOLTAN, libraries not installed')
-      import shutil
+
       output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(zoltanDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(zoltanDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
+      self.checkInstall(output)
       fd = file(os.path.join(self.confDir, 'Zoltan'), 'w')
       fd.write(args)
       fd.close()
