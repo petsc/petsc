@@ -96,12 +96,10 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+self.confDir+'/MUMPS', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MUMPS into '+self.installDir)
     else:
       self.framework.log.write('Do not need to compile downloaded MUMPS\n')
-        
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+self.confDir+'/MUMPS', timeout=5, log = self.framework.log)[0]
-
-    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MUMPS into '+self.installDir)
     return self.installDir
 
 if __name__ == '__main__':

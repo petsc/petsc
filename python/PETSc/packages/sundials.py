@@ -77,14 +77,11 @@ class Configure(PETSc.package.Package):
     args.append('--disable-libtool-lock')
     
     args = ' '.join(args)
-    try:
-      fd      = file(os.path.join(self.confDir,'sundials'))
-      oldargs = '/n'.join(fd.readlines())
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild SUNDIALS oldargs = '+oldargs+'\n new args ='+args+'\n')
+    fd = file(os.path.join(sundialsDir,'sundials'), 'w')
+    fd.write(args)
+    fd.close()
+    if not os.path.isfile(os.path.join(self.confDir,'sundials')) or not (self.getChecksum(os.path.join(self.confDir,'sundials')) == self.getChecksum(os.path.join(sundialsDir,'sundials'))):    
+      self.framework.log.write('Have to rebuild Sundials, sundials != '+self.confDir+'/sundials\n')
       try:
         self.logPrintBox('Configuring sundials; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+sundialsDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
@@ -98,11 +95,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUNDIALS: '+str(e))
       self.checkInstall(output)
-      
-      fd = file(os.path.join(self.confDir,'sundials'), 'w')
-      fd.write(args)
-      fd.close()
-
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(sundialsDir,'sundials')+' '+self.confDir+'/sundials', timeout=5, log = self.framework.log)[0]      
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUNDIALS into '+self.installDir)
     return self.installDir
   

@@ -67,8 +67,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
       self.checkInstall(output)
-
-      output  = shutil.copy(plapackMakefile,plapackInstallMakefile)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(plapackDir,'Make.include')+' '+self.confDir+'/PLAPACK', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PLAPACK into '+self.installDir)
     return self.installDir
 

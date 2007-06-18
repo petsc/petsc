@@ -75,16 +75,12 @@ class Configure(PETSc.package.Package):
     libs = ' '.join(libs) # '-lmpich -lpmpich'
     args.append('--with-mpi-libs=" '+libs+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
-
     args = ' '.join(args)
-    try:
-      fd      = file(os.path.join(self.confDir,'ml'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild ML oldargs = '+oldargs+'\n new args ='+args+'\n')
+    fd = file(os.path.join(mlDir,'ml'), 'w')
+    fd.write(args)
+    fd.close()
+
+    if not os.path.isfile(os.path.join(self.confDir,'ml')) or not (self.getChecksum(os.path.join(self.confDir,'ml')) == self.getChecksum(os.path.join(mlDir,'ml'))):
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-ml-epetra --disable-ml-aztecoo --disable-ml-examples --disable-tests', timeout=900, log = self.framework.log)[0]
@@ -96,17 +92,15 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
-      self.checkInstall(output)
-      
-      fd = file(os.path.join(self.confDir,'ml'), 'w')
-      fd.write(args)
-      fd.close()
 
       #need to run ranlib on the libraries using the full path
       try:
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on ML libraries: '+str(e))
+
+      self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mlDir,'ml')+' '+self.confDir+'/ml', timeout=5, log = self.framework.log)[0]                        
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed ML into '+self.installDir)
     return self.installDir
   

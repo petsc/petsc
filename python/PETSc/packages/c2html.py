@@ -15,13 +15,10 @@ class Configure(PETSc.package.Package):
     # Configure and Build c2html
     args = ['--prefix='+self.installDir, '--with-cc='+'"'+self.setCompilers.CC+'"']
     args = ' '.join(args)
-    try:
-      fd      = file(os.path.join(self.installDir,'config.args'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
+    fd = file(os.path.join(self.installDir,'c2html'), 'w')
+    fd.write(args)
+    fd.close()
+    if not os.path.isfile(os.path.join(self.confDir,'c2html')) or not (self.getChecksum(os.path.join(self.confDir,'c2html')) == self.getChecksum(os.path.join(c2htmlDir,'c2html'))):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+c2htmlDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
@@ -35,9 +32,7 @@ class Configure(PETSc.package.Package):
         if self.framework.argDB['with-batch']:
           self.logPrintBox('Batch build that could not generate c2html, you will not be able to generate document')
         raise RuntimeError('Error running make; make install on C2html: '+str(e))
-      fd = file(os.path.join(self.installDir,'config.args'), 'w')
-      fd.write(args)
-      fd.close()
+        output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(c2htmlDir,'c2html')+' '+self.confDir+'/c2html', timeout=5, log = self.framework.log)[0]      
       self.framework.actions.addArgument('C2HTML', 'Install', 'Installed c2html into '+self.installDir)
     self.binDir = os.path.join(self.installDir, 'bin')
     self.c2html = os.path.join(self.binDir, 'c2html')
@@ -49,6 +44,7 @@ class Configure(PETSc.package.Package):
     if self.petscdir.isClone:
       self.framework.logPrint('PETSc clone, checking for c2html\n')
       self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
+      self.confDir     = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
       self.Install()
     else:
       self.framework.logPrint("Not a clone of PETSc, don't need c2html\n")

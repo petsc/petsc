@@ -77,15 +77,11 @@ class Configure(PETSc.package.Package):
     args.append('--without-fei')
     args.append('--without-superlu')
     args = ' '.join(args)
+    fd = file(os.path.join(self.installDir,'hypre'), 'w')
+    fd.write(args)
+    fd.close()
 
-    try:
-      fd      = file(os.path.join(self.confDir,'hypre'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild HYPRE oldargs = '+oldargs+'\n new args ='+args+'\n')
+    if not os.path.isfile(os.path.join(self.confDir,'hypre')) or not (self.getChecksum(os.path.join(self.confDir,'hypre')) == self.getChecksum(os.path.join(hypreDir,'hypre'))):
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';make distclean;./configure '+args, timeout=900, log = self.framework.log)[0]
@@ -96,17 +92,14 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';HYPRE_INSTALL_DIR='+self.installDir+';export HYPRE_INSTALL_DIR; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HYPRE: '+str(e))
-      self.checkInstall(output)
-      
-      fd = file(os.path.join(self.confDir,'hypre'), 'w')
-      fd.write(args)
-      fd.close()
-
       #need to run ranlib on the libraries using the full path
       try:
         output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running ranlib on HYPRE libraries: '+str(e))
+      self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(hypreDir,'hypre')+' '+self.confDir+'/hypre', timeout=5, log = self.framework.log)[0]                  
+
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed HYPRE into '+self.installDir)
     return self.installDir
   

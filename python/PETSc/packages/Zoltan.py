@@ -27,8 +27,6 @@ class Configure(PETSc.package.Package):
   def Install(self):
     # Get the ZOLTAN directories
     zoltanDir  = self.getDir()
-    self.installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
-    self.confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
 
     # Build ZOLTAN 
     self.framework.pushLanguage('C')
@@ -56,14 +54,12 @@ class Configure(PETSc.package.Package):
       if self.parmetis.lib:
         args.append('PARMETIS_LIBPATH="'+' '.join([self.libraries.getLibArgument(lib) for lib in self.parmetis.lib])+'"')
     args = ' '.join(args)
-    try:
-      fd      = file(os.path.join(self.confDir, 'Zoltan'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild ZOLTAN oldargs = '+oldargs+'\n new args ='+args+'\n')
+
+    fd = file(os.path.join(zoltanDir, 'Zoltanconfig'),'w')
+    fd.write(args)
+    fd.close()
+
+    if not os.path.isfile(self.confDir+'Zoltan') or not (self.getChecksum(self.confDir+'Zoltan') == self.getChecksum(zoltanDir+'Zoltanconfig')):  
       fd = file(os.path.join(zoltanDir, 'Utilities', 'Config', 'Config.'+self.arch.arch), 'w')
       fd.write('''
 ##############################################################################
@@ -83,16 +79,15 @@ GL_LIBS    = -lGL -lGLU
       fd.close()
       try:
         self.logPrintBox('Compiling zoltan; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+zoltanDir+'; make clean; make '+args+' zoltan', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('rm -f '+self.installDir+'lib/libzoltan*', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+zoltanDir+'; make clean; make '+args+' zoltan', timeout=2500, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on ZOLTAN: '+str(e))
 
       output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(zoltanDir, 'Obj_'+self.arch.arch)+'/* '+os.path.join(self.installDir, 'lib'))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(zoltanDir, 'include')+'/* '+os.path.join(self.installDir, 'include'))
       self.checkInstall(output)
-      fd = file(os.path.join(self.confDir, 'Zoltan'), 'w')
-      fd.write(args)
-      fd.close()
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(zoltanDir,'Zoltanconfig')+' '+self.confDir+'/Zoltan', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed ZOLTAN into '+self.installDir)
     return self.installDir
   

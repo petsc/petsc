@@ -38,14 +38,10 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
 
     args = ' '.join(args)
-    try:
-      fd      = file(os.path.join(self.confDir,'fftw'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild FFTW oldargs = '+oldargs+'\n new args ='+args+'\n')
+    fd = file(os.path.join(fftwDir,'fftw'), 'w')
+    fd.write(args)
+    fd.close()
+    if not os.path.isfile(os.path.join(self.confDir,'fftw')) or not (self.getChecksum(os.path.join(self.confDir,'fftw')) == self.getChecksum(os.path.join(fftwDir,'fftw'))):
       try:
         self.logPrintBox('Configuring FFTW; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
@@ -58,10 +54,7 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on FFTW: '+str(e))
       self.checkInstall(output)
-      
-      fd = file(os.path.join(self.confDir,'fftw'), 'w')
-      fd.write(args)
-      fd.close()
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(fftwDir,'fftw')+' '+self.confDir+'/fftw', timeout=5, log = self.framework.log)[0]            
 
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed FFTW into '+self.installDir)
     return self.installDir

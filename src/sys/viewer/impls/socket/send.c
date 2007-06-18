@@ -198,12 +198,16 @@ $    -viewer_socket_port <port>
      Currently the only socket client available is Matlab. See 
      src/dm/da/examples/tests/ex12.c and ex12.m for an example of usage.
 
+   Notes: The socket viewer is in some sense a subclass of the binary viewer, to read and write to the socket
+          use PetscViewerBinaryRead/Write/GetDescriptor().
+
    Concepts: Matlab^sending data
    Concepts: sockets^sending data
 
 .seealso: MatView(), VecView(), PetscViewerDestroy(), PetscViewerCreate(), PetscViewerSetType(),
           PetscViewerSocketSetConnection(), PETSC_VIEWER_SOCKET_, PETSC_VIEWER_SOCKET_WORLD, 
-          PETSC_VIEWER_SOCKET_SELF
+          PETSC_VIEWER_SOCKET_SELF, PetscViewerBinaryWrite(), PetscViewerBinaryRead(), PetscViewerBinaryWriteStringArray(),
+          PetscBinaryViewerGetDescriptor()
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketOpen(MPI_Comm comm,const char machine[],int port,PetscViewer *lab)
 {
@@ -364,7 +368,8 @@ $       XXXView(XXX object,PETSC_VIEWER_SOCKET_(comm));
      Connects to a waiting socket and stays connected until PetscViewerDestroy() is called.
 
 .seealso: PETSC_VIEWER_SOCKET_WORLD, PETSC_VIEWER_SOCKET_SELF, PetscViewerSocketOpen(), PetscViewerCreate(),
-          PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_()
+          PetscViewerSocketSetConnection(), PetscViewerDestroy(), PETSC_VIEWER_SOCKET_(), PetscViewerBinaryWrite(), PetscViewerBinaryRead(),
+          PetscViewerBinaryWriteStringArray(), PetscBinaryViewerGetDescriptor()
 @*/
 PetscViewer PETSC_DLLEXPORT PETSC_VIEWER_SOCKET_(MPI_Comm comm)
 {

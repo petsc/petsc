@@ -47,14 +47,12 @@ class Configure(PETSc.package.Package):
 
     args = ' '.join(args)
     
-    try:
-      fd      = file(os.path.join(self.confDir,'MPE'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Have to rebuild MPE oldargs = '+oldargs+'\n new args ='+args+'\n')
+    fd = file(os.path.join(mpeDir,'MPE'), 'w')
+    fd.write(args)
+    fd.close()
+
+    if not os.path.isfile(os.path.join(self.confDir,'MPE')) or not (self.getChecksum(os.path.join(self.confDir,'MPE')) == self.getChecksum(os.path.join(mpeDir,'MPE'))):
+      self.framework.log.write('Have to rebuild MPE, MPE != '+self.confDir+'/MPE\n')
       try:
         self.logPrintBox('Configuring mpe; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
@@ -68,10 +66,7 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on MPE: '+str(e))
       self.checkInstall(output)
       
-      fd = file(os.path.join(self.confDir,'MPE'), 'w')
-      fd.write(args)
-      fd.close()
-
+      output  = config.base.Configure.executeShellCommand('mv -f '+os.path.join(mpeDir,'MPE')+' '+self.confDir+'/MPE', timeout=5, log = self.framework.log)[0]
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MPE into '+self.installDir)
     return self.installDir
   

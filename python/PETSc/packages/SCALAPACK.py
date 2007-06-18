@@ -89,12 +89,10 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+self.confDir+'/SCALAPACK', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument('scalapack', 'Install', 'Installed scalapack into '+self.installDir)
     else:
       self.framework.log.write('Did not need to compile downloaded SCALAPACK\n')
-    
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+self.confDir+'/SCALAPACK', timeout=5, log = self.
-framework.log)[0]
-    self.framework.actions.addArgument('scalapack', 'Install', 'Installed scalapack into '+self.installDir)
     return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):

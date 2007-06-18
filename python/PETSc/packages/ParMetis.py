@@ -66,10 +66,10 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
       self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installmakeinc, timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+self.installDir)
     else:
       self.framework.log.write('Did not need to compile downloaded ParMetis\n')
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installmakeinc, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('ParMetis', 'Install', 'Installed ParMetis into '+self.installDir)
     return self.installDir
   
 if __name__ == '__main__':

@@ -67,11 +67,10 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.checkInstall(output)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+self.confDir+'/SuperLU', timeout=5, log = self.framework.log)[0]
+      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU into '+self.installDir+'/lib')
     else:
       self.framework.log.write('Do NOT need to compile SuperLU downloaded libraries\n')  
-      
-    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(superluDir,'make.inc')+' '+self.confDir+'/SuperLU', timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SUPERLU into '+self.installDir+'/lib')
     return self.installDir
 
   def configureLibrary(self):

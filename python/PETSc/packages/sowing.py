@@ -15,14 +15,10 @@ class Configure(PETSc.package.Package):
     # Configure and Build sowing
     args = ['--prefix='+self.installDir]
     args = ' '.join(args)
-    try:
-      fd      = file(os.path.join(self.confDir,'sowing'))
-      oldargs = fd.readline()
-      fd.close()
-    except:
-      oldargs = ''
-    if not oldargs == args:
-      self.framework.log.write('Need to configure and compile Sowing: old args = '+oldargs+'\n new args ='+args+'\n')
+    fd = file(os.path.join(sowingDir,'sowing'), 'w')
+    fd.write(args)
+    fd.close()
+    if not os.path.isfile(os.path.join(self.confDir,'sowing')) or not (self.getChecksum(os.path.join(self.confDir,'sowing')) == self.getChecksum(os.path.join(sowingDir,'makefile.in'))):  
       try:
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
@@ -37,9 +33,6 @@ class Configure(PETSc.package.Package):
           return
         else:
           raise RuntimeError('Error running make; make install on Sowing: '+str(e))
-      fd = file(os.path.join(self.confDir,'sowing'), 'w')
-      fd.write(args)
-      fd.close()
       self.framework.actions.addArgument('Sowing', 'Install', 'Installed Sowing into '+self.installDir)
     self.binDir   = os.path.join(self.installDir, 'bin')
     self.bfort    = os.path.join(self.binDir, 'bfort')
@@ -53,6 +46,7 @@ class Configure(PETSc.package.Package):
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(sowingDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)[0]
     self.addMakeMacro('BFORT ', self.bfort)
     self.addMakeMacro('DOCTEXT ', self.doctext)
     self.addMakeMacro('MAPNAMES ', self.mapnames)
