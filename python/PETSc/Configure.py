@@ -48,12 +48,15 @@ class Configure(config.base.Configure):
     self.blaslapack    = framework.require('config.packages.BlasLapack', self)
     self.blaslapack.archProvider      = self.arch
     self.blaslapack.precisionProvider = self.scalartypes
+    self.blaslapack.installDirProvider= self.petscdir
     self.mpi           = framework.require('config.packages.MPI',        self)
     self.mpi.archProvider             = self.arch
     self.mpi.languageProvider         = self.languages
+    self.mpi.installDirProvider       = self.petscdir
 #    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
 #    self.umfpack.archProvider         = self.arch
 #    self.umfpack.languageProvider     = self.languages
+#    self.umfpack.installDirProvider   = self.petscdir
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
