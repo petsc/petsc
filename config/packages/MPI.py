@@ -314,7 +314,7 @@ class Configure(config.package.Package):
     args = ' '.join(args)
 
     try:
-      fd      = file(os.path.join(confDir,'LAM'))
+      fd      = file(os.path.join(confDir,self.package))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -426,7 +426,7 @@ class Configure(config.package.Package):
     args.append('--without-mpe')
     args.append('--with-pm='+self.argDB['download-mpich-pm'])
     args = ' '.join(args)
-    configArgsFilename = os.path.join(confDir,'MPICH')
+    configArgsFilename = os.path.join(confDir,self.package)
     try:
       fd      = file(configArgsFilename)
       oldargs = fd.readline()
