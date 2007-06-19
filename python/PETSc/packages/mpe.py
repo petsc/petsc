@@ -51,8 +51,7 @@ class Configure(PETSc.package.Package):
     fd.write(args)
     fd.close()
 
-    if not os.path.isfile(os.path.join(self.confDir,'MPE')) or not (self.getChecksum(os.path.join(self.confDir,'MPE')) == self.getChecksum(os.path.join(mpeDir,'MPE'))):
-      self.framework.log.write('Have to rebuild MPE, MPE != '+self.confDir+'/MPE\n')
+    if self.installNeeded('MPE'):
       try:
         self.logPrintBox('Configuring mpe; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]

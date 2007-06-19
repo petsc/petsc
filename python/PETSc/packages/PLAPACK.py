@@ -56,8 +56,7 @@ class Configure(PETSc.package.Package):
     g.write('RANLIB       = '+self.setCompilers.RANLIB+'\n')
     g.write('PLAPACKLIB   =  $(PLAPACK_ROOT)/lib/libPLAPACK.a\n')
     g.close()
-    if not os.path.isfile(plapackInstallMakefile) or not (self.getChecksum(plapackInstallMakefile) == self.getChecksum(plapackMakefile)):  
-      self.framework.log.write('Have to rebuild PLAPACK, Make.include != '+plapackInstallMakefile+'\n')
+    if self.installNeeded('Make.include'):
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
         incDir = os.path.join(plapackDir,'INCLUDE')

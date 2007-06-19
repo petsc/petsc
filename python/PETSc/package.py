@@ -148,6 +148,14 @@ class Package(config.base.Configure):
     if not os.path.isdir(os.path.join(self.installDir,'conf')): os.mkdir(os.path.join(self.installDir,'conf'))                
     return os.path.abspath(self.Install())
 
+  def installNeeded(self,mkfile):
+    if not os.path.isfile(os.path.join(self.confDir,self.name)) or not (self.getChecksum(os.path.join(self.confDir,self.name)) == self.getChecksum(os.path.join(self.packageDir,mkfile))):
+      self.framework.log.write('Have to rebuild '+self.name+', '+mkfile+' != '+os.path.join(self.confDir,self.name))
+      return 1
+    else:
+      self.framework.log.write('Do not need to rebuild '+self.name)
+      return 0
+                         
   def checkInstall(self,output,mkfile):
     '''Did the install process actually create a library?'''
     if not os.path.isfile(os.path.join(self.installDir,self.libdir,self.liblist[0][0])):

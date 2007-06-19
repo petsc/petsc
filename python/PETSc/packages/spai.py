@@ -40,8 +40,7 @@ class Configure(PETSc.package.Package):
     self.framework.popLanguage()
     fd.close()
 
-    if not os.path.isfile(os.path.join(self.confDir,'spai')) or not (self.getChecksum(os.path.join(self.confDir,'spai')) == self.getChecksum(os.path.join(spaiDir,'lib','Makefile.in'))):
-      self.framework.log.write('Have to rebuild SPAI, Makefile.in != '+self.confDir+'/spai\n')
+    if self.installNeeded('Makefile.in'):
       self.logPrintBox('Configuring and compiling Spai; this may take several minutes')
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; make clean; make ; mv libspai.a '+os.path.join(self.installDir,'lib','libspai.a'),timeout=250, log = self.framework.log)[0]
       output  = config.base.Configure.executeShellCommand('cd '+os.path.join(spaiDir,'lib')+'; cp *.h '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      

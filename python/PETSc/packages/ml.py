@@ -80,7 +80,7 @@ class Configure(PETSc.package.Package):
     fd.write(args)
     fd.close()
 
-    if not os.path.isfile(os.path.join(self.confDir,'ml')) or not (self.getChecksum(os.path.join(self.confDir,'ml')) == self.getChecksum(os.path.join(mlDir,'ml'))):
+    if self.installNeeded('ml'):
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-ml-epetra --disable-ml-aztecoo --disable-ml-examples --disable-tests', timeout=900, log = self.framework.log)[0]

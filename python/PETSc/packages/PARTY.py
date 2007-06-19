@@ -26,8 +26,7 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
     g.close()
     
-    if not os.path.isfile(os.path.join(self.confDir,'PARTY')) or not (self.getChecksum(os.path.join(self.confDir,'PARTY')) == self.getChecksum(os.path.join(partyDir,'make.inc'))):
-      self.framework.log.write('Have to rebuild Party, make.inc != '+self.confDir+'/PARTY\n')
+    if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling party; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(partyDir,'src')+'; PARTY_INSTALL_DIR='+self.installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv *.a '+os.path.join(self.installDir,self.libdir)+'/.; cp party_lib.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]

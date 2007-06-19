@@ -85,14 +85,14 @@ class Configure(PETSc.package.Package):
     g.write('	${FC} ${FFLAGS} $< -c -o $(@F) \n')
     #-----------------------------------------
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'pARMS')) or not (self.getChecksum(os.path.join(self.confDir,'pARMS')) == self.getChecksum(os.path.join(parmsDir,'makefile.in'))):  
-      self.framework.log.write('Have to rebuild pARMS, makefile.in != '+self.confDir+'/pARMS\n')
+
+    if self.installNeeded('makefile.in'):
       try:
         self.logPrintBox('Compiling pARMS; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+parmsDir+';PARMS_INSTALL_DIR='+self.installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(self.installDir,self.libdir)+'; make clean; make; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
-      self.checkInstall(output,'makefile.inc')
+      self.checkInstall(output,'makefile.in')
     return self.installDir
 
 if __name__ == '__main__':

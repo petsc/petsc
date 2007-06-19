@@ -51,14 +51,14 @@ class Configure(PETSc.package.Package):
     g.write('FFLAGS 	= -O3 $(PMLCGDEF) $(MPIDEF) -D$(PLAT) $(MPI_INCLUDE)\n')
     g.write('F77LDFLAGS = -O3\n')
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'sprng')) or not (self.getChecksum(os.path.join(self.confDir,'sprng')) == self.getChecksum(os.path.join(srcDir,'make.PETSC'))):  
-      self.framework.log.write('Have to rebuild SPRNG, make.PETSC != '+self.installDir+'/make.PETSC\n')
+
+    if self.installNeeded(os.path.join('SRC','make.PETSC')):
       try:
         self.logPrintBox('Compiling SPRNG; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+sprngDir+';SPRNG_INSTALL_DIR='+self.installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..;  cp lib/*.a '+os.path.join(self.installDir,self.libdir)+'; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPRNG: '+str(e))
-      self.checkInstall(output,'make.PETSC')
+      self.checkInstall(output,os.path.join('SRC','make.PETSC'))
     return self.installDir
 
 if __name__ == '__main__':

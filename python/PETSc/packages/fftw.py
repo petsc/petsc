@@ -41,13 +41,13 @@ class Configure(PETSc.package.Package):
     fd = file(os.path.join(fftwDir,'fftw'), 'w')
     fd.write(args)
     fd.close()
-    if not os.path.isfile(os.path.join(self.confDir,'fftw')) or not (self.getChecksum(os.path.join(self.confDir,'fftw')) == self.getChecksum(os.path.join(fftwDir,'fftw'))):
+
+    if self.installNeeded('fftw'):
       try:
         self.logPrintBox('Configuring FFTW; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on FFTW: '+str(e))
-      # Build FFTW
       try:
         self.logPrintBox('Compiling FFTW; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; make; make install', timeout=2500, log = self.framework.log)[0]

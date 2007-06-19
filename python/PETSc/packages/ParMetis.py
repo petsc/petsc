@@ -56,9 +56,7 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
     g.close()
 
-    # Now compile & install
-    if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
-      self.framework.log.write('Have to rebuild ParMetis, make.inc != '+installmakeinc+'\n')
+    if self.installNeeded('make.inc'):    # Now compile & install
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')

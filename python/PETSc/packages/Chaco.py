@@ -29,14 +29,13 @@ class Configure(PETSc.package.Package):
     self.setCompilers.popLanguage()
     g.close()
     
-    if not os.path.isfile(os.path.join(self.confDir,'Chaco')) or not (self.getChecksum(os.path.join(self.confDir,'Chaco')) == self.getChecksum(os.path.join(chacoDir,'make.inc'))):
-      self.framework.log.write('Have to rebuild Chaco, make.inc != '+self.confDir+'/Chaco\n')
+    if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling chaco; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+chacoDir+';CHACO_INSTALL_DIR='+self.installDir+';export CHACO_INSTALL_DIR; cd code; make clean; make; cd '+self.installDir+'; '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.a `find '+chacoDir+'/code -name "*.o"`; cd '+self.libdir+'; ar d libchaco.a main.o', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
-      self.checkInstall(output,make.inc)
+      self.checkInstall(output,'make.inc')
     return self.installDir
   
 if __name__ == '__main__':

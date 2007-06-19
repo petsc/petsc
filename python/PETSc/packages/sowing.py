@@ -18,7 +18,7 @@ class Configure(PETSc.package.Package):
     fd = file(os.path.join(sowingDir,'sowing'), 'w')
     fd.write(args)
     fd.close()
-    if not os.path.isfile(os.path.join(self.confDir,'sowing')) or not (self.getChecksum(os.path.join(self.confDir,'sowing')) == self.getChecksum(os.path.join(sowingDir,'makefile.in'))):  
+    if self.installNeeded('makefile.in'):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
@@ -38,7 +38,7 @@ class Configure(PETSc.package.Package):
     self.bfort    = os.path.join(self.binDir, 'bfort')
     self.doctext  = os.path.join(self.binDir, 'doctext')
     self.mapnames = os.path.join(self.binDir, 'mapnames')
-    # Bill's bug he does not install bib2html so use original location if needed
+    # bug does not install bib2html so use original location if needed
     if os.path.isfile(os.path.join(self.binDir, 'bib2html')):
       self.bib2html = os.path.join(self.binDir, 'bib2html')
     else:
@@ -78,6 +78,7 @@ class Configure(PETSc.package.Package):
       self.framework.logPrint('PETSc clone, checking for Sowing\n')
       self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
       self.confDir     = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
+      self.packageDir  = self.getDir()
       self.Install()
       self.buildFortranStubs()
     else:

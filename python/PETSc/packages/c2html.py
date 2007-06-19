@@ -18,7 +18,7 @@ class Configure(PETSc.package.Package):
     fd = file(os.path.join(self.installDir,'c2html'), 'w')
     fd.write(args)
     fd.close()
-    if not os.path.isfile(os.path.join(self.confDir,'c2html')) or not (self.getChecksum(os.path.join(self.confDir,'c2html')) == self.getChecksum(os.path.join(c2htmlDir,'c2html'))):
+    if self.installNeeded('c2html'):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+c2htmlDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:

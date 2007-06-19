@@ -38,8 +38,7 @@ class Configure(PETSc.package.Package):
     g.write('MPI_LIBS    = '+self.libraries.toString(self.mpi.lib)+'\n') 
     g.write('MPI_INCLUDE_DIR = '+self.headers.toString(self.mpi.include)+'\n') 
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'spooles')) or not (self.getChecksum(os.path.join(self.confDir,'spooles')) == self.getChecksum(os.path.join(spoolesDir,'Make.inc'))):
-      self.framework.log.write('Have to rebuild SPOOLES, Make.inc != '+self.confDir+'/spooles\n')
+    if self.installNeeded('Make.inc'):
       try:
         self.logPrintBox('Compiling spooles; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+self.installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib', timeout=2500, log = self.framework.log)[0]
@@ -47,8 +46,6 @@ class Configure(PETSc.package.Package):
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
       self.checkInstall(output,'Make.inc')
-    else:
-      self.framework.log.write('Do NOT need to compile SPOOLES downloaded libraries\n')  
     return self.installDir
 
 if __name__ == '__main__':

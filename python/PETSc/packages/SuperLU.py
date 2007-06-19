@@ -59,16 +59,13 @@ class Configure(PETSc.package.Package):
     g.write('MATLAB       =\n')
     g.write('NOOPTS       =  -O0\n')
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'SuperLU')) or not (self.getChecksum(os.path.join(self.confDir,'SuperLU')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):
-      self.framework.log.write('Have to rebuild SuperLU, make.inc != '+self.confDir+'/SuperLU\n')
+    if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu; this may take several minutes')
         output = config.base.Configure.executeShellCommand('cd '+superluDir+'; SUPERLU_INSTALL_DIR='+self.installDir+'/lib; export SUPERLU_INSTALL_DIR; make clean; make lib LAAUX="" SLASRC="" DLASRC="" CLASRC="" ZLASRC="" SCLAUX="" DZLAUX=""; mv *.a '+os.path.join(self.installDir,'lib')+';  cp SRC/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SUPERLU: '+str(e))
       self.checkInstall(output,'make.inc')
-    else:
-      self.framework.log.write('Do NOT need to compile SuperLU downloaded libraries\n')  
     return self.installDir
 
   def configureLibrary(self):

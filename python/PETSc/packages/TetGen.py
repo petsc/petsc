@@ -251,7 +251,7 @@ tetgen_shared:
     g.close()
 
     # Now compile & install
-    if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
+    if self.installNeeded('make.inc'):
       self.framework.log.write('Have to rebuild TetGen, make.inc != '+installmakeinc+'\n')
       self.framework.outputHeader(configheader)
       try:
@@ -262,7 +262,6 @@ tetgen_shared:
     else:
       self.framework.log.write('Did not need to compile downloaded TetGen\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(tetgenDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+self.installDir, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+self.installDir)
+    self.checkInstall('make.inc')
 
     return os.path.join(self.getDir(),self.arch.arch)

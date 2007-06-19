@@ -67,8 +67,7 @@ class Configure(PETSc.package.Package):
     fd.write(args)
     fd.close()
 
-    if not os.path.isfile(os.path.join(self.confDir,'Prometheus')) or not (self.getChecksum(os.path.join(self.confDir,'Prometheus')) == self.getChecksum(os.path.join(prometheusDir,'makefile.petsc'))):
-      self.logPrintBox('Configuring Prometheus; this may take a minute')
+    if self.installNeeded('makefile.petsc'):
       fd = file(os.path.join(prometheusDir,'makefile.in'),'a')
       fd.write('include makefile.petsc\n')
       fd.close()

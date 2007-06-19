@@ -80,16 +80,14 @@ class Configure(PETSc.package.Package):
     g.write('ARCHFLAGS   = '+self.setCompilers.AR_FLAGS+'\n')    
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')    
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'blacs')) or not (self.getChecksum(os.path.join(self.confDir,'blacs')) == self.getChecksum(os.path.join(blacsDir,'Bmake.Inc'))):
-      self.framework.log.write('Have to rebuild blacs, Bmake.Inc != '+self.confDir+'/blacs\n')
+
+    if self.installNeeded('Bmake.Inc'):
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
       self.checkInstall(output,'Bmake.Inc')
-    else:
-      self.framework.log.write('Do NOT need to compile BLACS downloaded libraries\n')
     return self.installDir
 
   def checkLib(self,lib,func,mangle,otherLibs = []):

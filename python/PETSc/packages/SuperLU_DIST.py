@@ -61,8 +61,8 @@ class Configure(PETSc.package.Package):
       raise RuntimeError('SuperLU_DIST requires a fortran compiler! No fortran compiler configured!')
     g.write('NOOPTS       =  -O0\n')
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'SuperLU_DIST')) or not (self.getChecksum(os.path.join(self.confDir,'SuperLU_DIST')) == self.getChecksum(os.path.join(superluDir,'make.inc'))):  
-      self.framework.log.write('Have to rebuild SUPERLU_DIST, make.inc != '+self.confDir+'/SuperLU_DIST\n')
+
+    if self.installNeeded('make.inc'):
       try:
         self.logPrintBox('Compiling superlu_dist; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+superluDir+';SUPERLU_DIST_INSTALL_DIR='+self.installDir+'/lib;export SUPERLU_DIST_INSTALL_DIR; make clean; make lib LAAUX=""; mv *.a '+os.path.join(self.installDir,'lib')+'; cp SRC/*.h '+os.path.join(self.installDir,'include')+'/.', timeout=2500, log = self.framework.log)[0]

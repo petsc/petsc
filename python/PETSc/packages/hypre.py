@@ -81,7 +81,7 @@ class Configure(PETSc.package.Package):
     fd.write(args)
     fd.close()
 
-    if not os.path.isfile(os.path.join(self.confDir,'hypre')) or not (self.getChecksum(os.path.join(self.confDir,'hypre')) == self.getChecksum(os.path.join(hypreDir,'hypre'))):
+    if self.installNeeded('hypre'):
       try:
         self.logPrintBox('Configuring hypre; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(hypreDir,'src')+';make distclean;./configure '+args, timeout=900, log = self.framework.log)[0]

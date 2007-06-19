@@ -80,8 +80,8 @@ class Configure(PETSc.package.Package):
     fd = file(os.path.join(sundialsDir,'sundials'), 'w')
     fd.write(args)
     fd.close()
-    if not os.path.isfile(os.path.join(self.confDir,'sundials')) or not (self.getChecksum(os.path.join(self.confDir,'sundials')) == self.getChecksum(os.path.join(sundialsDir,'sundials'))):    
-      self.framework.log.write('Have to rebuild Sundials, sundials != '+self.confDir+'/sundials\n')
+
+    if self.installNeeded('sundials'):
       try:
         self.logPrintBox('Configuring sundials; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+sundialsDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]

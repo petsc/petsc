@@ -59,7 +59,7 @@ class Configure(PETSc.package.Package):
     fd.write(args)
     fd.close()
 
-    if not os.path.isfile(self.confDir+'Zoltan') or not (self.getChecksum(self.confDir+'Zoltan') == self.getChecksum(zoltanDir+'Zoltanconfig')):  
+    if self.installNeeded('zoltanconfig'):
       fd = file(os.path.join(zoltanDir, 'Utilities', 'Config', 'Config.'+self.arch.arch), 'w')
       fd.write('''
 ##############################################################################

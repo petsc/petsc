@@ -141,7 +141,7 @@ triangle_shared:
     g.close()
 
     # Now compile & install
-    if not os.path.isfile(installmakeinc) or not (self.getChecksum(installmakeinc) == self.getChecksum(makeinc)):
+    if self.installNeeded('make.inc'):
       self.framework.log.write('Have to rebuild Triangle, make.inc != '+installmakeinc+'\n')
       self.framework.outputHeader(configheader)
       try:
@@ -153,7 +153,5 @@ triangle_shared:
       self.framework.log.write('Did not need to compile downloaded Triangle\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(triangleDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(triangleDir, 'config.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+self.installDir, timeout=5, log = self.framework.log)[0]
-    self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+self.installDir)
-
+    self.checkInstall('make.inc')
     return self.getDir()

@@ -81,8 +81,7 @@ class Configure(PETSc.package.Package):
     g.write('LIB = $(LIBPAR)\n')
     g.write('LIBSEQNEEDED =\n')
     g.close()
-    if not os.path.isfile(os.path.join(self.confDir,'MUMPS')) or not (self.getChecksum(os.path.join(self.confDir,'MUMPS')) == self.getChecksum(os.path.join(mumpsDir,'Makefile.inc'))):
-      self.framework.log.write('Have to rebuild MUMPS, Makefile.inc != '+self.confDir+'/MUMPS\n')
+    if self.installNeeded('Makefile.inc'):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+mumpsDir+';make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
