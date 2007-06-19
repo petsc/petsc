@@ -53,10 +53,10 @@ class Configure(config.base.Configure):
     self.mpi.archProvider             = self.arch
     self.mpi.languageProvider         = self.languages
     self.mpi.installDirProvider       = self.petscdir
-#    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
-#    self.umfpack.archProvider         = self.arch
-#    self.umfpack.languageProvider     = self.languages
-#    self.umfpack.installDirProvider   = self.petscdir
+    self.umfpack       = framework.require('config.packages.UMFPACK',    self)
+    self.umfpack.archProvider         = self.arch
+    self.umfpack.languageProvider     = self.languages
+    self.umfpack.installDirProvider   = self.petscdir
 
     self.compilers.headerPrefix = self.headerPrefix
     self.types.headerPrefix     = self.headerPrefix
