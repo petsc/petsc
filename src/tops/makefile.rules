@@ -63,7 +63,7 @@ client-debug:
 # Server build
 VPATH = ..:../glue
 CXXSRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${OTHERCXXFILES}
-CRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${IORSRCS} ${OTHERCFILES}
+CSRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${IORSRCS} ${OTHERCFILES}
 CXXOBJS = ${CXXSRCS:.cxx=.o} ${IORSRCS:.c=.o}
 COBJS = ${CSRCS:.c=.o}
 
@@ -71,14 +71,14 @@ COBJS = ${CSRCS:.c=.o}
 	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 		-I${PETSC_DIR}/include/tops \
 		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
-		-I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
+      		-I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
 		$<
 
 %.o : %.c
-	-@${CC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 		-I${PETSC_DIR}/include/tops \
 		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
-		-I$(CCASPEC_BABEL_includedir)/c -I$(CCASPEC_pkgincludedir)/c \
+      		-I$(CCASPEC_BABEL_includedir)/c -I$(CCASPEC_pkgincludedir)/c \
 		$<
 
 server-cxx:  server/cxx/obj/makefile 
@@ -139,7 +139,7 @@ cca:
 	else \
 	     ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
 		${EXNAME}.System cxx dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in; \
-	fi
+ 	fi
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
