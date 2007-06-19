@@ -388,7 +388,7 @@ class Configure(config.package.Package):
       line = f.readline()
     f.close()
     g.close()
-    if os.path.isfile(os.path.join(confdir,'blaslapack')) and (SourceDB.getChecksum(os.path.join(confdir,'blaslapack')) == SourceDB.getChecksum(os.path.join(confDir,'blaslapack'))):
+    if os.path.isfile(os.path.join(confdir,self.package)) and (SourceDB.getChecksum(os.path.join(confdir,self.package)) == SourceDB.getChecksum(os.path.join(blasDir,'tmpmakefile'))):
       self.framework.log.write('Do not need to compile '+l+'blaslapack, already compiled\n')
       return libdir
     try:
@@ -401,7 +401,7 @@ class Configure(config.package.Package):
     except RuntimeError, e:
       raise RuntimeError('Error moving '+l+'blaslapack libraries: '+str(e))
     try:
-      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+self.arch, timeout=30, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cd '+blasDir+';cp -f tmpmakefile '+os.path.join(self.confDir,self.package), timeout=30, log = self.framework.log)[0]
     except RuntimeError, e:
       pass
     return libdir
