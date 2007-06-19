@@ -43,7 +43,7 @@ class VTKViewer {
   #undef __FUNCT__  
   #define __FUNCT__ "VTKWriteField"
   template<typename Section>
-    static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer) {
+    static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
@@ -53,7 +53,7 @@ class VTKViewer {
       ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), fiberDim);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
     }
-    ierr = writeSection(field, fiberDim, numbering, viewer);CHKERRQ(ierr);
+    ierr = writeSection(field, fiberDim, numbering, viewer, enforceDim);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   };
 
