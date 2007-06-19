@@ -21,12 +21,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):    
-    # Get the sprng directories
-    sprngDir = self.getDir()  #~sprng-1.0
-    srcDir = os.path.join(sprngDir,'SRC') #~sprng-1.0/SRC
-    
-    # Configure and Build sprng
-    g = open(os.path.join(srcDir,'make.PETSC'),'w')
+
+    g = open(os.path.join(self.packageDir,'SRC','make.PETSC'),'w')
     g.write('AR         = ar\n')
     g.write('ARFLAGS 	= cr\n')
     g.write('RANLIB 	= '+self.setCompilers.RANLIB+'\n')

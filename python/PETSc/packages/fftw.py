@@ -22,10 +22,7 @@ class Configure(PETSc.package.Package):
     return
           
   def Install(self):
-    # Get the FFTW directories
-    fftwDir = self.getDir()
-    
-    # Configure FFTW 
+
     self.framework.pushLanguage('C')
     ccompiler=self.framework.getCompiler()
     args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+'"']
@@ -38,19 +35,19 @@ class Configure(PETSc.package.Package):
       self.framework.popLanguage()
 
     args = ' '.join(args)
-    fd = file(os.path.join(fftwDir,'fftw'), 'w')
+    fd = file(os.path.join(self.packageDir,'fftw'), 'w')
     fd.write(args)
     fd.close()
 
     if self.installNeeded('fftw'):
       try:
         self.logPrintBox('Configuring FFTW; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on FFTW: '+str(e))
       try:
         self.logPrintBox('Compiling FFTW; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on FFTW: '+str(e))
       self.checkInstall(output,'fftw')

@@ -22,13 +22,10 @@ class Configure(PETSc.package.Package):
   def Install(self):
     import os
     import sys
-    # Get the ParMetis directories
-    parmetisDir    = self.getDir()
-    self.installDir     = os.path.join(self.petscdir.dir,self.arch.arch)
-    self.confDir        = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
-    makeinc        = os.path.join(parmetisDir,'make.inc')
+
+    makeinc        = os.path.join(self.packageDir,'make.inc')
     installmakeinc = os.path.join(self.confDir,'ParMetis')
-    configheader   = os.path.join(parmetisDir,'ParMETISLib','configureheader.h')
+    configheader   = os.path.join(self.packageDir,'ParMETISLib','configureheader.h')
 
     # Configure ParMetis 
     g = open(makeinc,'w')
@@ -42,7 +39,7 @@ class Configure(PETSc.package.Package):
     g.write('AR_LIB_SUFFIX  = '+self.setCompilers.AR_LIB_SUFFIX+'\n')
     g.write('RANLIB         = '+self.setCompilers.RANLIB+'\n')
 
-    g.write('PARMETIS_ROOT  = '+parmetisDir+'\n')
+    g.write('PARMETIS_ROOT  = '+self.packageDir+'\n')
     g.write('PREFIX         = '+self.installDir+'\n')
     g.write('METISLIB       = $(PARMETIS_ROOT)/libmetis.$(AR_LIB_SUFFIX)\n')
     g.write('PARMETISLIB    = $(PARMETIS_ROOT)/libparmetis.$(AR_LIB_SUFFIX)\n')
@@ -60,12 +57,10 @@ class Configure(PETSc.package.Package):
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing Parmetis; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+parmetisDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make lib; make minstall; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ParMetis: '+str(e))
       self.checkInstall(output,'make.inc')
-    else:
-      self.framework.log.write('Did not need to compile downloaded ParMetis\n')
     return self.installDir
   
 if __name__ == '__main__':

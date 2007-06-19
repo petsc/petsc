@@ -24,11 +24,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    # Get the PLAPACK directories
-    plapackDir = self.getDir()
 
-    # Configure and Build PLAPACK
-    plapackMakefile        = os.path.join(plapackDir,'Make.include')
+    plapackMakefile        = os.path.join(self.packageDir,'Make.include')
     plapackInstallMakefile = os.path.join(self.confDir,'PLAPACK')
     g = open(plapackMakefile,'w')
     g.write('PLAPACK_ROOT = '+self.installDir+'\n')
@@ -59,10 +56,10 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Make.include'):
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
-        incDir = os.path.join(plapackDir,'INCLUDE')
+        incDir = os.path.join(self.packageDir,'INCLUDE')
         installIncDir = os.path.join(self.installDir,self.includedir)
         output  = config.base.Configure.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
-        output  = config.base.Configure.executeShellCommand('cd '+plapackDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PLAPACK: '+str(e))
       self.checkInstall(output,'Make.include')

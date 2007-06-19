@@ -32,9 +32,9 @@ class Configure(PETSc.package.Package):
     return alllibs
 
   def Install(self):
-    prometheusDir = self.getDir()
+
     args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
-    args += 'BUILD_DIR  = '+prometheusDir+'\n'
+    args += 'BUILD_DIR  = '+self.packageDir+'\n'
     args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
     args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
     args += 'AR      = '+self.setCompilers.AR+'\n'
@@ -63,17 +63,16 @@ class Configure(PETSc.package.Package):
  
     args += '\nPETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
-    fd = file(os.path.join(prometheusDir,'makefile.petsc'),'w')
+    fd = file(os.path.join(self.packageDir,'makefile.petsc'),'w')
     fd.write(args)
     fd.close()
 
     if self.installNeeded('makefile.petsc'):
-      fd = file(os.path.join(prometheusDir,'makefile.in'),'a')
+      fd = file(os.path.join(self.packageDir,'makefile.in'),'a')
       fd.write('include makefile.petsc\n')
       fd.close()
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(prometheusDir,'makefile.petsc')+' '+self.confDir+'/Prometheus', timeout=5, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'makefile.petsc')+' '+self.confDir+'/Prometheus', timeout=5, log = self.framework.log)[0]
       self.compilePrometheus = 1
-      self.prometheusDir     = prometheusDir
     return self.installDir
 
   def configureLibrary(self):

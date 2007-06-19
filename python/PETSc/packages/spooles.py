@@ -23,11 +23,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    # Get the SPOOLES directories
-    spoolesDir = self.getDir()
-    
-    # Configure and Build SPOOLES
-    g = open(os.path.join(spoolesDir,'Make.inc'),'w')
+
+    g = open(os.path.join(self.packageDir,'Make.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC          = '+self.setCompilers.getCompiler()+'\n') 
     g.write('CFLAGS      = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
@@ -41,8 +38,8 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Make.inc'):
       try:
         self.logPrintBox('Compiling spooles; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; SPOOLES_INSTALL_DIR='+self.installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib', timeout=2500, log = self.framework.log)[0]
-        output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; mv -f *.a MPI/src/*.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; SPOOLES_INSTALL_DIR='+self.installDir+'; export SPOOLES_INSTALL_DIR; make clean; make lib', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; mv -f *.a MPI/src/*.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
       self.checkInstall(output,'Make.inc')

@@ -21,11 +21,7 @@ class Configure(PETSc.package.Package):
     return
           
   def Install(self):
-    # Get the MPE directories
-    self.downloadname = 'mpe2'
-    mpeDir = self.getDir()
-        
-    # Configure MPE 
+
     args = ['--prefix='+self.installDir]
     
     self.framework.pushLanguage('C')
@@ -47,23 +43,23 @@ class Configure(PETSc.package.Package):
 
     args = ' '.join(args)
     
-    fd = file(os.path.join(mpeDir,'MPE'), 'w')
+    fd = file(os.path.join(self.packageDir,'mpe'), 'w')
     fd.write(args)
     fd.close()
 
-    if self.installNeeded('MPE'):
+    if self.installNeeded('mpe'):
       try:
         self.logPrintBox('Configuring mpe; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=2000, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on MPE: '+str(e))
       # Build MPE
       try:
         self.logPrintBox('Compiling mpe; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mpeDir+';make clean; make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MPE: '+str(e))
-      self.checkInstall(output,'MPE')
+      self.checkInstall(output,'mpe')
     return self.installDir
   
 if __name__ == '__main__':

@@ -26,11 +26,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    # Get the BLACS directories
-    blacsDir   = self.getDir()
 
-    # Configure and build BLACS
-    g = open(os.path.join(blacsDir,'Bmake.Inc'),'w')
+    g = open(os.path.join(self.packageDir,'Bmake.Inc'),'w')
     g.write('SHELL     = /bin/sh\n')
     g.write('COMMLIB   = MPI\n')
     g.write('SENDIS    = -DSndIsLocBlk\n')
@@ -39,7 +36,7 @@ class Configure(PETSc.package.Package):
     else:
       g.write('WHATMPI      = -DCSAMEF77\n')
     g.write('DEBUGLVL  = -DBlacsDebugLvl=1\n')
-    g.write('BLACSdir  = '+blacsDir+'\n')
+    g.write('BLACSdir  = '+self.packageDir+'\n')
     g.write('BLACSLIB  = '+os.path.join(self.installDir,self.libdir,'libblacs.a')+'\n')
     # look for the correct dir which has mpif.h [if not found error]
     found = 0
@@ -84,7 +81,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Bmake.Inc'):
       try:
         self.logPrintBox('Compiling Blacs; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+os.path.join(self.packageDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
       self.checkInstall(output,'Bmake.Inc')

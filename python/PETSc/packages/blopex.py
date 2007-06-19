@@ -30,11 +30,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    # Get the BLOPEX directories
-    blopexDir = self.getDir()
-    
-    # Configure and Build BLOPEX
-    g = open(os.path.join(blopexDir,'Makefile.inc'),'w')
+
+    g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     self.setCompilers.pushLanguage('C')
     g.write('CC          = '+self.setCompilers.getCompiler()+'\n') 
     g.write('CFLAGS      = ' + self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','') +'\n')
@@ -46,7 +43,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Makefile.Inc'):
       try:
         self.logPrintBox('Compiling blopex; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+blopexDir+';BLOPEX_INSTALL_DIR='+self.installDir+';export BLOPEX_INSTALL_DIR; make clean; make; mv -f lib/* '+os.path.join(self.installDir,self.libdir)+'; cp -fp multivector/temp_multivector.h include/.; mv -f include/* '+os.path.join(self.installDir,self.includedir)+'', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';BLOPEX_INSTALL_DIR='+self.installDir+';export BLOPEX_INSTALL_DIR; make clean; make; mv -f lib/* '+os.path.join(self.installDir,self.libdir)+'; cp -fp multivector/temp_multivector.h include/.; mv -f include/* '+os.path.join(self.installDir,self.includedir)+'', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLOPEX: '+str(e))
       self.checkInstall(output,'Makefile.inc')

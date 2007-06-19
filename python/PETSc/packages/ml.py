@@ -36,10 +36,7 @@ class Configure(PETSc.package.Package):
     return [alllibs]
         
   def Install(self):
-    # Get the ML directories
-    mlDir = self.getDir()
-    
-    # Configure ML 
+
     args = ['--prefix='+self.installDir]
     
     self.framework.pushLanguage('C')
@@ -76,20 +73,20 @@ class Configure(PETSc.package.Package):
     args.append('--with-mpi-libs=" '+libs+'"')
     args.append('--with-blas="'+self.libraries.toString(self.blasLapack.dlib)+'"')
     args = ' '.join(args)
-    fd = file(os.path.join(mlDir,'ml'), 'w')
+    fd = file(os.path.join(self.packageDir,'ml'), 'w')
     fd.write(args)
     fd.close()
 
     if self.installNeeded('ml'):
       try:
         self.logPrintBox('Configuring ml; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+mlDir+'; ./configure '+args+' --disable-ml-epetra --disable-ml-aztecoo --disable-ml-examples --disable-tests', timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('CC='+CCenv+'; export CC; F77='+F77env+'; export F77; CXX='+CXXenv+'; export CXX; cd '+self.packageDir+'; ./configure '+args+' --disable-ml-epetra --disable-ml-aztecoo --disable-ml-examples --disable-tests', timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on ML: '+str(e))
       # Build ML
       try:
         self.logPrintBox('Compiling ml; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+mlDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; ML_INSTALL_DIR='+self.installDir+'; export ML_INSTALL_DIR; make clean; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on ML: '+str(e))
 

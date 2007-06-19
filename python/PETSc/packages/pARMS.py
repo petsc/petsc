@@ -24,15 +24,14 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    # Get the pARMS directories
-    parmsDir = self.getDir()
+
     
     # Configure and Build pARMS
-    g = open(os.path.join(parmsDir,'makefile.in'),'w')
+    g = open(os.path.join(self.packageDir,'makefile.in'),'w')
     g.write('SHELL =	/bin/sh\n')
     g.write('.SUFFIXES:\n')
     g.write('.SUFFIXES: .c .o .f .F\n')
-    g.write('PARMS_ROOT = '+parmsDir+'\n')
+    g.write('PARMS_ROOT = '+self.packageDir+'\n')
     
     # path of the header files of pARMS
     g.write('IFLAGS     = -I${PARMS_ROOT}/include\n')
@@ -89,7 +88,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('makefile.in'):
       try:
         self.logPrintBox('Compiling pARMS; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+parmsDir+';PARMS_INSTALL_DIR='+self.installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(self.installDir,self.libdir)+'; make clean; make; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';PARMS_INSTALL_DIR='+self.installDir+';export PARMS_INSTALL_DIR; mkdir '+os.path.join(self.installDir,self.libdir)+'; make clean; make; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on pARMS: '+str(e))
       self.checkInstall(output,'makefile.in')

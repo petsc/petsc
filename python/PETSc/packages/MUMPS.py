@@ -26,11 +26,8 @@ class Configure(PETSc.package.Package):
     return
         
   def Install(self):
-    # Get the MUMPS directories
-    mumpsDir = self.getDir()
-    
-    # Configure and Build MUMPS
-    g = open(os.path.join(mumpsDir,'Makefile.inc'),'w')
+
+    g = open(os.path.join(self.packageDir,'Makefile.inc'),'w')
     g.write('LPORDDIR   = ../PORD/lib/\n')
     g.write('IPORD      = -I../PORD/include/\n')
     g.write('LPORD      = -L$(LPORDDIR) -lpord\n')
@@ -83,20 +80,18 @@ class Configure(PETSc.package.Package):
     g.close()
     if self.installNeeded('Makefile.inc'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+mumpsDir+';make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Mumps; this may take several minutes')
-        output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; make all',timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make all',timeout=2500, log = self.framework.log)[0]
         libDir     = os.path.join(self.installDir, self.libdir)
         includeDir = os.path.join(self.installDir, self.includedir)
-        output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; mv lib/*.* '+libDir+'/.; cp include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
+        output = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; mv lib/*.* '+libDir+'/.; cp include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
       self.checkInstall(output,'Makefile.inc')
-    else:
-      self.framework.log.write('Do not need to compile downloaded MUMPS\n')
     return self.installDir
 
 if __name__ == '__main__':

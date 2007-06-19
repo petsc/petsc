@@ -29,11 +29,7 @@ class Configure(PETSc.package.Package):
     if not hasattr(self.setCompilers, 'FC'):
       raise RuntimeError('SCALAPACK requires Fortran for automatic installation')
 
-    # Get the SCALAPACK directories
-    scalapackDir = self.getDir()
-
-    # Configure and build SCALAPACK
-    g = open(os.path.join(scalapackDir,'SLmake.inc'),'w')
+    g = open(os.path.join(self.packageDir,'SLmake.inc'),'w')
     g.write('SHELL        = /bin/sh\n')
     g.write('home         = '+self.getDir()+'\n')
     g.write('USEMPI       = -DUsingMpiBlacs\n')
@@ -80,12 +76,12 @@ class Configure(PETSc.package.Package):
 
     if self.installNeeded('SLmake.inc'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make cleanlib', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         pass
       try:
         self.logPrintBox('Compiling Scalapack; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
       self.checkInstall(output,'SLmake.inc')

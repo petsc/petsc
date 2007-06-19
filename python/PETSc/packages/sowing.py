@@ -11,23 +11,22 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-    sowingDir = self.getDir()
-    # Configure and Build sowing
+
     args = ['--prefix='+self.installDir]
     args = ' '.join(args)
-    fd = file(os.path.join(sowingDir,'sowing'), 'w')
+    fd = file(os.path.join(self.packageDir,'sowing'), 'w')
     fd.write(args)
     fd.close()
     if self.installNeeded('makefile.in'):
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.framework.argDB['with-batch']:
           return
         else:
           raise RuntimeError('Error running configure on Sowing: '+str(e))
       try:
-        output  = config.base.Configure.executeShellCommand('cd '+sowingDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make; make install; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         if self.framework.argDB['with-batch']:
           return
@@ -42,11 +41,11 @@ class Configure(PETSc.package.Package):
     if os.path.isfile(os.path.join(self.binDir, 'bib2html')):
       self.bib2html = os.path.join(self.binDir, 'bib2html')
     else:
-      self.bib2html = os.path.join(sowingDir,'bin', 'bib2html')
+      self.bib2html = os.path.join(self.packageDir,'bin', 'bib2html')
     for prog in [self.bfort, self.doctext, self.mapnames]:
       if not (os.path.isfile(prog) and os.access(prog, os.X_OK)):
         raise RuntimeError('Error in Sowing installation: Could not find '+prog)
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(sowingDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)[0]
+      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,'sowing')+' '+self.confDir+'/sowing', timeout=5, log = self.framework.log)[0]
     self.addMakeMacro('BFORT ', self.bfort)
     self.addMakeMacro('DOCTEXT ', self.doctext)
     self.addMakeMacro('MAPNAMES ', self.mapnames)
