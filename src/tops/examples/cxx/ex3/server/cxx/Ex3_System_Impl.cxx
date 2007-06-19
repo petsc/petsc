@@ -266,10 +266,6 @@ Ex3::System_impl::go_impl ()
   
   // Parameter port stuff here (instead of argc, argv);
   // for now pass fake argc and argv to solver
-  int argc = 1; 
-  char *argv[1];
-  argv[0] = (char*) malloc(10*sizeof(char));
-  strcpy(argv[0],"ex3");
 
   TOPS::Structured::Solver solver = ::babel_cast< TOPS::Structured::Solver >( myServices.getPort("TOPS.Structured.Solver") );
   this->solver = solver;
@@ -279,7 +275,7 @@ Ex3::System_impl::go_impl ()
     return 1;
   }
 
-  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
+  solver.Initialize();
   
   solver.solve();
 

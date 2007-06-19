@@ -203,13 +203,6 @@ Ex1::System_impl::go_impl ()
 #undef __FUNCT__
 #define __FUNCT__ "Ex1::System_impl::go"
   
-  // Parameter port stuff here (instead of argc, argv);
-  // for now pass fake argc and argv to solver
-  int argc = 1; 
-  char *argv[1];
-  argv[0] = (char*) malloc(10*sizeof(char));
-  strcpy(argv[0],"ex1");
-
   TOPS::Solver solver = ::babel_cast< TOPS::Structured::Solver >( 
   	myServices.getPort("TOPS.Structured.Solver") );
   if (solver._is_nil()) {
@@ -218,7 +211,7 @@ Ex1::System_impl::go_impl ()
     return 1;
   }
 
-  solver.Initialize(sidl::array<std::string>::create1d(argc,(const char**)argv));
+  solver.Initialize();
   
   solver.solve();
 

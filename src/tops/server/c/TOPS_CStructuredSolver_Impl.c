@@ -24,6 +24,7 @@
 
 /* DO-NOT-DELETE splicer.begin(TOPS.CStructuredSolver._includes) */
 /* Insert-Code-Here {TOPS.CStructuredSolver._includes} (includes and arbitrary code) */
+
 /* DO-NOT-DELETE splicer.end(TOPS.CStructuredSolver._includes) */
 
 #define SIDL_IOR_MAJOR_VERSION 1
@@ -401,7 +402,6 @@ extern "C"
 void
 impl_TOPS_CStructuredSolver_Initialize(
   /* in */ TOPS_CStructuredSolver self,
-  /* in array<string> */ struct sidl_string__array* args,
   /* out */ sidl_BaseInterface *_ex)
 {
   *_ex = 0;
