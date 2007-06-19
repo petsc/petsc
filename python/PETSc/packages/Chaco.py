@@ -36,10 +36,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+chacoDir+';CHACO_INSTALL_DIR='+self.installDir+';export CHACO_INSTALL_DIR; cd code; make clean; make; cd '+self.installDir+'; '+self.setCompilers.AR+' '+self.setCompilers.AR_FLAGS+' '+self.libdir+'/libchaco.a `find '+chacoDir+'/code -name "*.o"`; cd '+self.libdir+'; ar d libchaco.a main.o', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on CHACO: '+str(e))
-      self.checkInstall(output)
-      
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(chacoDir,'make.inc')+' '+self.confDir+'/Chaco', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed CHACO into '+self.installDir)
+      self.checkInstall(output,make.inc)
     return self.installDir
   
 if __name__ == '__main__':

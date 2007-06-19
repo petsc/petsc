@@ -33,10 +33,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(partyDir,'src')+'; PARTY_INSTALL_DIR='+self.installDir+';export PARTY_INSTALL_DIR; make clean; make all; cd ..; mv *.a '+os.path.join(self.installDir,self.libdir)+'/.; cp party_lib.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on PARTY: '+str(e))
-      self.checkInstall(output)
-
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(partyDir,'make.inc')+' '+self.confDir+'/PARTY', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed PARTY into '+self.installDir)
+      self.checkInstall(output,'make.inc')
     return self.installDir
 
 if __name__ == '__main__':

@@ -87,9 +87,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+os.path.join(blacsDir,'SRC','MPI')+';make clean; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLACS: '+str(e))
-      self.checkInstall(output)
-      output = config.base.Configure.executeShellCommand('cp -f '+os.path.join(blacsDir,'Bmake.Inc')+' '+self.confDir+'/blacs', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument('blacs', 'Install', 'Installed blacs into '+self.installDir)
+      self.checkInstall(output,'Bmake.Inc')
     else:
       self.framework.log.write('Do NOT need to compile BLACS downloaded libraries\n')
     return self.installDir

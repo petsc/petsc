@@ -95,9 +95,7 @@ class Configure(PETSc.package.Package):
         output = config.base.Configure.executeShellCommand('cd '+mumpsDir+'; mv lib/*.* '+libDir+'/.; cp include/*.* '+includeDir+'/.;', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on MUMPS: '+str(e))
-      self.checkInstall(output)
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(mumpsDir,'Makefile.inc')+' '+self.confDir+'/MUMPS', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed MUMPS into '+self.installDir)
+      self.checkInstall(output,'Makefile.inc')
     else:
       self.framework.log.write('Do not need to compile downloaded MUMPS\n')
     return self.installDir

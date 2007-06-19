@@ -46,10 +46,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+spoolesDir+'; cp -f *.h '+self.installDir+'/include; HLISTS=`ls *.h`; for hlist in $HLISTS MPI.h; do dir=`echo ${hlist} | sed s/"\.h"//`; mkdir '+self.installDir+'/include/$dir; cp -f $dir/*.h '+self.installDir+'/include/$dir/.; done; mv -f *.a MPI/src/*.a '+self.installDir+'/lib', timeout=2500, log = self.framework.log)[0]        
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPOOLES: '+str(e))
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(spoolesDir,'Make.inc')+' '+self.confDir+'/spooles', timeout=5, log = self.framework.log)[0]
-      #include "../
-      self.checkInstall(output)
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed SPOOLES into '+self.installDir)
+      self.checkInstall(output,'Make.inc')
     else:
       self.framework.log.write('Do NOT need to compile SPOOLES downloaded libraries\n')  
     return self.installDir

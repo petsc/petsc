@@ -141,15 +141,14 @@ class Package(config.base.Configure):
   def getInstallDir(self):
     self.installDir  = os.path.join(self.petscdir.dir,self.arch.arch)
     self.confDir     = os.path.join(self.petscdir.dir,self.arch.arch,'conf')
-    self.packageDir  = os.path.join(self.petscdir.dir,self.arch.arch,'conf')    # downloaded package is here
+    self.packageDir  = self.getDir()
     if not os.path.isdir(self.installDir): os.mkdir(self.installDir)
     if not os.path.isdir(os.path.join(self.installDir,'lib')): os.mkdir(os.path.join(self.installDir,'lib'))
     if not os.path.isdir(os.path.join(self.installDir,'include')): os.mkdir(os.path.join(self.installDir,'include'))
     if not os.path.isdir(os.path.join(self.installDir,'conf')): os.mkdir(os.path.join(self.installDir,'conf'))                
-    
     return os.path.abspath(self.Install())
 
-  def checkInstall(self,output):
+  def checkInstall(self,output,mkfile):
     '''Did the install process actually create a library?'''
     if not os.path.isfile(os.path.join(self.installDir,self.libdir,self.liblist[0][0])):
       self.framework.log.write('Error running make on '+self.name+'   ******(libraries not installed)*******\n')
@@ -157,6 +156,8 @@ class Package(config.base.Configure):
       self.framework.log.write(output)
       self.framework.log.write('********End of Output of running make on '+self.name+' *******\n')
       raise RuntimeError('Error running make on '+self.name+', libraries not installed')
+    output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir,mkfile)+' '+os.path.join(self.confDir,self.name), timeout=5, log = self.framework.log)[0]            
+    self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed '+self.name+' into '+self.installDir)
 
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''

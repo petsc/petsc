@@ -53,10 +53,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+fftwDir+'; make; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on FFTW: '+str(e))
-      self.checkInstall(output)
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(fftwDir,'fftw')+' '+self.confDir+'/fftw', timeout=5, log = self.framework.log)[0]            
-
-      self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed FFTW into '+self.installDir)
+      self.checkInstall(output,'fftw')
     return self.installDir
   
 if __name__ == '__main__':

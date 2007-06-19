@@ -88,9 +88,7 @@ class Configure(PETSc.package.Package):
         output  = config.base.Configure.executeShellCommand('cd '+scalapackDir+';make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SCALAPACK: '+str(e))
-      self.checkInstall(output)
-      output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(scalapackDir,'SLmake.inc')+' '+self.confDir+'/SCALAPACK', timeout=5, log = self.framework.log)[0]
-      self.framework.actions.addArgument('scalapack', 'Install', 'Installed scalapack into '+self.installDir)
+      self.checkInstall(output,'SLmake.inc')
     else:
       self.framework.log.write('Did not need to compile downloaded SCALAPACK\n')
     return self.installDir
