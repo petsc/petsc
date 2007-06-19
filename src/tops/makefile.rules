@@ -12,6 +12,7 @@ CCASPEC_VARS = $(shell ${CCASPEC_CONFIG} --var CCASPEC_MAKEINCL)
 include ${CCASPEC_VARS}
 
 CFLAGS = ${BABEL_INCLUDE} 
+CFLAGS += -I${PETSC_DIR}/src/tops/client/c
 
 TOPSSIDL = ${PETSC_DIR}/src/tops/tops.sidl
 SIDLFILES = ${TOPSSIDL} ${SIDL}
@@ -65,20 +66,21 @@ VPATH = ..:../glue
 CXXSRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${OTHERCXXFILES}
 CRCS = ${IMPLSRCS} ${SKELSRCS} ${STUBSRCS} ${IORSRCS} ${OTHERCFILES}
 CXXOBJS = ${CXXSRCS:.cxx=.o} ${IORSRCS:.c=.o}
-COBJS = ${CSRCS:.c=.o}
+#COBJS = ${CSRCS:.c=.o}
+COBJS = ${CRCS:.c=.o}
 
 %.o : %.cxx
 	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 		-I${PETSC_DIR}/include/tops \
 		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
-		-I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
+      		-I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
 		$<
 
 %.o : %.c
-	-@${CC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 		-I${PETSC_DIR}/include/tops \
-		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
-		-I$(CCASPEC_BABEL_includedir)/c -I$(CCASPEC_pkgincludedir)/c \
+		$(CCASPEC_BABEL_CFLAGS) -I$(CCASPEC_BABEL_includedir) \
+      		-I$(CCASPEC_BABEL_includedir)/c -I$(CCASPEC_pkgincludedir)/c \
 		$<
 
 server-cxx:  server/cxx/obj/makefile 
@@ -112,6 +114,9 @@ server/c/obj/makefile: ${OTHERSIDL}
 	-@if [ ! -d "server/c/obj" ]; then mkdir -p server/c/obj; fi
 	-@${BABEL} -R ${CCA_REPO} -I${TOPSSIDL} --hide-glue \
 		${SIDLEXCLUDE} --server=c --output-directory=./server/c ${OTHERSIDL}
+#	-@${BABEL} -R ${CCA_REPO} --hide-glue \
+#		${SIDLEXCLUDE} --server=c --output-directory=./server/c ${OTHERSIDL}
+
 	@-${RM} ${REMOVEFILES} server/c/obj/makefile
 	@-if [ ! -z "${TOPSCLIENT_LIB}" ]; then echo "TOPSCLIENT_LIB = ${TOPSCLIENT_LIB}" > server/c/obj/makefile; fi
 	@-if [ -f "server/c/babel.make" ] ; then echo "include ../babel.make" >> server/c/obj/makefile; fi
@@ -123,7 +128,7 @@ libserver-c.${SOSUFFIX}: ${COBJS}
 	-@$(OMAKE) LIBNAME=${TLIBNAME} SHARED_LIBRARY_TMPDIR=. OTHERSHAREDLIBS="${PETSC_LIB} ${BABEL_LIB} ${SL_LINKER_LIBS} ${SYS_LIB} ${CC_LINKER_SLFLAG}${PETSC_LIB_DIR}/tops ${TOPSCLIENT_LIB}" shared_arch
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@for i in CStructuredSolver CUnstructuredSolver ; do \
-	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtops.${SL_LINKER_SUFFIX} \
+	   ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/libtopsc.${SL_LINKER_SUFFIX} \
 		TOPS.$$i c dynamic global now TOPS.$$i > $$i.cca.in; \
 	   sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	       $$i.cca.in >  ${PETSC_LIB_DIR}/cca/$$i.cca; rm $$i.cca.in; \
@@ -139,7 +144,7 @@ cca:
 	else \
 	     ${PETSC_DIR}/src/tops/utils/genSCLCCA.sh cca ${PETSC_LIB_DIR}/lib${EXNAME}.${SL_LINKER_SUFFIX} \
 		${EXNAME}.System cxx dynamic global now ${EXNAME}.System > lib${EXNAME}.${SL_LINKER_SUFFIX}.cca.in; \
-	fi
+ 	fi
 	-@if [ ! -d "${PETSC_LIB_DIR}/cca" ]; then mkdir ${PETSC_LIB_DIR}/cca; fi
 	-@sed -e /"@PETSC_LIB_DIR@/ s|@PETSC_LIB_DIR@|${PETSC_LIB_DIR}|" \
 	    	-e /"@SOSUFFIX@/ s|@SOSUFFIX@|${SL_LINKER_SUFFIX}|" \
@@ -196,4 +201,4 @@ clean-cca: client-clean
 
 
 
-.PHONY: examples 
+.PHONY: examples clients
