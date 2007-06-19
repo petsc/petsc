@@ -58,7 +58,7 @@ class Configure(PETSc.package.Package):
     import config.base
     # Get the Triangle directories
     triangleDir    = self.getDir()
-    installDir     = os.path.join(triangleDir, self.arch.arch)
+    installDir     = os.path.join(self.petscdir.dir, self.arch.arch)
     libDir         = os.path.join(installDir, 'lib')
     includeDir     = os.path.join(installDir, 'include')
     makeinc        = os.path.join(triangleDir, 'make.inc')
@@ -167,4 +167,4 @@ triangle_shared:
     output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.framework.log)[0]
     self.framework.actions.addArgument('Triangle', 'Install', 'Installed Triangle into '+installDir)
 
-    return self.getDir()
+    return installDir
