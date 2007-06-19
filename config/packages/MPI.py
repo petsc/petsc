@@ -48,7 +48,6 @@ class Configure(config.package.Package):
     # local state
     self.commf2c          = 0
     self.commc2f          = 0
-    self.defaultInstallDir= os.path.abspath('externalpackages')
     return
 
   def setupHelp(self, help):
@@ -69,20 +68,6 @@ class Configure(config.package.Package):
     self.compilers = framework.require('config.compilers', self)
     self.types = framework.require('config.types', self)
     return
-
-  def getDefaultInstallDir(self):
-    '''The installation directroy of the library'''
-    if hasattr(self, 'installDirProvider'):
-      if hasattr(self.installDirProvider, 'dir'):
-        return self.installDirProvider.dir
-    elif not self.framework.externalPackagesDir is None:
-      return self.framework.externalPackagesDir
-    return self._defaultInstallDir
-  def setDefaultInstallDir(self, defaultInstallDir):
-    '''The installation directroy of the library'''
-    self._defaultInstallDir = defaultInstallDir
-    return
-  defaultInstallDir = property(getDefaultInstallDir, setDefaultInstallDir, doc = 'The installation directory of the library')
 
   # search many obscure locations for MPI
   def getSearchDirectories(self):

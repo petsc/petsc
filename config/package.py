@@ -37,6 +37,8 @@ class Package(config.base.Configure):
     self.license          = None # optional license text
     self.excludedDirs     = []   # list of directory names that could be false positives, SuperLU_DIST when looking for SuperLU
     self.archIndependent  = 0    # 1 means the install directory does not incorporate the ARCH name
+    # Outside coupling
+    self.defaultInstallDir= os.path.abspath('externalpackages')
     return
     
   def __str__(self):
@@ -114,6 +116,20 @@ class Package(config.base.Configure):
     self._arch = arch
     return
   arch = property(getArch, setArch, doc = 'The architecture identifier')
+
+  def getDefaultInstallDir(self):
+    '''The installation directroy of the library'''
+    if hasattr(self, 'installDirProvider'):
+      if hasattr(self.installDirProvider, 'dir'):
+        return self.installDirProvider.dir
+    elif not self.framework.externalPackagesDir is None:
+      return self.framework.externalPackagesDir
+    return self._defaultInstallDir
+  def setDefaultInstallDir(self, defaultInstallDir):
+    '''The installation directroy of the library'''
+    self._defaultInstallDir = defaultInstallDir
+    return
+  defaultInstallDir = property(getDefaultInstallDir, setDefaultInstallDir, doc = 'The installation directory of the library')
 
   def getExternalPackagesDir(self):
     '''The directory for downloaded packages'''

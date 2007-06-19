@@ -39,7 +39,8 @@ class Configure(config.package.Package):
   def Install(self):
     # Get the UMFPACK directories
     umfpackDir = self.getDir()
-    installDir = os.path.join(umfpackDir, self.arch)
+    installDir = os.path.join(self.defaultInstallDir, self.arch)
+    confDir    = os.path.join(installDir, 'conf')
     self.framework.log.write('umfpackDir = '+umfpackDir+' installDir '+installDir+'\n')
     # Configure and Build UMFPACK
     self.framework.pushLanguage('C')
@@ -57,7 +58,7 @@ class Configure(config.package.Package):
     args = ' '.join(args)
 
     try:
-      fd      = file(os.path.join(installDir,'config.args'))
+      fd      = file(os.path.join(confDir,self.package))
       oldargs = fd.readline()
       fd.close()
     except:
@@ -66,7 +67,7 @@ class Configure(config.package.Package):
       self.framework.log.write('Have to rebuild UMFPACK oldargs = '+oldargs+'\n new args ='+args+'\n')
       try:
         self.logPrintBox('Compiling umfpack; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+umfpackDir+'; UMFPACK_INSTALL_DIR='+installDir+';export UMFPACK_INSTALL_DIR; cp -r UMFPACK '+self.arch.arch+'/.; cp -r AMD '+self.arch+'/.; cd '+self.arch+'/UMFPACK; make slib; make clean', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+umfpackDir+'; UMFPACK_INSTALL_DIR='+installDir+';export UMFPACK_INSTALL_DIR; cp -r UMFPACK '+installDir+'/.; cp -r AMD '+installDir+'/.; cd '+installDir+'/UMFPACK; make slib; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on UMFPACK: '+str(e))
       if not os.path.isdir(os.path.join(installDir,self.libdir)):
@@ -76,9 +77,9 @@ class Configure(config.package.Package):
         self.framework.log.write('********End of Output of running make on UMFPACK *******\n')
         raise RuntimeError('Error running make on UMFPACK, libraries not installed')
       
-      fd = file(os.path.join(installDir,'config.args'), 'w')
+      fd = file(os.path.join(confDir,self.package), 'w')
       fd.write(args)
       fd.close()
 
       self.framework.actions.addArgument(self.PACKAGE, 'Install', 'Installed UMFPACK into '+installDir)
-    return self.getDir()
+    return installDir
