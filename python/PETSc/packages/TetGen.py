@@ -166,11 +166,12 @@ class Configure(PETSc.package.Package):
     import config.base
     # Get the TetGen directories
     tetgenDir      = self.getDir()
-    installDir     = os.path.join(tetgenDir, self.arch.arch)
+    installDir     = os.path.join(self.petscdir.dir, self.arch.arch)
     libDir         = os.path.join(installDir, 'lib')
     includeDir     = os.path.join(installDir, 'include')
+    confDir        = os.path.join(installDir, 'conf')
     makeinc        = os.path.join(tetgenDir, 'make.inc')
-    installmakeinc = os.path.join(installDir, 'make.inc')
+    installmakeinc = os.path.join(confDir, self.package)
     configheader   = os.path.join(tetgenDir, 'configureheader.h')
 
     # Configure ParMetis 
@@ -271,7 +272,7 @@ tetgen_shared:
     else:
       self.framework.log.write('Did not need to compile downloaded TetGen\n')
     output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(tetgenDir, 'tetgen.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installDir, timeout=5, log = self.framework.log)[0]
+    output  = config.base.Configure.executeShellCommand('cp -f '+makeinc+' '+installmakeinc, timeout=5, log = self.framework.log)[0]
     self.framework.actions.addArgument('TetGen', 'Install', 'Installed TetGen into '+installDir)
 
-    return self.getDir()
+    return installDir
