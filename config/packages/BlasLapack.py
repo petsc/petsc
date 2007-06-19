@@ -189,7 +189,7 @@ class Configure(config.package.Package):
       if not (len(dir) > 2 and dir[1] == ':') :
         dir = os.path.abspath(dir)
       yield ('User specified installation root (HPUX)', os.path.join(dir, 'libveclib.a'),  os.path.join(dir, 'liblapack.a'), 1)
-      f2cLibs = [os.path.join(libdir,'libf2cblas.a')]
+      f2cLibs = [os.path.join(dir,'libf2cblas.a')]
       if self.libraries.math:
         f2cLibs = f2cLibs+self.libraries.math
       yield ('User specified installation root (F2C)', f2cLibs, os.path.join(dir, 'libf2clapack.a'), 1)
