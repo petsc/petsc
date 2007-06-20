@@ -56,95 +56,6 @@ PetscEvent PC_InitializationStage_ASA, PC_GeneralSetupStage_ASA;
 PetscEvent PC_CreateTransferOp_ASA, PC_CreateVcycle_ASA;
 PetscTruth asa_events_registered = PETSC_FALSE;
 
-/* -------------------------------------------------------------------------- */
-/*
-   PCSetUp_ASA - Prepares for the use of the ASA preconditioner
-                    by setting data structures and options.   
-
-   Input Parameter:
-.  pc - the preconditioner context
-
-   Application Interface Routine: PCSetUp()
-
-   Notes:
-   The interface routine PCSetUp() is not usually called directly by
-   the user, but instead is called by PCApply() if necessary.
-*/
-#undef __FUNCT__  
-#define __FUNCT__ "PCSetUp_ASA"
-static PetscErrorCode PCSetUp_ASA(PC pc)
-{
-  PC_ASA         *asa = (PC_ASA*)pc->data;
-  PetscErrorCode ierr;
-  const char     *prefix;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
-
-  if(asa) {
-    /* already set up or? */
-    PetscFunctionReturn(0);
-  }
-
-  /* Create new PC_ASA object */
-  ierr = PetscMalloc(sizeof(PC_ASA),&asa);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_ASA));CHKERRQ(ierr);
-  pc->data = asa;
-
-  /* WORK: find some better initial values  */
-  asa->nu = 3;
-  asa->gamma = 1;
-  asa->epsilon = 1e-4;
-  asa->mu = 3;
-  asa->mu_initial = 20;
-  asa->direct_solver = 100;
-  asa->scale_diag = PETSC_TRUE;
-  ierr = PetscStrallocpy(KSPRICHARDSON, (char **) &(asa->ksptype_smooth)); CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PCSOR, (char **) &(asa->pctype_smooth)); CHKERRQ(ierr);
-  asa->smoother_rtol = 1e-10;
-  asa->smoother_abstol = 1e-20;
-  asa->smoother_dtol = PETSC_DEFAULT;
-  ierr = PetscStrallocpy(KSPPREONLY, (char **) &(asa->ksptype_direct)); CHKERRQ(ierr);
-  ierr = PetscStrallocpy(PCLU, (char **) &(asa->pctype_direct)); CHKERRQ(ierr);
-  asa->direct_rtol = 1e-10;
-  asa->direct_abstol = 1e-20;
-  asa->direct_dtol = PETSC_DEFAULT;
-  asa->richardson_scale = PETSC_DECIDE;
-  asa->sor_omega = PETSC_DECIDE;
-  ierr = PetscStrallocpy(MATSAME, (char **) &(asa->coarse_mat_type)); CHKERRQ(ierr);
-
-  asa->max_cand_vecs = 4;
-  asa->max_dof_lev_2 = 640; /* I don't think this parameter really matters, 640 should be enough for everyone! */
-
-  asa->multigrid_constructed = PETSC_FALSE;
-
-  asa->rtol = 1e-10;
-  asa->abstol = 1e-15;
-  asa->divtol = 1e5;
-  asa->max_it = 10000;
-  asa->rq_improve = 0.9;
-  
-  /* initialize all parameters to 0 */
-  asa->A = 0;
-  asa->invsqrtdiag = 0;
-  asa->b = 0;
-  asa->x = 0;
-  asa->r = 0;
-
-  /* no geometry information */
-  asa->dm = 0;
-  
-  /* start with 0 levels */
-  asa->levels = 0;
-  asa->levellist = 0;
-
-  /* communicator */
-  asa->comm = pc->comm;
-
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCASASetDM"
@@ -175,10 +86,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc, DM dm)
     SETERRQ1(PETSC_ERR_ARG_WRONG, "PCASASetDM expected PC of type asa, got %s\n", type);
   }
   asa = (PC_ASA *) pc->data;
-  if (!asa) {
-    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
-    asa = (PC_ASA*)pc->data;
-  }
 
   /* Set DM data structure */
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
@@ -225,10 +132,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, Pets
     SETERRQ1(PETSC_ERR_ARG_WRONG, "PCASASetTolerances expected PC of type asa, got %s\n", type);
   }
   asa = (PC_ASA *) pc->data;
-  if (!asa) {
-    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
-    asa = (PC_ASA*)pc->data;
-  }
 
   if (rtol != PETSC_DEFAULT)   asa->rtol   = rtol;
   if (abstol != PETSC_DEFAULT)   asa->abstol   = abstol;
@@ -1083,10 +986,10 @@ PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
     /* (d) construct coarse matrix */
     /* Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
     ierr = SafeMatDestroy(&(asa_next_lev->A)); CHKERRQ(ierr);
-    ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
-    ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A)); CHKERRQ(ierr);
-    ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);
-/*     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); */
+    /*    ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
+     ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A)); CHKERRQ(ierr);
+     ierr = SafeMatDestroy(&AI); CHKERRQ(ierr); */
+     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); 
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size)); CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev); CHKERRQ(ierr);
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->nu); CHKERRQ(ierr);
@@ -1294,10 +1197,10 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
       ierr = PCSmoothProlongator_ASA(asa_lev); CHKERRQ(ierr);
 
       /* (e) Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
-      ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
+      /*      ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
       ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A)); CHKERRQ(ierr);
-      ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);
-/*       ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); */
+      ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);*/
+      ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); 
       ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size)); CHKERRQ(ierr);
       ierr = PCComputeSpectralRadius_ASA(asa_next_lev); CHKERRQ(ierr);
       ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu); CHKERRQ(ierr);
@@ -1625,10 +1528,10 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
 							
     /* (c) construct coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
     ierr = SafeMatDestroy(&(asa_next_lev->A)); CHKERRQ(ierr);
-    ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
+    /*    ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI); CHKERRQ(ierr);
     ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A)); CHKERRQ(ierr);
-    ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);
-/*     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); */
+    ierr = SafeMatDestroy(&AI); CHKERRQ(ierr);*/
+     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A)); CHKERRQ(ierr); 
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size)); CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev); CHKERRQ(ierr);
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu); CHKERRQ(ierr);
@@ -1889,11 +1792,6 @@ PetscErrorCode PCApply_ASA(PC pc,Vec x,Vec y)
 
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   asa = (PC_ASA*)pc->data;
-  /* check if data structure is initialized */
-  if (!asa) {
-    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
-    asa = (PC_ASA*)pc->data;
-  }
 
   if( ! asa->multigrid_constructed ) {
     ierr = PCConstructMultigrid_ASA(pc); CHKERRQ(ierr);
@@ -1954,11 +1852,6 @@ PetscErrorCode PCSolve_ASA(PC pc, Vec b, Vec x)
 
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   asa = (PC_ASA*)pc->data;
-  /* check if data structure is initialized */
-  if (!asa) {
-    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
-    asa = (PC_ASA*)pc->data;
-  }
 
   if( ! asa->multigrid_constructed ) {
     ierr = PCConstructMultigrid_ASA(pc); CHKERRQ(ierr);
@@ -2090,10 +1983,6 @@ static PetscErrorCode PCSetFromOptions_ASA(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if( !asa ) {
-    ierr = PCSetUp_ASA(pc);CHKERRQ(ierr);
-    asa = (PC_ASA*)pc->data;
-  }
 
   ierr = PetscOptionsHead("ASA options");CHKERRQ(ierr);
   /* convergence parameters */
@@ -2161,6 +2050,9 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
 {
   PetscErrorCode ierr;
+  const char*    prefix;
+  PC_ASA         *asa;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
@@ -2176,7 +2068,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
   ierr = PetscMemzero(pc->ops, sizeof(struct _PCOps)); CHKERRQ(ierr);
   pc->ops->apply               = PCApply_ASA;
   pc->ops->applytranspose      = PCApply_ASA;
-  pc->ops->setup               = PCSetUp_ASA;
+  pc->ops->setup               = 0;
   pc->ops->destroy             = PCDestroy_ASA;
   pc->ops->setfromoptions      = PCSetFromOptions_ASA;
 
@@ -2192,6 +2084,62 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
     asa_events_registered = PETSC_TRUE;
   }
 
+  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
+
+  /* Create new PC_ASA object */
+  ierr = PetscMalloc(sizeof(PC_ASA),&asa);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(pc,sizeof(PC_ASA));CHKERRQ(ierr);
+  pc->data = asa;
+
+  /* WORK: find some better initial values  */
+  asa->nu = 3;
+  asa->gamma = 1;
+  asa->epsilon = 1e-4;
+  asa->mu = 3;
+  asa->mu_initial = 20;
+  asa->direct_solver = 100;
+  asa->scale_diag = PETSC_TRUE;
+  ierr = PetscStrallocpy(KSPRICHARDSON, (char **) &(asa->ksptype_smooth)); CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PCSOR, (char **) &(asa->pctype_smooth)); CHKERRQ(ierr);
+  asa->smoother_rtol = 1e-10;
+  asa->smoother_abstol = 1e-20;
+  asa->smoother_dtol = PETSC_DEFAULT;
+  ierr = PetscStrallocpy(KSPPREONLY, (char **) &(asa->ksptype_direct)); CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PCLU, (char **) &(asa->pctype_direct)); CHKERRQ(ierr);
+  asa->direct_rtol = 1e-10;
+  asa->direct_abstol = 1e-20;
+  asa->direct_dtol = PETSC_DEFAULT;
+  asa->richardson_scale = PETSC_DECIDE;
+  asa->sor_omega = PETSC_DECIDE;
+  ierr = PetscStrallocpy(MATSAME, (char **) &(asa->coarse_mat_type)); CHKERRQ(ierr);
+
+  asa->max_cand_vecs = 4;
+  asa->max_dof_lev_2 = 640; /* I don't think this parameter really matters, 640 should be enough for everyone! */
+
+  asa->multigrid_constructed = PETSC_FALSE;
+
+  asa->rtol = 1e-10;
+  asa->abstol = 1e-15;
+  asa->divtol = 1e5;
+  asa->max_it = 10000;
+  asa->rq_improve = 0.9;
+  
+  /* initialize all parameters to 0 */
+  asa->A = 0;
+  asa->invsqrtdiag = 0;
+  asa->b = 0;
+  asa->x = 0;
+  asa->r = 0;
+
+  /* no geometry information */
+  asa->dm = 0;
+  
+  /* start with 0 levels */
+  asa->levels = 0;
+  asa->levellist = 0;
+
+  /* communicator */
+  asa->comm = pc->comm;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END
