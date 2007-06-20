@@ -178,7 +178,7 @@ class Package(config.base.Configure):
       dowork=1
 
     if not dowork:
-      raise RuntimeError('URL missing for package'+self.package+'. perhaps a PETSc bug\n')
+      raise RuntimeError('URL missing for package '+self.package+'. perhaps a PETSc bug\n')
     
     if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
       self.framework.logClear()
