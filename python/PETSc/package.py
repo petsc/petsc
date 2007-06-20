@@ -170,15 +170,15 @@ class Package(config.base.Configure):
   def checkDownload(self,preOrPost):
     '''Check if we should download the package'''
     if not self.download : return ''
-    dowork=0
-    if preOrPost==1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
+    dowork = 0
+    if preOrPost == 1 and isinstance(self.framework.argDB['download-'+self.downloadname.lower()], str):
       self.download = ['file://'+os.path.abspath(self.framework.argDB['download-'+self.downloadname.lower()])]
-      dowork=1
+      dowork = 1
     elif self.framework.argDB['download-'+self.downloadname.lower()] == preOrPost:
-      dowork=1
+      dowork = 1
 
     if not dowork:
-      raise RuntimeError('URL missing for package '+self.package+'. perhaps a PETSc bug\n')
+      return ''
     
     if self.license and not os.path.isfile(os.path.expanduser(os.path.join('~','.'+self.package+'_license'))):
       self.framework.logClear()
