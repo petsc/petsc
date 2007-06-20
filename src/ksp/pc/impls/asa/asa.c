@@ -1563,6 +1563,7 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
     ierr = VecAssemblyEnd(asa_lev->x); CHKERRQ(ierr);
     ierr = PetscRandomDestroy(rctx); CHKERRQ(ierr);
   } else {
+    ierr = SafeVecDestroy(&(asa_lev->x)); CHKERRQ(ierr);
     ierr = VecDuplicate(cand, &(asa_lev->x)); CHKERRQ(ierr);
     ierr = VecCopy(cand, asa_lev->x); CHKERRQ(ierr);
   }
