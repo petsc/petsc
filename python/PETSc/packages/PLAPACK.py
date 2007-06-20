@@ -24,7 +24,8 @@ class Configure(PETSc.package.Package):
     return
 
   def Install(self):
-
+    incDir                 = os.path.join(self.packageDir,'INCLUDE')
+    installIncDir          = os.path.join(self.installDir,self.includedir)
     plapackMakefile        = os.path.join(self.packageDir,'Make.include')
     plapackInstallMakefile = os.path.join(self.confDir,'PLAPACK')
     g = open(plapackMakefile,'w')
@@ -37,7 +38,7 @@ class Configure(PETSc.package.Package):
     g.write('LIB          = $(BLASLIB) $(MPILIB)\n')
     self.setCompilers.pushLanguage('C')
     g.write('CC           = '+self.setCompilers.getCompiler()+'\n') 
-    g.write('CFLAGS       = -I$(PLAPACK_ROOT)/INCLUDE $(MPI_INCLUDE) -DMACHINE_TYPE=$(MACHINE_TYPE) -DMANUFACTURE=$(MANUFACTURE) ' + self.setCompilers.getCompilerFlags() +'\n')
+    g.write('CFLAGS       = -I'+installIncDir+' $(MPI_INCLUDE) -DMACHINE_TYPE=$(MACHINE_TYPE) -DMANUFACTURE=$(MANUFACTURE) '+self.setCompilers.getCompilerFlags()+'\n')
     self.setCompilers.popLanguage()
     if hasattr(self.compilers, 'FC'):
       self.setCompilers.pushLanguage('FC')
@@ -56,8 +57,6 @@ class Configure(PETSc.package.Package):
     if self.installNeeded('Make.include'):
       try:
         self.logPrintBox('Compiling PLAPACK; this may take several minutes')
-        incDir = os.path.join(self.packageDir,'INCLUDE')
-        installIncDir = os.path.join(self.installDir,self.includedir)
         output  = config.base.Configure.executeShellCommand('cp -f '+incDir+'/*.h '+installIncDir, timeout=2500, log = self.framework.log)[0]        
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';make removeall; make', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
