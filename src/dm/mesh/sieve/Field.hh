@@ -796,6 +796,9 @@ namespace ALE {
           txt << std::endl;
         }
       }
+      if (chart.size() == 0) {
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
+      }
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
     };
@@ -1598,6 +1601,9 @@ namespace ALE {
           }
           txt << std::endl;
         }
+      }
+      if (chart.size() == 0) {
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
       }
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
