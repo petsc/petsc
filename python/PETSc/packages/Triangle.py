@@ -142,10 +142,10 @@ triangle_shared:
       self.framework.outputHeader(configheader)
       try:
         self.logPrintBox('Compiling & installing Triangle; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make '+os.path.join(libDir, 'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' triangle_shared; make clean', timeout=2500, log = self.framework.log)[0]
+        output1  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean; make '+os.path.join(libDir, 'libtriangle.'+self.setCompilers.AR_LIB_SUFFIX)+' triangle_shared; make clean', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on Triangle: '+str(e))
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'src', 'triangle.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'config.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
-      self.checkInstall('make.inc')
-    return installDir
+      self.checkInstall(output1,'make.inc')
+    return self.installDir

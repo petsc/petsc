@@ -38,7 +38,7 @@ class Configure(PETSc.package.Package):
       for l in self.mpi.lib:
         ll = os.path.basename(l)
         libs.append('-l'+ll[3:-2])
-      libs = ' '.join(libs) # '-lmpich -lpmpich'
+      libs = ' '.join(libs)
       args.append('MPI_LIBS="'+'-L'+libdir+' '+libs+'"')
 
     args = ' '.join(args)
