@@ -14,6 +14,7 @@ typedef struct {
   PetscDrawAxis  *drawaxis;
   int            w,h;        /* These are saved in case additional windows are opened */
   char           *display;
+  char           *title;
   PetscTruth     singleton_made;
 } PetscViewer_Draw;
 
