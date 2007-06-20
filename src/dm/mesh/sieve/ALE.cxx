@@ -54,7 +54,7 @@ namespace ALE {
   void MPIERROR(PetscErrorCode ierr, const char *func, int line, const char *msg) {
     if(ierr) {
       char mpi_error[MPI_MAX_ERROR_STRING+1];
-      int32_t len = MPI_MAX_ERROR_STRING;
+      int len = MPI_MAX_ERROR_STRING;
       PetscErrorCode ie = MPI_Error_string(ierr, mpi_error, &len);
       char *mess;
       if(!ie) {

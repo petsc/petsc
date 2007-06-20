@@ -112,7 +112,10 @@ namespace ALE {
   class Point {
   public:
     typedef ALE_ALLOCATOR<Point> allocator;
-    int32_t prefix, index;
+    typedef int32_t prefix_type;
+    typedef int32_t index_type;
+    prefix_type prefix;
+    index_type  index;
     // Constructors
     Point() : prefix(0), index(0){};
     Point(int p) : prefix(p), index(0){};
