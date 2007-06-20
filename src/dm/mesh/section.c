@@ -12,7 +12,7 @@ PetscEvent  SectionPair_View = 0;
 #undef __FUNCT__  
 #define __FUNCT__ "SectionView_Sieve_Ascii"
 template<typename Bundle, typename Section>
-PetscErrorCode SectionView_Sieve_Ascii(const Obj<Bundle>& bundle, const Obj<Section>& s, const char name[], PetscViewer viewer)
+  PetscErrorCode SectionView_Sieve_Ascii(const Obj<Bundle>& bundle, const Obj<Section>& s, const char name[], PetscViewer viewer, int enforceDim = -1)
 {
   // state 0: No header has been output
   // state 1: Only POINT_DATA has been output
@@ -55,7 +55,7 @@ PetscErrorCode SectionView_Sieve_Ascii(const Obj<Bundle>& bundle, const Obj<Sect
       if (doOutput) {
         ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
-      VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
+      VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer, enforceDim);
     } else {
       if (outputState == 0) {
         outputState = 2;
@@ -76,7 +76,7 @@ PetscErrorCode SectionView_Sieve_Ascii(const Obj<Bundle>& bundle, const Obj<Sect
       if (doOutput) {
         ierr = PetscViewerASCIIPrintf(viewer, "CELL_DATA %d\n", numbering->getGlobalSize());CHKERRQ(ierr);
       }
-      VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer);
+      VTKViewer::writeField(s, std::string(name), fiberDim, numbering, viewer, enforceDim);
     }
     ierr = PetscObjectComposedDataSetInt((PetscObject) viewer, stateId, outputState);CHKERRQ(ierr);
   } else {

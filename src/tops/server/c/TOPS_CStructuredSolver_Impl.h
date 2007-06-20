@@ -57,6 +57,15 @@
 
 /* DO-NOT-DELETE splicer.begin(TOPS.CStructuredSolver._includes) */
 /* Insert-Code-Here {TOPS.CStructuredSolver._includes} (include files) */
+
+#if defined(HAVE_LONG_LONG)
+#undef HAVE_LONG_LONG
+#endif
+#include "petscdmmg.h"
+#include "TOPS.hxx"
+#include "gov_cca_ports_ParameterPortFactory.h"
+#include "gov_cca_ports_ParameterPort.h"
+
 /* DO-NOT-DELETE splicer.end(TOPS.CStructuredSolver._includes) */
 
 /*
@@ -67,6 +76,18 @@ struct TOPS_CStructuredSolver__data {
   /* DO-NOT-DELETE splicer.begin(TOPS.CStructuredSolver._data) */
   /* Insert-Code-Here {TOPS.CStructuredSolver._data} (private data members) */
   int ignore; /* dummy to force non-empty struct; remove if you add data */
+
+  DMMG                                  *dmmg;
+  DA                                    da;
+  int                                   lengths[4],m,n,p,dim,s,levels,bs;
+  DAStencilType                         stencil_type;
+  DAPeriodicType                        wrap;
+  int                                   startedpetsc;
+  gov_cca_Services			myServices;
+  gov_cca_ports_ParameterPortFactory 	ppf;
+  gov_cca_ports_ParameterPort        	params;
+		      
+  
   /* DO-NOT-DELETE splicer.end(TOPS.CStructuredSolver._data) */
 };
 
@@ -251,7 +272,6 @@ extern
 void
 impl_TOPS_CStructuredSolver_Initialize(
   /* in */ TOPS_CStructuredSolver self,
-  /* in array<string> */ struct sidl_string__array* args,
   /* out */ sidl_BaseInterface *_ex);
 
 extern

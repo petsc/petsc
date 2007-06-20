@@ -399,8 +399,8 @@ TOPS::StructuredSolver_impl::setLevels_impl (
  * Method:  Initialize[]
  */
 void
-TOPS::StructuredSolver_impl::Initialize_impl (
-  /* in array<string> */::sidl::array< ::std::string> args ) 
+TOPS::StructuredSolver_impl::Initialize_impl () 
+
 {
   // DO-NOT-DELETE splicer.begin(TOPS.StructuredSolver.Initialize)
 #undef __FUNCT__
@@ -412,17 +412,7 @@ TOPS::StructuredSolver_impl::Initialize_impl (
     return;
   }
   this->startedpetsc = 1;
-  int          argc = args.upper(0) + 1;
-  char       **argv = new char* [argc];
-  std::string  arg;
-
-  for(int i = 0; i < argc; i++) {
-    arg     = args[i];
-    argv[i] = new char [arg.length()+1];
-    arg.copy(argv[i], arg.length(), 0);
-    argv[i][arg.length()] = 0;
-  }
-  PetscInitialize(&argc,&argv,0,0); 
+  PetscInitializeNoArguments(); 
 
   // Process runtime parameters
   params = ::babel_cast< gov::cca::ports::ParameterPort >( myServices.getPort("tops_options") );

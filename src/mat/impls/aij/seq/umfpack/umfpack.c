@@ -151,6 +151,7 @@ PetscErrorCode MatSolve_UMFPACK(Mat A,Vec b,Vec x)
 
 #if defined(PETSC_USE_COMPLEX)
   ierr = VecConjugate(b);
+  ierr = VecConjugate(x);
 #endif
 
   PetscFunctionReturn(0);

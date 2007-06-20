@@ -185,11 +185,7 @@ namespace TOPS {
      * user defined non-static method.
      */
     void
-    Initialize_impl (
-      /* in array<string> */::sidl::array< ::std::string> args
-    )
-    ;
-
+    Initialize_impl() ;
     /**
      * user defined non-static method.
      */
