@@ -51,7 +51,7 @@ class Configure(PETSc.package.Package):
     if self.installNeeded(os.path.join('SRC','make.PETSC')):
       try:
         self.logPrintBox('Compiling SPRNG; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+sprngDir+';SPRNG_INSTALL_DIR='+self.installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..;  cp lib/*.a '+os.path.join(self.installDir,self.libdir)+'; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';SPRNG_INSTALL_DIR='+self.installDir+';export SPRNG_INSTALL_DIR; make realclean; cd SRC; make; cd ..;  cp lib/*.a '+os.path.join(self.installDir,self.libdir)+'; cp include/*.h '+os.path.join(self.installDir,self.includedir)+'/.', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on SPRNG: '+str(e))
       self.checkInstall(output,os.path.join('SRC','make.PETSC'))
