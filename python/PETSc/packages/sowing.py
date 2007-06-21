@@ -14,10 +14,10 @@ class Configure(PETSc.package.Package):
 
     args = ['--prefix='+self.installDir]
     args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,'sowing'), 'w')
+    fd = file(os.path.join(self.packageDir,self.package), 'w')
     fd.write(args)
     fd.close()
-    if self.installNeeded('makefile.in'):
+    if self.installNeeded(self.package):
       try:
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
