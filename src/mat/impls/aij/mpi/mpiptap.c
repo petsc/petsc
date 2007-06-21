@@ -45,7 +45,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroy_MPIAIJ_MatPtAP(Mat A)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatDuplicate_MPIAIJ_MatPtAP"
-PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M) {
+PetscErrorCode MatDuplicate_MPIAIJ_MatPtAP(Mat A, MatDuplicateOption op, Mat *M) 
+{
   PetscErrorCode       ierr;
   Mat_Merge_SeqsToMPI  *merge; 
   PetscContainer       container;

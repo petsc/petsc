@@ -10,7 +10,7 @@
      SISC Volume 25 Issue 6, Pages 1896-1920.
 
      For an example usage of this preconditioner, see, e.g.
-     $PETSC_DIR/src/ksp/pc/examples/tests/asatest.c
+     $PETSC_DIR/src/ksp/ksp/examples/tutorials/ex38.c ex39.c
      and other files in that directory.
 
      This code is still somewhat experimental. A number of improvements would be
@@ -71,19 +71,27 @@ PetscTruth asa_events_registered = PETSC_FALSE;
     Level: advanced
 
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc, DM dm)
+PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc,DM dm)
 {
-  PetscErrorCode ierr;
-  PC_ASA         *asa = (PC_ASA *) pc->data;
-  PetscTruth     isasa;
+  PetscErrorCode ierr,(*f)(PC,DM);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASASetDM_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,dm);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
 
-  ierr = PetscTypeCompare((PetscObject)pc,PCASA,&isasa);CHKERRQ(ierr);
-  if (!isasa) {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Requires a PC of type ASA, got %s\n", pc->type);
-  }
+#undef __FUNCT__  
+#define __FUNCT__ "PCASASetDM"
+PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM_ASA(PC pc, DM dm)
+{
+  PetscErrorCode ierr;
+  PC_ASA         *asa = (PC_ASA *) pc->data;
+
+  PetscFunctionBegin;
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
   asa->dm = dm;
   PetscFunctionReturn(0);
@@ -114,16 +122,25 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASASetDM(PC pc, DM dm)
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
 {
-  PetscErrorCode ierr;
-  PC_ASA         *asa = (PC_ASA *) pc->data;
-  PetscTruth     isasa;
+  PetscErrorCode ierr,(*f)(PC,PetscReal,PetscReal,PetscReal,PetscInt);
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  ierr = PetscTypeCompare((PetscObject)pc,PCASA,&isasa);CHKERRQ(ierr);
-  if (!isasa) {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Requires PC of type ASA, got %s\n", pc->type_name);
-  }
+  ierr = PetscObjectQueryFunction((PetscObject)pc,"PCASASetTolerances_C",(void (**)(void))&f);CHKERRQ(ierr);
+  if (f) {
+    ierr = (*f)(pc,rtol,abstol,dtol,maxits);CHKERRQ(ierr);
+  } 
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PCASASetTolerances_ASA"
+PetscErrorCode PETSCKSP_DLLEXPORT PCASASetTolerances_ASA(PC pc, PetscReal rtol, PetscReal abstol,PetscReal dtol, PetscInt maxits)
+{
+  PC_ASA         *asa = (PC_ASA *) pc->data;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (rtol != PETSC_DEFAULT)   asa->rtol   = rtol;
   if (abstol != PETSC_DEFAULT)   asa->abstol   = abstol;
   if (dtol != PETSC_DEFAULT)   asa->divtol = dtol;
@@ -963,10 +980,10 @@ PetscErrorCode PCCreateVcycle_ASA(PC_ASA *asa)
     /* (d) construct coarse matrix */
     /* Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
     ierr = SafeMatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
-    /*    ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
+       ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
      ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
-     ierr = SafeMatDestroy(&AI);CHKERRQ(ierr); */
-     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); 
+     ierr = SafeMatDestroy(&AI);CHKERRQ(ierr); 
+    /*     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->nu);CHKERRQ(ierr);
@@ -1121,7 +1138,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
   ierr = VecDot(asa_lev->x, ax, &tmp);CHKERRQ(ierr);
   norm = PetscAbsScalar(tmp);
   ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
-  ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %d relaxations: %f\n", asa->mu_initial, norm);CHKERRQ(ierr);
+  ierr = PetscPrintf(asa_lev->comm, "Residual norm of relaxation after %g %d relaxations: %g %g\n", asa->epsilon,asa->mu_initial, norm,prevnorm);CHKERRQ(ierr);
 
   /* Check if it already converges by itself */
   if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu_initial))) {
@@ -1170,10 +1187,10 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
       ierr = PCSmoothProlongator_ASA(asa_lev);CHKERRQ(ierr);
 
       /* (e) Define coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
-      /*      ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
+            ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
       ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
-      ierr = SafeMatDestroy(&AI);CHKERRQ(ierr);*/
-      ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); 
+      ierr = SafeMatDestroy(&AI);CHKERRQ(ierr);
+      /*      ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
       ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
       ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
       ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu);CHKERRQ(ierr);
@@ -1479,10 +1496,10 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
 							
     /* (c) construct coarse matrix A_{l+1} = (I_{l+1}^l)^T A_l I_{l+1}^l */
     ierr = SafeMatDestroy(&(asa_next_lev->A));CHKERRQ(ierr);
-    /*    ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
+       ierr = MatMatMult(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1.0, &AI);CHKERRQ(ierr);
     ierr = MatMatMult(asa_lev->It, AI, MAT_INITIAL_MATRIX, 1.0, &(asa_next_lev->A));CHKERRQ(ierr);
-    ierr = SafeMatDestroy(&AI);CHKERRQ(ierr);*/
-     ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); 
+    ierr = SafeMatDestroy(&AI);CHKERRQ(ierr);
+				 /* ierr = MatPtAP(asa_lev->A, asa_lev->I, MAT_INITIAL_MATRIX, 1, &(asa_next_lev->A));CHKERRQ(ierr); */
     ierr = MatGetSize(asa_next_lev->A, PETSC_NULL, &(asa_next_lev->size));CHKERRQ(ierr);
     ierr = PCComputeSpectralRadius_ASA(asa_next_lev);CHKERRQ(ierr);
     ierr = PCSetupSmoothersOnLevel_ASA(asa, asa_next_lev, asa->mu);CHKERRQ(ierr);
@@ -1969,6 +1986,45 @@ static PetscErrorCode PCSetFromOptions_ASA(PC pc)
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_ASA"
+static PetscErrorCode PCView_ASA(PC pc,PetscViewer viewer)
+{
+  PC_ASA          *asa = (PC_ASA*)pc->data;
+  PetscErrorCode ierr;
+  PetscTruth     iascii;
+  PC_ASA_level   *asa_lev = asa->levellist;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  ASA:\n");CHKERRQ(ierr);
+    asa_lev = asa->levellist;
+    while (asa_lev) {
+      if (!asa_lev->next) {
+        ierr = PetscViewerASCIIPrintf(viewer,"Coarse gride solver -- level %D -------------------------------\n",0);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer,"Down solver (pre-smoother) on level ? -------------------------------\n");CHKERRQ(ierr);
+      }
+      ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+      ierr = KSPView(asa_lev->smoothd,viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      if (asa_lev->next && asa_lev->smoothd == asa_lev->smoothu) {
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) same as down solver (pre-smoother)\n");CHKERRQ(ierr);
+      } else if (asa_lev->next){
+        ierr = PetscViewerASCIIPrintf(viewer,"Up solver (post-smoother) on level ? -------------------------------\n");CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
+        ierr = KSPView(asa_lev->smoothu,viewer);CHKERRQ(ierr);
+        ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
+      }
+      asa_lev = asa_lev->next;
+    }
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCASA",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------------- */
 /*
    PCCreate_ASA - Creates a ASA preconditioner context, PC_ASA, 
@@ -2005,9 +2061,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
   pc->ops->setup               = 0;
   pc->ops->destroy             = PCDestroy_ASA;
   pc->ops->setfromoptions      = PCSetFromOptions_ASA;
+  pc->ops->view                = PCView_ASA;
 
   /* Set the data to pointer to 0 */
   pc->data                = (void*)0;
+
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetDM_C","PCASASetDM_ASA",PCASASetDM_ASA);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCASASetTolerances_C","PCASASetTolerances_ASA",PCASASetTolerances_ASA);CHKERRQ(ierr);
 
   /* register events */
   if (! asa_events_registered) {
