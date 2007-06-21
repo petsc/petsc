@@ -223,6 +223,8 @@ namespace ALE {
   }
 }
 
+#endif // PETSC_HAVE_LIBXML2
+
 namespace ALECompat {
   namespace PyLith {
 
@@ -271,7 +273,5 @@ namespace ALECompat {
     };
   };
 };
-
-#endif // PETSC_HAVE_LIBXML2
 
 #endif // __PETSCMESH_FORMATS_HH
