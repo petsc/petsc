@@ -5,6 +5,8 @@
 #define __PETSCMESH_H
 #include <Mesh.hh>
 #include <CartesianSieve.hh>
+#include <Distribution.hh>
+#include <Generator.hh>
 #include "petscda.h"
 PETSC_EXTERN_CXX_BEGIN
 
@@ -24,6 +26,8 @@ typedef struct _p_Mesh* Mesh;
 
 /* Logging support */
 extern PetscCookie PETSCDM_DLLEXPORT MESH_COOKIE;
+extern PetscEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_assembleVector,
+  Mesh_assembleVectorComplete, Mesh_assembleMatrix, Mesh_updateOperator;
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();
 
@@ -262,9 +266,6 @@ typedef struct {
 } PetscQuadrature;
 
 PETSC_EXTERN_CXX_END
-
-template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(const ALE::Obj<ALE::Mesh>&, const ALE::Obj<Section>&, MatType, Mat *);
-template<typename Section> PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(const ALE::Obj<ALE::Mesh>&, const ALE::Obj<Section>&, VecScatter *);
 
 // Compatibility layer for PyLith 0.8
 //   This wil definitely go away soon

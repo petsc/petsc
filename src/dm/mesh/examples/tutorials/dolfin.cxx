@@ -1,11 +1,9 @@
-#include <petscmesh.h>
-#include <libxml/parser.h>
-#include <src/dm/mesh/meshdolfin.h>
 static char help[] = "Testing the interface with Dolfin";
 
+#include <petscmesh.hh>
+#include <petscmesh_formats.hh>
+
 using ALE::Obj;
-
-
 
 int main(int argc, char **argv)
 {
@@ -23,7 +21,6 @@ int main(int argc, char **argv)
 
   Obj<ALE::Mesh>             mesh  = new ALE::Mesh(PETSC_COMM_WORLD, 2, debug);
   Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(PETSC_COMM_WORLD, debug);
-  ALE::Dolfin::XMLObject    *xmlObject;
 
   try {
     std::cout << "Reading mesh from file " << filename << std::endl;

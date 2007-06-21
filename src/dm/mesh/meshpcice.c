@@ -1,4 +1,4 @@
-#include "src/dm/mesh/meshpcice.h"   /*I      "petscmesh.h"   I*/
+#include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCICERenumberBoundary"

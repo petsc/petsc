@@ -1,0 +1,56 @@
+import sys, os
+sys.path.insert(0, os.path.join(os.getenv('PETSC_DIR'), 'python'))
+sys.path.insert(0, os.path.join(os.getenv('PETSC_DIR'), 'python', 'BuildSystem'))
+import script
+
+class FEMQuadrature(script.Script):
+  def __init__(self):
+    import RDict
+    script.Script.__init__(self, argDB = RDict.RDict())
+    return
+
+  def setupHelp(self, help):
+    import nargs
+    help.addArgument('FEM', '-element_family=<string>', nargs.Arg(None, 'Lagrange', 'Specify the element family', isTemporary=1))
+    help.addArgument('FEM', '-element_order=<int>', nargs.ArgInt(None, 1, 'Specify the element order', isTemporary=1))
+    return
+
+  def setup(self):
+    script.Script.setup(self)
+    import PETSc.FEM
+
+    self.generator = PETSc.FEM.QuadratureGenerator()
+    self.generator.setup()
+    return
+
+  def getFamily(self):
+    if not hasattr(self, '_family'):
+      self._family = self.argDB['element_family']
+    return self._family
+  def setFamily(self, family):
+    self._family = family
+    return
+  family = property(getFamily, setFamily, doc = 'The element family')
+
+  def getOrder(self):
+    if not hasattr(self, '_order'):
+      self._order = self.argDB['element_order']
+    return self._order
+  def setOrder(self, order):
+    self._order = order
+    return
+  order = property(getOrder, setOrder, doc = 'The element order')
+
+  def run(self):
+    self.setup()
+    import FIAT.shapes
+
+    femCls = getattr(script.Script.importModule('FIAT.'+self.family), self.family)
+    self.generator.quadDegree = 2*(self.order+1)+1
+    self.generator.run([femCls(FIAT.shapes.TRIANGLE, self.order),
+                        femCls(FIAT.shapes.TRIANGLE, self.order+1)],
+                       filename = sys.argv[1])  
+    return
+
+if __name__ == '__main__':
+  FEMQuadrature().run()

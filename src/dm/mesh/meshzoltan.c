@@ -1,4 +1,4 @@
-#include <src/dm/mesh/meshzoltan.h>
+#include <petscmesh.hh>
 
 extern "C" {
 #ifdef PETSC_HAVE_ZOLTAN

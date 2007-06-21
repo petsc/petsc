@@ -1,4 +1,4 @@
-#include "src/dm/mesh/meshdolfin.h"   /*I      "petscmesh.h"   I*/
+#include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
 #ifdef PETSC_HAVE_LIBXML2
 
