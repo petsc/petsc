@@ -649,7 +649,7 @@ namespace ALE {
       if (doGhosts) {
         if (this->_debug > 1) {std::cout << "Ordering patch for ghosts" << std::endl;}
         const typename Section_::chart_type& points = section->getChart();
-        int offset = 0;
+        typename Section_::index_type::index_type offset = 0;
 
         for(typename Section_::chart_type::iterator point = points.begin(); point != points.end(); ++point) {
           const typename Section_::index_type& idx = section->getIndex(*point);

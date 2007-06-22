@@ -1,8 +1,8 @@
 // This example will solve the Bratu problem eventually
 static char help[] = "This example solves the Bratu problem.\n\n";
 
-#include <petscda.h>
-#include <petscmesh.h>
+#include <petscmesh.hh>
+#include <petscmesh_viewers.hh>
 #include <petscdmmg.h>
 #include "Generator.hh"
 
@@ -1553,8 +1553,6 @@ PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
   }
   PetscFunctionReturn(0);
 }
-
-#include "src/dm/mesh/meshvtk.h"
 
 #undef __FUNCT__
 #define __FUNCT__ "Solve"

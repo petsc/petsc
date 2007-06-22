@@ -1,4 +1,4 @@
-#include "src/dm/mesh/meshpylith.h"   /*I      "petscmesh.h"   I*/
+#include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
 
 #include<list>
 #include<map>

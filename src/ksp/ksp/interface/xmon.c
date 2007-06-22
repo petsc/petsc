@@ -49,19 +49,19 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGCreate(const char host[],const cha
 #define __FUNCT__ "KSPMonitorLG"
 PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLG(KSP ksp,PetscInt n,PetscReal rnorm,void *monctx)
 {
-  PetscDrawLG    lg = (PetscDrawLG) monctx;
+  PetscDrawLG    lg;
   PetscErrorCode ierr;
   PetscReal      x,y;
+  PetscViewer    v = (PetscViewer)monctx;
 
   PetscFunctionBegin;
   if (!monctx) {
     MPI_Comm    comm;
-    PetscViewer viewer;
 
     ierr   = PetscObjectGetComm((PetscObject)ksp,&comm);CHKERRQ(ierr);
-    viewer = PETSC_VIEWER_DRAW_(comm);
-    ierr   = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
+    v      = PETSC_VIEWER_DRAW_(comm);
   }
+  ierr   = PetscViewerDrawGetDrawLG(v,0,&lg);CHKERRQ(ierr);
 
   if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
   x = (PetscReal) n;

@@ -32,11 +32,8 @@ the rank of the process owning each cell.
 
 static char help[] = "Reads, partitions, and outputs an unstructured mesh.\n\n";
 
-#include <Distribution.hh>
-#include "petscmesh.h"
-#include "petscviewer.h"
-#include "src/dm/mesh/meshpcice.h"
-#include "src/dm/mesh/meshpylith.h"
+#include <petscmesh.hh>
+#include <petscmesh_formats.hh>
 #include <stdlib.h>
 #include <string.h>
 
@@ -164,22 +161,22 @@ PetscErrorCode OutputMesh(Mesh mesh, Options *options)
 // Creates a field whose value is the processor rank on each element
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 {
+  Obj<ALE::Mesh> m;
   Obj<ALE::Mesh::int_section_type> section;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ALE_LOG_EVENT_BEGIN;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, partition);CHKERRQ(ierr);
   ierr = PetscObjectSetName((PetscObject) *partition, "partition");CHKERRQ(ierr);
   ierr = SectionIntGetSection(*partition, section);CHKERRQ(ierr);
-  const ALE::Mesh::int_section_type::patch_type            patch    = 0;
-  const Obj<ALE::Mesh::topology_type>&                     topology = section->getTopology();
-  const Obj<ALE::Mesh::topology_type::label_sequence>&     cells    = topology->heightStratum(patch, 0);
-  const ALE::Mesh::topology_type::label_sequence::iterator end      = cells->end();
-  const ALE::Mesh::int_section_type::value_type            rank     = section->commRank();
+  const Obj<ALE::Mesh::label_sequence>&         cells = m->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator     end   = cells->end();
+  const ALE::Mesh::int_section_type::value_type rank  = section->commRank();
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
-    section->updatePoint(patch, *c_iter, &rank);
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    section->updatePoint(*c_iter, &rank);
   }
   ALE_LOG_EVENT_END;
   PetscFunctionReturn(0);
@@ -190,7 +187,6 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
 {
   Obj<ALE::Mesh> m;
-  PetscTruth     flag;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -199,19 +195,9 @@ PetscErrorCode DistributeMesh(Mesh mesh, Options *options)
     ALE::LogStage stage = ALE::LogStageRegister("MeshDistribution");
     ALE::LogStagePush(stage);
     ierr = PetscPrintf(m->comm(), "Distributing mesh\n");CHKERRQ(ierr);
-    m    = ALE::New::Distribution<ALE::Mesh::topology_type>::distributeMesh(m, std::string(options->partitioner));
+    m    = ALE::Distribution<ALE::Mesh>::distributeMesh(m, 0, std::string(options->partitioner));
     ALE::LogStagePop(stage);
     ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
-  }
-  ierr = MeshHasSectionPair(mesh, "split", &flag);CHKERRQ(ierr);
-  if (flag) {
-    SectionPair                       split;
-    Obj<ALE::Mesh::pair_section_type> section;
-
-    ierr = MeshGetSectionPair(mesh, "split", &split);CHKERRQ(ierr);
-    ierr = SectionPairGetSection(split, section);CHKERRQ(ierr);
-    section->view("Parallel split section");
-    ierr = SectionPairDestroy(split);CHKERRQ(ierr);
   }
   if (options->doPartition) {
     ierr = CreatePartition(mesh, &options->partition);CHKERRQ(ierr);
@@ -231,27 +217,26 @@ PetscErrorCode CreateOdd(Mesh mesh, SectionInt *odd)
   ALE_LOG_EVENT_BEGIN;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionIntCreate(m->comm(), odd);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::int_section_type>&              section = new ALE::Mesh::int_section_type(m->getTopology());
-  const ALE::Mesh::int_section_type::patch_type        patch   = 0;
-  const Obj<ALE::Mesh::topology_type::label_sequence>& cells   = m->getTopology()->heightStratum(patch, 0);
-  ALE::Mesh::topology_type::label_sequence::iterator   begin   = cells->begin();
-  ALE::Mesh::topology_type::label_sequence::iterator   end     = cells->end();
+  const Obj<ALE::Mesh::int_section_type>& section = new ALE::Mesh::int_section_type(m->comm(), m->debug());
+  const Obj<ALE::Mesh::label_sequence>&   cells   = m->heightStratum(0);
+  ALE::Mesh::label_sequence::iterator     begin   = cells->begin();
+  ALE::Mesh::label_sequence::iterator     end     = cells->end();
 
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
     const int num = *c_iter;
 
     if (num%2) {
-      section->setFiberDimension(patch, num, num%3+1);
+      section->setFiberDimension(num, num%3+1);
     }
   }
-  section->allocate();
-  for(ALE::Mesh::topology_type::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
+  m->allocate(section);
+  for(ALE::Mesh::label_sequence::iterator c_iter = begin; c_iter != end; ++c_iter) {
     const int num = *c_iter;
     int       val[3];
 
     if (num%2) {
       for(int n = 0; n <= num%3; n++) val[n] = num+n;
-      section->updatePoint(patch, num, val);
+      section->updatePoint(num, val);
     }
   }
   ierr = SectionIntSetSection(*odd, section);CHKERRQ(ierr);
@@ -280,26 +265,13 @@ PetscErrorCode CreateMesh(MPI_Comm comm, Options *options, Mesh *mesh)
   }
   ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
   ALE::LogStagePop(stage);
-  Obj<ALE::Mesh::topology_type> topology = m->getTopology();
-  ierr = PetscPrintf(comm, "  Read %d elements\n", topology->heightStratum(0, 0)->size());CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "  Read %d vertices\n", topology->depthStratum(0, 0)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "  Read %d elements\n", m->heightStratum(0)->size());CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "  Read %d vertices\n", m->depthStratum(0)->size());CHKERRQ(ierr);
   if (options->debug) {
-    topology->view("Serial topology");
+    m->view("Serial mesh");
   }
   if (options->doOdd) {
     ierr = CreateOdd(*mesh, &options->odd);CHKERRQ(ierr);
-  }
-
-  PetscTruth flag;
-  ierr = MeshHasSectionPair(*mesh, "split", &flag);CHKERRQ(ierr);
-  if (flag) {
-    SectionPair                       split;
-    Obj<ALE::Mesh::pair_section_type> section;
-
-    ierr = MeshGetSectionPair(*mesh, "split", &split);CHKERRQ(ierr);
-    ierr = SectionPairGetSection(split, section);CHKERRQ(ierr);
-    section->view("Serial split section");
-    ierr = SectionPairDestroy(split);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
