@@ -15,6 +15,7 @@ EXTERN PetscErrorCode MeshRefine_Mesh(Mesh, MPI_Comm, Mesh *);
 EXTERN PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh, int, Mesh **);
 EXTERN PetscErrorCode MeshGetInterpolation_Mesh(Mesh, Mesh, Mat *, Vec *);
 
+
 EXTERN PetscErrorCode updateOperatorCompat(Mat, const ALE::Obj<ALECompat::Mesh::real_section_type>&, const ALE::Obj<ALECompat::Mesh::order_type>&, const ALECompat::Mesh::point_type&, PetscScalar[], InsertMode);
 
 EXTERN_C_BEGIN
@@ -872,6 +873,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshInterpolatePoints(Mesh mesh, SectionReal se
   ierr = PetscMalloc(numPoints*dim * sizeof(double), &values);CHKERRQ(ierr);
   for(int p = 0; p < numPoints; p++) {
     double *point = &points[p*embedDim];
+    
     ALE::Mesh::point_type e = m->locatePoint(point);
     const ALE::Mesh::real_section_type::value_type *coeff = s->restrictPoint(e);
 
@@ -1578,6 +1580,7 @@ PetscErrorCode MeshRefine_Mesh(Mesh mesh, MPI_Comm comm, Mesh *refinedMesh)
   PetscFunctionReturn(0);
 }
 
+
 #include "Hierarchy.hh"
 
 #undef __FUNCT__  
@@ -1682,14 +1685,26 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-  ierr = MatSetUpPreallocation(P);CHKERRQ(ierr);
-  ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
-  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
-    const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
+  //ierr = MatSetUpPreallocation(P);CHKERRQ(ierr);
+  int selement = fine->getDiscretization()->getNumDof(fine->getDimension());
+  ierr = MatSeqAIJSetPreallocation(P, selement, PETSC_NULL); PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
+  bool hasprolong;
+  ierr = PetscPrintf(fine->comm(), "Start Building.\n");
+  if (fine->hasLabel("prolongation")) { 
+    hasprolong = true;
+  } else {
+    hasprolong = false;
+    PetscPrintf(fine->comm(), "WARNING: Point Location Label Does Not Exist");
+  }
+  ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
+  ALE::Mesh::real_section_type::value_type coords[dim];
 
+  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != v_iter_end; ++v_iter) {
+    //const ALE::Mesh::real_section_type::value_type *coords     = fineCoordinates->restrictPoint(*v_iter);
+    ierr = PetscMemcpy(coords, fineCoordinates->restrictPoint(*v_iter), dim*sizeof(double));CHKERRQ(ierr);
     ALE::Mesh::point_type coarseCell;
     ALE::Mesh::point_type cellguess = -1;
-    if (fine->hasLabel("prolongation")) {
+    if (hasprolong) {
       cellguess = fine->getValue(fine->getLabel("prolongation"), *v_iter);
       coarseCell = coarse->locatePoint(coords, cellguess);
     } else {
@@ -1710,6 +1725,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
       values[0] = -(refCoords[0] + refCoords[1])/2.0;
       values[1] = 0.5*(refCoords[0] + 1.0);
       values[2] = 0.5*(refCoords[1] + 1.0);
+  //    PetscPrintf(fine->comm(), "%f, %f, %f\n", values[0], values[1], values[2]);
       ierr = updateOperatorGeneral(P, fine, sFine, fineOrder, *v_iter, coarse, sCoarse, coarseOrder, coarseCell, values, INSERT_VALUES);CHKERRQ(ierr);
     }
   }
@@ -1717,6 +1733,7 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *interpolation = P;
+  ierr = PetscPrintf(fine->comm(), "Done Building.\n");
   PetscFunctionReturn(0);
 }
 
