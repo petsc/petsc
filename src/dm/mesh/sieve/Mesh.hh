@@ -1716,6 +1716,65 @@ namespace ALE {
       return mesh;
     }
     #undef __FUNCT__
+    #define __FUNCT__ "createReentrantBoundary"
+    /*
+      Simple boundary with reentrant singularity:
+
+     12--5-11
+      |     |
+      |     4
+      |     |
+      6    10--3--9
+      |           |
+      |           2
+      |           |
+      7-----1-----8
+    */
+    static Obj<ALE::Mesh> createReentrantBoundary(const MPI_Comm comm, const double lower[], const double upper[], double notchpercent[], const int debug = 0) {
+      Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
+      int       numVertices = 6;
+      int       numEdges    = numVertices;
+      double   *coords      = new double[numVertices*2];
+      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+
+      mesh->setSieve(sieve);
+      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        /* Create sieve and ordering */
+        for (int b = 0; b < numVertices; b++) {
+          sieve->addArrow(numEdges+b, b);
+          sieve->addArrow(numEdges+b, (b+1)%numVertices);
+          mesh->setValue(markers, b, 1);
+          mesh->setValue(markers, b+numVertices, 1);
+        }
+        coords[0] = lower[0];
+        coords[1] = lower[1];
+
+        coords[2] = upper[0];
+        coords[3] = lower[1];
+        
+        coords[4] = upper[0];
+        coords[5] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
+        
+        coords[6] = notchpercent[0]*lower[0] + (1 - notchpercent[0])*upper[0];
+        coords[7] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
+        
+        
+        coords[8] = notchpercent[0]*lower[0] + (1 - notchpercent[0])*upper[0];
+        coords[9] = upper[1];
+
+        coords[10] = lower[0];
+        coords[11] = upper[1];
+        mesh->stratify();
+      }
+      delete [] vertices;
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    }
+
+
+    #undef __FUNCT__
     #define __FUNCT__ "createCubeBoundary"
     /*
       Simple cubic boundary:
