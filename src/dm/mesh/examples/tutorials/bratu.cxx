@@ -249,7 +249,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
         curLimit = tmpLimit;
       } else curLimit = minLimit;
     } else curLimit = minLimit;
-    PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
+    //PetscPrintf(oldMesh->comm(), "%f, %f\n", dist, tmpLimit);
     volume_limits->updatePoint(*c_iter, &curLimit);
     c_iter++;
   }

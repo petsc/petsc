@@ -818,7 +818,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   }*/
   ierr = MeshLocateInMesh(finemesh, outmeshes[0]);
   for (int curLevel = 1; curLevel < nLevels-1; curLevel++) {
-    if (info) PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel);
+    if (info) PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel, curLevel+1);
     ierr = MeshLocateInMesh(outmeshes[curLevel-1], outmeshes[curLevel]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
