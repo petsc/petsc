@@ -1,0 +1,16 @@
+
+ALL: lib
+
+CFLAGS   = 
+FFLAGS   =
+SOURCEC  = adda.c
+SOURCEF  =
+OBJSC    = adda.o
+OBJSF    =
+LIBBASE  = libpetscdm
+DIRS     = examples
+LOCDIR   = src/dm/adda/
+MANSEC   = DA
+
+include ${PETSC_DIR}/conf/base
+

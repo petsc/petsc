@@ -1535,6 +1535,61 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose_SeqAIJ(Mat A,Mat B,PetscReal to
 }
 EXTERN_C_END
 
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatIsHermitianTranspose_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose_SeqAIJ(Mat A,Mat B,PetscReal tol,PetscTruth *f)
+{
+  Mat_SeqAIJ     *aij = (Mat_SeqAIJ *) A->data,*bij = (Mat_SeqAIJ*) A->data;
+  PetscInt       *adx,*bdx,*aii,*bii,*aptr,*bptr; PetscScalar *va,*vb;
+  PetscErrorCode ierr;
+  PetscInt       ma,na,mb,nb, i;
+
+  PetscFunctionBegin;
+  bij = (Mat_SeqAIJ *) B->data;
+  
+  ierr = MatGetSize(A,&ma,&na);CHKERRQ(ierr);
+  ierr = MatGetSize(B,&mb,&nb);CHKERRQ(ierr);
+  if (ma!=nb || na!=mb){
+    *f = PETSC_FALSE;
+    PetscFunctionReturn(0);
+  }
+  aii = aij->i; bii = bij->i;
+  adx = aij->j; bdx = bij->j;
+  va  = aij->a; vb = bij->a;
+  ierr = PetscMalloc(ma*sizeof(PetscInt),&aptr);CHKERRQ(ierr);
+  ierr = PetscMalloc(mb*sizeof(PetscInt),&bptr);CHKERRQ(ierr);
+  for (i=0; i<ma; i++) aptr[i] = aii[i];
+  for (i=0; i<mb; i++) bptr[i] = bii[i];
+
+  *f = PETSC_TRUE;
+  for (i=0; i<ma; i++) {
+    while (aptr[i]<aii[i+1]) {
+      PetscInt         idc,idr; 
+      PetscScalar vc,vr;
+      /* column/row index/value */
+      idc = adx[aptr[i]]; 
+      idr = bdx[bptr[idc]];
+      vc  = va[aptr[i]]; 
+      vr  = vb[bptr[idc]];
+      if (i!=idr || PetscAbsScalar(vc-PetscConj(vr)) > tol) {
+	*f = PETSC_FALSE;
+        goto done;
+      } else {
+	aptr[i]++; 
+        if (B || i!=idc) bptr[idc]++;
+      }
+    }
+  }
+ done:
+  ierr = PetscFree(aptr);CHKERRQ(ierr);
+  if (B) {
+    ierr = PetscFree(bptr);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+EXTERN_C_END
+
 #undef __FUNCT__
 #define __FUNCT__ "MatIsSymmetric_SeqAIJ"
 PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscTruth *f)
@@ -1542,6 +1597,16 @@ PetscErrorCode MatIsSymmetric_SeqAIJ(Mat A,PetscReal tol,PetscTruth *f)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   ierr = MatIsTranspose_SeqAIJ(A,A,tol,f);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MatIsHermitian_SeqAIJ"
+PetscErrorCode MatIsHermitian_SeqAIJ(Mat A,PetscReal tol,PetscTruth *f)
+{
+  PetscErrorCode ierr;
+  PetscFunctionBegin;
+  ierr = MatIsHermitianTranspose_SeqAIJ(A,A,tol,f);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2395,7 +2460,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
        MatLoad_SeqAIJ,
 /*85*/ MatIsSymmetric_SeqAIJ,
-       0,
+       MatIsHermitian_SeqAIJ,
        0,
        0,
        0,
@@ -3009,6 +3074,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
                                       MatConvert_SeqAIJ_SeqCRL);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsTranspose_C",
                                      "MatIsTranspose_SeqAIJ",
+                                      MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatIsHermitianTranspose_C",
+                                     "MatIsHermitianTranspose_SeqAIJ",
                                       MatIsTranspose_SeqAIJ);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatSeqAIJSetPreallocation_C",
                                      "MatSeqAIJSetPreallocation_SeqAIJ",

@@ -497,5 +497,52 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputBag(PetscView
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVec(PetscViewer, const char [], Vec);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryMatlabOutputVecDA(PetscViewer, const char [], Vec, DA);
 
+
+/*S
+  ADDA - Abstract PETSc object that manages distributed field data for a single structured grid
+         These are for any number of dimensions.
+
+  Level: advanced. 
+
+  Concepts: distributed array
+.seealso: DA, DACreate(), ADDACreate()
+S*/
+typedef struct _p_ADDA* ADDA;
+
+extern PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE;
+
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreate(MPI_Comm,PetscInt,PetscInt*,PetscInt*,PetscInt,PetscTruth*,ADDA*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA);
+
+/* DM interface functions */
+PetscErrorCode PETSCDM_DLLEXPORT ADDAView(ADDA,PetscViewer);
+PetscErrorCode PETSCDM_DLLEXPORT ADDACreateGlobalVector(ADDA,Vec*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA,ISColoringType,ISColoring*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA,MatType, Mat*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA,ADDA,Mat*,Vec*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA, MPI_Comm,ADDA *);
+PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA, ADDA*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA, ADDA, VecScatter*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA, ADDA, Mat *);
+
+/* functions only supported by ADDA */
+PetscErrorCode PETSCDM_DLLEXPORT ADDASetRefinement(ADDA, PetscInt *,PetscInt);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetCorners(ADDA, PetscInt **, PetscInt **);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetGhostCorners(ADDA, PetscInt **, PetscInt **);
+PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA, ADDA, MatType , Mat *);
+
+/* functions to set values in vectors and matrices */
+struct _ADDAIdx_s {
+  PetscInt     *x;               /* the coordinates, user has to make sure it is the correct size! */
+  PetscInt     d;                /* indexes the dof */
+};
+typedef struct _ADDAIdx_s ADDAIdx;
+
+PetscErrorCode PETSCDM_DLLEXPORT ADDAMatSetValues(Mat, ADDA, PetscInt, const ADDAIdx[], ADDA, PetscInt,
+						  const ADDAIdx[], const PetscScalar[], InsertMode);
+
+PetscTruth ADDAHCiterStartup(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
+PetscTruth ADDAHCiter(const PetscInt, const PetscInt *const, const PetscInt *const, PetscInt *const);
+
 PETSC_EXTERN_CXX_END
 #endif

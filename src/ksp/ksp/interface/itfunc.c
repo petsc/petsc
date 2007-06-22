@@ -325,7 +325,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = MatView(mat,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
     ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
   }
-
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   /* reset the residual history list if requested */
@@ -506,6 +505,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatDestroy(B);CHKERRQ(ierr);
+  }
+  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_preconditioner_binary",&flag2);CHKERRQ(ierr);
+  if (flag2) {
+    Mat B;
+    ierr = PCComputeExplicitOperator(ksp->pc,&B);CHKERRQ(ierr);
     ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }

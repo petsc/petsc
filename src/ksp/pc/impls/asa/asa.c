@@ -2,6 +2,8 @@
 
 /*  -------------------------------------------------------------------- 
 
+      Contributed by Arvid Bessen, Columbia University, June 2007
+     
      This file implements a ASA preconditioner in PETSc as part of PC.
 
      The adaptive smoothed aggregation algorithm is described in the paper
@@ -34,7 +36,7 @@
      Example runs in parallel would be with parameters like
      mpiexec ./program -pc_asa_coarse_mat_type aijmumps -pc_asa_direct_solver 200
      -pc_asa_max_cand_vecs 4 -pc_asa_mu_initial 50 -pc_asa_richardson_scale 1.0
-     -pc_asa_rq_improve 0.9 -pc_asa_smoother_pc_type asm -pc_asa_smoother_sub_pc_type sor
+     -pc_asa_rq_improve 0.9 -asa_smoother_pc_type asm -asa_smoother_sub_pc_type sor
 
     -------------------------------------------------------------------- */
 
@@ -439,8 +441,7 @@ PetscErrorCode PCSetupSmoothersOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_lev, P
     }
     /* this would be the place to add support for other preconditioners */
   }
-  /* user can set any option by using -pc_asa_smoother_xxx */
-  ierr = KSPSetOptionsPrefix(asa_lev->smoothd, "pc_asa_smoother_");CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(asa_lev->smoothd, "asa_smoother_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(asa_lev->smoothd);CHKERRQ(ierr);
   /* set smoothu equal to smoothd, this could change later */
   asa_lev->smoothu = asa_lev->smoothd;
@@ -496,7 +497,7 @@ PetscErrorCode PCSetupDirectSolversOnLevel_ASA(PC_ASA *asa, PC_ASA_level *asa_le
   ierr = KSPSetOperators(asa_lev->smoothd, asa_lev->A, asa_lev->A, DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
   ierr = KSPSetTolerances(asa_lev->smoothd, asa->direct_rtol, asa->direct_abstol, asa->direct_dtol, maxits);CHKERRQ(ierr);
   /* user can set any option by using -pc_asa_direct_xxx */
-  ierr = KSPSetOptionsPrefix(asa_lev->smoothd, "pc_asa_direct_");CHKERRQ(ierr);
+  ierr = KSPSetOptionsPrefix(asa_lev->smoothd, "asa_coarse_");CHKERRQ(ierr);
   ierr = KSPSetFromOptions(asa_lev->smoothd);CHKERRQ(ierr);
   /* set smoothu equal to 0, not used */
   asa_lev->smoothu = 0;
@@ -2042,7 +2043,6 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
 {
   PetscErrorCode ierr;
-  const char*    prefix;
   PC_ASA         *asa;
 
   PetscFunctionBegin;
@@ -2077,8 +2077,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
     ierr = PetscLogEventRegister(&PC_CreateVcycle_ASA,        "PCCreateVcycle_ASA",   PC_COOKIE);CHKERRQ(ierr);
     asa_events_registered = PETSC_TRUE;
   }
-
-  ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   /* Create new PC_ASA object */
   ierr = PetscMalloc(sizeof(PC_ASA),&asa);CHKERRQ(ierr);

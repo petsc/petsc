@@ -1,7 +1,7 @@
 
 ALL: lib
 
-DIRS     = ao da mesh
+DIRS     = ao da mesh adda
 LOCDIR   = src/dm/
 MANSEC   = DA
 

@@ -75,6 +75,28 @@ PetscErrorCode MatScale_SeqDense(Mat A,PetscScalar alpha)
   ierr = PetscLogFlops(nz);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitian_SeqDense"
+PetscErrorCode MatIsHermitian_SeqDense(Mat A,PetscReal rtol,PetscTruth *fl)
+{
+  Mat_SeqDense   *a = (Mat_SeqDense*)A->data;
+  PetscInt       i,j,m = A->rmap.n,N;
+  PetscScalar    *v = a->v;
+
+  PetscFunctionBegin;
+  *fl = PETSC_FALSE;
+  if (A->rmap.n != A->cmap.n) PetscFunctionReturn(0);
+  N = a->lda;
+
+  for (i=0; i<m; i++) {
+    for (j=i+1; j<m; j++) {
+      if (PetscAbsScalar(v[i+j*N] - PetscConj(v[j+i*N])) > rtol) PetscFunctionReturn(0);
+    }
+  }
+  *fl = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
   
 /* ---------------------------------------------------------------*/
 /* COMMENT: I have chosen to hide row permutation in the pivots,
@@ -1754,7 +1776,7 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqDense,
        0,
 /*84*/ MatLoad_SeqDense,
        0,
-       0,
+       MatIsHermitian_SeqDense,
        0,
        0,
        0,

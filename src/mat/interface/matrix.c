@@ -3549,6 +3549,51 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat A,Mat B,PetscReal tol,Petsc
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitianTranspose"
+/*@C
+   MatIsHermitianTranspose - Test whether a matrix is another one's Hermitian transpose, 
+
+   Collective on Mat
+
+   Input Parameter:
++  A - the matrix to test
+-  B - the matrix to test against, this can equal the first parameter
+
+   Output Parameters:
+.  flg - the result
+
+   Notes:
+   Only available for SeqAIJ/MPIAIJ matrices. The sequential algorithm
+   has a running time of the order of the number of nonzeros; the parallel
+   test involves parallel copies of the block-offdiagonal parts of the matrix.
+
+   Level: intermediate
+
+   Concepts: matrices^transposing, matrix^symmetry
+
+.seealso: MatTranspose(), MatIsSymmetric(), MatIsHermitian(), MatIsTranspose()
+@*/
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat A,Mat B,PetscReal tol,PetscTruth *flg)
+{
+  PetscErrorCode ierr,(*f)(Mat,Mat,PetscReal,PetscTruth*),(*g)(Mat,Mat,PetscReal,PetscTruth*);
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidHeaderSpecific(B,MAT_COOKIE,2);
+  PetscValidPointer(flg,3);
+  ierr = PetscObjectQueryFunction((PetscObject)A,"MatIsHermitianTranspose_C",(void (**)(void))&f);CHKERRQ(ierr);
+  ierr = PetscObjectQueryFunction((PetscObject)B,"MatIsHermitianTranspose_C",(void (**)(void))&g);CHKERRQ(ierr);
+  if (f && g) {
+    if (f==g) {
+      ierr = (*f)(A,B,tol,flg);CHKERRQ(ierr);
+    } else {
+      SETERRQ(PETSC_ERR_ARG_NOTSAMETYPE,"Matrices do not have the same comparator for Hermitian test");
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatPermute"
 /*@C
    MatPermute - Creates a new matrix with rows and columns permuted from the 
@@ -6299,6 +6344,50 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetric(Mat A,PetscReal tol,PetscTruth 
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MatIsHermitian"
+/*@
+   MatIsHermitian - Test whether a matrix is Hermitian
+
+   Collective on Mat
+
+   Input Parameter:
++  A - the matrix to test
+-  tol - difference between value and its transpose less than this amount counts as equal (use 0.0 for exact Hermitian)
+
+   Output Parameters:
+.  flg - the result
+
+   Level: intermediate
+
+   Concepts: matrix^symmetry
+
+.seealso: MatTranspose(), MatIsTranspose(), MatIsHermitian(), MatIsStructurallySymmetric(), MatSetOption(), MatIsSymmetricKnown()
+@*/ 
+PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscReal tol,PetscTruth *flg)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  PetscValidPointer(flg,2);
+  if (!A->hermitian_set) {
+    if (!A->ops->ishermitian) {
+      MatType mattype;
+      ierr = MatGetType(A,&mattype);CHKERRQ(ierr);
+      SETERRQ1(PETSC_ERR_SUP,"Matrix of type <%s> does not support checking for Hermitian",mattype);
+    }
+    ierr = (*A->ops->ishermitian)(A,tol,&A->hermitian);CHKERRQ(ierr);
+    A->hermitian_set = PETSC_TRUE;
+    if (A->hermitian) {
+      A->structurally_symmetric_set = PETSC_TRUE;
+      A->structurally_symmetric     = PETSC_TRUE;
+    }
+  }
+  *flg = A->hermitian;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MatIsSymmetricKnown"
 /*@
    MatIsSymmetricKnown - Checks the flag on the matrix to see if it is symmetric.
@@ -6406,45 +6495,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsStructurallySymmetric(Mat A,PetscTruth *f
     A->structurally_symmetric_set = PETSC_TRUE;
   }
   *flg = A->structurally_symmetric;
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "MatIsHermitian"
-/*@
-   MatIsHermitian - Test whether a matrix is Hermitian, i.e. it is the complex conjugate of its transpose.
-
-   Collective on Mat
-
-   Input Parameter:
-.  A - the matrix to test
-
-   Output Parameters:
-.  flg - the result
-
-   Level: intermediate
-
-   Concepts: matrix^symmetry
-
-.seealso: MatTranspose(), MatIsTranspose(), MatIsSymmetric(), MatIsStructurallySymmetric(), MatSetOption()
-@*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat A,PetscTruth *flg)
-{
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(A,MAT_COOKIE,1);
-  PetscValidPointer(flg,2);
-  if (!A->hermitian_set) {
-    if (!A->ops->ishermitian) SETERRQ(PETSC_ERR_SUP,"Matrix does not support checking for being Hermitian");
-    ierr = (*A->ops->ishermitian)(A,&A->hermitian);CHKERRQ(ierr);
-    A->hermitian_set = PETSC_TRUE;
-    if (A->hermitian) {
-      A->structurally_symmetric_set = PETSC_TRUE;
-      A->structurally_symmetric     = PETSC_TRUE;
-    }
-  }
-  *flg = A->hermitian;
   PetscFunctionReturn(0);
 }
 
