@@ -42,13 +42,14 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteField"
   template<typename Section>
     static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
+    const int      dim = enforceDim > 0 ? enforceDim : fiberDim;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    if (fiberDim == 3) {
+    if (dim == 3) {
       ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), fiberDim);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), dim);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
     }
     ierr = writeSection(field, fiberDim, numbering, viewer, enforceDim);CHKERRQ(ierr);
