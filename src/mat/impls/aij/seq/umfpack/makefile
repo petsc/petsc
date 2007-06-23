@@ -1,7 +1,6 @@
 
 #requirespackage   'PETSC_HAVE_UMFPACK'
 #requiresprecision double
-#requiresscalar    real
 
 ALL: lib
 
