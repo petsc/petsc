@@ -5,7 +5,7 @@
        Extension of DA object to any number of dimensions.
 
 */
-#include "adda.h"
+#include "src/dm/adda/addaimpl.h"
 
 PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE = 0;
 
@@ -435,7 +435,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA adda, MPI_Comm comm, ADDA *adda
 
 .seealso: DMCoarsen()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, ADDA *addac) {
+PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *addac) {
   PetscErrorCode ierr;
   PetscInt       *nodesc;
   PetscInt       *procsc;

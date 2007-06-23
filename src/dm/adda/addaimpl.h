@@ -5,11 +5,7 @@
 
 typedef struct _ADDAOps *ADDAOps;
 struct _ADDAOps {
-  ADDAOPS(ADDA)
-};
-
-struct _p_ADDA {
-  PETSCHEADER(struct _ADDAOps);
+  DMOPS(ADDA)
 };
 
 struct _p_ADDA {

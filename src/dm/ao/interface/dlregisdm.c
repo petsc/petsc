@@ -35,6 +35,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
   /* Register Classes */
   ierr = PetscLogClassRegister(&AO_COOKIE,     "Application Order");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&DA_COOKIE,     "Distributed array");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&ADDA_COOKIE,   "Arbitrary Dimension Distributed array");CHKERRQ(ierr);
 #ifdef PETSC_HAVE_SIEVE
   ierr = PetscLogClassRegister(&MESH_COOKIE,       "Mesh");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&SECTIONREAL_COOKIE,"SectionReal");CHKERRQ(ierr);

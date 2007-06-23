@@ -521,7 +521,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetColoring(ADDA,ISColoringType,ISColoring*
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA,MatType, Mat*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInterpolation(ADDA,ADDA,Mat*,Vec*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDARefine(ADDA, MPI_Comm,ADDA *);
-PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA, ADDA*);
+PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA, MPI_Comm, ADDA*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetInjection(ADDA, ADDA, VecScatter*);
 PetscErrorCode PETSCDM_DLLEXPORT ADDAGetAggregates(ADDA, ADDA, Mat *);
 
