@@ -75,7 +75,7 @@ class Configure(PETSc.package.Package):
     args.append('--without-fei')
     args.append('--without-superlu')
     args = ' '.join(args)
-    fd = file(os.path.join(self.installDir,'hypre'), 'w')
+    fd = file(os.path.join(self.packageDir,'hypre'), 'w')
     fd.write(args)
     fd.close()
 

@@ -13,6 +13,7 @@
 //helper functions:
 
 bool PointIsInElement(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type element, double * point);
+PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh);
 //double PointDist(double * pointA, double * pointB, int dim);
 
 // Functions only used here
@@ -706,9 +707,9 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     ierr = MeshSetSectionReal(outmeshes[curLevel-1], section);CHKERRQ(ierr);
     ierr = SectionRealDestroy(section);*/
   } //end of level for
-  std::list<ALE::Mesh::point_type> tricomplist;
-  for (int curLevel = 0; curLevel < nLevels-1; curLevel++) {
-    //PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel, curLevel+1);
+  //std::list<ALE::Mesh::point_type> tricomplist;
+/*  for (int curLevel = 0; curLevel < nLevels-1; curLevel++) {
+    if (info) PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel, curLevel+1);
     ALE::Obj<ALE::Mesh> c_m;
     ALE::Obj<ALE::Mesh> f_m;
     if (curLevel == 0) {
@@ -814,6 +815,11 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
         lv_iter++;
       }
     }
+  }*/
+  ierr = MeshLocateInMesh(finemesh, outmeshes[0]);
+  for (int curLevel = 1; curLevel < nLevels-1; curLevel++) {
+    if (info) PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel, curLevel+1);
+    ierr = MeshLocateInMesh(outmeshes[curLevel-1], outmeshes[curLevel]);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -870,7 +876,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
         if (PointIsInElement(cm, *ce_iter, fvCoords)) {
           isLocated = true;
           fm->setValue(prolongation, *fv_iter, *ce_iter);
-          PetscPrintf(fm->comm(), "INITIAL: Point %d located in %d.\n",  *fv_iter, *ce_iter);
+          //PetscPrintf(fm->comm(), "INITIAL: Point %d located in %d.\n",  *fv_iter, *ce_iter);
           //OK WE HAVE A STARTING POINT.  Go through its neighbors looking at the unfound ones and finding them homes.
           ALE::Obj<ALE::Mesh::sieve_type::coneSet> neighbors = fm->getSieve()->cone(fm->getSieve()->support(*fv_iter));
           ALE::Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
@@ -901,7 +907,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
                 locationDiscovered = true;
                 //set the label.
                 fm->setValue(prolongation, curVert, curguess);
-                PetscPrintf(fm->comm(), "Point %d located in %d.\n",  curVert, curguess);
+                //PetscPrintf(fm->comm(), "Point %d located in %d.\n",  curVert, curguess);
                 //stick its neighbors in the queue along with its location as a good guess of the location of its neighbors
                 neighbors = fm->getSieve()->cone(fm->getSieve()->support(curVert));
                 n_iter = neighbors->begin();
@@ -935,7 +941,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
             eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.
             //unset the traversed element list
             ALE::Obj<ALE::Mesh::label_sequence> traved_elements = cm->getLabelStratum("traversal", 1);
-            PetscPrintf(cm->comm(), "%d\n", traved_elements->size());
+            //PetscPrintf(cm->comm(), "%d\n", traved_elements->size());
             ALE::Mesh::label_sequence::iterator tp_iter = traved_elements->begin();
             ALE::Mesh::label_sequence::iterator tp_iter_end = traved_elements->end();
             while (tp_iter != tp_iter_end) {

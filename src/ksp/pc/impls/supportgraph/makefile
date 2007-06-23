@@ -3,10 +3,10 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = supportgraph.c
+SOURCEC  = supportgraph.c lowstretch.cpp
 SOURCEF  =
 SOURCEH  = 
-OBJSC    = supportgraph.o
+OBJSC    = supportgraph.o lowstretch.o
 OBJSF    =
 LIBBASE  = libpetscksp
 DIRS     = 

@@ -3,8 +3,8 @@
 #if !defined(__mesh_h)
 #define __mesh_h
 
-#include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "petscmat.h"    /*I      "petscmat.h"    I*/
+#include "petscmesh.h"   /*I      "petscmesh.h"   I*/
 #include "src/dm/dmimpl.h"
 
 typedef struct _MeshOps *MeshOps;

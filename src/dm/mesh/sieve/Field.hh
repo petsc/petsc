@@ -579,13 +579,13 @@ namespace ALE {
       return size;
     };
   public: // Index retrieval
-    const int& getIndex(const point_type& p) {
+    const typename index_type::index_type& getIndex(const point_type& p) {
       return this->_atlas->restrictPoint(p)->index;
     };
-    void setIndex(const point_type& p, const int& index) {
+    void setIndex(const point_type& p, const typename index_type::index_type& index) {
       ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
     };
-    void setIndexBC(const point_type& p, const int& index) {
+    void setIndexBC(const point_type& p, const typename index_type::index_type& index) {
       this->setIndex(p, index);
     };
     void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
@@ -796,6 +796,9 @@ namespace ALE {
           txt << std::endl;
         }
       }
+      if (chart.size() == 0) {
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
+      }
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
     };
@@ -991,13 +994,13 @@ namespace ALE {
       return size;
     };
   public: // Index retrieval
-    const int& getIndex(const point_type& p) {
+    const typename index_type::index_type& getIndex(const point_type& p) {
       return this->_atlas->restrictPoint(p)->index;
     };
-    void setIndex(const point_type& p, const int& index) {
+    void setIndex(const point_type& p, const typename index_type::index_type& index) {
       ((typename atlas_type::value_type *) this->_atlas->restrictPoint(p))->index = index;
     };
-    void setIndexBC(const point_type& p, const int& index) {};
+    void setIndexBC(const point_type& p, const typename index_type::index_type& index) {};
     void getIndices(const point_type& p, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       this->getIndices(p, this->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
@@ -1598,6 +1601,9 @@ namespace ALE {
           }
           txt << std::endl;
         }
+      }
+      if (chart.size() == 0) {
+        txt << "[" << this->commRank() << "]: empty" << std::endl;
       }
       PetscSynchronizedPrintf(comm, txt.str().c_str());
       PetscSynchronizedFlush(comm);
@@ -2622,7 +2628,7 @@ namespace ALECompat {
         return this->_indexArray;
       };
     public: // Allocation
-      void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, int& offset, int& bcOffset, const bool postponeGhosts = false) {
+      void orderPoint(const Obj<atlas_type>& atlas, const Obj<sieve_type>& sieve, const patch_type& patch, const point_type& point, typename atlas_type::value_type::index_type& offset, typename atlas_type::value_type::index_type& bcOffset, const bool postponeGhosts = false) {
         const Obj<typename sieve_type::coneSequence>& cone = sieve->cone(point);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
         index_type                                    idx  = atlas->restrictPoint(patch, point)[0];
@@ -2667,7 +2673,7 @@ namespace ALECompat {
           }
         }
       }
-      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, int& offset, int& bcOffset, const bool postponeGhosts = false) {
+      void orderPatch(const Obj<atlas_type>& atlas, const patch_type& patch, typename atlas_type::value_type::index_type& offset, typename atlas_type::value_type::index_type& bcOffset, const bool postponeGhosts = false) {
         const typename atlas_type::chart_type& chart = atlas->getPatch(patch);
 
         for(typename atlas_type::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
@@ -2690,7 +2696,7 @@ namespace ALECompat {
 
         for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
           if (this->_debug > 1) {std::cout << "Ordering patch " << p_iter->first << std::endl;}
-          int offset = 0, bcOffset = -2;
+          typename atlas_type::value_type::index_type offset = 0, bcOffset = -2;
 
           if (!atlas->hasPatch(p_iter->first)) continue;
           this->orderPatch(atlas, p_iter->first, offset, bcOffset, postponeGhosts);
@@ -2721,7 +2727,7 @@ namespace ALECompat {
           for(typename topology_type::sheaf_type::const_iterator p_iter = patches.begin(); p_iter != patches.end(); ++p_iter) {
             if (this->_debug > 1) {std::cout << "Ordering patch " << p_iter->first << " for ghosts" << std::endl;}
             const typename atlas_type::chart_type& points = this->_atlas->getPatch(p_iter->first);
-            int offset = 0, bcOffset = -2;
+            typename atlas_type::value_type::index_type offset = 0, bcOffset = -2;
 
             for(typename atlas_type::chart_type::iterator point = points.begin(); point != points.end(); ++point) {
               const index_type& idx = this->_atlas->restrictPoint(p_iter->first, *point)[0];
