@@ -36,11 +36,12 @@ extern PetscErrorCode PCDMMGSetDM(PC pc,DM dm)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = PetscObjectTypeCompare((PetscObject)pc,PCMG,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)pc,PCMG,&flg);CHKERRQ(ierr);
   if (!flg) PetscFunctionReturn(0);
 
   ierr = PetscObjectGetComm((PetscObject)pc,&comm);CHKERRQ(ierr);
   ierr = PCMGGetLevels(pc,&nlevels);CHKERRQ(ierr);
+  ierr = PCMGSetGalerkin(pc);CHKERRQ(ierr);
   ierr = PetscObjectReference((PetscObject)dm);CHKERRQ(ierr);
 
   /* refine the DM nlevels - 1 and use it to fill up the PCMG restrictions/interpolations */
