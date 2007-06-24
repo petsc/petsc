@@ -1181,7 +1181,7 @@ PetscErrorCode MatIsStructurallySymmetric_SeqSBAIJ(Mat A,PetscTruth *flg)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitian_SeqSBAIJ"
-PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscTruth *flg)
+PetscErrorCode MatIsHermitian_SeqSBAIJ(Mat A,PetscReal tol,PetscTruth *flg)
  {
    PetscFunctionBegin;
    *flg = PETSC_FALSE;

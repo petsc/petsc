@@ -149,3 +149,9 @@ triangle_shared:
       output  = config.base.Configure.executeShellCommand('cp -f '+os.path.join(self.packageDir, 'config.h')+' '+includeDir, timeout=5, log = self.framework.log)[0]
       self.checkInstall(output1,'make.inc')
     return self.installDir
+
+  def configureLibrary(self):
+    PETSc.package.Package.configureLibrary(self)
+    if self.found:
+      self.framework.addDefine('ANSI_DECLARATORS', 1)
+    return
