@@ -133,35 +133,12 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact)
   ierr = MatAssemblyEnd(pre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
 
-  //ierr = MatDuplicate(mat,MAT_COPY_VALUES,&pre);CHKERRQ(ierr);
-  
-
-  /*
-
-  ierr = VecCreate(&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
-  ierr = VecCreate(&y1);CHKERRQ(ierr);
-  ierr = VecSetSizes(y1,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(y1,VECSEQ);CHKERRQ(ierr);
-  ierr = VecCreate(&y2);CHKERRQ(ierr);
-  ierr = VecSetSizes(y2,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(y2,VECSEQ);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMult(mat,x,y1);CHKERRQ(ierr);
-  ierr = MatMult(*pre,x,y2);CHKERRQ(ierr);
-  */
   /*
   printf("\n----------\nOriginal matrix:\n"); 
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   printf("\n----------\nPreconditioner:\n\n"); 
   ierr = MatView(pre,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   printf("\n----------\n"); 
-  */
-  /*
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecView(y1,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecView(y2,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   */
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
