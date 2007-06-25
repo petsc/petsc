@@ -1,5 +1,6 @@
 #define PETSCKSP_DLL
 
+#include <math.h>
 #include <queue>
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "boost/graph/adjacency_list.hpp"
@@ -8,7 +9,7 @@
 using namespace boost;
 
 /*
-  Boost graph definitions
+  Type definitions
 */
 struct vertex_weight_t {
   typedef vertex_property_tag kind;
@@ -42,6 +43,7 @@ struct PQNode {
     return dist > a.dist;
   }
 };
+typedef std::priority_queue<PQNode> ShortestPathPriorityQueue;
 
 /*
   Function headers
@@ -52,7 +54,6 @@ PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const P
 PetscErrorCode StarDecomp(const Graph g,const PetscInt root,const PetscScalar delta,const PetscScalar epsilon,
 			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
 			  std::vector<PetscInt>& x,std::vector<PetscInt>& y);
-PetscErrorCode BallCut(const Graph g,const PetscInt root,const PetscScalar minRadius,const PetscScalar maxBoundary,PetscInt *idx[]);
 
 
 /* -------------------------------------------------------------------------- */
@@ -92,7 +93,7 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact)
     PetscScalar sum = 0;
     ierr = MatGetRow(mat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
     for (k=0; k<ncols; k++) {
-      if (!(-.000000001 < vals[k] && vals[k] < .000000001)) { /****** fix this ******/
+      if (cols[k] == i || vals[k] < 0) { /****** fix this ******/
 	sum += vals[k];
 	if (cols[k] > i) {
 	  add_edge(i,cols[k],-vals[k],g);
@@ -104,7 +105,7 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact)
   }
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = LowStretchSpanningTreeHelper(g,0,log(4.0/3)/(2*log(n)),h,idx);CHKERRQ(ierr);
+  ierr = LowStretchSpanningTreeHelper(g,0,log(4.0/3)/(2.0*log(n)),h,idx);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,idx,&perm);CHKERRQ(ierr);
   ierr = ISSetPermutation(perm);CHKERRQ(ierr);
@@ -132,37 +133,12 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact)
   ierr = MatAssemblyEnd(pre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   
 
-  //ierr = MatDuplicate(mat,MAT_COPY_VALUES,&pre);CHKERRQ(ierr);
-  
-
-  /*
-
-  ierr = VecCreate(&x);CHKERRQ(ierr);
-  ierr = VecSetSizes(x,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(x,VECSEQ);CHKERRQ(ierr);
-  ierr = VecCreate(&y1);CHKERRQ(ierr);
-  ierr = VecSetSizes(y1,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(y1,VECSEQ);CHKERRQ(ierr);
-  ierr = VecCreate(&y2);CHKERRQ(ierr);
-  ierr = VecSetSizes(y2,n,PETSC_DECIDE);CHKERRQ(ierr);
-  ierr = VecSetType(y2,VECSEQ);CHKERRQ(ierr);
-  ierr = VecSetRandom(x,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatMult(mat,x,y1);CHKERRQ(ierr);
-  ierr = MatMult(*pre,x,y2);CHKERRQ(ierr);
-  */
-
   /*
   printf("\n----------\nOriginal matrix:\n"); 
   ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   printf("\n----------\nPreconditioner:\n\n"); 
   ierr = MatView(pre,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   printf("\n----------\n"); 
-  */
-
-  /*
-  ierr = VecView(x,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecView(y1,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  ierr = VecView(y2,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
   */
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
@@ -264,9 +240,9 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
 			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
 			  std::vector<PetscInt>& x,std::vector<PetscInt>& y)
 {
-  PetscInt n,m;
+  PetscInt n,m,edgesLeft;
   //PetscErrorCode ierr;
-  std::priority_queue<PQNode> pq;
+  ShortestPathPriorityQueue pq;
   PetscScalar radius;
   PetscInt centerSize;
   std::vector<PetscInt> centerIdx;
@@ -277,19 +253,19 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   EdgeWeight edge_weight_g = get(edge_weight_t(),g);
   n = num_vertices(g);
   m = num_edges(g);
+  edgesLeft = m;
 
-  // don't declare like this...
   std::vector<PetscInt> pred(n,-1);
   std::vector<PetscInt> succ[n]; 
   std::vector<PetscInt>::iterator i;
   PetscScalar dist[n];
-  PetscTruth taken[n];
+  std::vector<PetscTruth> taken(n,PETSC_FALSE);
 
-  // form tree of shortest paths to root
+  /** form tree of shortest paths to root **/
   graph_traits<Graph>::out_edge_iterator e, e_end;  
   for (tie(e,e_end)=out_edges(root,g); e!=e_end; e++) {
     PetscInt t = target(*e,g);
-    pq.push(PQNode(t,root,get(edge_weight_g,*e)));
+    pq.push(PQNode(t,root,1.0/get(edge_weight_g,*e)));
   }
   pred[root] = root;
   while (!pq.empty()) {
@@ -301,19 +277,14 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
       for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
 	PetscInt t = target(*e,g);
 	if (pred[t] == -1) {
-	  pq.push(PQNode(t,node.vertex,node.dist+get(edge_weight_g,*e)));
+	  pq.push(PQNode(t,node.vertex,node.dist+1.0/get(edge_weight_g,*e)));
 	}
       }
+      radius = node.dist;
     }
   }
-  radius = node.dist;
-  /*
-  for (int w=0; w<n; w++) {
-    printf("pred[%d] = %d \n",w,pred[w]);
-    printf("dist[%d] = %f \n",w,dist[w]);
-  }
-  */
-  // do ball cut
+
+  /** BALL CUT **/
   for (i=succ[root].begin();i!=succ[root].end();i++) {
     pq.push(PQNode(*i,dist[*i]));
   }
@@ -328,6 +299,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   }
   const PetscScalar minRadius = delta*radius;
   while (dist[pq.top().vertex] < minRadius) {
+    assert(!pq.empty());
     node = pq.top();pq.pop();
     centerIdx.push_back(g.local_to_global(node.vertex));
     taken[node.vertex] = PETSC_TRUE;
@@ -335,19 +307,17 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
       if (taken[target(*e,g)]) {
 	boundary -= get(edge_weight_g,*e);
-	edgeCount++;
       } else {
 	boundary += get(edge_weight_g,*e);
+	edgeCount++;
       }
     }
     for (i=succ[node.vertex].begin();i!=succ[node.vertex].end();i++) {
       pq.push(PQNode(*i,dist[*i]));
     }
-    if (pq.empty()) {
-    }
-    assert(!pq.empty());
   }
   while (boundary > (edgeCount+1)*log(m)/(log(2)*(1-2*delta)*radius)) {
+    assert(!pq.empty());
     node = pq.top();pq.pop();
     centerIdx.push_back(g.local_to_global(node.vertex));
     taken[node.vertex] = PETSC_TRUE;
@@ -355,9 +325,9 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
       if (taken[target(*e,g)]) {
 	boundary -= get(edge_weight_g,*e);
-	edgeCount++;
       } else {
 	boundary += get(edge_weight_g,*e);
+	edgeCount++;
       }
     }
     for (i=succ[node.vertex].begin();i!=succ[node.vertex].end();i++) {
@@ -366,10 +336,122 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
   }
   size.push_back(centerSize);
   idx.push_back(centerIdx);
-  
-  // pseudo cone cut
+  edgesLeft -= edgeCount;
+
   k = 0;
   assert(!pq.empty());
+  std::queue<PetscInt> anchor_q;
+  ShortestPathPriorityQueue cone_pq;
+  std::vector<PetscInt> cone_succ[n]; 
+  std::vector<PetscTruth> cone_found(n,PETSC_FALSE);
+
+  /** form tree of shortest paths to an anchor **/
+  while (!pq.empty()) {
+    node = pq.top();pq.pop();
+    cone_found[node.vertex] = PETSC_TRUE;
+    anchor_q.push(node.vertex);
+    for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
+      PetscInt t = target(*e,g);
+      if (!taken[t]) {
+	cone_pq.push(PQNode(t,node.vertex,1.0/get(edge_weight_g,*e)));
+      }
+    }
+  }
+  while (!cone_pq.empty()) {
+    node = cone_pq.top();cone_pq.pop();
+    if (!cone_found[node.vertex]) {
+      cone_succ[node.pred].push_back(node.vertex);
+      cone_found[node.vertex] = PETSC_TRUE;
+      for (tie(e,e_end)=out_edges(node.vertex,g); e!=e_end; e++) {
+	PetscInt t = target(*e,g);
+	if (!taken[t] && !cone_found[t]) {
+	  cone_pq.push(PQNode(t,node.vertex,node.dist+1.0/get(edge_weight_g,*e)));
+	}
+      }
+    }
+  }
+
+  while (!anchor_q.empty()) {
+    /** CONE CUT **/
+    PetscInt anchor = anchor_q.front();anchor_q.pop();
+    if (!taken[anchor]) {
+      PetscInt v;
+      PetscInt thisSize = 0;
+      std::vector<PetscInt> thisIdx;
+      std::queue<PetscInt> q;
+      ShortestPathPriorityQueue mycone_pq;
+      std::vector<PetscTruth> mycone_taken(n,PETSC_FALSE);
+      PetscInt initialInternalConeEdges = 0;
+
+      boundary = 0;
+      edgeCount = 0;
+      q.push(anchor);
+      while (!q.empty()) {
+	v = q.front();q.pop();
+	taken[v] = PETSC_TRUE;
+	mycone_taken[v] = PETSC_TRUE;
+	thisIdx.push_back(g.local_to_global(v));
+	thisSize++;
+	for (i=cone_succ[v].begin();i!=cone_succ[v].end();i++) {
+	  q.push(*i);
+	}
+	for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
+	  PetscInt t = target(*e,g);
+	  if (!taken[t]) {
+	    mycone_pq.push(PQNode(t,v,1.0/get(edge_weight_g,*e)));
+	    boundary += get(edge_weight_g,*e);
+	    edgeCount++;
+	  } else if (mycone_taken[t]) {
+	    boundary -= get(edge_weight_g,*e);
+	    initialInternalConeEdges++;
+	  }
+	}
+      }
+      if (!anchor_q.empty()) { // implying initialInternalConeEdges < edgesLeft
+	while (initialInternalConeEdges == 0 ?
+	       boundary > (edgeCount+1)*log(edgesLeft+1)*2.0/(log(2.0)*epsilon*radius) : 
+	       boundary > (edgeCount)*log(edgesLeft*1.0/initialInternalConeEdges)*2.0/(log(2.0)*epsilon*radius))
+	  {
+	    assert(!mycone_pq.empty());
+	    node = mycone_pq.top();mycone_pq.pop();
+	    if (!mycone_taken[node.vertex]) {
+	      q.push(node.vertex);
+	      while (!q.empty()) {
+		v = q.front();q.pop();
+		taken[v] = PETSC_TRUE;
+		mycone_taken[v] = PETSC_TRUE;
+		thisIdx.push_back(g.local_to_global(v));
+		thisSize++;
+		for (i=cone_succ[v].begin();i!=cone_succ[v].end();i++) {
+		  q.push(*i);
+		}
+		for (tie(e,e_end)=out_edges(v,g); e!=e_end; e++) {
+		  PetscInt t = target(*e,g);
+		  if (!taken[t]) {
+		    mycone_pq.push(PQNode(t,v,node.dist+1.0/get(edge_weight_g,*e)));
+		    boundary += get(edge_weight_g,*e);
+		    edgeCount++;
+		  } else if (mycone_taken[t]) {
+		    boundary -= get(edge_weight_g,*e);
+		  }
+		}
+	      }
+	    }
+	  }
+      }
+      edgesLeft -= edgeCount;
+      size.push_back(thisSize);
+      idx.push_back(thisIdx);
+      x.push_back(anchor);
+      y.push_back(pred[anchor]);
+      k++;
+    }
+  }
+    
+  
+
+  /*
+  // pseudo cone cut
   while (!pq.empty()) {
     node = pq.top();pq.pop();
 
@@ -397,36 +479,10 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
     y.push_back(pred[node.vertex]);
     k++;
   }
-
+  */
 
   
 
 
   PetscFunctionReturn(0);
 }
-
-
-/* -------------------------------------------------------------------------- */
-/*
-   BallCut
-
-   Input Parameters:
-.  g - input graph
-.  root - center vertex of cut
-.  minRadius - cut must include all vertices closer than this to root
-.  maxBoundary - weight of boundary of cut may be at most this
-
-   Output Parameter:
-.  idx - list of vertices in smallest cut satisfying given conditions
- */
-#undef __FUNCT__  
-#define __FUNCT__ "LowStretchSpanningTreeHelper"
-PetscErrorCode BallCut(const Graph g,const PetscInt root,const PetscScalar minRadius,const PetscScalar maxBoundary,PetscInt *idx[])
-{
-  PetscFunctionBegin;
-
-  
-
-  PetscFunctionReturn(0);
-}
-
