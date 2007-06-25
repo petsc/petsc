@@ -72,5 +72,8 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC,PetscInt,Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC,PetscInt,PetscErrorCode (*)(Mat,Vec,Vec,Vec),Mat);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCMGDefaultResidual(Mat,Vec,Vec,Vec);
 
+#include "petscda.h"
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDMMGSetDM(PC,DM);
+
 PETSC_EXTERN_CXX_END
 #endif

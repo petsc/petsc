@@ -10,7 +10,7 @@ PetscTruth  CharacteristicRegisterAllCalled = PETSC_FALSE;
 */
 PetscFList  CharacteristicList = PETSC_NULL;
 
-PetscErrorCode DAGetNeighborsRank(DA, PetscInt []);
+PetscErrorCode DAGetNeighborsRank(DA, PetscMPIInt []);
 PetscInt DAGetNeighborRelative(DA, PassiveReal, PassiveReal);
 PetscErrorCode DAMapToPeriodicDomain(DA, PetscScalar [] ); 
 
@@ -249,7 +249,7 @@ PetscErrorCode CharacteristicRegister(const char sname[],const char path[],const
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetVelocityInterpolation"
-PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, Vec v, Vec vOld, int numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
   c->velocityDA      = da;
@@ -264,7 +264,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolation(Characteristic c, DA da, V
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetVelocityInterpolationLocal"
-PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA da, Vec v, Vec vOld, int numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA da, Vec v, Vec vOld, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
   c->velocityDA          = da;
@@ -279,7 +279,7 @@ PetscErrorCode CharacteristicSetVelocityInterpolationLocal(Characteristic c, DA 
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetFieldInterpolation"
-PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec v, int numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(Vec, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
 #if 0
@@ -298,7 +298,7 @@ PetscErrorCode CharacteristicSetFieldInterpolation(Characteristic c, DA da, Vec 
 
 #undef __FUNCT__  
 #define __FUNCT__ "CharacteristicSetFieldInterpolationLocal"
-PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da, Vec v, int numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
+PetscErrorCode CharacteristicSetFieldInterpolationLocal(Characteristic c, DA da, Vec v, PetscInt numComponents, PetscInt components[], PetscErrorCode (*interp)(void *, PetscReal [], PetscInt, PetscInt [], PetscScalar [], void *), void *ctx)
 {
   PetscFunctionBegin;
 #if 0
@@ -727,7 +727,7 @@ PetscErrorCode CharacteristicGetValuesEnd(Characteristic c)
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-int HeapSort(Characteristic c, Queue queue, int size)
+int HeapSort(Characteristic c, Queue queue, PetscInt size)
 /*---------------------------------------------------------------------*/
 {
   CharacteristicPointDA2D temp;
@@ -764,7 +764,7 @@ int HeapSort(Characteristic c, Queue queue, int size)
 /*
   Based on code from http://linux.wku.edu/~lamonml/algor/sort/heap.html
 */
-void SiftDown(Characteristic c, Queue queue, int root, int bottom)
+void SiftDown(Characteristic c, Queue queue, PetscInt root, PetscInt bottom)
 /*---------------------------------------------------------------------*/
 {
   int   done=0, maxChild;
@@ -791,7 +791,7 @@ void SiftDown(Characteristic c, Queue queue, int root, int bottom)
 #undef __FUNCT__
 #define __FUNCT__ "DAGetNeighborsRank"
 /* [center, left, top-left, top, top-right, right, bottom-right, bottom, bottom-left] */
-PetscErrorCode DAGetNeighborsRank(DA da, PetscInt neighbors[])
+PetscErrorCode DAGetNeighborsRank(DA da, PetscMPIInt neighbors[])
 {
   DAPeriodicType periodic_type;
   PetscTruth     IPeriodic = PETSC_FALSE, JPeriodic = PETSC_FALSE;
