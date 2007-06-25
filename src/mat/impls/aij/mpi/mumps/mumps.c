@@ -270,7 +270,7 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x) {
   PetscScalar    *array;
   Vec            x_seq;
   IS             is_iden,is_petsc;
-  VecScatter     scat_rhs=lu->scat_rhs,scat_sol=lu->scat_sol; 
+  VecScatter     scat_rhs=lu->scat_rhs; 
   PetscErrorCode ierr;
   PetscInt       i;
 
