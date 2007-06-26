@@ -10,7 +10,7 @@ class Configure(PETSc.package.Package):
     PETSc.package.Package.__init__(self, framework)
     self.download   = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/spooles-2.2-June_2007.tar.gz']
     self.functions  = ['InpMtx_init']
-    self.includes   = ['spoolesMPI.h']
+    self.includes   = ['MPI/spoolesMPI.h']
     self.liblist    = [['spoolesMPI.a','spooles.a']]
     self.complex    = 1
     return
