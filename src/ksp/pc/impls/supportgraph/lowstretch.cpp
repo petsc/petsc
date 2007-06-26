@@ -407,7 +407,7 @@ PetscErrorCode StarDecomp(Graph g,const PetscInt root,const PetscScalar delta,co
 	  }
 	}
       }
-      if (!anchor_q.empty()) { // implying initialInternalConeEdges < edgesLeft
+      if (initialInternalConeEdges < edgesLeft) {
 	while (initialInternalConeEdges == 0 ?
 	       boundary > (edgeCount+1)*log(edgesLeft+1)*2.0/(log(2.0)*epsilon*radius) : 
 	       boundary > (edgeCount)*log(edgesLeft*1.0/initialInternalConeEdges)*2.0/(log(2.0)*epsilon*radius))
