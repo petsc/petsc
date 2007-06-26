@@ -16,7 +16,6 @@ EXTERN_C_BEGIN
 #  define LAPACKgeqrf_ sgeqrf
 #  define LAPACKungqr_ sorgqr
 #  define LAPACKgetrf_ sgetrf
-#  define LAPACKgetf2_ sgetf2
 #  define BLASdot_     sdot
 #  define BLASnrm2_    snrm2
 #  define BLASscal_    sscal
@@ -48,7 +47,6 @@ EXTERN_C_BEGIN
 #  define LAPACKgeqrf_ dgeqrf
 #  define LAPACKungqr_ dorgqr
 #  define LAPACKgetrf_ dgetrf
-#  define LAPACKgetf2_ dgetf2
 #  define BLASdot_     ddot
 #  define BLASnrm2_    dnrm2
 #  define BLASscal_    dscal
@@ -81,7 +79,6 @@ EXTERN_C_BEGIN
 # define LAPACKgeqrf_ zgeqrf
 # define LAPACKungqr_ zungqr
 # define LAPACKgetrf_ zgetrf
-# define LAPACKgetf2_ zgetf2
 
 # define BLASdot_     zdotc
 # define BLASnrm2_    dznrm2
@@ -113,7 +110,6 @@ EXTERN_C_BEGIN
 
 EXTERN void LAPACKgetrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKungqr_(PetscBLASInt*,PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
-EXTERN void LAPACKgetf2_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 EXTERN void LAPACKgeqrf_(PetscBLASInt*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
 
 EXTERN PetscReal BLASdot_(PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*);
