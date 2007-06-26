@@ -46,8 +46,8 @@ EXTERN_C_BEGIN
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ dgeqrf_
-#  define LAPACKgetrf_ dgetrf_
 #  define LAPACKungqr_ dorgqr_
+#  define LAPACKgetrf_ dgetrf_
 #  define BLASdot_     ddot_
 #  define BLASnrm2_    dnrm2_
 #  define BLASscal_    dscal_

@@ -28,7 +28,6 @@ EXTERN_C_BEGIN
 #  define LAPACKstein_ STEIN
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ SORMQR
-#  define LAPACKungqr_ DORGQR
 #  define LAPACKtrtrs_ STRTRS
 #  define LAPACKpotrf_ SPOTRF
 #  define LAPACKpotrs_ SPOTRS
@@ -46,6 +45,7 @@ EXTERN_C_BEGIN
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ DGEQRF
+#  define LAPACKungqr_ DORGQR
 #  define LAPACKgetrf_ DGETRF
 #  define BLASdot_     DDOT
 #  define BLASnrm2_    DNRM2
@@ -110,6 +110,7 @@ EXTERN_C_BEGIN
 # else
 /* Complex double precision with no character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
+#  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
 #  define BLASdot_     ZDOTC
 #  define BLASnrm2_    DZNRM2

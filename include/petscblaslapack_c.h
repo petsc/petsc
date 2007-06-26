@@ -29,7 +29,6 @@ EXTERN_C_BEGIN
 #  define LAPACKstein_ sstein /* eigenvectors of real symm tridiagonal matrix */
 /* Real single precision with character string arguments. */
 #  define LAPACKormqr_ sormqr
-#  define LAPACKungqr_ dorgqr
 #  define LAPACKtrtrs_ strtrs
 #  define LAPACKpotrf_ spotrf
 #  define LAPACKpotrs_ spotrs
@@ -47,6 +46,7 @@ EXTERN_C_BEGIN
 # else
 /* Real double precision with no character string arguments */
 #  define LAPACKgeqrf_ dgeqrf
+#  define LAPACKungqr_ dorgqr
 #  define LAPACKgetrf_ dgetrf
 #  define LAPACKgetf2_ dgetf2
 #  define BLASdot_     ddot

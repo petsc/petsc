@@ -118,7 +118,7 @@ EXTERN void PETSC_STDCALL                           DPTTRS(PetscBLASInt*,PetscBL
 # if defined(PETSC_USES_FORTRAN_SINGLE) || defined(PETSC_USE_SINGLE)
 /* Complex single precision without character string arguments. */
 #  define ZGEQRF  CGEQRF
-#  define LAPACKungqr_ ZUNGQR
+#  define ZUNGQR  CUNGQR
 #  define ZGETRF  CGETRF
 #  define ZDOTC   CDOTC
 #  define DZNRM2  SCNRM2
@@ -162,6 +162,7 @@ EXTERN void PETSC_STDCALL                           CPTTRS(const char*,int,Petsc
 # else
 /* Complex double precision without character string arguments */
 #  define LAPACKgeqrf_ ZGEQRF
+#  define LAPACKungqr_ ZUNGQR
 #  define LAPACKgetrf_ ZGETRF
 #  define BLASdot_     ZDOTC
 #  define BLASnrm2_    DZNRM2
