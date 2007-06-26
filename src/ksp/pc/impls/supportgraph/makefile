@@ -1,3 +1,4 @@
+#requirespackage  'PETSC_HAVE_BOOST'
 #requireslanguage CXXONLY
 
 ALL: lib

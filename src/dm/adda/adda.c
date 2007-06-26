@@ -5,7 +5,7 @@
        Extension of DA object to any number of dimensions.
 
 */
-#include "src/dm/adda/addaimpl.h"
+#include "src/dm/adda/addaimpl.h"                          /*I "petscda.h" I*/
 
 PetscCookie PETSCDM_DLLEXPORT ADDA_COOKIE = 0;
 

@@ -26,7 +26,7 @@
 
 .seealso: PCMG, PCMGSetLevels()
 @*/
-extern PetscErrorCode PCDMMGSetDM(PC pc,DM dm)
+PetscErrorCode PCDMMGSetDM(PC pc,DM dm)
 {
   PetscErrorCode ierr;
   PetscInt       i,nlevels;
