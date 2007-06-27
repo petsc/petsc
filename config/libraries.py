@@ -27,13 +27,12 @@ class Configure(config.base.Configure):
   def getLibArgument(self, library):
     '''Return the proper link line argument for the given filename library
       - If the path is empty, return it unchanged
+      - If starts with - then return unchanged
       - If the path ends in ".lib" return it unchanged
-      - If the path ends in ".so" return it unchanged       
       - If the path is absolute and the filename is "lib"<name>, return -L<dir> -l<name>
       - If the filename is "lib"<name>, return -l<name>
+      - If the path ends in ".so" return it unchanged       
       - If the path is absolute, return it unchanged
-      - If the filename is <dir>/<name>.so, it remains unchanged
-      - If starts with - then return unchanged
       - Otherwise return -l<library>'''
     if not library:
       return ''

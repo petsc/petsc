@@ -57,9 +57,8 @@ class Retriever(logger.Logger):
       failureMessage = '''\
 Unable to download %s
 You may be off the network. Connect to the internet and run config/configure.py again
-or put in the directory %s the uncompressed, untared file obtained
-from %s
-''' % (name, root, url)
+or obtain %s and rerun using --download-%s=<location of downloaded tarball>
+''' % (name, url, name)
       raise RuntimeError(failureMessage)
     self.logPrint('Uncompressing '+localFile)
     try:
