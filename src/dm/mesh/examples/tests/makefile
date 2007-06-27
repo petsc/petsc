@@ -1,16 +1,16 @@
 CPPFLAGS        = ${SIEVE_FLAGS} ${EXTRA_FLAGS}
-CFLAGS	        = -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
+CFLAGS	        = -I. -I${PETSC_DIR}/src/dm/mesh/sieve ${BOOST_INCLUDE} ${TRIANGLE_INCLUDE} ${TETGEN_INCLUDE}
 FFLAGS	        =
 FPPFLAGS        = 
-LOCDIR          = src/dm/mesh/examples/tests/
+LOCDIR          = src/dm/mesh/examples/tutorials/
 EXAMPLESC       = ex00.c ex01.c ex02.c ex03.c ex1.c
 EXAMPLESF       = 
 MANSEC          = DA
 NP              = 1
 DISPLAY         = :0.0
-EXTRA_ARGS      =
+EXTRA_ARGS      = 
 
-include ${PETSC_DIR}/conf/base
+include ${PETSC_DIR}/bmake/common/base
 
 ex00: ex00.o chkopts
 	-${CLINKER} -o ex00 ex00.o ${PETSC_DM_LIB}
@@ -68,17 +68,9 @@ section1: section1.o chkopts
 	-${CLINKER} -o section1 section1.o ${PETSC_DM_LIB}
 	${RM} -f section1.o
 
-section2: section2.o chkopts
-	-${CLINKER} -o section2 section2.o ${PETSC_DM_LIB}
-	${RM} -f section2.o
-
 mesh1: mesh1.o chkopts
 	-${CLINKER} -o mesh1 mesh1.o ${PETSC_DM_LIB}
 	${RM} -f mesh1.o
-
-mesh2: mesh2.o chkopts
-	-${CLINKER} -o mesh2 mesh2.o ${PETSC_DM_LIB}
-	${RM} -f mesh2.o
 
 overlap1: overlap1.o chkopts
 	-${CLINKER} -o overlap1 overlap1.o ${PETSC_DM_LIB}
@@ -87,14 +79,16 @@ overlap1: overlap1.o chkopts
 overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
+#-----------------------------------------------------------------
+xsifter00: xsifter00.o chkopts
+	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB}
+	${RM} -f xsifter00.o
+NP = 1
+runxsifter00:
+	-@${MPIEXEC} -np ${NP} ./xsifter00 ${EXTRA_ARGS}
+debugxsifter00:
+	-@${MPIEXEC} -np ${NP} ./xsifter00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
-closure1: closure1.o chkopts
-	-${CLINKER} -o closure1 closure1.o ${PETSC_DM_LIB}
-	${RM} -f closure1.o
-
-discretization1: discretization1.o chkopts
-	-${CLINKER} -o discretization1 discretization1.o ${PETSC_DM_LIB}
-	${RM} -f discretization1.o
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}
@@ -114,6 +108,9 @@ runxsifter1:
 	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS}
 debugxsifter1:
 	-@${MPIEXEC} -np ${NP} ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+
+valgrindxsifter1:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsifter1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
@@ -237,4 +234,4 @@ TESTEXAMPLES_C_COMPLEX    =
 TESTEXAMPLES_C_NOCOMPLEX  = 
 TESTEXAMPLES_13           = 
 
-include ${PETSC_DIR}/conf/test
+include ${PETSC_DIR}/bmake/common/test
