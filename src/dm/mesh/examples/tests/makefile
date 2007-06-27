@@ -10,7 +10,7 @@ NP              = 1
 DISPLAY         = :0.0
 EXTRA_ARGS      = 
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex00: ex00.o chkopts
 	-${CLINKER} -o ex00 ex00.o ${PETSC_DM_LIB}
@@ -234,4 +234,4 @@ TESTEXAMPLES_C_COMPLEX    =
 TESTEXAMPLES_C_NOCOMPLEX  = 
 TESTEXAMPLES_13           = 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test
