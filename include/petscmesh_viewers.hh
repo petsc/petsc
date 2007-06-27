@@ -42,10 +42,11 @@ class VTKViewer {
   #define __FUNCT__ "VTKWriteField"
   template<typename Section>
     static PetscErrorCode writeField(const Obj<Section>& field, const std::string& name, const int fiberDim, const Obj<ALE::Mesh::numbering_type>& numbering, PetscViewer viewer, int enforceDim = -1) {
-    const int      dim = enforceDim > 0 ? enforceDim : fiberDim;
+    int            dim = enforceDim > 0 ? enforceDim : fiberDim;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
+    if (enforceDim == -4) dim = 4;
     if (dim == 3) {
       ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
     } else {
@@ -63,9 +64,11 @@ class VTKViewer {
     typedef typename Section::value_type value_type;
     const typename Section::chart_type& chart   = field->getChart();
     const MPI_Datatype                  mpiType = ALE::New::ParallelFactory<value_type>::singleton(field->debug())->getMPIType();
+    const bool                          verify  = enforceDim == -4;
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
+    if (verify) enforceDim = 3;
     if (field->commRank() == 0) {
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         const value_type *array = field->restrictPoint(*p_iter);
@@ -73,6 +76,7 @@ class VTKViewer {
 
         // Perhaps there should be a flag for excluding boundary values
         if (dim != 0) {
+          if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", *p_iter);CHKERRQ(ierr);}
           for(int d = 0; d < fiberDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
@@ -92,20 +96,24 @@ class VTKViewer {
       for(int p = 1; p < field->commSize(); p++) {
         value_type *remoteValues;
         int         numLocalElements;
+        int         size;
+        const int   newDim = fiberDim+verify;
         MPI_Status  status;
 
         ierr = MPI_Recv(&numLocalElements, 1, MPI_INT, p, 1, field->comm(), &status);CHKERRQ(ierr);
-        ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
-        ierr = MPI_Recv(remoteValues, numLocalElements*fiberDim, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
+        size = numLocalElements*newDim;
+        ierr = PetscMalloc(size * sizeof(value_type), &remoteValues);CHKERRQ(ierr);
+        ierr = MPI_Recv(remoteValues, size, mpiType, p, 1, field->comm(), &status);CHKERRQ(ierr);
         for(int e = 0; e < numLocalElements; e++) {
-          for(int d = 0; d < fiberDim; d++) {
+          if (verify) {ierr = PetscViewerASCIIPrintf(viewer, "%d ", (int) remoteValues[e*newDim+0]);CHKERRQ(ierr);}
+          for(int d = verify; d < newDim; d++) {
             if (d > 0) {
               ierr = PetscViewerASCIIPrintf(viewer, " ");CHKERRQ(ierr);
             }
             if (mpiType == MPI_INT) {
-              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer, "%d", remoteValues[e*newDim+d]);CHKERRQ(ierr);
             } else {
-              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*fiberDim+d]);CHKERRQ(ierr);
+              ierr = PetscViewerASCIIPrintf(viewer, "%G", remoteValues[e*newDim+d]);CHKERRQ(ierr);
             }
           }
           for(int d = fiberDim; d < enforceDim; d++) {
@@ -118,24 +126,26 @@ class VTKViewer {
     } else {
       value_type *localValues;
       int         numLocalElements = numbering->getLocalSize();
+      const int   size = numLocalElements*(fiberDim+verify);
       int         k = 0;
 
-      ierr = PetscMalloc(numLocalElements*fiberDim * sizeof(value_type), &localValues);CHKERRQ(ierr);
+      ierr = PetscMalloc(size * sizeof(value_type), &localValues);CHKERRQ(ierr);
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
         if (numbering->isLocal(*p_iter)) {
           const value_type *array = field->restrictPoint(*p_iter);
           const int&        dim   = field->getFiberDimension(*p_iter);
 
+          if (verify) localValues[k++] = *p_iter;
           for(int i = 0; i < dim; ++i) {
             localValues[k++] = array[i];
           }
         }
       }
-      if (k != numLocalElements*fiberDim) {
-        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, numLocalElements*fiberDim);
+      if (k != size) {
+        SETERRQ2(PETSC_ERR_PLIB, "Invalid number of values to send for field, %d should be %d", k, size);
       }
       ierr = MPI_Send(&numLocalElements, 1, MPI_INT, 0, 1, field->comm());CHKERRQ(ierr);
-      ierr = MPI_Send(localValues, numLocalElements*fiberDim, mpiType, 0, 1, field->comm());CHKERRQ(ierr);
+      ierr = MPI_Send(localValues, size, mpiType, 0, 1, field->comm());CHKERRQ(ierr);
       ierr = PetscFree(localValues);CHKERRQ(ierr);
     }
     PetscFunctionReturn(0);
