@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   typedef xsifter_type::cone_order_type        order_type;
   typedef order_type::pre_extractor_type       preex_type;
   typedef order_type::pos_extractor_type       posex_type;
-  
+#ifdef TEST1  
   {//test1
     target_type low, high;
     source_type s;
@@ -88,6 +88,8 @@ int main(int argc, char *argv[])
     }
     std::cout << "\n";
   }//test1
+#endif
+#ifdef TEST2
   {//test2
     source_type s;
     
@@ -119,6 +121,7 @@ int main(int argc, char *argv[])
     }
     std::cout << "\n";
   }//test2
+#endif
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }// main()
