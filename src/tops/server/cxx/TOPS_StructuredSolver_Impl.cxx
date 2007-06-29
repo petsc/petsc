@@ -602,6 +602,8 @@ TOPS::StructuredSolver_impl::setServices_impl (
 #undef __FUNCT__
 #define __FUNCT__ "TOPS::StructuredSolver_impl::setServices"
 
+  int i=0;
+  std::cout << "Structured solver setServices!" << std::endl;
   myServices = services;
   gov::cca::TypeMap tm = services.createTypeMap();
   if(tm._is_nil()) {
@@ -609,6 +611,7 @@ TOPS::StructuredSolver_impl::setServices_impl (
 	    __FILE__, __LINE__);
     exit(1);
   }
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   gov::cca::Port p = (*this);      //  Babel required casting
   if(p._is_nil()) {
     fprintf(stderr, "Error:: %s:%d: Error casting (*this) to gov::cca::Port \n",
@@ -616,27 +619,34 @@ TOPS::StructuredSolver_impl::setServices_impl (
     exit(1);
   }
   
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   // Provides port
   services.addProvidesPort(p,
 			   "TOPS.Structured.Solver",
 			   "TOPS.Structured.Solver", tm);
   
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   // Uses ports
-  services.registerUsesPort("TOPS.Structured.Matrix",
-			    "JacobianMatrix", tm);
+  services.registerUsesPort("JacobianMatrix",
+			    "TOPS.Structured.Matrix", tm);
 
-  services.registerUsesPort("TOPS.Structured.Matrix",
-			    "PreconditionerMatrix", tm);
+  std::cout << "Structured solver setServices " << i++ << std::endl;
+  services.registerUsesPort("PreconditionerMatrix",
+			    "TOPS.Structured.Matrix", tm);
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   services.registerUsesPort("TOPS.System.Initialize.Once",
 			    "TOPS.System.Initialize.Once", tm);
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   services.registerUsesPort("TOPS.System.Initialize.EverySolve",
 			    "TOPS.System.Initialize.EverySolve", tm);
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   services.registerUsesPort("TOPS.System.Compute.InitialGuess",
 			    "TOPS.System.Compute.InitialGuess", tm);
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   services.registerUsesPort("TOPS.System.Compute.Matrix",
 			    "TOPS.System.Compute.Matrix", tm);
 
@@ -649,17 +659,21 @@ TOPS::StructuredSolver_impl::setServices_impl (
   services.registerUsesPort("TOPS.System.Compute.Residual",
   			  "TOPS.System.Compute.Residual", tm);
   
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   // Parameter port
   myServices.registerUsesPort(std::string("ParameterPortFactory"),
 			      std::string("gov.cca.ports.ParameterPortFactory"), tm);
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   // Set up parameter port
   if (this->setupParameterPort() != 0) {
     std::cerr << "TOPS::StructuredSolver_impl::go: errors during setup of ParameterPort" << std::endl;
   }
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   myServices.unregisterUsesPort(std::string("ParameterPortFactory"));
 
+  std::cout << "Structured solver setServices " << i++ << std::endl;
   return;
   // DO-NOT-DELETE splicer.end(TOPS.StructuredSolver.setServices)
 }

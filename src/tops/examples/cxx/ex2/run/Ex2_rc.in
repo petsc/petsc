@@ -7,13 +7,13 @@ repository get-global TOPS.StructuredMatrix
 repository get-global Ex2.System
 
 instantiate TOPS.StructuredMatrix Jacobian
-instantiate TOPS.StructuredMatrix B
+instantiate TOPS.StructuredMatrix Preconditioner
 
 instantiate TOPS.StructuredSolver Solver
 instantiate Ex2.System System
 
 connect Solver JacobianMatrix Jacobian TOPS.Structured.Matrix
-connect Solver SystemMatrix B TOPS.Structured.Matrix
+connect Solver PreconditionerMatrix Preconditioner TOPS.Structured.Matrix
 
 connect Solver TOPS.System.Initialize.Once system TOPS.System.Initialize.Once
 connect Solver TOPS.System.Initialize.EverySolve System TOPS.System.Initialize.EverySolve

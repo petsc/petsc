@@ -8,12 +8,12 @@ repository get-global Ex3.System
 
 instantiate TOPS.StructuredSolver Solver
 instantiate TOPS.StructuredMatrix Jacobian
-instantiate TOPS.StructuredMatrix B
+instantiate TOPS.StructuredMatrix Preconditioner
 instantiate Ex3.System System
 
 # Connect Solver uses ports to the corresponding Matrix and System provides ports
 connect Solver JacobianMatrix Jacobian TOPS.Structured.Matrix
-connect Solver PreconditionerMatrix B TOPS.Structured.Matrix
+connect Solver PreconditionerMatrix Preconditioner TOPS.Structured.Matrix
 connect Solver TOPS.System.Initialize.Once System TOPS.System.Initialize.Once
 connect Solver TOPS.System.Compute.Matrix System TOPS.System.Compute.Matrix
 connect Solver TOPS.System.Compute.RightHandSide System TOPS.System.Compute.RightHandSide
