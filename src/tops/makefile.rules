@@ -70,14 +70,14 @@ CXXOBJS = ${CXXSRCS:.cxx=.o} ${IORSRCS:.c=.o}
 COBJS = ${CRCS:.c=.o}
 
 %.o : %.cxx
-	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 		-I${PETSC_DIR}/include/tops \
 		$(CCASPEC_BABEL_CXXFLAGS) -I$(CCASPEC_BABEL_includedir) \
       		-I$(CCASPEC_BABEL_includedir)/cxx -I$(CCASPEC_pkgincludedir)/cxx \
 		$<
 
 %.o : %.c
-	${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
+	-@${PCC} -c ${HAVE_CCA} ${PCC_FLAGS} ${COPTFLAGS} ${CFLAGS} ${CCPPFLAGS} -Iglue -I../glue -I.. \
 		-I${PETSC_DIR}/include/tops \
 		$(CCASPEC_BABEL_CFLAGS) -I$(CCASPEC_BABEL_includedir) \
       		-I$(CCASPEC_BABEL_includedir)/c -I$(CCASPEC_pkgincludedir)/c \

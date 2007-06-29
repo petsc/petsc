@@ -3,4 +3,5 @@
 path set @PETSC_LIB_DIR@/cca
 
 repository get-global TOPS.StructuredSolver
+repository get-global TOPS.StructuredMatrix
 repository get-global Ex1.System
