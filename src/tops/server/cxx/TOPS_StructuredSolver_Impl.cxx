@@ -194,7 +194,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   // Use the TOPS.Structured.Matrix port to configure B
   TOPS::Structured::Matrix BMatrix;
   BMatrix = ::babel_cast< TOPS::Structured::Matrix >(
-  	solver->getServices().getPort("SystemMatrix"));
+  	solver->getServices().getPort("PreconditionerMatrix"));
   if (BMatrix._is_nil()) {
     std::cerr << "Error at " << __FILE__ << ":" << __LINE__ 
 	      << ": TOPS.Structured.Matrix port is nil, could not connect to matrix B component." 
@@ -261,7 +261,7 @@ static PetscErrorCode FormMatrix(DMMG dmmg,Mat J,Mat B)
   
   solver->getServices().releasePort("TOPS.System.Compute.Matrix");
   solver->getServices().releasePort("JacobianMatrix");
-  solver->getServices().releasePort("SystemMatrix");
+  solver->getServices().releasePort("PreconditionerMatrix");
   
   PetscFunctionReturn(0);
 }
@@ -626,7 +626,7 @@ TOPS::StructuredSolver_impl::setServices_impl (
 			    "JacobianMatrix", tm);
 
   services.registerUsesPort("TOPS.Structured.Matrix",
-			    "SystemMatrix", tm);
+			    "PreconditionerMatrix", tm);
 
   services.registerUsesPort("TOPS.System.Initialize.Once",
 			    "TOPS.System.Initialize.Once", tm);
