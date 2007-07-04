@@ -3,16 +3,23 @@
 path set @PETSC_LIB_DIR@/cca
 
 repository get-global TOPS.StructuredSolver
+repository get-global TOPS.StructuredMatrix
 repository get-global Ex1.System
 
-instantiate Ex1.System system
-instantiate TOPS.StructuredSolver solver
+instantiate TOPS.StructuredMatrix Jacobian
+instantiate TOPS.StructuredMatrix Preconditioner
 
-connect solver TOPS.System.Compute.Residual system TOPS.System.Compute.Residual
-connect system TOPS.Structured.Solver solver TOPS.Structured.Solver
+instantiate Ex1.System System
+instantiate TOPS.StructuredSolver Solver
 
-parameter solver tops_options options "-snes_monitor -ksp_monitor -snes_rtol 1e-11"
+connect Solver JacobianMatrix Jacobian TOPS.Structured.Matrix
+connect Solver PreconditionerMatrix Preconditioner TOPS.Structured.Matrix
 
-go system DoSolve
+connect Solver TOPS.System.Compute.Residual System TOPS.System.Compute.Residual
+connect System TOPS.Structured.Solver Solver TOPS.Structured.Solver
+
+parameter Solver tops_options options "-snes_monitor -ksp_monitor -snes_rtol 1e-11"
+
+go System DoSolve
 
 quit
