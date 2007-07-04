@@ -10,7 +10,7 @@ NP              = 1
 DISPLAY         = :0.0
 EXTRA_ARGS      = 
 
-include ${PETSC_DIR}/bmake/common/base
+include ${PETSC_DIR}/conf/base
 
 ex00: ex00.o chkopts
 	-${CLINKER} -o ex00 ex00.o ${PETSC_DM_LIB}
@@ -79,6 +79,10 @@ overlap1: overlap1.o chkopts
 overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
+
+subset: subset.o chkopts
+	-${CLINKER} -o subset subset.o ${PETSC_DM_LIB}
+	${RM} -f subset.o
 #-----------------------------------------------------------------
 xsifter00: xsifter00.o chkopts
 	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB}
@@ -234,4 +238,4 @@ TESTEXAMPLES_C_COMPLEX    =
 TESTEXAMPLES_C_NOCOMPLEX  = 
 TESTEXAMPLES_13           = 
 
-include ${PETSC_DIR}/bmake/common/test
+include ${PETSC_DIR}/conf/test

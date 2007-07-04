@@ -933,8 +933,9 @@ namespace ALE {
     double integrateDual(const double v0[], const double J[], const int dualIndex) {return this->_integrator(v0, J, dualIndex, this->_func);};
   };
   class DiscretizationNew : public ALE::ParallelObject {
+    typedef std::map<std::string, Obj<BoundaryCondition> > boundaryConditions_type;
   protected:
-    Obj<BoundaryCondition> _boundaryCondition;
+    boundaryConditions_type _boundaryConditions;
     Obj<BoundaryCondition> _exactSolution;
     std::map<int,int> _dim2dof;
     std::map<int,int> _dim2class;
@@ -951,8 +952,18 @@ namespace ALE {
       if (this->_indices) {delete [] this->_indices;}
     };
   public:
-    const Obj<BoundaryCondition>& getBoundaryCondition() {return this->_boundaryCondition;};
-    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryCondition = boundaryCondition;};
+    const Obj<BoundaryCondition>& getBoundaryCondition() {return this->getBoundaryCondition("default");};
+    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->setDiscretization("default", boundaryCondition);};
+    const Obj<BoundaryCondition>& getBoundaryCondition(const std::string& name) {return this->_boundaryConditions[name];};
+    void setDiscretization(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
+    Obj<std::set<std::string> > getBoundaryConditions() const {
+      Obj<std::set<std::string> > names = std::set<std::string>();
+
+      for(boundaryConditions_type::const_iterator d_iter = this->_boundaryConditions.begin(); d_iter != this->_boundaryConditions.end(); ++d_iter) {
+        names->insert(d_iter->first);
+      }
+      return names;
+    };
     const Obj<BoundaryCondition>& getExactSolution() {return this->_exactSolution;};
     void setExactSolution(const Obj<BoundaryCondition>& exactSolution) {this->_exactSolution = exactSolution;};
     const int     getQuadratureSize() {return this->_quadSize;};
