@@ -103,20 +103,20 @@ ex14f: ex14f.o  chkopts
 	${RM} -f ex14f.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_VEC_LIB}
+	${RM} -f ex15.o
 
 ex16: ex16.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex16 ex16.o  ${PETSC_VEC_LIB}
+	${RM} -f ex16.o
 
 ex17: ex17.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_VEC_LIB}
+	${RM} -f ex17.o
 
 ex18: ex18.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_VEC_LIB}
+	${RM} -f ex18.o
 
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
