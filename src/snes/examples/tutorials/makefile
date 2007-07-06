@@ -11,9 +11,9 @@ LOCDIR		 = src/snes/examples/tutorials/
 MANSEC           = SNES
 EXAMPLESC	 = ex1.c ex2.c ex3.c ex5.c ex5s.c ex6.c \
                    ex14.c ex18.c ex19.c ex20.c ex21.c ex22.c \
-                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c
+                   ex23.c ex24.c ex25.c ex26.c ex27.c ex29.c ex30.c ex31.c ex38.c
 EXAMPLESF	 = ex1f.F ex5f.F ex5f90.F ex5fs.F ex33f.F mex34f90.F ex34f90.F \
-		   mex35f90.F90 ex35f90.F90 mex36f90.F90 ex36f90.F90 mex37f90.F90 ex37f90.F90
+		   mex35f90.F90 ex35f90.F90 mex36f90.F90 ex36f90.F90 mex37f90.F90 ex37f90.F90 ex39f90.F
 EXAMPLESCH	 = 
 EXAMPLESFH       = ex5f.h
 EXAMPLESMATLAB   = ex5m.m
@@ -154,6 +154,12 @@ ex36f90: mex36f90.o ex36f90.o  chkopts
 ex37f90: mex37f90.o ex37f90.o  chkopts
 	-${FLINKER} -o ex37f90 ex37f90.o ${PETSC_SNES_LIB}
 	${RM} ex37f90.o mex37f90.mod mex37f90.o mex37finterfaces.mod
+ex38: ex38.o  chkopts
+	-${CLINKER} -o ex38 ex38.o ${PETSC_SNES_LIB}
+	${RM} ex38.o
+ex39f90: ex39f90.o  chkopts
+	-${FLINKER} -o ex39f90 ex39f90.o ${PETSC_SNES_LIB}
+	${RM} ex39f90.o
 #--------------------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np 1 ./ex1 -ksp_gmres_cgs_refinement_type refine_always -snes_monitor_short > ex1_1.tmp 2>&1;   \

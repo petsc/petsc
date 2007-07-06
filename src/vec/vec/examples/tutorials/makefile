@@ -5,7 +5,7 @@ CPPFLAGS         =
 FPPFLAGS         =
 MANSEC           = Vec
 LOCDIR		 = src/vec/vec/examples/tutorials/
-EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex16.c ex17.c
+EXAMPLESC	 = ex1.c ex1e.c ex2.c ex3.c ex5.c ex6.c ex7.c ex8.c ex9.c ex10.c ex11.c ex12.c ex13.c ex16.c ex17.c ex18.c
 EXAMPLESF	 = ex1f.F ex2f.F ex3f.F ex4f.F ex7f.F ex1f90.F ex4f90.F ex9f.F ex11f.F ex14f.F
 
 include ${PETSC_DIR}/conf/base
@@ -103,16 +103,20 @@ ex14f: ex14f.o  chkopts
 	${RM} -f ex14f.o
 
 ex15: ex15.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex15 ex15.o  ${PETSC_VEC_LIB}
+	${RM} -f ex15.o
 
 ex16: ex16.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex16 ex16.o  ${PETSC_VEC_LIB}
+	${RM} -f ex16.o
 
 ex17: ex17.o  chkopts
-	-${CLINKER} -o $@ $@.o  ${PETSC_KSP_LIB}
-	${RM} -f $@.o
+	-${CLINKER} -o ex17 ex17.o  ${PETSC_VEC_LIB}
+	${RM} -f ex17.o
+
+ex18: ex18.o  chkopts
+	-${CLINKER} -o ex18 ex18.o  ${PETSC_VEC_LIB}
+	${RM} -f ex18.o
 
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
