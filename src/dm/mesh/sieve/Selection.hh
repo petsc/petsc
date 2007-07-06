@@ -101,7 +101,11 @@ namespace ALE {
         } else if ((indices[0] == 3) && (indices[1] == 0)) {
           posOrient = true;
         } else {
-          posOrient = false;
+          if (((indices[0] > indices[1]) && (indices[0] - indices[1] == 1)) || ((indices[0] == 0) && (indices[1] == 3))) {
+            posOrient = false;
+          } else {
+            throw ALE::Exception("Invalid quad crossedge");
+          }
         }
       } else if (cellDim == 3) {
         // Hexes
@@ -114,7 +118,8 @@ namespace ALE {
         //   | 3-|-2
         //   |/  |/
         //   0---1
-        int sortedIndices[4];
+        int  sortedIndices[4];
+        bool found = false;
 
         for(int i = 0; i < 4; ++i) sortedIndices[i] = indices[i];
         std::sort(sortedIndices, sortedIndices+4);
@@ -141,6 +146,7 @@ namespace ALE {
               faceVertices->push_back((*origVertices)[i]); break;
             }
           }
+          found = true;
         }
         // Case 2: Top quad
         if ((sortedIndices[0] == 4) && (sortedIndices[1] == 5) && (sortedIndices[2] == 6) && (sortedIndices[3] == 7)) {
@@ -165,6 +171,7 @@ namespace ALE {
               faceVertices->push_back((*origVertices)[i]); break;
             }
           }
+          found = true;
         }
         // Case 3: Front quad
         if ((sortedIndices[0] == 0) && (sortedIndices[1] == 1) && (sortedIndices[2] == 4) && (sortedIndices[3] == 5)) {
@@ -189,6 +196,7 @@ namespace ALE {
               faceVertices->push_back((*origVertices)[i]); break;
             }
           }
+          found = true;
         }
         // Case 4: Back quad
         if ((sortedIndices[0] == 2) && (sortedIndices[1] == 3) && (sortedIndices[2] == 6) && (sortedIndices[3] == 7)) {
@@ -213,6 +221,7 @@ namespace ALE {
               faceVertices->push_back((*origVertices)[i]); break;
             }
           }
+          found = true;
         }
         // Case 5: Right quad
         if ((sortedIndices[0] == 1) && (sortedIndices[1] == 2) && (sortedIndices[2] == 5) && (sortedIndices[3] == 6)) {
@@ -237,6 +246,7 @@ namespace ALE {
               faceVertices->push_back((*origVertices)[i]); break;
             }
           }
+          found = true;
         }
         // Case 6: Left quad
         if ((sortedIndices[0] == 0) && (sortedIndices[1] == 3) && (sortedIndices[2] == 4) && (sortedIndices[3] == 7)) {
@@ -261,7 +271,9 @@ namespace ALE {
               faceVertices->push_back((*origVertices)[i]); break;
             }
           }
+          found = true;
         }
+        if (!found) {throw ALE::Exception("Invalid hex crossface");}
         return true;
       }
       if (!posOrient) {
@@ -312,15 +324,19 @@ namespace ALE {
         subSieve->addArrow(*preFace->begin(), cell);
       } else if (preFace->size() == 0) {
         if (debug) std::cout << "  Orienting face " << f << std::endl;
-        getOrientedFace(mesh, cell, face, numCorners, indices, origVertices, faceVertices);
-        if (debug) std::cout << "  Adding face " << f << std::endl;
-        int color = 0;
-        for(typename PointArray::const_iterator f_iter = faceVertices->begin(); f_iter != faceVertices->end(); ++f_iter) {
-          if (debug) std::cout << "    vertex " << *f_iter << std::endl;
-          subSieve->addArrow(*f_iter, f, color++);
+        try {
+          getOrientedFace(mesh, cell, face, numCorners, indices, origVertices, faceVertices);
+          if (debug) std::cout << "  Adding face " << f << std::endl;
+          int color = 0;
+          for(typename PointArray::const_iterator f_iter = faceVertices->begin(); f_iter != faceVertices->end(); ++f_iter) {
+            if (debug) std::cout << "    vertex " << *f_iter << std::endl;
+            subSieve->addArrow(*f_iter, f, color++);
+          }
+          subSieve->addArrow(f, cell);
+          f++;
+        } catch (ALE::Exception e) {
+          if (debug) std::cout << "  Did not add invalid face " << f << std::endl;
         }
-        subSieve->addArrow(f, cell);
-        f++;
       }
     };
   public:
