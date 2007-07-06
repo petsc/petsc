@@ -4,17 +4,19 @@ TODO:
 
   1) Put in Neumann conditions for Bratu FD
 
-  2) Figure out finite precision symmetry check (Stokes)
+  2) Write preallocateOperator() for rectangular matrices
+
+  3) Rewrite discretization loop in stokes.cxx to use names
 
 Testing Schedule:
 
   - Laplacian (bratu.cxx)
     - Dirichlet
       - many mesh sizes
-        - SG, ICC(0), Jacobi
+        - SG, ICC(0), Jacobi, (GMG)
     - Neumann
       - many mesh sizes
-        - SG, ICC(0), Jacobi
+        - SG, ICC(0), Jacobi, (GMG), maybe structured MG
 
   - Linear Elasticity (PyLith benchmarks)
 
@@ -23,10 +25,12 @@ Testing Schedule:
   - Groundwater flow (PFLOTRAN)
 
 Data:
-  - Number of Rows (area)
+  - Mesh maximum cell volume
+  - Number of Rows
   - Number of iterates
 
 Timing:
+  - Total Time
   - MatMult()
   - PCSetUp()
   - PCApply()

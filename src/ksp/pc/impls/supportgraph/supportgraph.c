@@ -90,7 +90,7 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 
   PetscFunctionBegin;
   if(!pc->setupcalled) {
-    if (!MatIsSymmetric(pc->pmat)) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
+    if (!MatIsSymmetric(pc->pmat, 1.0e-9)) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
     ierr = LowStretchSpanningTree(pc->pmat, &sg->pre);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

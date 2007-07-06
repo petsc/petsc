@@ -1685,9 +1685,9 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-  //ierr = MatSetUpPreallocation(P);CHKERRQ(ierr);
   int selement = fine->getDiscretization()->getNumDof(fine->getDimension());
-  ierr = MatSeqAIJSetPreallocation(P, selement, PETSC_NULL); PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(P, selement, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
   bool hasprolong;
   ierr = PetscPrintf(fine->comm(), "Start Building.\n");
   if (fine->hasLabel("prolongation")) { 
