@@ -41,7 +41,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
 #endif
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(t, sizeof(struct _p_TS));CHKERRQ(ierr);
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
   t->bops->publish    = TSPublish_Petsc;
   t->type_name        = PETSC_NULL;

@@ -322,8 +322,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Eisenstat(PC pc)
   PC_Eisenstat   *eis;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Eisenstat,&eis);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Eisenstat));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Eisenstat,&eis);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_Eisenstat;
   pc->ops->presolve        = PCPreSolve_Eisenstat;

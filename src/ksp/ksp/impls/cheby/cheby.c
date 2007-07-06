@@ -252,8 +252,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Chebychev(KSP ksp)
   KSP_Chebychev  *chebychevP;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_Chebychev,&chebychevP);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_Chebychev));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_Chebychev,&chebychevP);CHKERRQ(ierr);
 
   ksp->data                      = (void*)chebychevP;
   ksp->pc_side                   = PC_LEFT;

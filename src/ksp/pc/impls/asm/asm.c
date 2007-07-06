@@ -836,8 +836,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASM(PC pc)
   PC_ASM         *osm;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_ASM,&osm);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_ASM));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_ASM,&osm);CHKERRQ(ierr);
   osm->n                 = PETSC_DECIDE;
   osm->n_local           = 0;
   osm->n_local_true      = PETSC_DECIDE;

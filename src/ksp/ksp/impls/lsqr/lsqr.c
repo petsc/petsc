@@ -283,7 +283,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LSQR(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_LSQR,&lsqr);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LSQR,&lsqr);CHKERRQ(ierr);
   lsqr->se     = PETSC_NULL;
   lsqr->se_flg = PETSC_FALSE;
   ierr = PCSetType(ksp->pc,PCNONE);CHKERRQ(ierr);

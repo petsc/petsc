@@ -476,8 +476,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   PC_Cholesky    *dir;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Cholesky,&dir);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Cholesky));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Cholesky,&dir);CHKERRQ(ierr);
 
   dir->fact                   = 0;
   dir->inplace                = PETSC_FALSE;

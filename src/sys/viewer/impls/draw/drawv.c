@@ -437,7 +437,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Draw(PetscViewer viewer)
   PetscViewer_Draw *vdraw;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(PetscViewer_Draw,&vdraw);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,PetscViewer_Draw,&vdraw);CHKERRQ(ierr);
   viewer->data = (void*)vdraw;
 
   viewer->ops->flush            = PetscViewerFlush_Draw;

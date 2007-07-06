@@ -309,8 +309,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   PC_ICC         *icc;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_ICC,&icc);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_ICC));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_ICC,&icc);CHKERRQ(ierr);
 
   icc->fact	          = 0;
   ierr = PetscStrallocpy(MATORDERING_NATURAL,&icc->ordering);CHKERRQ(ierr);

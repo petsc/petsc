@@ -613,7 +613,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqCSRPERM(Mat A,MatType typ
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_SeqCSRPERM,&csrperm);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_SeqCSRPERM,&csrperm);CHKERRQ(ierr);
   B->spptr = (void *) csrperm;
 
   csrperm->AssemblyEnd_SeqAIJ  = A->ops->assemblyend;

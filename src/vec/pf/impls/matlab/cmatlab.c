@@ -85,7 +85,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFCreate_Matlab(PF pf,void *value)
   PF_Matlab      *matlab;
 
   PetscFunctionBegin;
-  ierr           = PetscNew(PF_Matlab,&matlab);CHKERRQ(ierr);
+  ierr           = PetscNewLog(pf,PF_Matlab,&matlab);CHKERRQ(ierr);
   matlab->dimin  = pf->dimin;
   matlab->dimout = pf->dimout;
 

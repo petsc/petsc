@@ -217,7 +217,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_SYMMLQ(KSP ksp)
   PetscFunctionBegin;
   ksp->pc_side                   = PC_LEFT;
 
-  ierr           = PetscNew(KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
+  ierr           = PetscNewLog(ksp,KSP_SYMMLQ,&symmlq);CHKERRQ(ierr);
   symmlq->haptol = 1.e-18;
   ksp->data      = (void*)symmlq;
 

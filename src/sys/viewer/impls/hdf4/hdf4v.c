@@ -90,7 +90,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_HDF4(PetscViewer v)
  PetscViewer_HDF4 *vhdf4;
  
  PetscFunctionBegin;
- ierr = PetscNew(PetscViewer_HDF4,&vhdf4); CE;
+ ierr = PetscNewLog(v,PetscViewer_HDF4,&vhdf4); CE;
  v->data            = (void*)vhdf4;
  v->ops->destroy    = PetscViewerDestroy_HDF4;
  v->ops->flush      = 0;

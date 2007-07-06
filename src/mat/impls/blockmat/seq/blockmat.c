@@ -984,10 +984,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  ierr = PetscNew(Mat_BlockMat,&b);CHKERRQ(ierr);
-
+  ierr = PetscNewLog(A,Mat_BlockMat,&b);CHKERRQ(ierr);
   A->data = (void*)b;
+  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);

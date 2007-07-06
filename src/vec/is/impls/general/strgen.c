@@ -51,8 +51,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   ierr = ISStride(inis,&stride);CHKERRQ(ierr);
   if (!stride) SETERRQ(PETSC_ERR_SUP,"Can only convert stride index sets");
 
-  ierr = PetscNew(IS_General,&sub);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(inis,sizeof(IS_General));CHKERRQ(ierr);
+  ierr = PetscNewLog(inis,IS_General,&sub);CHKERRQ(ierr);
   
   ierr   = ISGetIndices(inis,&sub->idx);CHKERRQ(ierr);
   /* Note: we never restore the indices, since we need to keep the copy generated */

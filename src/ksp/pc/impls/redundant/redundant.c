@@ -462,8 +462,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   PetscMPIInt    size;
   
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Redundant,&red);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Redundant));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Redundant,&red);CHKERRQ(ierr);
   ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
   red->nsubcomm       = size;
   red->useparallelmat = PETSC_TRUE;

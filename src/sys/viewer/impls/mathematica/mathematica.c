@@ -177,7 +177,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Mathematica(PetscViewer v)
 
   PetscFunctionBegin;
 
-  ierr = PetscNew(PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
+  ierr = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
   v->data         = (void*) vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;

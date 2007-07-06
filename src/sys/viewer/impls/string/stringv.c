@@ -150,7 +150,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_String(PetscViewer v)
   v->ops->flush            = 0;
   v->ops->getsingleton     = PetscViewerGetSingleton_String;
   v->ops->restoresingleton = PetscViewerRestoreSingleton_String;
-  ierr                     = PetscNew(PetscViewer_String,&vstr);CHKERRQ(ierr);
+  ierr                     = PetscNewLog(v,PetscViewer_String,&vstr);CHKERRQ(ierr);
   v->data                  = (void*)vstr;
   vstr->string             = 0;
   PetscFunctionReturn(0);

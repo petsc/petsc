@@ -603,7 +603,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPIAIJSpooles(Mat A,MatType 
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
+  ierr     = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
     lu->MatDuplicate              = B->ops->duplicate;

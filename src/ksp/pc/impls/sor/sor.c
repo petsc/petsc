@@ -322,8 +322,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SOR(PC pc)
   PC_SOR         *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_SOR,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_SOR));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_SOR,&jac);CHKERRQ(ierr);
 
   pc->ops->apply           = PCApply_SOR;
   pc->ops->applyrichardson = PCApplyRichardson_SOR;

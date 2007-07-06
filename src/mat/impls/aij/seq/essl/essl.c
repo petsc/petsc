@@ -163,7 +163,7 @@ PetscErrorCode MatLUFactorSymbolic_Essl(Mat A,IS r,IS c,MatFactorInfo *info,Mat 
   essl->ja          = essl->ia + essl->lna;
   essl->CleanUpESSL = PETSC_TRUE;
 
-  ierr = PetscLogObjectMemory(B,len+sizeof(Mat_Essl));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,len);CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0);
 }
@@ -198,7 +198,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Essl(Mat A,MatType type,MatR
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr                      = PetscNew(Mat_Essl,&essl);CHKERRQ(ierr);
+  ierr                      = PetscNewLog(B,Mat_Essl,&essl);CHKERRQ(ierr);
   essl->MatDuplicate        = A->ops->duplicate;
   essl->MatAssemblyEnd      = A->ops->assemblyend;
   essl->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
