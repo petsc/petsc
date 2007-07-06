@@ -130,18 +130,18 @@ int main(int argc, char *argv[])
     MeshSetMesh(mesh_set[0], mesh);
     ierr = MeshSpacingFunction(mesh_set[0]);
     ierr = MeshIDBoundary(mesh_set[0]);
-    MeshCreateHierarchyLabel(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
+    MeshCreateHierarchyLabel_NEW(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
     //ierr = MeshCoarsenMesh(m, pow(options.coarseFactor, 2), &n);
     //ierr = MeshGetMesh(n, mesh);
     //ierr = MeshLocateInMesh(m, n);
    // Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
    // mesh->getTopology()->setPatch(options.levels, sieve);
    // mesh->getTopology()->stratify();
-    char vtkfilename[128];
-    for (int i = 0; i < options.levels; i++) {
-      sprintf(vtkfilename, "testMesh%d.vtk", i);
-      ierr = OutputVTK(mesh_set[i], &options, vtkfilename);CHKERRQ(ierr);
-    }
+//    char vtkfilename[128];
+ //   for (int i = 0; i < options.levels; i++) {
+//      sprintf(vtkfilename, "testMesh%d.vtk", i);
+//      ierr = OutputVTK(mesh_set[i], &options, vtkfilename);CHKERRQ(ierr);
+ //   }
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
