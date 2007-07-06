@@ -542,7 +542,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_BCGSL(KSP ksp)
 
   PetscFunctionBegin;
   /* allocate BiCGStab(L) context */
-  ierr = PetscNew(KSP_BiCGStabL, &bcgsl);CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp, KSP_BiCGStabL, &bcgsl);CHKERRQ(ierr);
   ksp->data = (void*)bcgsl;
 
   ksp->pc_side              = PC_LEFT;

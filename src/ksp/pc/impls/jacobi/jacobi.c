@@ -399,14 +399,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Jacobi(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_Jacobi,&jac);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_Jacobi,&jac);CHKERRQ(ierr);
   pc->data  = (void*)jac;
-
-  /*
-     Logs the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes.
-  */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Jacobi));CHKERRQ(ierr);
 
   /*
      Initialize the pointers to vectors to ZERO; these will be used to store

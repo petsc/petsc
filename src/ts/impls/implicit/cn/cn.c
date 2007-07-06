@@ -496,8 +496,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_CN(TS ts)
     ierr = SNESCreate(ts->comm,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
-  ierr = PetscNew(TS_CN,&cn);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ts,sizeof(TS_CN));CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_CN,&cn);CHKERRQ(ierr);
   ts->data = (void*)cn;
   PetscFunctionReturn(0);
 }

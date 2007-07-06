@@ -131,7 +131,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_VU(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(PetscViewer_VU, &vu);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,PetscViewer_VU, &vu);CHKERRQ(ierr);
   viewer->data = (void*) vu;
 
   viewer->ops->destroy          = PetscViewerDestroy_VU;

@@ -683,8 +683,8 @@ static PetscErrorCode VecCreate_Seq_Private(Vec v,const PetscScalar array[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscNewLog(v,Vec_Seq,&s);CHKERRQ(ierr);
   ierr = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscNew(Vec_Seq,&s);CHKERRQ(ierr);
   v->precision       = PETSC_SCALAR;
   v->data            = (void*)s;
   v->bops->publish   = VecPublish_Seq;
@@ -779,7 +779,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Seq(Vec V)
   if (size > 1) {
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot create VECSEQ on more than one process");
   }
-  ierr = PetscMalloc( n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(V, n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = PetscMemzero(array,n*sizeof(PetscScalar));CHKERRQ(ierr);
   ierr = VecCreate_Seq_Private(V,array);CHKERRQ(ierr);

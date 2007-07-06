@@ -1695,7 +1695,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
 
   PetscFunctionBegin;
 
-  ierr    = PetscNew(Mat_MPISBAIJ,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,Mat_MPISBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 

@@ -1967,11 +1967,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
-  ierr            = PetscNew(Mat_SeqDense,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_SeqDense,&b);CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;
-  ierr = PetscLogObjectMemory(B,sizeof(struct _p_Mat));CHKERRQ(ierr);
   B->data         = (void*)b;
 
 

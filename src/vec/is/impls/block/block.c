@@ -266,9 +266,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
 #endif
 
   ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);
-  ierr = PetscNew(IS_Block,&sub);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(Nindex,sizeof(IS_Block)+n*sizeof(PetscInt)+sizeof(struct _p_IS));CHKERRQ(ierr);
-  ierr   = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+  ierr = PetscNewLog(Nindex,IS_Block,&sub);CHKERRQ(ierr);
+  ierr = PetscMalloc(n*sizeof(PetscInt),&sub->idx);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(Nindex,n*sizeof(PetscInt));CHKERRQ(ierr);
   sub->n = n;
   ierr = MPI_Allreduce(&n,&sub->N,1,MPIU_INT,MPI_SUM,comm);CHKERRQ(ierr);
   for (i=1; i<n; i++) {

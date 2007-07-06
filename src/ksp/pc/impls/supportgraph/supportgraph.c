@@ -200,14 +200,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_SupportGraph,&sg);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_SupportGraph,&sg);CHKERRQ(ierr);
   pc->data  = (void*)sg;
-
-  /*
-     Logs the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes.
-  */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_SupportGraph));CHKERRQ(ierr);
 
   /*
      Initialize preconditioner matrix to ZERO

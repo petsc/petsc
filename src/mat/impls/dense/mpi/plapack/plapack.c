@@ -466,7 +466,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_Dense_Plapack(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_Plapack,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_Plapack,&lu);CHKERRQ(ierr);
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
   lu->MatAssemblyEnd       = A->ops->assemblyend;

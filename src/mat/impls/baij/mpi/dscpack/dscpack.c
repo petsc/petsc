@@ -705,7 +705,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_BAIJ_DSCPACK(Mat A,const MatType ty
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(Mat_DSC,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_DSC,&lu);CHKERRQ(ierr);
 
   lu->MatDuplicate               = A->ops->duplicate;
   lu->MatView                    = A->ops->view;

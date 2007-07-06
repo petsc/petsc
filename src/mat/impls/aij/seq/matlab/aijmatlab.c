@@ -342,7 +342,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_Matlab(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_Matlab,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_Matlab,&lu);CHKERRQ(ierr);
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
   lu->MatLUFactorSymbolic  = A->ops->lufactorsymbolic;

@@ -218,7 +218,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_MINRES(KSP ksp)
   PetscFunctionBegin;
 
   ksp->pc_side   = PC_LEFT;
-  ierr           = PetscNew(KSP_MINRES,&minres);CHKERRQ(ierr);
+  ierr           = PetscNewLog(ksp,KSP_MINRES,&minres);CHKERRQ(ierr);
   minres->haptol = 1.e-18;
   ksp->data      = (void*)minres;
 

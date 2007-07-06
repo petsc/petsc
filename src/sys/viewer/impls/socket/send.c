@@ -261,7 +261,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr                   = PetscNew(PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
+  ierr                   = PetscNewLog(v,PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
   vmatlab->port          = 0;
   v->data                = (void*)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;

@@ -733,7 +733,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(PetscViewer_ASCII,&vascii);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,PetscViewer_ASCII,&vascii);CHKERRQ(ierr);
   viewer->data = (void*)vascii;
 
   viewer->ops->destroy          = PetscViewerDestroy_ASCII;

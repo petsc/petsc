@@ -310,7 +310,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->getelements        = DAGetElements_2d_P1;
   da->elementtype             = DA_ELEMENT_P1;
 
-  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 2;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;

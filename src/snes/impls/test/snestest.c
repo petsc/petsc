@@ -125,8 +125,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   snes->ops->converged	     = 0;
   snes->ops->view            = 0;
 
-  ierr			= PetscNew(SNES_Test,&neP);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(SNES_Test));CHKERRQ(ierr);
+  ierr			= PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);
   snes->data    	= (void*)neP;
   neP->complete_print   = PETSC_FALSE;
   PetscFunctionReturn(0);

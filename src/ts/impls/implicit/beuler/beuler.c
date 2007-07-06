@@ -368,8 +368,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_BEuler(TS ts)
     ierr = SNESCreate(ts->comm,&ts->snes);CHKERRQ(ierr);
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"No such problem");
 
-  ierr = PetscNew(TS_BEuler,&beuler);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ts,sizeof(TS_BEuler));CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_BEuler,&beuler);CHKERRQ(ierr);
   ts->data = (void*)beuler;
 
   PetscFunctionReturn(0);

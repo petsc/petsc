@@ -152,7 +152,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
   crl->AssemblyEnd  = A->ops->assemblyend;

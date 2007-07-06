@@ -807,7 +807,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat B)
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
 
-  ierr            = PetscNew(Mat_SeqBDiag,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_SeqBDiag,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;

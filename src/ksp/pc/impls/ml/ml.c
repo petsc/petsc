@@ -115,8 +115,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
     } else {
       PC_ML           *pc_ml_new = PETSC_NULL;
       PetscContainer  container_new;
-      ierr = PetscNew(PC_ML,&pc_ml_new);CHKERRQ(ierr); 
-      ierr = PetscLogObjectMemory(pc,sizeof(PC_ML));CHKERRQ(ierr);
+      ierr = PetscNewLog(pc,PC_ML,&pc_ml_new);CHKERRQ(ierr); 
       ierr = PetscContainerCreate(PETSC_COMM_SELF,&container_new);CHKERRQ(ierr);
       ierr = PetscContainerSetPointer(container_new,pc_ml_new);CHKERRQ(ierr);
       ierr = PetscContainerSetUserDestroy(container_new,PetscContainerDestroy_PC_ML);CHKERRQ(ierr); 
@@ -143,7 +142,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
 
   /* create and initialize struct 'PetscMLdata' */
   if (!reuse){
-    ierr = PetscNew(FineGridCtx,&PetscMLdata);CHKERRQ(ierr); 
+    ierr = PetscNewLog(pc,FineGridCtx,&PetscMLdata);CHKERRQ(ierr); 
     pc_ml->PetscMLdata = PetscMLdata;
     ierr = PetscMalloc((Aloc->cmap.n+1)*sizeof(PetscScalar),&PetscMLdata->pwork);CHKERRQ(ierr); 
 
@@ -294,13 +293,15 @@ PetscErrorCode PetscContainerDestroy_PC_ML(void *ptr)
   PetscInt        level,fine_level=pc_ml->Nlevels-1;
 
   PetscFunctionBegin; 
-  if (pc_ml->size > 1){ierr = MatDestroy(pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
   ML_Aggregate_Destroy(&pc_ml->agg_object); 
   ML_Destroy(&pc_ml->ml_object);
 
-  ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
-  if (pc_ml->PetscMLdata->x){ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
-  if (pc_ml->PetscMLdata->y){ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
+  if (pc_ml->PetscMLdata) {
+    ierr = PetscFree(pc_ml->PetscMLdata->pwork);CHKERRQ(ierr);
+    if (pc_ml->size > 1)      {ierr = MatDestroy(pc_ml->PetscMLdata->Aloc);CHKERRQ(ierr);} 
+    if (pc_ml->PetscMLdata->x){ierr = VecDestroy(pc_ml->PetscMLdata->x);CHKERRQ(ierr);}
+    if (pc_ml->PetscMLdata->y){ierr = VecDestroy(pc_ml->PetscMLdata->y);CHKERRQ(ierr);}
+  }
   ierr = PetscFree(pc_ml->PetscMLdata);CHKERRQ(ierr);
 
   for (level=0; level<fine_level; level++){
@@ -341,11 +342,12 @@ PetscErrorCode PCDestroy_ML(PC pc)
   } else {
     SETERRQ(PETSC_ERR_ARG_NULL,"Container does not exit");
   }
-  ierr = PetscContainerDestroy(container);CHKERRQ(ierr); 
-
   /* detach pc and PC_ML and dereference container */
+  ierr = PetscContainerDestroy(container);CHKERRQ(ierr);
   ierr = PetscObjectCompose((PetscObject)pc,"PC_ML",0);CHKERRQ(ierr); 
-  ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+  if (pc->ops->destroy) {
+    ierr = (*pc->ops->destroy)(pc);CHKERRQ(ierr);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -354,8 +356,7 @@ PetscErrorCode PCDestroy_ML(PC pc)
 PetscErrorCode PCSetFromOptions_ML(PC pc)
 {
   PetscErrorCode  ierr;
-  PetscInt        indx,m,PrintLevel,MaxNlevels,MaxCoarseSize; 
-  PetscReal       Threshold,DampingFactor; 
+  PetscInt        indx,m,PrintLevel; 
   PetscTruth      flg;
   const char      *scheme[] = {"Uncoupled","Coupled","MIS","METIS"};
   PC_ML           *pc_ml=PETSC_NULL;
@@ -459,8 +460,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ML(PC pc)
   ierr = PCSetType(pc,PCMG);CHKERRQ(ierr); /* calls PCCreate_MG() and MGCreate_Private() */
 
   /* create a supporting struct and attach it to pc */
-  ierr = PetscNew(PC_ML,&pc_ml);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_ML));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_ML,&pc_ml);CHKERRQ(ierr);
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(container,pc_ml);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(container,PetscContainerDestroy_PC_ML);CHKERRQ(ierr); 

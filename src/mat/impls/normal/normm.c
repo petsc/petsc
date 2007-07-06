@@ -115,10 +115,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateNormal(Mat A,Mat *N)
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATNORMAL);CHKERRQ(ierr);
   
-  ierr      = PetscNew(Mat_Normal,&Na);CHKERRQ(ierr);
+  ierr      = PetscNewLog(*N,Mat_Normal,&Na);CHKERRQ(ierr);
+  (*N)->data = (void*) Na;
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   Na->A     = A;
-  (*N)->data = (void*) Na;
 
   ierr    = VecCreateMPI(A->comm,m,PETSC_DECIDE,&Na->w);CHKERRQ(ierr);
   (*N)->ops->destroy     = MatDestroy_Normal;

@@ -149,7 +149,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,c
   ierr = MatSetSizes(*A,m,m,m,m);CHKERRQ(ierr);  
   ierr = PetscObjectChangeTypeName((PetscObject)*A,MATSEQFFTW);CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_FFTW,&fftw);CHKERRQ(ierr);
+  ierr = PetscNewLog(*A,Mat_FFTW,&fftw);CHKERRQ(ierr);
   (*A)->data = (void*)fftw;
   ierr = PetscMalloc((ndim+1)*sizeof(PetscInt),&fftw->dim);CHKERRQ(ierr);
   ierr = PetscMemcpy(fftw->dim,dim,ndim*sizeof(PetscInt));CHKERRQ(ierr);

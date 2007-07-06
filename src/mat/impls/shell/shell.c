@@ -326,8 +326,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Shell(Mat A)
   PetscFunctionBegin;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
-  ierr = PetscNew(Mat_Shell,&b);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,sizeof(struct _p_Mat)+sizeof(Mat_Shell));CHKERRQ(ierr);
+  ierr = PetscNewLog(A,Mat_Shell,&b);CHKERRQ(ierr);
   A->data = (void*)b;
 
   if (A->rmap.n == PETSC_DECIDE || A->cmap.n == PETSC_DECIDE) {

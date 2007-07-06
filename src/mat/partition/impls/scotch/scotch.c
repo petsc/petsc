@@ -668,7 +668,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning p
     MatPartitioning_Scotch *scotch;
 
     PetscFunctionBegin;
-    ierr = PetscNew(MatPartitioning_Scotch, &scotch);CHKERRQ(ierr);
+    ierr = PetscNewLog(part,MatPartitioning_Scotch, &scotch);CHKERRQ(ierr);
+    part->data = (void*) scotch;
 
     scotch->map = 0;
     scotch->global_method = MP_SCOTCH_GR_GPS;
@@ -685,7 +686,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning p
     part->ops->view = MatPartitioningView_Scotch;
     part->ops->destroy = MatPartitioningDestroy_Scotch;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Scotch;
-    part->data = (void*) scotch;
 
     PetscFunctionReturn(0);
 }

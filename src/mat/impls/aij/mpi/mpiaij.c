@@ -2157,7 +2157,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     PetscContainer container;
     *matredundant = C;
     /* create a supporting struct and attach it to C for reuse */
-    ierr = PetscNew(Mat_Redundant,&redund);CHKERRQ(ierr);
+    ierr = PetscNewLog(C,Mat_Redundant,&redund);CHKERRQ(ierr);
     ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,redund);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)C,"Mat_Redundant",(PetscObject)container);CHKERRQ(ierr);
@@ -4478,7 +4478,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
 
-  ierr            = PetscNew(Mat_MPIAIJ,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;

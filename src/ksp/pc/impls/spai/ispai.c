@@ -631,7 +631,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PC_SPAI,&ispai);CHKERRQ(ierr);
+  ierr               = PetscNewLog(pc,PC_SPAI,&ispai);CHKERRQ(ierr);
   pc->data           = (void*)ispai;
 
   pc->ops->destroy         = PCDestroy_SPAI;

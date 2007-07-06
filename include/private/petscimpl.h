@@ -112,7 +112,8 @@ typedef PetscErrorCode (*PetscObjectViewerFunction)(PetscObject,PetscViewer);
    PetscNew(PetscOps,&((h)->bops)) || \
    PetscNew(pops,&((h)->ops)) || \
    PetscHeaderCreate_Private((PetscObject)h,cook,t,class_name,com,(PetscObjectFunction)des,(PetscObjectViewerFunction)vie) || \
-   PetscLogObjectCreate(h))
+   PetscLogObjectCreate(h) || \
+   PetscLogObjectMemory(h, sizeof(struct tp) + sizeof(PetscOps) + sizeof(pops)))
 
 /*@C
     PetscHeaderDestroy - Final step in destroying a PetscObject

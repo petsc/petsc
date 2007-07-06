@@ -2278,7 +2278,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = PetscNew(Mat_MPIBAIJ,&b);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_MPIBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
 
 

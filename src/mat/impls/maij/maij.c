@@ -155,7 +155,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(Mat_MPIMAIJ,&b);CHKERRQ(ierr);
+  ierr     = PetscNewLog(A,Mat_MPIMAIJ,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor           = 0;
