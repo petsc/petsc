@@ -1,20 +1,21 @@
-#define PETSC_AVOID_DECLARATIONS
-#include "include/finclude/petscall.h"
+
 
 !
 !      Fortran main program that uses Sieve to read in and
 !    partition a cell-centered unstructured mesh
 
       program ex12f90
-      use mex12f90
-
-
+#include "include/finclude/petscall.h"     
+      DM mesh
       PetscErrorCode   ierr
-      type(appctx)     app
-
+      Vec gvec,lvec
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
-      call handlemesh(ierr)
+      call LoadMesh(mesh,ierr)
+      call DMCreateGlobalVector(mesh,gvec,ierr)
+      call DMCreateLocalVector(mesh,lvec,ierr)
+      call VecDestroy(gvec,ierr)
+      call VecDestroy(lvec,ierr)
       call PetscFinalize(ierr)
       end
 

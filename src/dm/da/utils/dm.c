@@ -233,6 +233,90 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefine(DM dm,MPI_Comm comm,DM *dmf)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMGlobalToLocalBegin"
+/*@
+    DMGlobalToLocalBegin - Begins updating local vectors from local vectors
+
+    Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   g - the global vector
+.   mode - INSERT_VALUES or ADD_VALUES
+-   l - the local vector
+
+
+    Level: beginner
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobal()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalBegin(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->globaltolocalbegin)(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMGlobalToLocalEnd"
+/*@
+    DMGlobalToLocalEnd - Ends updating local vectors from local vectors
+
+    Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   g - the global vector
+.   mode - INSERT_VALUES or ADD_VALUES
+-   l - the local vector
+
+
+    Level: beginner
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMLocalToGlobal()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMGlobalToLocalEnd(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->globaltolocalend)(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMLocalToGlobal"
+/*@
+    DMLocalToGlobal - updates global vectors from local vectors
+
+    Collective on DM
+
+    Input Parameters:
++   dm - the DM object
+.   g - the global vector
+.   mode - INSERT_VALUES or ADD_VALUES
+-   l - the local vector
+
+
+    Level: beginner
+
+.seealso DMCoarsen(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation(), DMGlobalToLocalEnd(), DMGlobalToLocalBegin()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMLocalToGlobal(DM dm,Vec g,InsertMode mode,Vec l)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->localtoglobal)(dm,g,mode,l);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMCoarsen"
 /*@C
     DMCoarsen - Coarsens a DM object
