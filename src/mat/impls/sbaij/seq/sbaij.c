@@ -1572,7 +1572,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
   
-  ierr    = PetscNew(Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->destroy     = MatDestroy_SeqSBAIJ;

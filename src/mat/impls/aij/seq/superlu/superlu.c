@@ -120,7 +120,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_SuperLU,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_SuperLU,&lu);CHKERRQ(ierr);
   /* save the original SeqAIJ methods that we are changing */
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
@@ -530,7 +530,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->CleanUpSuperLU = PETSC_TRUE;
 
   *F = B;
-  ierr = PetscLogObjectMemory(B,(A->rmap.n+A->cmap.n)*sizeof(PetscInt)+sizeof(Mat_SuperLU));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(B,(A->rmap.n+A->cmap.n)*sizeof(PetscInt));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

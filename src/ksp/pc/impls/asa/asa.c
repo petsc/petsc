@@ -2079,9 +2079,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
   }
 
   /* Create new PC_ASA object */
-  ierr = PetscMalloc(sizeof(PC_ASA),&asa);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_ASA));CHKERRQ(ierr);
-  pc->data = asa;
+  ierr = PetscNewLog(pc,PC_ASA,&asa);CHKERRQ(ierr);
+  pc->data = (void*)asa;
 
   /* WORK: find some better initial values  */
   asa->nu             = 3;

@@ -277,7 +277,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCreate_DS(MatMFFD ctx)
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-  ierr       = PetscNew(MatMFFD_DS,&hctx);CHKERRQ(ierr);
+  ierr       = PetscNewLog(ctx,MatMFFD_DS,&hctx);CHKERRQ(ierr);
   ctx->hctx  = (void*)hctx;
   /* set a default for my parameter */
   hctx->umin = 1.e-6;

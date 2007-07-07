@@ -103,7 +103,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqSBAIJSpooles(Mat A,MatT
   Mat_Spooles    *lu;
 
   PetscFunctionBegin;
-  ierr = PetscNew(Mat_Spooles,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_Spooles,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     /* This routine is inherited, so we know the type is correct. */
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);

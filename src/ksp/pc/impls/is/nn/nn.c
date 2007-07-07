@@ -182,14 +182,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_NN(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_NN,&pcnn);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_NN,&pcnn);CHKERRQ(ierr);
   pc->data  = (void*)pcnn;
-
-  /*
-     Logs the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes.
-  */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_NN)+sizeof(PC_IS));CHKERRQ(ierr); /* Is this the right thing to do? */
 
   ierr = PCISCreate(pc);CHKERRQ(ierr);
   pcnn->coarse_mat  = 0;

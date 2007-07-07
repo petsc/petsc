@@ -786,7 +786,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   ts->ops->step            = TSStep_Sundials_Nonlinear;
   ts->ops->setfromoptions  = TSSetFromOptions_Sundials_Nonlinear;
 
-  ierr = PetscNew(TS_Sundials,&cvode);CHKERRQ(ierr);
+  ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
   ierr = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->pc);CHKERRQ(ierr);
   ts->data          = (void*)cvode;

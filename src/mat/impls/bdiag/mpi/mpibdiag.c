@@ -948,7 +948,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr            = PetscNew(Mat_MPIBDiag,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_MPIBDiag,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;

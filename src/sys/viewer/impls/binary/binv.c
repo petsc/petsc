@@ -792,7 +792,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Binary(PetscViewer v)
   PetscViewer_Binary *vbinary;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
+  ierr               = PetscNewLog(v,PetscViewer_Binary,&vbinary);CHKERRQ(ierr);
   v->data            = (void*)vbinary;
   v->ops->destroy    = PetscViewerDestroy_Binary;
   v->ops->flush      = 0;

@@ -663,8 +663,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
 
   PetscFunctionBegin;
 
-  ierr = PetscNew(KSP_STCG, &cg); CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp, sizeof(KSP_STCG)); CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_STCG, &cg); CHKERRQ(ierr);
 
   cg->radius = PETSC_MAX;
   cg->dtype = STCG_UNPRECONDITIONED_DIRECTION;

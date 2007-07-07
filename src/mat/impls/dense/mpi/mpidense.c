@@ -1190,7 +1190,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIDense(Mat mat)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr              = PetscNew(Mat_MPIDense,&a);CHKERRQ(ierr);
+  ierr              = PetscNewLog(mat,Mat_MPIDense,&a);CHKERRQ(ierr);
   mat->data         = (void*)a;
   ierr              = PetscMemcpy(mat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   mat->factor       = 0;

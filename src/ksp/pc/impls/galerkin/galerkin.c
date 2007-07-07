@@ -268,7 +268,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC pc)
   PC_Galerkin    *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Galerkin,&jac);CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Galerkin,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Galerkin;
   pc->ops->setup              = PCSetUp_Galerkin;
   pc->ops->destroy            = PCDestroy_Galerkin;

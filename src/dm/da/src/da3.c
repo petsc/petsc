@@ -265,7 +265,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->coarsen            = DACoarsen;
   da->ops->getaggregates      = DAGetAggregates;
 
-  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 3;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;

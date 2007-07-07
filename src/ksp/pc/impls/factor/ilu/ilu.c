@@ -662,8 +662,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   PC_ILU         *ilu;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_ILU,&ilu);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_ILU));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_ILU,&ilu);CHKERRQ(ierr);
 
   ilu->fact                    = 0;
   ierr = MatFactorInfoInitialize(&ilu->info);CHKERRQ(ierr);

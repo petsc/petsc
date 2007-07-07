@@ -214,7 +214,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning
   MatPartitioning_Parmetis *parmetis;
 
   PetscFunctionBegin;
-  ierr  = PetscNew(MatPartitioning_Parmetis,&parmetis);CHKERRQ(ierr);
+  ierr  = PetscNewLog(part,MatPartitioning_Parmetis,&parmetis);CHKERRQ(ierr);
+  part->data                = (void*)parmetis;
 
   parmetis->cuts       = 0;   /* output variable */
   parmetis->foldfactor = 150; /*folding factor */
@@ -228,7 +229,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Parmetis(MatPartitioning
   part->ops->view           = MatPartitioningView_Parmetis;
   part->ops->destroy        = MatPartitioningDestroy_Parmetis;
   part->ops->setfromoptions = MatPartitioningSetFromOptions_Parmetis;
-  part->data                = (void*)parmetis;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

@@ -428,7 +428,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 #endif
 
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(rr, sizeof(struct _p_PetscRandom));CHKERRQ(ierr);
   ierr = PetscMemzero(rr->ops, sizeof(struct _PetscRandomOps));CHKERRQ(ierr);
   rr->bops->publish = PETSC_NULL;
   rr->type_name     = PETSC_NULL;

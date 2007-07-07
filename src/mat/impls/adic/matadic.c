@@ -424,7 +424,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DAAD(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr    = PetscNew(Mat_DAAD,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,Mat_DAAD,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   

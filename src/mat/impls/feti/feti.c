@@ -34,7 +34,7 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
     PetscFunctionBegin;
     N=A->m;                  /* MatCreateFeti stored it there */
 
-    ierr=PetscNew(Mat_Feti, &matfeti);CHKERRQ(ierr);
+    ierr=PetscNewLog(A,Mat_Feti, &matfeti);CHKERRQ(ierr);
     A->data=(void*)matfeti;  /* that's actually me in data */
     ierr = PetscMemzero(matfeti,sizeof(Mat_Feti));CHKERRQ(ierr);      /* just for safety, everything to zero */
 

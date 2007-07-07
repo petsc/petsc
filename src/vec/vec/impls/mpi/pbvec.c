@@ -151,10 +151,9 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   PetscFunctionBegin;
 
   v->bops->publish   = VecPublish_MPI;
-  ierr = PetscLogObjectMemory(v,sizeof(Vec_MPI) + (v->map.n+nghost+1)*sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr           = PetscNew(Vec_MPI,&s);CHKERRQ(ierr);
-  ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
+  ierr           = PetscNewLog(v,Vec_MPI,&s);CHKERRQ(ierr);
   v->data        = (void*)s;
+  ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
   s->nghost      = nghost;
   v->mapping     = 0;
   v->bmapping    = 0;
@@ -168,8 +167,9 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   } else {
     PetscInt n         = v->map.n+nghost;
     ierr               = PetscMalloc(n*sizeof(PetscScalar),&s->array);CHKERRQ(ierr);
-    s->array_allocated = s->array;
+    ierr               = PetscLogObjectMemory(v,n*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr               = PetscMemzero(s->array,v->map.n*sizeof(PetscScalar));CHKERRQ(ierr);
+    s->array_allocated = s->array;
   }
 
   /* By default parallel vectors do not have local representation */

@@ -770,8 +770,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxLinearSolveFailures = 1;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  ierr = PetscNew(SNESKSPEW,&kctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(SNESKSPEW));CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,SNESKSPEW,&kctx);CHKERRQ(ierr);
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 

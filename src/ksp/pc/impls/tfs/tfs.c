@@ -177,8 +177,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_TFS(PC pc)
   PC_TFS         *tfs;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_TFS,&tfs);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_TFS));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_TFS,&tfs);CHKERRQ(ierr);
 
   tfs->xxt = 0;
   tfs->xyt = 0;

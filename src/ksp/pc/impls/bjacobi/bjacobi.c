@@ -666,8 +666,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_BJacobi(PC pc)
   PC_BJacobi     *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_BJacobi,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_BJacobi));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_BJacobi,&jac);CHKERRQ(ierr);
   ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
   pc->ops->apply              = 0;
   pc->ops->applytranspose     = 0;
@@ -922,8 +921,7 @@ static PetscErrorCode PCSetUp_BJacobi_Singleblock(PC pc,Mat mat,Mat pmat)
     pc->ops->applytranspose      = PCApplyTranspose_BJacobi_Singleblock;
     pc->ops->setuponblocks       = PCSetUpOnBlocks_BJacobi_Singleblock;
 
-    ierr = PetscMalloc(sizeof(PC_BJacobi_Singleblock),&bjac);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(pc,sizeof(PC_BJacobi_Singleblock));CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,PC_BJacobi_Singleblock,&bjac);CHKERRQ(ierr);
     bjac->x      = x;
     bjac->y      = y;
 
@@ -1123,8 +1121,7 @@ static PetscErrorCode PCSetUp_BJacobi_Multiblock(PC pc,Mat mat,Mat pmat)
     pc->ops->applytranspose= PCApplyTranspose_BJacobi_Multiblock;
     pc->ops->setuponblocks = PCSetUpOnBlocks_BJacobi_Multiblock;
 
-    ierr = PetscMalloc(sizeof(PC_BJacobi_Multiblock),&bjac);CHKERRQ(ierr);
-    ierr = PetscLogObjectMemory(pc,sizeof(PC_BJacobi_Multiblock));CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,PC_BJacobi_Multiblock,&bjac);CHKERRQ(ierr);
     ierr = PetscMalloc(n_local*sizeof(KSP),&jac->ksp);CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(pc,sizeof(n_local*sizeof(KSP)));CHKERRQ(ierr);
     ierr = PetscMalloc2(n_local,Vec,&bjac->x,n_local,Vec,&bjac->y);CHKERRQ(ierr);

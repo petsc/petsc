@@ -92,7 +92,7 @@ static PetscErrorCode MatCreateMPIRowbs_local(Mat A,int nz,const int nnz[])
   }
 
   /* Allocate BlockSolve matrix context */
-  ierr  = PetscNew(BSspmat,&bsif->A);CHKERRQ(ierr);
+  ierr  = PetscNewLog(A,BSspmat,&bsif->A);CHKERRQ(ierr);
   bsmat = bsif->A;
   BSset_mat_icc_storage(bsmat,PETSC_FALSE);
   BSset_mat_symmetric(bsmat,PETSC_FALSE);
@@ -1604,7 +1604,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   PetscFunctionBegin;
   comm = A->comm;
 
-  ierr                  = PetscNew(Mat_MPIRowbs,&a);CHKERRQ(ierr);
+  ierr                  = PetscNewLog(A,Mat_MPIRowbs,&a);CHKERRQ(ierr);
   A->data               = (void*)a;
   ierr                  = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor             = 0;
@@ -1680,8 +1680,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   /* Compute global offsets */
   offset = &A->rmap.rstart;
 
-  ierr = PetscNew(BSmapping,&a->bsmap);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(A,sizeof(BSmapping));CHKERRQ(ierr);
+  ierr = PetscNewLog(A,BSmapping,&a->bsmap);CHKERRQ(ierr);
   bsmap = a->bsmap;
   ierr                           = PetscMalloc(sizeof(int),&bsmap->vlocal2global);CHKERRQ(ierr);
   *((int*)bsmap->vlocal2global) = (*offset);
@@ -2004,7 +2003,6 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
     the original matrix contains the factor information.
   */
   ierr = PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   newmat->data         = (void*)mat;
   ierr                 = PetscMemcpy(newmat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
@@ -2065,7 +2063,6 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
     the original matrix contains the factor information.
   */
   ierr = PetscHeaderCreate(newmat,_p_Mat,struct _MatOps,MAT_COOKIE,-1,"Mat",mat->comm,MatDestroy,MatView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(newmat,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   newmat->data         = (void*)mat;
   ierr                 = PetscMemcpy(newmat->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);

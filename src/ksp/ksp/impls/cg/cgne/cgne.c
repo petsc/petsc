@@ -246,8 +246,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CGNE(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_CG,&cg);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_CG));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   cg->type                       = KSP_CG_SYMMETRIC;
 #else
