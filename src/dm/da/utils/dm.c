@@ -90,6 +90,33 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMCreateLocalVector"
+/*@C
+    DMCreateLocalVector - Creates a local vector from a DA or DMComposite object
+
+    Collective on DM
+
+    Input Parameter:
+.   dm - the DM object
+
+    Output Parameter:
+.   vec - the local vector
+
+    Level: developer
+
+.seealso DMDestroy(), DMView(), DMGetInterpolation(), DMGetColoring(), DMGetMatrix()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMCreateLocalVector(DM dm,Vec *vec)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = (*dm->ops->createlocalvector)(dm,vec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMGetInterpolation"
 /*@C
     DMGetInterpolation - Gets interpolation matrix between two DA or DMComposite objects

@@ -41,14 +41,14 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dmcreateglobalvector_(DA *da,Vec *v,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcreateglobalvector_(DM *dm,Vec *v,PetscErrorCode *ierr)
 {
-  *ierr = DACreateGlobalVector(*da,v);
+  *ierr = DMCreateGlobalVector(*dm,v);
 }
 
-void PETSC_STDCALL dmcreatelocalvector_(DA *da,Vec *v,PetscErrorCode *ierr)
+void PETSC_STDCALL dmcreatelocalvector_(DM *dm,Vec *v,PetscErrorCode *ierr)
 {
-  *ierr = DACreateLocalVector(*da,v);
+  *ierr = DMCreateLocalVector(*dm,v);
 }
 
 void PETSC_STDCALL dagetmatrix_(DA *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))

@@ -506,6 +506,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm comm,Mesh *mesh)
   p->ops->view               = MeshView_Mesh;
   p->ops->destroy            = PETSC_NULL;
   p->ops->createglobalvector = MeshCreateGlobalVector;
+  p->ops->createlocalvector  = MeshCreateLocalVector;
   p->ops->getcoloring        = PETSC_NULL;
   p->ops->getmatrix          = MeshGetMatrix;
   p->ops->getinterpolation   = MeshGetInterpolation_Mesh_New;
@@ -732,6 +733,44 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh mesh, Vec *gvec)
   ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
   ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCreateLocalVector"
+/*@C
+    MeshCreateLocalVector - Creates a vector of the correct size for local computation.
+
+    Collective on Mesh
+
+    Input Parameter:
+.    mesh - the mesh object
+
+    Output Parameters:
+.   lvec - the local vector
+
+    Level: advanced
+
+    Notes: Once this has been created you cannot add additional arrays or vectors to be packed.
+
+.seealso MeshDestroy(), MeshCreate(), MeshCreateGlobalVector()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscTruth     flag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
+  if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const int size = m->getRealSection("default")->sizeWithBC();
+
+  ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*lvec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
