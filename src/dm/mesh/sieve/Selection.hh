@@ -15,6 +15,8 @@ namespace ALE {
     typedef typename mesh_type::int_section_type int_section_type;
     typedef std::set<point_type>                 PointSet;
     typedef std::vector<point_type>              PointArray;
+    typedef std::pair<typename sieve_type::point_type, int> oPoint_type;
+    typedef std::vector<oPoint_type>                        oPointArray;
     typedef typename ALE::SieveAlg<mesh_type>    sieveAlg;
   public:
     template<typename Processor>
@@ -421,7 +423,7 @@ namespace ALE {
               face->insert(face->end(), *v_iter);
             }
           }
-          if (face->size() > faceSize) {
+          if ((int) face->size() > faceSize) {
             if (!boundaryFaces) throw ALE::Exception("Invalid fault mesh: Too many vertices of an element on the fault");
             FaceInserter inserter(mesh, sieve, subSieve, f, *c_iter,
                                   numCorners, indices, &origVertices, &faceVertices, &submeshCells);
@@ -429,7 +431,7 @@ namespace ALE {
 
             subsets(faceVec, faceSize, inserter);
           }
-          if (face->size() == faceSize) {
+          if ((int) face->size() == faceSize) {
             if (debug) std::cout << "  Contains a face on the submesh" << std::endl;
             insertFace(mesh, subSieve, face, f, *c_iter, numCorners, indices, &origVertices, &faceVertices);
             submeshCells.insert(*c_iter);
@@ -456,6 +458,114 @@ namespace ALE {
         return submesh_uninterpolated(mesh, label, dimension);
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
+    };
+  protected:
+    static Obj<mesh_type> boundary_uninterpolated(const Obj<mesh_type>& mesh) {
+      const Obj<typename mesh_type::label_sequence>&     cells    = mesh->heightStratum(0);
+      const typename mesh_type::label_sequence::iterator cBegin   = cells->begin();
+      const typename mesh_type::label_sequence::iterator cEnd     = cells->end();
+      const int                                          faceSize = numFaceVertices(*cBegin, mesh);
+      const int                                          depth    = mesh->depth();
+
+      for(typename mesh_type::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
+        const Obj<typename sieve_type::coneSet>& cone = mesh->getSieve()->nCone(*c_iter, depth);
+        PointArray cell(cone->begin(), cone->end());
+
+        // For each face
+        // - determine if its legal
+        // - determine if its part of a neighboring cell
+        // - if not, its a boundary face
+        //subsets(cell, faceSize, inserter);
+      }
+    }
+    static Obj<mesh_type> boundary_interpolated(const Obj<mesh_type>& mesh) {
+      Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
+      Obj<sieve_type>                                    newSieve = new sieve_type(mesh->comm(), mesh->debug());
+      const Obj<sieve_type>&                             sieve    = mesh->getSieve();
+      const Obj<typename mesh_type::label_sequence>&     faces    = mesh->heightStratum(1);
+      const typename mesh_type::label_sequence::iterator fBegin   = faces->begin();
+      const typename mesh_type::label_sequence::iterator fEnd     = faces->end();
+
+      for(typename mesh_type::label_sequence::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+        const Obj<typename sieve_type::traits::supportSequence>& support = sieve->support(*f_iter);
+
+        if (support->size() == 1) {
+          addClosure(sieve, newSieve, *f_iter);
+        }
+      }
+      newMesh->setSieve(newSieve);
+      newMesh->stratify();
+    }
+  public:
+    static Obj<mesh_type> boundary(const Obj<mesh_type>& mesh) {
+      const int dim   = mesh->getDimension();
+      const int depth = mesh->depth();
+
+      if (dim == depth) {
+        return boundary_interpolated(mesh);
+      } else if (depth == 1) {
+        return boundary_uninterpolated(mesh);
+      }
+      throw ALE::Exception("Cannot handle partially interpolated meshes");
+    };
+  public:
+    static Obj<mesh_type> interpolateMesh(const Obj<mesh_type>& mesh) {
+      const Obj<sieve_type>                              sieve       = mesh->getSieve();
+      const int  dim         = mesh->getDimension();
+      const int  numVertices = mesh->depthStratum(0)->size();
+      const Obj<typename mesh_type::label_sequence>&     cells       = mesh->heightStratum(0);
+      const int  numCells    = cells->size();
+      const int  corners     = sieve->cone(*cells->begin())->size();
+      const int  firstVertex = numCells;
+      const int  debug       = sieve->debug();
+      Obj<mesh_type>                                     newMesh     = new mesh_type(mesh->comm(), dim, mesh->debug());
+      Obj<sieve_type>                                    newSieve    = new sieve_type(mesh->comm(), mesh->debug());
+      const Obj<typename mesh_type::arrow_section_type>& orientation = newMesh->getArrowSection("orientation");
+
+      newMesh->setSieve(newSieve);
+      // Create a map from dimension to the current element number for that dimension
+      std::map<int,point_type*> curElement;
+      std::map<int,PointArray>  bdVertices;
+      std::map<int,PointArray>  faces;
+      std::map<int,oPointArray> oFaces;
+      int                       curCell    = 0;
+      int                       curVertex  = firstVertex;
+      int                       newElement = firstVertex+numVertices;
+      int                       o;
+
+      curElement[0]   = &curVertex;
+      curElement[dim] = &curCell;
+      for(int d = 1; d < dim; d++) {
+        curElement[d] = &newElement;
+      }
+      typename mesh_type::label_sequence::iterator cBegin = cells->begin();
+      typename mesh_type::label_sequence::iterator cEnd   = cells->end();
+
+      for(typename mesh_type::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
+        typename sieve_type::point_type                           cell   = *c_iter;
+        const Obj<typename sieve_type::traits::coneSequence>&     cone   = sieve->cone(cell);
+        const typename sieve_type::traits::coneSequence::iterator vBegin = cone->begin();
+        const typename sieve_type::traits::coneSequence::iterator vEnd   = cone->end();
+
+        // Build the cell
+        bdVertices[dim].clear();
+        for(typename sieve_type::traits::coneSequence::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
+          typename sieve_type::point_type vertex(*v_iter);
+
+          if (debug > 1) {std::cout << "Adding boundary vertex " << vertex << std::endl;}
+          bdVertices[dim].push_back(vertex);
+        }
+        if (debug) {std::cout << "cell " << cell << " num boundary vertices " << bdVertices[dim].size() << std::endl;}
+
+        if (corners != dim+1) {
+          ALE::SieveBuilder<mesh_type>::buildHexFaces(newSieve, dim, curElement, bdVertices, faces, cell);
+        } else {
+          ALE::SieveBuilder<mesh_type>::buildFaces(newSieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+        }
+      }
+      newMesh->stratify();
+      newMesh->setRealSection("coordinates", mesh->getRealSection("coordinates"));
+      return newMesh;
     };
   };
 }
