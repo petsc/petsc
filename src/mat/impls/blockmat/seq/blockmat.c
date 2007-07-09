@@ -358,7 +358,7 @@ PetscErrorCode MatLoad_BlockMat(PetscViewer viewer, MatType type,Mat *A)
 
   ierr = MatCreateBlockMat(PETSC_COMM_SELF,m,n,bs,0,lens,A);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatSetOption(*A,MAT_SYMMETRIC);CHKERRQ(ierr);
+    ierr = MatSetOption(*A,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   }
   amat = (Mat_BlockMat*)(*A)->data;
 
@@ -750,10 +750,10 @@ PetscErrorCode MatAssemblyEnd_BlockMat(Mat A,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_BlockMat"
-PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt)
+PetscErrorCode MatSetOption_BlockMat(Mat A,MatOption opt,PetscTruth flg)
 {
   PetscFunctionBegin;
-  if (opt == MAT_SYMMETRIC) {
+  if (opt == MAT_SYMMETRIC && flg) {
     A->ops->relax = MatRelax_BlockMat_Symmetric;
     A->ops->mult  = MatMult_BlockMat_Symmetric;
   } else {

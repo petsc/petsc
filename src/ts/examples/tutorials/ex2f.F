@@ -670,7 +670,7 @@
 !  Set and option to indicate that we will never add a new nonzero location 
 !  to the matrix. If we do, it will generate an error.
 
-      call MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
+      call MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,ierr)
 
       return
       end

@@ -740,7 +740,7 @@ PetscErrorCode MatWrapML_SeqAIJ(ML_Operator *mlmat,MatReuse reuse,Mat *newmat)
   }
 
   ierr = MatSeqAIJSetPreallocation(*newmat,0,nnz);CHKERRQ(ierr);
-  ierr = MatSetOption(*newmat,MAT_COLUMNS_SORTED);CHKERRQ(ierr); 
+  ierr = MatSetOption(*newmat,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr); 
   
   ierr = PetscMalloc(nz_max*(sizeof(PetscInt)+sizeof(PetscScalar)),&aj);CHKERRQ(ierr);
   aa = (PetscScalar*)(aj + nz_max);

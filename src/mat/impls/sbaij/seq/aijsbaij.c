@@ -44,9 +44,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   B->rmap.bs = A->rmap.bs;
 
   b  = (Mat_SeqAIJ*)(B->data);
@@ -138,9 +138,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newt
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
 
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   
   b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;
@@ -204,9 +204,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   
   b  = (Mat_SeqBAIJ*)(B->data);
   bi = b->i;
@@ -291,9 +291,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType new
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,browlengths);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROW_ORIENTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_ROWS_SORTED);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_ROWS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   
   b  = (Mat_SeqSBAIJ*)(B->data);
   bi = b->i;

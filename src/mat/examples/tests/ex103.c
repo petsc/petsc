@@ -94,8 +94,8 @@ int main(int argc,char **args)
   ierr = MatShift(C,M);CHKERRQ(ierr);  /* make C positive definite */
   ierr = MatDestroy(C1);CHKERRQ(ierr);
   
-  ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
-  ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr); 
+  ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr); 
 
   ierr = MatDuplicate(C,MAT_COPY_VALUES,&C1);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(C,perm,&info,&F);CHKERRQ(ierr);

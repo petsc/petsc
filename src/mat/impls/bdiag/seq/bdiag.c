@@ -79,7 +79,7 @@ PetscErrorCode MatAssemblyEnd_SeqBDiag(Mat A,MatAssemblyType mode)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqBDiag"
-PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
+PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqBDiag   *a = (Mat_SeqBDiag*)A->data;
   PetscErrorCode ierr;
@@ -87,39 +87,24 @@ PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) {
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew       = 1;
+    a->nonew       = (flg ? 1 : 0);
     break;
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-    a->nonew       = 0;
-    break;
-  case MAT_NO_NEW_DIAGONALS:
-    a->nonew_diag  = 1;
-    break;
-  case MAT_YES_NEW_DIAGONALS:
-    a->nonew_diag  = 0;
-    break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE;
+  case MAT_NEW_DIAGONALS:
+    a->nonew_diag  = (flg ? 1 : 0);
     break;
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE;
+    a->roworiented = flg;
     break;
   case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
   case MAT_COLUMNS_SORTED:
-  case MAT_COLUMNS_UNSORTED:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:

@@ -520,7 +520,7 @@ PetscErrorCode RHSMatrixHeat(TS ts,PetscReal t,Mat *AA,Mat *BB,MatStructure *str
      Set and option to indicate that we will never add a new nonzero location 
      to the matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   return 0;
 }

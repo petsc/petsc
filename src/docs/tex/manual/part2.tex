@@ -1199,7 +1199,7 @@ opposite of the Fortran convention, meaning that the value to be put in row
 allow the insertion of values in column major order, one can call the command
 \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED);
+  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED,PETSC\_TRUE);
 \end{tabbing}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently
 support the column-oriented option.
@@ -1221,11 +1221,11 @@ assembly process.  To indicate to PETSc that the row (\trl{im}) or
 column (\trl{in}) indices set with MatSetValues() are sorted (in increasing order),
 one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_ROWS\_SORTED);
+  MatSetOption(Mat A,MAT\_ROWS\_SORTED,PETSC\_TRUE);
 \end{tabbing}
 or 
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMNS\_SORTED);
+  MatSetOption(Mat A,MAT\_COLUMNS\_SORTED,PETSC\_TRUE);
 \end{tabbing}
 Note that these flags indicate the format of the data passed in with 
 MatSetValues(); they do not have anything to do with how the sparse
@@ -1274,7 +1274,7 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
@@ -1786,7 +1786,7 @@ previously existed, space will be allocated for the new entries.
 To prevent the allocation of additional memory and simply discard those 
 new entries, one can use the option \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 Once the matrix has been assembled, one can factor it numerically
 without repeating the ordering or the symbolic factorization. 
@@ -1829,7 +1829,7 @@ same positions and the matrix retains the same nonzero structure, the user
 can call MatZeroRows() in the first iteration. Then, before generating 
 the matrix in the second iteration the user should call
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 From that point, \findex{MatSetOption()}
 no new values will be inserted into those (boundary) rows of 
@@ -2643,7 +2643,7 @@ allocation.
 
 If the matrix is symmetric, one {\em may} call
 \begin{tabbing}
-  MatSetOption(Mat mat,MAT\_SYMMETRIC);
+  MatSetOption(Mat mat,MAT\_SYMMETRIC,PETSC\_TRUE);
 \end{tabbing}
 to improve efficiency, but in this case one cannot use the ILU 
 preconditioner, only ICC.
@@ -5839,7 +5839,7 @@ at a time can significantly enhance performance.
 
 \item When using MatSetValues(), if the column indices of the values being
    inserted have been sorted in monotonically increasing order, call
-   the routine \trl{MatSetOption(mat,MAT_COLUMNS_SORTED)} before setting the values
+   the routine \trl{MatSetOption(mat,MAT_COLUMNS_SORTED,PETSC\_TRUE)} before setting the values
    to reduce the insertion time significantly.
 
 \item When possible, use VecMDot() rather than a series of calls to VecDot().

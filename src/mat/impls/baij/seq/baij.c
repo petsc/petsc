@@ -889,7 +889,7 @@ PetscErrorCode MatDestroy_SeqBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqBAIJ"
-PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -897,49 +897,33 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) {
   case MAT_ROW_ORIENTED:
-    a->roworiented    = PETSC_TRUE;
-    break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented    = PETSC_FALSE;
+    a->roworiented    = flg;
     break;
   case MAT_COLUMNS_SORTED:
-    a->sorted         = PETSC_TRUE;
-    break;
-  case MAT_COLUMNS_UNSORTED:
-    a->sorted         = PETSC_FALSE;
+    a->sorted         = flg;
     break;
   case MAT_KEEP_ZEROED_ROWS:
-    a->keepzeroedrows = PETSC_TRUE;
+    a->keepzeroedrows = flg;
     break;
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew          = 1;
+    a->nonew          = (flg ? 1 : 0);
     break;
   case MAT_NEW_NONZERO_LOCATION_ERR:
-    a->nonew          = -1;
+    a->nonew          = (flg ? -1 : 0);
     break;
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
-    a->nonew          = -2;
-    break;
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-    a->nonew          = 0;
+    a->nonew          = (flg ? -2 : 0);
     break;
   case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
+  case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
@@ -2170,7 +2154,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);first");
   }
 
   /* allocate space for values if not already there */
@@ -2195,7 +2179,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);first");
   }
   if (!aij->saved_values) {
     SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");

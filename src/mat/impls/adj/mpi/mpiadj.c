@@ -80,7 +80,7 @@ PetscErrorCode MatDestroy_MPIAdj(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIAdj"
-PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPIAdj     *a = (Mat_MPIAdj*)A->data;
   PetscErrorCode ierr;
@@ -90,15 +90,9 @@ PetscErrorCode MatSetOption_MPIAdj(Mat A,MatOption op)
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-    a->symmetric = PETSC_TRUE;
-    break;
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_HERMITIAN:
-    a->symmetric = PETSC_FALSE;
+    a->symmetric = flg;
     break;
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     break;
   default:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);

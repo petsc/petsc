@@ -212,7 +212,7 @@ int main(int argc,char **args)
     /* 
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRQ(ierr);
+    ierr = MatSetOption(C1,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
 
     /* 
        Compute right-hand-side vector
@@ -315,7 +315,7 @@ int main(int argc,char **args)
     /* 
        Indicate same nonzero structure of successive linear system matrices
     */
-    ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS);CHKERRQ(ierr);
+    ierr = MatSetOption(C2,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
 
     /*
        Compute right-hand-side vector 

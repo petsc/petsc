@@ -38,7 +38,7 @@ int main(int argc,char **args)
   ierr = MatGetType(sA,&type);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)sA,MATSEQSBAIJ,&doIcc);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(sA,bs,nz,PETSC_NULL);CHKERRQ(ierr);
-  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR);CHKERRQ(ierr);
+  ierr = MatSetOption(sA,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
 
   /* Test MatGetOwnershipRange() */
   ierr = MatGetOwnershipRange(A,&Ii,&J);CHKERRQ(ierr);

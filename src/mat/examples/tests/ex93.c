@@ -16,7 +16,7 @@ int main(int argc,char **argv) {
   ierr = MatCreate(PETSC_COMM_SELF,&A);CHKERRQ(ierr);
   ierr = MatSetSizes(A,3,3,3,3);CHKERRQ(ierr);
   ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_IGNORE_ZERO_ENTRIES,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = MatSetValues(A,3,ij,3,ij,a,ADD_VALUES);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
