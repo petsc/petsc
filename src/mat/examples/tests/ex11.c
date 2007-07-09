@@ -37,7 +37,7 @@ int main(int argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRQ(ierr);
   if (keepzeroedrows) {
-    ierr = MatSetOption(C,MAT_KEEP_ZEROED_ROWS);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = MatZeroRowsIS(C,isrow,five);CHKERRQ(ierr);

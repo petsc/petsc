@@ -29,7 +29,7 @@ int main(int argc,char **args)
   ierr = MatGetOwnershipRange(A,&start,&end);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
   if (flg) { 
-    ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
+    ierr = MatSetOption(A,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr); 
   }
 
   /* inproc assembly */

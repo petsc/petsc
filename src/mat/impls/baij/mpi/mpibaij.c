@@ -1535,7 +1535,7 @@ PetscErrorCode MatGetInfo_MPIBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIBAIJ"
-PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPIBAIJ    *a = (Mat_MPIBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -1543,49 +1543,31 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) { 
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-  case MAT_COLUMNS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_KEEP_ZEROED_ROWS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE;
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    a->roworiented = flg;
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
+  case MAT_NEW_DIAGONALS:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE;
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
-    a->donotstash = PETSC_TRUE;
+    a->donotstash = flg;
     break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_USE_HASH_TABLE:
-    a->ht_flag = PETSC_TRUE;
+    a->ht_flag = flg;
     break;
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    break;
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_HERMITIAN:
-  case MAT_NOT_SYMMETRY_ETERNAL:
-    ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   default: 
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
@@ -2133,7 +2115,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     ierr = PetscMemzero(values,bs*bs*nnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = Ii[i+1]- Ii[i];
@@ -2141,7 +2122,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_UNSORTED);CHKERRQ(ierr);
 
   if (!v) {
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -2332,7 +2312,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBAIJ(Mat B)
     ierr = PetscOptionsTruth("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { 
       PetscReal fact = 1.39;
-      ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
+      ierr = MatSetOption(B,MAT_USE_HASH_TABLE,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscOptionsReal("-mat_use_hash_table","Use hash table factor","MatMPIBAIJSetHashTableFactor",fact,&fact,PETSC_NULL);CHKERRQ(ierr);
       if (fact <= 1.0) fact = 1.39;
       ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
@@ -2870,9 +2850,6 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   ierr = MatSetType(A,type);CHKERRQ(ierr)
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
 
-  /* Why doesn't this called using ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr); */
-  ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
-  
   if (!rank) {
     ierr = PetscMalloc((maxnz+1)*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
     /* read in my part of the matrix numerical values  */

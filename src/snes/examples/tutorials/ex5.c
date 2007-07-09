@@ -406,7 +406,7 @@ PetscErrorCode FormJacobianLocal(DALocalInfo *info,PetscScalar **x,Mat jac,AppCt
      Tell the matrix we will never add a new nonzero location to the
      matrix. If we do, it will generate an error.
   */
-  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

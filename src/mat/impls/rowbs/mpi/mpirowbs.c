@@ -1353,7 +1353,7 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIRowbs"
-PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPIRowbs   *a = (Mat_MPIRowbs*)A->data;
   PetscErrorCode ierr;
@@ -1361,53 +1361,32 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) {
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE;
-    break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE; 
-    break;
-  case MAT_COLUMNS_SORTED:
-    a->sorted      = 1;
-    break;
-  case MAT_COLUMNS_UNSORTED:
-    a->sorted      = 0;
+    a->roworiented = flg;
     break;
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew       = 1;
-    break;
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-    a->nonew       = 0;
+    a->nonew       = (flg ? 1 : 0);
     break;
   case MAT_DO_NOT_USE_INODES:
-    a->bs_color_single = 1;
+    a->bs_color_single = (flg ? 1 : 0);
     break;
-  case MAT_YES_NEW_DIAGONALS:
-  case MAT_ROWS_SORTED: 
+  case MAT_NEW_DIAGONALS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
-  case MAT_ROWS_UNSORTED:
   case MAT_USE_HASH_TABLE:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
-    a->donotstash = PETSC_TRUE;
-    break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
+    a->donotstash = flg;
     break;
   case MAT_KEEP_ZEROED_ROWS:
-    a->keepzeroedrows    = PETSC_TRUE;
+    a->keepzeroedrows    = flg;
     break;
   case MAT_SYMMETRIC:
     BSset_mat_symmetric(a->A,PETSC_TRUE);CHKERRBS(0);
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
@@ -1973,7 +1952,7 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
   if (!mat->symmetric) {
     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use incomplete Cholesky \n\
         preconditioning with a MATMPIROWBS matrix you must declare it to be \n\
-        symmetric using the option MatSetOption(A,MAT_SYMMETRIC)");
+        symmetric using the option MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE)");
   }
 
   /* If the icc_storage flag wasn't set before the last blocksolveassembly,          */
@@ -2046,7 +2025,7 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
 /*   if (mat->symmetric) { */
 /*     SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"To use ILU preconditioner with \n\ */
 /*         MatCreateMPIRowbs() matrix you CANNOT declare it to be a symmetric matrix\n\ */
-/*         using the option MatSetOption(A,MAT_SYMMETRIC)"); */
+/*         using the option MatSetOption(A,MAT_SYMMETRIC,PETSC_TRUE)"); */
 /*   } */
 
   /* Copy permuted matrix */
@@ -2112,8 +2091,8 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
    Notes:
    By default, the matrix is assumed to be nonsymmetric; the user can
    take advantage of special optimizations for symmetric matrices by calling
-$     MatSetOption(mat,MAT_SYMMETRIC)
-$     MatSetOption(mat,MAT_SYMMETRY_ETERNAL)
+$     MatSetOption(mat,MAT_SYMMETRIC,PETSC_TRUE)
+$     MatSetOption(mat,MAT_SYMMETRY_ETERNAL,PETSC_TRUE)
    BEFORE calling the routine MatAssemblyBegin().
 
    Internally, the MATMPIROWBS format inserts zero elements to the

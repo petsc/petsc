@@ -30,7 +30,7 @@ int main(int argc,char **args)
     if (solve_count == 1){
       //ierr = MatSetType(C,MATSBAIJMUMPS);CHKERRQ(ierr);
       ierr = MatSetType(C,MATSBAIJSPOOLES);CHKERRQ(ierr);
-      ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR);CHKERRQ(ierr);
+      ierr = MatSetOption(C,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE);CHKERRQ(ierr);
     } else {
       ierr = MatSetType(C,MATPLAPACK);CHKERRQ(ierr);
       //ierr = MatSetType(C,MATAIJSPOOLES);CHKERRQ(ierr);

@@ -26,8 +26,8 @@ int main(int argc,char **args)
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-symmetric",&flg);CHKERRQ(ierr);
   if (flg) {  /* Treat matrix as symmetric only if we set this flag */
-    ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* Create the matrix for the five point stencil, YET AGAIN */

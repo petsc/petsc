@@ -561,43 +561,29 @@ PetscErrorCode MatView_MPIBDiag(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIBDiag"
-PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)A->data;
   PetscErrorCode ierr;
 
   switch (op) {
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
-  case MAT_NO_NEW_DIAGONALS:
-  case MAT_YES_NEW_DIAGONALS:
-    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
+  case MAT_NEW_DIAGONALS:
+    ierr = MatSetOption(mbd->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
-    mbd->roworiented = PETSC_TRUE;
-    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
-    break;
-  case MAT_COLUMN_ORIENTED:
-    mbd->roworiented = PETSC_FALSE;
-    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
+    mbd->roworiented = flg;
+    ierr = MatSetOption(mbd->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
-    mbd->donotstash = PETSC_TRUE;
+    mbd->donotstash = flg;
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
-  case MAT_COLUMNS_UNSORTED:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:

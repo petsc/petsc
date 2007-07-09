@@ -421,13 +421,13 @@ PetscErrorCode MatGetDiagonal_IS(Mat A, Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_IS"
-PetscErrorCode MatSetOption_IS(Mat A,MatOption op)
+PetscErrorCode MatSetOption_IS(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_IS         *a = (Mat_IS*)A->data; 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;  
-  ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+  ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
