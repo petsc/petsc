@@ -42,6 +42,7 @@ PetscErrorCode MatDestroy_MPICRL(Mat A)
   }
   ierr = PetscFree(crl->array);CHKERRQ(ierr);
   ierr = PetscFree(crl);CHKERRQ(ierr);
+  A->spptr = 0;
 
   /* Change the type of A back to MPIAIJ and use MatDestroy_MPIAIJ() 
    * to destroy everything that remains. */
