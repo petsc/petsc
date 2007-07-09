@@ -13,3 +13,5 @@ include ${PETSC_DIR}/conf/base
 ex1: ex1.o   chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_DM_LIB}
 	${RM} -f ex1.o
+
+include ${PETSC_DIR}/conf/test
