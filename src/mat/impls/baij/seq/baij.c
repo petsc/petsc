@@ -1338,17 +1338,17 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
   PetscInt    *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
   PetscInt    *ai = a->i,*ailen = a->ilen;
   PetscInt    brow,bcol,ridx,cidx,bs=A->rmap.bs,bs2=a->bs2;
-  MatScalar   *ap,*aa = a->a,zero = 0.0;
+  MatScalar   *ap,*aa = a->a;
 
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
-    if (row < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (row < 0) {v += n; continue;} /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
     if (row >= A->rmap.N) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Row %D too large", row);
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
+      if (in[l] < 0) {v++; continue;} /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column"); */
       if (in[l] >= A->cmap.n) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Column %D too large", in[l]);
       col  = in[l] ; 
       bcol = col/bs;
@@ -1368,7 +1368,7 @@ PetscErrorCode MatGetValues_SeqBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscIn
           goto finished;
         }
       } 
-      *v++ = zero;
+      *v++ = 0.0;
       finished:;
     }
   }
