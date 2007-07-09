@@ -205,6 +205,9 @@ namespace ALE {
       this->checkLabel(name);
       return this->_labels[name];
     };
+    void setLabel(const std::string& name, const Obj<label_type>& label) {
+      this->_labels[name] = label;
+    };
     const labels_type& getLabels() {
       return this->_labels;
     };

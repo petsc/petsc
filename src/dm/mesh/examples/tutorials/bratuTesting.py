@@ -4,8 +4,6 @@ TODO:
 
   1) Put in Neumann conditions for Bratu FD
 
-  2) Rewrite discretization loop in stokes.cxx to use names
-
 Testing Schedule:
 
   - Laplacian (bratu.cxx)
