@@ -1543,7 +1543,6 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscTruth flg)
   PetscFunctionBegin;
   switch (op) { 
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_COLUMNS_SORTED:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_KEEP_ZEROED_ROWS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
@@ -1555,7 +1554,6 @@ PetscErrorCode MatSetOption_MPIBAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
-  case MAT_ROWS_SORTED:
   case MAT_NEW_DIAGONALS:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
@@ -2117,7 +2115,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
     ierr = PetscMemzero(values,bs*bs*nnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = Ii[i+1]- Ii[i];
@@ -2125,7 +2122,6 @@ PetscErrorCode MatMPIBAIJSetPreallocationCSR_MPIBAIJ(Mat B,PetscInt bs,const Pet
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_FALSE);CHKERRQ(ierr);
 
   if (!v) {
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -2854,9 +2850,6 @@ PetscErrorCode MatLoad_MPIBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   ierr = MatSetType(A,type);CHKERRQ(ierr)
   ierr = MatMPIBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
 
-  /* Why doesn't this called using ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr); */
-  ierr = MatSetOption(A,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
-  
   if (!rank) {
     ierr = PetscMalloc((maxnz+1)*sizeof(PetscScalar),&buf);CHKERRQ(ierr);
     /* read in my part of the matrix numerical values  */

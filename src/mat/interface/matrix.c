@@ -4211,7 +4211,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    Input Parameters:
 +  mat - the matrix 
 -  option - the option, one of those listed below (and possibly others),
-             e.g., MAT_ROWS_SORTED, MAT_NEW_NONZERO_LOCATION_ERR
 
    Options Describing Matrix Structure:
 +    MAT_SYMMETRIC - symmetric in terms of both structure and value
@@ -4226,9 +4225,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
 
    Options For Use with MatSetValues():
    Insert a logically dense subblock, which can be
-+    MAT_ROW_ORIENTED - row-oriented (default)
-.    MAT_ROWS_SORTED - sorted by row
--    MAT_COLUMNS_SORTED - sorted by column
+.    MAT_ROW_ORIENTED - row-oriented (default)
 
    Not these options reflect the data you pass in with MatSetValues(); it has 
    nothing to do with how the data is stored internally in the matrix 

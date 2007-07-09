@@ -580,8 +580,6 @@ PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op,PetscTruth flg)
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     mbd->donotstash = flg;
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_COLUMNS_SORTED:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:

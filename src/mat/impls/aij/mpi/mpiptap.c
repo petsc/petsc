@@ -679,7 +679,6 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
     ierr = MatSetValues(C,1,&row,bnz,bj_i,ba_i,INSERT_VALUES);CHKERRQ(ierr); 
     flops += 2*cnz;
   } 
-  ierr = MatSetOption(C,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr); /* -cause delay? */
   ierr = MatSetBlockSize(C,1);CHKERRQ(ierr);
   ierr = MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 

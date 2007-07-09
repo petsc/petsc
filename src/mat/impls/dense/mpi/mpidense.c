@@ -820,14 +820,12 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscTruth flg)
   case MAT_NO_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
-  case MAT_COLUMNS_SORTED:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
-  case MAT_ROWS_SORTED: 
   case MAT_NEW_DIAGONALS:
   case MAT_USE_HASH_TABLE:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);

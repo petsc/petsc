@@ -1363,9 +1363,6 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     break;
-  case MAT_COLUMNS_SORTED:
-    a->sorted      = (flg ? 1 : 0);
-    break;
   case MAT_NO_NEW_NONZERO_LOCATIONS:
     a->nonew       = (flg ? 1 : 0);
     break;
@@ -1373,7 +1370,6 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op,PetscTruth flg)
     a->bs_color_single = (flg ? 1 : 0);
     break;
   case MAT_NEW_DIAGONALS:
-  case MAT_ROWS_SORTED: 
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_USE_HASH_TABLE:

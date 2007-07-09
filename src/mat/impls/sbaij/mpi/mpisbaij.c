@@ -1244,7 +1244,6 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
   PetscFunctionBegin;
   switch (op) {
   case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_COLUMNS_SORTED:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_KEEP_ZEROED_ROWS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
@@ -1256,7 +1255,6 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
-  case MAT_ROWS_SORTED: 
   case MAT_NEW_DIAGONALS:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
@@ -2302,7 +2300,6 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   ierr = MatSetSizes(A,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,type);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   
   if (!rank) {
     ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);

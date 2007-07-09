@@ -899,9 +899,6 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     a->roworiented    = flg;
     break;
-  case MAT_COLUMNS_SORTED:
-    a->sorted         = flg;
-    break;
   case MAT_KEEP_ZEROED_ROWS:
     a->keepzeroedrows = flg;
     break;
@@ -914,7 +911,6 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscTruth flg)
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
     a->nonew          = (flg ? -2 : 0);
     break;
-  case MAT_ROWS_SORTED:
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
@@ -2384,7 +2380,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   b->setvaluescopy    = PETSC_NULL;
 #endif
 
-  b->sorted           = PETSC_FALSE;
   b->roworiented      = PETSC_TRUE;
   b->nonew            = 0;
   b->diag             = 0;
@@ -2472,7 +2467,6 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
       ierr = PetscMemzero(c->a,bs2*nz*sizeof(MatScalar));CHKERRQ(ierr);
     }
   }
-  c->sorted      = a->sorted;
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
 

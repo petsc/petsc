@@ -117,7 +117,6 @@ int Mat_Parallel_Load(MPI_Comm comm,const char *name,Mat *newmat)
   ierr = MatSetType(A,MATMPIAIJ);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,0,ourlens,0,offlens);CHKERRQ(ierr);
 
-  ierr = MatSetOption(A,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ourlens[i] += offlens[i];
   }

@@ -759,9 +759,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_KEEP_ZEROED_ROWS:
       a->keepzeroedrows    = flg;
       break;
-    case MAT_COLUMNS_SORTED:
-      a->sorted            = flg;
-      break;
     case MAT_NO_NEW_NONZERO_LOCATIONS:
       a->nonew             = (flg ? 1 : 0);
       break;
@@ -777,7 +774,6 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_USE_COMPRESSEDROW:
       a->compressedrow.use = flg;
       break;
-    case MAT_ROWS_SORTED:
     case MAT_NEW_DIAGONALS:
     case MAT_IGNORE_OFF_PROC_ENTRIES:
     case MAT_USE_HASH_TABLE:
@@ -2956,8 +2952,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
     ierr = PetscMemzero(values, nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_TRUE);CHKERRQ(ierr);
-
   for(i = 0; i < m; i++) {
     nz  = Ii[i+1] - Ii[i];
     ierr = MatSetValues_SeqAIJ(B, 1, &i, nz, J+Ii[i], values + (v ? Ii[i] : 0), INSERT_VALUES);CHKERRQ(ierr);
@@ -2965,7 +2959,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED,PETSC_FALSE);CHKERRQ(ierr);
 
   if (!v) {
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -3012,7 +3005,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
-  b->sorted            = PETSC_FALSE;
   b->ignorezeroentries = PETSC_FALSE;
   b->roworiented       = PETSC_TRUE;
   b->nonew             = 0;
@@ -3126,7 +3118,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   }
 
-  c->sorted            = a->sorted;
   c->ignorezeroentries = a->ignorezeroentries;
   c->roworiented       = a->roworiented;
   c->nonew             = a->nonew;

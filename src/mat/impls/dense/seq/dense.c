@@ -1258,8 +1258,6 @@ PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     aij->roworiented = flg;
     break;
-  case MAT_ROWS_SORTED: 
-  case MAT_COLUMNS_SORTED:
   case MAT_NO_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_DIAGONALS:

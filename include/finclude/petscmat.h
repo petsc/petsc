@@ -107,8 +107,8 @@
 !
 !  Matrix options; must match those in include/petscmat.h
 !
-      PetscEnum MAT_ROW_ORIENTED,MAT_ROWS_SORTED
-      PetscEnum MAT_COLUMNS_SORTED,MAT_NO_NEW_NONZERO_LOCATIONS
+      PetscEnum MAT_ROW_ORIENTED
+      PetscEnum MAT_NO_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_SYMMETRIC
       PetscEnum MAT_STRUCTURALLY_SYMMETRIC
       PetscEnum MAT_NEW_DIAGONALS,MAT_INODE_LIMIT_1
@@ -125,7 +125,6 @@
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
 
       parameter (MAT_ROW_ORIENTED=0)
-      parameter (MAT_ROWS_SORTED=1,MAT_COLUMNS_SORTED=2)
       parameter (MAT_NO_NEW_NONZERO_LOCATIONS=3)
       parameter (MAT_SYMMETRIC=4,MAT_STRUCTURALLY_SYMMETRIC=5)
       parameter (MAT_NEW_DIAGONALS=6)

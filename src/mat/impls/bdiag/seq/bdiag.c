@@ -95,8 +95,6 @@ PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_COLUMNS_SORTED:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:

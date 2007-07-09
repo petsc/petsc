@@ -1215,21 +1215,7 @@ MATMPIBAIJ), one can insert elements more efficiently using the block
 variant, MatSetValuesBlocked(). \findex{MatSetValuesBlocked()}
 
 The function MatSetOption() accepts several other inputs; see
-the manual page for details. We
-discuss two of these options, which are related to the efficiency of the
-assembly process.  To indicate to PETSc that the row (\trl{im}) or
-column (\trl{in}) indices set with MatSetValues() are sorted (in increasing order),
-one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
-\begin{tabbing}
-  MatSetOption(Mat A,MAT\_ROWS\_SORTED,PETSC\_TRUE);
-\end{tabbing}
-or 
-\begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMNS\_SORTED,PETSC\_TRUE);
-\end{tabbing}
-Note that these flags indicate the format of the data passed in with 
-MatSetValues(); they do not have anything to do with how the sparse
-matrix data is stored internally in PETSc.
+the manual page for details.
 
 After the matrix elements have been inserted or added into the matrix, 
 they must be processed (also called assembled) before they can be used. The routines for matrix
@@ -5836,11 +5822,6 @@ at a time can significantly enhance performance.
    than looping and inserting a single value at a time.  In order to
    access elements in of vector repeatedly, employ {VecGetArray()} to allow 
    direct manipulation of the vector elements. \findex{VecGetArray()}
-
-\item When using MatSetValues(), if the column indices of the values being
-   inserted have been sorted in monotonically increasing order, call
-   the routine \trl{MatSetOption(mat,MAT_COLUMNS_SORTED,PETSC\_TRUE)} before setting the values
-   to reduce the insertion time significantly.
 
 \item When possible, use VecMDot() rather than a series of calls to VecDot().
 \end{itemize}
