@@ -1707,47 +1707,48 @@ PetscErrorCode MeshCoarsenHierarchy_Mesh(Mesh mesh, int numLevels, Mesh **coarse
 PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *interpolation, Vec *scaling) {
 
   ALE::Obj<ALE::Mesh> fm, cm;
-  PetscErrorCode ierr;
+  Mat                 P;
+  PetscErrorCode      ierr;
+
   PetscFunctionBegin;
   ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
   ierr = MeshGetMesh(dmCoarse, cm);CHKERRQ(ierr);
   ALE::Obj<ALE::Mesh::label_type> coarsetraversal = cm->createLabel("traversal");
-  ALE::Obj<ALE::Mesh::label_type> finetraversal = fm->createLabel ("traversal");
-  if (fm->debug())ierr = PetscPrintf(fm->comm(), "Fine: %d vertices, Coarse: %d vertices\n", fm->depthStratum(0)->size(), cm->depthStratum(0)->size());CHKERRQ(ierr);
-  const ALE::Obj<ALE::Mesh::real_section_type>&  finecoordinates = fm->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>&  coarsecoordinates = cm->getRealSection("coordinates");
-  const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse = cm->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::real_section_type>& sFine = fm->getRealSection("default");
-  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
-  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
-  std::list<ALE::Mesh::point_type> travlist;  //store point
-  std::list<ALE::Mesh::point_type> travguesslist;  //store guess
-  std::list<ALE::Mesh::point_type> eguesslist; // store the next guesses for the location of the current point.
-  static double loc[4], v0[3], J[9], invJ[9], detJ;   // locations for the first point, jacobian, inverse jacobian, and jacobian determinant of a cell
-  if (fm->debug()) ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);
-  Mat P;
+  ALE::Obj<ALE::Mesh::label_type> finetraversal   = fm->createLabel ("traversal");
+  const int                       debug           = fm->debug();
+  if (debug) {ierr = PetscPrintf(fm->comm(), "Fine: %d vertices, Coarse: %d vertices\n", fm->depthStratum(0)->size(), cm->depthStratum(0)->size());CHKERRQ(ierr);}
+  const ALE::Obj<ALE::Mesh::real_section_type>& finecoordinates   = fm->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& coarsecoordinates = cm->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& sCoarse           = cm->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::real_section_type>& sFine             = fm->getRealSection("default");
+  const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder       = cm->getFactory()->getGlobalOrder(cm, "default", sCoarse);
+  const ALE::Obj<ALE::Mesh::order_type>&        fineOrder         = fm->getFactory()->getGlobalOrder(fm, "default", sFine);
+  std::list<ALE::Mesh::point_type> travlist;        // store point
+  std::list<ALE::Mesh::point_type> travguesslist;   // store guess
+  std::list<ALE::Mesh::point_type> eguesslist;      // store the next guesses for the location of the current point.
+  static double loc[4], v0[3], J[9], invJ[9], detJ; // first point, jacobian, inverse jacobian, and jacobian determinant of a cell
+  if (debug) {ierr = PetscPrintf(fm->comm(), "Starting Interpolation Matrix Build\n");CHKERRQ(ierr);}
 
   ierr = MatCreate(fm->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
 
+  const int dim = fm->getDimension();
+  if (dim != cm->getDimension()) throw ALE::Exception("Dimensions of the fine and coarse meshes do not match"); 
 
   //traversal labels on both layers
   const ALE::Obj<ALE::Mesh::label_sequence>& finevertices = fm->depthStratum(0);
-  ALE::Mesh::label_sequence::iterator fv_iter = finevertices->begin();
-  ALE::Mesh::label_sequence::iterator fv_iter_end = finevertices->end();
+  const ALE::Mesh::label_sequence::iterator  fv_iter_end  = finevertices->end();
+  ALE::Mesh::label_sequence::iterator        fv_iter      = finevertices->begin();
+
   while (fv_iter != fv_iter_end) {
     fm->setValue(finetraversal, *fv_iter, 0);
     fv_iter++;
   }
 
-  int dim = fm->getDimension();
-  //PetscPrintf(cm->comm(), "Dimensions: %d and %d\n", dim, cm->getDimension());
-  if (dim != cm->getDimension()) throw ALE::Exception("Dimensions of the fine and coarse meshes do not match"); 
-
   const ALE::Obj<ALE::Mesh::label_sequence>& coarseelements = cm->heightStratum(0);
-  ALE::Mesh::label_sequence::iterator ce_iter = coarseelements->begin();
-  ALE::Mesh::label_sequence::iterator ce_iter_end = coarseelements->end();
+  const ALE::Mesh::label_sequence::iterator  ce_iter_end    = coarseelements->end();
+  ALE::Mesh::label_sequence::iterator        ce_iter        = coarseelements->begin();
   
   while (ce_iter != ce_iter_end) {
     cm->setValue(coarsetraversal, *ce_iter, 0);
@@ -1756,25 +1757,25 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
 
   double fvCoords[dim], nvCoords[dim];
   bool pointIsInElement;
+
+  if (debug) {ierr = PetscPrintf(fm->comm(), "starting iterations\n");CHKERRQ(ierr);}
   fv_iter = finevertices->begin();
-  fv_iter_end = finevertices->end();
-  //ierr = PetscPrintf(fm->comm(), "starting iterations\n");CHKERRQ(ierr);
   while (fv_iter != fv_iter_end) {
-    //locate an initial point.
+    // locate an initial point.
     if (fm->getValue(finetraversal, *fv_iter) == 0) {
-      ce_iter = coarseelements->begin();
-      ce_iter_end = coarseelements->end();
       bool isLocated = false;
+
+      ce_iter = coarseelements->begin();
       ierr = PetscMemcpy(fvCoords, finecoordinates->restrictPoint(*fv_iter), dim*sizeof(double));
       while ((ce_iter != ce_iter_end) && (!isLocated)) {
         cm->computeElementGeometry(coarsecoordinates, *ce_iter, v0, J, invJ, detJ);
-        //generalized simplicial location for 2D, 3D:
-        loc[0] = 1.;
+        // generalized simplicial location for 2D, 3D:
+        loc[0] = 1.0;
         pointIsInElement = true;
-        for (int i = 0; i < dim; i++) {
-            loc [i+1] = 0.;
-          for (int j = 0; j < dim; j++) {
-            loc [i+1] += 0.5*invJ[i*dim+j]*(fvCoords[j] - v0[j]);
+        for(int i = 0; i < dim; i++) {
+          loc[i+1] = 0.0;
+          for(int j = 0; j < dim; j++) {
+            loc[i+1] += 0.5*invJ[i*dim+j]*(fvCoords[j] - v0[j]);
           }
           loc[0] -= loc[i+1];
           //PetscPrintf(fm->comm(), "%f, ", loc[i+1]);
@@ -1788,9 +1789,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
           isLocated = true;
           ierr = updateOperatorGeneral(P, fm, sFine, fineOrder, *fv_iter, cm, sCoarse, coarseOrder, *ce_iter, loc, INSERT_VALUES);CHKERRQ(ierr);
           fm->setValue(finetraversal, *fv_iter, 1);
-          ALE::Obj<ALE::Mesh::sieve_type::coneSet> neighbors = fm->getSieve()->cone(fm->getSieve()->support(*fv_iter));
-          ALE::Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
-          ALE::Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
+          const ALE::Obj<ALE::Mesh::sieve_type::coneSet> neighbors  = fm->getSieve()->cone(fm->getSieve()->support(*fv_iter));
+          const ALE::Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
+          ALE::Mesh::sieve_type::coneSet::iterator       n_iter     = neighbors->begin();
           while (n_iter != n_iter_end) {
             if (fm->getValue(finetraversal, *n_iter) == 0) {
               travlist.push_back(*n_iter);
@@ -1808,7 +1809,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             travguesslist.pop_front();
             eguesslist.push_front(curEle);
             cm->setValue(coarsetraversal, curEle, 1);
-            bool locationDiscovered = false;
+            bool locationDiscovered  = false;
             int traversalcomparisons = 0;
             while ((!eguesslist.empty()) && (!locationDiscovered)) {
               traversalcomparisons++;
@@ -1817,9 +1818,9 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
               pointIsInElement = true;
               cm->computeElementGeometry(coarsecoordinates, curguess, v0, J, invJ, detJ);
               loc[0] = 1.0;
-              for (int i = 0; i < dim; i++) {
-                loc[i+1] = 0.;
-                for (int j = 0; j < dim; j++) {
+              for(int i = 0; i < dim; i++) {
+                loc[i+1] = 0.0;
+                for(int j = 0; j < dim; j++) {
                   loc[i+1] += 0.5*invJ[i*dim+j]*(nvCoords[j] - v0[j]);
                 }
                 loc[0] -= loc[i+1];
@@ -1832,26 +1833,26 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
                 locationDiscovered = true;
                 //PetscPrintf(fm->comm(), "located by traversal.\n");
                 //set the label.
-//                fm->setValue(prolongation, curVert, curguess);
+                //fm->setValue(prolongation, curVert, curguess);
                 ierr = updateOperatorGeneral(P, fm, sFine, fineOrder, curVert, cm, sCoarse, coarseOrder, curguess, loc, INSERT_VALUES);CHKERRQ(ierr);
                 //PetscPrintf(fm->comm(), "Point %d located in %d.\n",  curVert, curguess);
                 //stick its neighbors in the queue along with its location as a good guess of the location of its neighbors
-                neighbors = fm->getSieve()->cone(fm->getSieve()->support(curVert));
-                n_iter = neighbors->begin();
-                n_iter_end = neighbors->end();
-                while (n_iter != n_iter_end) {
-                  if (fm->getValue(finetraversal, *n_iter) == 0) { //unlocated neighbor
-                    travlist.push_back(*n_iter);
+                const ALE::Obj<ALE::Mesh::sieve_type::coneSet> newNeighbors = fm->getSieve()->cone(fm->getSieve()->support(curVert));
+                const ALE::Mesh::sieve_type::coneSet::iterator nn_iter_end  = newNeighbors->end();
+                ALE::Mesh::sieve_type::coneSet::iterator       nn_iter      = newNeighbors->begin();
+                while (nn_iter != nn_iter_end) {
+                  if (fm->getValue(finetraversal, *nn_iter) == 0) { //unlocated neighbor
+                    travlist.push_back(*nn_iter);
                     travguesslist.push_back(curguess);
-                    fm->setValue(finetraversal, *n_iter, 1);
+                    fm->setValue(finetraversal, *nn_iter, 1);
                   }
-                  n_iter++;
+                  nn_iter++;
                 }
               } else {
               //add the current guesses neighbors to the comparison queue and start over.
-                ALE::Obj<ALE::Mesh::sieve_type::supportSet> curguessneighbors = cm->getSieve()->support(cm->getSieve()->cone(curguess));
-                ALE::Mesh::sieve_type::supportSet::iterator cgn_iter = curguessneighbors->begin();
-                ALE::Mesh::sieve_type::supportSet::iterator cgn_iter_end = curguessneighbors->end();
+                const ALE::Obj<ALE::Mesh::sieve_type::supportSet> curguessneighbors = cm->getSieve()->support(cm->getSieve()->cone(curguess));
+                const ALE::Mesh::sieve_type::supportSet::iterator cgn_iter_end      = curguessneighbors->end();
+                ALE::Mesh::sieve_type::supportSet::iterator       cgn_iter          = curguessneighbors->begin();
                 while (cgn_iter != cgn_iter_end) {
                   if (cm->getValue(coarsetraversal, *cgn_iter) == 0) {
                     eguesslist.push_back(*cgn_iter);
@@ -1867,10 +1868,10 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             }
             eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.
             //unset the traversed element list
-            ALE::Obj<ALE::Mesh::label_sequence> traved_elements = cm->getLabelStratum("traversal", 1);
+            const ALE::Obj<ALE::Mesh::label_sequence>& traved_elements = cm->getLabelStratum("traversal", 1);
+            const ALE::Mesh::label_sequence::iterator  tp_iter_end     = traved_elements->end();
+            ALE::Mesh::label_sequence::iterator        tp_iter         = traved_elements->begin();
             //PetscPrintf(cm->comm(), "%d\n", traved_elements->size());
-            ALE::Mesh::label_sequence::iterator tp_iter = traved_elements->begin();
-            ALE::Mesh::label_sequence::iterator tp_iter_end = traved_elements->end();
             while (tp_iter != tp_iter_end) {
               eguesslist.push_back(*tp_iter);
               tp_iter++;
@@ -1888,14 +1889,14 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
        fm->setValue(finetraversal, *fv_iter, 0);
       }
     }
-   // printf("-");
+    // printf("-");
     fv_iter++;
   }
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   //MatView(P, PETSC_VIEWER_STDOUT_SELF);
   *interpolation = P;
-  if (fm->debug())ierr = PetscPrintf(fm->comm(), "Ending Interpolation Matrix Build\n");CHKERRQ(ierr);
+  if (debug) {ierr = PetscPrintf(fm->comm(), "Ending Interpolation Matrix Build\n");CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 }
 
@@ -1909,14 +1910,12 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
 {
   ALE::Obj<ALE::Mesh> coarse;
   ALE::Obj<ALE::Mesh> fine;
-  Mesh coarseMesh = (Mesh) dmCoarse;
-  Mesh fineMesh   = (Mesh) dmFine;
-  Mat  P;
-  PetscErrorCode ierr;
+  Mat                 P;
+  PetscErrorCode      ierr;
 
   PetscFunctionBegin;
-  ierr = MeshGetMesh(fineMesh,   fine);CHKERRQ(ierr);
-  ierr = MeshGetMesh(coarseMesh, coarse);CHKERRQ(ierr);
+  ierr = MeshGetMesh(dmFine,   fine);CHKERRQ(ierr);
+  ierr = MeshGetMesh(dmCoarse, coarse);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type>& coarseCoordinates = coarse->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::real_section_type>& fineCoordinates   = fine->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::label_sequence>&    vertices          = fine->depthStratum(0);
@@ -1925,17 +1924,17 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   const ALE::Obj<ALE::Mesh::order_type>&        coarseOrder = coarse->getFactory()->getGlobalOrder(coarse, "default", sCoarse);
   const ALE::Obj<ALE::Mesh::order_type>&        fineOrder   = fine->getFactory()->getGlobalOrder(fine, "default", sFine);
 
-  const int dim = coarse->getDimension();
+  const int dim    = coarse->getDimension();
+  const int numDof = fine->getDiscretization()->getNumDof(fine->getDimension());
   double *v0, *J, *invJ, detJ, *refCoords, *values;
 
   ierr = MatCreate(fine->comm(), &P);CHKERRQ(ierr);
   ierr = MatSetSizes(P, sFine->size(), sCoarse->size(), PETSC_DETERMINE, PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
-  int selement = fine->getDiscretization()->getNumDof(fine->getDimension());
-  ierr = MatSeqAIJSetPreallocation(P, selement, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatSeqAIJSetPreallocation(P, numDof, PETSC_NULL);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(A, numDof, PETSC_NULL, numDof, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscMalloc5(dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ,dim,double,&refCoords,dim+1,double,&values);CHKERRQ(ierr);
   bool hasprolong;
-  ierr = PetscPrintf(fine->comm(), "Start Building.\n");
   if (fine->hasLabel("prolongation")) { 
     hasprolong = true;
   } else {
@@ -1979,7 +1978,6 @@ PetscErrorCode MeshGetInterpolation_Mesh(Mesh dmCoarse, Mesh dmFine, Mat *interp
   ierr = MatAssemblyBegin(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(P, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   *interpolation = P;
-  ierr = PetscPrintf(fine->comm(), "Done Building.\n");
   PetscFunctionReturn(0);
 }
 

@@ -37,6 +37,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->debug          = 0;
   options->test           = 0;
+  options->postponeGhosts = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
