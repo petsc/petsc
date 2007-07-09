@@ -663,13 +663,14 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   PetscInt     i,j;
-  PetscScalar  *vpt = v;
 
   PetscFunctionBegin;
   /* row-oriented output */ 
   for (i=0; i<m; i++) {
+    if (indexm[i] < 0) {v += n;continue;}
     for (j=0; j<n; j++) {
-      *vpt++ = mat->v[indexn[j]*mat->lda + indexm[i]];
+      if (indexn[i] < 0) {v++; continue;}
+      *v++ = mat->v[indexn[j]*mat->lda + indexm[i]];
     }
   }
   PetscFunctionReturn(0);

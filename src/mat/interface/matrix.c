@@ -1318,6 +1318,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
    MatSetValues() and MatGetValues() CANNOT be made in succession
    without intermediate matrix assembly.
 
+   Negative row or column indices will be ignored and those locations in v[] will be 
+   left unchanged.
+
    Level: advanced
 
    Concepts: matrices^accessing values

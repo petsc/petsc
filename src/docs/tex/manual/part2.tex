@@ -130,8 +130,9 @@ thus resulting in different values at the particular location. Since
 PETSc does not allow the simultaneous use of INSERT\_VALUES and
 ADD\_VALUES this nondeterministic behavior will not occur in PETSc.)
 
-There is no routine called VecGetValues(), since we provide 
-an alternative method for extracting some components of a vector using
+You can called VecGetValues() to pull local values from a vector (but
+not off-process values),
+an alternative method for extracting some components of a vector are
 the vector scatter routines.  See Section~\ref{sec_scatter} for details; see also
 below for VecGetArray().
 
@@ -985,9 +986,10 @@ VecDuplicate() from the original vectors used in the call to
 VecScatterCreate().
 
 \sindex{vector values, getting} \findex{VecGetValues()}
-There is no PETSc routine that is the opposite of VecSetValues()
-\findex{VecSetValues()}, that is, VecGetValues(). \findex{VecGetValues()}
-Instead, the user should create a new vector where
+There is a PETSc routine that is nearly the opposite of VecSetValues()
+\findex{VecSetValues()}, that is, VecGetValues(), but it can only get
+local values from the vector. \findex{VecGetValues()}
+To get off process values, the user should create a new vector where
 the components are to be stored and perform the appropriate vector 
 scatter. For example, if one desires to obtain the values of the 
 100th and 200th entries of a parallel vector, \trl{p}, one could use 
