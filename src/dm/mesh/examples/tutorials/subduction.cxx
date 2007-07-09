@@ -236,12 +236,6 @@ PetscErrorCode CreateMeshBoundary(MPI_Comm comm, Mesh *meshBoundary, Options *op
   const Obj<ALE::Mesh::label_type>& markers = m->createLabel("marker");
 
   if (m->commRank() == 0) {
-    for(int v = 12; v < 20; v++) {
-      m->setValue(markers, v, 1);
-    }
-    for(int e = 0; e < 8; e++) {
-      m->setValue(markers, e, 1);
-    }
     int v = 0, e = -1, tmpV, lidStart, lidEnd;
     // Slab lid boundary
     for(++v, ++e, tmpV = 1; tmpV < (PetscInt) slabLidLen/h; ++v, ++e, ++tmpV) {
@@ -466,6 +460,45 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CreateSlabLabel"
+PetscErrorCode CreateSlabLabel(Mesh mesh, Options *options)
+{
+  Obj<ALE::Mesh> m;
+  SectionReal    coordinates;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = MeshGetSectionReal(mesh, "coordinates", &coordinates);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::label_type>&         slabLabel = m->getLabel("exclude-u");
+  const Obj<ALE::Mesh::label_sequence>&     cells     = m->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator end       = cells->end();
+  const int dim      = m->getDimension();
+  const int corners  = m->getSieve()->nCone(*cells->begin(), m->depth())->size();
+  double   *centroid = new double[dim];
+
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
+    double *coords;
+
+    ierr = SectionRealRestrict(coordinates, *c_iter, &coords);CHKERRQ(ierr);
+    for(int d = 0; d < dim; ++d) {
+      centroid[d] = 0.0;
+      for(int c = 0; c < corners; ++c) {
+        centroid[d] += coords[c*dim+d];
+      }
+      centroid[d] /= corners;
+    }
+    if (centroid[1] > options->lidDepth) {
+      m->setValue(slabLabel, *c_iter, 1);
+    }
+  }
+  delete [] centroid;
+  ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
+  m->setLabel("exclude-v", slabLabel);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateProblem"
 PetscErrorCode CreateProblem(DM dm, Options *options)
 {
@@ -483,12 +516,36 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   ierr = CreateProblem_gen_1(dm, "u", zero, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(dm, "v", zero, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(dm, "T", zero, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateSlabLabel(mesh, options);CHKERRQ(ierr);
 
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
   m->calculateIndices();
   m->setupFieldMultiple(s, SLAB_LID, LID, NUM_BC);
   if (options->debug) {s->view("Default field");}
+  PetscFunctionReturn(0);
+}
+
+// Isoviscous analytic corner-flow solution
+PetscErrorCode BatchelorSolution(double coords[], double values[], Options *options) {
+  const PetscReal slabDip   = options->slabDip;
+  const PetscReal lidStartX = options->lidDepth/tan(slabDip);
+  const PetscReal sb = sin(slabDip); 
+  const PetscReal cb = cos(slabDip);
+  const PetscReal c  =  slabDip*sb/(slabDip*slabDip - sb*sb);
+  const PetscReal d  = (slabDip*cb - sb)/(slabDip*slabDip - sb*sb); 
+  // First shift to the corner
+  const PetscReal x  = coords[0] - lidStartX;
+  const PetscReal y  = coords[1] - options->lidDepth;
+  const PetscReal r  = sqrt(x*x+y*y);
+  const PetscReal st = y/r;
+  const PetscReal ct = x/r;
+  const PetscReal theta = atan(y/x); 
+
+  PetscFunctionBegin;
+  values[0] = -2.0*(c*ct-d*st)/r;
+  values[1] = ct*(c*theta*st + d*(st+theta*ct)) + st*(c*(st-theta*ct) + d*theta*st);
+  values[2] = st*(c*theta*st + d*(st+theta*ct)) - ct*(c*(st-theta*ct) + d*theta*st);  
   PetscFunctionReturn(0);
 }
 
