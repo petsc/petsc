@@ -384,7 +384,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
-  ierr=PetscOptionsHasName(PETSC_NULL,"-z", &flgz); CHKERRQ(ierr);
+  ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
   if(flgz){
     extern int PETSC_SOCKFD;
     extern int PETSC_LISTENFD;
@@ -392,7 +392,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     char hostname[256];
     int remoteport = 9999;
     int listenport = 9998;
-    PetscGetHostName(hostname,256);
+    ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
+    if(!hostname[0]){
+      ierr=PetscGetHostName(hostname,256); CHKERRQ(ierr);}
     PETSC_SOCKFD = PetscOpenSocket(hostname, remoteport);
     PETSC_LISTEN_CHECK = 1; 
     PETSC_LISTENFD = PetscSocketListen(hostname, listenport);
