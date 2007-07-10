@@ -2,7 +2,7 @@
 
 #include "include/private/matimpl.h"
 
-const char *MatOptions[] = {"ROW_ORIENTED","NO_NEW_NONZERO_LOCATIONS",
+const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "SYMMETRIC",
               "STRUCTURALLY_SYMMETRIC",
               "NEW_DIAGONALS",
