@@ -71,8 +71,7 @@ int PetscSocketListen(char * hostname, int portnum){
     int listenfd, newfd;
     typedef struct sockaddr SA;
     socklen_t sin_size;
-    extern int errno;
-	extern int PETSC_LISTEN_CHECK;
+    extern int PETSC_LISTEN_CHECK;
     //build the address struct
     bzero((char *)&sin, sizeof(sin));
     sin.sin_family = AF_INET;

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-PYTHON="/local/bin/python"
+PYTHON="/usr/local/bin/python"
 ZOPE_HOME="/opt/Zope-2.9"
 INSTANCE_HOME="./"
 CONFIG_FILE="./zope.conf"

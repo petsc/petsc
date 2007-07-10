@@ -389,9 +389,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     extern int PETSC_SOCKFD;
     extern int PETSC_LISTENFD;
     extern int PETSC_LISTEN_CHECK;
-    char hostname[] = "hookshot.mcs.anl.gov";
+    char hostname[256];
     int remoteport = 9999;
     int listenport = 9998;
+    PetscGetHostName(hostname,256);
     PETSC_SOCKFD = PetscOpenSocket(hostname, remoteport);
     PETSC_LISTEN_CHECK = 1; 
     PETSC_LISTENFD = PetscSocketListen(hostname, listenport);
