@@ -1,0 +1,14 @@
+#! /bin/sh
+
+PYTHON="/usr/bin/python2.4"
+ZOPE_HOME="/usr/lib/zope2.9"
+INSTANCE_HOME="./"
+CONFIG_FILE="./zope.conf"
+SOFTWARE_HOME="$ZOPE_HOME/lib/python"
+PYTHONPATH="$SOFTWARE_HOME:$PYTHONPATH"
+export PYTHONPATH INSTANCE_HOME SOFTWARE_HOME
+
+ZOPE_RUN="$SOFTWARE_HOME/Zope2/Startup/run.py"
+
+exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@" 
+
