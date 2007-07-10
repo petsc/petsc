@@ -205,6 +205,9 @@ namespace ALE {
       this->checkLabel(name);
       return this->_labels[name];
     };
+    void setLabel(const std::string& name, const Obj<label_type>& label) {
+      this->_labels[name] = label;
+    };
     const labels_type& getLabels() {
       return this->_labels;
     };
@@ -1409,19 +1412,63 @@ namespace ALE {
         s->setFiberDimension(this->depthStratum(d), numDof);
         maxDof = std::max(maxDof, numDof);
       }
+      // Process exclusions
       int f = 0;
+      for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
+        const Obj<ALE::DiscretizationNew>& disc      = this->getDiscretization(*f_iter);
+        std::string                        labelName = "exclude-";
+        std::set<point_type>               seen;
+
+        labelName += *f_iter;
+        if (this->hasLabel(labelName)) {
+          const Obj<label_type>&         label     = this->getLabel(labelName);
+          const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
+          const label_sequence::iterator end       = exclusion->end();
+          label->view(labelName.c_str());
+
+          for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
+            const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(this, this->getArrowSection("orientation"), *e_iter);
+            const coneArray::iterator cEnd    = closure->end();
+
+            for(coneArray::iterator c_iter = closure->begin(); c_iter != cEnd; ++c_iter) {
+              if (seen.find(*c_iter) != seen.end()) continue;
+              if (this->getValue(label, *c_iter) == 1) {
+                seen.insert(*c_iter);
+                s->setFiberDimension(*c_iter, 0, f);
+                s->addFiberDimension(*c_iter, -disc->getNumDof(this->depth(*c_iter)));
+                std::cout << "  cell: " << *c_iter << " dim: " << disc->getNumDof(this->depth(*c_iter)) << std::endl;
+              }
+            }
+          }
+        }
+      }
+      // Process constraints
+      f = 0;
       for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
         const Obj<ALE::DiscretizationNew>& disc = this->getDiscretization(*f_iter);
         const Obj<ALE::BoundaryCondition>& bc   = disc->getBoundaryCondition();
+        std::string                        labelName = "exclude-";
 
+        labelName += *f_iter;
         if (!bc.isNull()) {
           for(int b = startMarker; b <= endMarker; ++b) {
             const Obj<label_sequence>& boundary = this->getLabelStratum(bc->getLabelName(), b);
 
             names.insert(bc->getLabelName());
-            for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-              s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
-              s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+            if (this->hasLabel(labelName)) {
+              const Obj<label_type>& label = this->getLabel(labelName);
+
+              for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+                if (!this->getValue(label, *e_iter)) {
+                  s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
+                  s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+                }
+              }
+            } else {
+              for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
+                s->addConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)));
+                s->setConstraintDimension(*e_iter, disc->getNumDof(this->depth(*e_iter)), f);
+              }
             }
           }
         }
@@ -1429,7 +1476,6 @@ namespace ALE {
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       s->defaultConstraintDof();
-      s->view("");
       for(std::set<std::string>::const_iterator n_iter = names.begin(); n_iter != names.end(); ++n_iter) {
         const Obj<real_section_type>&      coordinates = this->getRealSection("coordinates");
         double                            *v0          = new double[this->getDimension()];
@@ -1516,6 +1562,7 @@ namespace ALE {
         delete [] v0;
         delete [] J;
       }
+      s->view("");
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {

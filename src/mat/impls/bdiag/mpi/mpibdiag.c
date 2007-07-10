@@ -567,7 +567,7 @@ PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op,PetscTruth flg)
   PetscErrorCode ierr;
 
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_NEW_DIAGONALS:

@@ -86,8 +86,8 @@ PetscErrorCode MatSetOption_SeqBDiag(Mat A,MatOption op,PetscTruth flg)
 
   PetscFunctionBegin;
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew       = (flg ? 1 : 0);
+  case MAT_NEW_NONZERO_LOCATIONS:
+    a->nonew       = (flg ? 0 : 1);
     break;
   case MAT_NEW_DIAGONALS:
     a->nonew_diag  = (flg ? 1 : 0);

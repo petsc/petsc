@@ -1363,8 +1363,8 @@ PetscErrorCode MatSetOption_MPIRowbs(Mat A,MatOption op,PetscTruth flg)
   case MAT_ROW_ORIENTED:
     a->roworiented = flg;
     break;
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew       = (flg ? 1 : 0);
+  case MAT_NEW_NONZERO_LOCATIONS:
+    a->nonew       = (flg ? 0 : 1);
     break;
   case MAT_DO_NOT_USE_INODES:
     a->bs_color_single = (flg ? 1 : 0);

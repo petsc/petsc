@@ -112,21 +112,6 @@ PetscErrorCode MatSetOption_Inode(Mat A,MatOption op,PetscTruth flg)
     case MAT_USE_INODES:
       a->inode.use         = flg;
       break;
-    case MAT_INODE_LIMIT_1:
-      a->inode.limit  = 1;
-      break;
-    case MAT_INODE_LIMIT_2:
-      a->inode.limit  = 2;
-      break;
-    case MAT_INODE_LIMIT_3:
-      a->inode.limit  = 3;
-      break;
-    case MAT_INODE_LIMIT_4:
-      a->inode.limit  = 4;
-      break;
-    case MAT_INODE_LIMIT_5:
-      a->inode.limit  = 5;
-      break;
     default:
       break;
   }

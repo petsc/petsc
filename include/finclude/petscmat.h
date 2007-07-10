@@ -108,12 +108,11 @@
 !  Matrix options; must match those in include/petscmat.h
 !
       PetscEnum MAT_ROW_ORIENTED
-      PetscEnum MAT_NO_NEW_NONZERO_LOCATIONS
+      PetscEnum MAT_NEW_NONZERO_LOCATIONS
       PetscEnum MAT_SYMMETRIC
       PetscEnum MAT_STRUCTURALLY_SYMMETRIC
-      PetscEnum MAT_NEW_DIAGONALS,MAT_INODE_LIMIT_1
-      PetscEnum MAT_INODE_LIMIT_2,MAT_INODE_LIMIT_3,MAT_INODE_LIMIT_4
-      PetscEnum MAT_INODE_LIMIT_5,MAT_IGNORE_OFF_PROC_ENTRIES
+      PetscEnum MAT_NEW_DIAGONALS
+      PetscEnum MAT_IGNORE_OFF_PROC_ENTRIES
       PetscEnum MAT_NEW_NONZERO_LOCATION_ERR
       PetscEnum MAT_NEW_NONZERO_ALLOCATION_ERR,MAT_USE_HASH_TABLE
       PetscEnum MAT_KEEP_ZEROED_ROWS,MAT_IGNORE_ZERO_ENTRIES
@@ -125,24 +124,22 @@
       PetscEnum MAT_GETROW_UPPERTRIANGULAR
 
       parameter (MAT_ROW_ORIENTED=0)
-      parameter (MAT_NO_NEW_NONZERO_LOCATIONS=1)
+      parameter (MAT_NEW_NONZERO_LOCATIONS=1)
       parameter (MAT_SYMMETRIC=2,MAT_STRUCTURALLY_SYMMETRIC=3)
       parameter (MAT_NEW_DIAGONALS=4)
-      parameter (MAT_INODE_LIMIT_1=5,MAT_INODE_LIMIT_2=6)
-      parameter (MAT_INODE_LIMIT_3=7,MAT_INODE_LIMIT_4=8)
-      parameter (MAT_INODE_LIMIT_5=9,MAT_IGNORE_OFF_PROC_ENTRIES=10)
-      parameter (MAT_NEW_NONZERO_LOCATION_ERR=11)
-      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=12)
-      parameter (MAT_USE_HASH_TABLE=13)
-      parameter (MAT_KEEP_ZEROED_ROWS=14)
-      parameter (MAT_IGNORE_ZERO_ENTRIES=15)
-      parameter (MAT_USE_INODES=16)
-      parameter (MAT_HERMITIAN=17)
-      parameter (MAT_SYMMETRY_ETERNAL=18)
-      parameter (MAT_USE_COMPRESSEDROW=19)
-      parameter (MAT_IGNORE_LOWER_TRIANGULAR=20)
-      parameter (MAT_ERROR_LOWER_TRIANGULAR=21)
-      parameter (MAT_GETROW_UPPERTRIANGULAR=22)
+      parameter (MAT_IGNORE_OFF_PROC_ENTRIES=5)
+      parameter (MAT_NEW_NONZERO_LOCATION_ERR=6)
+      parameter (MAT_NEW_NONZERO_ALLOCATION_ERR=7)
+      parameter (MAT_USE_HASH_TABLE=8)
+      parameter (MAT_KEEP_ZEROED_ROWS=9)
+      parameter (MAT_IGNORE_ZERO_ENTRIES=10)
+      parameter (MAT_USE_INODES=11)
+      parameter (MAT_HERMITIAN=12)
+      parameter (MAT_SYMMETRY_ETERNAL=13)
+      parameter (MAT_USE_COMPRESSEDROW=14)
+      parameter (MAT_IGNORE_LOWER_TRIANGULAR=15)
+      parameter (MAT_ERROR_LOWER_TRIANGULAR=16)
+      parameter (MAT_GETROW_UPPERTRIANGULAR=17)
 
 !
 !  MatDuplicateOption

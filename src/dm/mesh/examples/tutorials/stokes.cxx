@@ -359,6 +359,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           // Constant part
           elemVec[indices[f]] -= basis[q*numBasisFuncs+f]*funcVal*quadWeights[q]*detJ;
           // Linear part
+          //if (*f_iter == "pressure") {
           if (field == 0) {
             // Divergence of u
             const Obj<ALE::DiscretizationNew>& u         = m->getDiscretization("u");
@@ -799,6 +800,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
       for(int q = 0; q < numQuadPoints; ++q) {
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
+          //if (*f_iter == "pressure") {
           if (field == 0) {
             // Divergence of u
             const Obj<ALE::DiscretizationNew>& u         = m->getDiscretization("u");

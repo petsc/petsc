@@ -817,7 +817,7 @@ PetscErrorCode MatSetOption_MPIDense(Mat A,MatOption op,PetscTruth flg)
 
   PetscFunctionBegin;
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
     ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);

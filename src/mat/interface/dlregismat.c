@@ -2,11 +2,10 @@
 
 #include "include/private/matimpl.h"
 
-const char *MatOptions[] = {"ROW_ORIENTED","NO_NEW_NONZERO_LOCATIONS",
+const char *MatOptions[] = {"ROW_ORIENTED","NEW_NONZERO_LOCATIONS",
               "SYMMETRIC",
               "STRUCTURALLY_SYMMETRIC",
-              "NEW_DIAGONALS","INODE_LIMIT_1","INODE_LIMIT_2",
-              "INODE_LIMIT_3","INODE_LIMIT_4","INODE_LIMIT_5",
+              "NEW_DIAGONALS",
               "IGNORE_OFF_PROC_ENTRIES",
               "NEW_NONZERO_LOCATION_ERR",
               "NEW_NONZERO_ALLOCATION_ERR","USE_HASH_TABLE",
