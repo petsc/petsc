@@ -34,7 +34,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!fd) fd = stdout;
+  if (!fd) fd = PETSC_STDOUT;
    
   /* Did we wait on all the non-blocking sends and receives? */
   ierr = PetscSequentialPhaseBegin(PETSC_COMM_WORLD,1);CHKERRQ(ierr);

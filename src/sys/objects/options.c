@@ -480,7 +480,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsPrint(FILE *fd)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (!fd) fd = stdout;
+  if (!fd) fd = PETSC_STDOUT;
   if (!options) {ierr = PetscOptionsInsert(0,0,0);CHKERRQ(ierr);}
   for (i=0; i<options->N; i++) {
     if (options->values[i]) {

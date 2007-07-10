@@ -430,7 +430,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
       }
     } else {
-      file = stdout;
+      file = PETSC_STDOUT;
     }
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }

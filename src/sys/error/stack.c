@@ -50,7 +50,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStackView(PetscViewer viewer)
   if (!viewer) viewer = PETSC_VIEWER_STDOUT_SELF;
   ierr = PetscViewerASCIIGetPointer(viewer,&file);CHKERRQ(ierr);
 
-  if (file == stdout) {
+  if (file == PETSC_STDOUT) {
     (*PetscErrorPrintf)("Note: The EXACT line numbers in the stack are not available,\n");
     (*PetscErrorPrintf)("      INSTEAD the line number of the start of the function\n");
     (*PetscErrorPrintf)("      is given.\n");

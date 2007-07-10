@@ -54,9 +54,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFOpen(MPI_Comm comm,const char name[],const 
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
     ierr = PetscStrcmp(name,"stderr",&isstderr);CHKERRQ(ierr);
     if (isstdout || !name) {
-      fd = stdout;
+      fd = PETSC_STDOUT;
     } else if (isstderr) {
-      fd = stderr;
+      fd = PETSC_STDERR;
     } else {
       ierr = PetscStrreplace(PETSC_COMM_SELF,name,tname,PETSC_MAX_PATH_LEN);CHKERRQ(ierr);
       ierr = PetscFixFilename(tname,fname);CHKERRQ(ierr);
@@ -98,7 +98,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank && fd != stdout && fd != stderr) fclose(fd);
+  if (!rank && fd != PETSC_STDOUT && fd != PETSC_STDERR) fclose(fd);
   PetscFunctionReturn(0);
 }
 
