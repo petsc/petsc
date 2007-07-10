@@ -470,13 +470,14 @@ PetscErrorCode CreateSlabLabel(Mesh mesh, Options *options)
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetSectionReal(mesh, "coordinates", &coordinates);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::label_type>&         slabLabel = m->getLabel("exclude-u");
+  const Obj<ALE::Mesh::label_type>&         slabLabel = m->createLabel("exclude-u");
   const Obj<ALE::Mesh::label_sequence>&     cells     = m->heightStratum(0);
   const ALE::Mesh::label_sequence::iterator end       = cells->end();
   const int dim      = m->getDimension();
   const int corners  = m->getSieve()->nCone(*cells->begin(), m->depth())->size();
   double   *centroid = new double[dim];
 
+  std::cout << "lidDepth: " << options->lidDepth << std::endl;
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     double *coords;
 
@@ -487,14 +488,38 @@ PetscErrorCode CreateSlabLabel(Mesh mesh, Options *options)
         centroid[d] += coords[c*dim+d];
       }
       centroid[d] /= corners;
+      std::cout << "centroid["<<d<<"]: " << centroid[d] << std::endl;
     }
-    if (centroid[1] > options->lidDepth) {
+    if (centroid[1] > -options->lidDepth) {
+      std::cout << "  marking cell " << *c_iter << std::endl;
       m->setValue(slabLabel, *c_iter, 1);
     }
   }
   delete [] centroid;
   ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
   m->setLabel("exclude-v", slabLabel);
+  const Obj<ALE::Mesh::label_sequence>&     exclusion = m->getLabelStratum("exclude-u", 1);
+  const ALE::Mesh::label_sequence::iterator eEnd      = exclusion->end();
+
+  for(ALE::Mesh::label_sequence::iterator e_iter = exclusion->begin(); e_iter != eEnd; ++e_iter) {
+    const Obj<ALE::Mesh::coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *e_iter);
+    const ALE::Mesh::coneArray::iterator cEnd    = closure->end();
+
+    for(ALE::Mesh::coneArray::iterator c_iter = closure->begin(); c_iter != cEnd; ++c_iter) {
+      if (*c_iter == *e_iter) continue;
+      const Obj<ALE::Mesh::supportArray>&     support  = m->getSieve()->nSupport(*c_iter, m->height(*c_iter));
+      const ALE::Mesh::supportArray::iterator sEnd     = support->end();
+      int                                     preserve = 1;
+
+      for(ALE::Mesh::supportArray::iterator s_iter = support->begin(); s_iter != sEnd; ++s_iter) {
+        if (!m->getValue(slabLabel, *s_iter)) {
+          preserve = 0;
+          break;
+        }
+      }
+      m->setValue(slabLabel, *c_iter, preserve);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
