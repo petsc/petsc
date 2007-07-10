@@ -902,8 +902,8 @@ PetscErrorCode MatSetOption_SeqBAIJ(Mat A,MatOption op,PetscTruth flg)
   case MAT_KEEP_ZEROED_ROWS:
     a->keepzeroedrows = flg;
     break;
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew          = (flg ? 1 : 0);
+  case MAT_NEW_NONZERO_LOCATIONS:
+    a->nonew          = (flg ? 0 : 1);
     break;
   case MAT_NEW_NONZERO_LOCATION_ERR:
     a->nonew          = (flg ? -1 : 0);
@@ -2150,7 +2150,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
 
   /* allocate space for values if not already there */
@@ -2175,7 +2175,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqBAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   if (!aij->saved_values) {
     SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");

@@ -4233,7 +4233,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
 
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.  These options include
-+    MAT_NO_NEW_NONZERO_LOCATIONS - additional insertions will not be
++    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be
         allowed if they generate a new nonzero
 .    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
@@ -4249,7 +4249,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    use the column-oriented option (or convert to the row-oriented 
    format).  
 
-   MAT_NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
+   MAT_NEW_NONZERO_LOCATIONS set to PETSC_FALSE indicates that any add or insertion 
    that would generate a new entry in the nonzero structure is instead
    ignored.  Thus, if memory has not alredy been allocated for this particular 
    data, then the insertion is ignored. For dense matrices, in which
@@ -4278,7 +4278,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    searches during matrix assembly. When this flag is set, the hash table
    is created during the first Matrix Assembly. This hash table is
    used the next time through, during MatSetVaules()/MatSetVaulesBlocked()
-   to improve the searching of indices. MAT_NO_NEW_NONZERO_LOCATIONS flag 
+   to improve the searching of indices. MAT_NEW_NONZERO_LOCATIONS flag 
    should be used with MAT_USE_HASH_TABLE flag. This option is currently
    supported by MATMPIBAIJ format only.
 

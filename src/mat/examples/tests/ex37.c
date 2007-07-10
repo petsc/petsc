@@ -45,8 +45,8 @@ int main(int argc,char **args)
   ierr = MatCopy(C,A,DIFFERENT_NONZERO_PATTERN);CHKERRQ(ierr);
 
   /* Now C and A have the same nonzero pattern */
-  ierr = MatSetOption(C,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);CHKERRQ(ierr);
+  ierr = MatSetOption(C,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);CHKERRQ(ierr);
   ierr = MatCopy(C,A,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
 
   ierr = MatView(C,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

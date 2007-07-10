@@ -759,8 +759,8 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
     case MAT_KEEP_ZEROED_ROWS:
       a->keepzeroedrows    = flg;
       break;
-    case MAT_NO_NEW_NONZERO_LOCATIONS:
-      a->nonew             = (flg ? 1 : 0);
+    case MAT_NEW_NONZERO_LOCATIONS:
+      a->nonew             = (flg ? 0 : 1);
       break;
     case MAT_NEW_NONZERO_LOCATION_ERR:     
       a->nonew             = (flg ? -1 : 0);
@@ -2545,7 +2545,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
 
   /* allocate space for values if not already there */
@@ -2580,7 +2580,7 @@ $    Set linear terms into matrix
 $    Apply boundary conditions to matrix, at this time matrix must have 
 $      final nonzero structure (i.e. setting the nonlinear terms and applying 
 $      boundary conditions again will not change the nonzero structure
-$    ierr = MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);
+$    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 $    ierr = MatStoreValues(mat);
 $    Call SNESSetJacobian() with matrix
 $    In your Jacobian routine
@@ -2589,7 +2589,7 @@ $      Set nonlinear terms in matrix
  
   Common Usage without SNESSolve(), i.e. when you handle nonlinear solve yourself:
 $    // build linear portion of Jacobian 
-$    ierr = MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);
+$    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 $    ierr = MatStoreValues(mat);
 $    loop over nonlinear iterations
 $       ierr = MatRetrieveValues(mat);
@@ -2600,7 +2600,7 @@ $    endloop
 
   Notes:
     Matrix must already be assemblied before calling this routine
-    Must set the matrix option MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE); before 
+    Must set the matrix option MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE); before 
     calling this routine.
 
     When this is called multiple times it overwrites the previous set of stored values
@@ -2638,7 +2638,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS,PETSC_TRUE);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   if (!aij->saved_values) {
     SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");

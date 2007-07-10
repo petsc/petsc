@@ -361,7 +361,7 @@ M*/
 
 .seealso: MatSetOption()
 E*/
-typedef enum {MAT_ROW_ORIENTED,MAT_NO_NEW_NONZERO_LOCATIONS,      
+typedef enum {MAT_ROW_ORIENTED,MAT_NEW_NONZERO_LOCATIONS,      
               MAT_SYMMETRIC,          
               MAT_STRUCTURALLY_SYMMETRIC,
               MAT_NEW_DIAGONALS,MAT_INODE_LIMIT_1,
