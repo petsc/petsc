@@ -1394,6 +1394,7 @@ namespace ALE {
     void setupFieldMultiple(const Obj<real_section_type>& s, const int startMarker, const int endMarker, const int cellMarker = 2, const bool postponeGhosts = false) {
       const Obj<std::set<std::string> >& discs = this->getDiscretizations();
       std::set<std::string> names;
+      const int debug = s->debug();
       int maxDof = 0;
 
       for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
@@ -1521,22 +1522,34 @@ namespace ALE {
           const Obj<coneArray>      closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), *c_iter);
           const coneArray::iterator end     = closure->end();
 
+          //std::cout << "Boundary cell " << *c_iter << std::endl;
           this->computeElementGeometry(coordinates, *c_iter, v0, J, PETSC_NULL, detJ);
           for(int f = 0; f < numFields; ++f) v[f] = 0;
           for(coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             const int cDim = s->getConstraintDimension(*cl_iter);
             int       f    = 0;
 
+            //std::cout << "  point " << *cl_iter << std::endl;
             if (cDim) {
+              std::cout << "    constrained" << std::endl;
               for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
                 const Obj<ALE::DiscretizationNew>& disc     = this->getDiscretization(*f_iter);
                 const Obj<ALE::BoundaryCondition>& bc       = disc->getBoundaryCondition();
                 const int                          pointDim = disc->getNumDof(this->depth(*cl_iter));
                 const int                         *indices  = disc->getIndices();
 
+                //std::cout << "  field " << *f_iter << std::endl;
                 if (!bc.isNull()) {
-                  for(int d = 0; d < pointDim; ++d, ++v[f]) {
-                    values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                  const int value = this->getValue(this->getLabel(bc->getLabelName()), *cl_iter);
+
+                  if ((value >= startMarker) && (value <= endMarker)) {
+                    for(int d = 0; d < pointDim; ++d, ++v[f]) {
+                      values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                    }
+                  } else {
+                    for(int d = 0; d < pointDim; ++d, ++v[f]) {
+                      values[indices[v[f]]] = 0.0;
+                    }
                   }
                 } else {
                   for(int d = 0; d < pointDim; ++d, ++v[f]) {
