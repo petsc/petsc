@@ -1476,7 +1476,6 @@ namespace ALE {
       if (postponeGhosts) throw ALE::Exception("Not implemented yet");
       this->allocate(s);
       s->defaultConstraintDof();
-      s->view("");
       for(std::set<std::string>::const_iterator n_iter = names.begin(); n_iter != names.end(); ++n_iter) {
         const Obj<real_section_type>&      coordinates = this->getRealSection("coordinates");
         double                            *v0          = new double[this->getDimension()];
@@ -1563,6 +1562,7 @@ namespace ALE {
         delete [] v0;
         delete [] J;
       }
+      s->view("");
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) {
