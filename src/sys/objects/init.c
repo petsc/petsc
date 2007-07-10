@@ -16,6 +16,7 @@
 #include <malloc.h>
 #endif
 #include "petscfix.h"
+#include "zope.h"
 
 /* ------------------------Nasty global variables -------------------------------*/
 /*
@@ -213,7 +214,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscTruth     flg1,flg2,flg3,flag;
+  PetscTruth     flg1,flg2,flg3,flag, flgz;
   PetscErrorCode ierr;
   PetscInt       si;
   int            i;
@@ -382,6 +383,21 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
+
+  ierr=PetscOptionsHasName(PETSC_NULL,"-z", &flgz); CHKERRQ(ierr);
+  if(flgz){
+    extern int PETSC_SOCKFD;
+    extern int PETSC_LISTENFD;
+    extern int PETSC_LISTEN_CHECK;
+    char hostname[] = "hookshot.mcs.anl.gov";
+    int remoteport = 9999;
+    int listenport = 9998;
+    PETSC_SOCKFD = PetscOpenSocket(hostname, remoteport);
+    PETSC_LISTEN_CHECK = 1; 
+    PETSC_LISTENFD = PetscSocketListen(hostname, listenport);
+    PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
+    fprintf(PETSC_STDOUT, "<<<start>>>");
+  }
 
   /*
         Setup profiling and logging
