@@ -5,6 +5,11 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
+#include "zope.h"
+
+int PETSC_SOCKFD;
+int PETSC_LISTENFD;
+int PETSC_LISTEN_CHECK;
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
@@ -13,6 +18,7 @@ EXTERN PetscErrorCode PetscLogBegin_Private(void);
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
+extern FILE *PETSC_STDOUT;
 
 EXTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 EXTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
@@ -101,7 +107,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void)
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
   
-   Level: beginner
+7   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
@@ -476,6 +482,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
 
+
+
   /*
      We initialize the program name here (before MPI_Init()) because MPICH has a bug in 
      it that it sets args[0] on all processors to be args[0] on the first processor.
@@ -485,7 +493,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   } else {
     ierr = PetscSetProgramName("Unknown Name");CHKERRQ(ierr);
   }
-
 
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
@@ -546,11 +553,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
+  
   /*
      Build the options database
   */
   ierr = PetscOptionsInsert(argc,args,file);CHKERRQ(ierr);
 
+  
   /*
      Print main application help message
   */
@@ -559,7 +568,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
-
+ 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
@@ -646,6 +655,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscTruth     flg1,flg2,flg3;
   
   PetscFunctionBegin;
+
+  extern int PETSC_LISTEN_CHECK;
+  if(PETSC_LISTEN_CHECK){
+    PETSC_LISTEN_CHECK = 0;
+    extern int PETSC_SOCKFD;
+    extern int PETSC_LISTENFD;
+    extern FILE *PETSC_STDOUT;
+    fprintf(PETSC_STDOUT, "<<<end>>>");
+    PETSC_STDOUT = stdout;
+    close(PETSC_SOCKFD);
+    close(PETSC_LISTENFD);}
 
   if (!PetscInitializeCalled) {
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
