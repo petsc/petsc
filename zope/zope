@@ -1,7 +1,7 @@
 #! /bin/sh
 
-PYTHON="/usr/bin/python2.4"
-ZOPE_HOME="/usr/lib/zope2.9"
+PYTHON="/local/bin/python"
+ZOPE_HOME="/opt/Zope-2.9"
 INSTANCE_HOME="./"
 CONFIG_FILE="./zope.conf"
 SOFTWARE_HOME="$ZOPE_HOME/lib/python"
