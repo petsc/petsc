@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfoAllow(PetscTruth flag, const char filena
     ierr = PetscFOpen(MPI_COMM_SELF, fname, "w", &PetscInfoFile);CHKERRQ(ierr);
     if (!PetscInfoFile) SETERRQ1(PETSC_ERR_FILE_OPEN, "Cannot open requested file for writing: %s",fname);
   } else if (flag) {
-    PetscInfoFile = stdout;
+    PetscInfoFile = PETSC_STDOUT;
   }
   PetscLogPrintInfo     = flag;
   PetscLogPrintInfoNull = flag;

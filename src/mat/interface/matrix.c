@@ -1912,7 +1912,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec 
    number of nonzeros allocated and used, number of mallocs during
    matrix assembly, etc.  Additional information for factored matrices
    is provided (such as the fill ratio, number of mallocs during
-   factorization, etc.).  Much of this info is printed to STDOUT
+   factorization, etc.).  Much of this info is printed to PETSC_STDOUT
    when using the runtime options 
 $       -info -mat_view_info
 

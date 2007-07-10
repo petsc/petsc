@@ -466,7 +466,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(MPI_COMM_WORLD,&rank);CHKERRQ(ierr);
-  if (!fp) fp = stdout;
+  if (!fp) fp = PETSC_STDOUT;
   if (TRallocated > 0) {
     fprintf(fp,"[%d]Total space allocated %.0f bytes\n",rank,(PetscLogDouble)TRallocated);
   }
@@ -550,7 +550,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
     ierr = MPI_Recv(&dummy,1,MPIU_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
   }
 
-  if (!fp) fp = stdout;
+  if (!fp) fp = PETSC_STDOUT;
   ierr = PetscMemoryGetCurrentUsage(&rss);CHKERRQ(ierr);
   if (rss) {
     ierr = PetscFPrintf(MPI_COMM_WORLD,fp,"[%d] Maximum memory PetscMalloc()ed %.0f maximum size of entire process %D\n",rank,(PetscLogDouble)TRMaxMem,rss);CHKERRQ(ierr);
