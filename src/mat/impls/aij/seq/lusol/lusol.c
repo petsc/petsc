@@ -495,7 +495,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_LUSOL(Mat A,const MatType ty
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 		
-  ierr                       = PetscNew(Mat_LUSOL,&lusol);CHKERRQ(ierr);
+  ierr                       = PetscNewLog(B,Mat_LUSOL,&lusol);CHKERRQ(ierr);
   lusol->MatDuplicate        = A->ops->duplicate;
   lusol->MatLUFactorSymbolic = A->ops->lufactorsymbolic;
   lusol->MatDestroy          = A->ops->destroy;

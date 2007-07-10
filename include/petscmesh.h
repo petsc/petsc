@@ -31,11 +31,12 @@ extern PetscEvent  Mesh_View, Mesh_GetGlobalScatter, Mesh_restrictVector, Mesh_a
 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFinalize();
 
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh,PetscViewer);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm,Mesh*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh, PetscViewer);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreate(MPI_Comm, Mesh*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh, MeshType);
-EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalVector(Mesh, Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetMatrix(Mesh, MatType,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetVertexMatrix(Mesh, MatType, Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalIndices(Mesh,PetscInt*[]);

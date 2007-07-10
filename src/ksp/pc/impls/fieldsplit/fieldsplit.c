@@ -683,8 +683,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
   PC_FieldSplit  *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_FieldSplit,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_FieldSplit));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_FieldSplit,&jac);CHKERRQ(ierr);
   jac->bs        = -1;
   jac->nsplits   = 0;
   jac->type      = PC_COMPOSITE_ADDITIVE;

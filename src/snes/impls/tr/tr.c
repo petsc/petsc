@@ -380,8 +380,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES snes)
   snes->ops->view            = SNESView_TR;
   snes->nwork                = 0;
   
-  ierr			= PetscNew(SNES_TR,&neP);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(SNES_TR));CHKERRQ(ierr);
+  ierr			= PetscNewLog(snes,SNES_TR,&neP);CHKERRQ(ierr);
   snes->data	        = (void*)neP;
   neP->mu		= 0.25;
   neP->eta		= 0.75;

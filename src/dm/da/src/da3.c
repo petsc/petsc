@@ -254,6 +254,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
 
   ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
   da->bops->publish           = DAPublish_Petsc;
+  da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
+  da->ops->globaltolocalend   = DAGlobalToLocalEnd;
+  da->ops->localtoglobal      = DALocalToGlobal;
   da->ops->createglobalvector = DACreateGlobalVector;
   da->ops->getinterpolation   = DAGetInterpolation;
   da->ops->getcoloring        = DAGetColoring;
@@ -262,7 +265,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
   da->ops->coarsen            = DACoarsen;
   da->ops->getaggregates      = DAGetAggregates;
 
-  ierr = PetscLogObjectMemory(da,sizeof(struct _p_DA));CHKERRQ(ierr);
   da->dim        = 3;
   da->interptype = DA_Q1;
   da->refine_x   = refine_x;

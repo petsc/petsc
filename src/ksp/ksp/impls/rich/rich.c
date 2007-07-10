@@ -232,8 +232,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_Richardson(KSP ksp)
   KSP_Richardson *richardsonP;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_Richardson,&richardsonP);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_Richardson));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_Richardson,&richardsonP);CHKERRQ(ierr);
   ksp->data                        = (void*)richardsonP;
 
   ksp->normtype                    = KSP_NORM_PRECONDITIONED;

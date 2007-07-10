@@ -729,7 +729,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_X(PetscDraw draw)
 
   /* actually create and open the window */
   ierr = PetscNew(PetscDraw_X,&Xwin);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X)+sizeof(struct _p_PetscDraw));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(draw,sizeof(PetscDraw_X));CHKERRQ(ierr);
   ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
 
   if (!rank) {

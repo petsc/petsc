@@ -301,7 +301,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning p
     MatPartitioning_Jostle *jostle_struct;
 
     PetscFunctionBegin;
-    ierr = PetscNew(MatPartitioning_Jostle, &jostle_struct);CHKERRQ(ierr);
+    ierr = PetscNewLog(part,MatPartitioning_Jostle, &jostle_struct);CHKERRQ(ierr);
+    part->data = (void*) jostle_struct;
 
     jostle_struct->nbvtxcoarsed = 20;
     jostle_struct->output = 0;
@@ -312,7 +313,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning p
     part->ops->view = MatPartitioningView_Jostle;
     part->ops->destroy = MatPartitioningDestroy_Jostle;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Jostle;
-    part->data = (void*) jostle_struct;
 
     PetscFunctionReturn(0);
 }

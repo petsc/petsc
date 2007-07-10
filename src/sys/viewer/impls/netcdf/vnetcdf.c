@@ -111,7 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Netcdf(PetscViewer v)
   PetscViewer_Netcdf *vnetcdf;
 
   PetscFunctionBegin;
-  ierr               = PetscNew(PetscViewer_Netcdf,&vnetcdf);CHKERRQ(ierr);
+  ierr               = PetscNewLog(v,PetscViewer_Netcdf,&vnetcdf);CHKERRQ(ierr);
   v->data            = (void*)vnetcdf;
   v->ops->destroy    = PetscViewerDestroy_Netcdf;
   v->ops->flush      = 0;

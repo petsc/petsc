@@ -262,7 +262,7 @@ PetscErrorCode MatSetValues_MPISBAIJ_MatScalar(Mat mat,PetscInt m,const PetscInt
           if (a->ignore_ltriangular){
             continue;    /* ignore lower triangular blocks */
           } else {
-            SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR)");
+            SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
           }
         }
         if (in[j] >= cstart_orig && in[j] < cend_orig){  /* diag entry (A) */
@@ -436,12 +436,12 @@ PetscErrorCode MatGetValues_MPISBAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    if (idxm[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",idxm[i]);
+    if (idxm[i] < 0) continue; /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",idxm[i]); */
     if (idxm[i] >= mat->rmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",idxm[i],mat->rmap.N-1);
     if (idxm[i] >= bsrstart && idxm[i] < bsrend) {
       row = idxm[i] - bsrstart;
       for (j=0; j<n; j++) {
-        if (idxn[j] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column %D",idxn[j]);
+        if (idxn[j] < 0) continue; /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column %D",idxn[j]); */
         if (idxn[j] >= mat->cmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",idxn[j],mat->cmap.N-1);
         if (idxn[j] >= bscstart && idxn[j] < bscend){
           col = idxn[j] - bscstart;
@@ -1235,7 +1235,7 @@ PetscErrorCode MatGetInfo_MPISBAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPISBAIJ"
-PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPISBAIJ   *a = (Mat_MPISBAIJ*)A->data;
   Mat_SeqSBAIJ   *aA = (Mat_SeqSBAIJ*)a->A->data;
@@ -1243,58 +1243,43 @@ PetscErrorCode MatSetOption_MPISBAIJ(Mat A,MatOption op)
 
   PetscFunctionBegin;
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-  case MAT_COLUMNS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
+  case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_KEEP_ZEROED_ROWS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE;
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    a->roworiented = flg;
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
-  case MAT_ROWS_SORTED: 
-  case MAT_ROWS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
+  case MAT_NEW_DIAGONALS:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE;
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
-    break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
-    a->donotstash = PETSC_TRUE;
+    a->donotstash = flg;
     break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_USE_HASH_TABLE:
-    a->ht_flag = PETSC_TRUE;
+    a->ht_flag = flg;
     break;
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-    SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
+    if (flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
+    if (!flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
-    aA->ignore_ltriangular = PETSC_TRUE;
+    aA->ignore_ltriangular = flg;
     break;
   case MAT_ERROR_LOWER_TRIANGULAR:
-    aA->ignore_ltriangular = PETSC_FALSE;
+    aA->ignore_ltriangular = flg;
     break;
   case MAT_GETROW_UPPERTRIANGULAR:
-    aA->getrow_utriangular = PETSC_TRUE;
+    aA->getrow_utriangular = flg;
     break;
   default:
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
@@ -1695,7 +1680,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
 
   PetscFunctionBegin;
 
-  ierr    = PetscNew(Mat_MPISBAIJ,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,Mat_MPISBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
@@ -1759,7 +1744,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPISBAIJ(Mat B)
     ierr = PetscOptionsTruth("-mat_use_hash_table","Use hash table to save memory in constructing matrix","MatSetOption",PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
     if (flg) { 
       PetscReal fact = 1.39;
-      ierr = MatSetOption(B,MAT_USE_HASH_TABLE);CHKERRQ(ierr);
+      ierr = MatSetOption(B,MAT_USE_HASH_TABLE,PETSC_TRUE);CHKERRQ(ierr);
       ierr = PetscOptionsReal("-mat_use_hash_table","Use hash table factor","MatMPIBAIJSetHashTableFactor",fact,&fact,PETSC_NULL);CHKERRQ(ierr);
       if (fact <= 1.0) fact = 1.39;
       ierr = MatMPIBAIJSetHashTableFactor(B,fact);CHKERRQ(ierr);
@@ -2315,7 +2300,6 @@ PetscErrorCode MatLoad_MPISBAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   ierr = MatSetSizes(A,m,m,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(A,type);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(A,bs,0,dlens,0,odlens);CHKERRQ(ierr);
-  ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   
   if (!rank) {
     ierr = PetscMalloc(maxnz*sizeof(PetscScalar),&buf);CHKERRQ(ierr);

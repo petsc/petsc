@@ -103,34 +103,14 @@ PetscErrorCode MatCreate_Inode(Mat B)
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSetOption_Inode"
-PetscErrorCode MatSetOption_Inode(Mat A,MatOption op)
+PetscErrorCode MatSetOption_Inode(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqAIJ     *a=(Mat_SeqAIJ*)A->data;
-  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch(op) {
     case MAT_USE_INODES:
-      a->inode.use         = PETSC_TRUE;
-      break;
-    case MAT_DO_NOT_USE_INODES:
-      a->inode.use         = PETSC_FALSE;
-      ierr = PetscInfo(A,"Not using Inode routines due to MatSetOption(MAT_DO_NOT_USE_INODES\n");CHKERRQ(ierr);
-      break;
-    case MAT_INODE_LIMIT_1:
-      a->inode.limit  = 1;
-      break;
-    case MAT_INODE_LIMIT_2:
-      a->inode.limit  = 2;
-      break;
-    case MAT_INODE_LIMIT_3:
-      a->inode.limit  = 3;
-      break;
-    case MAT_INODE_LIMIT_4:
-      a->inode.limit  = 4;
-      break;
-    case MAT_INODE_LIMIT_5:
-      a->inode.limit  = 5;
+      a->inode.use         = flg;
       break;
     default:
       break;

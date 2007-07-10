@@ -9,17 +9,26 @@
 using namespace boost;
 
 /*
-  Type definitions
+  Boost Graph type definitions
 */
-struct vertex_weight_t {
-  typedef vertex_property_tag kind;
-};
-typedef subgraph<adjacency_list<vecS, vecS, undirectedS, 
-				property<vertex_weight_t, PetscScalar, property<vertex_index_t, PetscInt> >, 
-				property<edge_weight_t, PetscScalar, property<edge_index_t, PetscInt> > > > Graph;
-typedef property_map<Graph, vertex_weight_t>::type VertexWeight;
+
+enum edge_keep_t { edge_keep };
+namespace boost {
+  BOOST_INSTALL_PROPERTY(edge, keep);
+}
+
+typedef property<edge_weight_t, PetscScalar, property<edge_keep_t, PetscTruth, property<edge_index_t, PetscInt> > > EdgeProperty;
+
+typedef subgraph<adjacency_list<vecS, vecS, undirectedS, property<vertex_index_t, PetscInt>, EdgeProperty> > Graph; 
 typedef property_map<Graph, edge_weight_t>::type EdgeWeight;
-typedef std::pair<PetscInt,PetscInt> Edge;
+typedef property_map<Graph, edge_keep_t>::type EdgeKeep;
+
+/* ShortestPathPriorityQueue is a priority queue in which each node (PQNode)
+   represents a potential shortest path to a vertex.  Each node stores
+   the terminal vertex, the distance along the path, and (optionally) 
+   the vertex (pred) adjacent to the terminal vertex.
+   The top node of the queue is the shortest path in the queue.
+*/
 
 struct PQNode {
   PetscInt vertex;
@@ -50,7 +59,7 @@ typedef std::priority_queue<PQNode> ShortestPathPriorityQueue;
 */
 PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *pre);
 PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const PetscScalar alpha,
-					    Graph& h,PetscInt perm[]);
+					    PetscScalar diag[],PetscInt perm[]);
 PetscErrorCode StarDecomp(const Graph g,const PetscInt root,const PetscScalar delta,const PetscScalar epsilon,
 			  PetscInt& k,std::vector<PetscInt>& size,std::vector<std::vector<PetscInt> >& idx,
 			  std::vector<PetscInt>& x,std::vector<PetscInt>& y);
@@ -77,69 +86,69 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact)
   PetscInt          n,ncols,i,k;
   MatFactorInfo     info;
   IS                perm;
-  const PetscInt    *cols;
-  const PetscScalar *vals;
+  const PetscInt    *cols_c;
+  const PetscScalar *vals_c;
+  PetscInt          *rows, *cols;
+  PetscScalar       *vals, *diag, absval;
   Mat               pre;
+  graph_traits<Graph>::out_edge_iterator e, e_end;
 
   PetscFunctionBegin;
 
   ierr = MatGetSize(mat,PETSC_NULL,&n);CHKERRQ(ierr);
 
-  Graph g(n),h(n);
-  VertexWeight vertex_weight_h = get(vertex_weight_t(), h);
-  EdgeWeight edge_weight_h = get(edge_weight_t(), h);
+  Graph g(n);
 
+  EdgeKeep edge_keep_g = get(edge_keep_t(),g);
+
+  ierr = PetscMalloc(n*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    PetscScalar sum = 0;
-    ierr = MatGetRow(mat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatGetRow(mat,i,&ncols,&cols_c,&vals_c);CHKERRQ(ierr);
+    diag[i] = 0;
     for (k=0; k<ncols; k++) {
-      if (cols[k] == i || vals[k] < 0) { /****** fix this ******/
-	sum += vals[k];
-	if (cols[k] > i) {
-	  add_edge(i,cols[k],-vals[k],g);
+      if (cols_c[k] == i) {
+        diag[i] += vals_c[k];
+      } else if (vals_c[k] != 0) {
+	absval = vals_c[k]>0?vals_c[k]:-vals_c[k];
+	diag[i] -= absval;
+	if (cols_c[k] > i) {
+	  add_edge(i,cols_c[k],EdgeProperty(absval,PETSC_FALSE),g);
 	}
       }
     }
-    put(vertex_weight_h,i,sum);
-    ierr = MatRestoreRow(mat,i,&ncols,&cols,&vals);CHKERRQ(ierr);
+    ierr = MatRestoreRow(mat,i,&ncols,&cols_c,&vals_c);CHKERRQ(ierr);
   }
 
   ierr = PetscMalloc(n*sizeof(PetscInt),&idx);CHKERRQ(ierr);
-  ierr = LowStretchSpanningTreeHelper(g,0,log(4.0/3)/(2.0*log(n)),h,idx);CHKERRQ(ierr);
+  ierr = LowStretchSpanningTreeHelper(g,0,log(4.0/3)/(2.0*log(n)),diag,idx);CHKERRQ(ierr);
 
   ierr = ISCreateGeneral(PETSC_COMM_WORLD,n,idx,&perm);CHKERRQ(ierr);
   ierr = ISSetPermutation(perm);CHKERRQ(ierr);
   ierr = PetscFree(idx);CHKERRQ(ierr);
 
-  /*
-  printf ("\nperm:\n");
-  ISView(perm,PETSC_VIEWER_STDOUT_SELF);
-  */
-
   ierr = MatCreate(PETSC_COMM_WORLD,&pre);CHKERRQ(ierr);
   ierr = MatSetSizes(pre,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetType(pre,MATAIJ);CHKERRQ(ierr);
 
+  ierr = PetscMalloc3(1,PetscInt,&rows,n,PetscInt,&cols,n,PetscScalar,&vals);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
-    ierr = MatSetValue(pre,i,i,get(vertex_weight_h,i),INSERT_VALUES);CHKERRQ(ierr);
+    rows[0] = i;
+    k = 0;
+    for (tie(e, e_end) = out_edges(i,g); e != e_end; e++) {
+      if (get(edge_keep_g,*e)) {
+	cols[k++] = target(*e,g);
+      }
+    }
+    MatGetValues(mat,1,rows,k,cols,vals);
+    cols[k] = i;
+    vals[k] = diag[i];
+    MatSetValues(pre,1,rows,k+1,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
-  
-  graph_traits<Graph>::edge_iterator e, e_end;
-  for (tie(e, e_end) = edges(h); e != e_end; e++) {
-    ierr = MatSetValue(pre,source(*e,h),target(*e,h),-get(edge_weight_h,*e),INSERT_VALUES);CHKERRQ(ierr);
-    ierr = MatSetValue(pre,target(*e,h),source(*e,h),-get(edge_weight_h,*e),INSERT_VALUES);CHKERRQ(ierr);
-  }
+  ierr = PetscFree3(rows,cols,vals);CHKERRQ(ierr);
+  ierr = PetscFree(diag);CHKERRQ(ierr);
+
   ierr = MatAssemblyBegin(pre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(pre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  
-
-  /*
-  printf("\n----------\nOriginal matrix:\n"); 
-  ierr = MatView(mat,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  printf("\n----------\nPreconditioner:\n\n"); 
-  ierr = MatView(pre,PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
-  printf("\n----------\n"); 
-  */
 
   ierr = MatFactorInfoInitialize(&info);CHKERRQ(ierr);
   ierr = MatCholeskyFactorSymbolic(pre,perm,&info,prefact);CHKERRQ(ierr);
@@ -154,19 +163,21 @@ PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *prefact)
    LowStretchSpanningTreeHelper
 
    Input Parameters:
-.  g - input graph
+.  g - input graph; all edges have edge_keep = PETSC_FALSE
 .  alpha - parameter
-.  h - empty graph with same number of vertices as g, and vertex weights equal row sums
-.  perm - preallocated array in which to store vertex ordering
+.  diag - preallocated array in which to compute diagonals of the spanning tree preconditioner
+             (i.e. the weighted vertex degree plus the original diagonal surplus)
+.  perm - preallocated array of size num_vertices(g) in which to store vertex ordering
 
    Output Parameter:
-.  h - low-stretch spanning tree of input graph
-.  perm - vertex ordering
+.  g - edges in low-stretch spanning tree are marked with edge_keep = PETSC_TRUE
+.  diag - weighted vertex degrees in spanning tree are added to the input diag values (indexed by global index) 
+.  perm - vertex ordering (with vertices referred to by global index)
  */
 #undef __FUNCT__  
 #define __FUNCT__ "LowStretchSpanningTreeHelper"
 PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const PetscScalar alpha,
-					    Graph& h,PetscInt perm[])
+					    PetscScalar diag[],PetscInt perm[])
 {
   PetscInt n,i,j,k;
   std::vector<PetscInt> size,x,y;
@@ -176,35 +187,35 @@ PetscErrorCode LowStretchSpanningTreeHelper(Graph& g,const PetscInt root,const P
   PetscFunctionBegin;
 
   EdgeWeight edge_weight_g = get(edge_weight_t(),g);
-  VertexWeight vertex_weight_h = get(vertex_weight_t(),h);
+  EdgeKeep edge_keep_g = get(edge_keep_t(),g);
   n = num_vertices(g);
 
   if (n > 2) {
-    ierr = StarDecomp(g,root,1.0/3,alpha,k,size,idx,x,y);
+    ierr = StarDecomp(g,root,1.0/3,alpha,k,size,idx,x,y);CHKERRQ(ierr);
     j = 0;
     for (i=1;i<=k;i++) {
       Graph& g1 = g.create_subgraph(idx[i].begin(),idx[i].end());
-      Graph& h1 = h.create_subgraph(idx[i].begin(),idx[i].end());
-      LowStretchSpanningTreeHelper(g1,g1.global_to_local(g.local_to_global(x[i-1])),alpha,h1,perm+j);
+      ierr = LowStretchSpanningTreeHelper(g1,g1.global_to_local(g.local_to_global(x[i-1])),alpha,diag,perm+j);CHKERRQ(ierr);
       j += size[i];
     }
     Graph& g1 = g.create_subgraph(idx[0].begin(),idx[0].end());
-    Graph& h1 = h.create_subgraph(idx[0].begin(),idx[0].end());
-    LowStretchSpanningTreeHelper(g1,g1.global_to_local(g.local_to_global(root)),alpha,h1,perm+j);
+    ierr = LowStretchSpanningTreeHelper(g1,g1.global_to_local(g.local_to_global(root)),alpha,diag,perm+j);CHKERRQ(ierr);
     for (i=0;i<k;i++) {
       PetscScalar w = get(edge_weight_g,edge(x[i],y[i],g).first);
-      add_edge(x[i],y[i],w,h);
-      put(vertex_weight_h,x[i],get(vertex_weight_h,x[i])+w);
-      put(vertex_weight_h,y[i],get(vertex_weight_h,y[i])+w);
+
+      put(edge_keep_g,edge(x[i],y[i],g).first,PETSC_TRUE);
+      diag[g.local_to_global(x[i])] += w;
+      diag[g.local_to_global(y[i])] += w;
     }
   } else if (n == 2) {
     graph_traits<Graph>::edge_descriptor e = *(out_edges(root,g).first);
     PetscInt t = target(e,g);
-
     PetscScalar w = get(edge_weight_g,e);
-    add_edge(root,t,w,h);
-    put(vertex_weight_h,root,get(vertex_weight_h,root)+w);
-    put(vertex_weight_h,t,get(vertex_weight_h,t)+w);
+
+    put(edge_keep_g,e,PETSC_TRUE);
+    diag[g.local_to_global(root)] += w;
+    diag[g.local_to_global(t)] += w;
+
     perm[0] = g.local_to_global(t);
     perm[1] = g.local_to_global(root);
   } else /* n == 1 */ {

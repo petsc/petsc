@@ -263,7 +263,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC_Composite(PC pc,PCType type)
   char             newprefix[8];
 
   PetscFunctionBegin;
-  ierr       = PetscNew(struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(pc,struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr = PCCreate(pc->comm,&ilink->pc);CHKERRQ(ierr);
 
@@ -526,8 +526,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Composite(PC pc)
   PC_Composite   *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_Composite,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Composite));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_Composite,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_Composite_Additive;
   pc->ops->setup              = PCSetUp_Composite;
   pc->ops->destroy            = PCDestroy_Composite;

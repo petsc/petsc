@@ -936,8 +936,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_LGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_LGMRES,&lgmres);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LGMRES));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LGMRES,&lgmres);CHKERRQ(ierr);
   ksp->data                              = (void*)lgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_LGMRES;
 

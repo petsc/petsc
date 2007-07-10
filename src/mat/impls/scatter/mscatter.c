@@ -232,7 +232,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Scatter(Mat A)
 
   PetscFunctionBegin;
   ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-  ierr = PetscNew(Mat_Scatter,&b);CHKERRQ(ierr);
+  ierr = PetscNewLog(A,Mat_Scatter,&b);CHKERRQ(ierr);
 
   A->data = (void*)b;
 

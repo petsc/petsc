@@ -93,7 +93,7 @@ PetscErrorCode TestMatZeroRows_Basic(Mat A,IS is,PetscScalar diag)
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-keep_zeroed_rows",&keepzeroedrows);CHKERRQ(ierr);
   if (keepzeroedrows) {
-    ierr = MatSetOption(B,MAT_KEEP_ZEROED_ROWS);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);
@@ -112,7 +112,7 @@ PetscErrorCode TestMatZeroRows_with_no_allocation(Mat A,IS is,PetscScalar diag)
   /* Now copy A into B, and test it with MatZeroRows() */
   ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   /* Set this flag after assembly. This way, it affects only MatZeroRows() */
-  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(B,MAT_NEW_NONZERO_ALLOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
 
   ierr = MatZeroRowsIS(B,is,diag);CHKERRQ(ierr);
   ierr = MatView(B,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); 

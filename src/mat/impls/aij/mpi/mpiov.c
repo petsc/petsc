@@ -718,11 +718,11 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
   ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,A->comm);CHKERRQ(ierr);
   ierr = PetscFree(recvcounts);CHKERRQ(ierr);
   if (A->symmetric){
-    ierr = MatSetOption(B,MAT_SYMMETRIC);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   } else if (A->hermitian) {
-    ierr = MatSetOption(B,MAT_HERMITIAN);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
   } else if (A->structurally_symmetric) {
-    ierr = MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC);CHKERRQ(ierr);
+    ierr = MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   PetscFunctionReturn(0);

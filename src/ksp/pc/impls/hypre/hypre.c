@@ -1041,8 +1041,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC pc)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_HYPRE,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_HYPRE));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_HYPRE,&jac);CHKERRQ(ierr);
   pc->data                 = jac;
   pc->ops->destroy         = PCDestroy_HYPRE;
   pc->ops->setfromoptions  = PCSetFromOptions_HYPRE;

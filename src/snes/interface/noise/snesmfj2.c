@@ -225,8 +225,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   char           p[64];
 
   PetscFunctionBegin;
-  ierr = PetscNew(MFCtx_Private,&mfctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(MFCtx_Private));CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,MFCtx_Private,&mfctx);CHKERRQ(ierr);
   mfctx->sp   = 0;
   mfctx->snes = snes;
   mfctx->error_rel        = PETSC_SQRT_MACHINE_EPSILON;

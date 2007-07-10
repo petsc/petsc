@@ -53,12 +53,12 @@ PetscErrorCode MatGetValues_MPIBDiag(Mat mat,PetscInt m,const PetscInt idxm[],Pe
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    if (idxm[i] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row");
+    if (idxm[i] < 0) continue; /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative row"); */
     if (idxm[i] >= mat->rmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Row too large");
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
-        if (idxn[j] < 0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column");
+        if (idxn[j] < 0) continue; /* SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Negative column"); */
         if (idxn[j] >= mat->cmap.N) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Column too large");
         ierr = MatGetValues(mbd->A,1,&row,1,&idxn[j],v+i*n+j);CHKERRQ(ierr);
       }
@@ -561,43 +561,29 @@ PetscErrorCode MatView_MPIBDiag(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIBDiag"
-PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIBDiag(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPIBDiag   *mbd = (Mat_MPIBDiag*)A->data;
   PetscErrorCode ierr;
 
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
-  case MAT_NO_NEW_DIAGONALS:
-  case MAT_YES_NEW_DIAGONALS:
-    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
+  case MAT_NEW_DIAGONALS:
+    ierr = MatSetOption(mbd->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
-    mbd->roworiented = PETSC_TRUE;
-    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
-    break;
-  case MAT_COLUMN_ORIENTED:
-    mbd->roworiented = PETSC_FALSE;
-    ierr = MatSetOption(mbd->A,op);CHKERRQ(ierr);
+    mbd->roworiented = flg;
+    ierr = MatSetOption(mbd->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
-    mbd->donotstash = PETSC_TRUE;
+    mbd->donotstash = flg;
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
-  case MAT_COLUMNS_UNSORTED:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
@@ -948,7 +934,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIBDiag(Mat B)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr            = PetscNew(Mat_MPIBDiag,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_MPIBDiag,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;

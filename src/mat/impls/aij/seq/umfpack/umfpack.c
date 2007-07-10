@@ -450,7 +450,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_UMFPACK(Mat A,MatType type,M
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_UMFPACK,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_UMFPACK,&lu);CHKERRQ(ierr);
   lu->MatDuplicate         = A->ops->duplicate;
   lu->MatView              = A->ops->view;
   lu->MatAssemblyEnd       = A->ops->assemblyend;

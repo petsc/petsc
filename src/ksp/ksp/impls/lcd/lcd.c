@@ -231,9 +231,7 @@ PetscErrorCode KSPCreate_LCD(KSP ksp)
   KSP_LCD         *lcd;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_LCD,&lcd);CHKERRQ(ierr);
-  ierr = PetscMemzero(lcd,sizeof(KSP_LCD));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_LCD));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_LCD,&lcd);CHKERRQ(ierr);
   ksp->data                      = (void*)lcd;
   ksp->pc_side                   = PC_LEFT;
   lcd->restart                   = 30;

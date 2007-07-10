@@ -158,7 +158,7 @@ PetscErrorCode AllocationTest(const Obj<ALE::Mesh>& mesh, Options *options)
   ierr = MatSeqAIJSetPreallocation(A, 0, dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A, 0, dnz, 0, onz);CHKERRQ(ierr);
   ierr = PetscFree2(dnz, onz);CHKERRQ(ierr);
-  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);CHKERRQ(ierr);
   // Fill matrix
   const Obj<ALE::Mesh::topology_type::label_sequence>& elements = mesh->getTopology()->heightStratum(0, 0);
   int          size       = options->dim*options->dim*9;

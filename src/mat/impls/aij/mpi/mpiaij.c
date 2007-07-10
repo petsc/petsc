@@ -246,12 +246,12 @@ PetscErrorCode MatGetValues_MPIAIJ(Mat mat,PetscInt m,const PetscInt idxm[],Pets
 
   PetscFunctionBegin;
   for (i=0; i<m; i++) {
-    if (idxm[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",idxm[i]);
+    if (idxm[i] < 0) continue; /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",idxm[i]);*/
     if (idxm[i] >= mat->rmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",idxm[i],mat->rmap.N-1);
     if (idxm[i] >= rstart && idxm[i] < rend) {
       row = idxm[i] - rstart;
       for (j=0; j<n; j++) {
-        if (idxn[j] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",idxn[j]);
+        if (idxn[j] < 0) continue; /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",idxn[j]); */
         if (idxn[j] >= mat->cmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",idxn[j],mat->cmap.N-1);
         if (idxn[j] >= cstart && idxn[j] < cend){
           col = idxn[j] - cstart;
@@ -357,7 +357,7 @@ PetscErrorCode MatAssemblyEnd_MPIAIJ(Mat mat,MatAssemblyType mode)
   if (!mat->was_assembled && mode == MAT_FINAL_ASSEMBLY) {
     ierr = MatSetUpMultiply_MPIAIJ(mat);CHKERRQ(ierr);
   }
-  ierr = MatSetOption(aij->B,MAT_DO_NOT_USE_INODES);CHKERRQ(ierr);
+  ierr = MatSetOption(aij->B,MAT_USE_INODES,PETSC_FALSE);CHKERRQ(ierr);
   ((Mat_SeqAIJ *)aij->B->data)->compressedrow.use = PETSC_TRUE; /* b->compressedrow.use */
   ierr = MatAssemblyBegin(aij->B,mode);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(aij->B,mode);CHKERRQ(ierr);
@@ -512,7 +512,7 @@ PetscErrorCode MatZeroRows_MPIAIJ(Mat A,PetscInt N,const PetscInt rows[],PetscSc
     ierr = MatZeroRows(l->A,slen,lrows,0.0);CHKERRQ(ierr);
     if (((Mat_SeqAIJ*)l->A->data)->nonew) {
       SETERRQ(PETSC_ERR_SUP,"MatZeroRows() on rectangular matrices cannot be used with the Mat options\n\
-MAT_NO_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
+MAT_NEW_NONZERO_LOCATIONS,MAT_NEW_NONZERO_LOCATION_ERR,MAT_NEW_NONZERO_ALLOCATION_ERR");
     }
     for (i = 0; i < slen; i++) {
       row  = lrows[i] + rstart;
@@ -1196,59 +1196,40 @@ PetscErrorCode MatGetInfo_MPIAIJ(Mat matin,MatInfoType flag,MatInfo *info)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_MPIAIJ"
-PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_MPIAIJ(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_MPIAIJ     *a = (Mat_MPIAIJ*)A->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   switch (op) {
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-  case MAT_COLUMNS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
+  case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_KEEP_ZEROED_ROWS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
   case MAT_USE_INODES:
-  case MAT_DO_NOT_USE_INODES:
   case MAT_IGNORE_ZERO_ENTRIES:
-  case MAT_DO_NOT_IGNORE_ZERO_ENTRIES:
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE; 
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
+    a->roworiented = flg;
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
+    ierr = MatSetOption(a->B,op,flg);CHKERRQ(ierr);
     break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
+  case MAT_NEW_DIAGONALS:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
-    break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE;
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    ierr = MatSetOption(a->B,op);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_OFF_PROC_ENTRIES:
     a->donotstash = PETSC_TRUE;
     break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
   case MAT_SYMMETRIC:
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-    ierr = MatSetOption(a->A,op);CHKERRQ(ierr);
-    break;
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_HERMITIAN:
-  case MAT_NOT_SYMMETRY_ETERNAL:
+    ierr = MatSetOption(a->A,op,flg);CHKERRQ(ierr);
     break;
   default:
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
@@ -2157,7 +2138,7 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
     PetscContainer container;
     *matredundant = C;
     /* create a supporting struct and attach it to C for reuse */
-    ierr = PetscNew(Mat_Redundant,&redund);CHKERRQ(ierr);
+    ierr = PetscNewLog(C,Mat_Redundant,&redund);CHKERRQ(ierr);
     ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
     ierr = PetscContainerSetPointer(container,redund);CHKERRQ(ierr);
     ierr = PetscObjectCompose((PetscObject)C,"Mat_Redundant",(PetscObject)container);CHKERRQ(ierr);
@@ -2590,7 +2571,6 @@ PetscErrorCode MatLoad_MPIAIJ(PetscViewer viewer, MatType type,Mat *newmat)
   ierr = MatSetType(A,type);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(A,0,ourlens,0,offlens);CHKERRQ(ierr);
 
-  ierr = MatSetOption(A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ourlens[i] += offlens[i];
   }
@@ -2829,7 +2809,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
     ierr = PetscMemzero(values,nnz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   for (i=0; i<m; i++) {
     ii   = i + rstart;
     nnz  = Ii[i+1]- Ii[i];
@@ -2837,7 +2816,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   }
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_UNSORTED);CHKERRQ(ierr);
 
   if (!v) {
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -4478,7 +4456,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAIJ(Mat B)
   PetscFunctionBegin;
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
 
-  ierr            = PetscNew(Mat_MPIAIJ,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_MPIAIJ,&b);CHKERRQ(ierr);
   B->data         = (void*)b;
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;

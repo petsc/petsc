@@ -804,11 +804,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_FGMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_FGMRES,&fgmres);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_FGMRES));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_FGMRES,&fgmres);CHKERRQ(ierr);
   ksp->data                              = (void*)fgmres;
   ksp->ops->buildsolution                = KSPBuildSolution_FGMRES;
-
   ksp->ops->setup                        = KSPSetUp_FGMRES;
   ksp->ops->solve                        = KSPSolve_FGMRES;
   ksp->ops->destroy                      = KSPDestroy_FGMRES;

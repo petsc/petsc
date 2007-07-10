@@ -197,11 +197,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
   }
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
-                    cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(*mapping,sizeof(struct _p_ISLocalToGlobalMapping)+n*sizeof(PetscInt));CHKERRQ(ierr);
+			   cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
 
   (*mapping)->n       = n;
   (*mapping)->indices = (PetscInt*)indices;
+  ierr = PetscLogObjectMemory(*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
 
   /*
       Do not create the global to local mapping. This is only created if 

@@ -42,6 +42,7 @@ PetscErrorCode MatDestroy_MPICRL(Mat A)
   }
   ierr = PetscFree(crl->array);CHKERRQ(ierr);
   ierr = PetscFree(crl);CHKERRQ(ierr);
+  A->spptr = 0;
 
   /* Change the type of A back to MPIAIJ and use MatDestroy_MPIAIJ() 
    * to destroy everything that remains. */
@@ -152,7 +153,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIAIJ_MPICRL(Mat A,MatType type,Ma
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
   }
 
-  ierr = PetscNew(Mat_CRL,&crl);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_CRL,&crl);CHKERRQ(ierr);
   B->spptr = (void *) crl;
 
   crl->AssemblyEnd  = A->ops->assemblyend;

@@ -1965,7 +1965,6 @@ int SetPetscDS(GRID *grid,TstepCtx *tsCtx)
 #endif
    ierr = PetscFree(svertices);CHKERRQ(ierr);
 #endif
-   /*ierr = MatSetOption(grid->A,MAT_COLUMNS_SORTED);CHKERRQ(ierr);*/
 
    PetscFunctionReturn(0);
 }

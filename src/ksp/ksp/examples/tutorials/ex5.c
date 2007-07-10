@@ -107,8 +107,8 @@ int main(int argc,char **args)
       if (i>1)   {J = Ii-n-1; ierr = MatSetValues(C,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
   } else {
-    ierr = MatSetOption(C,MAT_SYMMETRIC);CHKERRQ(ierr);
-    ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
+    ierr = MatSetOption(C,MAT_SYMMETRY_ETERNAL,PETSC_TRUE);CHKERRQ(ierr);
   }
 
   /* 

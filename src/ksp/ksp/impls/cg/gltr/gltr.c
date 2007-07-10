@@ -1453,8 +1453,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
 
   PetscFunctionBegin;
 
-  ierr = PetscNew(KSP_GLTR, &cg); CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp, sizeof(KSP_GLTR)); CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_GLTR, &cg); CHKERRQ(ierr);
+  ksp->data = (void *) cg;
 
   cg->radius = PETSC_MAX;
   cg->dtype = GLTR_UNPRECONDITIONED_DIRECTION;
@@ -1472,7 +1472,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
 
   cg->max_its = cg->max_cg_its + cg->max_lanczos_its + 1;
 
-  ksp->data = (void *) cg;
   ksp->pc_side = PC_LEFT;
 
   /***************************************************************************/

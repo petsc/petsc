@@ -99,9 +99,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm comm, const char nam
 
   PetscFunctionBegin;
   ierr = PetscHeaderCreate(v, _p_PetscViewer, struct _PetscViewerOps, PETSC_VIEWER_COOKIE, -1, PETSC_VIEWER_SILO, comm, PetscViewerDestroy, 0);CHKERRQ(ierr);
-  ierr = PetscLogObjectCreate(v);CHKERRQ(ierr);
-  silo            = PetscNew(Viewer_Silo); CHKPTRQ(silo);
-  v->data         = silo;
+  ierr            = PetscNewLog(v,Viewer_Silo,&silo); CHKPTRQ(silo);
+  v->data         = (void*)silo;
   v->ops->destroy = PetscViewerDestroy_Silo;
   v->ops->flush   = PetscViewerFlush_Silo;
   ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &v->type_name);CHKERRQ(ierr);
