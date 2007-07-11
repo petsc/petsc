@@ -3,6 +3,7 @@ from socket import *
 from urllib import *
 import string
 from os import fdopen
+from re import search
 # Strings to return to the Zope webpage
 global gs
 global glast
@@ -35,7 +36,8 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			linestrip = line.strip()
 			joinline = "".join(line)
 			# Check to see if the string is info or error output
-			endinfo = linestrip.rfind("<<info>>")
+			endinfo = search(r'\[[0-9]+\]', joinline)
+			infocheckRE = (endinfo != None)
 			errorinfo = linestrip.rfind("PETSC ERROR:")
 			if joinline.rfind("<<<start>>>") >= 0:
 				status = 1
@@ -43,7 +45,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			if joinline.rfind("<<<end>>>") >= 0:
 				status = 0
 				joinline = joinline.lstrip("<<<end>>>")
-			if endinfo >= 0:
+			if infocheckRE :
 				if infocheck:
 					if info == startmsg:
 						info = ""
