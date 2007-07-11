@@ -256,9 +256,11 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   ALE::Obj<ALE::Mesh> newMesh = ALE::Generator::refineMesh(oldMesh, volume_limits, true);
   ierr = MeshSetMesh(*refinedMesh, newMesh);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type>& s = newMesh->getRealSection("default");
+  const Obj<std::set<std::string> >& discs = oldMesh->getDiscretizations();
 
-  newMesh->setDiscretization(oldMesh->getDiscretization());
-  newMesh->setBoundaryCondition(oldMesh->getBoundaryCondition());
+  for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+    newMesh->setDiscretization(*f_iter, oldMesh->getDiscretization(*f_iter));
+  }
   newMesh->setupField(s);
   PetscFunctionReturn(0);
 }
@@ -1308,8 +1310,6 @@ PetscErrorCode RunTests(DM dm, Options *options)
 #define __FUNCT__ "CreateProblem"
 PetscErrorCode CreateProblem(DM dm, Options *options)
 {
-  PetscErrorCode ierr;
-
   PetscFunctionBegin;
   if (options->dim == 2) {
     if (options->bcType == DIRICHLET) {
@@ -1341,18 +1341,30 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   if (options->structured) {
     // The DA defines most of the problem during creation
   } else {
+    Mesh           mesh = (Mesh) dm;
+    Obj<ALE::Mesh> m;
+    int            markers[1]  = {1};
+    double       (*funcs[1])(const double *coords) = {options->exactFunc};
+    PetscErrorCode ierr;
+
+    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     if (options->dim == 1) {
-      ierr = CreateProblem_gen_0(dm, options);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_0(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_0;
     } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_1(dm, options);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_1(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_1;
     } else if (options->dim == 3) {
-      ierr = CreateProblem_gen_2(dm, options);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_2(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_2;
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
+    const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
+    s->setDebug(options->debug);
+    m->calculateIndices();
+    m->setupField(s);
+    if (options->debug) {s->view("Default field");}
   }
   PetscFunctionReturn(0);
 }

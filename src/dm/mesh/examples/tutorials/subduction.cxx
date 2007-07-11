@@ -477,7 +477,6 @@ PetscErrorCode CreateSlabLabel(Mesh mesh, Options *options)
   const int corners  = m->getSieve()->nCone(*cells->begin(), m->depth())->size();
   double   *centroid = new double[dim];
 
-  std::cout << "lidDepth: " << options->lidDepth << std::endl;
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     double *coords;
 
@@ -488,10 +487,8 @@ PetscErrorCode CreateSlabLabel(Mesh mesh, Options *options)
         centroid[d] += coords[c*dim+d];
       }
       centroid[d] /= corners;
-      std::cout << "centroid["<<d<<"]: " << centroid[d] << std::endl;
     }
     if (centroid[1] > -options->lidDepth) {
-      std::cout << "  marking cell " << *c_iter << std::endl;
       m->setValue(slabLabel, *c_iter, 1);
     }
   }
@@ -529,6 +526,10 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 {
   Mesh           mesh = (Mesh) dm;
   Obj<ALE::Mesh> m;
+  int            velMarkers[2]  = {LID, SLAB};
+  int            tempMarkers[1] = {TOP};
+  double       (*velFuncs[2])(const double *coords)  = {zero, zero};
+  double       (*tempFuncs[1])(const double *coords) = {zero};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -537,16 +538,16 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   options->funcs[1]  = zero;
   options->funcs[2]  = zero;
   options->funcs[3]  = zero;
-  ierr = CreateProblem_gen_0(dm, "p", PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "u", zero, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "v", zero, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "T", zero, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_0(dm, "p", 0, PETSC_NULL,  PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "u", 2, velMarkers,  velFuncs,   PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "v", 2, velMarkers,  velFuncs,   PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "T", 1, tempMarkers, tempFuncs,  PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateSlabLabel(mesh, options);CHKERRQ(ierr);
 
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
   m->calculateIndices();
-  m->setupFieldMultiple(s, SLAB_LID, LID, NUM_BC);
+  m->setupField(s, NUM_BC);
   if (options->debug) {s->view("Default field");}
   PetscFunctionReturn(0);
 }
