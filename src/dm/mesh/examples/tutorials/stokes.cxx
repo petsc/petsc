@@ -334,14 +334,14 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
-      const Obj<ALE::DiscretizationNew>& disc          = m->getDiscretization(*f_iter);
-      const int                          numQuadPoints = disc->getQuadratureSize();
-      const double                      *quadPoints    = disc->getQuadraturePoints();
-      const double                      *quadWeights   = disc->getQuadratureWeights();
-      const int                          numBasisFuncs = disc->getBasisSize();
-      const double                      *basis         = disc->getBasis();
-      const double                      *basisDer      = disc->getBasisDerivatives();
-      const int                         *indices       = disc->getIndices();
+      const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
+      const int                       numQuadPoints = disc->getQuadratureSize();
+      const double                   *quadPoints    = disc->getQuadraturePoints();
+      const double                   *quadWeights   = disc->getQuadratureWeights();
+      const int                       numBasisFuncs = disc->getBasisSize();
+      const double                   *basis         = disc->getBasis();
+      const double                   *basisDer      = disc->getBasisDerivatives();
+      const int                      *indices       = disc->getIndices();
 
       ierr = PetscMemzero(elemMat, numBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
       // Loop over quadrature points
@@ -362,10 +362,10 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           //if (*f_iter == "pressure") {
           if (field == 0) {
             // Divergence of u
-            const Obj<ALE::DiscretizationNew>& u         = m->getDiscretization("u");
-            const int                          numUFuncs = u->getBasisSize();
-            const double                      *uBasisDer = u->getBasisDerivatives();
-            const int                         *uIndices  = u->getIndices();
+            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
+            const int                       numUFuncs = u->getBasisSize();
+            const double                   *uBasisDer = u->getBasisDerivatives();
+            const int                      *uIndices  = u->getIndices();
 
             for(int g = 0; g < numUFuncs; ++g) {
               PetscScalar uDiv = 0.0;
@@ -374,10 +374,10 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
               elemMat[f*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
             }
             // Divergence of v
-            const Obj<ALE::DiscretizationNew>& v         = m->getDiscretization("v");
-            const int                          numVFuncs = v->getBasisSize();
-            const double                      *vBasisDer = v->getBasisDerivatives();
-            const int                         *vIndices  = v->getIndices();
+            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
+            const int                       numVFuncs = v->getBasisSize();
+            const double                   *vBasisDer = v->getBasisDerivatives();
+            const int                      *vIndices  = v->getIndices();
 
             for(int g = 0; g < numVFuncs; ++g) {
               PetscScalar vDiv = 0.0;
@@ -402,10 +402,10 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
               elemMat[f*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
             }
             // Gradient of pressure
-            const Obj<ALE::DiscretizationNew>& pres         = m->getDiscretization("p");
-            const int                          numPresFuncs = pres->getBasisSize();
-            const double                      *presBasisDer = pres->getBasisDerivatives();
-            const int                         *presIndices  = pres->getIndices();
+            const Obj<ALE::Discretization>& pres         = m->getDiscretization("p");
+            const int                       numPresFuncs = pres->getBasisSize();
+            const double                   *presBasisDer = pres->getBasisDerivatives();
+            const int                      *presIndices  = pres->getIndices();
 
             for(int g = 0; g < numPresFuncs; ++g) {
               PetscScalar presGrad = 0.0;
@@ -487,7 +487,7 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
       x = (PetscScalar *) m->restrictNew(sX, *c_iter);
     }
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-      const Obj<ALE::DiscretizationNew>& disc          = m->getDiscretization(*f_iter);
+      const Obj<ALE::Discretization>&    disc          = m->getDiscretization(*f_iter);
       const Obj<ALE::BoundaryCondition>& bc            = disc->getExactSolution();
       const int                          numQuadPoints = disc->getQuadratureSize();
       const double                      *quadPoints    = disc->getQuadraturePoints();
@@ -787,14 +787,14 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemMat, totBasisFuncs*totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
-      const Obj<ALE::DiscretizationNew>& disc          = m->getDiscretization(*f_iter);
-      const int                          numQuadPoints = disc->getQuadratureSize();
-      const double                      *quadPoints    = disc->getQuadraturePoints();
-      const double                      *quadWeights   = disc->getQuadratureWeights();
-      const int                          numBasisFuncs = disc->getBasisSize();
-      const double                      *basis         = disc->getBasis();
-      const double                      *basisDer      = disc->getBasisDerivatives();
-      const int                         *indices       = disc->getIndices();
+      const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
+      const int                       numQuadPoints = disc->getQuadratureSize();
+      const double                   *quadPoints    = disc->getQuadraturePoints();
+      const double                   *quadWeights   = disc->getQuadratureWeights();
+      const int                       numBasisFuncs = disc->getBasisSize();
+      const double                   *basis         = disc->getBasis();
+      const double                   *basisDer      = disc->getBasisDerivatives();
+      const int                      *indices       = disc->getIndices();
 
       // Loop over quadrature points
       for(int q = 0; q < numQuadPoints; ++q) {
@@ -803,10 +803,10 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
           //if (*f_iter == "pressure") {
           if (field == 0) {
             // Divergence of u
-            const Obj<ALE::DiscretizationNew>& u         = m->getDiscretization("u");
-            const int                          numUFuncs = u->getBasisSize();
-            const double                      *uBasisDer = u->getBasisDerivatives();
-            const int                         *uIndices  = u->getIndices();
+            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
+            const int                       numUFuncs = u->getBasisSize();
+            const double                   *uBasisDer = u->getBasisDerivatives();
+            const int                      *uIndices  = u->getIndices();
 
             for(int g = 0; g < numUFuncs; ++g) {
               PetscScalar uDiv = 0.0;
@@ -815,10 +815,10 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
               elemMat[indices[f]*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
             }
             // Divergence of v
-            const Obj<ALE::DiscretizationNew>& v         = m->getDiscretization("v");
-            const int                          numVFuncs = v->getBasisSize();
-            const double                      *vBasisDer = v->getBasisDerivatives();
-            const int                         *vIndices  = v->getIndices();
+            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
+            const int                       numVFuncs = v->getBasisSize();
+            const double                   *vBasisDer = v->getBasisDerivatives();
+            const int                      *vIndices  = v->getIndices();
 
             for(int g = 0; g < numVFuncs; ++g) {
               PetscScalar vDiv = 0.0;
@@ -843,10 +843,10 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
               elemMat[indices[f]*totBasisFuncs+indices[g]] += product*quadWeights[q]*detJ;
             }
             // Gradient of pressure
-            const Obj<ALE::DiscretizationNew>& pres         = m->getDiscretization("p");
-            const int                          numPresFuncs = pres->getBasisSize();
-            const double                      *presBasisDer = pres->getBasisDerivatives();
-            const int                         *presIndices  = pres->getIndices();
+            const Obj<ALE::Discretization>& pres         = m->getDiscretization("p");
+            const int                       numPresFuncs = pres->getBasisSize();
+            const double                   *presBasisDer = pres->getBasisDerivatives();
+            const int                      *presIndices  = pres->getIndices();
 
             for(int g = 0; g < numPresFuncs; ++g) {
               PetscScalar presGrad = 0.0;
@@ -902,24 +902,24 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   if (options->dim == 1) {
-    ierr = CreateProblem_gen_0(dm, "p", PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_1(dm, "u", quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_0(dm, "p", 0, PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_1(dm, "u", 1, quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
   } else if (options->dim == 2) {
-    ierr = CreateProblem_gen_2(dm, "p", PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_3(dm, "u", quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_3(dm, "v", quadratic_2d_v, quadratic_2d_v);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_3(dm, "u", 1, quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_3(dm, "v", 1, quadratic_2d_v, quadratic_2d_v);CHKERRQ(ierr);
   } else if (options->dim == 3) {
-    ierr = CreateProblem_gen_4(dm, "p", PETSC_NULL,     quadratic_3d_p);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_5(dm, "u", quadratic_3d_u, quadratic_3d_u);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_5(dm, "v", quadratic_3d_v, quadratic_3d_v);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_5(dm, "w", quadratic_3d_w, quadratic_3d_w);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_4(dm, "p", 0, PETSC_NULL,     quadratic_3d_p);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_5(dm, "u", 1, quadratic_3d_u, quadratic_3d_u);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_5(dm, "v", 1, quadratic_3d_v, quadratic_3d_v);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_5(dm, "w", 1, quadratic_3d_w, quadratic_3d_w);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
   m->calculateIndices();
-  m->setupFieldMultiple(s, 1, 1, 2);
+  m->setupField(s, 2);
   if (options->debug) {s->view("Default field");}
   PetscFunctionReturn(0);
 }
@@ -941,7 +941,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetSectionReal(mesh, "exactSolution", &options->exactSol.section);CHKERRQ(ierr);
   ierr = SectionRealGetSection(options->exactSol.section, s);CHKERRQ(ierr);
-  m->setupFieldMultiple(s, 1, 1, 2);
+  m->setupField(s, 2);
   const Obj<ALE::Mesh::label_sequence>&     cells       = m->heightStratum(0);
   const Obj<ALE::Mesh::real_section_type>&  coordinates = m->getRealSection("coordinates");
   const int                                 localDof    = m->sizeWithBC(s, *cells->begin());
@@ -963,7 +963,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
       int f = 0;
 
       for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++f) {
-        const Obj<ALE::DiscretizationNew>& disc     = m->getDiscretization(*f_iter);
+        const Obj<ALE::Discretization>&    disc     = m->getDiscretization(*f_iter);
         const Obj<ALE::BoundaryCondition>& bc       = disc->getExactSolution();
         const int                          pointDim = disc->getNumDof(m->depth(*cl_iter));
         const int                         *indices  = disc->getIndices();

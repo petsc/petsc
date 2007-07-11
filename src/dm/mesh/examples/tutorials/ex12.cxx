@@ -238,10 +238,12 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   ierr = MeshGetSectionReal(mesh, "default", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-  const Obj<ALE::Discretization>& disc = m->getDiscretization();
+  const Obj<ALE::Discretization> disc = new ALE::Discretization(m->comm(), m->debug());
   
   disc->setNumDof(m->depth(), 2);
+  m->setDiscretization(disc);
   s->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(s);
 
   VecScatter scatter;
@@ -262,6 +264,7 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   
   disc->setNumDof(m->depth(), 2);
   s->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(s);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF, s->size(), &options->local);CHKERRQ(ierr);
@@ -286,10 +289,12 @@ PetscErrorCode CreateField(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
   const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
-  const Obj<ALE::Discretization>&       disc  = m->getDiscretization();
+  const Obj<ALE::Discretization>        disc  = new ALE::Discretization(m->comm(), m->debug());
   
   disc->setNumDof(m->depth(), 1);
+  m->setDiscretization(disc);
   s->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(s, options->postponeGhosts);
   // Loop over elements (quadrilaterals)
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {

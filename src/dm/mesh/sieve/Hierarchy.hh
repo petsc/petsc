@@ -694,9 +694,12 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       nv_iter++;
     }
     ALE::Obj<ALE::Mesh::real_section_type> s = newmesh->getRealSection("default");
+    const Obj<std::set<std::string> >& discs = m->getDiscretizations();
+
     //set up the default section
-    newmesh->setDiscretization(m->getDiscretization());
-    newmesh->setBoundaryCondition(m->getBoundaryCondition());
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      newmesh->setDiscretization(*f_iter, m->getDiscretization(*f_iter));
+    }
     newmesh->setupField(s);
 
     MeshSetMesh(outmeshes[curLevel-1], newmesh);
