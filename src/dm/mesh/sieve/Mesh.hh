@@ -861,8 +861,9 @@ namespace ALE {
     };
   public:
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->getBoundaryCondition("default");};
-    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->setDiscretization("default", boundaryCondition);};
+    void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->setBoundaryCondition("default", boundaryCondition);};
     const Obj<BoundaryCondition>& getBoundaryCondition(const std::string& name) {return this->_boundaryConditions[name];};
+    void setBoundaryCondition(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
     void setDiscretization(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
     Obj<std::set<std::string> > getBoundaryConditions() const {
       Obj<std::set<std::string> > names = std::set<std::string>();
@@ -1358,12 +1359,14 @@ namespace ALE {
                 const Obj<std::set<std::string> >  bcs     = disc->getBoundaryConditions();
                 const int                          fDim    = s->getFiberDimension(*cl_iter, f);//disc->getNumDof(this->depth(*cl_iter));
                 const int                         *indices = disc->getIndices();
+                int                                b       = 0;
 
                 //std::cout << "  field " << *f_iter << std::endl;
-                for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter) {
+                for(std::set<std::string>::const_iterator bc_iter = bcs->begin(); bc_iter != bcs->end(); ++bc_iter, ++b) {
                   const Obj<ALE::BoundaryCondition>& bc    = disc->getBoundaryCondition(*bc_iter);
                   const int                          value = this->getValue(this->getLabel(bc->getLabelName()), *cl_iter);
 
+                  if (b > 0) v[f] -= fDim;
                   if (value == bc->getMarker()) {
                     for(int d = 0; d < fDim; ++d, ++v[f]) {
                       dofs[++i] = off+d;

@@ -899,20 +899,28 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   }
   Mesh mesh = (Mesh) dm;
   Obj<ALE::Mesh> m;
+  int            velMarkers[1] = {1};
+  double       (*velFuncs[1])(const double *coords);
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   if (options->dim == 1) {
-    ierr = CreateProblem_gen_0(dm, "p", 0, PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_1(dm, "u", 1, quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_0(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_p);CHKERRQ(ierr);
+    velFuncs[0] = quadratic_2d_u;
+    ierr = CreateProblem_gen_1(dm, "u", 1, velMarkers, velFuncs,   quadratic_2d_u);CHKERRQ(ierr);
   } else if (options->dim == 2) {
-    ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL,     quadratic_2d_p);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_3(dm, "u", 1, quadratic_2d_u, quadratic_2d_u);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_3(dm, "v", 1, quadratic_2d_v, quadratic_2d_v);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_p);CHKERRQ(ierr);
+    velFuncs[0] = quadratic_2d_u;
+    ierr = CreateProblem_gen_3(dm, "u", 1, velMarkers, velFuncs,   quadratic_2d_u);CHKERRQ(ierr);
+    velFuncs[0] = quadratic_2d_v;
+    ierr = CreateProblem_gen_3(dm, "v", 1, velMarkers, velFuncs,   quadratic_2d_v);CHKERRQ(ierr);
   } else if (options->dim == 3) {
-    ierr = CreateProblem_gen_4(dm, "p", 0, PETSC_NULL,     quadratic_3d_p);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_5(dm, "u", 1, quadratic_3d_u, quadratic_3d_u);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_5(dm, "v", 1, quadratic_3d_v, quadratic_3d_v);CHKERRQ(ierr);
-    ierr = CreateProblem_gen_5(dm, "w", 1, quadratic_3d_w, quadratic_3d_w);CHKERRQ(ierr);
+    ierr = CreateProblem_gen_4(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_3d_p);CHKERRQ(ierr);
+    velFuncs[0] = quadratic_3d_u;
+    ierr = CreateProblem_gen_5(dm, "u", 1, velMarkers, velFuncs,   quadratic_3d_u);CHKERRQ(ierr);
+    velFuncs[0] = quadratic_3d_v;
+    ierr = CreateProblem_gen_5(dm, "v", 1, velMarkers, velFuncs,   quadratic_3d_v);CHKERRQ(ierr);
+    velFuncs[0] = quadratic_3d_w;
+    ierr = CreateProblem_gen_5(dm, "w", 1, velMarkers, velFuncs,   quadratic_3d_w);CHKERRQ(ierr);
   } else {
     SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
   }

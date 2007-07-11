@@ -252,8 +252,9 @@ class QuadratureGenerator(script.Script):
     from Cxx import CompoundStatement
     funcName  = 'CreateProblem_gen_'+str(n)
     meshVar   = self.Cxx.getVar('mesh')
-    markerVar = self.Cxx.getVar('marker')
-    bcVar     = self.Cxx.getVar('bcFunc')
+    numBCVar  = self.Cxx.getVar('numBC')
+    markerVar = self.Cxx.getVar('markers')
+    bcVar     = self.Cxx.getVar('bcFuncs')
     exactVar  = self.Cxx.getVar('exactFunc')
     decls = []
     decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
@@ -278,13 +279,15 @@ class QuadratureGenerator(script.Script):
     bcCmpd = CompoundStatement()
     bcCmpd.declarations = [self.Cxx.getDeclaration('b', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
                                                    self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
-                                                                                                           self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
+                                                                                                           self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))])),
+                           self.Cxx.getDeclaration('name', self.Cxx.getType('ostringstream'), isForward = 1)]
     bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setMarker'), [markerVar])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [bcVar])))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setMarker'), [self.Cxx.getArrayRef(markerVar, 'i')])))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getArrayRef(bcVar, 'i')])))
     bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n)])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBoundaryCondition'), ['b'])))
-    cmpd.children.append(self.Cxx.getIf(bcVar, [bcCmpd]))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getLeftShift('name', 'i')))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBoundaryCondition'), [self.Cxx.getFunctionCall(self.Cxx.getStructRef('name', 'str', 0)), 'b'])))
+    cmpd.children.append(self.Cxx.getSimpleLoop('i', 0, numBCVar, isPrefix = 1, body = [bcCmpd]))
     exactCmpd = CompoundStatement()
     exactCmpd.declarations = [self.Cxx.getDeclaration('e', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
                                                       self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
@@ -300,8 +303,9 @@ class QuadratureGenerator(script.Script):
     func = self.Cxx.getFunction(funcName, self.Cxx.getType('PetscErrorCode'),
                                 [self.Cxx.getParameter('dm', self.Cxx.getType('DM')),
                                  self.Cxx.getParameter('name', self.Cxx.getType('char pointer', isConst = 1)),
-                                 self.Cxx.getParameter('marker', self.Cxx.getType('int', isConst = 1)),
-                                 self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])),
+                                 self.Cxx.getParameter('numBC', self.Cxx.getType('int', isConst = 1)),
+                                 self.Cxx.getParameter('markers', self.Cxx.getType('int pointer', isConst = 1)),
+                                 self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))], numPointers = 2)),
                                  self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(exactVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))]))],
                                 decls, stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
