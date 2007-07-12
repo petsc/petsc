@@ -4,7 +4,7 @@
  * Opens a socket to the PETSc remote server
  * returns a file descriptor for the socket
  *
- */
+ */  
 int PetscOpenSocket(char * hostname, int portnum){
     struct sockaddr_in sin;
     int clientfd;
@@ -17,9 +17,10 @@ int PetscOpenSocket(char * hostname, int portnum){
         fprintf(stderr, "unknown host %s\n", hostname);
         exit(1);}
     //build address data structure
-    bzero((char *)&sin, sizeof(sin));
+    //bzero((char *)&sin, sizeof(sin));
     sin.sin_family = AF_INET;
-    bcopy(host->h_addr, (char *)&sin.sin_addr, host->h_length);
+    //bcopy(host->h_addr, (char *)&sin.sin_addr, host->h_length);
+    PetscMemcpy(host->h_addr, (char *)&sin.sin_addr, host->h_length);
     sin.sin_port = htons(portnum);
     //active open
     if((clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
@@ -73,7 +74,7 @@ int PetscSocketListen(char * hostname, int portnum){
     socklen_t sin_size;
     extern int PETSC_LISTEN_CHECK;
     //build the address struct
-    bzero((char *)&sin, sizeof(sin));
+    //bzero((char *)&sin, sizeof(sin));
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(portnum);

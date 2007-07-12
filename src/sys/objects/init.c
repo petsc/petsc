@@ -17,7 +17,6 @@
 #endif
 #include "petscfix.h"
 #include "zope.h"
-
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was 
@@ -214,7 +213,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscTruth     flg1,flg2,flg3,flag, flgz;
+  PetscTruth     flg1,flg2,flg3,flag;
   PetscErrorCode ierr;
   PetscInt       si;
   int            i;
@@ -384,6 +383,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
+  PetscTruth flgz;
   ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
   if(flgz){
     extern int PETSC_SOCKFD;

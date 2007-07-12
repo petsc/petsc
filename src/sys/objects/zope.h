@@ -1,17 +1,20 @@
 #ifndef __ZOPE_H__
 #define __ZOPE_H__
 
+#include "petsc.h"
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/errno.h>
-#include "petsc.h"
+
+int PETSC_SOCKFD;
+int PETSC_LISTENFD;
+int PETSC_LISTEN_CHECK;
 
 int PetscOpenSocket(char * hostname, int portnum);
 ssize_t Recv(int fd, void *buf, size_t len, int flags);

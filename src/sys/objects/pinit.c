@@ -7,10 +7,6 @@
 #include "petscsys.h"
 #include "zope.h"
 
-int PETSC_SOCKFD;
-int PETSC_LISTENFD;
-int PETSC_LISTEN_CHECK;
-
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
@@ -18,7 +14,6 @@ EXTERN PetscErrorCode PetscLogBegin_Private(void);
 /* -----------------------------------------------------------------------------------------*/
 
 extern FILE *petsc_history;
-extern FILE *PETSC_STDOUT;
 
 EXTERN PetscErrorCode PetscInitialize_DynamicLibraries(void);
 EXTERN PetscErrorCode PetscFinalize_DynamicLibraries(void);
@@ -477,12 +472,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   if (PetscInitializeCalled) PetscFunctionReturn(0);
 
   /* these must be initialized in a routine, not as a constant declaration*/
-  PETSC_STDOUT = stdout;
+  //PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);
-
-
 
   /*
      We initialize the program name here (before MPI_Init()) because MPICH has a bug in 
@@ -655,17 +648,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscTruth     flg1,flg2,flg3;
   
   PetscFunctionBegin;
-
-  extern int PETSC_LISTEN_CHECK;
-  if(PETSC_LISTEN_CHECK){
-    PETSC_LISTEN_CHECK = 0;
-    extern int PETSC_SOCKFD;
-    extern int PETSC_LISTENFD;
-    extern FILE *PETSC_STDOUT;
-    fprintf(PETSC_STDOUT, "<<<end>>>");
-    PETSC_STDOUT = stdout;
-    close(PETSC_SOCKFD);
-    close(PETSC_LISTENFD);}
 
   if (!PetscInitializeCalled) {
     (*PetscErrorPrintf)("PetscInitialize() must be called before PetscFinalize()\n");
@@ -881,6 +863,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   if (PetscBeganMPI) {
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
+
+ extern int PETSC_LISTEN_CHECK;
+  if(PETSC_LISTEN_CHECK){
+    PETSC_LISTEN_CHECK = 0;
+    extern int PETSC_LISTENFD;
+    extern FILE * PETSC_STDOUT;
+    fprintf(PETSC_STDOUT, "<<<end>>>");
+    close(PETSC_LISTENFD);}
 
 /*
 
