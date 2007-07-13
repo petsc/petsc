@@ -5,6 +5,7 @@
  * returns a file descriptor for the socket
  *
  */  
+
 int PetscOpenSocket(char * hostname, int portnum){
     struct sockaddr_in sin;
     int clientfd;
