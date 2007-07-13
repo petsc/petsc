@@ -7,6 +7,10 @@
 #include "petscsys.h"
 #include "zope.h"
 
+int PETSC_SOCKFD = 0;
+int PETSC_LISTENFD = 0;
+int PETSC_LISTEN_CHECK = 0;
+
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
