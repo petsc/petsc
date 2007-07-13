@@ -7,11 +7,6 @@
 #include "petscsys.h"
 #include "zope.h"
 
-int PETSC_SOCKFD;
-int PETSC_LISTENFD;
-int PETSC_LISTEN_CHECK;
-
-
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
@@ -477,7 +472,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   if (PetscInitializeCalled) PetscFunctionReturn(0);
 
   /* these must be initialized in a routine, not as a constant declaration*/
-  //PETSC_STDOUT = stdout;
+  PETSC_STDOUT = stdout;
   PETSC_STDERR = stderr;
 
   ierr = PetscOptionsCreate();CHKERRQ(ierr);

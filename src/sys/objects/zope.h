@@ -12,9 +12,9 @@
 #include <fcntl.h>
 #include <sys/errno.h>
 
-extern int PETSC_SOCKFD;
-extern int PETSC_LISTENFD;
-extern int PETSC_LISTEN_CHECK;
+int PETSC_SOCKFD;
+int PETSC_LISTENFD;
+int PETSC_LISTEN_CHECK;
 
 int PetscOpenSocket(char * hostname, int portnum);
 ssize_t Recv(int fd, void *buf, size_t len, int flags);
