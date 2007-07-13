@@ -7,6 +7,11 @@
 #include "petscsys.h"
 #include "zope.h"
 
+int PETSC_SOCKFD;
+int PETSC_LISTENFD;
+int PETSC_LISTEN_CHECK;
+
+
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
 #endif
@@ -864,10 +869,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
- extern int PETSC_LISTEN_CHECK;
   if(PETSC_LISTEN_CHECK){
     PETSC_LISTEN_CHECK = 0;
-    extern int PETSC_LISTENFD;
     extern FILE * PETSC_STDOUT;
     fprintf(PETSC_STDOUT, "<<<end>>>");
     close(PETSC_LISTENFD);}

@@ -386,9 +386,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   PetscTruth flgz;
   ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
   if(flgz){
-    extern int PETSC_SOCKFD;
-    extern int PETSC_LISTENFD;
-    extern int PETSC_LISTEN_CHECK;
     char hostname[256];
     int remoteport = 9999;
     int listenport = 9998;
