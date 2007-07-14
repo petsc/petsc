@@ -49,6 +49,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MEMC             78   /* memory corruption */
 #define PETSC_ERR_CONV_FAILED      82   /* iterative method (KSP or SNES) failed */
 #define PETSC_ERR_USER             83   /* user has not provided needed function */
+#define PETSC_ERR_SYS              88   /* error in system call */
 
 #define PETSC_ERR_ARG_SIZ          60   /* nonconforming object sizes used in operation */
 #define PETSC_ERR_ARG_IDN          61   /* two arguments not allowed to be the same */
@@ -72,7 +73,7 @@ PETSC_EXTERN_CXX_BEGIN
 #define PETSC_ERR_MAT_LU_ZRPVT     71   /* detected a zero pivot during LU factorization */
 #define PETSC_ERR_MAT_CH_ZRPVT     81   /* detected a zero pivot during Cholesky factorization */
 
-#define PETSC_ERR_MAX_VALUE        88   /* this is always the one more than the largest error code */
+#define PETSC_ERR_MAX_VALUE        89   /* this is always the one more than the largest error code */
 
 #if defined(PETSC_USE_ERRORCHECKING)
 

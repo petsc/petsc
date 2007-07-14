@@ -73,6 +73,7 @@ typedef unsigned long   u_long;
 #include "mex.h"
 
 #define PETSC_MEX_ERROR(a) {mexErrMsgTxt(a); return ;}
+#define PETSC_MEX_ERRORQ(a) {mexErrMsgTxt(a); return -1;}
 
 /*-----------------------------------------------------------------*/
 /* The listenport variable is an ugly hack. If the user hits a         */
@@ -83,10 +84,10 @@ typedef unsigned long   u_long;
 /* and control c we may not be able to close the correct listener. */
 static int listenport;
 /*-----------------------------------------------------------------*/
-extern PetscErrorCode establish(u_short);
+extern int establish(u_short);
 #undef __FUNCT__  
 #define __FUNCT__ "SOCKConnect_Private"
-PetscErrorCode SOCKConnect_Private(int portnumber)
+int SOCKConnect_Private(int portnumber)
 {
   struct sockaddr_in isa; 
 #if defined(PETSC_HAVE_ACCEPT_SIZE_T)
@@ -99,15 +100,13 @@ PetscErrorCode SOCKConnect_Private(int portnumber)
 /* open port*/
   listenport = establish((u_short) portnumber);
   if (listenport == -1) {
-    PETSC_MEX_ERROR("RECEIVE: unable to establish port\n");
-    return -1;
+    PETSC_MEX_ERRORQ("RECEIVE: unable to establish port\n");
   }
 
 /* wait for someone to try to connect */
   i = sizeof(struct sockaddr_in);
   if ((t = accept(listenport,(struct sockaddr *)&isa,(socklen_t *)&i)) < 0) {
-    PETSC_MEX_ERROR("RECEIVE: error from accept\n");
-    return(-1);
+    PETSC_MEX_ERRORQ("RECEIVE: error from accept\n");
   }
   close(listenport);  
   return(t);
@@ -116,7 +115,7 @@ PetscErrorCode SOCKConnect_Private(int portnumber)
 #define MAXHOSTNAME 100
 #undef __FUNCT__  
 #define __FUNCT__ "establish"
-PetscErrorCode establish(u_short portnum)
+int establish(u_short portnum)
 {
   char               myname[MAXHOSTNAME+1];
   int                s;
@@ -143,16 +142,14 @@ PetscErrorCode establish(u_short portnum)
 #endif
   hp = gethostbyname(myname);
   if (!hp) {
-    PETSC_MEX_ERROR("RECEIVE: error from gethostbyname\n");
-     return(-1);
+    PETSC_MEX_ERRORQ("RECEIVE: error from gethostbyname\n");
   }
 
   sa.sin_family = hp->h_addrtype; 
   sa.sin_port = htons(portnum); 
 
   if ((s = socket(AF_INET,SOCK_STREAM,0)) < 0) {
-    PETSC_MEX_ERROR("RECEIVE: error from socket\n");
-    return(-1);
+    PETSC_MEX_ERRORQ("RECEIVE: error from socket\n");
   }
   {
   int optval = 1; /* Turn on the option */
@@ -167,7 +164,7 @@ PetscErrorCode establish(u_short portnum)
     if (errno != EADDRINUSE) { 
 #endif
       close(s);
-      PETSC_MEX_ERROR("RECEIVE: error from bind\n");
+      PETSC_MEX_ERRORQ("RECEIVE: error from bind\n");
       return(-1);
     }
     close(listenport); 

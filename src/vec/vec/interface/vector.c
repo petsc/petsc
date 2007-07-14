@@ -604,62 +604,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDestroyVecs(Vec vv[],PetscInt m)
 
   Input Parameters:
 . vec   - The vector
-. title - The title
+. title - The title (currently ignored)
 
   Level: intermediate
 
 .keywords: Vec, view, options, database
 .seealso: VecSetFromOptions(), VecView()
 @*/
-PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, char *title)
+PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec vec, const char *title)
 {
-  PetscViewer    viewer;
-  PetscDraw      draw;
-  PetscTruth     opt;
-  char           *titleStr;
-  char           typeName[1024];
-  char           fileName[PETSC_MAX_PATH_LEN];
-  size_t         len;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(vec->prefix, "-vec_view", &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscOptionsGetString(vec->prefix, "-vec_view", typeName, 1024, &opt);CHKERRQ(ierr);
-    ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
-    if (len > 0) {
-      ierr = PetscViewerCreate(vec->comm, &viewer);CHKERRQ(ierr);
-      ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
-      ierr = PetscOptionsGetString(vec->prefix, "-vec_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
-      if (opt) {
-        ierr = PetscViewerFileSetName(viewer, fileName);CHKERRQ(ierr);
-      } else {
-        ierr = PetscViewerFileSetName(viewer, vec->name);CHKERRQ(ierr);
-      }
-      ierr = VecView(vec, viewer);CHKERRQ(ierr);
-      ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-      ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-    } else {
-      ierr = PetscViewerASCIIGetStdout(vec->comm,&viewer);CHKERRQ(ierr);
-      ierr = VecView(vec, viewer);CHKERRQ(ierr);
-    }
-  }
-  ierr = PetscOptionsHasName(vec->prefix, "-vec_view_draw", &opt);CHKERRQ(ierr);
-  if (opt) {
-    ierr = PetscViewerDrawOpen(vec->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
-    ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
-    if (title) {
-      titleStr = title;
-    } else {
-      ierr = PetscObjectName((PetscObject) vec);                                                          CHKERRQ(ierr);
-      titleStr = vec->name;
-    }
-    ierr = PetscDrawSetTitle(draw, titleStr);CHKERRQ(ierr);
-    ierr = VecView(vec, viewer);CHKERRQ(ierr);
-    ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-    ierr = PetscDrawPause(draw);CHKERRQ(ierr);
-    ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
-  }
+  ierr = VecView_Private(vec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

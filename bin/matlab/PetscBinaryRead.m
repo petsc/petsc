@@ -30,7 +30,7 @@ end
 
 if comp == 'cell'
   if nargin == 3
-    narg = cnt
+    narg = cnt;
   else
     narg   = 1000;  
   end
@@ -46,7 +46,7 @@ for l=1:narg
       varargout(1) = {result};
       return 
     else 
-      disp('File does not have that many items')
+      disp('File/Socket does not have that many items')
     end
     return
   end
