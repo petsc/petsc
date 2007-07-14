@@ -307,14 +307,29 @@ namespace ALE {
     };
     template<typename Section_>
     int sizeWithBC(const Obj<Section_>& section, const point_type& p) {
-      const typename Section_::chart_type&  chart   = section->getChart();
-      const Obj<coneArray>                  closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), p);
-      typename coneArray::iterator          end     = closure->end();
-      int                                   size    = 0;
+      const typename Section_::chart_type& chart = section->getChart();
+      int                                  size  = 0;
 
-      for(typename coneArray::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
-        if (chart.count(*c_iter)) {
-          size += section->getFiberDimension(*c_iter);
+      if (this->height() < 2) {
+        const Obj<typename sieve_type::coneSequence>& cone = this->_sieve->cone(p);
+        typename sieve_type::coneSequence::iterator   end  = cone->end();
+
+        if (chart.count(p)) {
+          size += section->getFiberDimension(p);
+        }
+        for(typename sieve_type::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter) {
+          if (chart.count(*c_iter)) {
+            size += section->getFiberDimension(*c_iter);
+          }
+        }
+      } else {
+        const Obj<coneArray>         closure = sieve_alg_type::closure(this, this->getArrowSection("orientation"), p);
+        typename coneArray::iterator end     = closure->end();
+
+        for(typename coneArray::iterator c_iter = closure->begin(); c_iter != end; ++c_iter) {
+          if (chart.count(*c_iter)) {
+            size += section->getFiberDimension(*c_iter);
+          }
         }
       }
       return size;
