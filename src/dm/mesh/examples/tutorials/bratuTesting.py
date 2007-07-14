@@ -4,8 +4,6 @@ TODO:
 
   1) Put in Neumann conditions for Bratu FD
 
-  2) Section for cell-wise errors in bratu
-
 Testing Schedule:
 
   - Laplacian (bratu.cxx)
