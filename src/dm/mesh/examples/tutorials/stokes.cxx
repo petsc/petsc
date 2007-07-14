@@ -1151,6 +1151,16 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   if (flag) {ierr = ViewSection(mesh, solution, "sol.vtk");CHKERRQ(ierr);}
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (flag) {sol->view("Solution");}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_fibrated", &flag);CHKERRQ(ierr);
+  if (flag) {
+    Obj<ALE::Mesh::real_section_type> pressure  = sol->getFibration(0);
+    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(1);
+    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(2);
+
+    pressure->view("Pressure Solution");
+    velocityX->view("X-Velocity Solution");
+    velocityY->view("Y-Velocity Solution");
+  }
   ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
