@@ -8,6 +8,8 @@ function Set = PetscReadBinaryMatlab(filename)
 %   This function returns a single struct containing all objects submitted
 %   to the PetscViewerBinaryMatlab viewer.
    
+   matlabHeader = '%$$ '; % string that marks a matlab line for evaluation (could be passed)
+
    if (isempty(strfind(filename,'.info')))
       filename = [filename,'.info'];
    end
@@ -17,9 +19,21 @@ function Set = PetscReadBinaryMatlab(filename)
    end
    str=fgets(fid);
    while (ischar(str))
-      % check for output lines that start %Set.blah=etc.
-      marker = strmatch('%$$',str); 
-      if marker
+
+      % check for output lines that start matlabHeader
+      header = strmatch(matlabHeader,str); 
+      if header                     
+	 str = str(header+length(matlabHeader):end);
+
+      	 % check for old-style file open/close commands
+	 if strfind(str,'fopen(Set.filename')
+	    str = 'fd = freader(Set.filename);';
+	 elseif strfind(str,'if (fd < 0) error'); % ignore this line
+	    str = '%';
+	 elseif strfind(str,'fclose(fd)');
+	    str = 'close(fd);';
+	 end
+
 	 eval(str(marker+4:end));
       end
       str=fgets(fid);
