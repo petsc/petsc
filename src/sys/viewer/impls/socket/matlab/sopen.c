@@ -190,7 +190,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
     char *str;
     str = getenv("PETSC_VIEWER_SOCKET_PORT");
     if (str) portnumber = atoi(str);
-    else portnumber = DEFAULTPORT;  
+    else portnumber = PETSCSOCKETDEFAULTPORT;  
   } else {
     portnumber = (int)*mxGetPr(prhs[0]);
   }
