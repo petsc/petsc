@@ -1305,7 +1305,7 @@ namespace ALE {
           const Obj<label_type>&         label     = this->getLabel(labelName);
           const Obj<label_sequence>&     exclusion = this->getLabelStratum(labelName, 1);
           const label_sequence::iterator end       = exclusion->end();
-          label->view(labelName.c_str());
+          if (debug) {label->view(labelName.c_str());}
 
           for(label_sequence::iterator e_iter = exclusion->begin(); e_iter != end; ++e_iter) {
             const Obj<coneArray>      closure = ALE::SieveAlg<ALE::Mesh>::closure(this, this->getArrowSection("orientation"), *e_iter);
@@ -1317,7 +1317,7 @@ namespace ALE {
                 seen.insert(*c_iter);
                 s->setFiberDimension(*c_iter, 0, f);
                 s->addFiberDimension(*c_iter, -disc->getNumDof(this->depth(*c_iter)));
-                std::cout << "  cell: " << *c_iter << " dim: " << disc->getNumDof(this->depth(*c_iter)) << std::endl;
+                if (debug) {std::cout << "  cell: " << *c_iter << " dim: " << disc->getNumDof(this->depth(*c_iter)) << std::endl;}
               }
             }
           }
