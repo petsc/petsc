@@ -40,6 +40,7 @@ class BratuTest(script.Script):
     import RDict
     script.Script.__init__(self, argDB = RDict.RDict())
     self.executable = './bratu'
+    self.data       = []
     return
 
   def setupHelp(self, help):
@@ -60,6 +61,10 @@ class BratuTest(script.Script):
   def setup(self):
     script.Script.setup(self)
     self.setupOptions()
+    return
+
+  def addOutput(self, maxVolume, numRows, numNonzeros, numIterates, TotalTime):
+    self.data.append((maxVolume, numRows, numNonzeros, numIterates, TotalTime))
     return
 
   def processOutput(self, out):
@@ -90,7 +95,9 @@ class BratuTest(script.Script):
     for i in range(self.argDB['num_refine']+1):
       print '  testing refinement',i,'area', area
       cmd = ' '.join([self.executable]+self.defaultOptions+['-refinement_limit '+str(area)])
-      iters.append(self.processOutput(self.executeShellCommand(cmd)[:-2]))
+      numRows, numIterates = self.processOutput(self.executeShellCommand(cmd)[:-2])
+      self.addOutput(area, numRows, -1, numIterates, -1)
+      iters.append((numRows, numIterates))
       area /= factor
     print 'rows and iterations:', iters
     return iters
@@ -98,6 +105,7 @@ class BratuTest(script.Script):
   def run(self):
     self.setup()
     self.testLS()
+    print self.output
     return
 
 if __name__ == '__main__':
