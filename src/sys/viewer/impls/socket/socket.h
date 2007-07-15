@@ -10,7 +10,7 @@ typedef struct {
   int           port;
 } PetscViewer_Socket;
 
-#define DEFAULTPORT    5005
+#define PETSCSOCKETDEFAULTPORT    5005
 
 /* different types of matrix which may be communicated */
 #define DENSEREAL      0

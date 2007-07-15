@@ -19,18 +19,31 @@ PetscErrorCode PetscBinaryRead(int,void *p,int,PetscDataType);
 #define __FUNCT__ "mexFunction"
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 {
-  int  fd,cnt,dt;
+  int            fd,cnt,dt;
+  PetscErrorCode ierr;
 
   /* check output parameters */
   if (nlhs != 1) PETSC_MEX_ERROR("Receive requires one output argument.");
-
   if (nrhs != 3) PETSC_MEX_ERROR("Receive requires three input arguments.");
-  fd  = *(int*)mxGetPr(prhs[0]);
-  cnt = *(int*)mxGetPr(prhs[1]);
-  dt  = *(PetscDataType*)mxGetPr(prhs[2]);
+  fd  = (int) mxGetScalar(prhs[0]);
+  cnt = (int) mxGetScalar(prhs[1]);
+  dt  = (PetscDataType) mxGetScalar(prhs[2]);
 
-  plhs[0]  = mxCreateDoubleMatrix(1,cnt,mxREAL);
-  ierr = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,dt);if (ierr) PETSC_MEX_ERROR("Unable to receive %d items.",cnt);
+
+  if (dt == PETSC_DOUBLE) {
+    plhs[0]  = mxCreateDoubleMatrix(1,cnt,mxREAL);
+    ierr = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,dt);if (ierr) PETSC_MEX_ERROR("Unable to receive double items.");
+  } else if (dt == PETSC_INT) {
+    plhs[0]  = mxCreateNumericMatrix(1,cnt,mxINT32_CLASS,mxREAL);
+    ierr = PetscBinaryRead(fd,mxGetPr(plhs[0]),cnt,dt);if (ierr) PETSC_MEX_ERROR("Unable to receive int items.");
+  } else if (dt == PETSC_CHAR) {
+    char *tmp = (char*) mxMalloc(cnt*sizeof(char));
+    ierr = PetscBinaryRead(fd,tmp,cnt,dt);if (ierr) PETSC_MEX_ERROR("Unable to receive char items.");
+    plhs[0] = mxCreateStringFromNChars(tmp,cnt);
+    mxFree(tmp);
+  } else {
+    PETSC_MEX_ERROR("Unknown datatype.");
+  }
   return;
 }
 
