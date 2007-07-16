@@ -514,7 +514,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
       nelements = tridata[1].numberoftriangles;
       nverts = tridata[1].numberofpoints;
 #else
-      SETERRQ(PETSC_ERR_SUP, "Must have Triangle installed to use this method. Reconfigure with --download-triangle");
+      throw ALE::Exception("Must have Triangle installed to use this method. Reconfigure with --download-triangle");
 #endif
     } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
@@ -548,7 +548,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
       nelements = tetdata[1].numberoftetrahedra;
       nverts = tetdata[1].numberofpoints;
 #else
-      SETERRQ(PETSC_ERR_SUP, "Must have TetGen installed to use this method. Reconfigure with --download-tetgen");
+      throw ALE::Exception("Must have TetGen installed to use this method. Reconfigure with --download-tetgen");
 #endif
     }
     //make it into a mesh;
