@@ -485,6 +485,9 @@ namespace ALE {
       };
       return array;
     };
+    int getStorageSize() const {
+      return this->sizeWithBC();
+    };
   public: // Verifiers
     bool hasPoint(const point_type& point) {
       return this->_atlas->hasPoint(point);
@@ -841,6 +844,7 @@ namespace ALE {
     Obj<atlas_type> _atlasNew;
     values_type     _array;
     bool            _sharedStorage;
+    int             _sharedStorageSize;
     Obj<bc_type>    _bc;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
@@ -852,7 +856,7 @@ namespace ALE {
       this->_sharedStorage = false;
       this->_bc            = new bc_type(comm, debug);
     };
-    GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false) {
+    GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
       this->_bc       = new bc_type(comm, debug);
     };
     virtual ~GeneralSection() {
@@ -872,6 +876,12 @@ namespace ALE {
         array = new value_type[maxSize];
       };
       return array;
+    };
+    int getStorageSize() const {
+      if (this->_sharedStorage) {
+        return this->_sharedStorageSize;
+      }
+      return this->sizeWithBC();
     };
   public: // Verifiers
     bool hasPoint(const point_type& point) {
@@ -1078,17 +1088,19 @@ namespace ALE {
     void allocateStorage() {
       const int totalSize = this->sizeWithBC();
 
-      this->_array         = new value_type[totalSize];
-      this->_sharedStorage = false;
+      this->_array             = new value_type[totalSize];
+      this->_sharedStorage     = false;
+      this->_sharedStorageSize = 0;
       PetscMemzero(this->_array, totalSize * sizeof(value_type));
       this->_bc->allocatePoint();
     };
-    void replaceStorage(value_type *newArray, const bool sharedStorage = false) {
+    void replaceStorage(value_type *newArray, const bool sharedStorage = false, const int sharedStorageSize = 0) {
       if (this->_array && !this->_sharedStorage) {delete [] this->_array;}
-      this->_array         = newArray;
-      this->_sharedStorage = sharedStorage;
-      this->_atlas         = this->_atlasNew;
-      this->_atlasNew      = NULL;
+      this->_array             = newArray;
+      this->_sharedStorage     = sharedStorage;
+      this->_sharedStorageSize = sharedStorageSize;
+      this->_atlas             = this->_atlasNew;
+      this->_atlasNew          = NULL;
     };
     void addPoint(const point_type& point, const int dim) {
       if (dim == 0) return;
@@ -1606,7 +1618,7 @@ namespace ALE {
         newAtlas->addPoint(*c_iter);
         newAtlas->updatePoint(*c_iter, &idx);
       }
-      field->replaceStorage(this->_array, true);
+      field->replaceStorage(this->_array, true, this->getStorageSize());
       field->setAtlas(newAtlas);
       return field;
     };

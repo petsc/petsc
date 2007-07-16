@@ -766,7 +766,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshCreateLocalVector(Mesh mesh, Vec *lvec)
   ierr = MeshHasSectionReal(mesh, "default", &flag);CHKERRQ(ierr);
   if (!flag) SETERRQ(PETSC_ERR_ARG_WRONGSTATE, "Must set default section");
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const int size = m->getRealSection("default")->sizeWithBC();
+  const int size = m->getRealSection("default")->getStorageSize();
 
   ierr = VecCreate(PETSC_COMM_SELF, lvec);CHKERRQ(ierr);
   ierr = VecSetSizes(*lvec, size, size);CHKERRQ(ierr);

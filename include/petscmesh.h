@@ -159,6 +159,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealUpdateAdd(SectionReal, PetscI
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealZero(SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal, Vec*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal, Mesh, ScatterMode, Vec);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal, Mesh, VecScatter, ScatterMode, Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealNorm(SectionReal, Mesh, NormType, PetscReal *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealAXPY(SectionReal, Mesh, PetscScalar, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT SectionRealComplete(SectionReal);
@@ -170,6 +171,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetSectionReal(Mesh, const char [], 
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetSectionReal(Mesh, SectionReal);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, SectionReal, MatType, Mat *);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh, SectionReal, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,VecScatter *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh,SectionReal,VecScatter *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh, PetscErrorCode (*)(Mesh, SectionReal, SectionReal, void*));
