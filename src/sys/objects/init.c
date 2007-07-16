@@ -392,9 +392,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
     if(!hostname[0]){
       ierr=PetscGetHostName(hostname,256); CHKERRQ(ierr);}
-    PETSC_SOCKFD = PetscOpenSocket(hostname, remoteport);
+    ierr=PetscOpenSocket(hostname, remoteport, &PETSC_SOCKFD);CHKERRQ(ierr);
     PETSC_LISTEN_CHECK = 1; 
-    PETSC_LISTENFD = PetscSocketListen(hostname, listenport);
+    ierr=PetscSocketListen(hostname, listenport, &PETSC_LISTENFD);CHKERRQ(ierr);
     PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
     fprintf(PETSC_STDOUT, "<<<start>>>");
   }
