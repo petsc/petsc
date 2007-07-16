@@ -246,7 +246,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
     }
     if (dist > 0.) {
       dist = sqrt(dist);
-      tmpLimit = 1./(oldLimInv + factor/(dist*dist));
+      tmpLimit = 1./(oldLimInv + factor/(dist));
       if (tmpLimit > minLimit) {
         curLimit = tmpLimit;
       } else curLimit = minLimit;
@@ -266,6 +266,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   newMesh->setupField(s);
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode MeshIDBoundary(Mesh);
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
@@ -324,6 +326,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       std::string adjFile   = baseFilename+".lcon";
 
       ierr = MeshCreatePCICE(comm, options->dim, coordFile.c_str(), adjFile.c_str(), options->interpolate, PETSC_NULL, &mesh);CHKERRQ(ierr);
+      ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
     }
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     if (size > 1) {
@@ -1627,7 +1630,8 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
-      double offset[3] = {1.5, 0.0, 0.0};
+      double offset[3] = {0.7, 0.0, 0.0};
+      ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyVertices(dmmg, viewer, offset);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyElements(dmmg, viewer);CHKERRQ(ierr);

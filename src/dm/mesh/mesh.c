@@ -1711,6 +1711,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   ALE::Obj<ALE::Mesh> fm, cm;
   Mat                 P;
   PetscErrorCode      ierr;
+  int maxComparisons = 40; //point is considered a lost cause beyond this many comparisons with volumes
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
@@ -1813,7 +1814,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             cm->setValue(coarsetraversal, curEle, 1);
             bool locationDiscovered  = false;
             int traversalcomparisons = 0;
-            while ((!eguesslist.empty()) && (!locationDiscovered)) {
+            while ((!eguesslist.empty()) && (!locationDiscovered) && traversalcomparisons < maxComparisons) {
               traversalcomparisons++;
               ALE::Mesh::point_type curguess = *eguesslist.begin();
               eguesslist.pop_front();
@@ -1866,7 +1867,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             }
             if (!locationDiscovered) {  //if a position for it is not discovered, it doesn't get corrected; complain
               PetscPrintf(fm->comm(), "Point %d (%f, %f) not located.\n",  curVert, nvCoords[0], nvCoords[1]);
-              fm->setValue(finetraversal, curVert, 0);
+              fm->setValue(finetraversal, curVert, 2); //don't try again.
             }
             eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.
             //unset the traversed element list
@@ -1887,8 +1888,8 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
         ce_iter++;
       }
       if (!isLocated) {
-       ierr = PetscPrintf(fm->comm(), "NOT located\n");CHKERRQ(ierr);
-       fm->setValue(finetraversal, *fv_iter, 0);
+       if (fm->debug())ierr = PetscPrintf(fm->comm(), "NOT located\n");CHKERRQ(ierr);
+       fm->setValue(finetraversal, *fv_iter, 2); //don't try again.
       }
     }
     // printf("-");

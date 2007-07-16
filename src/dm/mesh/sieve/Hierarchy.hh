@@ -790,7 +790,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           } else if ((dist < comparison_const*(bvSpace+curSpace)) && (curpt_bound == 1)) {
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*(bvSpace+curSpace)) { 
+          } else if (dist < comparison_const*(3.*curSpace)) { 
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
@@ -1209,6 +1209,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
   ALE::Obj<ALE::Mesh> fm, cm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  //int maxSearches = 30;
   ierr = MeshGetMesh(finemesh, fm);CHKERRQ(ierr);
   ierr = MeshGetMesh(coarsemesh, cm);CHKERRQ(ierr);
 
