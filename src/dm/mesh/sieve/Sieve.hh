@@ -236,12 +236,13 @@ namespace ALE {
       set_type set;
 
       void removePoint(const typename traits::rec_type::point_type& p) {
-        typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
+        /*typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 
           ::boost::multi_index::get<typename traits::pointTag>(this->set);
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type::iterator i = index.find(p);
         if (i != index.end()) { // Point exists
           index.erase(i);
-        }
+        }*/
+        this->set.erase(p);
       };
       void adjustDegree(const typename traits::rec_type::point_type& p, int delta) {
         typename ::boost::multi_index::index<set_type, typename traits::pointTag>::type& index = 

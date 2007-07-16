@@ -15,9 +15,9 @@
 #include <fcntl.h>
 #include <sys/errno.h>
 
-extern int PETSC_SOCKFD;
-extern int PETSC_LISTENFD;
-extern int PETSC_LISTEN_CHECK;
+EXTERN int PETSC_SOCKFD;
+EXTERN int PETSC_LISTENFD;
+EXTERN int PETSC_LISTEN_CHECK;
 
 PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int *clientfd);
 PetscErrorCode PETSC_DLLEXPORT Recv(int fd, void *buf, size_t len, int flags, unsigned int *size);

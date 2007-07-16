@@ -27,6 +27,7 @@ typedef struct {
   BCType        bcType;                      // The type of boundary conditions
   PetscScalar (*exactFunc)(const double []); // The exact solution function
   ExactSolType  exactSol;                    // The discrete exact solution
+  ExactSolType  error;                       // The discrete cell-wise error
   AssemblyType  operatorAssembly;            // The type of operator assembly 
   double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
   double        lambda;                      // The parameter controlling nonlinearity
@@ -156,7 +157,7 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
 
 #undef __FUNCT__
 #define __FUNCT__ "ViewSection"
-PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[])
+PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[], bool vertexwise = true)
 {
   MPI_Comm       comm;
   SectionInt     partition;
@@ -170,6 +171,7 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
   ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
   ierr = PetscViewerFileSetName(viewer, filename);CHKERRQ(ierr);
   ierr = MeshView(mesh, viewer);CHKERRQ(ierr);
+  if (!vertexwise) {ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);}
   ierr = SectionRealView(section, viewer);CHKERRQ(ierr);
   ierr = CreatePartition(mesh, &partition);CHKERRQ(ierr);
   ierr = PetscViewerPushFormat(viewer, PETSC_VIEWER_ASCII_VTK_CELL);CHKERRQ(ierr);
@@ -244,7 +246,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
     }
     if (dist > 0.) {
       dist = sqrt(dist);
-      tmpLimit = 1./(oldLimInv + factor/(dist*dist));
+      tmpLimit = 1./(oldLimInv + factor/(dist));
       if (tmpLimit > minLimit) {
         curLimit = tmpLimit;
       } else curLimit = minLimit;
@@ -264,6 +266,8 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   newMesh->setupField(s);
   PetscFunctionReturn(0);
 }
+
+extern PetscErrorCode MeshIDBoundary(Mesh);
 
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
@@ -322,6 +326,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       std::string adjFile   = baseFilename+".lcon";
 
       ierr = MeshCreatePCICE(comm, options->dim, coordFile.c_str(), adjFile.c_str(), options->interpolate, PETSC_NULL, &mesh);CHKERRQ(ierr);
+      ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
     }
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
     if (size > 1) {
@@ -781,6 +786,7 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
     if (options->debug) {
       std::cout << "Element " << *c_iter << " error: " << elemError << std::endl;
     }
+    ierr = SectionRealUpdateAdd(options->error.section, *c_iter, &elemError);CHKERRQ(ierr);
     localError += elemError;
   }
   ierr = MPI_Allreduce(&localError, error, 1, MPI_DOUBLE, MPI_SUM, m->comm());CHKERRQ(ierr);
@@ -1400,6 +1406,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
     if (flag) {ierr = VecView(U, PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
     options->func = func;
+    ierr = DACreateGlobalVector(da, &options->error.vec);CHKERRQ(ierr);
   } else {
     Mesh mesh = (Mesh) dm;
 
@@ -1442,6 +1449,10 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     if (flag) {s->view("Exact Solution");}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
     if (flag) {ierr = ViewSection(mesh, options->exactSol.section, "exact_sol.vtk");CHKERRQ(ierr);}
+    ierr = MeshGetSectionReal(mesh, "error", &options->error.section);CHKERRQ(ierr);
+    ierr = SectionRealGetSection(options->error.section, s);CHKERRQ(ierr);
+    s->setFiberDimension(m->heightStratum(0), 1);
+    m->allocate(s);
   }
   PetscFunctionReturn(0);
 }
@@ -1606,7 +1617,10 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
     ierr = CalculateError(mesh, solution, &error, options);CHKERRQ(ierr);
     ierr = PetscPrintf(sol->comm(), "Total error: %g\n", error);CHKERRQ(ierr);
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
-    if (flag) {ierr = ViewSection(mesh, solution, "sol.vtk");CHKERRQ(ierr);}
+    if (flag) {
+      ierr = ViewSection(mesh, solution, "sol.vtk");CHKERRQ(ierr);
+      ierr = ViewSection(mesh, options->error.section, "error.vtk", false);CHKERRQ(ierr);
+    }
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
     if (flag) {sol->view("Solution");}
     ierr = PetscOptionsHasName(PETSC_NULL, "-hierarchy_vtk", &flag);CHKERRQ(ierr);
@@ -1616,7 +1630,8 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
-      double offset[3] = {1.5, 0.0, 0.0};
+      double offset[3] = {0.7, 0.0, 0.0};
+      ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyVertices(dmmg, viewer, offset);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyElements(dmmg, viewer);CHKERRQ(ierr);
@@ -1655,6 +1670,7 @@ int main(int argc, char *argv[])
       ierr = Solve(dmmg, &options);CHKERRQ(ierr);
       ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
       ierr = DestroyExactSolution(options.exactSol, &options);CHKERRQ(ierr);
+      ierr = DestroyExactSolution(options.error,    &options);CHKERRQ(ierr);
     }
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {

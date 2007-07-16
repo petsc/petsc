@@ -22,8 +22,6 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh);
 PetscErrorCode MeshSpacingFunction(Mesh mesh); //builds the spacing function for the mesh
 PetscErrorCode MeshIDBoundary(Mesh mesh); //finds the boundary of the mesh.
 
-// DMMG Top Function
-
 #ifdef PETSC_HAVE_TRIANGLE
 //SetupTriangulateio: set all the fields of the triangulateio structures to be good for initial input/output
 void SetupTriangulateio(triangulateio * input, triangulateio * output) {
@@ -344,6 +342,247 @@ PetscErrorCode MeshIDBoundary(Mesh mesh) {
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MeshCreateHierarchyMesh"
+
+ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, int curLevel) {
+
+  int curmeshsize = 0;
+  int dim = m->getDimension();
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::label_type>& boundary = m->getLabel("marker");
+  const ALE::Obj<ALE::Mesh::label_type> hdepth = m->getLabel("hdepth");
+  for (int i = curLevel; i < nLevels; i++) {
+    curmeshsize += m->getLabelStratum("hdepth", i)->size();
+  }
+  const ALE::Obj<ALE::Mesh::label_sequence>& vertices = m->depthStratum(0);
+  ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
+  ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
+  double coords[dim * curmeshsize];
+  int indices[dim * curmeshsize];
+  const double * tmpcoords;
+  int index = 0;
+    //PetscPrintf(m->comm(), "Mesh Size: %d\n", curmeshsize);
+    //MESHING AND CONTINUITY CHECKING: MAKE SURE:
+    //1. ELIMINATE COMPLETELY CONSTRAINED ELEMENTS, BEING ONES ON WHICH ALL CORNERS ARE BOUNDARY PLACES.
+    //2. MAKE SURE THAT NO INTERNAL NODES ARE IN THE BOUNDARY.  IF AN INTERNAL NODE IS IN THE BOUNDARY, PUT THEM BACK TO LEVEL '0' AND REMESH.  REPEAT UNTIL SANE (THIS REALLY SHOULDN'T HAPPEN GIVEN OUR POINT ADDITION CRITERIA).
+    //load the points and their names in this mesh into a list
+    //triangulate/tetrahedralize
+    //make into a new sieve.  place coordinates and names on the sieve.
+
+    ALE::Obj<ALE::Mesh::sieve_type> boundary_sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+    ALE::Obj<ALE::Mesh> boundary_mesh = new ALE::Mesh(m->comm(), m->debug());
+    boundary_mesh->setSieve(boundary_sieve);
+    //rebuild the boundary, then coarsen it.
+ 
+    ALE::Obj<ALE::Mesh::label_sequence> bndPoints = m->getLabelStratum("marker", 1);
+    ALE::Mesh::label_sequence::iterator b_iter = bndPoints->begin();
+    ALE::Mesh::label_sequence::iterator b_iter_end = bndPoints->end();
+
+    //PetscPrintf(m->comm(),"Copying the Boundary Mesh: %d items\n", bndPoints->size());
+    while (b_iter != b_iter_end) {
+      if (m->height(*b_iter) > 1) {
+        ALE::Obj<ALE::Mesh::sieve_type::supportSequence> bnd_support = m->getSieve()->support(*b_iter);
+        ALE::Mesh::sieve_type::supportSequence::iterator bs_iter = bnd_support->begin();
+        ALE::Mesh::sieve_type::supportSequence::iterator bs_iter_end = bnd_support->end();
+        while (bs_iter != bs_iter_end) {
+          if (m->getValue(boundary, *bs_iter) == 1) {
+            boundary_sieve->addArrow(*b_iter, *bs_iter);
+          }
+          bs_iter++;
+        }
+      }
+      b_iter++;
+    }
+    boundary_mesh->stratify();
+    //boundary_sieve->view();
+    //PetscPrintf(m->comm(),"Copied the Boundary Mesh: %d vertices, %d edges\n", boundary_mesh->depthStratum(0)->size(), boundary_mesh->depthStratum(1)->size());
+    //call triangle or tetgen: turns out the options we want on are the same
+    std::string triangleOptions = "zQep"; //(z)ero indexing, output (e)dges, Quiet
+    double * finalcoords;
+    int * connectivity;
+    int * oldpositions;
+    int nelements;
+    int nverts;
+    if (dim == 2) {
+#ifdef PETSC_HAVE_TRIANGLE
+     v_iter = vertices->begin();
+     v_iter_end = vertices->end();
+     while (v_iter != v_iter_end) {
+       if (m->getValue(boundary, *v_iter) == 1 && m->getValue(hdepth, *v_iter) < curLevel) {
+         //remove this one and reconnect its sides
+         ALE::Obj<ALE::Mesh::sieve_type::supportSequence> rem_support = boundary_sieve->support(*v_iter);
+         ALE::Mesh::sieve_type::supportSequence::iterator rs_iter = rem_support->begin();
+         ALE::Mesh::sieve_type::supportSequence::iterator rs_iter_end = rem_support->end();
+         ALE::Mesh::point_type bnd_segments [2];
+         ALE::Mesh::point_type endpts [2];
+         int bnd_index = 0;
+         while (rs_iter != rs_iter_end) {
+           bnd_segments[bnd_index] = *rs_iter;
+           ALE::Obj<ALE::Mesh::sieve_type::coneSequence> rs_cone = boundary_sieve->cone(*rs_iter);
+           ALE::Mesh::sieve_type::coneSequence::iterator rsc_iter = rs_cone->begin();
+           ALE::Mesh::sieve_type::coneSequence::iterator rsc_iter_end = rs_cone->end();
+           while (rsc_iter != rsc_iter_end) {
+             if (*rsc_iter != *v_iter) {
+               endpts[bnd_index] = *rsc_iter;
+             }
+             rsc_iter++;
+           }
+           bnd_index++;
+           rs_iter++;
+         }
+         boundary_sieve->removeBasePoint(bnd_segments[0]);
+         boundary_sieve->removeCapPoint(*v_iter);
+         boundary_sieve->addArrow(endpts[0], bnd_segments[1]);
+         boundary_sieve->stratify();
+         //PetscPrintf(m->comm(), "taking %d -%d- %d -%d- %d to %d -%d- %d\n", endpts[0], bnd_segments[0], *v_iter, bnd_segments[1], endpts[1], endpts[0], bnd_segments[1], endpts[1]);
+         //boundary_sieve->view();
+       }
+       v_iter++;
+     }
+     boundary_mesh->stratify();
+     ALE::Obj<ALE::Mesh::label_type> numbering = boundary_mesh->createLabel("numbering"); //hacked up until I can figure out what's wrong with the regular numbering.
+     //PetscPrintf(m->comm(),"Coarsened the Boundary Mesh to: %d vertices %d edges\n", boundary_mesh->depthStratum(0)->size(), boundary_mesh->depthStratum(1)->size());
+
+       //now, take the edges of this sieve and use them to construct a segmentlist.
+       //ALE::Obj<ALE::Mesh::numbering_type> bnd_vertices_numbering  = boundary_mesh->getFactory()->getNumbering(boundary_mesh, 0);
+       //ALE::Obj<ALE::Mesh::numbering_type> bnd_edges_numbering = boundary_mesh->getFactory()->getNumbering(boundary_mesh, 1);
+       
+       //copy over the boundary vertex coordinates:
+       ALE::Obj<ALE::Mesh::label_sequence> bnd_vertices = boundary_mesh->depthStratum(0);
+       ALE::Mesh::label_sequence::iterator bndv_iter = bnd_vertices->begin();
+       ALE::Mesh::label_sequence::iterator bndv_iter_end = bnd_vertices->end();
+       while (bndv_iter != bndv_iter_end) {
+         tmpcoords = coordinates->restrictPoint(*bndv_iter);
+         for (int j = 0; j < dim; j++) {
+            coords[dim*index+j] = tmpcoords[j];
+            boundary_mesh->setValue(numbering, *bndv_iter, index);
+            //PetscPrintf(m->comm(), "%d\n", index);
+         }
+         indices[index] = *bndv_iter;
+         bndv_iter++;
+         index++;
+      }
+      ALE::Obj<ALE::Mesh::label_sequence> bnd_edges = boundary_mesh->depthStratum(1);
+      int segments[2*bnd_edges->size()];
+      int nSegments = bnd_edges->size();
+      ALE::Mesh::label_sequence::iterator bnde_iter = bnd_edges->begin();
+      ALE::Mesh::label_sequence::iterator bnde_iter_end = bnd_edges->end();
+      int bnd_index = 0;
+      while (bnde_iter != bnde_iter_end) {
+        ALE::Obj<ALE::Mesh::sieve_type::coneSequence> bnde_cone = boundary_sieve->cone(*bnde_iter);
+        ALE::Mesh::sieve_type::coneSequence::iterator bndec_iter = bnde_cone->begin();
+        segments[2*bnd_index] = boundary_mesh->getValue(numbering, *bndec_iter);
+        bndec_iter++;
+        segments[2*bnd_index + 1] = boundary_mesh->getValue(numbering, *bndec_iter);
+        bnd_index++;
+        bnde_iter++;
+      }
+
+     //PetscPrintf(m->comm(),"Created the segmentlist\n");
+      for (int i = curLevel; i < nLevels; i++) {
+        //PetscPrintf(m->comm(), "level %d\n", i);
+        ALE::Obj<ALE::Mesh::label_sequence> curLevVerts = m->getLabelStratum("hdepth", i);
+        ALE::Mesh::label_sequence::iterator clv_iter = curLevVerts->begin();
+        ALE::Mesh::label_sequence::iterator clv_iter_end = curLevVerts->end();
+          while (clv_iter != clv_iter_end) {
+            if (m->getValue(boundary, *clv_iter) != 1) {
+            tmpcoords = coordinates->restrictPoint(*clv_iter);
+            for (int j = 0; j < dim; j++) {
+              coords[index*dim+j] = tmpcoords[j];
+            }
+            indices[index] = *clv_iter;
+            //PetscPrintf(m->comm(), "%d\n", index);
+            index++;
+          }
+          clv_iter++;
+        }
+      }
+     //PetscPrintf(m->comm(),"Triangulate\n");
+      //create a segmentlist to keep triangle from doing dumb things.
+      triangulateio tridata[2];
+      SetupTriangulateio(&tridata[0], &tridata[1]);
+      tridata[0].segmentlist = segments;
+      tridata[0].numberofsegments = nSegments;
+      tridata[0].pointlist = coords;
+      tridata[0].numberofpoints = curmeshsize;
+      tridata[0].pointmarkerlist = indices;
+      //triangulate
+      triangulate((char *)triangleOptions.c_str(), &tridata[0], &tridata[1], NULL);
+      finalcoords = tridata[1].pointlist;
+      connectivity = tridata[1].trianglelist;
+      oldpositions = tridata[1].pointmarkerlist;
+      nelements = tridata[1].numberoftriangles;
+      nverts = tridata[1].numberofpoints;
+#else
+      SETERRQ(PETSC_ERR_SUP, "Must have Triangle installed to use this method. Reconfigure with --download-triangle");
+#endif
+    } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
+
+      for (int i = curLevel; i < nLevels; i++) {
+        ALE::Obj<ALE::Mesh::label_sequence> curLevVerts = m->getLabelStratum("hdepth", i);
+        ALE::Mesh::label_sequence::iterator clv_iter = curLevVerts->begin();
+        ALE::Mesh::label_sequence::iterator clv_iter_end = curLevVerts->end();
+          while (clv_iter != clv_iter_end) {
+            tmpcoords = coordinates->restrictPoint(*clv_iter);
+            for (int j = 0; j < dim; j++) {
+              coords[index*dim+j] = tmpcoords[j];
+            }
+            indices[index] = *clv_iter;
+            index++;
+            clv_iter++;
+        }
+      }
+
+
+      tetgenio * tetdata = new tetgenio[2];
+      //push the points into the thing
+      tetdata[0].pointlist = coords;
+      tetdata[0].pointmarkerlist = indices;
+      tetdata[0].numberofpoints = curmeshsize;
+      //tetrahedralize
+      tetrahedralize((char *)triangleOptions.c_str(), &tetdata[0], &tetdata[1]);
+      finalcoords = tetdata[1].pointlist;
+      connectivity = tetdata[1].tetrahedronlist;
+      oldpositions = tetdata[1].pointmarkerlist;
+      nelements = tetdata[1].numberoftetrahedra;
+      nverts = tetdata[1].numberofpoints;
+#else
+      SETERRQ(PETSC_ERR_SUP, "Must have TetGen installed to use this method. Reconfigure with --download-tetgen");
+#endif
+    }
+    //make it into a mesh;
+    ALE::Obj<ALE::Mesh> newmesh = new ALE::Mesh(m->comm(), m->debug());
+    newmesh->setDimension(dim);
+    ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+    ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, nelements, connectivity, nverts, true, dim+1, -1, newmesh->getArrowSection("orientation"));
+    newmesh->setSieve(sieve);
+    newmesh->stratify();
+    //UPDATE THE MARKER AND FINEMESH VERTEX NUMBERING LABELS
+    ALE::Obj<ALE::Mesh::label_type> boundary_new = newmesh->createLabel("marker");
+    ALE::Obj<ALE::Mesh::label_type> fine_corresponds = newmesh->createLabel("fine");
+    ALE::Obj<ALE::Mesh::label_sequence> newverts = newmesh->depthStratum(0);
+    ALE::Mesh::label_sequence::iterator nv_iter = newverts->begin();
+    ALE::Mesh::label_sequence::iterator nv_iter_end = newverts->end();
+    while (nv_iter != nv_iter_end) {
+      newmesh->setValue(fine_corresponds, *nv_iter, oldpositions[*nv_iter - nelements]);
+      if(m->getValue(boundary, oldpositions[*nv_iter - nelements]) == 1) newmesh->setValue(boundary_new, *nv_iter, 1);
+      nv_iter++;
+    }
+    ALE::Obj<ALE::Mesh::real_section_type> s = newmesh->getRealSection("default");
+    const Obj<std::set<std::string> >& discs = m->getDiscretizations();
+
+    //set up the default section
+    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
+      newmesh->setDiscretization(*f_iter, m->getDiscretization(*f_iter));
+    }
+    newmesh->setupField(s);
+
+    ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
+    return newmesh;
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MeshCreateHierarchyLabel"
 
 //MeshCreateHierarchyLabel: Create a label that tells what the highest level a given vertex appears in where 0 is fine and n is coarsest.
@@ -382,7 +621,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   ALE::Mesh::label_sequence::iterator bv_iter_end = boundaryvertices->end();
  // PetscPrintf(m->comm(), "NUMBER OF BOUNDARY POINTS: %d\n", boundaryvertices->size());
   while (bv_iter != bv_iter_end) {
-    if (m->depth(*bv_iter) == 0) if (Curvature(m, *bv_iter) > 0.01) {
+    if (m->depth(*bv_iter) == 0) if (Curvature(m, *bv_iter) > 0.1) {
       m->setValue(hdepth, *bv_iter, nLevels-1);
     }
     bv_iter++;
@@ -392,7 +631,6 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   ALE::Mesh::point_type bvdom;
   std::list<ALE::Mesh::point_type> complist;
   std::list<ALE::Mesh::point_type> domlist; //stores the points dominated by the current point.
-  int curmeshsize = 0; //the size of the current mesh
   for (int curLevel = nLevels-1; curLevel > 0; curLevel--) {
     double curBeta = pow(beta, curLevel);
    //OUR MODUS OPERANDI:
@@ -552,7 +790,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           } else if ((dist < comparison_const*(bvSpace+curSpace)) && (curpt_bound == 1)) {
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*(bvSpace+curSpace)) { 
+          } else if (dist < comparison_const*(3.*curSpace)) { 
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
@@ -603,107 +841,10 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
       bv_iter++;
     }
   //  PetscPrintf(m->comm(), "Included %d new points in level %d\n", m->getLabelStratum("hdepth", curLevel)->size(), curLevel);
-    curmeshsize += m->getLabelStratum("hdepth", curLevel)->size();
-    //MESHING AND CONTINUITY CHECKING: MAKE SURE:
-    //1. ELIMINATE COMPLETELY CONSTRAINED ELEMENTS, BEING ONES ON WHICH ALL CORNERS ARE BOUNDARY PLACES.
-    //2. MAKE SURE THAT NO INTERNAL NODES ARE IN THE BOUNDARY.  IF AN INTERNAL NODE IS IN THE BOUNDARY, PUT THEM BACK TO LEVEL '0' AND REMESH.  REPEAT UNTIL SANE (THIS REALLY SHOULDN'T HAPPEN GIVEN OUR POINT ADDITION CRITERIA).
-    //load the points and their names in this mesh into a list
-    //triangulate/tetrahedralize
-    //make into a new sieve.  place coordinates and names on the sieve.
-
-
-
-    double coords[dim * curmeshsize];
-    int indices[dim * curmeshsize];
-    const double * tmpcoords;
-    int index = 0;
-    for (int i = curLevel; i < nLevels; i++) {
-      ALE::Obj<ALE::Mesh::label_sequence> curLevVerts = m->getLabelStratum("hdepth", i);
-      ALE::Mesh::label_sequence::iterator clv_iter = curLevVerts->begin();
-      ALE::Mesh::label_sequence::iterator clv_iter_end = curLevVerts->end();
-      while (clv_iter != clv_iter_end) {
-        tmpcoords = coordinates->restrictPoint(*clv_iter);
-        for (int j = 0; j < dim; j++) {
-          coords[index*dim+j] = tmpcoords[j];
-        }
-        indices[index] = *clv_iter;
-        index++;
-        clv_iter++;
-      }
-    }
-    //call triangle or tetgen: turns out the options we want on are the same
-    std::string triangleOptions = "zQe"; //(z)ero indexing, output (e)dges, Quiet
-    double * finalcoords;
-    int * connectivity;
-    int * oldpositions;
-    int nelements;
-    int nverts;
-    if (dim == 2) {
-#ifdef PETSC_HAVE_TRIANGLE
-      //create a segmentlist to keep triangle from doing dumb things.
-      triangulateio tridata[2];
-      SetupTriangulateio(&tridata[0], &tridata[1]);
-      tridata[0].pointlist = coords;
-      tridata[0].numberofpoints = curmeshsize;
-      tridata[0].pointmarkerlist = indices;
-      //triangulate
-      triangulate((char *)triangleOptions.c_str(), &tridata[0], &tridata[1], NULL);
-      finalcoords = tridata[1].pointlist;
-      connectivity = tridata[1].trianglelist;
-      oldpositions = tridata[1].pointmarkerlist;
-      nelements = tridata[1].numberoftriangles;
-      nverts = tridata[1].numberofpoints;
-#else
-      SETERRQ(PETSC_ERR_SUP, "Must have Triangle installed to use this method. Reconfigure with --download-triangle");
-#endif
-    } else if (dim == 3) {
-#ifdef PETSC_HAVE_TETGEN
-      tetgenio * tetdata = new tetgenio[2];
-      //push the points into the thing
-      tetdata[0].pointlist = coords;
-      tetdata[0].pointmarkerlist = indices;
-      tetdata[0].numberofpoints = curmeshsize;
-      //tetrahedralize
-      tetrahedralize((char *)triangleOptions.c_str(), &tetdata[0], &tetdata[1]);
-      finalcoords = tetdata[1].pointlist;
-      connectivity = tetdata[1].tetrahedronlist;
-      oldpositions = tetdata[1].pointmarkerlist;
-      nelements = tetdata[1].numberoftetrahedra;
-      nverts = tetdata[1].numberofpoints;
-#else
-      SETERRQ(PETSC_ERR_SUP, "Must have TetGen installed to use this method. Reconfigure with --download-tetgen");
-#endif
-    }
-    //make it into a mesh;
-    ALE::Obj<ALE::Mesh> newmesh = new ALE::Mesh(m->comm(), m->debug());
-    newmesh->setDimension(dim);
-    ALE::Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
-    ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, nelements, connectivity, nverts, true, dim+1, -1, newmesh->getArrowSection("orientation"));
-    newmesh->setSieve(sieve);
-    newmesh->stratify();
-    //UPDATE THE MARKER AND FINEMESH VERTEX NUMBERING LABELS
-    ALE::Obj<ALE::Mesh::label_type> boundary_new = newmesh->createLabel("marker");
-    ALE::Obj<ALE::Mesh::label_type> fine_corresponds = newmesh->createLabel("fine");
-    ALE::Obj<ALE::Mesh::label_sequence> newverts = newmesh->depthStratum(0);
+    ALE::Obj<ALE::Mesh> newmesh = MeshCreateHierarchyMesh(m, nLevels, curLevel);
     if (info)PetscPrintf(m->comm(), "%d: %d vertices, %d elements\n", curLevel, newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size());
-    ALE::Mesh::label_sequence::iterator nv_iter = newverts->begin();
-    ALE::Mesh::label_sequence::iterator nv_iter_end = newverts->end();
-    while (nv_iter != nv_iter_end) {
-      newmesh->setValue(fine_corresponds, *nv_iter, oldpositions[*nv_iter - nelements]);
-      if(m->getValue(boundary, oldpositions[*nv_iter - nelements]) == 1) newmesh->setValue(boundary_new, *nv_iter, 1);
-      nv_iter++;
-    }
-    ALE::Obj<ALE::Mesh::real_section_type> s = newmesh->getRealSection("default");
-    const Obj<std::set<std::string> >& discs = m->getDiscretizations();
-
-    //set up the default section
-    for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
-      newmesh->setDiscretization(*f_iter, m->getDiscretization(*f_iter));
-    }
-    newmesh->setupField(s);
 
     MeshSetMesh(outmeshes[curLevel-1], newmesh);
-    ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
 /*    ierr = SectionRealCreate(newmesh->comm(), &section);CHKERRQ(ierr);
     ierr = SectionRealGetBundle(section, newmesh);CHKERRQ(ierr);
     ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
@@ -829,6 +970,8 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
 */ 
  PetscFunctionReturn(0);
 }
+
+
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateHierarchyLabel_NEW"
@@ -1066,6 +1209,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
   ALE::Obj<ALE::Mesh> fm, cm;
   PetscErrorCode ierr;
   PetscFunctionBegin;
+  //int maxSearches = 30;
   ierr = MeshGetMesh(finemesh, fm);CHKERRQ(ierr);
   ierr = MeshGetMesh(coarsemesh, cm);CHKERRQ(ierr);
 
