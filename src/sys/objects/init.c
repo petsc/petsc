@@ -395,9 +395,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     extern int PETSC_LISTENFD;
     extern int PETSC_SOCKFD;
     extern int PETSC_LISTEN_CHECK;
-    PETSC_SOCKFD = PetscOpenSocket(hostname, remoteport);
+    ierr=PetscOpenSocket(hostname, remoteport, &PETSC_SOCKFD);CHKERRQ(ierr);
     PETSC_LISTEN_CHECK = 1; 
-    PETSC_LISTENFD = PetscSocketListen(hostname, listenport);
+    ierr=PetscSocketListen(hostname, listenport, &PETSC_LISTENFD);CHKERRQ(ierr);
     PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
     fprintf(PETSC_STDOUT, "<<<start>>>");
   }
