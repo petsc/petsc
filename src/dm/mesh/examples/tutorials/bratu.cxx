@@ -1359,19 +1359,20 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   } else {
     Mesh           mesh = (Mesh) dm;
     Obj<ALE::Mesh> m;
+    int            numBC = (options->bcType == DIRICHLET) ? 1 : 0;
     int            markers[1]  = {1};
     double       (*funcs[1])(const double *coords) = {options->exactFunc};
     PetscErrorCode ierr;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     if (options->dim == 1) {
-      ierr = CreateProblem_gen_0(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_0(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_0;
     } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_1(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_1(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_1;
     } else if (options->dim == 3) {
-      ierr = CreateProblem_gen_2(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_2(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_2;
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
