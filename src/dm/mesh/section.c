@@ -178,8 +178,11 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealGetSection(SectionReal section, ALE:
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SectionRealSetSection(SectionReal section, const ALE::Obj<ALE::Mesh::real_section_type>& s)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  if (!s.isNull()) {ierr = PetscObjectSetName((PetscObject) section, s->getName().c_str());CHKERRQ(ierr);}
   section->s = s;
   PetscFunctionReturn(0);
 }
@@ -530,7 +533,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealCreateLocalVector(SectionReal sectio
 
   PetscFunctionBegin;
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->sizeWithBC(), s->restrict(), localVec);CHKERRQ(ierr);
+  ierr = VecCreateSeqWithArray(PETSC_COMM_SELF, s->getStorageSize(), s->restrict(), localVec);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -562,6 +565,25 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   ierr = SectionRealCreateLocalVector(section, &localVec);CHKERRQ(ierr);
   ierr = MeshGetGlobalScatter(mesh, &scatter);CHKERRQ(ierr);
+  if (mode == SCATTER_FORWARD) {
+    ierr = VecScatterBegin(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
+  } else {
+    ierr = VecScatterBegin(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
+    ierr = VecScatterEnd(scatter, vec, localVec, INSERT_VALUES, mode);CHKERRQ(ierr);
+  }
+  ierr = VecDestroy(localVec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+PetscErrorCode PETSCDM_DLLEXPORT SectionRealToVec(SectionReal section, Mesh mesh, VecScatter scatter, ScatterMode mode, Vec vec)
+{
+  Vec            localVec;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
+  ierr = SectionRealCreateLocalVector(section, &localVec);CHKERRQ(ierr);
   if (mode == SCATTER_FORWARD) {
     ierr = VecScatterBegin(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
     ierr = VecScatterEnd(scatter, localVec, vec, INSERT_VALUES, mode);CHKERRQ(ierr);
@@ -758,6 +780,45 @@ PetscErrorCode MeshGetCellSectionReal(Mesh mesh, PetscInt fiberDim, SectionReal 
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshCreateGlobalRealVector"
+/*@C
+    MeshCreateGlobalRealVector - Creates a vector of the correct size to be gathered into 
+        by the mesh.
+
+    Collective on Mesh
+
+    Input Parameters:
++    mesh - the mesh object
+-    section - The SectionReal
+
+    Output Parameters:
+.   gvec - the global vector
+
+    Level: advanced
+
+.seealso MeshDestroy(), MeshCreate(), MeshCreateGlobalVector()
+
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh mesh, SectionReal section, Vec *gvec)
+{
+  ALE::Obj<ALE::Mesh> m;
+  ALE::Obj<ALE::Mesh::real_section_type> s;
+  const char    *name;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) section, &name);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::order_type>& order = m->getFactory()->getGlobalOrder(m, name, s);
+
+  ierr = VecCreate(m->comm(), gvec);CHKERRQ(ierr);
+  ierr = VecSetSizes(*gvec, order->getLocalSize(), order->getGlobalSize());CHKERRQ(ierr);
+  ierr = VecSetFromOptions(*gvec);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SectionIntView_Sieve"
 PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
 {
@@ -890,8 +951,11 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntGetSection(SectionInt section, ALE::O
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT SectionIntSetSection(SectionInt section, const ALE::Obj<ALE::Mesh::int_section_type>& s)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
+  if (!s.isNull()) {ierr = PetscObjectSetName((PetscObject) section, s->getName().c_str());CHKERRQ(ierr);}
   section->s = s;
   PetscFunctionReturn(0);
 }

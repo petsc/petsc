@@ -78,7 +78,7 @@ bratu: bratu_quadrature.h bratu.o chkopts
 	${RM} -f bratu.o
 
 subduction: subduction_quadrature.h subduction.o chkopts
-	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
+	-${CLINKER} -o subduction subduction.o ${PETSC_SNES_LIB}
 	${RM} -f subduction.o
 
 dolfin: dolfin.o chkopts

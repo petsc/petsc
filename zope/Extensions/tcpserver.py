@@ -3,7 +3,10 @@ from socket import *
 from urllib import *
 import string
 from os import fdopen
+import threading
+from thread import start_new_thread
 from re import search
+
 # Strings to return to the Zope webpage
 global gs
 global glast
@@ -87,7 +90,15 @@ def runserver():
 	gs = glast = info = error = startmsg
 	serv = SocketServer.ThreadingTCPServer(("", 9999), RecHandler)
 	sockfd = serv.fileno()
-	serv.serve_forever()
+	thread = threading.Thread(target=serv.serve_forever)
+	thread.setDaemon(1)
+	thread.start()
+	return "TCP server started"
+	#serv.serve_forever()
+
+def quickreturn(var):
+	var = 2;
+	return "new thread started"
 
 def writefd():
 	global sockfd

@@ -3,15 +3,12 @@
 
 
 
-#include "src/dm/mesh/sieve/Hierarchy.hh"
-#include <petscda.h>
-#include <petscmesh.h>
-#include "private/meshimpl.h"
+#include <petscmesh.hh>
+#include <petscmesh_viewers.hh>
+#include <petscmesh_formats.hh>
 #include <petscdmmg.h>
-#include "petscviewer.h"
-#include "src/dm/mesh/meshpcice.h"
-#include "src/dm/mesh/meshpylith.h"
-#include "src/dm/mesh/meshvtk.h"
+#include "Generator.hh"
+#include "Hierarchy.hh"
 
 using ALE::Obj;
 
@@ -38,8 +35,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug        = 0;
   options->useZeroBase  = PETSC_TRUE;
   ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
-  options->levels       = 6;
-  options->coarseFactor = 1.41;
+  options->levels       = 3;
+  options->coarseFactor = 1.45;
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
 
@@ -130,18 +127,18 @@ int main(int argc, char *argv[])
     MeshSetMesh(mesh_set[0], mesh);
     ierr = MeshSpacingFunction(mesh_set[0]);
     ierr = MeshIDBoundary(mesh_set[0]);
-    MeshCreateHierarchyLabel_NEW(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
+    MeshCreateHierarchyLabel(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
     //ierr = MeshCoarsenMesh(m, pow(options.coarseFactor, 2), &n);
     //ierr = MeshGetMesh(n, mesh);
     //ierr = MeshLocateInMesh(m, n);
    // Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(mesh->comm(), 0);
    // mesh->getTopology()->setPatch(options.levels, sieve);
    // mesh->getTopology()->stratify();
-//    char vtkfilename[128];
- //   for (int i = 0; i < options.levels; i++) {
-//      sprintf(vtkfilename, "testMesh%d.vtk", i);
-//      ierr = OutputVTK(mesh_set[i], &options, vtkfilename);CHKERRQ(ierr);
- //   }
+    char vtkfilename[128];
+    for (int i = 0; i < options.levels; i++) {
+      sprintf(vtkfilename, "testMesh%d.vtk", i);
+      ierr = OutputVTK(mesh_set[i], &options, vtkfilename);CHKERRQ(ierr);
+    }
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }
