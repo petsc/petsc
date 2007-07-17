@@ -311,7 +311,7 @@ PetscErrorCode MeshIDBoundary(Mesh mesh) {
       if (support->size() == 1) {
         m->setValue(boundary, *f_iter, 1);
         m->setValue(boundary, *support->begin(), 2);
-        ALE::Obj<ALE::Mesh::sieve_type::coneArray> boundclose = ALE::Mesh::sieve_alg_type::closure(m, *f_iter);
+        ALE::Obj<ALE::Mesh::sieve_type::coneArray> boundclose = ALE::SieveAlg<ALE::Mesh>::closure(m, *f_iter);
         ALE::Mesh::sieve_type::coneArray::iterator bc_iter = boundclose->begin();
         ALE::Mesh::sieve_type::coneArray::iterator bc_iter_end = boundclose->end();
         while (bc_iter != bc_iter_end) {

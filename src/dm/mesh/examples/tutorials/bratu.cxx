@@ -302,21 +302,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
       ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
       if (options->dim == 2) {
-        double lower[2] = {0.0, 0.0};
-        double upper[2] = {1.0, 1.0};
+        double lower[2]  = {0.0, 0.0};
+        double upper[2]  = {1.0, 1.0};
         double offset[2] = {0.5, 0.5};
-        int    edges[2] = {2, 2};
+        int    edges[2]  = {2, 2};
         Obj<ALE::Mesh> mB;
+
         if (options->circularMesh) {
           double arclen = 1.;
           if (options->reentrantMesh) {
             arclen = .9;
           }
           mB = ALE::MeshBuilder::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
-      } else if (options->reentrantMesh) {
+        } else if (options->reentrantMesh) {
           double reentrantlower[2] = {-1., -1.};
           mB = ALE::MeshBuilder::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
-        } else mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+        } else {
+          mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+        }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else if (options->dim == 3) {
         double lower[3] = {0.0, 0.0, 0.0};
