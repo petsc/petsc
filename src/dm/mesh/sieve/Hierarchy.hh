@@ -591,6 +591,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   ALE::Obj<ALE::Mesh> m;
   PetscFunctionBegin;
   PetscTruth info;
+  int overallComparisons = 0;
   ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_coarsen_info", &info);CHKERRQ(ierr);
   ierr = MeshGetMesh(finemesh, m);CHKERRQ(ierr);
   int dim = m->getDimension();
@@ -644,6 +645,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     ALE::Obj<ALE::Mesh::sieve_type::coneSet> neighbors = m->getSieve()->cone(m->getSieve()->support(*bv_iter));
     ALE::Mesh::sieve_type::coneSet::iterator n_iter = neighbors->begin();
     ALE::Mesh::sieve_type::coneSet::iterator n_iter_end = neighbors->end();
+    int nComparisonsTotal = 0;
     while (bv_iter != bv_iter_end) {
       bvdom = m->getValue(dompoint, *bv_iter);
       bool skip = false;
@@ -672,6 +674,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
         }
 
         while ((!complist.empty()) && canAdd) {
+          nComparisonsTotal++;
           ALE::Mesh::point_type curpt = *complist.begin();
           complist.pop_front();
           dist = 0.;
@@ -770,6 +773,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
            complist.push_front(bvdom);
         }
         while ((!complist.empty()) && canAdd) {
+          nComparisonsTotal++;
           ALE::Mesh::point_type curpt = *complist.begin();
           complist.pop_front();
           //PetscPrintf(m->comm(), "Comparing %d to %d\n", *bv_iter, curpt);
@@ -842,7 +846,8 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     }
   //  PetscPrintf(m->comm(), "Included %d new points in level %d\n", m->getLabelStratum("hdepth", curLevel)->size(), curLevel);
     ALE::Obj<ALE::Mesh> newmesh = MeshCreateHierarchyMesh(m, nLevels, curLevel);
-    if (info)PetscPrintf(m->comm(), "%d: %d vertices, %d elements\n", curLevel, newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size());
+    if (info)PetscPrintf(m->comm(), "%d: %d vertices, %d elements in %d comparisons\n", curLevel, newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size(), nComparisonsTotal);
+    overallComparisons += nComparisonsTotal; //yeah yeah horrible names
 
     MeshSetMesh(outmeshes[curLevel-1], newmesh);
 /*    ierr = SectionRealCreate(newmesh->comm(), &section);CHKERRQ(ierr);
@@ -852,6 +857,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     ierr = MeshSetSectionReal(outmeshes[curLevel-1], section);CHKERRQ(ierr);
     ierr = SectionRealDestroy(section);*/
   } //end of level for
+  if (info)PetscPrintf(m->comm(), "Comparisons per Point: %f\n", (float)overallComparisons/vertices->size());
   //std::list<ALE::Mesh::point_type> tricomplist;
 /*  for (int curLevel = 0; curLevel < nLevels-1; curLevel++) {
     if (info) PetscPrintf(m->comm(), "Building the prolongation section from level %d to level %d\n", curLevel, curLevel+1);

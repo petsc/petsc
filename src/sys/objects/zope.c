@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
     unsigned int len2 = 0;
     int newfd;
     typedef struct sockaddr SA;
-    socklen_t sin_size;
+    socklen_t sin_size, sout_size;
     PetscErrorCode ierr;
     
     PetscFunctionBegin;
@@ -99,7 +99,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
       while(PETSC_LISTEN_CHECK){
 	sin_size = sizeof(struct sockaddr_in);
 	//non-blocking listen
-        if((newfd = accept(*listenfd, (SA*)&sin, &len)) < 0){
+        if((newfd = accept(*listenfd, (SA*)&sin, &sout_size)) < 0){
 	  if(errno == EAGAIN) break;
 	  SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not complete accept");}
 	//If a connection is found, fork off process to handle the connection
