@@ -9,5 +9,14 @@ export PYTHONPATH INSTANCE_HOME SOFTWARE_HOME
 
 ZOPE_RUN="$SOFTWARE_HOME/Zope2/Startup/run.py"
 
-exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@" 
+exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@"   &
+sleep 2
+
+wget "http://localhost:9673/PETSc/tcpserver"  >& /dev/null
+if [ "$?" != 0 ]; then
+  curl "http://localhost:9673/PETSc/tcpserver" >& /dev/null
+  if [ "$?" != 0 ]; then
+    echo "Point your browser to http://localhost:9673/PETSc/tcpserver to start the server"
+  fi
+fi
 
