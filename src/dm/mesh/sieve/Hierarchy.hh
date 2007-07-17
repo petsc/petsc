@@ -691,7 +691,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           if ((dist < comparison_const*(bvSpace + curSpace))&&(curpt_depth > 0)) { //collision with an already added node
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*(bvSpace + maxspace)) { 
+          } else if (dist < comparison_const*curBeta*(bvSpace + curSpace)) {
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
@@ -794,7 +794,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           } else if ((dist < comparison_const*(bvSpace+curSpace)) && (curpt_bound == 1)) {
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*(3.*curSpace)) { 
+          } else if (dist < comparison_const*curBeta*(bvSpace + curSpace)) { 
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
@@ -1321,7 +1321,7 @@ PetscErrorCode MeshLocateInMesh(Mesh finemesh, Mesh coarsemesh) {
             }
             if (!locationDiscovered) { 
               fm->setValue(prolongation, curVert, -2); //put it back in the list of orphans.
-              PetscPrintf(fm->comm(), "Point %d (%f, %f) not located.\n",  curVert, nvCoords[0], nvCoords[1]);
+              if(fm->debug())PetscPrintf(fm->comm(), "Point %d (%f, %f) not located.\n",  curVert, nvCoords[0], nvCoords[1]);
             }
             eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.
             //unset the traversed element list

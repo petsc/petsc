@@ -2,10 +2,11 @@ import SocketServer
 from socket import *
 from urllib import *
 import string
+import os
+import fcntl
 from os import fdopen
-import threading
-from thread import start_new_thread
 from re import search
+import threading
 
 # Strings to return to the Zope webpage
 global gs
@@ -48,7 +49,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			if joinline.rfind("<<<end>>>") >= 0:
 				status = 0
 				joinline = joinline.lstrip("<<<end>>>")
-			if infocheckRE :
+			if infocheckRE:
 				if infocheck:
 					if info == startmsg:
 						info = ""
@@ -68,12 +69,32 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			if not string.strip(line):
 				#Ending tag for a communication
 				end = "\n========== END ==========\n\n"
+				msgdelim = "|MSGDELIM|"
+				end += msgdelim
 				gs += end
 				glast += end
+				petscdir = os.environ["PETSC_DIR"]
+				file = petscdir + "/zope/Extensions/bufupdate"
+				f = open(file, "a");
+				fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 				if not infocheck:
 					info += end
+					delimstring = "2~/~/~"
+					writestring = delimstring+""+info
+					f.write(writestring)
+					info = ""
 				if not errorcheck:
 					error += end
+					delimstring = "3~/~/~"
+					writestring = delimstring+""+error
+					f.write(writestring)
+					error = ""										            
+				delimstring = "1~/~/~"
+				writestring = delimstring+""+gs
+				f.write(writestring)
+				gs = ""
+				fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+				f.close()
 				break
 
 #Start the server and intilize the global variables
@@ -94,11 +115,6 @@ def runserver():
 	thread.setDaemon(1)
 	thread.start()
 	return "TCP server started"
-	#serv.serve_forever()
-
-def quickreturn(var):
-	var = 2;
-	return "new thread started"
 
 def writefd():
 	global sockfd
@@ -126,16 +142,21 @@ def getstatus():
 	else: 
 		return "Not Active"
 
-def cleargs():
-	global gs
-	gs = startmsg
-	global glast
-	glast = startmsg
-	global info
-	info = startmsg
-	global error
-	error = startmsg
-	return
+def update():
+	petscdir = os.environ["PETSC_DIR"]
+	file = petscdir+"/zope/Extensions/bufupdate"
+	f = open(file, "r")
+	fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+	out = f.read()
+	fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+	f.close()
+	return out
+
+def clear():
+	petscdir = os.environ["PETSC_DIR"]
+	file = petscdir+"/zope/Extensions/bufupdate"
+	f = open(file, "w+")
+	f.close()
 
 if __name__ == '__main__':
 	runserver()
