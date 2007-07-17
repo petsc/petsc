@@ -394,7 +394,7 @@ class Configure(config.base.Configure):
               except RuntimeError, e:
                 self.logPrint('GNU 64-bit C compilation not working: '+str(e))
               self.popLanguage()
-            elif self.vendor == 'solaris' or Configure.isSun(self.C):
+            elif self.vendor == 'solaris' or Configure.isSun(self.CC):
               self.pushLanguage('C')
               try:
                 self.addCompilerFlag('-xarch=v9')
@@ -402,7 +402,7 @@ class Configure(config.base.Configure):
               except RuntimeError, e:
                 self.logPrint('Solaris 64-bit C compilation not working: '+str(e))
               self.popLanguage()
-            elif self.vendor == 'ibm' or Configure.isIBM(self.C):
+            elif self.vendor == 'ibm' or Configure.isIBM(self.CC):
               self.pushLanguage('C')
               try:
                 self.addCompilerFlag('-q64')
@@ -552,21 +552,21 @@ class Configure(config.base.Configure):
           if self.getExecutable(compiler, resultName = 'CXX'):
             self.checkCompiler('Cxx')
             if self.framework.argDB['with-64-bit-pointers']:
-              if Configure.isGNU(self.CC):
+              if Configure.isGNU(self.CXX):
                 self.pushLanguage('C++')
                 try:
                   self.addCompilerFlag('-m64')
                 except RuntimeError, e:
                   self.logPrint('GNU 64-bit C++ compilation not working: '+str(e))
                 self.popLanguage()
-              elif self.vendor == 'solaris' or Configure.isSun(self.CC):
+              elif self.vendor == 'solaris' or Configure.isSun(self.CXX):
                 self.pushLanguage('C++')
                 try:
                   self.addCompilerFlag('-xarch=v9')
                 except RuntimeError, e:
                   self.logPrint('Solaris 64-bit C++ compilation not working: '+str(e))
                 self.popLanguage()
-              elif self.vendor == 'ibm' or Configure.isIBM(self.CC):
+              elif self.vendor == 'ibm' or Configure.isIBM(self.CXX):
                 self.pushLanguage('C++')
                 try:
                   self.addCompilerFlag('-q64')
