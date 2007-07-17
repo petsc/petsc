@@ -1700,6 +1700,63 @@ namespace ALE {
       return mesh;
     }
 
+    #undef __FUNCT__
+    #define __FUNCT__ "createCircularReentrantBoundary"
+    /*
+      Circular boundary with reentrant singularity:
+
+       ___--1
+      |     |
+      |     |
+      |     |
+      -     0-----n
+       -          |
+        -         |
+         -___  _|
+             --
+    */
+    static Obj<ALE::Mesh> createCircularReentrantBoundary(const MPI_Comm comm, const int segments, const double radius, const double arc_percent, const int debug = 0) {
+      Obj<Mesh> mesh        = new Mesh(comm, 1, debug);
+      int       numVertices = segments+2;
+      int       numEdges    = numVertices;
+      double   *coords      = new double[numVertices*2];
+      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+
+      mesh->setSieve(sieve);
+      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        /* Create sieve and ordering */
+
+        int startvertex = 1;
+        if (arc_percent <= 1.) {
+          coords[0] = 0.;
+          coords[1] = 0.;
+        } else {
+          numVertices = segments;
+          startvertex = 0;
+        }
+
+        for (int b = 0; b < numVertices; b++) {
+          sieve->addArrow(numEdges+b, b);
+          sieve->addArrow(numEdges+b, (b+1)%numVertices);
+          mesh->setValue(markers, b, 1);
+          mesh->setValue(markers, b+numVertices, 1);
+        }
+
+        double anglestep = arc_percent*2.*3.14159265/((float)segments);
+
+        for (int i = startvertex; i < numVertices; i++) {
+          coords[2*i] = radius * sin(anglestep*(i-startvertex));
+          coords[2*i+1] = radius*cos(anglestep*(i-startvertex));
+        }
+        mesh->stratify();
+      }
+      delete [] vertices;
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    }
+
 
     #undef __FUNCT__
     #define __FUNCT__ "createCubeBoundary"
