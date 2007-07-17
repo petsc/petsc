@@ -485,6 +485,8 @@ namespace ALE {
     template<typename Section_>
     const typename Section_::value_type *restrict(const Obj<Section_>& section, const point_type& p) {
       const int size = this->sizeWithBC(section, p);
+      //static typename Section_::value_type array[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
+      //return array;
       return this->restrict(section, p, section->getRawArray(size), size);
     };
     template<typename Section_>
