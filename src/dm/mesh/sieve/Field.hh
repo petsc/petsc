@@ -278,6 +278,7 @@ namespace ALE {
   protected:
     Obj<atlas_type> _atlas;
     values_type     _array;
+    fiber_type      _emptyValue;
   public:
     UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       this->_atlas = new atlas_type(comm, fiberDim, 0, debug);
@@ -385,6 +386,7 @@ namespace ALE {
     };
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) {
+      if (this->_array.find(p) == this->_array.end()) return this->_emptyValue.v;
       return this->_array[p].v;
     };
     // Update only the values associated to this point, not its closure
@@ -867,6 +869,7 @@ namespace ALE {
     };
   public:
     value_type *getRawArray(const int size) {
+      // Put in a sentinel value that deallocates the array
       static value_type *array   = NULL;
       static int         maxSize = 0;
 

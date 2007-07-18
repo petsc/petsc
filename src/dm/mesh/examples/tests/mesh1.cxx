@@ -52,10 +52,8 @@ PetscErrorCode PrintMatrix(MPI_Comm comm, int rank, const std::string& name, con
 PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>& coordinates, Options *options)
 {
   const Obj<ALE::Mesh::label_sequence>&     cells  = mesh->heightStratum(0);
-  if (options->test > 2) {
   const ALE::Mesh::label_sequence::iterator cBegin = cells->begin();
   const ALE::Mesh::label_sequence::iterator cEnd   = cells->end();
-  if (options->test > 3) {
   const int                                 dim    = mesh->getDimension();
   const MPI_Comm                            comm   = mesh->comm();
   const int                                 rank   = mesh->commRank();
@@ -67,7 +65,6 @@ PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>&
   PetscErrorCode            ierr;
 
   PetscFunctionBegin;
-  if (options->test > 4) {
   for(ALE::Mesh::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
     const sieve_type::point_type& e = *c_iter;
 
@@ -75,21 +72,16 @@ PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>&
       const std::string elem = ALE::Test::MeshProcessor::printElement(e, dim, mesh->restrict(coordinates, e), rank);
       ierr = PetscSynchronizedPrintf(comm, "%s", elem.c_str());CHKERRQ(ierr);
     }
-    if (options->test > 5) {
-      mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
-      if (debug) {
-        ierr = PrintMatrix(comm, rank, "J",    dim, dim, J);CHKERRQ(ierr);
-        ierr = PrintMatrix(comm, rank, "invJ", dim, dim, invJ);CHKERRQ(ierr);
-      }
-      if (detJ < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
+    mesh->computeElementGeometry(coordinates, e, v0, J, invJ, detJ);
+    if (debug) {
+      ierr = PrintMatrix(comm, rank, "J",    dim, dim, J);CHKERRQ(ierr);
+      ierr = PrintMatrix(comm, rank, "invJ", dim, dim, invJ);CHKERRQ(ierr);
     }
-  }
+    if (detJ < 0) {SETERRQ(PETSC_ERR_ARG_WRONG, "Negative Jacobian determinant");}
   }
   delete [] v0;
   delete [] J;
   delete [] invJ;
-  }
-  }
   PetscFunctionReturn(0);
 }
 
