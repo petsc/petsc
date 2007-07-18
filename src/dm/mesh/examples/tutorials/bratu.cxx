@@ -32,6 +32,7 @@ typedef struct {
   AssemblyType  operatorAssembly;            // The type of operator assembly 
   double (*integrate)(const double *, const double *, const int, double (*)(const double *)); // Basis functional application
   double        lambda;                      // The parameter controlling nonlinearity
+  double        reentrant_angle;              // The angle for the reentrant corner.
 } Options;
 
 #include "bratu_quadrature.h"
@@ -49,6 +50,23 @@ PetscScalar constant(const double x[]) {
 PetscScalar nonlinear_2d(const double x[]) {
   return -4.0 - lambda*PetscExpScalar(x[0]*x[0] + x[1]*x[1]);
 }
+
+PetscScalar singularity_2d(const double x[]) {
+  return 0.;
+}
+
+PetscScalar singularity_exact_2d(const double x[]) {
+  double r = sqrt(x[0]*x[0] + x[1]*x[1]);
+  double theta;
+  if (r == 0.) {
+    return 0.;
+  } else theta = asin(x[1]/r);
+  if (x[0] < 0) {
+    theta = 2*3.14159265358979323846264338327950288419716939937510582097494459230 - theta;
+  }
+  return pow(r, 2./3.)*sin((2./3.)*theta);
+}
+
 
 PetscScalar linear_2d(const double x[]) {
   return -6.0*(x[0] - 0.5) - 6.0*(x[1] - 0.5);
@@ -223,7 +241,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
   ierr = MeshCreate(comm, refinedMesh);CHKERRQ(ierr);
   int dim = oldMesh->getDimension();
   oldLimit = oldMesh->getMaxVolume();
-  double oldLimInv = 1./oldLimit;
+  //double oldLimInv = 1./oldLimit;
   double curLimit, tmpLimit;
   double minLimit = oldLimit/16384.;             //arbitrary;
   const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = oldMesh->getRealSection("coordinates");
@@ -249,7 +267,9 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
     }
     if (dist > 0.) {
       dist = sqrt(dist);
-      tmpLimit = 1./(oldLimInv + factor/(dist));
+      double mu = pow(dist, factor);
+      //PetscPrintf(oldMesh->comm(), "%f\n", mu);
+      tmpLimit = oldLimit*pow(mu, dim);
       if (tmpLimit > minLimit) {
         curLimit = tmpLimit;
       } else curLimit = minLimit;
@@ -312,10 +332,12 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
           double arclen = 1.;
           if (options->reentrantMesh) {
             arclen = .9;
+            options->reentrant_angle = .9;
           }
           mB = ALE::MeshBuilder::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
         } else if (options->reentrantMesh) {
           double reentrantlower[2] = {-1., -1.};
+          options->reentrant_angle = .75;
           mB = ALE::MeshBuilder::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
         } else {
           mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
@@ -357,7 +379,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       mesh = refinedMesh;
       if (options->refineSingularity) {
         double singularity[3] = {0.0, 0.0, 0.0};
-        ierr = MeshRefineSingularity(mesh, comm, singularity, 200., &refinedMesh2);CHKERRQ(ierr);
+        ierr = MeshRefineSingularity(mesh, comm, singularity, options->reentrant_angle, &refinedMesh2);CHKERRQ(ierr);
         ierr = MeshDestroy(mesh);CHKERRQ(ierr);
         mesh = refinedMesh2;
       }
@@ -1334,10 +1356,14 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     if (options->bcType == DIRICHLET) {
       if (options->lambda > 0.0) {
         options->func    = nonlinear_2d;
+        options->exactFunc = quadratic_2d;
+      } else if (options->reentrantMesh) { 
+        options->func = singularity_2d;
+        options->exactFunc = singularity_exact_2d;
       } else {
         options->func    = constant;
+        options->exactFunc = quadratic_2d;
       }
-      options->exactFunc = quadratic_2d;
     } else {
       options->func      = linear_2d;
       options->exactFunc = cubic_2d;
