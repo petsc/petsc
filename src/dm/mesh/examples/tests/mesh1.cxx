@@ -8,6 +8,7 @@ static char help[] = "Mesh Tests.\n\n";
 using ALE::Obj;
 typedef ALE::Mesh::sieve_type        sieve_type;
 typedef ALE::Mesh::real_section_type section_type;
+typedef ALE::Mesh::label_type        label_type;
 
 typedef struct {
   int        debug;           // The debugging level
@@ -82,6 +83,25 @@ PetscErrorCode GeometryTest(const Obj<ALE::Mesh>& mesh, const Obj<section_type>&
   delete [] v0;
   delete [] J;
   delete [] invJ;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "LabelTest"
+PetscErrorCode LabelTest(const Obj<ALE::Mesh>& mesh, const Obj<label_type>& label, Options *options)
+{
+  const Obj<ALE::Mesh::label_sequence>&     cells  = mesh->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator cBegin = cells->begin();
+  const ALE::Mesh::label_sequence::iterator cEnd   = cells->end();
+
+  PetscFunctionBegin;
+  for(ALE::Mesh::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
+    const sieve_type::point_type& e = *c_iter;
+
+    if (options->test > 2) {
+      mesh->setValue(label, e, 1);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
@@ -240,6 +260,9 @@ int main(int argc, char *argv[])
       ierr = GeometryTest(mesh, mesh->getRealSection("coordinates"), &options);CHKERRQ(ierr);
     }
     if (options.test > 1) {
+      ierr = LabelTest(mesh, mesh->getLabel("marker"), &options);CHKERRQ(ierr);
+    }
+    if (options.test > 2) {
       //ierr = AllocationTest(mesh, &options);CHKERRQ(ierr);
     }
   } catch (ALE::Exception e) {
