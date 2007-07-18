@@ -669,6 +669,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           n_iter++;
         }
         //push the last point to invalidate the current point to the front of the list of comparisons.
+        maxspace = bvSpace*curBeta;
         bool setDist = false;
         if (bvdom != -1) {
            setDist = true;
@@ -776,11 +777,12 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           }
           n_iter++;
         }
+        maxspace = bvSpace*curBeta;
         bool setDist = false;
         if (bvdom != -1) {
            setDist = true;
            complist.push_front(bvdom);
-        }
+        } 
         while ((!complist.empty()) && canAdd) {
           nComparisonsTotal++;
           ALE::Mesh::point_type curpt = *complist.begin();
@@ -792,7 +794,6 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           for (int i = 0; i < dim; i++) {
             dist += (curCoords[i] - bvCoords[i])*(curCoords[i] - bvCoords[i]);
           }
-          dist = sqrt(dist);
           dist = sqrt(dist);
           if (setDist == true) {
             maxspace = dist;
