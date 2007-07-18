@@ -268,6 +268,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt 
 . block - The block size
 - array - The integer array
 
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
+
   Level: beginner
 
 .keywords: application ordering, mapping
@@ -296,6 +299,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt 
 + ao    - The application ordering context
 . block - The block size
 - array - The integer array
+
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
 
   Level: beginner
 
@@ -327,6 +333,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt 
 . block - The block size
 - array - The integer array
 
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
+
   Level: beginner
 
 .keywords: application ordering, mapping
@@ -356,6 +365,9 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt
 + ao    - The application ordering context
 . block - The block size
 - array - The integer array
+
+  Note: The length of the array should be block*N, where N is length
+  provided to the AOCreate*() method that created the AO.
 
   Level: beginner
 
