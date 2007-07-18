@@ -1560,9 +1560,8 @@ PetscErrorCode PCGeneralSetupStage_ASA(PC_ASA *asa, Vec cand, PetscTruth *cand_a
       ierr = VecDot(asa_next_lev->x, ax, &tmp);CHKERRQ(ierr);
       norm = PetscAbsScalar(tmp);
       ierr = SafeVecDestroy(&(ax));CHKERRQ(ierr);
-    
-      if (norm/prevnorm <= PetscPowScalar(asa->epsilon, asa->mu))
-	skip_steps_d_j = PETSC_TRUE;
+
+      if (norm/prevnorm <= PetscAbsScalar(PetscPowScalar(asa->epsilon, asa->mu))) skip_steps_d_j = PETSC_TRUE;
    
       /* (j) update candidate B_{l+1} */
       ierr = PCAddCandidateToB_ASA(asa_next_lev->B, asa_next_lev->cand_vecs, asa_next_lev->x, asa_next_lev->A);CHKERRQ(ierr);

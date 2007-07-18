@@ -15,14 +15,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     PetscErrorCode ierr;
 
     PetscFunctionBegin;
-    //retrieve information of host
+    /* retrieve information of host */
     host = gethostbyname(hostname);
     if(!host){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "unknown host");}
     sin.sin_family = AF_INET;
     ierr = PetscMemcpy(host->h_addr, (char *)&sin.sin_addr, host->h_length); CHKERRQ(ierr);
     sin.sin_port = htons(portnum);
-    //active open
+    /* active open */
     if((*clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new socket for client");}
     if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){ 
@@ -36,10 +36,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
  *
  */
 PetscErrorCode PETSC_DLLEXPORT Recv(int fd, void *buf, size_t len, int flags, unsigned int *size){
-    PetscFunctionBegin;
-    if((*size = recv(fd, buf, len, flags)) < 0){
-        SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not complete recv");}
-    PetscFunctionReturn(0);
+  ssize_t recvLen;
+
+  PetscFunctionBegin;
+  recvLen = recv(fd, buf, len, flags);
+  if(recvLen < 0) {SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not complete recv");}
+  *size = (unsigned int) recvLen;
+  PetscFunctionReturn(0);
 }   
 
 /*
@@ -47,10 +50,13 @@ PetscErrorCode PETSC_DLLEXPORT Recv(int fd, void *buf, size_t len, int flags, un
  *
  */
 PetscErrorCode PETSC_DLLEXPORT Write(int fd, void *buf, size_t len, unsigned int *size){
-    PetscFunctionBegin;
-    if((*size = write(fd, buf, len)) < 0){
-        SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not complete write: ");}
-    PetscFunctionReturn(0);
+  ssize_t sendLen;
+
+  PetscFunctionBegin;
+  sendLen = write(fd, buf, len);
+  if(sendLen < 0) {SETERRQ(PETSC_ERR_ARG_CORRUPT, "Could not complete write: ");}
+  *size = (unsigned int) sendLen;
+  PetscFunctionReturn(0);
 }  
 
 /*
@@ -75,34 +81,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(portnum);
-    //passive open
+    /* passive open */
     if((*listenfd = socket(PF_INET, SOCK_STREAM, 0)) < 0){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "could not make a new socket for server");}
-    //Allow for non-blocking on the socket
+    /* Allow for non-blocking on the socket */
     int flags;
     if(!(flags = fcntl(*listenfd, F_GETFL, NULL)))
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"flags error");
     flags = 0 | O_NONBLOCK;
     if(fcntl(*listenfd, F_SETFL, 0 | O_NONBLOCK)) 
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"flags error");
-    //so it is possible to reuse port numbers
+    /* so it is possible to reuse port numbers */
     if(setsockopt(*listenfd, SOL_SOCKET, SO_REUSEADDR,
                 (const void *)&optval, sizeof(int)) < 0)
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not open a new socket");
     if((bind(*listenfd, (SA*)&sin, sizeof(sin))) < 0)
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not complete bind");
     listen(*listenfd, MAX_PENDING);
-    //Non-blocking busy loop waiting for a connnection
+    /* Non-blocking busy loop waiting for a connnection */
     if(fork() == 0){
-      //PETSC_LISTEN_CHECK is set in PetscInitilize and PetscFinalize to
-      //tell the forked process when the program has finished
+      /* PETSC_LISTEN_CHECK is set in PetscInitilize and PetscFinalize to
+         tell the forked process when the program has finished */
       while(PETSC_LISTEN_CHECK){
 	sin_size = sizeof(struct sockaddr_in);
-	//non-blocking listen
+	/* non-blocking listen */
         if((newfd = accept(*listenfd, (SA*)&sin, &sout_size)) < 0){
 	  if(errno == EAGAIN) break;
 	  SETERRQ(PETSC_ERR_ARG_CORRUPT,"Could not complete accept");}
-	//If a connection is found, fork off process to handle the connection
+        /* If a connection is found, fork off process to handle the connection */
         if(fork() == 0){
           close(*listenfd);
           Recv(newfd, iname, MAX_BUF, 0, &len);
