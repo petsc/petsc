@@ -271,6 +271,10 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetsc(AO ao,PetscInt n,PetscInt 
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
 
+  The permutation takes array[i_pet] --> array[i_app], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
+
   Level: beginner
 
 .keywords: application ordering, mapping
@@ -302,6 +306,10 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteInt(AO ao, PetscInt 
 
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
+
+  The permutation takes array[i_app] --> array[i_pet], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
 
   Level: beginner
 
@@ -336,6 +344,10 @@ PetscErrorCode PETSCDM_DLLEXPORT AOApplicationToPetscPermuteInt(AO ao, PetscInt 
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
 
+  The permutation takes array[i_pet] --> array[i_app], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
+
   Level: beginner
 
 .keywords: application ordering, mapping
@@ -368,6 +380,10 @@ PetscErrorCode PETSCDM_DLLEXPORT AOPetscToApplicationPermuteReal(AO ao, PetscInt
 
   Note: The length of the array should be block*N, where N is length
   provided to the AOCreate*() method that created the AO.
+
+  The permutation takes array[i_app] --> array[i_pet], where i_app is
+  the index of 'i' in the application ordering and i_pet is the index
+  of 'i' in the petsc ordering.
 
   Level: beginner
 
