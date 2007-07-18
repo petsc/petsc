@@ -19,13 +19,13 @@ if nargin == 1
 end
 
 if nargin == 0
-  fd = sreader()
+  fd = sreader();
 else if ischar(inarg) 
   fd = freader(inarg);
 else if isnumeric(inarg)
-  fd = sreader(inarg)
+  fd = sreader(inarg);
 else % assume it is a freader or sreader and handles read()
-  fd = inarg
+  fd = inarg;
 end
 end
 end
