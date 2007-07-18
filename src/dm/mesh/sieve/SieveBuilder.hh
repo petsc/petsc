@@ -259,7 +259,7 @@ namespace ALE {
       int                      curCell    = 0;
       int                      curVertex  = firstVertex;
       int                      newElement = firstVertex+numVertices;
-      int                      o;
+      int                      o          = 1;
 
       if (corners < 0) corners = dim+1;
       curElement[0]   = &curVertex;

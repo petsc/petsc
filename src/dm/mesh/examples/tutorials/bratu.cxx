@@ -17,6 +17,7 @@ typedef struct {
   RunType       run;                         // The run type
   PetscInt      dim;                         // The topological mesh dimension
   PetscTruth    reentrantMesh;               // Generate a reentrant mesh?
+  PetscTruth    circularMesh;                // Generate a circular mesh?
   PetscTruth    refineSingularity;           // Generate an a priori graded mesh for the poisson problem
   PetscTruth    structured;                  // Use a structured mesh
   PetscTruth    generateMesh;                // Generate the unstructure mesh
@@ -104,6 +105,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->operatorAssembly = ASSEMBLY_FULL;
   options->lambda           = 0.0;
   options->reentrantMesh    = PETSC_FALSE;
+  options->circularMesh    = PETSC_FALSE;
   options->refineSingularity= PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Bratu Problem Options", "DMMG");CHKERRQ(ierr);
@@ -113,6 +115,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     options->run = (RunType) run;
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "bratu.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-reentrant", "Make a reentrant-corner mesh", "bratu.cxx", options->reentrantMesh, &options->reentrantMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-circular_mesh", "Make a reentrant-corner mesh", "bratu.cxx", options->circularMesh, &options->circularMesh, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-singularity", "Refine the mesh around a singularity with a priori poisson error estimation", "bratu.cxx", options->refineSingularity, &options->refineSingularity, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-structured", "Use a structured mesh", "bratu.cxx", options->structured, &options->structured, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "bratu.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
@@ -299,14 +302,24 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
       ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
       if (options->dim == 2) {
-        double lower[2] = {0.0, 0.0};
-        double upper[2] = {1.0, 1.0};
+        double lower[2]  = {0.0, 0.0};
+        double upper[2]  = {1.0, 1.0};
         double offset[2] = {0.5, 0.5};
-        int    edges[2] = {2, 2};
+        int    edges[2]  = {2, 2};
         Obj<ALE::Mesh> mB;
-        if (options->reentrantMesh) {
-          mB = ALE::MeshBuilder::createReentrantBoundary(comm, lower, upper, offset, options->debug);
-        } else mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+
+        if (options->circularMesh) {
+          double arclen = 1.;
+          if (options->reentrantMesh) {
+            arclen = .9;
+          }
+          mB = ALE::MeshBuilder::createCircularReentrantBoundary(comm, 100, 1., arclen, options->debug);
+        } else if (options->reentrantMesh) {
+          double reentrantlower[2] = {-1., -1.};
+          mB = ALE::MeshBuilder::createReentrantBoundary(comm, reentrantlower, upper, offset, options->debug);
+        } else {
+          mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
+        }
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
       } else if (options->dim == 3) {
         double lower[3] = {0.0, 0.0, 0.0};
@@ -343,7 +356,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshDestroy(mesh);CHKERRQ(ierr);
       mesh = refinedMesh;
       if (options->refineSingularity) {
-        double singularity[3] = {0.5, 0.5, 0.5};
+        double singularity[3] = {0.0, 0.0, 0.0};
         ierr = MeshRefineSingularity(mesh, comm, singularity, 200., &refinedMesh2);CHKERRQ(ierr);
         ierr = MeshDestroy(mesh);CHKERRQ(ierr);
         mesh = refinedMesh2;
@@ -1349,19 +1362,20 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   } else {
     Mesh           mesh = (Mesh) dm;
     Obj<ALE::Mesh> m;
+    int            numBC = (options->bcType == DIRICHLET) ? 1 : 0;
     int            markers[1]  = {1};
     double       (*funcs[1])(const double *coords) = {options->exactFunc};
     PetscErrorCode ierr;
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     if (options->dim == 1) {
-      ierr = CreateProblem_gen_0(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_0(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_0;
     } else if (options->dim == 2) {
-      ierr = CreateProblem_gen_1(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_1(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_1;
     } else if (options->dim == 3) {
-      ierr = CreateProblem_gen_2(dm, "u", 1, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_2(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
       options->integrate = IntegrateDualBasis_gen_2;
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
