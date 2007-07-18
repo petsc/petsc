@@ -34,7 +34,7 @@ function Set = PetscReadBinaryMatlab(filename)
 	    str = 'close(fd);';
 	 end
 
-	 eval(str(marker+4:end));
+	 eval(str);
       end
       str=fgets(fid);
    end
