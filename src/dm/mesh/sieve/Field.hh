@@ -1529,6 +1529,30 @@ namespace ALE {
         }
       }
     };
+    // Update all dofs on a point (free and constrained)
+    void updatePointAllAdd(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+
+      if (orientation >= 0) {
+        const int& dim = this->getFiberDimension(p);
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] += v[i];
+        }
+      } else {
+        int offset = 0;
+        int j      = -1;
+
+        for(int space = 0; space < this->getNumSpaces(); ++space) {
+          const int& dim = this->getFiberDimension(p, space);
+
+          for(int i = dim-1; i >= 0; --i) {
+            array[++j] += v[i+offset];
+          }
+          offset += dim;
+        }
+      }
+    };
   public: // Fibrations
     int getNumSpaces() const {return this->_spaces.size();};
     const std::vector<Obj<atlas_type> >& getSpaces() {return this->_spaces;};
