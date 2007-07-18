@@ -282,10 +282,12 @@ namespace ALE {
   public:
     UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       this->_atlas = new atlas_type(comm, fiberDim, 0, debug);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {
       int dim = fiberDim;
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     virtual ~UniformSection() {
       this->_atlas = NULL;
