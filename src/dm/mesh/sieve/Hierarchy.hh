@@ -669,7 +669,9 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           n_iter++;
         }
         //push the last point to invalidate the current point to the front of the list of comparisons.
+        bool setDist = false;
         if (bvdom != -1) {
+           setDist = true;
            complist.push_front(bvdom);
         }
 
@@ -683,7 +685,12 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           for (int i = 0; i < dim; i++) {
             dist += (curCoords[i] - bvCoords[i])*(curCoords[i] - bvCoords[i]);
           }
+          //gets the distance to bvdom as the maximum radius to compare out
           dist = sqrt(dist);
+          if (setDist == true) {
+            maxspace = dist;
+            setDist = false;
+         } 
           ALE::Mesh::point_type curpt_dom = m->getValue(dompoint, curpt);
           int curpt_depth = m->getValue(hdepth, curpt);
           int curpt_bound = m->getValue(boundary, curpt);
@@ -691,7 +698,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           if ((dist < comparison_const*(bvSpace + curSpace))&&(curpt_depth > 0)) { //collision with an already added node
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*beta*(bvSpace+curSpace)) {
+          } else if (dist < maxspace) { //go out to the dompoint
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
@@ -769,7 +776,9 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           }
           n_iter++;
         }
+        bool setDist = false;
         if (bvdom != -1) {
+           setDist = true;
            complist.push_front(bvdom);
         }
         while ((!complist.empty()) && canAdd) {
@@ -784,6 +793,11 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
             dist += (curCoords[i] - bvCoords[i])*(curCoords[i] - bvCoords[i]);
           }
           dist = sqrt(dist);
+          dist = sqrt(dist);
+          if (setDist == true) {
+            maxspace = dist;
+            setDist = false;
+          } 
           int curpt_depth = m->getValue(hdepth, curpt);
           int curpt_bound = m->getValue(boundary, curpt);
           comparison_const = 0.5*curBeta;
@@ -794,7 +808,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           } else if ((dist < comparison_const*(bvSpace+curSpace)) && (curpt_bound == 1)) {
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*beta*(bvSpace+curSpace)) { 
+          } else if (dist < maxspace) {
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
