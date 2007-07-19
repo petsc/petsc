@@ -587,7 +587,6 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
-  m->calculateIndices();
   m->setupField(s, NUM_BC);
   if (options->debug) {s->view("Default field");}
   PetscFunctionReturn(0);
