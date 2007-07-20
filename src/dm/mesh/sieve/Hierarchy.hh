@@ -518,7 +518,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
 #endif
     } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-
+      std::string tetgenOptions = "zQe"; //(z)ero indexing, output (e)dges, Quiet
       for (int i = curLevel; i < nLevels; i++) {
         ALE::Obj<ALE::Mesh::label_sequence> curLevVerts = m->getLabelStratum("hdepth", i);
         ALE::Mesh::label_sequence::iterator clv_iter = curLevVerts->begin();
@@ -541,7 +541,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
       tetdata[0].pointmarkerlist = indices;
       tetdata[0].numberofpoints = curmeshsize;
       //tetrahedralize
-      tetrahedralize((char *)triangleOptions.c_str(), &tetdata[0], &tetdata[1]);
+      tetrahedralize((char *)tetgenOptions.c_str(), &tetdata[0], &tetdata[1]);
       finalcoords = tetdata[1].pointlist;
       connectivity = tetdata[1].tetrahedronlist;
       oldpositions = tetdata[1].pointmarkerlist;

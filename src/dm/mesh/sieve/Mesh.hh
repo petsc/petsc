@@ -2005,23 +2005,23 @@ namespace ALE {
           mesh->setValue(markers, b, 1);
           mesh->setValue(markers, b+numVertices, 1);
         }
-        coords[0] = lower[0];
+        coords[0] = upper[0];
         coords[1] = lower[1];
 
-        coords[2] = upper[0];
+        coords[2] = lower[0];
         coords[3] = lower[1];
         
-        coords[4] = upper[0];
+        coords[4] = lower[0];
         coords[5] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
         
-        coords[6] = notchpercent[0]*lower[0] + (1 - notchpercent[0])*upper[0];
+        coords[6] = notchpercent[0]*upper[0] + (1 - notchpercent[0])*lower[0];
         coords[7] = notchpercent[1]*lower[1] + (1 - notchpercent[1])*upper[1];
         
         
-        coords[8] = notchpercent[0]*lower[0] + (1 - notchpercent[0])*upper[0];
+        coords[8] = notchpercent[0]*upper[0] + (1 - notchpercent[0])*lower[0];
         coords[9] = upper[1];
 
-        coords[10] = lower[0];
+        coords[10] = upper[0];
         coords[11] = upper[1];
         mesh->stratify();
       }
@@ -2059,11 +2059,12 @@ namespace ALE {
         /* Create sieve and ordering */
 
         int startvertex = 1;
-        if (arc_percent <= 1.) {
+        if (arc_percent < 1.) {
           coords[0] = 0.;
           coords[1] = 0.;
         } else {
           numVertices = segments;
+          numEdges = numVertices;
           startvertex = 0;
         }
 
