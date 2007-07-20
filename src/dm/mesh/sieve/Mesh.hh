@@ -1517,7 +1517,7 @@ namespace ALE {
             }
             for(names_type::const_iterator g_iter = discs->begin(); g_iter != discs->end(); ++g_iter) {
               indices[*g_iter].first  = 0;
-              for(int i = 0; i < indices[*g_iter].second.size(); ++i) indices[*g_iter].second[i] = 0;
+              for(unsigned int i = 0; i < indices[*g_iter].second.size(); ++i) indices[*g_iter].second[i] = 0;
             }
           }
         }
@@ -1874,7 +1874,104 @@ namespace ALE {
       delete [] vertices;
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
-    }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "createParticleInSquareBoundary"
+    /*
+      Simple square boundary:
+
+     18--5-17--4--16
+      |     |     |
+      6    10     3
+      |     |     |
+     19-11-20--9--15
+      |     |     |
+      7     8     2
+      |     |     |
+     12--0-13--1--14
+    */
+    static Obj<ALE::Mesh> createParticleInSquareBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int edges[], const double radius, const int partEdges, const int debug = 0) {
+      Obj<Mesh> mesh              = new Mesh(comm, 1, debug);
+      const int numSquareVertices = (edges[0]+1)*(edges[1]+1);
+      const int numVertices       = numSquareVertices + partEdges;
+      const int numSquareEdges    = edges[0]*(edges[1]+1) + (edges[0]+1)*edges[1];
+      const int numEdges          = numSquareEdges + partEdges;
+      double   *coords            = new double[numVertices*2];
+      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      int                         order    = 0;
+
+      mesh->setSieve(sieve);
+      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        /* Create sieve and ordering */
+        for(int v = numEdges; v < numEdges+numVertices; v++) {
+          vertices[v-numEdges] = Mesh::point_type(v);
+        }
+        // Make square
+        for(int vy = 0; vy <= edges[1]; vy++) {
+          for(int ex = 0; ex < edges[0]; ex++) {
+            Mesh::point_type edge(vy*edges[0] + ex);
+            int vertex = vy*(edges[0]+1) + ex;
+
+            sieve->addArrow(vertices[vertex+0], edge, order++);
+            sieve->addArrow(vertices[vertex+1], edge, order++);
+            if ((vy == 0) || (vy == edges[1])) {
+              mesh->setValue(markers, edge, 1);
+              mesh->setValue(markers, vertices[vertex], 1);
+              if (ex == edges[0]-1) {
+                mesh->setValue(markers, vertices[vertex+1], 1);
+              }
+            }
+          }
+        }
+        for(int vx = 0; vx <= edges[0]; vx++) {
+          for(int ey = 0; ey < edges[1]; ey++) {
+            Mesh::point_type edge(vx*edges[1] + ey + edges[0]*(edges[1]+1));
+            int vertex = ey*(edges[0]+1) + vx;
+
+            sieve->addArrow(vertices[vertex],            edge, order++);
+            sieve->addArrow(vertices[vertex+edges[0]+1], edge, order++);
+            if ((vx == 0) || (vx == edges[0])) {
+              mesh->setValue(markers, edge, 1);
+              mesh->setValue(markers, vertices[vertex], 1);
+              if (ey == edges[1]-1) {
+                mesh->setValue(markers, vertices[vertex+edges[0]+1], 1);
+              }
+            }
+          }
+        }
+        // Make particle
+        for(int ep = 0; ep < partEdges; ++ep) {
+          Mesh::point_type edge(numSquareEdges + ep);
+          const int vertexA = numSquareVertices + ep;
+          const int vertexB = numSquareVertices + (ep+1)%partEdges;
+
+          sieve->addArrow(vertices[vertexA], edge, order++);
+          sieve->addArrow(vertices[vertexB], edge, order++);
+          mesh->setValue(markers, edge, 1);
+          mesh->setValue(markers, vertices[vertexA], 1);
+          mesh->setValue(markers, vertices[vertexB], 1);
+        }
+      }
+      mesh->stratify();
+      for(int vy = 0; vy <= edges[1]; ++vy) {
+        for(int vx = 0; vx <= edges[0]; ++vx) {
+          coords[(vy*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/edges[0])*vx;
+          coords[(vy*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/edges[1])*vy;
+        }
+      }
+      const double centroidX = 0.5*(upper[0] + lower[0]);
+      const double centroidY = 0.5*(upper[1] + lower[1]);
+      for(int vp = 0; vp < partEdges; ++vp) {
+        const double rad = 2.0*PETSC_PI*vp/partEdges;
+        coords[(numSquareVertices+vp)*2+0] = centroidX + radius*cos(rad);
+        coords[(numSquareVertices+vp)*2+1] = centroidY + radius*sin(rad);
+      }
+      delete [] vertices;
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    };
     #undef __FUNCT__
     #define __FUNCT__ "createReentrantBoundary"
     /*

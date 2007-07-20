@@ -564,38 +564,6 @@ PetscErrorCode FormFunctions(DM dm, Options *options)
 }
 
 #undef __FUNCT__
-#define __FUNCT__ "setupUnstructuredQuadrature"
-PetscErrorCode setupUnstructuredQuadrature(const int dim, int *numQuadPoints, const double *quadPoints[], const double *quadWeights[], int *numBasisFuncs, const double *basis[], const double *basisDer[])
-{
-  PetscFunctionBegin;
-  if (dim == 1) {
-    if (numQuadPoints) *numQuadPoints = NUM_QUADRATURE_POINTS_0;
-    if (quadPoints)    *quadPoints    = points_0;
-    if (quadWeights)   *quadWeights   = weights_0;
-    if (numBasisFuncs) *numBasisFuncs = NUM_BASIS_FUNCTIONS_0;
-    if (basis)         *basis         = Basis_0;
-    if (basisDer)      *basisDer      = BasisDerivatives_0;
-  } else if (dim == 2) {
-    if (numQuadPoints) *numQuadPoints = NUM_QUADRATURE_POINTS_1;
-    if (quadPoints)    *quadPoints    = points_1;
-    if (quadWeights)   *quadWeights   = weights_1;
-    if (numBasisFuncs) *numBasisFuncs = NUM_BASIS_FUNCTIONS_1;
-    if (basis)         *basis         = Basis_1;
-    if (basisDer)      *basisDer      = BasisDerivatives_1;
-  } else if (dim == 3) {
-    if (numQuadPoints) *numQuadPoints = NUM_QUADRATURE_POINTS_2;
-    if (quadPoints)    *quadPoints    = points_2;
-    if (quadWeights)   *quadWeights   = weights_2;
-    if (numBasisFuncs) *numBasisFuncs = NUM_BASIS_FUNCTIONS_2;
-    if (basis)         *basis         = Basis_2;
-    if (basisDer)      *basisDer      = BasisDerivatives_2;
-  } else {
-    SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
-  }
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__
 #define __FUNCT__ "Rhs_Structured_2d_FD"
 PetscErrorCode Rhs_Structured_2d_FD(DALocalInfo *info, PetscScalar *x[], PetscScalar *f[], void *ctx)
 {
@@ -696,16 +664,20 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   PetscScalar  (*func)(const double *) = options->func;
   const double   lambda                = options->lambda;
   Obj<ALE::Mesh> m;
-  int            numQuadPoints, numBasisFuncs;
-  const double  *quadPoints, *quadWeights, *basis, *basisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = setupUnstructuredQuadrature(options->dim, &numQuadPoints, &quadPoints, &quadWeights, &numBasisFuncs, &basis, &basisDer);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
-  const int                                dim         = m->getDimension();
+  const Obj<ALE::Discretization>&          disc          = m->getDiscretization("u");
+  const int                                numQuadPoints = disc->getQuadratureSize();
+  const double                            *quadPoints    = disc->getQuadraturePoints();
+  const double                            *quadWeights   = disc->getQuadratureWeights();
+  const int                                numBasisFuncs = disc->getBasisSize();
+  const double                            *basis         = disc->getBasis();
+  const double                            *basisDer      = disc->getBasisDerivatives();
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const int                                dim           = m->getDimension();
   double      *t_der, *b_der, *coords, *v0, *J, *invJ, detJ;
   PetscScalar *elemVec, *elemMat;
 
@@ -781,16 +753,19 @@ PetscErrorCode CalculateError(Mesh mesh, SectionReal X, double *error, void *ctx
   Options       *options = (Options *) ctx;
   PetscScalar  (*func)(const double *) = options->exactFunc;
   Obj<ALE::Mesh> m;
-  int            numQuadPoints, numBasisFuncs;
-  const double  *quadPoints, *quadWeights, *basis, *basisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = setupUnstructuredQuadrature(options->dim, &numQuadPoints, &quadPoints, &quadWeights, &numBasisFuncs, &basis, &basisDer);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
-  const int                                dim         = m->getDimension();
+  const Obj<ALE::Discretization>&          disc          = m->getDiscretization("u");
+  const int                                numQuadPoints = disc->getQuadratureSize();
+  const double                            *quadPoints    = disc->getQuadraturePoints();
+  const double                            *quadWeights   = disc->getQuadratureWeights();
+  const int                                numBasisFuncs = disc->getBasisSize();
+  const double                            *basis         = disc->getBasis();
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const int                                dim           = m->getDimension();
   double *coords, *v0, *J, *invJ, detJ;
   double  localError = 0.0;
 
@@ -1082,7 +1057,6 @@ EXTERN_C_END
 #define __FUNCT__ "Jac_Unstructured_Calculated"
 PetscErrorCode Jac_Unstructured_Calculated(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Options         *options = (Options *) ctx;
   Obj<ALE::Mesh>   m;
   PetscQuadrature *q;
   PetscErrorCode   ierr;
@@ -1091,13 +1065,17 @@ PetscErrorCode Jac_Unstructured_Calculated(Mesh mesh, SectionReal section, Mat A
   ierr = MatShellSetOperation(A, MATOP_MULT, (void(*)(void)) Laplacian_2D_MF);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscQuadrature), &q);CHKERRQ(ierr);
   ierr = MatShellSetContext(A, (void *) q);CHKERRQ(ierr);
-  ierr = setupUnstructuredQuadrature(options->dim, &q->numQuadPoints, &q->quadPoints, &q->quadWeights,
-                                     &q->numBasisFuncs, &q->basis, &q->basisDer);CHKERRQ(ierr);
-
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const Obj<ALE::Discretization>&          disc  = m->getDiscretization("u");
   const Obj<ALE::Mesh::real_section_type>& def   = m->getRealSection("default");
   const Obj<ALE::Mesh::real_section_type>& work1 = m->getRealSection("work1");
   const Obj<ALE::Mesh::real_section_type>& work2 = m->getRealSection("work2");
+  q->numQuadPoints = disc->getQuadratureSize();
+  q->quadPoints    = disc->getQuadraturePoints();
+  q->quadWeights   = disc->getQuadratureWeights();
+  q->numBasisFuncs = disc->getBasisSize();
+  q->basis         = disc->getBasis();
+  q->basisDer      = disc->getBasisDerivatives();
   work1->setAtlas(def->getAtlas());
   work1->allocateStorage();
   work2->setAtlas(def->getAtlas());
@@ -1126,12 +1104,10 @@ PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
   ierr = MeshGetSectionReal(mesh, "work2", &Y);CHKERRQ(ierr);
   ierr = SectionRealToVec(X, mesh, SCATTER_REVERSE, x);CHKERRQ(ierr);
 
-  const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
-  const int                             dim   = m->getDimension();
-  int           numBasisFuncs;
-  PetscScalar  *elemVec;
+  const Obj<ALE::Mesh::label_sequence>& cells         = m->heightStratum(0);
+  int                                   numBasisFuncs = m->getDiscretization("u")->getBasisSize();
+  PetscScalar                          *elemVec;
 
-  ierr = setupUnstructuredQuadrature(dim, 0, 0, 0, &numBasisFuncs, 0, 0);CHKERRQ(ierr);
   ierr = PetscMalloc(numBasisFuncs *sizeof(PetscScalar), &elemVec);CHKERRQ(ierr);
   // Loop over cells
   ierr = SectionRealZero(Y);CHKERRQ(ierr);
@@ -1163,19 +1139,20 @@ EXTERN_C_END
 #define __FUNCT__ "Jac_Unstructured_Stored"
 PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Options       *options = (Options *) ctx;
   SectionReal    op;
   Obj<ALE::Mesh> m;
-  int            numQuadPoints, numBasisFuncs;
-  const double  *quadPoints, *quadWeights, *basis, *basisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = setupUnstructuredQuadrature(options->dim, &numQuadPoints, &quadPoints, &quadWeights, &numBasisFuncs, &basis, &basisDer);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MatShellSetOperation(A, MATOP_MULT, (void(*)(void)) Laplacian_2D_MF2);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
+  const Obj<ALE::Discretization>&          disc          = m->getDiscretization("u");
+  const int                                numQuadPoints = disc->getQuadratureSize();
+  const double                            *quadWeights   = disc->getQuadratureWeights();
+  const int                                numBasisFuncs = disc->getBasisSize();
+  const double                            *basisDer      = disc->getBasisDerivatives();
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
   const int dim = m->getDimension();
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
@@ -1231,19 +1208,22 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
   const double   lambda  = options->lambda;
   Obj<ALE::Mesh::real_section_type> s;
   Obj<ALE::Mesh> m;
-  int            numQuadPoints, numBasisFuncs;
-  const double  *quadPoints, *quadWeights, *basis, *basisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
-  ierr = setupUnstructuredQuadrature(options->dim, &numQuadPoints, &quadPoints, &quadWeights, &numBasisFuncs, &basis, &basisDer);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::label_sequence>&    cells       = m->heightStratum(0);
-  const Obj<ALE::Mesh::order_type>&        order       = m->getFactory()->getGlobalOrder(m, "default", s);
-  const int                                dim         = m->getDimension();
+  const Obj<ALE::Discretization>&          disc          = m->getDiscretization("u");
+  const int                                numQuadPoints = disc->getQuadratureSize();
+  const double                            *quadWeights   = disc->getQuadratureWeights();
+  const int                                numBasisFuncs = disc->getBasisSize();
+  const double                            *basis         = disc->getBasis();
+  const double                            *basisDer      = disc->getBasisDerivatives();
+  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::label_sequence>&    cells         = m->heightStratum(0);
+  const Obj<ALE::Mesh::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", s);
+  const int                                dim           = m->getDimension();
   double      *t_der, *b_der, *v0, *J, *invJ, detJ;
   PetscScalar *elemMat;
 
@@ -1408,7 +1388,6 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     }
     const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
     s->setDebug(options->debug);
-    m->calculateIndices();
     m->setupField(s);
     if (options->debug) {s->view("Default field");}
   }
