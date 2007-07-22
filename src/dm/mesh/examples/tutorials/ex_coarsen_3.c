@@ -36,7 +36,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->useZeroBase  = PETSC_TRUE;
   ierr = PetscStrcpy(options->baseFilename, "data/coarsen_mesh");CHKERRQ(ierr);
   options->levels       = 3;
-  options->coarseFactor = 1.45;
+  options->coarseFactor = 2.;
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
 
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     MeshSetMesh(mesh_set[0], mesh);
     ierr = MeshSpacingFunction(mesh_set[0]);
     ierr = MeshIDBoundary(mesh_set[0]);
-    MeshCreateHierarchyLabel(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
+    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
     //ierr = MeshCoarsenMesh(m, pow(options.coarseFactor, 2), &n);
     //ierr = MeshGetMesh(n, mesh);
     //ierr = MeshLocateInMesh(m, n);

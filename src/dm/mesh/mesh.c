@@ -1134,8 +1134,6 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, con
   PetscFunctionBegin;
   const ALE::Mesh::indices_type rowIndicesBlock = rowM->getIndices(rowSection, rowE, rowGlobalOrder);
 
-  //MATT! Stop using static everywhere PLEASE!!!!!
-
   const PetscInt *tmpIndices    = rowIndicesBlock.first;
   const int      numRowIndices = rowIndicesBlock.second;
   PetscInt rowIndices[numRowIndices];
@@ -1165,7 +1163,6 @@ PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, con
       printf("\n");
     }
   }
-  if (rowIndices == colIndices) printf("DANGER!");
   ierr = MatSetValues(A, numRowIndices, rowIndices, numColIndices, colIndices, array, mode);
   if (ierr) {
     printf("[%d]ERROR in updateOperator: points %d %d\n", colSection->commRank(), rowE, colE);
@@ -1669,7 +1666,7 @@ PetscErrorCode MeshCoarsenHierarchy(Mesh mesh, int numLevels, double coarseningF
     ierr = MeshCreate(oldMesh->comm(), &(*coarseHierarchy)[i]);CHKERRQ(ierr);
   }
   ierr = MeshSpacingFunction(mesh);CHKERRQ(ierr);
-  ierr = MeshCreateHierarchyLabel(mesh, coarseningFactor, numLevels+1, *coarseHierarchy);
+  ierr = MeshCreateHierarchyLabel_Link(mesh, coarseningFactor, numLevels+1, *coarseHierarchy);
   
 #if 0
   if (oldMesh->getDimension() != 2) SETERRQ(PETSC_ERR_SUP, "Coarsening only works in two dimensions right now");
@@ -1711,7 +1708,6 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   ALE::Obj<ALE::Mesh> fm, cm;
   Mat                 P;
   PetscErrorCode      ierr;
-  int maxComparisons = 40; //point is considered a lost cause beyond this many comparisons with volumes
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(dmFine, fm);CHKERRQ(ierr);
@@ -1737,6 +1733,8 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
   ierr = MatSetFromOptions(P);CHKERRQ(ierr);
 
   const int dim = fm->getDimension();
+  int maxComparisons = 60; //point is considered a lost cause beyond this many comparisons with volumes
+  if (dim == 3) maxComparisons = 1000; //3D is odd
   if (dim != cm->getDimension()) throw ALE::Exception("Dimensions of the fine and coarse meshes do not match"); 
 
   //traversal labels on both layers
@@ -1815,7 +1813,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
             bool locationDiscovered  = false;
             int traversalcomparisons = 0;
             while ((!eguesslist.empty()) && (!locationDiscovered) && traversalcomparisons < maxComparisons) {
-              traversalcomparisons++;
+              traversalcomparisons = 0;
               ALE::Mesh::point_type curguess = *eguesslist.begin();
               eguesslist.pop_front();
               pointIsInElement = true;
@@ -1866,7 +1864,7 @@ PetscErrorCode MeshGetInterpolation_Mesh_New(Mesh dmCoarse, Mesh dmFine, Mat *in
               }
             }
             if (!locationDiscovered) {  //if a position for it is not discovered, it doesn't get corrected; complain
-              if (cm->debug())PetscPrintf(fm->comm(), "Point %d (%f, %f) not located.\n",  curVert, nvCoords[0], nvCoords[1]);
+              if (fm->debug())PetscPrintf(fm->comm(), "Point %d (%f, %f) not located.\n",  curVert, nvCoords[0], nvCoords[1]);
               fm->setValue(finetraversal, curVert, 2); //don't try again.
             }
             eguesslist.clear(); //we've discovered the location of the point or exhausted our possibilities on this contiguous block of elements.

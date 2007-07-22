@@ -346,7 +346,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       } else if (options->dim == 3) {
         double lower[3] = {0.0, 0.0, 0.0};
         double upper[3] = {1.0, 1.0, 1.0};
-        int    faces[3] = {1, 1, 1};
+        int    faces[3] = {3, 3, 3};
 
         Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
         ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
