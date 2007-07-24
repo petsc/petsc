@@ -186,6 +186,7 @@ def getfunctions(filename):
 	if  not reject:
           args = struct[struct.find("(")+1:struct.find(")")]
           args = args.split(",")
+          if args == ['void']: args = []
           name = struct[:struct.find("(")]
           for i in classlist:
             if name.startswith(i):

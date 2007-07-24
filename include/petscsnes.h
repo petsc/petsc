@@ -140,6 +140,7 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetIterationNumber(SNES,PetscInt*)
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES,PetscInt);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES,PetscInt*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES,PetscInt*);
 
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES,PetscInt*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES,PetscInt*);
