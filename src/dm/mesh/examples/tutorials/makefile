@@ -77,6 +77,10 @@ bratu: bratu_quadrature.h bratu.o chkopts
 	-${CLINKER} -o bratu bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
+electrostatic: electrostatic_quadrature.h electrostatic.o chkopts
+	-${CLINKER} -o electrostatic electrostatic.o ${PETSC_SNES_LIB}
+	${RM} -f electrostatic.o
+
 subduction: subduction_quadrature.h subduction.o chkopts
 	-${CLINKER} -o subduction subduction.o ${PETSC_SNES_LIB}
 	${RM} -f subduction.o
