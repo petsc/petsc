@@ -210,7 +210,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
   PetscInt          *idx;
   PetscInt          n,ncols,i,j,k;
   MatFactorInfo     info;
-  IS                perm, iperm;
+  // IS                perm, iperm;
   const PetscInt    *cols_c;
   const PetscScalar *vals_c;
   PetscInt          *rows, *cols;
