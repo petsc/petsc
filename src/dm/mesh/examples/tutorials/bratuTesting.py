@@ -105,7 +105,6 @@ class BratuTest(script.Script):
   def run(self):
     self.setup()
     self.testLS()
-    print self.output
     return
 
 if __name__ == '__main__':
