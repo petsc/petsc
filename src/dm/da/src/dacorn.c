@@ -65,7 +65,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
     For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
     and (x_0,y_0,z_0,x_1,y_1,z_1...)
 
-    You should not destroy or keep around this vector after the DA is destroyed.
+    The user is responsible for destroying this vector.
 
   Level: intermediate
 
@@ -75,10 +75,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetCoordinates(DA da,Vec c)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
- 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
+  ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);
   *c = da->coordinates;
   PetscFunctionReturn(0);
 }
@@ -95,8 +97,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
 
    Output Parameter:
 .  dac - coordinate DA
-
-   Note: You should not destroy or keep around this vector after the DA is destroyed.
 
   Level: intermediate
 
@@ -204,7 +204,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
     For two and three dimensions coordinates are interlaced (x_0,y_0,x_1,y_1,...)
     and (x_0,y_0,z_0,x_1,y_1,z_1...)
 
-    You should not destroy or keep around this vector after the DA is destroyed.
+    The user is responsible for destroying this vector.
 
   Level: intermediate
 
@@ -214,20 +214,21 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostedCoordinates(DA da,Vec *c)
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
- 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
   if (!da->coordinates) SETERRQ(PETSC_ERR_ORDER,"You must call DASetCoordinates() before this call");
   if (!da->ghosted_coordinates) {
-    DA  dac;
-    PetscErrorCode ierr;
+    DA dac;
     ierr = DAGetCoordinateDA(da,&dac);CHKERRQ(ierr);
     ierr = DACreateLocalVector(dac,&da->ghosted_coordinates);CHKERRQ(ierr);
     if (dac == da) {ierr = PetscObjectDereference((PetscObject)dac);CHKERRQ(ierr);}
     ierr = DAGlobalToLocalBegin(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
     ierr = DAGlobalToLocalEnd(dac,da->coordinates,INSERT_VALUES,da->ghosted_coordinates);CHKERRQ(ierr);
   }
+  ierr = PetscObjectReference((PetscObject) da->ghosted_coordinates);CHKERRQ(ierr);
   *c = da->ghosted_coordinates;
   PetscFunctionReturn(0);
 }
