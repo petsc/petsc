@@ -518,7 +518,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
 #endif
     } else if (dim == 3) {
 #ifdef PETSC_HAVE_TETGEN
-
+      std::string tetgenOptions = "zQe"; //(z)ero indexing, output (e)dges, Quiet
       for (int i = curLevel; i < nLevels; i++) {
         ALE::Obj<ALE::Mesh::label_sequence> curLevVerts = m->getLabelStratum("hdepth", i);
         ALE::Mesh::label_sequence::iterator clv_iter = curLevVerts->begin();
@@ -541,7 +541,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
       tetdata[0].pointmarkerlist = indices;
       tetdata[0].numberofpoints = curmeshsize;
       //tetrahedralize
-      tetrahedralize((char *)triangleOptions.c_str(), &tetdata[0], &tetdata[1]);
+      tetrahedralize((char *)tetgenOptions.c_str(), &tetdata[0], &tetdata[1]);
       finalcoords = tetdata[1].pointlist;
       connectivity = tetdata[1].tetrahedronlist;
       oldpositions = tetdata[1].pointmarkerlist;
@@ -580,6 +580,313 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
 
     ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
     return newmesh;
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshCreateHierarchyLabel_Link"
+PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLevels, Mesh * outmeshes, Mat * outmats = PETSC_NULL) {
+    PetscErrorCode ierr;
+  
+  PetscFunctionBegin;
+
+  //initialization
+  ALE::Obj<ALE::Mesh> m;
+  int nComparisons;
+  PetscTruth info;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-dmmg_coarsen_info", &info);CHKERRQ(ierr);
+  double nComparisons_perPoint_Total = 0.;
+  double maxspace = -1., minspace = -1., dist, current_beta;
+  double n_space, c_space, v_space;
+  double n_coords[3], c_coords[3];
+  ALE::Mesh::point_type v_point;
+  ALE::Mesh::point_type c_point, n_point;
+  int v_bound;
+  
+  std::list<ALE::Mesh::point_type> comparison_list;
+
+  std::list<ALE::Mesh::point_type> support_list;
+  
+  ierr = MeshGetMesh(finemesh, m);CHKERRQ(ierr);
+  int interplevels = m->height(*m->depthStratum(0)->begin());
+  if (interplevels == 1) { //noninterpolated case -- fix later as join is broken
+    throw ALE::Exception("Cannot Coarsen a Non-Interpolated Mesh (for now, fix is easy)");
+  }
+  int dim = m->getDimension();
+
+  if (!m->hasLabel("marker"))ierr = MeshIDBoundary(finemesh);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::label_type>& boundary = m->getLabel("marker");
+
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  const ALE::Obj<ALE::Mesh::real_section_type>& spacing = m->getRealSection("spacing");
+  const ALE::Obj<ALE::Mesh::label_type> hdepth = m->createLabel("hdepth");
+  const ALE::Obj<ALE::Mesh::label_type> dompoint = m->createLabel("dominating_point");
+  if (info)PetscPrintf(m->comm(), "Original Mesh: %d vertices, %d elements\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());
+  const ALE::Obj<ALE::Mesh::sieve_type> sieve = m->getSieve();
+  const ALE::Obj<ALE::Mesh::label_sequence>& vertices = m->depthStratum(0);
+  ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
+  ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
+
+  //Setup, find the minimum and maximum spacing values and force in high-curvature nodes.
+  while(v_iter != v_iter_end) {
+
+    v_point = *v_iter;
+    v_bound = m->getValue(boundary, v_point);
+    m->setValue(dompoint, v_point, -1);
+    m->setValue(hdepth, v_point, 0);
+    v_space = *spacing->restrictPoint(v_point);
+
+    if ((v_space > maxspace) || (maxspace == -1.)) maxspace = v_space;
+    if ((v_space < minspace) || (minspace == -1.)) minspace = v_space;
+
+    if (m->depth(v_point) == 0 && v_bound == 1) if (Curvature(m, v_point) > 0.2) {
+      m->setValue(hdepth, v_point, nLevels-1);
+    }
+
+    v_iter++;
+  }
+  for (int curLevel = nLevels-1; curLevel > 0; curLevel--) {
+    nComparisons = 0;
+    current_beta = pow(beta, curLevel);
+    //recopy the first two levels of the sieve into a new sieve.
+    ALE::Obj<ALE::Mesh::sieve_type> coarsen_sieve = new ALE::Mesh::sieve_type(m->comm(), m->debug());
+    ALE::Obj<ALE::Mesh> coarsen_mesh = new ALE::Mesh(m->comm(), m->debug());
+    coarsen_mesh->setSieve(coarsen_sieve);
+    ALE::Obj<ALE::Mesh::label_type> coarsen_candidates = m->createLabel("candidates");
+    ALE::Obj<ALE::Mesh::label_type> traversal = coarsen_mesh->createLabel("traversal");
+    v_iter = vertices->begin();
+    v_iter_end = vertices->end();
+    while (v_iter != v_iter_end) {
+      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> adjacent_edges = sieve->support(*v_iter);
+      ALE::Mesh::sieve_type::supportSequence::iterator ae_iter = adjacent_edges->begin();
+      ALE::Mesh::sieve_type::supportSequence::iterator ae_iter_end = adjacent_edges->end();
+      while (ae_iter != ae_iter_end) {
+        coarsen_sieve->addArrow(*v_iter, *ae_iter);
+        ae_iter++;
+      }
+      v_iter++;
+    }
+    coarsen_mesh->stratify();
+    //Interior Pass: Eliminate Nodes that collide with already included nodes or the boundary.
+    //now, take the points that neighbor the already included points in the main sieve AND THE BOUNDARY:
+    //for (int compare_marker = 1; compare_marker <= 2; compare_marker++) { //two passes, interior and boundary
+    v_iter = vertices->begin();
+    v_iter_end = vertices->end();
+    while (v_iter != v_iter_end) {
+      if ((m->getValue(hdepth, *v_iter) != 0) || (m->getValue(boundary, *v_iter) == 1)) {
+        ALE::Obj<ALE::Mesh::sieve_type::supportSequence> tangent_edges = coarsen_sieve->support(*v_iter);
+        ALE::Mesh::sieve_type::supportSequence::iterator te_iter = tangent_edges->begin();
+        ALE::Mesh::sieve_type::supportSequence::iterator te_iter_end = tangent_edges->end();
+        while (te_iter != te_iter_end) {
+          if ((m->getValue(boundary, *te_iter) == 0)) {
+            comparison_list.push_back(*te_iter);
+          }
+          te_iter++;
+        }
+      }
+      if (m->getValue(hdepth, *v_iter) == 0 && (m->getValue(boundary, *v_iter) == 0)) {
+        m->setValue(coarsen_candidates, *v_iter, 1);
+      } 
+      v_iter++;
+    }
+    //Interior Run: Treat the boundaries as barriers
+    bool notDone = true;
+    while (notDone) {
+    while (!comparison_list.empty()){
+      ALE::Mesh::point_type c_edge = *comparison_list.begin();
+      comparison_list.pop_front();
+      //PetscPrintf(m->comm(), "comparing across edge %d\n", c_edge);
+      ALE::Obj<ALE::Mesh::sieve_type::coneSequence> end_points = coarsen_sieve->cone(c_edge);
+      ALE::Mesh::sieve_type::coneSequence::iterator ep_iter = end_points->begin();
+      ALE::Mesh::point_type ep_1 = *ep_iter;
+      ep_iter++;
+      ALE::Mesh::point_type  ep_2 = *ep_iter;
+      int ep_1_hdepth = m->getValue(hdepth, ep_1);
+      int ep_2_hdepth = m->getValue(hdepth, ep_2);
+      int ep_1_bound = m->getValue(boundary, ep_1);
+      int ep_2_bound = m->getValue(boundary, ep_2);
+      bool ep_1_dominates = ((ep_1_hdepth != 0)  || ((ep_1_bound == 1)));
+      bool ep_2_dominates = ((ep_2_hdepth != 0)  || ((ep_2_bound == 1)));
+      //if ((!ep_1_dominates) && (!ep_2_dominates)) {
+      //  PetscPrintf(m->comm(),"%d, %d\n", ep_1_bound, ep_2_bound);
+      //  throw ALE::Exception("Coarse To Coarse Comparison: This Should Not Have Happened");
+      //}
+      if ((!ep_1_dominates && ep_2_dominates) || (ep_1_dominates && !ep_2_dominates)) {
+        if (ep_1_dominates) { 
+        c_point = ep_2;
+        n_point = ep_1;
+        } else {
+         c_point = ep_1;
+         n_point = ep_2;
+        }
+        nComparisons++;
+        PetscMemcpy(c_coords, coordinates->restrictPoint(c_point), dim*sizeof(double));
+        n_space = *spacing->restrictPoint(c_point);
+        PetscMemcpy(n_coords, coordinates->restrictPoint(n_point), dim*sizeof(double));
+        n_space = *spacing->restrictPoint(n_point);
+        dist = 0;
+        for (int i = 0; i < dim; i++) {
+            dist += (n_coords[i] - c_coords[i])*(n_coords[i] - c_coords[i]);
+        }
+        dist = sqrt(dist);
+        if (dist < current_beta*(n_space + c_space)) {
+          //remove the point and this edge from existence and link its neighbors up with the eliminating point, adding the neighboring edges to THE LIST.
+          m->setValue(coarsen_candidates, c_point, 0);
+          ALE::Obj<ALE::Mesh::sieve_type::supportSequence> move_these_edges = coarsen_sieve->support(c_point);
+          ALE::Mesh::sieve_type::supportSequence::iterator mte_iter = move_these_edges->begin();
+          ALE::Mesh::sieve_type::supportSequence::iterator mte_iter_end = move_these_edges->end();
+          while (mte_iter != mte_iter_end) {
+            if (*mte_iter != c_edge) {
+              coarsen_sieve->addArrow(n_point, *mte_iter);
+              comparison_list.push_front(*mte_iter);
+            }
+            mte_iter++;
+          }
+          coarsen_sieve->removeBasePoint(c_edge);
+          coarsen_sieve->removeCapPoint(c_point);
+
+        }
+      } else {
+        //do nothing .. this edge will never be bothered again save for the difference between the boundary and non-boundary passes.
+      }
+    }
+
+    ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
+    ALE::Mesh::label_sequence::iterator new_candidate = new_candidate_options->begin();
+    if (new_candidate_options->size() == 0) {
+      notDone = false;
+    } else { //add this point to the mesh, adding its neighbors to the comparison queue.
+      m->setValue(coarsen_candidates, *new_candidate, 0);
+      m->setValue(hdepth, *new_candidate, curLevel);
+      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(*new_candidate);
+      ALE::Mesh::sieve_type::supportSequence::iterator ne_iter = neighbor_edges->begin();
+      ALE::Mesh::sieve_type::supportSequence::iterator ne_iter_end = neighbor_edges->end();
+      while (ne_iter != ne_iter_end) {
+        if ((m->getValue(boundary, *ne_iter) == 0)) {
+          comparison_list.push_back(*ne_iter);
+        }
+        ne_iter++;
+      }
+    }
+    }
+    //Boundary Run: ONLY treat the boundary.
+    ALE::Obj<ALE::Mesh::label_sequence> bound_points = m->getLabelStratum("marker", 1);
+    v_iter = bound_points->begin();
+    v_iter_end = bound_points->end();
+    while (v_iter != v_iter_end) {
+      if ((m->depth(*v_iter) == 0)&&(m->getValue(hdepth, *v_iter) != 0)) {
+        ALE::Obj<ALE::Mesh::sieve_type::supportSequence> tangent_edges = coarsen_sieve->support(*v_iter);
+        ALE::Mesh::sieve_type::supportSequence::iterator te_iter = tangent_edges->begin();
+        ALE::Mesh::sieve_type::supportSequence::iterator te_iter_end = tangent_edges->end();
+        while (te_iter != te_iter_end) {
+          if ((m->getValue(boundary, *te_iter) == 1)) {
+            comparison_list.push_back(*te_iter);
+          }
+          te_iter++;
+        }
+      }
+      if ((m->getValue(hdepth, *v_iter) == 0) && (m->getValue(boundary, *v_iter) == 1) && (m->depth(*v_iter) == 0)) {
+        m->setValue(coarsen_candidates, *v_iter, 1);
+      }  
+      v_iter++;
+    }
+    //PetscPrintf(m->comm(), "Comparison_queue size: %d\n", comparison_list.size());
+    notDone = true;
+    while (notDone) {
+    while (!comparison_list.empty()){
+      ALE::Mesh::point_type c_edge = *comparison_list.begin();
+      comparison_list.pop_front();
+      //PetscPrintf(m->comm(), "comparing across edge %d\n", c_edge);
+      ALE::Obj<ALE::Mesh::sieve_type::coneSequence> end_points = coarsen_sieve->cone(c_edge);
+      ALE::Mesh::sieve_type::coneSequence::iterator ep_iter = end_points->begin();
+      ALE::Mesh::point_type ep_1 = *ep_iter;
+      ep_iter++;
+      ALE::Mesh::point_type  ep_2 = *ep_iter;
+      int ep_1_hdepth = m->getValue(hdepth, ep_1);
+      int ep_2_hdepth = m->getValue(hdepth, ep_2);
+      bool ep_1_dominates = ((ep_1_hdepth != 0));
+      bool ep_2_dominates = ((ep_2_hdepth != 0));
+      //if ((!ep_1_dominates) && (!ep_2_dominates)) {
+      //  PetscPrintf(m->comm(),"%d, %d\n", ep_1_bound, ep_2_bound);
+      //  throw ALE::Exception("Coarse To Coarse Comparison: This Should Not Have Happened");
+      //}
+      if ((!ep_1_dominates && ep_2_dominates) || (ep_1_dominates && !ep_2_dominates)) {
+        if (ep_1_dominates) { 
+        c_point = ep_2;
+        n_point = ep_1;
+        } else {
+         c_point = ep_1;
+         n_point = ep_2;
+        }
+        nComparisons++;
+        PetscMemcpy(c_coords, coordinates->restrictPoint(c_point), dim*sizeof(double));
+        n_space = *spacing->restrictPoint(c_point);
+        PetscMemcpy(n_coords, coordinates->restrictPoint(n_point), dim*sizeof(double));
+        n_space = *spacing->restrictPoint(n_point);
+        dist = 0;
+        for (int i = 0; i < dim; i++) {
+            dist += (n_coords[i] - c_coords[i])*(n_coords[i] - c_coords[i]);
+        }
+        dist = sqrt(dist);
+        if (dist < current_beta*(n_space + c_space)) {
+          //remove the point and this edge from existence and link its neighbors up with the eliminating point, adding the neighboring edges to THE LIST.
+          m->setValue(coarsen_candidates, c_point, 0);
+          ALE::Obj<ALE::Mesh::sieve_type::supportSequence> move_these_edges = coarsen_sieve->support(c_point);
+          ALE::Mesh::sieve_type::supportSequence::iterator mte_iter = move_these_edges->begin();
+          ALE::Mesh::sieve_type::supportSequence::iterator mte_iter_end = move_these_edges->end();
+          while (mte_iter != mte_iter_end) {
+            if (*mte_iter != c_edge) {
+              coarsen_sieve->addArrow(n_point, *mte_iter); 
+              if (m->getValue(boundary, *mte_iter) == 1) comparison_list.push_front(*mte_iter);
+            }
+            mte_iter++;
+          }
+          coarsen_sieve->removeBasePoint(c_edge);
+          coarsen_sieve->removeCapPoint(c_point);
+          //PetscPrintf(m->comm(), "Removed %d\n", c_point);
+        }
+      } else {
+        //do nothing .. this edge will never be bothered again save for the difference between the boundary and non-boundary passes.
+      }
+    }
+
+    ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
+    ALE::Mesh::label_sequence::iterator new_candidate = new_candidate_options->begin();
+    if (new_candidate_options->size() == 0) {
+      notDone = false;
+    } else { //add this point to the mesh, adding its neighbors to the comparison queue.
+      m->setValue(coarsen_candidates, *new_candidate, 0);
+      m->setValue(hdepth, *new_candidate, curLevel);
+      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(*new_candidate);
+      ALE::Mesh::sieve_type::supportSequence::iterator ne_iter = neighbor_edges->begin();
+      ALE::Mesh::sieve_type::supportSequence::iterator ne_iter_end = neighbor_edges->end();
+      while (ne_iter != ne_iter_end) {
+        if (m->getValue(boundary, *ne_iter) == 1) {
+          comparison_list.push_back(*ne_iter);
+        }
+        ne_iter++;
+      }
+    }
+    }
+
+
+    //}
+    coarsen_mesh->stratify();
+    ALE::Obj<ALE::Mesh::label_sequence> coarsen_vertices = coarsen_mesh->depthStratum(0);
+    ALE::Mesh::label_sequence::iterator cv_iter = coarsen_vertices->begin();
+    ALE::Mesh::label_sequence::iterator cv_iter_end = coarsen_vertices->end();
+    while (cv_iter != cv_iter_end) {
+      m->setValue(hdepth, *cv_iter, curLevel);
+      cv_iter++;
+    }
+  if(info) PetscPrintf(m->comm(), "%d points in %d comparisons\n", coarsen_mesh->depthStratum(0)->size(), nComparisons);
+  nComparisons_perPoint_Total += nComparisons;
+  ALE::Obj<ALE::Mesh> newmesh = MeshCreateHierarchyMesh(m, nLevels, curLevel);
+  if(info) PetscPrintf(m->comm(), "%d: %d vertices, %d elements\n", curLevel, newmesh->depthStratum(0)->size(), newmesh->heightStratum(0)->size());
+  MeshSetMesh(outmeshes[curLevel-1], newmesh);
+  }
+  nComparisons_perPoint_Total = nComparisons_perPoint_Total/((double)m->depthStratum(0)->size());
+  if(info) PetscPrintf(m->comm(), "Comparisons Per Point: %f\n", nComparisons_perPoint_Total);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__
@@ -669,7 +976,9 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           n_iter++;
         }
         //push the last point to invalidate the current point to the front of the list of comparisons.
+        bool setDist = false;
         if (bvdom != -1) {
+           setDist = true;
            complist.push_front(bvdom);
         }
 
@@ -683,20 +992,27 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           for (int i = 0; i < dim; i++) {
             dist += (curCoords[i] - bvCoords[i])*(curCoords[i] - bvCoords[i]);
           }
+          //gets the distance to bvdom as the maximum radius to compare out
           dist = sqrt(dist);
+          comparison_const = 0.5*curBeta;
+          if (setDist == true) {
+            maxspace = dist;
+            setDist = false;
+          } else {
+            maxspace = 3.*curSpace*comparison_const;
+          } 
           ALE::Mesh::point_type curpt_dom = m->getValue(dompoint, curpt);
           int curpt_depth = m->getValue(hdepth, curpt);
           int curpt_bound = m->getValue(boundary, curpt);
-          comparison_const = 0.5*curBeta;
           if ((dist < comparison_const*(bvSpace + curSpace))&&(curpt_depth > 0)) { //collision with an already added node
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*curBeta*(bvSpace + curSpace)) {
+          } else if (dist < maxspace) { //go out to the dompoint
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
             while (n_iter != n_iter_end) {
-              if ((curpt_bound == 1) && (m->getValue(traversal, *n_iter) == 0)) {
+              if ((m->getValue(traversal, *n_iter) == 0)) {
                 m->setValue(traversal, *n_iter, 1);
                 complist.push_back(*n_iter);
               }
@@ -705,6 +1021,11 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           }
           if ((dist < comparison_const*(bvSpace + curSpace)) && (curpt_depth == 0)) { //add the point to the list of points dominated by this node; points eliminated in one step later
             domlist.push_front(curpt);
+            if (curpt_bound == 0) {
+              m->setValue(dompoint, curpt, *bv_iter);
+            }
+          }
+          if ((dist < maxspace) && (curpt_depth == 0)) {
             if (curpt_dom != -1) {
               if (m->getValue(traversal, curpt_dom) == 0) {
                 complist.push_front(curpt_dom);
@@ -769,9 +1090,12 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           }
           n_iter++;
         }
+        maxspace = 0.5*bvSpace*curBeta;
+        bool setDist = false;
         if (bvdom != -1) {
+           setDist = true;
            complist.push_front(bvdom);
-        }
+        } 
         while ((!complist.empty()) && canAdd) {
           nComparisonsTotal++;
           ALE::Mesh::point_type curpt = *complist.begin();
@@ -783,10 +1107,16 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           for (int i = 0; i < dim; i++) {
             dist += (curCoords[i] - bvCoords[i])*(curCoords[i] - bvCoords[i]);
           }
+          comparison_const = 0.5*curBeta;
           dist = sqrt(dist);
+          if (setDist == true) {
+            maxspace = dist;
+            setDist = false;
+          } else {
+            maxspace = 3.*curSpace*comparison_const;
+          }
           int curpt_depth = m->getValue(hdepth, curpt);
           int curpt_bound = m->getValue(boundary, curpt);
-          comparison_const = 0.5*curBeta;
           ALE::Mesh::point_type curpt_dom = m->getValue(dompoint, curpt);
           if ((dist < comparison_const*(bvSpace + curSpace))&&(curpt_depth > 0)) {
             canAdd = false;
@@ -794,7 +1124,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
           } else if ((dist < comparison_const*(bvSpace+curSpace)) && (curpt_bound == 1)) {
             canAdd = false;
             m->setValue(dompoint, *bv_iter, curpt);
-          } else if (dist < comparison_const*curBeta*(bvSpace + curSpace)) { 
+          } else if (dist < maxspace) {
             neighbors = m->getSieve()->cone(m->getSieve()->support(curpt));
             n_iter = neighbors->begin();
             n_iter_end = neighbors->end();
@@ -806,8 +1136,10 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
               n_iter++;
             }
           }
-          if ((dist < comparison_const*(bvSpace + curSpace)) && (curpt_depth == 0)) {
+          if ((dist < comparison_const*(bvSpace + curSpace)) && (curpt_depth == 0)) { 
             domlist.push_front(curpt);
+          }
+          if ((dist < maxspace) && (curpt_depth == 0)) {
             if (curpt_dom != -1) {
               if (m->getValue(traversal, curpt_dom) == 0) {
                 complist.push_front(curpt_dom);

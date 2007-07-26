@@ -64,6 +64,7 @@ ierr = VecView(coors,PETSC_VIEWER_STDOUT_SELF);
   }
   ierr = VecRestoreArray(local,&alocal);CHKERRQ(ierr);
   ierr = VecRestoreArray(coors,&xy);CHKERRQ(ierr);
+  ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   ierr = DALocalToGlobal(da,local,INSERT_VALUES,global);CHKERRQ(ierr);
 

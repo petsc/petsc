@@ -56,6 +56,22 @@ double zero(const double x[]) {
   return 0.0;
 }
 
+double one(const double x[]) {
+  return 1.0;
+}
+
+double two(const double x[]) {
+  return 2.0;
+}
+
+double three(const double x[]) {
+  return 3.0;
+}
+
+double four(const double x[]) {
+  return 4.0;
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
@@ -553,16 +569,16 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   Obj<ALE::Mesh> m;
   int            velMarkers[2]  = {LID, SLAB};
   int            tempMarkers[1] = {TOP};
-  double       (*velFuncs[2])(const double *coords)  = {zero, zero};
-  double       (*tempFuncs[1])(const double *coords) = {zero};
+  double       (*velFuncs[2])(const double *coords)  = {three, four};
+  double       (*tempFuncs[1])(const double *coords) = {one};
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-  options->funcs[0]  = zero;
-  options->funcs[1]  = zero;
-  options->funcs[2]  = zero;
-  options->funcs[3]  = zero;
+  options->funcs[0]  = one;
+  options->funcs[1]  = two;
+  options->funcs[2]  = three;
+  options->funcs[3]  = four;
   ierr = CreateProblem_gen_0(dm, "p", 0, PETSC_NULL,  PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(dm, "u", 2, velMarkers,  velFuncs,   PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(dm, "v", 2, velMarkers,  velFuncs,   PETSC_NULL);CHKERRQ(ierr);
@@ -571,7 +587,6 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
-  m->calculateIndices();
   m->setupField(s, NUM_BC);
   if (options->debug) {s->view("Default field");}
   PetscFunctionReturn(0);

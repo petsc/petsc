@@ -278,13 +278,16 @@ namespace ALE {
   protected:
     Obj<atlas_type> _atlas;
     values_type     _array;
+    fiber_type      _emptyValue;
   public:
     UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       this->_atlas = new atlas_type(comm, fiberDim, 0, debug);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {
       int dim = fiberDim;
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     virtual ~UniformSection() {
       this->_atlas = NULL;
@@ -385,6 +388,7 @@ namespace ALE {
     };
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) {
+      if (this->_array.find(p) == this->_array.end()) return this->_emptyValue.v;
       return this->_array[p].v;
     };
     // Update only the values associated to this point, not its closure
@@ -867,6 +871,7 @@ namespace ALE {
     };
   public:
     value_type *getRawArray(const int size) {
+      // Put in a sentinel value that deallocates the array
       static value_type *array   = NULL;
       static int         maxSize = 0;
 
@@ -1132,6 +1137,9 @@ namespace ALE {
   public: // Restriction and Update
     // Zero entries
     void zero() {
+      this->set(0.0);
+    };
+    void set(const value_type value) {
       //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
       const chart_type& chart = this->getChart();
 
@@ -1141,14 +1149,16 @@ namespace ALE {
         const int&  cDim  = this->getConstraintDimension(*c_iter);
 
         if (!cDim) {
-          memset(array, 0, dim * sizeof(value_type));
+          for(int i = 0; i < dim; ++i) {
+            array[i] = value;
+          }
         } else {
           const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
           int                                 cInd = 0;
 
           for(int i = 0; i < dim; ++i) {
             if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-            array[i] = 0.0;
+            array[i] = value;
           }
         }
       }
@@ -1519,6 +1529,30 @@ namespace ALE {
 
           for(int i = dim-1; i >= 0; --i) {
             array[++j] = v[i+offset];
+          }
+          offset += dim;
+        }
+      }
+    };
+    // Update all dofs on a point (free and constrained)
+    void updatePointAllAdd(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+
+      if (orientation >= 0) {
+        const int& dim = this->getFiberDimension(p);
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] += v[i];
+        }
+      } else {
+        int offset = 0;
+        int j      = -1;
+
+        for(int space = 0; space < this->getNumSpaces(); ++space) {
+          const int& dim = this->getFiberDimension(p, space);
+
+          for(int i = dim-1; i >= 0; --i) {
+            array[++j] += v[i+offset];
           }
           offset += dim;
         }

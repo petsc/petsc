@@ -1,8 +1,6 @@
 static char help[] = "Mesh Tests.\n\n";
 
-#include <Mesh.hh>
-#include <Generator.hh>
-#include <src/dm/mesh/meshvtk.h>
+#include <petscmesh_viewers.hh>
 
 using ALE::Obj;
 

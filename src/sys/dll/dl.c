@@ -33,10 +33,11 @@
 #if defined(PETSC_HAVE_SYS_SYSTEMINFO_H)
 #include <sys/systeminfo.h>
 #endif
-
+#if defined(PETSC_HAVE_DLFCN_H)
+#include <dlfcn.h>
 #endif
 
-#include "petscfix.h"
+#endif
 
 
 /*
@@ -50,9 +51,6 @@ PetscFList CCAList = 0;
       Code to maintain a list of opened dynamic libraries and load symbols
 */
 #if defined(PETSC_USE_DYNAMIC_LIBRARIES)
-#if defined(PETSC_HAVE_DLFCN_H)
-#include <dlfcn.h>
-#endif
 struct _n_PetscDLLibrary {
   PetscDLLibrary next;
   void           *handle;
@@ -222,13 +220,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryOpen(MPI_Comm comm,const char libna
   ierr = PetscInfo1(0,"Opening %s\n",libname);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_LOADLIBRARY)
   *handle = LoadLibrary(par2);
-#else
-#if defined(PETSC_HAVE_RTLD_GLOBAL)
+#elif defined(PETSC_HAVE_RTLD_GLOBAL)
   *handle = dlopen(par2,RTLD_LAZY | RTLD_GLOBAL); 
 #else
   *handle = dlopen(par2,RTLD_LAZY); 
 #endif
-#endif
+
   if (!*handle) {
 #if defined(PETSC_HAVE_DLERROR)
     SETERRQ3(PETSC_ERR_FILE_OPEN,"Unable to open dynamic library:\n  %s\n  %s\n  Error message from dlopen() %s\n",libname,par2,dlerror());
