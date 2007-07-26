@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         = 
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
-EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
+EXAMPLESC        = sleep.c ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
                    ex39.c ex40.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F
@@ -14,6 +14,10 @@ NP               = 1
 DISPLAY          = :0.0
 
 include ${PETSC_DIR}/conf/base
+
+sleep: sleep.o  chkopts
+	-${CLINKER} -o sleep sleep.o  ${PETSC_KSP_LIB}
+	${RM} sleep.o
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}

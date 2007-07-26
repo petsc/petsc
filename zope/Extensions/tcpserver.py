@@ -2,161 +2,227 @@ import SocketServer
 from socket import *
 from urllib import *
 import string
-import os
-import fcntl
 from os import fdopen
-from re import search
 import threading
+from re import search
 
 # Strings to return to the Zope webpage
-global gs
-global glast
-global info
 global startmsg
-global error
 global sockfd
-global status
+global users
+global n
+
+class User(object):
+	def __init__(self, msg):
+		self.gs = msg
+		self.glast = msg
+		self.info = msg
+		self.error = msg
+		self.status = -1
+	def addgs(self, mgs):
+		self.gs += mgs
+	def replacegs(self, msg):
+		self.gs = msg
+	def getgs(self):
+		return self.gs
+	def addglast(self, mgs):
+		self.glast += mgs
+	def replaceglast(self, msg):
+		self.glast = msg
+	def getglast(self):
+		return self.glast
+	def addinfo(self, mgs):
+		self.info += mgs
+	def replaceinfo(self, msg):
+		self.info = msg
+	def getinfo(self):
+		return self.info
+	def adderror(self, mgs):
+		self.error += mgs
+	def replaceerror(self, msg):
+		self.error = msg
+	def geterror(self):
+		return self.error
+	def getstatus(self):
+		return self.status
+	def replacestatus(self, i):
+		self.status = i
+	def replaceall(self, msg):
+		self.gs = msg
+		self.glast = msg
+		self.info = msg
+		self.error = msg
+
+def removeUser(i):
+	global users
+	del users[i]
+
+def createuser(i):
+	global users
+	global startmsg
+	i = i.strip()
+	users[i] = User(startmsg)
 
 # Is handler for information received on the socket
 class RecHandler(SocketServer.StreamRequestHandler):
 	def handle(self):
-		global gs
-		global glast
-		global info
-		global error
-		global status
+		global users
+		global startmsg
+		peer = self.client_address
+		ip = peer[0]
+		line = self.rfile.readline()
+		linestrip = line.strip()
+		joinline = "".join(line)
+		if joinline.rfind("<<<user>>>") >= 0:
+			joinline = joinline.lstrip("<<<user>>>")
+			joinline = joinline.strip()
+			n = joinline
+			if users.has_key(n):
+				curr = users[n]
+			else:
+				users[n] = User(startmsg)
+				curr = users[n]
 		infocheck = errorcheck = 1
 		#Checks to see if this is the first time the strings are used
-		if gs == startmsg: 
-			gs = ""
-		peer = self.client_address
+		if curr.getgs() == startmsg: 
+			curr.replacegs("")
 		alias = gethostbyaddr(peer[0])
 		#Used to distingush between seperate communications
 		start = "\n======= %s %s ======\n\n" % (alias[0], peer[1])
-		gs += start
-		glast = start
+		curr.addgs(start)
+		curr.replaceglast(start)
 		while 1:
 			line = self.rfile.readline()
 			linestrip = line.strip()
 			joinline = "".join(line)
+			if joinline.rfind("<<<user>>>") >= 0:
+				joinline = joinline.lstrip("<<<user>>>")
+				n = joinline
+				if users.has_key(n):
+					curr = users[n]
+				else:
+					users[n] = User(startmsg)
+					curr = users[n]
+				continue
 			# Check to see if the string is info or error output
 			endinfo = search(r'\[[0-9]+\]', joinline)
 			infocheckRE = (endinfo != None)
-			errorinfo = linestrip.rfind("PETSC ERROR:")
+			errorinfo = joinline.rfind("PETSC ERROR:")
 			if joinline.rfind("<<<start>>>") >= 0:
-				status = 1
+				curr.replacestatus(1)
 				joinline = joinline.lstrip("<<<start>>>")
 			if joinline.rfind("<<<end>>>") >= 0:
-				status = 0
+				curr.replacestatus(0)
 				joinline = joinline.lstrip("<<<end>>>")
-			if infocheckRE:
+			if infocheckRE :
 				if infocheck:
-					if info == startmsg:
-						info = ""
+					if curr.getinfo() == startmsg:
+						curr.replaceinfo("")
 					infocheck = 0
-					info += start
-				info += joinline.lstrip("<<info>>")
+					curr.addinfo(start)
+				curr.addinfo(joinline.lstrip("<<info>>"))
 			elif errorinfo >= 0:
 				if errorcheck:
-					if error == startmsg:
-						error = ""
+					if curr.geterror() == startmsg:
+						curr.replaceerror("")
 					errorcheck = 0
-					error += start
-				error += joinline
+					curr.adderror(start)
+				curr.adderror(joinline)
 			else:
-				glast += joinline
-				gs += joinline
+				curr.addglast(joinline)
+				curr.addgs(joinline)
 			if not string.strip(line):
 				#Ending tag for a communication
 				end = "\n========== END ==========\n\n"
-				msgdelim = "|MSGDELIM|"
-				end += msgdelim
-				gs += end
-				glast += end
-				petscdir = os.environ["PETSC_DIR"]
-				file = petscdir + "/zope/Extensions/bufupdate"
-				f = open(file, "a");
-				fcntl.flock(f.fileno(), fcntl.LOCK_EX)
+				curr.addgs(end)
+				curr.addglast(end)
 				if not infocheck:
-					info += end
-					delimstring = "2~/~/~"
-					writestring = delimstring+""+info
-					f.write(writestring)
-					info = ""
+					curr.addinfo(end)
 				if not errorcheck:
-					error += end
-					delimstring = "3~/~/~"
-					writestring = delimstring+""+error
-					f.write(writestring)
-					error = ""										            
-				delimstring = "1~/~/~"
-				writestring = delimstring+""+gs
-				f.write(writestring)
-				gs = ""
-				fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-				f.close()
+					curr.error(end)
 				break
 
 #Start the server and intilize the global variables
 def runserver():
-	global gs
-	global glast
-	global info
-	global error
 	global startmsg
 	global sockfd
-	global status
-	status = -1
+	global n
+	global users
 	startmsg = "No Output"
-	gs = glast = info = error = startmsg
+	d = User(startmsg)
+	users = {"default" : d}
+	n = "default"
+	#threading used so Zope server can display startserver page
 	serv = SocketServer.ThreadingTCPServer(("", 9999), RecHandler)
 	sockfd = serv.fileno()
 	thread = threading.Thread(target=serv.serve_forever)
 	thread.setDaemon(1)
 	thread.start()
+	#serv.serve_forever()
 	return "TCP server started"
 
-def writefd():
-	global sockfd
-	f = fdopen(sockfd, "w")
-	f.write("hello world\n")
+def getgs(i):
+	global users
+	i = i.strip()
+	return users[i].getgs()
 
-def getgs():
-	return gs
+def getgsn(i):
+	global users
+	i = i.strip()
+	return users[i].getgs()
 
-def getglast():
-	return glast
+def getglast(i):
+	global users
+	i = i.strip()
+	return users[i].getglast()
 
-def getinfo():
-	return info
+def getinfo(i):
+	global users
+	i = i.strip()
+	return users[i].getinfo()
 
-def geterror():
-	return error
+def geterror(i):
+	global users
+	i = i.strip()
+	return users[i].geterror()
 
-def getstatus():
-	global stauts
-	if status == -1:
+def setn(i):
+	global n
+	global users
+	if users.has_key(i):
+		n = i
+
+def checkuser(i):
+	global users
+	i = i.strip()
+	if users.has_key(i):
+		return "true"
+	else:
+		return "false"
+
+def getstatus(i):
+	global users
+	i = i.strip()
+	if checkuser(i) == 'false':
+		createuser(i)
+	stat = users[i].getstatus()
+	if stat == -1:
 		return "No Programs have been started"
-	elif status == 1:
+	elif stat == 1:
 		return "Active Program"
 	else: 
 		return "Not Active"
 
-def update():
-	petscdir = os.environ["PETSC_DIR"]
-	file = petscdir+"/zope/Extensions/bufupdate"
-	f = open(file, "r")
-	fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-	out = f.read()
-	fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-	f.close()
-	return out
+def getuser():
+	global n
+	return n
 
-def clear():
-	petscdir = os.environ["PETSC_DIR"]
-	file = petscdir+"/zope/Extensions/bufupdate"
-	f = open(file, "w+")
-	f.close()
+def clearoutput(i):
+	global users
+	global startmsg
+	i = i.strip()
+	if users.has_key(i):
+		users[i].replaceall(startmsg)
 
 if __name__ == '__main__':
 	runserver()

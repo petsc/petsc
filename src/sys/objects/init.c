@@ -396,6 +396,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     PETSC_LISTEN_CHECK = 1; 
     ierr=PetscSocketListen(hostname, listenport, &PETSC_LISTENFD);CHKERRQ(ierr);
     PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
+    PETSC_STDERR = PETSC_STDOUT;
+    char username[256];
+    ierr = PetscGetUserName(username, 256);
+    fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
     fprintf(PETSC_STDOUT, "<<<start>>>");
   }
 

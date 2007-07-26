@@ -42,7 +42,6 @@ int main(int argc,char **args)
   PetscInitialize(&argc,&args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-m",&m,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
-
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
          Compute the matrix and right-hand-side vector that define
          the linear system, Ax = b.
@@ -172,7 +171,6 @@ int main(int argc,char **args)
        KSPSetFromOptions().  All of these defaults can be
        overridden at runtime, as indicated below.
   */
-
   ierr = KSPSetTolerances(ksp,1.e-2/((m+1)*(n+1)),1.e-50,PETSC_DEFAULT,
                           PETSC_DEFAULT);CHKERRQ(ierr);
 
