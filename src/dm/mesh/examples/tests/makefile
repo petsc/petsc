@@ -72,6 +72,10 @@ mesh1: mesh1.o chkopts
 	-${CLINKER} -o mesh1 mesh1.o ${PETSC_DM_LIB}
 	${RM} -f mesh1.o
 
+mesh2: mesh2.o chkopts
+	-${CLINKER} -o mesh2 mesh2.o ${PETSC_DM_LIB}
+	${RM} -f mesh2.o
+
 overlap1: overlap1.o chkopts
 	-${CLINKER} -o overlap1 overlap1.o ${PETSC_DM_LIB}
 	${RM} -f overlap1.o
@@ -79,6 +83,10 @@ overlap1: overlap1.o chkopts
 overlap2: overlap2.o chkopts
 	-${CLINKER} -o overlap2 overlap2.o ${PETSC_DM_LIB}
 	${RM} -f overlap2.o
+
+operator1: operator1.o chkopts
+	-${CLINKER} -o operator1 operator1.o ${PETSC_DM_LIB}
+	${RM} -f operator1.o
 
 subset: subset.o chkopts
 	-${CLINKER} -o subset subset.o ${PETSC_DM_LIB}

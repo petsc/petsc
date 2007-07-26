@@ -1137,6 +1137,9 @@ namespace ALE {
   public: // Restriction and Update
     // Zero entries
     void zero() {
+      this->set(0.0);
+    };
+    void set(const value_type value) {
       //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
       const chart_type& chart = this->getChart();
 
@@ -1146,14 +1149,16 @@ namespace ALE {
         const int&  cDim  = this->getConstraintDimension(*c_iter);
 
         if (!cDim) {
-          memset(array, 0, dim * sizeof(value_type));
+          for(int i = 0; i < dim; ++i) {
+            array[i] = value;
+          }
         } else {
           const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
           int                                 cInd = 0;
 
           for(int i = 0; i < dim; ++i) {
             if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-            array[i] = 0.0;
+            array[i] = value;
           }
         }
       }
