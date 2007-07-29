@@ -1037,8 +1037,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideScatter(Vec s,PetscInt start,Vec v,In
 PetscErrorCode VecReciprocal_Default(Vec v)
 {
   PetscErrorCode ierr;
-  PetscInt         i,n;
-  PetscScalar *x;
+  PetscInt       i,n;
+  PetscScalar    *x;
 
   PetscFunctionBegin;
   ierr = VecGetLocalSize(v,&n);CHKERRQ(ierr);
@@ -1071,8 +1071,8 @@ PetscErrorCode VecReciprocal_Default(Vec v)
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec v)
 {
-  PetscScalar *x;
-  PetscInt         i, n;
+  PetscScalar    *x;
+  PetscInt       i, n;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1083,6 +1083,56 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSqrt(Vec v)
     x[i] = sqrt(PetscAbsScalar(x[i]));
   }
   ierr = VecRestoreArray(v, &x);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "VecDotNorm2"
+/*@
+  VecDotNorm2 - computes the inner product of two vectors and the 2-norm squared of the second vector
+
+  Collective on Vec
+
+  Input Parameter:
++ s - first vector
+- t - second vector
+
+  Output Parameter:
++ dp - s't
+- nm - t't
+
+  Level: advanced
+
+.seealso:   VecDot(), VecNorm(), VecDotBegin(), VecNormBegin(), VecDotEnd(), VecNormEnd()
+
+.keywords: vector, sqrt, square root
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, PetscScalar *nm)
+{
+  PetscScalar    *sx, *tx, dpx = 0.0, nmx = 0.0,work[2],sum[2];
+  PetscInt       i, n;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(s, VEC_COOKIE,1);
+  PetscValidHeaderSpecific(t, VEC_COOKIE,2);
+
+  ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
+  ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
+  ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
+
+  for (i = 0; i<n; i++) {
+    dpx += sx[i]*tx[i];
+    nmx += tx[i]*tx[i];
+  }
+  work[0] = dpx;
+  work[1] = nmx;
+  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,PetscSum_Op,s->comm);CHKERRQ(ierr);
+  *dp  = sum[0];
+  *nm  = sum[1];
+  
+  ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
+  ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
