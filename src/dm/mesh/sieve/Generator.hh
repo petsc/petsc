@@ -222,6 +222,34 @@ namespace ALE {
         }
         if (serialMesh->depth() == 2) {
           const Obj<Mesh::label_sequence>&           edges    = serialMesh->depthStratum(1);
+#define NEW_LABEL
+#ifdef NEW_LABEL
+          for(Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+            if (serialMesh->getValue(markers, *e_iter)) {
+              in.numberofsegments++;
+            }
+          }
+          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          if (in.numberofsegments > 0) {
+            int s = 0;
+
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            for(Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+              const int edgeMarker = serialMesh->getValue(markers, *e_iter);
+
+              if (edgeMarker) {
+                const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*e_iter);
+                int                                                p    = 0;
+
+                for(Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
+                  in.segmentlist[s*2 + (p++)] = vNumbering->getIndex(*v_iter);
+                }
+                in.segmentmarkerlist[s++] = edgeMarker;
+              }
+            } 
+          }
+#else
           const Obj<Mesh::label_type::baseSequence>& boundary = markers->base();
 
           in.numberofsegments = 0;
@@ -241,7 +269,7 @@ namespace ALE {
               for(Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
                 if (*b_iter == *e_iter) {
                   const Obj<Mesh::sieve_type::traits::coneSequence>& cone = serialSieve->cone(*e_iter);
-                  int                                                            p    = 0;
+                  int                                                p    = 0;
 
                   for(Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
                     in.segmentlist[s*2 + (p++)] = vNumbering->getIndex(*v_iter);
@@ -251,6 +279,7 @@ namespace ALE {
               }
             }
           }
+#endif
         }
 
         in.numberofholes = 0;

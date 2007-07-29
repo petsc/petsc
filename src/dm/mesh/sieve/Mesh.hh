@@ -15,6 +15,10 @@
 #include <SieveBuilder.hh>
 #endif
 
+#ifndef  included_ALE_LabelSifter_hh
+#include <LabelSifter.hh>
+#endif
+
 namespace ALE {
   class indexSet : public std::valarray<int> {
   public:
@@ -75,7 +79,12 @@ namespace ALE {
     typedef ArrowSection_                                             arrow_section_type;
     typedef Bundle<Sieve_,RealSection_,IntSection_,ArrowSection_>     this_type;
     typedef typename sieve_type::point_type                           point_type;
+#define NEW_LABEL
+#ifdef NEW_LABEL
+    typedef typename ALE::LabelSifter<int, point_type>                label_type;
+#else
     typedef typename ALE::Sifter<int, point_type, int>                label_type;
+#endif
     typedef typename std::map<const std::string, Obj<label_type> >    labels_type;
     typedef typename label_type::supportSequence                      label_sequence;
     typedef std::map<std::string, Obj<arrow_section_type> >           arrow_sections_type;
@@ -1731,80 +1740,6 @@ namespace ALE {
       return output.str();
     };
   };
-  class MeshOld : public ALE::ParallelObject {
-  public:
-    // PCICE BC
-    typedef struct {double rho,u,v,p;}   bc_value_type;
-    typedef std::map<int, bc_value_type> bc_values_type;
-  protected:
-    int            _dim;
-    // PCICE BC
-    bc_values_type _bcValues;
-  public:
-    MeshOld(MPI_Comm comm, int dim, int debug = 0) : ALE::ParallelObject(comm, debug), _dim(dim) {};
-  public: // Accessors
-#if 0
-    // Only works in 2D
-    int orientation(const patch_type& patch, const point_type& cell) {
-      const Obj<real_section_type>&     coordinates = this->getRealSection("coordinates");
-      const Obj<topology_type>&         topology    = this->getTopology();
-      const Obj<sieve_type>&            sieve       = topology->getPatch(patch);
-      const Obj<sieve_type::coneArray>& cone        = sieve->nCone(cell, topology->depth());
-      sieve_type::coneArray::iterator   cBegin      = cone->begin();
-      real_section_type::value_type     root[2];
-      real_section_type::value_type     vA[2];
-      real_section_type::value_type     vB[2];
-
-      const real_section_type::value_type *coords = coordinates->restrictPoint(patch, *cBegin);
-      root[0] = coords[0];
-      root[1] = coords[1];
-      ++cBegin;
-      coords = coordinates->restrictPoint(patch, *cBegin);
-      vA[0] = coords[0] - root[0];
-      vA[1] = coords[1] - root[1];
-      ++cBegin;
-      coords = coordinates->restrictPoint(patch, *cBegin);
-      vB[0] = coords[0] - root[0];
-      vB[1] = coords[1] - root[1];
-      double det = vA[0]*vB[1] - vA[1]*vB[0];
-      if (det > 0.0) return  1;
-      if (det < 0.0) return -1;
-      return 0;
-    };
-#endif
-  public: // BC values for PCICE
-    const bc_value_type& getBCValue(const int bcFunc) {
-      return this->_bcValues[bcFunc];
-    };
-    void setBCValue(const int bcFunc, const bc_value_type& value) {
-      this->_bcValues[bcFunc] = value;
-    };
-    bc_values_type& getBCValues() {
-      return this->_bcValues;
-    };
-    void distributeBCValues() {
-      int size = this->_bcValues.size();
-
-      MPI_Bcast(&size, 1, MPI_INT, 0, this->comm()); 
-      if (this->commRank()) {
-        for(int bc = 0; bc < size; ++bc) {
-          int           funcNum;
-          bc_value_type funcVal;
-
-          MPI_Bcast((void *) &funcNum, 1, MPI_INT,    0, this->comm());
-          MPI_Bcast((void *) &funcVal, 4, MPI_DOUBLE, 0, this->comm());
-          this->_bcValues[funcNum] = funcVal;
-        }
-      } else {
-        for(bc_values_type::iterator bc_iter = this->_bcValues.begin(); bc_iter != this->_bcValues.end(); ++bc_iter) {
-          const int&           funcNum = bc_iter->first;
-          const bc_value_type& funcVal = bc_iter->second;
-          MPI_Bcast((void *) &funcNum, 1, MPI_INT,    0, this->comm());
-          MPI_Bcast((void *) &funcVal, 4, MPI_DOUBLE, 0, this->comm());
-        }
-      }
-    };
-  };
   class MeshBuilder {
     typedef ALE::Mesh Mesh;
   public:
@@ -2094,9 +2029,7 @@ namespace ALE {
       delete [] vertices;
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
-    }
-
-
+    };
     #undef __FUNCT__
     #define __FUNCT__ "createCubeBoundary"
     /*
@@ -2223,7 +2156,200 @@ namespace ALE {
 #endif
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
       return mesh;
-    }
+    };
+    #undef __FUNCT__
+    #define __FUNCT__ "createParticleInCubeBoundary"
+    /*
+      Simple cubic boundary:
+
+     30----31-----32
+      |     |     |
+      |  3  |  2  |
+      |     |     |
+     27----28-----29
+      |     |     |
+      |  0  |  1  |
+      |     |     |
+     24----25-----26
+    */
+    static Obj<Mesh> createParticleInCubeBoundary(const MPI_Comm comm, const double lower[], const double upper[], const int faces[], const double radius, const int thetaEdges, const int phiSlices, const int debug = 0) {
+      Obj<Mesh> mesh            = new Mesh(comm, 2, debug);
+      const int numCubeVertices = (faces[0]+1)*(faces[1]+1)*(faces[2]+1);
+      const int numPartVertices = (thetaEdges - 1)*phiSlices + 2;
+      const int numVertices     = numCubeVertices + numPartVertices;
+      const int numCubeFaces    = 6;
+      const int numFaces        = numCubeFaces + thetaEdges*phiSlices;
+      double   *coords          = new double[numVertices*3];
+      const Obj<Mesh::sieve_type> sieve    = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+      Mesh::point_type           *vertices = new Mesh::point_type[numVertices];
+      int                         order    = 0;
+
+      mesh->setSieve(sieve);
+      const Obj<Mesh::label_type>& markers = mesh->createLabel("marker");
+      if (mesh->commRank() == 0) {
+        // Make cube
+        for(int v = numFaces; v < numFaces+numVertices; v++) {
+          vertices[v-numFaces] = Mesh::point_type(v);
+          mesh->setValue(markers, vertices[v-numFaces], 1);
+        }
+        {
+          // Side 0 (Front)
+          Mesh::point_type face(0);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 1 (Back)
+          Mesh::point_type face(1);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[7], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 2 (Bottom)
+          Mesh::point_type face(2);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[0], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 3 (Top)
+          Mesh::point_type face(3);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
+          sieve->addArrow(vertices[7], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 4 (Left)
+          Mesh::point_type face(4);
+          sieve->addArrow(vertices[4], face, order++);
+          sieve->addArrow(vertices[0], face, order++);
+          sieve->addArrow(vertices[3], face, order++);
+          sieve->addArrow(vertices[7], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        {
+          // Side 5 (Right)
+          Mesh::point_type face(5);
+          sieve->addArrow(vertices[1], face, order++);
+          sieve->addArrow(vertices[5], face, order++);
+          sieve->addArrow(vertices[6], face, order++);
+          sieve->addArrow(vertices[2], face, order++);
+          mesh->setValue(markers, face, 1);
+        }
+        // Make particle
+        for(int s = 0; s < phiSlices; ++s) {
+          for(int ep = 0; ep < thetaEdges; ++ep) {
+            // Vertices on each slice are 0..thetaEdges
+            Mesh::point_type face(numCubeFaces + s*thetaEdges + ep);
+            int vertexA = numCubeVertices + ep + 0 +     s*(thetaEdges+1);
+            int vertexB = numCubeVertices + ep + 1 +     s*(thetaEdges+1);
+            int vertexC = numCubeVertices + (ep + 1 + (s+1)*(thetaEdges+1))%((thetaEdges+1)*phiSlices);
+            int vertexD = numCubeVertices + (ep + 0 + (s+1)*(thetaEdges+1))%((thetaEdges+1)*phiSlices);
+            const int correction1 = (s > 0)*((s-1)*2 + 1);
+            const int correction2 = (s < phiSlices-1)*(s*2 + 1);
+
+            if ((vertexA - numCubeVertices)%(thetaEdges+1) == 0) {
+              vertexA = vertexD = numCubeVertices;
+              vertexB -= correction1;
+              vertexC -= correction2;
+            } else if ((vertexB - numCubeVertices)%(thetaEdges+1) == thetaEdges) {
+              vertexA -= correction1;
+              vertexD -= correction2;
+              vertexB = vertexC = numCubeVertices + thetaEdges;
+            } else {
+              vertexA -= correction1;
+              vertexB -= correction1;
+              vertexC -= correction2;
+              vertexD -= correction2;
+            }
+            if ((vertexA >= numVertices) || (vertexB >= numVertices) || (vertexC >= numVertices) || (vertexD >= numVertices)) {
+              throw ALE::Exception("Bad vertex");
+            }
+            sieve->addArrow(vertices[vertexA], face, order++);
+            sieve->addArrow(vertices[vertexB], face, order++);
+            if (vertexB != vertexC) sieve->addArrow(vertices[vertexC], face, order++);
+            if (vertexA != vertexD) sieve->addArrow(vertices[vertexD], face, order++);
+            mesh->setValue(markers, face, 1);
+            mesh->setValue(markers, vertices[vertexA], 1);
+            mesh->setValue(markers, vertices[vertexB], 1);
+            if (vertexB != vertexC) mesh->setValue(markers, vertices[vertexC], 1);
+            if (vertexA != vertexD) mesh->setValue(markers, vertices[vertexD], 1);
+          }
+        }
+      }
+      mesh->stratify();
+#if 0
+      for(int vz = 0; vz <= edges[2]; ++vz) {
+        for(int vy = 0; vy <= edges[1]; ++vy) {
+          for(int vx = 0; vx <= edges[0]; ++vx) {
+            coords[((vz*(edges[1]+1)+vy)*(edges[0]+1)+vx)*2+0] = lower[0] + ((upper[0] - lower[0])/faces[0])*vx;
+            coords[((vz*(edges[1]+1)+vy)*(edges[0]+1)+vx)*2+1] = lower[1] + ((upper[1] - lower[1])/faces[1])*vy;
+            coords[((vz*(edges[1]+1)+vy)*(edges[0]+1)+vx)*2+2] = lower[2] + ((upper[2] - lower[2])/faces[2])*vz;
+          }
+        }
+      }
+#else
+      coords[0*3+0] = lower[0];
+      coords[0*3+1] = lower[1];
+      coords[0*3+2] = upper[2];
+      coords[1*3+0] = upper[0];
+      coords[1*3+1] = lower[1];
+      coords[1*3+2] = upper[2];
+      coords[2*3+0] = upper[0];
+      coords[2*3+1] = upper[1];
+      coords[2*3+2] = upper[2];
+      coords[3*3+0] = lower[0];
+      coords[3*3+1] = upper[1];
+      coords[3*3+2] = upper[2];
+      coords[4*3+0] = lower[0];
+      coords[4*3+1] = lower[1];
+      coords[4*3+2] = lower[2];
+      coords[5*3+0] = upper[0];
+      coords[5*3+1] = lower[1];
+      coords[5*3+2] = lower[2];
+      coords[6*3+0] = upper[0];
+      coords[6*3+1] = upper[1];
+      coords[6*3+2] = lower[2];
+      coords[7*3+0] = lower[0];
+      coords[7*3+1] = upper[1];
+      coords[7*3+2] = lower[2];
+#endif
+      const double centroidX = 0.5*(upper[0] + lower[0]);
+      const double centroidY = 0.5*(upper[1] + lower[1]);
+      const double centroidZ = 0.5*(upper[2] + lower[2]);
+      for(int s = 0; s < phiSlices; ++s) {
+        for(int v = 0; v <= thetaEdges; ++v) {
+          int          vertex  = numCubeVertices + v + s*(thetaEdges+1);
+          const double theta   = v*(PETSC_PI/thetaEdges);
+          const double phi     = s*(2.0*PETSC_PI/phiSlices);
+          const int correction = (s > 0)*((s-1)*2 + 1);
+
+          if ((vertex- numCubeVertices)%(thetaEdges+1) == 0) {
+            vertex = numCubeVertices;
+          } else if ((vertex - numCubeVertices)%(thetaEdges+1) == thetaEdges) {
+            vertex = numCubeVertices + thetaEdges;
+          } else {
+            vertex -= correction;
+          }
+          coords[vertex*3+0] = centroidX + radius*sin(theta)*cos(phi);
+          coords[vertex*3+1] = centroidY + radius*sin(theta)*sin(phi);
+          coords[vertex*3+2] = centroidZ + radius*cos(theta);
+        }
+      }
+      delete [] vertices;
+      ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, mesh->getDimension()+1, coords);
+      return mesh;
+    };
   };
 } // namespace ALE
 

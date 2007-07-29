@@ -247,6 +247,10 @@ namespace ALE {
         const Obj<typename bundle_type::label_type>& serialLabel   = l_iter->second;
         const Obj<typename bundle_type::label_type>& parallelLabel = parallelMesh->createLabel(l_iter->first);
         // Create local label
+#define NEW_LABEL
+#ifdef NEW_LABEL
+        parallelLabel->add(serialLabel, parallelSieve);
+#else
         const Obj<typename bundle_type::label_type::traits::baseSequence>& base = serialLabel->base();
 
         for(typename bundle_type::label_type::traits::baseSequence::iterator b_iter = base->begin(); b_iter != base->end(); ++b_iter) {
@@ -254,6 +258,7 @@ namespace ALE {
             parallelLabel->addArrow(*serialLabel->cone(*b_iter)->begin(), *b_iter);
           }
         }
+#endif
         // Get remote labels
         sieveCompletion::scatterCones(serialLabel, parallelLabel, sendOverlap, recvOverlap);
       }

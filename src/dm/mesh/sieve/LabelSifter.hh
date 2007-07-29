@@ -297,8 +297,6 @@ namespace ALE {
       typedef LabelSifter<Source_, Target_> graph_type;
       // Encapsulated container types
       typedef NewSifterDef::ArrowContainer<Source_, Target_>                         arrow_container_type;
-      typedef std::set<Source_>                                                      cap_container_type;
-      typedef std::set<Target_>                                                      base_container_type;
       // Types associated with records held in containers
       typedef typename arrow_container_type::traits::arrow_type                      arrow_type;
       typedef typename arrow_container_type::traits::source_type                     source_type;
@@ -376,8 +374,6 @@ namespace ALE {
         };
       };// struct supportSequence
 
-      typedef typename base_container_type::iterator baseSequence;
-      typedef typename cap_container_type::iterator  capSequence;
       typedef std::set<source_type>   coneSet;
       typedef ALE::array<source_type> coneArray;
       typedef std::set<target_type>   supportSet;
@@ -389,13 +385,15 @@ namespace ALE {
       typedef LabelSifter<OtherSource_, OtherTarget_> type;
     };
 
+    typedef typename traits::source_type     source_type;
+    typedef typename traits::target_type     target_type;
+    typedef typename traits::coneSequence    coneSequence;
+    typedef typename traits::supportSequence supportSequence;
   public:
     // Debug level
     int _debug;
     //protected:
     typename traits::arrow_container_type _arrows;
-    typename traits::base_container_type  _base;
-    typename traits::cap_container_type   _cap;
   protected:
     MPI_Comm    _comm;
     int         _commRank;
@@ -451,18 +449,6 @@ namespace ALE {
     PetscObject petscObj() const {return this->_petscObj;};
 #endif
 
-    const typename traits::cap_container_type& cap() const {
-      return this->_cap;
-    };
-    const typename traits::base_container_type& base() const {
-      return this->_base;
-    };
-    bool capContains(const typename traits::source_type& p) {
-      return this->_cap.find(p) != this->_cap.end();
-    };
-    bool baseContains(const typename traits::target_type& p) {
-      return this->_base.find(p) != this->_base.end();
-    };
     // FIX: should probably have cone and const_cone etc, since arrows can be modified through an iterator (modifyColor).
     Obj<typename traits::arrowSequence> 
     arrows(const typename traits::source_type& s, const typename traits::target_type& t) {
@@ -564,39 +550,9 @@ namespace ALE {
       else {
         os << "["<<rank<<"]Viewing a LabelSifter:" << std::endl;
       }
-      if(!rawData) {
-        os << "cap --> base:" << std::endl;
-        const typename traits::cap_container_type& cap = this->cap();
-        for(typename traits::cap_container_type::iterator capi = cap->begin(); capi != cap->end(); capi++) {
-          const Obj<typename traits::supportSequence>& supp = this->support(*capi);
-
-          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); suppi++) {
-            os << *capi << "---->" << *suppi << std::endl;
-          }
-        }
-        os << "base <-- cap:" << std::endl;
-        const typename traits::base_container_type& base = this->base();
-        for(typename traits::base_container_type::iterator basei = base->begin(); basei != base->end(); basei++) {
-          const Obj<typename traits::coneSequence>& cone = this->cone(*basei);
-
-          for(typename traits::coneSequence::iterator conei = cone->begin(); conei != cone->end(); conei++) {
-            os << *basei <<  "<--(" << conei.color() << ")--" << *conei << std::endl;
-          }
-        }
-      }
-      else {
-        os << "'raw' arrow set:" << std::endl;
-        for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++) {
-          os << *ai << std::endl;
-        }
-        os << "'raw' base set:" << std::endl;
-        for(typename traits::base_container_type::iterator bi = _base.begin(); bi != _base.end(); bi++) {
-          os << *bi << std::endl;
-        }
-        os << "'raw' cap set:" << std::endl;
-        for(typename traits::cap_container_type::iterator ci = _cap.begin(); ci != _cap.end(); ci++) {
-          os << *ci << std::endl;
-        }
+      os << "'raw' arrow set:" << std::endl;
+      for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++) {
+        os << *ai << std::endl;
       }
     };
     // A parallel viewer
@@ -617,45 +573,13 @@ namespace ALE {
         if(this->commRank() == 0) {
           txt << "cap --> base:\n";
         }
-        const typename traits::cap_container_type& cap   = this->cap();
-        const typename traits::base_container_type& base = this->base();
-        if(cap.empty()) {
+        if(_arrows.set.empty()) {
           txt << "[" << this->commRank() << "]: empty" << std::endl; 
         }
-        for(typename traits::cap_container_type::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          const Obj<typename traits::supportSequence>& supp = this->support(*capi);
-          for(typename traits::supportSequence::iterator suppi = supp->begin(); suppi != supp->end(); suppi++) {
-            txt << "[" << this->commRank() << "]: " << *capi << "---->" << *suppi << std::endl;
-          }
+        for(typename traits::arrow_container_type::set_type::iterator ai = _arrows.set.begin(); ai != _arrows.set.end(); ai++) {
+          txt << "[" << this->commRank() << "]: " << ai->source << "---->" << ai->target << std::endl;
         }
-        //
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        //
-        ostringstream txt1;
-        if(this->commRank() == 0) {
-          txt1 << "cap:\n";
-        }
-        txt1 << "[" << this->commRank() << "]:  [";
-        for(typename traits::cap_container_type::iterator capi = cap.begin(); capi != cap.end(); capi++) {
-          txt1 << "  " << *capi;
-        }
-        txt1 << " ]" << std::endl;
-        //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        //
-        ostringstream txt2;
-        if(this->commRank() == 0) {
-          txt2 << "base:\n";
-        }
-        txt2 << "[" << this->commRank() << "]:  [";
-        for(typename traits::base_container_type::iterator basei = base.begin(); basei != base.end(); basei++) {
-          txt2 << "  " << *basei;
-        }
-        txt2 << " ]" << std::endl;
-        //
-        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }
       else { // if(raw)
@@ -669,28 +593,6 @@ namespace ALE {
           txt << "[" << this->commRank() << "]: " << arr << std::endl;
         }
         ierr = PetscSynchronizedPrintf(this->comm(), txt.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        //
-        ostringstream txt1;
-        if(this->commRank() == 0) {
-          txt1 << "'raw' base set:" << std::endl;
-        }
-        for(typename traits::base_container_type::iterator bi = _base.begin(); bi != _base.end(); bi++) 
-        {
-          txt1 << "[" << this->commRank() << "]: " << *bi << std::endl;
-        }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt1.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
-        //
-        ostringstream txt2;
-        if(this->commRank() == 0) {
-          txt2 << "'raw' cap set:" << std::endl;
-        }
-        for(typename traits::cap_container_type::iterator ci = _cap.begin(); ci != _cap.end(); ci++) 
-        {
-          txt2 << "[" << this->commRank() << "]: " << *ci << std::endl;
-        }
-        ierr = PetscSynchronizedPrintf(this->comm(), txt2.str().c_str()); CHKERROR(ierr, "Error in PetscSynchronizedFlush");
         ierr = PetscSynchronizedFlush(this->comm());  CHKERROR(ierr, "Error in PetscSynchronizedFlush");
       }// if(raw)
       
@@ -710,40 +612,18 @@ namespace ALE {
     // Structural manipulation
     //
     void clear() {
-      this->_arrows.set.clear(); this->_base.clear(); this->_cap.clear();
+      this->_arrows.set.clear();
     };
-    void addBasePoint(const typename traits::target_type t) {
-      this->_base.insert(t);
-    };
-    void removeBasePoint(const typename traits::target_type t) {
-      if (this->_debug) {std::cout << " Removing " << t << " from the base" << std::endl;}
-      // Clear the cone and remove the point from _base
-      this->clearCone(t);
-      this->_base.erase(t);
-    };
-    void addCapPoint(const typename traits::source_type s) {
-      this->_cap.insert(s);
-    };
-    void removeCapPoint(const typename traits::source_type s) {
-      if (this->_debug) {std::cout << " Removing " << s << " from the cap" << std::endl;}
-      // Clear the support and remove the point from _cap
-      this->clearSupport(s);
-      this->_cap.erase(s);
+    // This is necessary to work with Completion right now
+    virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q, const int dummy) {
+      this->addArrow(p, q);
     };
     virtual void addArrow(const typename traits::source_type& p, const typename traits::target_type& q) {
       this->addArrow(typename traits::arrow_type(p, q));
       //std::cout << "Added " << arrow_type(p, q);
     };
-    virtual bool checkArrow(const typename traits::arrow_type& a) {
-      if (this->_cap.find(a.source) == this->_cap.end()) return false;
-      if (this->_base.find(a.target) == this->_base.end()) return false;
-      return true;
-    };
-    virtual void addArrow(const typename traits::arrow_type& a, bool restrict = false) {
-      if (restrict && !this->checkArrow(a)) return;
+    virtual void addArrow(const typename traits::arrow_type& a) {
       this->_arrows.set.insert(a);
-      this->addBasePoint(a.target);
-      this->addCapPoint(a.source);
     };
     virtual void removeArrow(const typename traits::arrow_type& a) {
       // First, produce an arrow sequence for the given source, target combination.
@@ -825,20 +705,16 @@ namespace ALE {
         this->addArrow(source, *iter);
       }
     };
-    template<typename Sifter_>
-    void add(const Obj<Sifter_>& cbg, bool restrict = false) {
+    template<typename Sifter_, typename AnotherSifter_>
+    void add(const Obj<Sifter_>& cbg, const Obj<AnotherSifter_>& baseRestriction = NULL) {
       typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type& aInd = ::boost::multi_index::get<typename Sifter_::traits::arrowInd>(cbg->_arrows.set);
+      bool baseRestrict = !baseRestriction.isNull();
       
       for(typename ::boost::multi_index::index<typename Sifter_::traits::arrow_container_type::set_type, typename Sifter_::traits::arrowInd>::type::iterator a_iter = aInd.begin(); a_iter != aInd.end(); ++a_iter) {
-        this->addArrow(*a_iter, restrict);
-      }
-      if (!restrict) {
-        for(typename traits::base_container_type::iterator b_iter = this->_base.begin(); b_iter != this->_base.end(); ++b_iter) {
-          this->addBasePoint(*b_iter);
+        if (baseRestrict) {
+          if (!baseRestriction->support(a_iter->target)->size() && !baseRestriction->cone(a_iter->target)->size()) continue;
         }
-        for(typename traits::cap_container_type::iterator c_iter = this->_cap.begin(); c_iter != this->_cap.end(); ++c_iter) {
-          this->addCapPoint(*c_iter);
-        }
+        this->addArrow(*a_iter);
       }
     };
   }; // class LabelSifter

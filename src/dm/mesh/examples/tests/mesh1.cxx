@@ -122,11 +122,6 @@ PetscErrorCode NewLabelTest(const Obj<ALE::Mesh>& mesh, const Obj<new_label_type
       label->setCone(1, e);
     }
   }
-  if (options->test > 5) {
-    for(unsigned int i = 0; i < cells->size(); ++i) {
-      label->addCapPoint(i+2);
-    }
-  }
   PetscFunctionReturn(0);
 }
 
