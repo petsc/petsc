@@ -100,7 +100,7 @@ static PetscErrorCode  KSPSolve_BCGS(KSP ksp)
     ierr  = VecAXPY(X,alpha,P);CHKERRQ(ierr);     /*   x <- x + a p       */
     ierr  = VecAXPY(X,omega,S);CHKERRQ(ierr);     /*   x <- x + w s       */
     ierr  = VecWAXPY(R,-omega,T,S);CHKERRQ(ierr);     /*   r <- s - w t       */
-    if (ksp->normtype != KSP_NORM_NO && ksp->chknorm < i) {
+    if (ksp->normtype != KSP_NORM_NO && ksp->chknorm < i+2) {
       ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);
     }
 
