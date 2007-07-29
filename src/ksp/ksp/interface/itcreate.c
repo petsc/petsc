@@ -144,6 +144,37 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "KSPSetCheckNormIteration"
+/*@
+   KSPSetCheckNormIteration - Sets the first iteration at which the norm of the residual will be 
+     computed and used in the convergence test. 
+
+   Collective on KSP
+
+   Input Parameter:
++  ksp - Krylov solver context
+-  it  - use -1 to check at all iterations
+
+   Notes: 
+   Currently only works with Bi-CG-stab
+
+   Use KSPSetNormType(ksp,KSP_NORM_NO) to never check the norm
+
+   Level: advanced
+
+.keywords: KSP, create, context, norms
+
+.seealso: KSPSetUp(), KSPSolve(), KSPDestroy(), KSPSkipConverged(), KSPSetNormType()                               
+@*/
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetCheckNormIteration(KSP ksp,PetscInt it)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  ksp->chknorm = it;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "KSPGetNormType"
 /*@
    KSPGetNormType - Sets the norm that is used for convergence testing.
@@ -392,7 +423,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->rtol          = 1.e-5;
   ksp->abstol        = 1.e-50;
   ksp->divtol        = 1.e4;
-
+  
+  ksp->chknorm             = -1;
   ksp->normtype            = KSP_NORM_PRECONDITIONED;
   ksp->rnorm               = 0.0;
   ksp->its                 = 0;

@@ -61,6 +61,7 @@ struct _p_KSP {
   PetscInt      res_hist_max;         /* actual amount of data in residual_history */
   PetscTruth    res_hist_reset;       /* reset history to size zero for each new solve */
 
+  PetscInt      chknorm;             /* only compute/check norm if iterations is great than this */
   /* --------User (or default) routines (most return -1 on error) --------*/
   PetscErrorCode (*monitor[MAXKSPMONITORS])(KSP,PetscInt,PetscReal,void*); /* returns control to user after */
   PetscErrorCode (*monitordestroy[MAXKSPMONITORS])(void*);         /* */
