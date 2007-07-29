@@ -1,14 +1,15 @@
 static char help[] = "Mesh Tests.\n\n";
 
-#include <petsc.h>
-#include <Distribution.hh>
 #include "petscmesh_formats.hh"
 #include "meshTest.hh"
+
+#include <LabelSifter.hh>
 
 using ALE::Obj;
 typedef ALE::Mesh::sieve_type        sieve_type;
 typedef ALE::Mesh::real_section_type section_type;
 typedef ALE::Mesh::label_type        label_type;
+typedef ALE::LabelSifter<int,sieve_type::point_type> new_label_type;
 
 typedef struct {
   int        debug;           // The debugging level
@@ -98,8 +99,27 @@ PetscErrorCode LabelTest(const Obj<ALE::Mesh>& mesh, const Obj<label_type>& labe
   for(ALE::Mesh::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
     const sieve_type::point_type& e = *c_iter;
 
-    if (options->test > 2) {
+    if (options->test > 4) {
       mesh->setValue(label, e, 1);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "NewLabelTest"
+PetscErrorCode NewLabelTest(const Obj<ALE::Mesh>& mesh, const Obj<new_label_type>& label, Options *options)
+{
+  const Obj<ALE::Mesh::label_sequence>&     cells  = mesh->heightStratum(0);
+  const ALE::Mesh::label_sequence::iterator cBegin = cells->begin();
+  const ALE::Mesh::label_sequence::iterator cEnd   = cells->end();
+
+  PetscFunctionBegin;
+  for(ALE::Mesh::label_sequence::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
+    const sieve_type::point_type& e = *c_iter;
+
+    if (options->test > 4) {
+      label->setCone(1, e);
     }
   }
   PetscFunctionReturn(0);
@@ -262,9 +282,11 @@ int main(int argc, char *argv[])
     if (options.test > 1) {
       ierr = LabelTest(mesh, mesh->getLabel("marker"), &options);CHKERRQ(ierr);
     }
-    if (options.test > 2) {
-      //ierr = AllocationTest(mesh, &options);CHKERRQ(ierr);
+    if (options.test > 3) {
+      Obj<new_label_type> label = new new_label_type(mesh->comm(), mesh->debug());
+      ierr = NewLabelTest(mesh, label, &options);CHKERRQ(ierr);
     }
+    //ierr = AllocationTest(mesh, &options);CHKERRQ(ierr);
   } catch (ALE::Exception e) {
     std::cout << e << std::endl;
   }

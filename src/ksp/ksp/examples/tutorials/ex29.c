@@ -263,6 +263,7 @@ PetscErrorCode VecView_VTK(Vec x, const char filename[], const char bcName[])
   ierr = PetscViewerASCIIPrintf(viewer, "Z_COORDINATES %d double\n", 1);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "%G\n", 0.0);CHKERRQ(ierr);
   ierr = VecRestoreArray(coords, &array);CHKERRQ(ierr);
+  ierr = VecDestroy(coords);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "POINT_DATA %d\n", N);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "SCALARS scalars double %d\n", dof);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
