@@ -93,9 +93,10 @@ namespace ALE {
   namespace XSifterDef {
     static int debug   = 0;
     static int codebug = 0;
-    // Debugging works the top: setting ALE::XSifterDef::debug to n will 'uncover' the *last* (newest) n layers of debugging.
-    // Thus, the functions with the n heighst __ALE_DEBUG__ markers will spew out debugging prints.
+    // Debugging works from the top: setting ALE::XSifterDef::debug to n will 'uncover' the *last* (newest) n layers of debugging.
+    // Thus, the functions with the n heighest __ALE_DEBUG__ markers will produce debugging output.
     // Co-debugging works from the bottom: setting ALE::XSifterDef::codebug to n will 'uncover' the *first* (oldest) n layers of debugging.
+    // Thus, the functions with the n lowest __ALE_DEBUG__ markers will produce debugging output.
 #define ALE_XDEBUG_HEIGHT 6
 #define ALE_XDEBUG_LEVEL(n)  ((ALE::XSifterDef::codebug >= n) || (n > ALE_XDEBUG_HEIGHT - ALE::XSifterDef::debug))
 #define ALE_XDEBUG           (ALE_XDEBUG_LEVEL(__ALE_XDEBUG__))
@@ -312,18 +313,24 @@ namespace ALE {
       typedef typename index_type::key_compare                 key_compare_type;
       //
       struct cookie_type {
+        iterator _segmentBegin;
         iterator _segmentEnd;
       public:
         //
         cookie_type(){};
-        explicit cookie_type(const iterator& iter) : _segmentEnd(iter) {};
-        cookie_type(const cookie_type& cookie)     : _segmentEnd(cookie._segmentEnd){};
-       
-        const iterator&  segmentEnd() const {return this->_segmentEnd;};
+        explicit cookie_type(const iterator& b, const iterator& e) : 
+          _segmentEnd(b), _segmentEnd(e) {};
+        cookie_type(const cookie_type& cookie) : 
+          _segmentBegin(cookie._segmentBegin), _segmentEnd(cookie._segmentEnd){};
+        //
+        inline void operator()(const iterator& b, const iterator& e){this->_segmentBegin = b; this->_segmentEnd = e;};
+        //
+        inline const iterator&  segmentBegin() const {return this->_segmentBegin;};
+        inline const iterator&  segmentEnd()   const {return this->_segmentEnd;};
         //
         template <typename Stream_>
         friend Stream_& operator<<(Stream_& os, const cookie_type& cookie) {
-          return os << (*(cookie.segmentEnd()));
+          return os << "[" << (*(cookie.segmentBegin())) << ", " << (*(cookie.segmentEnd())) << "]";
         };
       };// struct cookie
       //      
@@ -332,12 +339,14 @@ namespace ALE {
     public:
       //
       // Basic interface
+      //
       //IndexFilterAdapter(){};
       IndexFilterAdapter(index_type* index) : _index(index){};
       ~IndexFilterAdapter(){};
       //
       // Extended interface
       //
+      // individual key queries
       inline static key_type  key(const iterator& iter) { static key_extractor_type kex; return kex(*iter);};
       static        bool      compare(const key_type& k1, const key_type& k2) {
         static key_compare_type comp;
@@ -346,12 +355,50 @@ namespace ALE {
       inline static        bool      compare(const iterator& i1, const iterator& i2) {
         return compare(key(i1),key(i2));
       };
+    public:
+      //
+      // Search interface
+      //
+      //
+      // We can search on a given Key_ key.
+      template <typename Key_>
+      inline iterator relative_lower_bound(const Key_& key, const cookie_type& range) const {
+        return this->_index->lower_bound(key);
+      };
+      //
+      template <typename Key_>
+      inline iterator relative_upper_bound(const Key_& key, const cookie_type& range) const {
+        return this->_index->upper_bound(key);
+      };
+      template <typename Key_>
+      inline iterator weak_relative_upper_bound(const Key_& key, const cookie_type& range) const {
+        return this->_index->weak_upper_bound(key);
+      };
+      //
+      // We can search on a given PosKey_ key within the subsegment delineated by PreKey_ low/high bounds.
+      template <typename PreKey_, typename PosKey_>
+      inline iterator relative_lower_bound(const PosKey_& key, const PreKey_& low, const PreKey_ high, const cookie_type& range) const {
+        return this->_index->relative_lower_bound(low, high, key);
+      };
+      //
+      template <typename PreKey_, typename PosKey_>
+      inline iterator relative_upper_bound(const PosKey_& key, const PreKey_& low, const PreKey_ high, const cookie_type& range) const {
+        return this->_index->relative_upper_bound(low, high, key);
+      };
+      //
+      template <typename PreKey_, typename PosKey_>
+      inline iterator weak_relative_upper_bound(const PosKey_& key, const PreKey_& low, const PreKey_ high, const cookie_type& range) const {
+        return this->_index->weak_relative_upper_bound(low, high, key);
+      };
+    public:
+      //
+      // Main interface
       //
       #undef  __FUNCT__
       #define __FUNCT__ "firstSegment"
       #undef  __ALE_XDEBUG__ 
       #define __ALE_XDEBUG__ 5
-      void firstSegment(iterator& iter, cookie_type& cookie) const {
+      void firstSegment(cookie_type& range) const {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
@@ -360,11 +407,12 @@ namespace ALE {
         };
 #endif
 
-        iter = this->_index->begin();
-        cookie._segmentEnd = this->_index->end();
+        range._segmentBegin = this->_index->begin();
+        range._segmentEnd  = this->_index->end();
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
-          std::cout << "*iter: " << *iter << ", cookie: " << cookie << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "range: " << range << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         };
 #endif
@@ -374,33 +422,31 @@ namespace ALE {
       #define __FUNCT__ "nextSegment"
       #undef  __ALE_XDEBUG__ 
       #define __ALE_XDEBUG__ 5
-      void nextSegment(iterator& iter, cookie_type& cookie) const {
+      void nextSegment(cookie_type& range) const {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "*iter: " << *iter << ", cookie: " << cookie << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": range: " << range << std::endl;
         };
 #endif
 
-        iter = this->_index->end();
-        cookie._segmentEnd = this->_index->end();
+        range._segmentEnd = this->_index->end();
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
-          std::cout << "*iter: " << *iter << ", cookie: " << cookie << std::endl;
+          std::cout << "range: " << range << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         };
 #endif
       };
       //
-      void next(iterator& iter, cookie_type& cookie) const {
-        iter = this->nextSegment(iter, cookie);
+      void next(iterator& iter, cookie_type& range) const {
+        iter = this->nextSegment(iter, range);
       };
       //
-      void end(iterator& iter, cookie_type& cookie) const {
-        iter = this->veryEnd(); cookie(iter);
+      void end(iterator& iter, cookie_type& range) const {
+        iter = this->veryEnd(); range(iter, iter);
       };
       //
       iterator veryEnd()       const { return this->_index->end();  };
@@ -420,8 +466,8 @@ namespace ALE {
     // RangeFilter defines a subset of an OuterFilter_ based on the high and low value of a key.
     // The type and ordering of the key are defined by KeyExtractor_ and KeyCompare_ respectively.
     // Nested filter types are in one-to-one correspondence with lexicographical nests of their KeyCompare_s.
-    // Namely, the outermost Filter_ can compare nested pairs of keys from the outermost 'ko', to the innermost 'ki':
-    // (ko,(kj,...,(ki))).
+    // Namely, the outermost Filter_ (containing a nest of other filters) can compare nested pairs of keys 
+    // (ko,(kj,...,(ki))) from the outermost 'ko', to the innermost 'ki'.
     // 
     #undef  __CLASS__
     #define __CLASS__ "RangeFilter"
@@ -437,44 +483,32 @@ namespace ALE {
       typedef typename outer_type::iterator                    iterator;
       typedef typename outer_type::cookie_type                 outer_cookie_type;
       //
+      // The cookie_type stores the range delimiters; 
+      // it derives from the outer_cookie_type, hence contains the outer segment delimiters.
+      //
       struct cookie_type: public outer_cookie_type {
-        // we store an iterator pointing to the end of the segment
-        iterator _subsegmentEnd;
-        iterator _segmentEnd;
-        //
+        // we store the iterators delineating the segment
+        iterator _segmentBegin, _segmentEnd;
+        // Basic
         cookie_type(){};
-        cookie_type(const cookie_type& cookie) : _segmentEnd(cookie._segmentEnd) {};
-        explicit cookie_type(const iterator& segmentEnd) : outer_cookie_type(segmentEnd), _segmentEnd(segmentEnd) {};
-        //
-        inline const iterator&  outerEnd()   const {return this->outer_cookie_type::segmentEnd();};
-        inline const iterator&  segmentEnd() const {return this->_segmentEnd;};
-        inline const iterator&  subsegmentEnd() const {return this->_subsegmentEnd;};
-        //
+        cookie_type(const cookie_type& cookie) : 
+          _segmentBegin(cookie._segmentBegin), _segmentEnd(cookie._segmentEnd) {};
+        explicit cookie_type(const iterator& segmentBegin, const iterator& segmentEnd) : 
+          outer_cookie_type(segmentBegin, segmentEnd), _segmentBegin(segmentBegin), _segmentEnd(segmentEnd) {};
+        inline void operator()(const iterator& b, const iterator& e){this->_segmentBegin = b; this->_segmentEnd = e;};
+        // Extended
+        inline const iterator&        outerBegin()   const {return this->outer_cookie_type::segmentBegin();};
+        inline const iterator&        outerEnd()     const {return this->outer_cookie_type::segmentEnd();};
+        inline const iterator&        segmentBegin() const {return this->_segmentBegin;};
+        inline const iterator&        segmentEnd()   const {return this->_segmentEnd;};
+        //        inline const key_type&        subsegmentEnd() const {return this->_subsegmentEnd;};
+        // Aux
+        inline void syncOuter() {this->_segmentEnd = this->outerEnd(); this->_segmentBegin = this->outerBegin();};
         template <typename Stream_>
         friend Stream_& operator<<(Stream_& os, const cookie_type& cookie) {
-          return os /* << ((outer_cookie_type) cookie) << "; " */ << *cookie.segmentEnd();
+          return os << "[" << *cookie.segmentBegin() << ", " << *cookie.segmentEnd() << "]";
         };
       };// struct cookie_type
-      //
-      template <typename SubkeyExtractor_>
-      struct superkey_extractor_type {
-        typedef SubkeyExtractor_                           subkey_extractor_type;
-        typedef typename subkey_extractor_type::value_type subkey_type;
-        typedef ALE::pair<key_type, subkey_type>           super_key_type;
-        //
-        superkey_extractor_type(){};
-        //
-        inline const super_key_type& operator()(const iterator& iter) { 
-          return _super_key(_ex(iter), _subex(iter));
-        };
-        inline const super_key_type& operator()(const iterator& iter, const subkey_type& subkey) {
-          return _super_key(_ex(iter), subkey);
-        };
-      protected:
-        super_key_type        _super_key;  
-        subkey_extractor_type _subex;
-        key_extractor_type    _ex;
-      };// struct superkey_extractor_type
       //      
     protected:
       bool                                  _have_low, _have_high;
@@ -494,10 +528,17 @@ namespace ALE {
       //
       // Extended interface
       //
+      // range manipulation and queries
       inline void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
       inline void setHigh(const key_type& high) {this->_high = high; this->_have_high = true;};
       inline void setLowAndHigh(const key_type& low, const key_type& high) {this->setLow(low); this->setHigh(high);};
       //
+      inline key_type         low()       const {return this->_low;};
+      inline key_type         high()      const {return this->_high;};
+      inline bool             haveLow()   const {return this->_have_low;};
+      inline bool             haveHigh()  const {return this->_have_high;};
+      //
+      // individual key queries
       inline static key_type  key(const iterator& iter) { static key_extractor_type kex; return kex(*iter);};
       static        bool      compare(const key_type& k1, const key_type& k2) {
         static key_compare_type comp;
@@ -506,80 +547,104 @@ namespace ALE {
       inline static        bool      compare(const iterator& i1, const iterator& i2) {
         return compare(key(i1),key(i2));
       };
-      //
-      inline key_type         low()       const {return this->_low;};
-      inline key_type         high()      const {return this->_high;};
-      inline bool             haveLow()   const {return this->_have_low;};
-      inline bool             haveHigh()  const {return this->_have_high;};
-      //
     public:
       //
-      // We can search on a SubKey subkey within the segment bound by the low/high iterators.
-      // The subkey will be combined with any key_type key from the [low, high] range using a pair combinator: 
-      // comb(key, subkey) producing a compatible key.
-      template <typename SubKeyExtractor_>
-      inline iterator lower_bound(const typename SubKeyExtractor_::value_type& subkey, const iterator& low, const iterator& high) const {
-        typedef superkey_extractor_type<SubKeyExtractor_> supex_type;
-        typedef SubKeyExtractor_                          subex_type;
-        static   supex_type      supex;
-        static   subex_type      subex;
-        typename supex_type::key_type suplow = supex(low, subkey), suphigh = supex(high, subkey);
-        iterator iter = this->_index->ale_lower_bound(subex, subkey, supex, suplow, suphigh);
-        return (iter==this->veryEnd())?low:iter;
+      // Search Interface
+      //
+      //
+//       // Key combinators are needed for lexicographical searches.
+//       // The intent here is that a key_type prekey can be combined with a given poskey_type poskey (defined by PosKeyExtractor_)
+//       // to make a combo_key_type  that can used by OuterFilter_ as its own poskey_type.  
+//       template <typename PosKeyExtractor_>
+//       struct combo_key_extractor_type {
+//         typedef PosKeyExtractor_                           poskey_extractor_type;
+//         typedef typename poskey_extractor_type::value_type poskey_type;
+//         typedef ALE::pair<key_type, poskey_type>           combo_key_type;
+//         //
+//       protected:
+//         combo_key_type        _combo_key;  
+//         poskey_extractor_type _posex;
+//         key_extractor_type    _ex;
+//       public:
+//         combo_key_extractor_type(){};
+//         //
+//         inline const combo_key_type& operator()(const iterator& iter) { 
+//           return _combo_key(_ex(iter), _posex(iter));
+//         };
+//         inline const combo_key_type& operator()(const iterator& iter, const poskey_type& poskey) {
+//           return _combo_key(_ex(iter), poskey);
+//         };
+//       };// struct combo_key_extractor_type
+      //
+      // We can search on a given Key_ key within the segment delineated in the 'range'.
+      //
+      template <typename Key_>
+      inline iterator relative_lower_bound(const Key_& key, const cookie_type& range) const {
+        return this->outer_type::relative_lower_bound(key, this->key(range.segmentBegin()), this->key(range.segmentEnd()), range);
       };
       //
-      #undef  __FUNCT__
-      #define __FUNCT__ "firstSegment"
-      #undef  __ALE_XDEBUG__ 
-      #define __ALE_XDEBUG__ 5
-      // Returns the first segment allowed by this filter.
-      void firstSegment(iterator& iter, cookie_type& cookie) const {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-        };
-#endif
-        cookie._segmentEnd = iter;
-        while((iter == cookie._segmentEnd) && (iter != this->veryEnd())) {
-          if(iter == cookie.outerEnd()) {
-            this->outer_type::nextSegment(iter, cookie);
-            if(iter == this->veryEnd()) break;
-          }
-          // from here until the end of the while loop the outer segment can be assumed to be non-empty
-          if(this->haveLow()) {
-            iter = this->lower_bound(this->low(),iter,cookie.outerEnd());
-          }
-          if(this->haveHigh()) {
-            cookie._segmentEnd = this->upper_bound(this->high(),iter,cookie.outerEnd());
-          }
-        }//while
-        if(Strided) {
-          // now find the boundary of a subsegment
-          if(iter != this->veryEnd()) {
-            cookie._subsegmentEnd = this->upper_bound(this->high(),iter,cookie.segmentEnd());
-          }
-        }
-        //
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter: " << *iter;
-          std::cout << ", cookie: " << cookie << std::endl; 
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };//firstSegment()
+      template <typename Key_>
+      inline iterator relative_upper_bound(const Key_& key, const cookie_type& range) const {
+        return this->outer_type::relative_upper_bound(key, this->key(range.segmentBegin()), this->key(range.segmentEnd()), range);
+      };
+      template <typename Key_>
+      inline iterator weak_relative_upper_bound(const Key_& key, const cookie_type& range) const {
+        return this->outer_type::weak_relative_upper_bound(key, this->key(range.segmentBegin()), this->key(range.segmentEnd()), range);
+      };
       //
+      // We can search on a given PosKey_ poskey within a subsegment of the 'range'; 
+      // the subsegment is bounded by the prekey PreKey_ bounds.
+      // Both PreKey_ and PosKey_ refer to their relative order in the portion of the key following key_type;
+      // thus, both are 'pos' relative to key_type.
+      //
+      template <typename PreKey_, typename PosKey_>
+      inline iterator relative_lower_bound(const PosKey_ poskey, const PreKey_ prelow, const PreKey_& prehigh, const cookie_type& range) const {
+        // The poskeys prelow, prehigh are combined with the key_type keys of range.segmentBegin()/segmentEnd() 
+        // into ALE::pairs.  These together, with the poskey and the range will be handed off to the OuterFilter 
+        // to execute the analogous search (as interpreted by OuterFilter_).
+        ALE::pair<key_type, PosKey_> 
+          low(this->key(range.segmentBegin()),prelow), high(this->key(range.segmentEnd()),prehigh);
+        return this->outer_type::relative_lower_bound(poskey, low, high, range);
+      };
+      //
+      template <typename PreKey_, typename PosKey_>
+      inline iterator relative_upper_bound(const PosKey_ poskey, const PreKey_ prelow, const PreKey_& prehigh, const cookie_type& range) const {
+        // The poskeys prelow, prehigh are combined with the key_type keys of range.segmentBegin()/segmentEnd() 
+        // into ALE::pairs.  These together, with the poskey and the range will be handed off to the OuterFilter 
+        // to execute the analogous search (as interpreted by OuterFilter_).
+        ALE::pair<key_type, PosKey_> 
+          low(this->key(range.segmentBegin()),prelow), high(this->key(range.segmentEnd()),prehigh);
+        return this->outer_type::relative_upper_bound(poskey, low, high, range);
+      };
+      //
+      template <typename PreKey_, typename PosKey_>
+      inline iterator weak_relative_upper_bound(const PosKey_ poskey, const PreKey_ prelow, const PreKey_& prehigh, const cookie_type& range) const {
+        // The poskeys prelow, prehigh are combined with the key_type keys of range.segmentBegin()/segmentEnd() 
+        // into ALE::pairs.  These together, with the poskey and the range will be handed off to the OuterFilter 
+        // to execute the analogous search (as interpreted by OuterFilter_).
+        ALE::pair<key_type, PosKey_> 
+          low(this->key(range.segmentBegin()),prelow), high(this->key(range.segmentEnd()),prehigh);
+        return this->outer_type::weak_relative_upper_bound(poskey, low, high, range);
+      };
     public:
+      //
+      // Main interface
+      //
+      // Each RangeFilter is assumed to contain *at most one* segment of records, within each outer segment.
+      // Each segment is broken up into subsegments defined as the records with the same RangeFilter key_type key;
+      // recall that a key_type key is in general only a prefix of the total key; records within a subsegment 
+      // differ in the postfix only.
+      // Subsegment boundaries are ignored unless the RangeFilter is Strided, in which case only the first
+      // elements of each subsegment are traversed.  There is no point in storing the subsegment boundaries
+      // in the cookie, since there is no opportunity for reuse (e.g., segmentEnd boundary is checked every time
+      // an iterator is incremented by a non-Strided RangeFilter; no such thing is done by a Strided RangeFilter).
       //
       #undef  __FUNCT__
       #define __FUNCT__ "first"
       #undef  __ALE_XDEBUG__ 
       #define __ALE_XDEBUG__ 5
       // Returns the first segment allowed by this filter.
-      void first(iterator& iter, cookie_type& cookie) const {
+      void first(iterator& iter, cookie_type& range) const {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
@@ -587,54 +652,106 @@ namespace ALE {
           std::cout << "filter: " << *this << std::endl;
         };
 #endif
-        this->outer_type::first(iter, cookie);
-        this->firstSegment(iter, cookie);
+        this->outer_type::firstSegment(range);
+        this->firstSegment(range);
+        iter = range.segmentBegin();
         //
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter: " << *iter;
-          std::cout << ", cookie: " << cookie << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "range: " << range << std::endl; 
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         };
 #endif
       };//first()
       //
       #undef  __FUNCT__
+      #define __FUNCT__ "firstSegment"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 5
+      // Returns the first segment allowed by this filter.
+      void firstSegment(cookie_type& range) const {
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "filter: " << *this << std::endl;
+        };
+#endif
+        // Recursively compute the first segment of the OuterFilter(s).
+        this->outer_filter_type::firstSegment(range);
+        // Start with an empty segment at the beginning of the outer segment
+        range._segmentBegin = range.outerBegin();
+        range._segmentEnd   = range.outerBegin();
+        // While the segment is empty,  but the index has not been exhausted, we search for a non-empty segment
+        while((range._segmentBegin == range._segmentEnd) && (range._segmentEnd != this->veryEnd())) {
+#ifdef ALE_USE_DEBUGGING
+          if(ALE_XDEBUG) {
+            std::cout << __CLASS__ << "::" << __FUNCT__ << ": looking for a segment" << std::endl;
+          };
+#endif
+          if(range._segmentBegin == range.outerEnd()) {
+            // if this outer segment contains no segment (remember, at most one such segment exists)
+            // move on to the next outer segment.
+#ifdef ALE_USE_DEBUGGING
+            if(ALE_XDEBUG) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": no segment in the current outer segment; moving onto a new outer segment" << std::endl;
+            };
+#endif
+            this->outer_type::nextSegment(range);
+            if(range.outerBegin() == this->veryEnd()){
+              range._segmentBegin = range.outerBegin();
+              range._segmentEnd   = range.outerEnd();
+            };
+          }
+          // from here until the end of the while loop the outer segment can be assumed to be non-empty
+          if(this->haveLow()) {
+            range._segmentBegin = this->outer_type::relative_lower_bound(this->low(), range);
+          }
+          else {
+            range._segmentBegin = range.outerBegin();
+          }
+          if(this->haveHigh()) {
+            range._segmentEnd = this->outer_type::relative_upper_bound(this->high(), range);
+          }
+          else {
+            range._segmentEnd = range.outerEnd();
+          }
+        }//while
+        //
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          //
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "range: " << range << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
+        };
+#endif
+      };//firstSegment()
+      //
+      #undef  __FUNCT__
       #define __FUNCT__ "nextSegment"
       #undef  __ALE_XDEBUG__
       #define __ALE_XDEBUG__ 5
-      void nextSegment(iterator& iter, cookie_type& cookie) {
+      void nextSegment(cookie_type& range) {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "*iter: " << *iter << ", cookie: " << cookie << std::endl;
+          std::cout << "range: " << range << std::endl;
         };
 #endif
-        if(Strided){
-          iter = cookie._subsegmentEnd;
-          if(iter == cookie._segmentEnd){
-            this->outer_type::nextSegment(iter, cookie);
-            this->firstSegment(iter,cookie);
-          }
-          else if(iter != this->veryEnd()) {
-            cookie._subsegmentEnd = this->_segment_upper_bound(this->key(iter), iter, cookie);
-            // assuming a nonempty segment, there cannot be an overshoot
-          }
-        }// Strided
-        else {// !Strided
-            this->outer_type::nextSegment(iter,cookie);
-            this->firstSegment(iter,cookie);
-        }// !Strided
-
+        // recall, one segment per outer segment; 
+        // therefore we must move onto the next outer segment first
+        this->outer_type::nextSegment(range);
+        this->firstSegment(range);
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter: " << *iter;
-          std::cout << ", cookie: " << cookie << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":  range: " << range << std::endl; 
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         };
 #endif
@@ -644,46 +761,88 @@ namespace ALE {
       #define __FUNCT__ "next"
       #undef  __ALE_XDEBUG__
       #define __ALE_XDEBUG__ 5
-      void next(iterator& iter, cookie_type& cookie) {
+      void next(iterator& iter, cookie_type& range) {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
           std::cout << "filter: " << *this << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "*iter: " << *iter << ", cookie: " << cookie << std::endl;
+          std::cout << "*iter: " << *iter << ", range: " << range << std::endl;
         };
 #endif
         if(!Strided) {
-        // If filter is not strided, we iterate through each subsegment until the end of the segment is reached
+        // If filter is not strided, we iterate through each segment until the end of the outer segment is reached
 #ifdef ALE_USE_DEBUGGING
           if(ALE_XDEBUG) {
             std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided filter" << std::endl;
           }
 #endif
-          if(iter != cookie.segmentEnd()) {
+          if(iter != range.segmentEnd()) {
             ++iter;
           }
           else {
-            this->nextSegment(iter,cookie);
+            this->nextSegment(range);
+            iter = range.segmentBegin();
           }
         }// !Strided
-        else {
-          // If the filter is strided, we skip the remainder of the current segment; effectively, we iterate over subsegments.
+        else {// if(Strided)
+          // If the filter is strided, we skip the remainder of the current subsegment and find the next;
+          // effectively, we iterate over subsegments.
 #ifdef ALE_USE_DEBUGGING
           if(ALE_XDEBUG) {
             std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided filter" << std::endl;
           }
 #endif
-          // RangeFilter has multiple inner segments outer segment: one inner segment per key.  
-          // A Strided RangeFilter's next iterates over inner segments.
-          this->nextSegment(iter,cookie); // really means 'nextSubsegment'
+          // RangeFilter may have  multiple subsegments per segment: one subsegment per key value;
+          // However, there is only one segment, delineated by 'low' and 'high', per outer segment.
+          // Thus, the next subsegment starts at the upper bound of the current iter's key, relative
+          // to the [low,high] segment.
+          //
+          if(iter != range.segmentEnd()) {// not at segment end
+#ifdef ALE_USE_DEBUGGING
+            if(ALE_XDEBUG) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "not at segment end" << std::endl;
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "looking for weak_relative_upper_bound of " << this->key(iter) << std::endl;
+            }
+#endif
+            iter = this->weak_relative_upper_bound(this->key(iter), range);
+            if(iter != range.segmentEnd()){
+              ++iter; // FIX: should replace with iter->next() to take advantage of intercone linked lists
+#ifdef ALE_USE_DEBUGGING
+              if(ALE_XDEBUG) {
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "found a weak upper bound within the current segment, *iter =  " << *iter << std::endl;
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "converted to the upper bound, *iter =  " << *iter << std::endl;
+              }
+#endif
+            }
+            else {
+              this->nextSegment(range);
+              iter = range.segmentBegin();
+#ifdef ALE_USE_DEBUGGING
+              if(ALE_XDEBUG) {
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "no weak upper bound within the current segment" << std::endl;
+                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "moved to the next segment, *iter = " << *iter << std::endl;
+              }
+#endif
+            }
+          }// not at segment end
+          else {// at segment end
+            this->nextSegment(range);
+            iter = range.segmentBegin();
+#ifdef ALE_USE_DEBUGGING
+            if(ALE_XDEBUG) {
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "at segment end" << std::endl;
+              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "moved to the next segment, *iter =  " << *iter << std::endl;
+            }
+#endif
+          }
         }// Strided
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           //
           std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter: " << *iter;
-          std::cout << ", cookie: " << cookie << std::endl; 
+          std::cout << ", range: " << range << std::endl; 
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         };
 #endif
@@ -693,7 +852,7 @@ namespace ALE {
       #define __FUNCT__ "end"
       #undef  __ALE_XDEBUG__
       #define __ALE_XDEBUG__ 5
-      void end(iterator& iter, cookie_type& cookie) {
+      void end(iterator& iter, cookie_type& range) {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
@@ -701,16 +860,16 @@ namespace ALE {
           std::cout << "filter: " << *this << std::endl;
         };
 #endif
-        iter = this->veryEnd(); 
-        cookie._segmentEnd = iter;
-        if(Strided) {
-          cookie._subsegmentEnd = iter;
-        }
+        this->outer_filter_type::end(iter, range);
+        range(range.outerBegin(), range.outerEnd());
+        iter = range._segmentBegin;
+
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter: " << *iter;
-          std::cout << ", cookie: " << cookie << std::endl; 
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*iter: " << *iter;
+          std::cout << ", range: " << range << std::endl; 
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         };
 #endif
@@ -849,7 +1008,7 @@ namespace ALE {
 #endif
         static itor_type itor;
         static cookie_type cookie;
-        this->filter()->firstSegment(itor, cookie);
+        this->filter()->first(itor, cookie);
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           //
@@ -859,7 +1018,7 @@ namespace ALE {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
         }
 #endif
-        return iterator(this, itor, cookie);
+        return iterator(this, cookie.segmentBegin(), cookie);
       }; // begin()
       //
       //
@@ -910,9 +1069,9 @@ namespace ALE {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           //
-          //std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor: " << *itor; 
-          //std::cout << ", cookie: " << cookie;
-          //std::cout << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor: " << *itor; 
+          std::cout << ", cookie: " << cookie;
+          std::cout << std::endl;
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << std::endl;
         }
 #endif
@@ -1207,12 +1366,13 @@ namespace ALE {
     //
     // Filter types
     //
-    typedef ALE::XSifterDef::IndexFilterAdapter<cone_index_type>                                               cone_index_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_filter_type, target_extractor_type, target_order_type>      cone_filter_type;
+    typedef ALE::XSifterDef::IndexFilterAdapter<cone_index_type>                                                 cone_index_filter_type;
+    typedef ALE::XSifterDef::RangeFilter<cone_index_filter_type, target_extractor_type, target_order_type>       cone_filter_type;
+    typedef ALE::XSifterDef::RangeFilter<cone_index_filter_type, target_extractor_type, target_order_type, true> base_filter_type; // Strided = true
     //
     // Sequence types
     //
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_filter_type,  target_extractor_type>      BaseSequence;
+    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, base_filter_type,  target_extractor_type>      BaseSequence;
     typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_filter_type,  source_extractor_type>      ConeSequence;
     //
     //
@@ -1247,7 +1407,7 @@ namespace ALE {
     };
     //
     void base(BaseSequence& seq) {
-      static Obj<cone_filter_type> base_filter(cone_filter_type(this->_cone_index_filter));
+      static Obj<base_filter_type> base_filter(base_filter_type(this->_cone_index_filter));
       seq.reset(this, base_filter);
     };
     BaseSequence& base() {

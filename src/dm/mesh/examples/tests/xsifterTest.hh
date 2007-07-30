@@ -22,7 +22,7 @@ namespace ALE {
         PetscInt predicate; // The slice predicate; negative means 'all arrows'
         Options(MPI_Comm comm = PETSC_COMM_WORLD){
           PetscErrorCode ierr = ProcessOptions(comm, this); 
-          ALE::CHKERROR(ierr, "Error in Options constructor/ProcessOptions");
+          CHKERROR(ierr, "Error in Options constructor/ProcessOptions");
         };
         //
         #undef  __FUNCT__
