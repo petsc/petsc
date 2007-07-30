@@ -93,6 +93,10 @@ dolfin: dolfin.o chkopts
 	-${CLINKER} -o dolfin dolfin.o ${PETSC_DM_LIB}
 	${RM} -f dolfin.o
 
+rt: rt_quadrature.h rt.o chkopts
+	-${CLINKER} -o rt rt.o ${PETSC_SNES_LIB}
+	${RM} -f rt.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
