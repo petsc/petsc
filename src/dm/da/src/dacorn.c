@@ -80,7 +80,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
-  ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);
+  if (da->coordinates) {ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);}
   *c = da->coordinates;
   PetscFunctionReturn(0);
 }
