@@ -398,7 +398,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning pa
     MatPartitioning_Party *party;
 
     PetscFunctionBegin;
-    ierr = PetscNew(MatPartitioning_Party, &party);CHKERRQ(ierr);
+    ierr = PetscNewLog(part,MatPartitioning_Party, &party);CHKERRQ(ierr);
+    part->data = (void*) party;
 
     PetscStrcpy(party->global_method, "gcf,gbf");
     PetscStrcpy(party->local_method, "kl");
@@ -414,7 +415,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning pa
     part->ops->view = MatPartitioningView_Party;
     part->ops->destroy = MatPartitioningDestroy_Party;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Party;
-    part->data = (void*) party;
     PetscFunctionReturn(0);
 }
 

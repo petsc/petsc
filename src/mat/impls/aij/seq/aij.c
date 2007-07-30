@@ -238,17 +238,17 @@ PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
   Mat_SeqAIJ   *a = (Mat_SeqAIJ*)A->data;
   PetscInt     *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
   PetscInt     *ai = a->i,*ailen = a->ilen;
-  PetscScalar  *ap,*aa = a->a,zero = 0.0;
+  PetscScalar  *ap,*aa = a->a;
 
   PetscFunctionBegin;  
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k];   
-    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row);
+    if (row < 0) {v += n; continue;} /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row); */
     if (row >= A->rmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap.n-1);
     rp   = aj + ai[row]; ap = aa + ai[row];
     nrow = ailen[row]; 
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",in[l]);
+      if (in[l] < 0) {v++; continue;} /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",in[l]); */
       if (in[l] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap.n-1);
       col = in[l] ;
       high = nrow; low = 0; /* assume unsorted */
@@ -264,7 +264,7 @@ PetscErrorCode MatGetValues_SeqAIJ(Mat A,PetscInt m,const PetscInt im[],PetscInt
           goto finished;
         }
       } 
-      *v++ = zero;
+      *v++ = 0.0;
       finished:;
     }
   }
@@ -746,7 +746,7 @@ PetscErrorCode MatCompress_SeqAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqAIJ"
-PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqAIJ     *a = (Mat_SeqAIJ*)A->data;
   PetscErrorCode ierr;
@@ -754,57 +754,35 @@ PetscErrorCode MatSetOption_SeqAIJ(Mat A,MatOption op)
   PetscFunctionBegin;  
   switch (op) {
     case MAT_ROW_ORIENTED:
-      a->roworiented       = PETSC_TRUE;
+      a->roworiented       = flg;
       break;
     case MAT_KEEP_ZEROED_ROWS:
-      a->keepzeroedrows    = PETSC_TRUE;
+      a->keepzeroedrows    = flg;
       break;
-    case MAT_COLUMN_ORIENTED:
-      a->roworiented       = PETSC_FALSE;
-      break;
-    case MAT_COLUMNS_SORTED:
-      a->sorted            = PETSC_TRUE;
-      break;
-    case MAT_COLUMNS_UNSORTED:
-      a->sorted            = PETSC_FALSE;
-      break;
-    case MAT_NO_NEW_NONZERO_LOCATIONS:
-      a->nonew             = 1;
+    case MAT_NEW_NONZERO_LOCATIONS:
+      a->nonew             = (flg ? 0 : 1);
       break;
     case MAT_NEW_NONZERO_LOCATION_ERR:     
-      a->nonew             = -1;
+      a->nonew             = (flg ? -1 : 0);
       break;
     case MAT_NEW_NONZERO_ALLOCATION_ERR:
-      a->nonew             = -2;
-      break;
-    case MAT_YES_NEW_NONZERO_LOCATIONS:
-      a->nonew             = 0;
+      a->nonew             = (flg ? -2 : 0);
       break;
     case MAT_IGNORE_ZERO_ENTRIES:
-      a->ignorezeroentries = PETSC_TRUE;
-      break;
-    case MAT_DO_NOT_IGNORE_ZERO_ENTRIES:
-      a->ignorezeroentries = PETSC_FALSE;
+      a->ignorezeroentries = flg;
       break;
     case MAT_USE_COMPRESSEDROW:
-      a->compressedrow.use = PETSC_TRUE;
+      a->compressedrow.use = flg;
       break;
-    case MAT_DO_NOT_USE_COMPRESSEDROW:
-      a->compressedrow.use = PETSC_FALSE;
-      break;
-    case MAT_ROWS_SORTED:
-    case MAT_ROWS_UNSORTED:
-    case MAT_YES_NEW_DIAGONALS:
+    case MAT_NEW_DIAGONALS:
     case MAT_IGNORE_OFF_PROC_ENTRIES:
     case MAT_USE_HASH_TABLE:
       ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
       break;
-    case MAT_NO_NEW_DIAGONALS:
-      SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
     default:
       break;
   }
-  ierr = MatSetOption_Inode(A,op);CHKERRQ(ierr);
+  ierr = MatSetOption_Inode(A,op,flg);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2567,7 +2545,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
 
   /* allocate space for values if not already there */
@@ -2602,7 +2580,7 @@ $    Set linear terms into matrix
 $    Apply boundary conditions to matrix, at this time matrix must have 
 $      final nonzero structure (i.e. setting the nonlinear terms and applying 
 $      boundary conditions again will not change the nonzero structure
-$    ierr = MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS);
+$    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 $    ierr = MatStoreValues(mat);
 $    Call SNESSetJacobian() with matrix
 $    In your Jacobian routine
@@ -2611,7 +2589,7 @@ $      Set nonlinear terms in matrix
  
   Common Usage without SNESSolve(), i.e. when you handle nonlinear solve yourself:
 $    // build linear portion of Jacobian 
-$    ierr = MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS);
+$    ierr = MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);
 $    ierr = MatStoreValues(mat);
 $    loop over nonlinear iterations
 $       ierr = MatRetrieveValues(mat);
@@ -2622,7 +2600,7 @@ $    endloop
 
   Notes:
     Matrix must already be assemblied before calling this routine
-    Must set the matrix option MatSetOption(mat,MAT_NO_NEW_NONZERO_LOCATIONS); before 
+    Must set the matrix option MatSetOption(mat,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE); before 
     calling this routine.
 
     When this is called multiple times it overwrites the previous set of stored values
@@ -2660,7 +2638,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqAIJ(Mat mat)
 
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   if (!aij->saved_values) {
     SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
@@ -2974,8 +2952,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
     ierr = PetscMemzero(values, nz_max*sizeof(PetscScalar));CHKERRQ(ierr);
   }
 
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
-
   for(i = 0; i < m; i++) {
     nz  = Ii[i+1] - Ii[i];
     ierr = MatSetValues_SeqAIJ(B, 1, &i, nz, J+Ii[i], values + (v ? Ii[i] : 0), INSERT_VALUES);CHKERRQ(ierr);
@@ -2983,7 +2959,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocationCSR_SeqAIJ(Mat B,cons
 
   ierr = MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_UNSORTED);CHKERRQ(ierr);
 
   if (!v) {
     ierr = PetscFree(values);CHKERRQ(ierr);
@@ -3021,7 +2996,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Comm must be of size 1");
 
-  ierr = PetscNew(Mat_SeqAIJ,&b);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_SeqAIJ,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
   ierr = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor           = 0;
@@ -3030,7 +3005,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   b->col              = 0;
   b->icol             = 0;
   b->reallocs         = 0;
-  b->sorted            = PETSC_FALSE;
   b->ignorezeroentries = PETSC_FALSE;
   b->roworiented       = PETSC_TRUE;
   b->nonew             = 0;
@@ -3144,7 +3118,6 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   }
 
-  c->sorted            = a->sorted;
   c->ignorezeroentries = a->ignorezeroentries;
   c->roworiented       = a->roworiented;
   c->nonew             = a->nonew;

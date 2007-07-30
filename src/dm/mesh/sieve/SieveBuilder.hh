@@ -259,7 +259,7 @@ namespace ALE {
       int                      curCell    = 0;
       int                      curVertex  = firstVertex;
       int                      newElement = firstVertex+numVertices;
-      int                      o;
+      int                      o          = 1;
 
       if (corners < 0) corners = dim+1;
       curElement[0]   = &curVertex;
@@ -387,7 +387,7 @@ namespace ALECompat {
       typedef typename bundle_type::arrow_section_type     arrow_section_type;
       typedef std::vector<typename sieve_type::point_type> PointArray;
     public:
-      static void buildHexFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
+      static void buildHexFaces(ALE::Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
         int debug = sieve->debug();
 
         if (debug > 1) {std::cout << "  Building hex faces for boundary of " << cell << " (size " << bdVertices[dim].size() << "), dim " << dim << std::endl;}
@@ -446,7 +446,7 @@ namespace ALECompat {
         typename PointArray::iterator          f_itor = faces[dim].begin();
         const typename sieve_type::point_type& start  = *f_itor;
         const typename sieve_type::point_type& next   = *(++f_itor);
-        Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
+        ALE::Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
           cell = *preElement->begin();
@@ -461,7 +461,7 @@ namespace ALECompat {
           if (debug > 1) {std::cout << "  Added cell " << cell << " dim " << dim << std::endl;}
         }
       };
-      static void buildFaces(Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
+      static void buildFaces(ALE::Obj<sieve_type> sieve, int dim, std::map<int, int*>& curElement, std::map<int,PointArray>& bdVertices, std::map<int,PointArray>& faces, typename sieve_type::point_type& cell) {
         int debug = sieve->debug();
 
         if (debug > 1) {
@@ -502,7 +502,7 @@ namespace ALECompat {
         typename PointArray::iterator          f_itor = faces[dim].begin();
         const typename sieve_type::point_type& start  = *f_itor;
         const typename sieve_type::point_type& next   = *(++f_itor);
-        Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
+        ALE::Obj<typename sieve_type::supportSet> preElement = sieve->nJoin(start, next, 1);
 
         if (preElement->size() > 0) {
           cell = *preElement->begin();
@@ -524,7 +524,7 @@ namespace ALECompat {
       //   (0, 0)        ... (0, numCells-1):  dim-dimensional cells
       //   (0, numCells) ... (0, numVertices): vertices
       // The other cells are numbered as they are requested
-      static void buildTopology(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1) {
+      static void buildTopology(ALE::Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1) {
         int debug = sieve->debug();
 
         ALE_LOG_EVENT_BEGIN;
@@ -583,9 +583,9 @@ namespace ALECompat {
         ALE_LOG_EVENT_END;
       };
       template<typename Section>
-      static void buildCoordinates(const Obj<Section>& coords, const int embedDim, const double coordinates[]) {
+      static void buildCoordinates(const ALE::Obj<Section>& coords, const int embedDim, const double coordinates[]) {
         const typename Section::patch_type                          patch    = 0;
-        const Obj<typename Section::topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
+        const ALE::Obj<typename Section::topology_type::label_sequence>& vertices = coords->getTopology()->depthStratum(patch, 0);
         const int numCells = coords->getTopology()->heightStratum(patch, 0)->size();
 
         coords->setName("coordinates");
@@ -595,9 +595,9 @@ namespace ALECompat {
           coords->update(patch, *v_iter, &(coordinates[(*v_iter - numCells)*embedDim]));
         }
       };
-      static void buildCoordinatesNew(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
-        const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
-        const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
+      static void buildCoordinatesNew(const ALE::Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+        const ALE::Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
+        const ALE::Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
         const int numCells = bundle->heightStratum(0)->size();
 
         coordinates->setFiberDimension(vertices, embedDim);

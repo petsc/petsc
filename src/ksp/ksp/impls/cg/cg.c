@@ -204,9 +204,9 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
      ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
      ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);      /*  beta <- r'*z       */
-     if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
+     if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
-     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+     } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i+2) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
      } else if (ksp->normtype == KSP_NORM_NATURAL) {
        dp = sqrt(PetscAbsScalar(beta));
@@ -350,8 +350,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_CG(KSP ksp)
   KSP_CG         *cg;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_CG,&cg);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_CG));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_CG,&cg);CHKERRQ(ierr);
 #if !defined(PETSC_USE_COMPLEX)
   cg->type                       = KSP_CG_SYMMETRIC;
 #else

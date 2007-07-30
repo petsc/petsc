@@ -647,7 +647,8 @@
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
+       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,      &
+      &                  ierr)
 
       return
       end

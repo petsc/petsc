@@ -31,21 +31,21 @@ EXTERN_C_END
 PetscErrorCode OurSNESLineSearch(SNES snes,void *ctx,Vec x,Vec f,Vec g,Vec y,Vec w,PetscReal fnorm,PetscReal*ynorm,PetscReal*gnorm,PetscTruth *flag)
 {
   PetscErrorCode ierr = 0;
-  (*f73)(&snes,(void*)&ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
+  (*f73)(&snes,ctx,&x,&f,&g,&y,&w,&fnorm,ynorm,gnorm,flag,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 PetscErrorCode OurSNESLineSearchPostCheck(SNES snes,Vec x,Vec y,Vec z,void *checkCtx,PetscTruth *flag1,PetscTruth *flag2)
 {
   PetscErrorCode ierr = 0;
-  (*f74)(&snes,&x,&y,&z,(void*)&checkCtx,flag1,flag2,&ierr);CHKERRQ(ierr);
+  (*f74)(&snes,&x,&y,&z,checkCtx,flag1,flag2,&ierr);CHKERRQ(ierr);
   return 0;
 }
 
 PetscErrorCode OurSNESLineSearchPreCheck(SNES snes,Vec x,Vec y,void *checkCtx,PetscTruth *flag1)
 {
   PetscErrorCode ierr = 0;
-  (*f75)(&snes,&x,&y,(void*)&checkCtx,flag1,&ierr);CHKERRQ(ierr);
+  (*f75)(&snes,&x,&y,checkCtx,flag1,&ierr);CHKERRQ(ierr);
   return 0;
 }
 PetscErrorCode OurSNESSetUpdate(SNES snes,PetscInt b)

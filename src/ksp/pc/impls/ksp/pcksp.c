@@ -257,8 +257,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
   PC_KSP         *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_KSP,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_KSP));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_KSP,&jac);CHKERRQ(ierr);
   pc->ops->apply              = PCApply_KSP;
   pc->ops->applytranspose     = PCApplyTranspose_KSP;
   pc->ops->setup              = PCSetUp_KSP;

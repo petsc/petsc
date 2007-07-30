@@ -43,7 +43,7 @@ struct _MatOps {
   PetscErrorCode (*assemblybegin)(Mat,MatAssemblyType);
   PetscErrorCode (*assemblyend)(Mat,MatAssemblyType);
   PetscErrorCode (*compress)(Mat);
-  PetscErrorCode (*setoption)(Mat,MatOption);
+  PetscErrorCode (*setoption)(Mat,MatOption,PetscTruth);
   PetscErrorCode (*zeroentries)(Mat);
   /*25*/
   PetscErrorCode (*zerorows)(Mat,PetscInt,const PetscInt[],PetscScalar);

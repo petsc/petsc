@@ -229,7 +229,6 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
   b = (Mat_SeqAIJ*)(*fact)->data;
   b->free_a        = PETSC_TRUE;
   b->free_ij       = PETSC_TRUE;
-  b->sorted        = PETSC_FALSE;
   b->singlemalloc  = PETSC_FALSE;
   b->a             = new_a;
   b->j             = new_j;

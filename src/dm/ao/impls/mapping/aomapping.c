@@ -291,8 +291,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOCreateMapping(MPI_Comm comm,PetscInt napp,con
 #endif
 
   ierr = PetscHeaderCreate(ao, _p_AO, struct _AOOps, AO_COOKIE, AO_MAPPING, "AO", comm, AODestroy, AOView);CHKERRQ(ierr);
-  ierr = PetscNew(AO_Mapping, &aomap);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ao, sizeof(struct _p_AO) + sizeof(AO_Mapping));CHKERRQ(ierr);
+  ierr = PetscNewLog(ao, AO_Mapping, &aomap);CHKERRQ(ierr);
   ierr = PetscMemcpy(ao->ops, &AOps, sizeof(AOps));CHKERRQ(ierr);
   ao->data = (void*) aomap;
 

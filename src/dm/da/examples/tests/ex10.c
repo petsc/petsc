@@ -56,6 +56,7 @@ int main(int argc,char **argv)
   }
   ierr = VecRestoreArray(global,&alocal);CHKERRQ(ierr);
   ierr = VecRestoreArray(coors,&x);CHKERRQ(ierr);
+  ierr = VecDestroy(coords);CHKERRQ(ierr);
 
   ierr = VecView(global,viewer);CHKERRQ(ierr); 
 

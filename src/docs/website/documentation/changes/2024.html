@@ -291,7 +291,7 @@
       <li>If the option <strong>MAT_IGNORE_OFF_PROC_ENTRIES</strong> is used, then the routines <strong>MatAssemblyBegin()</strong><br>
         and <strong>MatAssemblyEnd()</strong> will not cause any parallel communication or
         synchronization.</li>
-      <li>If the option <strong>MAT_NO_NEW_NONZERO_LOCATIONS</strong> is used, one less collective
+      <li>If the option <strong>MAT_NEW_NONZERO_LOCATIONS</strong> is used, one less collective
         call will be made in the <strong>MatAssemblyEnd()</strong> routines for MPIAIJ and
         MPIBAIJ.</li>
       <li>Fixed bugs in <strong>MatReorderForNonzeroDiagonal()</strong> and made it more robust. </li>

@@ -77,12 +77,12 @@ static PetscErrorCode PCMGCreate_Private(MPI_Comm comm,PetscInt levels,PC pc,MPI
 
   PetscFunctionBegin;
   ierr = PetscMalloc(levels*sizeof(PC_MG*),&mg);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)+sizeof(PC_MG)));CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(pc,levels*(sizeof(PC_MG*)));CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
 
   for (i=0; i<levels; i++) {
-    ierr = PetscNew(PC_MG,&mg[i]);CHKERRQ(ierr);
+    ierr = PetscNewLog(pc,PC_MG,&mg[i]);CHKERRQ(ierr);
     mg[i]->level           = i;
     mg[i]->levels          = levels;
     mg[i]->cycles          = PC_MG_CYCLE_V;
@@ -137,9 +137,11 @@ static PetscErrorCode PCDestroy_MG(PC pc)
 {
   PC_MG          **mg = (PC_MG**)pc->data;
   PetscErrorCode ierr;
-  PetscInt       i,n = mg[0]->levels;
+  PetscInt       i,n;
 
   PetscFunctionBegin;
+  if (!mg) PetscFunctionReturn(0);
+  n = mg[0]->levels;
   for (i=0; i<n-1; i++) {
     if (mg[i+1]->r) {ierr = VecDestroy(mg[i+1]->r);CHKERRQ(ierr);}
     if (mg[i]->b) {ierr = VecDestroy(mg[i]->b);CHKERRQ(ierr);}

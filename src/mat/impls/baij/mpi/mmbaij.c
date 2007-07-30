@@ -196,7 +196,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap.bs,0,nz);CHKERRQ(ierr);
-  ierr = MatSetOption(Bnew,MAT_COLUMN_ORIENTED);CHKERRQ(ierr);
+  ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_FALSE);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscMalloc(bs2*sizeof(PetscScalar),&atmp);CHKERRQ(ierr);
@@ -212,7 +212,7 @@ PetscErrorCode DisAssemble_MPIBAIJ(Mat A)
         ierr = MatSetValuesBlocked_SeqBAIJ(Bnew,1,&i,1,&col,atmp,B->insertmode);CHKERRQ(ierr);
       }
     }
-  ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED);CHKERRQ(ierr);
+    ierr = MatSetOption(Bnew,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);
 
 #if defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscFree(atmp);CHKERRQ(ierr);

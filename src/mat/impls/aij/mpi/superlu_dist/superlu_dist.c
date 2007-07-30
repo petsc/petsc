@@ -653,7 +653,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
   Mat_SuperLU_DIST *lu;
 
   PetscFunctionBegin;
-  ierr = PetscNew(Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_SuperLU_DIST,&lu);CHKERRQ(ierr);
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
     lu->MatDuplicate         = B->ops->duplicate;

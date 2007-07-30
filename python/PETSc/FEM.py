@@ -250,61 +250,12 @@ class QuadratureGenerator(script.Script):
 
   def getSectionSetup(self, n, element):
     from Cxx import CompoundStatement
-
-    funcName = 'CreateProblem_gen_'+str(n)
-    meshVar  = self.Cxx.getVar('mesh')
-    secVar   = self.Cxx.getVar('section')
-    optVar   = self.Cxx.getVar('options')
-    decls = []
-    decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
-    decls.append(self.Cxx.getDeclaration(secVar, self.Cxx.getType('SectionReal')))
-    decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<ALE::Mesh>'), isForward=1))
-    decls.append(self.Cxx.getDeclaration('s', self.Cxx.getType('ALE::Obj<ALE::Mesh::real_section_type>'), isForward=1))
-    decls.append(self.Cxx.getDeclaration('ierr', self.Cxx.getType('PetscErrorCode')))
-    stmts = []
-    stmts.append(self.Cxx.getExpStmt(self.Cxx.getVar('PetscFunctionBegin')))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshGetMesh', [meshVar, 'm'])))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealCreate',
-                                                                 [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
-                                                                  self.Cxx.getAddress(secVar)])))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealSetBundle', [secVar, 'm'])))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealGetSection', [secVar, 's'])))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('PetscObjectSetName', [self.Cxx.castToType(secVar, self.Cxx.getType('PetscObject')),
-                                                                                        self.Cxx.getString('default')])))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshSetSectionReal', [meshVar, secVar])))
-    cmpd = CompoundStatement()
-    cmpd.declarations = [
-      self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::Discretization>&', isConst=1),
-                              self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'getDiscretization'))),
-      self.Cxx.getDeclaration('b', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
-                              self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'getBoundaryCondition')))]
-    for d, ids in element.Udual.entity_ids.items():
-      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setNumDof'), [d, len(ids[0])])))
-    trueBranch = CompoundStatement()
-    trueBranch.children = [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])),
-                           self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getStructRef(optVar, 'exactFunc')])),
-                           self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n)]))]
-    cmpd.children.append(self.Cxx.getIf(self.Cxx.getEquality(self.Cxx.getStructRef(optVar, 'bcType'), 'DIRICHLET'), [trueBranch]))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'setDebug'), [self.Cxx.getStructRef(optVar, 'debug')])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setupField'), ['s'])))
-    cmpd.children.append(self.Cxx.getIf(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug')),
-                                        [self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('s', 'view'),
-                                                                                      [self.Cxx.getString('Default field')]))]))
-    stmts.append(cmpd)
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('SectionRealDestroy', [secVar])))
-    stmts.append(self.Cxx.getReturn(isPetsc = 1))
-    func = self.Cxx.getFunction(funcName, self.Cxx.getType('PetscErrorCode'),
-                                [self.Cxx.getParameter('dm', self.Cxx.getType('DM')),
-                                 self.Cxx.getParameter(optVar, self.Cxx.getType('Options', 1))],
-                                decls, stmts)
-    return self.Cxx.getFunctionHeader(funcName)+[func]
-
-  def getSectionSetupNew(self, n, element):
-    from Cxx import CompoundStatement
-    funcName = 'CreateProblem_gen_'+str(n)
-    meshVar  = self.Cxx.getVar('mesh')
-    bcVar    = self.Cxx.getVar('bcFunc')
-    exactVar = self.Cxx.getVar('exactFunc')
+    funcName  = 'CreateProblem_gen_'+str(n)
+    meshVar   = self.Cxx.getVar('mesh')
+    numBCVar  = self.Cxx.getVar('numBC')
+    markerVar = self.Cxx.getVar('markers')
+    bcVar     = self.Cxx.getVar('bcFuncs')
+    exactVar  = self.Cxx.getVar('exactFunc')
     decls = []
     decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
     decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<ALE::Mesh>'), isForward=1))
@@ -313,8 +264,8 @@ class QuadratureGenerator(script.Script):
     stmts.append(self.Cxx.getExpStmt(self.Cxx.getVar('PetscFunctionBegin')))
     stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshGetMesh', [meshVar, 'm'])))
     cmpd = CompoundStatement()
-    cmpd.declarations = [self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::DiscretizationNew>&', isConst=1),
-                                                 self.Cxx.getFunctionCall('new ALE::DiscretizationNew',
+    cmpd.declarations = [self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::Discretization>&', isConst=1),
+                                                 self.Cxx.getFunctionCall('new ALE::Discretization',
                                                                           [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
                                                                            self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
     for d, ids in element.Udual.entity_ids.items():
@@ -328,12 +279,15 @@ class QuadratureGenerator(script.Script):
     bcCmpd = CompoundStatement()
     bcCmpd.declarations = [self.Cxx.getDeclaration('b', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
                                                    self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
-                                                                                                           self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
+                                                                                                           self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))])),
+                           self.Cxx.getDeclaration('name', self.Cxx.getType('ostringstream'), isForward = 1)]
     bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [bcVar])))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setMarker'), [self.Cxx.getArrayRef(markerVar, 'i')])))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getArrayRef(bcVar, 'i')])))
     bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n)])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBoundaryCondition'), ['b'])))
-    cmpd.children.append(self.Cxx.getIf(bcVar, [bcCmpd]))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getLeftShift('name', 'i')))
+    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBoundaryCondition'), [self.Cxx.getFunctionCall(self.Cxx.getStructRef('name', 'str', 0)), 'b'])))
+    cmpd.children.append(self.Cxx.getSimpleLoop('i', 0, numBCVar, isPrefix = 1, body = [bcCmpd]))
     exactCmpd = CompoundStatement()
     exactCmpd.declarations = [self.Cxx.getDeclaration('e', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
                                                       self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
@@ -349,7 +303,9 @@ class QuadratureGenerator(script.Script):
     func = self.Cxx.getFunction(funcName, self.Cxx.getType('PetscErrorCode'),
                                 [self.Cxx.getParameter('dm', self.Cxx.getType('DM')),
                                  self.Cxx.getParameter('name', self.Cxx.getType('char pointer', isConst = 1)),
-                                 self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])),
+                                 self.Cxx.getParameter('numBC', self.Cxx.getType('int', isConst = 1)),
+                                 self.Cxx.getParameter('markers', self.Cxx.getType('int pointer', isConst = 1)),
+                                 self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))], numPointers = 2)),
                                  self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(exactVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))]))],
                                 decls, stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
@@ -543,10 +499,7 @@ class QuadratureGenerator(script.Script):
         defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
         defns.extend(self.getIntegratorSetup(n, element))
-        if self.quadDegree > 0:
-          defns.extend(self.getSectionSetupNew(n, element))
-        else:
-          defns.extend(self.getSectionSetup(n, element))
+        defns.extend(self.getSectionSetup(n, element))
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())
     except CompilerException, e:

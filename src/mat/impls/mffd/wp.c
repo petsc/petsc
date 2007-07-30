@@ -238,7 +238,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDCreate_WP(MatMFFD ctx)
   PetscFunctionBegin;
 
   /* allocate my own private data structure */
-  ierr               = PetscNew(MatMFFD_WP,&hctx);CHKERRQ(ierr);
+  ierr               = PetscNewLog(ctx,MatMFFD_WP,&hctx);CHKERRQ(ierr);
   ctx->hctx          = (void*)hctx;
   hctx->computenormU = PETSC_FALSE;
   hctx->computenorma = PETSC_TRUE;

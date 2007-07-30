@@ -1,0 +1,24 @@
+#! /bin/sh
+
+pushd ${PETSC_DIR}/zope
+
+PYTHON=`which python`"2.4"
+CONFIG_FILE="${PETSC_DIR}/zope/zope.conf"
+SOFTWARE_HOME="$ZOPE_HOME/lib/python"
+PYTHONPATH="$SOFTWARE_HOME:$PYTHONPATH"
+ZOPE_RUN="$SOFTWARE_HOME/Zope2/Startup/run.py"
+export PYTHONPATH SOFTWARE_HOME
+
+exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@"   &
+sleep 1
+
+wget "http://localhost:9673/PETSc/startserver"  >& /dev/null
+if [ "$?" != 0 ]; then
+  curl "http://localhost:9673/PETSc/startserver" >& /dev/null
+  if [ "$?" != 0 ]; then
+    echo "Point your browser to http://localhost:9673/PETSc/startserver to start the server"
+  fi
+fi
+
+popd
+

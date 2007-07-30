@@ -130,8 +130,9 @@ thus resulting in different values at the particular location. Since
 PETSc does not allow the simultaneous use of INSERT\_VALUES and
 ADD\_VALUES this nondeterministic behavior will not occur in PETSc.)
 
-There is no routine called VecGetValues(), since we provide 
-an alternative method for extracting some components of a vector using
+You can called VecGetValues() to pull local values from a vector (but
+not off-process values),
+an alternative method for extracting some components of a vector are
 the vector scatter routines.  See Section~\ref{sec_scatter} for details; see also
 below for VecGetArray().
 
@@ -985,9 +986,10 @@ VecDuplicate() from the original vectors used in the call to
 VecScatterCreate().
 
 \sindex{vector values, getting} \findex{VecGetValues()}
-There is no PETSc routine that is the opposite of VecSetValues()
-\findex{VecSetValues()}, that is, VecGetValues(). \findex{VecGetValues()}
-Instead, the user should create a new vector where
+There is a PETSc routine that is nearly the opposite of VecSetValues()
+\findex{VecSetValues()}, that is, VecGetValues(), but it can only get
+local values from the vector. \findex{VecGetValues()}
+To get off process values, the user should create a new vector where
 the components are to be stored and perform the appropriate vector 
 scatter. For example, if one desires to obtain the values of the 
 100th and 200th entries of a parallel vector, \trl{p}, one could use 
@@ -1197,7 +1199,7 @@ opposite of the Fortran convention, meaning that the value to be put in row
 allow the insertion of values in column major order, one can call the command
 \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED);
+  MatSetOption(Mat A,MAT\_COLUMN\_ORIENTED,PETSC\_TRUE);
 \end{tabbing}
 {\bf Warning}: Several of the sparse implementations do {\em not} currently
 support the column-oriented option.
@@ -1213,21 +1215,7 @@ MATMPIBAIJ), one can insert elements more efficiently using the block
 variant, MatSetValuesBlocked(). \findex{MatSetValuesBlocked()}
 
 The function MatSetOption() accepts several other inputs; see
-the manual page for details. We
-discuss two of these options, which are related to the efficiency of the
-assembly process.  To indicate to PETSc that the row (\trl{im}) or
-column (\trl{in}) indices set with MatSetValues() are sorted (in increasing order),
-one uses the command \findex{MAT_ROWS_SORTED} \findex{MAT_COLUMNS_SORTED}
-\begin{tabbing}
-  MatSetOption(Mat A,MAT\_ROWS\_SORTED);
-\end{tabbing}
-or 
-\begin{tabbing}
-  MatSetOption(Mat A,MAT\_COLUMNS\_SORTED);
-\end{tabbing}
-Note that these flags indicate the format of the data passed in with 
-MatSetValues(); they do not have anything to do with how the sparse
-matrix data is stored internally in PETSc.
+the manual page for details.
 
 After the matrix elements have been inserted or added into the matrix, 
 they must be processed (also called assembled) before they can be used. The routines for matrix
@@ -1272,7 +1260,7 @@ If one wishes to repeatedly assemble matrices that retain the same
 nonzero pattern (such as within a nonlinear or time-dependent
 problem), the option
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 should be specified after the first matrix has been fully assembled.
 This option ensures that certain data structures and communication
@@ -1784,7 +1772,7 @@ previously existed, space will be allocated for the new entries.
 To prevent the allocation of additional memory and simply discard those 
 new entries, one can use the option \findex{MatSetOption()}
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 Once the matrix has been assembled, one can factor it numerically
 without repeating the ordering or the symbolic factorization. 
@@ -1827,11 +1815,11 @@ same positions and the matrix retains the same nonzero structure, the user
 can call MatZeroRows() in the first iteration. Then, before generating 
 the matrix in the second iteration the user should call
 \begin{tabbing}
-  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS);
+  MatSetOption(Mat A,MAT\_NO\_NEW\_NONZERO\_LOCATIONS,PETSC\_TRUE);
 \end{tabbing}
 From that point, \findex{MatSetOption()}
 no new values will be inserted into those (boundary) rows of 
-the matrix. \findex{MAT_NO_NEW_NONZERO_LOCATIONS} 
+the matrix. \findex{MAT_NEW_NONZERO_LOCATIONS} 
 
 Another matrix routine of interest is \findex{MatConvert()}
 \begin{tabbing}
@@ -2641,7 +2629,7 @@ allocation.
 
 If the matrix is symmetric, one {\em may} call
 \begin{tabbing}
-  MatSetOption(Mat mat,MAT\_SYMMETRIC);
+  MatSetOption(Mat mat,MAT\_SYMMETRIC,PETSC\_TRUE);
 \end{tabbing}
 to improve efficiency, but in this case one cannot use the ILU 
 preconditioner, only ICC.
@@ -5834,11 +5822,6 @@ at a time can significantly enhance performance.
    than looping and inserting a single value at a time.  In order to
    access elements in of vector repeatedly, employ {VecGetArray()} to allow 
    direct manipulation of the vector elements. \findex{VecGetArray()}
-
-\item When using MatSetValues(), if the column indices of the values being
-   inserted have been sorted in monotonically increasing order, call
-   the routine \trl{MatSetOption(mat,MAT_COLUMNS_SORTED)} before setting the values
-   to reduce the insertion time significantly.
 
 \item When possible, use VecMDot() rather than a series of calls to VecDot().
 \end{itemize}

@@ -658,8 +658,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   PC_LU          *dir;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_LU,&dir);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_LU));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_LU,&dir);CHKERRQ(ierr);
 
   ierr = MatFactorInfoInitialize(&dir->info);CHKERRQ(ierr);
   dir->fact                  = 0;

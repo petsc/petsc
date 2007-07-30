@@ -7,7 +7,6 @@
     Struct header shared by SeqAIJ, SeqBAIJ and SeqSBAIJ matrix formats
 */
 #define SEQAIJHEADER(datatype)	\
-  PetscTruth        sorted;           /* if true, rows are sorted by increasing columns */\
   PetscTruth        roworiented;      /* if true, row-oriented input, default */\
   PetscInt          nonew;            /* 1 don't add new nonzeros, -1 generate error on new */\
   PetscTruth        singlemalloc;     /* if true a, i, and j have been obtained with one big malloc */\
@@ -53,7 +52,7 @@ EXTERN PetscErrorCode MatView_Inode(Mat,PetscViewer);
 EXTERN PetscErrorCode MatAssemblyEnd_Inode(Mat,MatAssemblyType);
 EXTERN PetscErrorCode MatDestroy_Inode(Mat);
 EXTERN PetscErrorCode MatCreate_Inode(Mat);
-EXTERN PetscErrorCode MatSetOption_Inode(Mat,MatOption);
+EXTERN PetscErrorCode MatSetOption_Inode(Mat,MatOption,PetscTruth);
 EXTERN PetscErrorCode MatDuplicate_Inode(Mat A,MatDuplicateOption cpvalues,Mat *B);
 EXTERN PetscErrorCode MatILUDTFactor_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact);
 EXTERN PetscErrorCode MatLUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFactorInfo *info,Mat *fact);

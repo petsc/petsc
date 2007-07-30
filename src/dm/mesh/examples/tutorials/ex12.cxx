@@ -37,6 +37,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   PetscFunctionBegin;
   options->debug          = 0;
   options->test           = 0;
+  options->postponeGhosts = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "PFLOTRAN Options", "DMMG");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-debug", "The debugging level", "pflotran.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
@@ -237,10 +238,12 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   ierr = MeshGetSectionReal(mesh, "default", &f);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
-  const Obj<ALE::Discretization>& disc = m->getDiscretization();
+  const Obj<ALE::Discretization> disc = new ALE::Discretization(m->comm(), m->debug());
   
   disc->setNumDof(m->depth(), 2);
+  m->setDiscretization(disc);
   s->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(s);
 
   VecScatter scatter;
@@ -261,6 +264,7 @@ PetscErrorCode CreateGlobalVector(DM dm, Options *options)
   
   disc->setNumDof(m->depth(), 2);
   s->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(s);
 
   ierr = VecCreateSeq(PETSC_COMM_SELF, s->size(), &options->local);CHKERRQ(ierr);
@@ -285,10 +289,12 @@ PetscErrorCode CreateField(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = SectionRealGetSection(f, s);CHKERRQ(ierr);
   const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
-  const Obj<ALE::Discretization>&       disc  = m->getDiscretization();
+  const Obj<ALE::Discretization>        disc  = new ALE::Discretization(m->comm(), m->debug());
   
   disc->setNumDof(m->depth(), 1);
+  m->setDiscretization(disc);
   s->setDebug(options->debug);
+  m->calculateIndices();
   m->setupField(s, options->postponeGhosts);
   // Loop over elements (quadrilaterals)
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
@@ -362,20 +368,19 @@ PetscErrorCode RunTests(DM dm, Options *options)
 EXTERN_C_BEGIN
 
 #undef __FUNCT__
-#define __FUNCT__ "handlemesh"
-void handlemesh_(PetscErrorCode *ierr)
+#define __FUNCT__ "loadmesh"
+void loadmesh_(DM *mesh,PetscErrorCode *ierr)
 {
   MPI_Comm       comm;
   Options        options;
-  DM             dm;
 
   PetscFunctionBegin;
   try {
     comm = PETSC_COMM_WORLD;
     *ierr = ProcessOptions(comm, &options);CHKERRV(*ierr);
-    *ierr = CreateMesh(comm, &dm, &options);CHKERRV(*ierr);
-    *ierr = RunTests(dm, &options);CHKERRV(*ierr);
-    *ierr = DestroyMesh(dm, &options);CHKERRV(*ierr);
+    *ierr = CreateMesh(comm, mesh, &options);CHKERRV(*ierr);
+    *ierr = RunTests(*mesh, &options);CHKERRV(*ierr);
+    //    *ierr = DestroyMesh(mesh, &options);CHKERRV(*ierr);
   } catch(ALE::Exception e) {
     std::cout << "ERROR: " << e.msg() << std::endl;
   }

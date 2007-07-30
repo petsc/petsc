@@ -278,13 +278,16 @@ namespace ALE {
   protected:
     Obj<atlas_type> _atlas;
     values_type     _array;
+    fiber_type      _emptyValue;
   public:
     UniformSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       this->_atlas = new atlas_type(comm, fiberDim, 0, debug);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     UniformSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas) {
       int dim = fiberDim;
       this->_atlas->update(*this->_atlas->getChart().begin(), &dim);
+      for(int i = 0; i < fiberDim; ++i) this->_emptyValue.v[i] = value_type();
     };
     virtual ~UniformSection() {
       this->_atlas = NULL;
@@ -385,6 +388,7 @@ namespace ALE {
     };
     // Return only the values associated to this point, not its closure
     const value_type *restrictPoint(const point_type& p) {
+      if (this->_array.find(p) == this->_array.end()) return this->_emptyValue.v;
       return this->_array[p].v;
     };
     // Update only the values associated to this point, not its closure
@@ -484,6 +488,9 @@ namespace ALE {
         array = new value_type[maxSize];
       };
       return array;
+    };
+    int getStorageSize() const {
+      return this->sizeWithBC();
     };
   public: // Verifiers
     bool hasPoint(const point_type& point) {
@@ -840,27 +847,31 @@ namespace ALE {
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
     values_type     _array;
+    bool            _sharedStorage;
+    int             _sharedStorageSize;
     Obj<bc_type>    _bc;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
   public:
     GeneralSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
-      this->_atlas    = new atlas_type(comm, debug);
-      this->_atlasNew = NULL;
-      this->_array    = NULL;
-      this->_bc       = new bc_type(comm, debug);
+      this->_atlas         = new atlas_type(comm, debug);
+      this->_atlasNew      = NULL;
+      this->_array         = NULL;
+      this->_sharedStorage = false;
+      this->_bc            = new bc_type(comm, debug);
     };
-    GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL) {
+    GeneralSection(const Obj<atlas_type>& atlas) : ParallelObject(atlas->comm(), atlas->debug()), _atlas(atlas), _atlasNew(NULL), _array(NULL), _sharedStorage(false), _sharedStorageSize(0) {
       this->_bc       = new bc_type(comm, debug);
     };
     virtual ~GeneralSection() {
-      if (this->_array) {
+      if (this->_array && !this->_sharedStorage) {
         delete [] this->_array;
         this->_array = NULL;
       }
     };
   public:
     value_type *getRawArray(const int size) {
+      // Put in a sentinel value that deallocates the array
       static value_type *array   = NULL;
       static int         maxSize = 0;
 
@@ -870,6 +881,12 @@ namespace ALE {
         array = new value_type[maxSize];
       };
       return array;
+    };
+    int getStorageSize() const {
+      if (this->_sharedStorage) {
+        return this->_sharedStorageSize;
+      }
+      return this->sizeWithBC();
     };
   public: // Verifiers
     bool hasPoint(const point_type& point) {
@@ -938,7 +955,7 @@ namespace ALE {
   public: // Sizes
     void clear() {
       this->_atlas->clear(); 
-      delete [] this->_array;
+      if (!this->_sharedStorage) delete [] this->_array;
       this->_array = NULL;
       this->_bc->clear(); 
     };
@@ -1076,15 +1093,19 @@ namespace ALE {
     void allocateStorage() {
       const int totalSize = this->sizeWithBC();
 
-      this->_array = new value_type[totalSize];
+      this->_array             = new value_type[totalSize];
+      this->_sharedStorage     = false;
+      this->_sharedStorageSize = 0;
       PetscMemzero(this->_array, totalSize * sizeof(value_type));
       this->_bc->allocatePoint();
     };
-    void replaceStorage(value_type *newArray) {
-      delete [] this->_array;
-      this->_array    = newArray;
-      this->_atlas    = this->_atlasNew;
-      this->_atlasNew = NULL;
+    void replaceStorage(value_type *newArray, const bool sharedStorage = false, const int sharedStorageSize = 0) {
+      if (this->_array && !this->_sharedStorage) {delete [] this->_array;}
+      this->_array             = newArray;
+      this->_sharedStorage     = sharedStorage;
+      this->_sharedStorageSize = sharedStorageSize;
+      this->_atlas             = this->_atlasNew;
+      this->_atlasNew          = NULL;
     };
     void addPoint(const point_type& point, const int dim) {
       if (dim == 0) return;
@@ -1116,6 +1137,9 @@ namespace ALE {
   public: // Restriction and Update
     // Zero entries
     void zero() {
+      this->set(0.0);
+    };
+    void set(const value_type value) {
       //memset(this->_array, 0, this->sizeWithBC()* sizeof(value_type));
       const chart_type& chart = this->getChart();
 
@@ -1125,14 +1149,16 @@ namespace ALE {
         const int&  cDim  = this->getConstraintDimension(*c_iter);
 
         if (!cDim) {
-          memset(array, 0, dim * sizeof(value_type));
+          for(int i = 0; i < dim; ++i) {
+            array[i] = value;
+          }
         } else {
           const typename bc_type::value_type *cDof = this->getConstraintDof(*c_iter);
           int                                 cInd = 0;
 
           for(int i = 0; i < dim; ++i) {
             if ((cInd < cDim) && (i == cDof[cInd])) {++cInd; continue;}
-            array[i] = 0.0;
+            array[i] = value;
           }
         }
       }
@@ -1508,6 +1534,30 @@ namespace ALE {
         }
       }
     };
+    // Update all dofs on a point (free and constrained)
+    void updatePointAllAdd(const point_type& p, const value_type v[], const int orientation = 1) {
+      value_type *array = (value_type *) this->restrictPoint(p);
+
+      if (orientation >= 0) {
+        const int& dim = this->getFiberDimension(p);
+
+        for(int i = 0; i < dim; ++i) {
+          array[i] += v[i];
+        }
+      } else {
+        int offset = 0;
+        int j      = -1;
+
+        for(int space = 0; space < this->getNumSpaces(); ++space) {
+          const int& dim = this->getFiberDimension(p, space);
+
+          for(int i = dim-1; i >= 0; --i) {
+            array[++j] += v[i+offset];
+          }
+          offset += dim;
+        }
+      }
+    };
   public: // Fibrations
     int getNumSpaces() const {return this->_spaces.size();};
     const std::vector<Obj<atlas_type> >& getSpaces() {return this->_spaces;};
@@ -1554,6 +1604,57 @@ namespace ALE {
       for(typename std::vector<Obj<bc_type> >::const_iterator b_iter = bcs.begin(); b_iter != bcs.end(); ++b_iter) {
         this->_bcs.push_back(*b_iter);
       }
+    };
+    Obj<GeneralSection> getFibration(const int space) const {
+      Obj<GeneralSection> field = new GeneralSection(this->comm(), this->debug());
+//     Obj<atlas_type> _atlas;
+//     std::vector<Obj<atlas_type> > _spaces;
+//     Obj<bc_type>    _bc;
+//     std::vector<Obj<bc_type> >    _bcs;
+      field->addSpace();
+      const chart_type& chart = this->getChart();
+
+      // Copy sizes
+      for(typename chart_type::iterator c_iter = chart.begin(); c_iter != chart.end(); ++c_iter) {
+        const int fDim = this->getFiberDimension(*c_iter, space);
+        const int cDim = this->getConstraintDimension(*c_iter, space);
+
+        if (fDim) {
+          field->setFiberDimension(*c_iter, fDim);
+          field->setFiberDimension(*c_iter, fDim, 0);
+        }
+        if (cDim) {
+          field->setConstraintDimension(*c_iter, cDim);
+          field->setConstraintDimension(*c_iter, cDim, 0);
+        }
+      }
+      field->allocateStorage();
+      Obj<atlas_type>   newAtlas = new atlas_type(this->comm(), this->debug());
+      const chart_type& newChart = field->getChart();
+
+      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        const int cDim   = field->getConstraintDimension(*c_iter);
+        const int dof[1] = {0};
+
+        if (cDim) {
+          field->setConstraintDof(*c_iter, dof);
+        }
+      }
+      // Copy offsets
+      for(typename chart_type::iterator c_iter = newChart.begin(); c_iter != newChart.end(); ++c_iter) {
+        index_type idx;
+
+        idx.prefix = field->getFiberDimension(*c_iter);
+        idx.index  = this->_atlas->restrictPoint(*c_iter)[0].index;
+        for(int s = 0; s < space; ++s) {
+          idx.index += this->getFiberDimension(*c_iter, s);
+        }
+        newAtlas->addPoint(*c_iter);
+        newAtlas->updatePoint(*c_iter, &idx);
+      }
+      field->replaceStorage(this->_array, true, this->getStorageSize());
+      field->setAtlas(newAtlas);
+      return field;
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {

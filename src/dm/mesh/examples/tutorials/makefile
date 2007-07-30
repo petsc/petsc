@@ -73,12 +73,20 @@ stokes: stokes_quadrature.h stokes.o chkopts
 	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
 	${RM} -f stokes.o
 
+grade2: stokes_quadrature.h grade2.o chkopts
+	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
+	${RM} -f grade2.o
+
 bratu: bratu_quadrature.h bratu.o chkopts
 	-${CLINKER} -o bratu bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
+electrostatic: electrostatic_quadrature.h electrostatic.o chkopts
+	-${CLINKER} -o electrostatic electrostatic.o ${PETSC_SNES_LIB}
+	${RM} -f electrostatic.o
+
 subduction: subduction_quadrature.h subduction.o chkopts
-	-${CLINKER} -o subduction subduction.o ${PETSC_DM_LIB}
+	-${CLINKER} -o subduction subduction.o ${PETSC_SNES_LIB}
 	${RM} -f subduction.o
 
 dolfin: dolfin.o chkopts

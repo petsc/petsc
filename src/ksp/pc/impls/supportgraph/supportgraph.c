@@ -56,10 +56,32 @@
    Private context (data structure) for the SupportGraph preconditioner.  
 */
 typedef struct {
-  Mat pre;
+  Mat         pre;      /* Cholesky factored preconditioner matrix */
+  PetscTruth  augment;  /* whether to augment the spanning tree */
+  PetscScalar maxCong;  /* create subgraph with at most this much congestion (only used with augment) */
+  PetscScalar tol;      /* throw out entries smaller than this */
 } PC_SupportGraph;
 
-EXTERN PetscErrorCode LowStretchSpanningTree(Mat mat,Mat *pre);
+#undef __FUNCT__  
+#define __FUNCT__ "PCView_SupportGraph"
+static PetscErrorCode PCView_SupportGraph(PC pc,PetscViewer viewer)
+{
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
+  PetscErrorCode  ierr;
+  PetscTruth      iascii;
+
+  PetscFunctionBegin;
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
+  if (iascii) {
+    ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: maxCong = %f\n",sg->maxCong);
+    ierr = PetscViewerASCIIPrintf(viewer,"  SupportGraph: tol = %f\n",sg->tol);
+  } else {
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for PCSupportGraph",((PetscObject)viewer)->type_name);
+  }
+  PetscFunctionReturn(0);
+}
+
+EXTERN PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *pre,PetscTruth augment,PetscScalar tol,PetscScalar& maxCong);
 
 /* -------------------------------------------------------------------------- */
 /*
@@ -90,8 +112,9 @@ static PetscErrorCode PCSetUp_SupportGraph(PC pc)
 
   PetscFunctionBegin;
   if(!pc->setupcalled) {
-    if (!MatIsSymmetric(pc->pmat)) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
-    ierr = LowStretchSpanningTree(pc->pmat, &sg->pre);CHKERRQ(ierr);
+    if (!MatIsSymmetric(pc->pmat, 1.0e-9)) SETERRQ(PETSC_ERR_ARG_WRONG,"matrix must be symmetric");
+    // note that maxCong is being updated
+    ierr = AugmentedLowStretchSpanningTree(pc->pmat, &sg->pre, sg->augment, sg->tol, sg->maxCong);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -152,10 +175,14 @@ static PetscErrorCode PCDestroy_SupportGraph(PC pc)
 #define __FUNCT__ "PCSetFromOptions_SupportGraph"
 static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
 {
+  PC_SupportGraph *sg = (PC_SupportGraph*)pc->data;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = PetscOptionsHead("SupportGraph options");CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-pc_sg_augment","Max congestion","",sg->augment,&sg->augment,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_sg_cong","Max congestion","",sg->maxCong,&sg->maxCong,0);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-pc_sg_tol","Smallest usable value","",sg->tol,&sg->tol,0);CHKERRQ(ierr);
   ierr = PetscOptionsTail();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -176,7 +203,7 @@ static PetscErrorCode PCSetFromOptions_SupportGraph(PC pc)
      PCSUPPORTGRAPH - SupportGraph (i.e. diagonal scaling preconditioning)
 
    Options Database Key:
-     None
+.    -pc_supportgraph_augment - augment the spanning tree
 
    Level: beginner
 
@@ -200,19 +227,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
      Creates the private data structure for this preconditioner and
      attach it to the PC object.
   */
-  ierr      = PetscNew(PC_SupportGraph,&sg);CHKERRQ(ierr);
+  ierr      = PetscNewLog(pc,PC_SupportGraph,&sg);CHKERRQ(ierr);
   pc->data  = (void*)sg;
 
-  /*
-     Logs the memory usage; this is not needed but allows PETSc to 
-     monitor how much memory is being used for various purposes.
-  */
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_SupportGraph));CHKERRQ(ierr);
-
-  /*
-     Initialize preconditioner matrix to ZERO
-  */
   sg->pre = 0;
+  sg->augment = PETSC_TRUE;
+  sg->maxCong = 3.0;
+  sg->tol = 0;
   
 
   /*
@@ -227,7 +248,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SupportGraph(PC pc)
   pc->ops->setup               = PCSetUp_SupportGraph;
   pc->ops->destroy             = PCDestroy_SupportGraph;
   pc->ops->setfromoptions      = PCSetFromOptions_SupportGraph;
-  pc->ops->view                = 0;
+  pc->ops->view                = PCView_SupportGraph;
   pc->ops->applyrichardson     = 0;
   pc->ops->applysymmetricleft  = 0;
   pc->ops->applysymmetricright = 0;

@@ -499,6 +499,33 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES snes, Pe
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "SNESGetNumberFunctionEvals"
+/*@
+   SNESGetNumberFunctionEvals - Gets the number of user provided function evaluations
+     done by SNES.
+
+   Not Collective
+
+   Input Parameter:
+.  snes     - SNES context
+
+   Output Parameter:
+.  nfuncs - number of evaluations
+
+   Level: intermediate
+
+.keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
+@*/
+PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
+  PetscValidIntPointer(nfuncs,2);
+  *nfuncs = snes->nfuncs;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "SNESGetLinearSolveFailures"
 /*@
    SNESGetLinearSolveFailures - Gets the number of failed (non-converged)
@@ -770,8 +797,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
   snes->maxLinearSolveFailures = 1;
 
   /* Create context to compute Eisenstat-Walker relative tolerance for KSP */
-  ierr = PetscNew(SNESKSPEW,&kctx);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(snes,sizeof(SNESKSPEW));CHKERRQ(ierr);
+  ierr = PetscNewLog(snes,SNESKSPEW,&kctx);CHKERRQ(ierr);
   snes->kspconvctx  = (void*)kctx;
   kctx->version     = 2;
   kctx->rtol_0      = .3; /* Eisenstat and Walker suggest rtol_0=.5, but 

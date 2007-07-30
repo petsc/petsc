@@ -5,6 +5,11 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
+#include "zope.h"
+
+int PETSC_SOCKFD = 0;
+int PETSC_LISTENFD = 0;
+int PETSC_LISTEN_CHECK = 0;
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
@@ -101,7 +106,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializeNoArguments(void)
 /*@
       PetscInitialized - Determine whether PETSc is initialized.
   
-   Level: beginner
+7   Level: beginner
 
 .seealso: PetscInitialize(), PetscInitializeNoArguments(), PetscInitializeFortran()
 @*/
@@ -486,7 +491,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     ierr = PetscSetProgramName("Unknown Name");CHKERRQ(ierr);
   }
 
-
   ierr = MPI_Initialized(&flag);CHKERRQ(ierr);
   if (!flag) {
     if (PETSC_COMM_WORLD) SETERRQ(PETSC_ERR_SUP,"You cannot set PETSC_COMM_WORLD if you have not initialized MPI first");
@@ -546,11 +550,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = MPI_Type_contiguous(2,MPIU_INT,&MPIU_2INT);CHKERRQ(ierr);
   ierr = MPI_Type_commit(&MPIU_2INT);CHKERRQ(ierr);
 
+  
   /*
      Build the options database
   */
   ierr = PetscOptionsInsert(argc,args,file);CHKERRQ(ierr);
 
+  
   /*
      Print main application help message
   */
@@ -559,7 +565,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     ierr = PetscPrintf(PETSC_COMM_WORLD,help);CHKERRQ(ierr);
   }
   ierr = PetscOptionsCheckInitial_Private();CHKERRQ(ierr); 
-
+ 
   /* SHOULD PUT IN GUARDS: Make sure logging is initialized, even if we do not print it out */
 #if defined(PETSC_USE_LOG)
   ierr = PetscLogBegin_Private();CHKERRQ(ierr);
@@ -861,6 +867,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   if (PetscBeganMPI) {
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
+
+  if(PETSC_LISTEN_CHECK){
+    PETSC_LISTEN_CHECK = 0;
+    extern FILE * PETSC_STDOUT;
+    fprintf(PETSC_STDOUT, "<<<end>>>");
+    close(PETSC_LISTENFD);}
 
 /*
 

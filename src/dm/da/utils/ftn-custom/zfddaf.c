@@ -4,6 +4,8 @@
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define dagetmatrix_                 DAGETMATRIX
+#define dmcreateglobalvector_        DMCREATEGLOBALVECTOR
+#define dmcreatelocalvector_         DMCREATELOCALVECTOR
 #define dmcompositegetentries1_      DMCOMPOSITEGETENTRIES1
 #define dmcompositegetentries2_      DMCOMPOSITEGETENTRIES2
 #define dmcompositegetentries3_      DMCOMPOSITEGETENTRIES3
@@ -20,6 +22,8 @@
 #define dmcompositerestorelocalvectors4_ DMCOMPOSITERESTORELOCALVECTORS4
 #elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
 #define dagetmatrix_                 dagetmatrix
+#define dmcreateglobalvector_           dmcreateglobalvector
+#define dmcreatelocalvector_            dmcreatelocalvector
 #define dmcompositegetentries1_      dmcompositegetentries1
 #define dmcompositegetentries2_      dmcompositegetentries2
 #define dmcompositegetentries3_      dmcompositegetentries3
@@ -37,6 +41,16 @@
 #endif
 
 EXTERN_C_BEGIN
+void PETSC_STDCALL dmcreateglobalvector_(DM *dm,Vec *v,PetscErrorCode *ierr)
+{
+  *ierr = DMCreateGlobalVector(*dm,v);
+}
+
+void PETSC_STDCALL dmcreatelocalvector_(DM *dm,Vec *v,PetscErrorCode *ierr)
+{
+  *ierr = DMCreateLocalVector(*dm,v);
+}
+
 void PETSC_STDCALL dagetmatrix_(DA *da,CHAR mat_type PETSC_MIXED_LEN(len),Mat *J,PetscErrorCode *ierr PETSC_END_LEN(len))
 {
   char *t;

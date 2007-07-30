@@ -527,7 +527,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Chaco(MatPartitioning pa
     MatPartitioning_Chaco *chaco;
 
     PetscFunctionBegin;
-    ierr = PetscNew(MatPartitioning_Chaco, &chaco);CHKERRQ(ierr);
+    ierr = PetscNewLog(part,MatPartitioning_Chaco, &chaco);CHKERRQ(ierr);
+    part->data = (void*) chaco;
 
     chaco->architecture = 1;
     chaco->ndims_tot = 0;
@@ -544,7 +545,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Chaco(MatPartitioning pa
     part->ops->view = MatPartitioningView_Chaco;
     part->ops->destroy = MatPartitioningDestroy_Chaco;
     part->ops->setfromoptions = MatPartitioningSetFromOptions_Chaco;
-    part->data = (void*) chaco;
 
     PetscFunctionReturn(0);
 }

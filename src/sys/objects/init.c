@@ -16,7 +16,7 @@
 #include <malloc.h>
 #endif
 #include "petscfix.h"
-
+#include "zope.h"
 /* ------------------------Nasty global variables -------------------------------*/
 /*
      Indicates if PETSc started up MPI, or it was 
@@ -383,6 +383,26 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
+  PetscTruth flgz;
+  ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
+  if(flgz){
+    char hostname[256];
+    int remoteport = 9999;
+    int listenport = 9998;
+    ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
+    if(!hostname[0]){
+      ierr=PetscGetHostName(hostname,256); CHKERRQ(ierr);}
+    ierr=PetscOpenSocket(hostname, remoteport, &PETSC_SOCKFD);CHKERRQ(ierr);
+    PETSC_LISTEN_CHECK = 1; 
+    ierr=PetscSocketListen(hostname, listenport, &PETSC_LISTENFD);CHKERRQ(ierr);
+    PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
+    PETSC_STDERR = PETSC_STDOUT;
+    char username[256];
+    ierr = PetscGetUserName(username, 256);
+    fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
+    fprintf(PETSC_STDOUT, "<<<start>>>");
+  }
+
   /*
         Setup profiling and logging
   */
@@ -430,7 +450,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open trace file: %s",fname);
       }
     } else {
-      file = stdout;
+      file = PETSC_STDOUT;
     }
     ierr = PetscLogTraceBegin(file);CHKERRQ(ierr);
   }

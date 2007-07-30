@@ -77,6 +77,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec,const char*[]);
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecSetSizes(Vec,PetscInt,PetscInt);
 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec,Vec,PetscScalar*,PetscScalar*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec,Vec,PetscScalar*);
 PetscPolymorphicFunction(VecDot,(Vec x,Vec y),(x,y,&s),PetscScalar,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecTDot(Vec,Vec,PetscScalar*);  
@@ -347,7 +348,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecRestoreArrays(const Vec[],PetscInt,P
 
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecValid(Vec,PetscTruth*);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecView(Vec,PetscViewer);
-EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, char *);
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecViewFromOptions(Vec, const char *);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec,Vec,PetscTruth*);
 PetscPolymorphicFunction(VecEqual,(Vec x,Vec y),(x,y,&s),PetscTruth,s)
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT VecLoad(PetscViewer,VecType,Vec*);

@@ -142,7 +142,7 @@ PetscErrorCode MatDestroy_SeqSBAIJ(Mat A)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqSBAIJ"
-PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
+PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data;
   PetscErrorCode ierr;
@@ -150,60 +150,41 @@ PetscErrorCode MatSetOption_SeqSBAIJ(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) {
   case MAT_ROW_ORIENTED:
-    a->roworiented = PETSC_TRUE;
-    break;
-  case MAT_COLUMN_ORIENTED:
-    a->roworiented = PETSC_FALSE;
-    break;
-  case MAT_COLUMNS_SORTED:
-    a->sorted = PETSC_TRUE;
-    break;
-  case MAT_COLUMNS_UNSORTED:
-    a->sorted = PETSC_FALSE;
+    a->roworiented = flg;
     break;
   case MAT_KEEP_ZEROED_ROWS:
-    a->keepzeroedrows = PETSC_TRUE;
+    a->keepzeroedrows = flg;
     break;
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-    a->nonew = 1;
+  case MAT_NEW_NONZERO_LOCATIONS:
+    a->nonew = (flg ? 0 : 1);
     break;
   case MAT_NEW_NONZERO_LOCATION_ERR:
-    a->nonew = -1;
+    a->nonew = (flg ? -1 : 0);
     break;
   case MAT_NEW_NONZERO_ALLOCATION_ERR:
-    a->nonew = -2;
+    a->nonew = (flg ? -2 : 0);
     break;
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
-    a->nonew = 0;
-    break;
-  case MAT_ROWS_SORTED:
-  case MAT_ROWS_UNSORTED:
-  case MAT_YES_NEW_DIAGONALS:
+  case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
-  case MAT_NO_NEW_DIAGONALS:
-    SETERRQ(PETSC_ERR_SUP,"MAT_NO_NEW_DIAGONALS");
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-    SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
+    if (flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
+    if (!flg) SETERRQ(PETSC_ERR_SUP,"Matrix must be symmetric");
     ierr = PetscInfo1(A,"Option %s not relevent\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   case MAT_IGNORE_LOWER_TRIANGULAR:
-    a->ignore_ltriangular = PETSC_TRUE;
+    a->ignore_ltriangular = flg;
     break;
   case MAT_ERROR_LOWER_TRIANGULAR:
-    a->ignore_ltriangular = PETSC_FALSE;
+    a->ignore_ltriangular = flg;
     break;
   case MAT_GETROW_UPPERTRIANGULAR:
-    a->getrow_utriangular = PETSC_TRUE;
+    a->getrow_utriangular = flg;
     break;
   default:
     SETERRQ1(PETSC_ERR_SUP,"unknown option %d",op);
@@ -222,7 +203,7 @@ PetscErrorCode MatGetRow_SeqSBAIJ(Mat A,PetscInt row,PetscInt *ncols,PetscInt **
   PetscScalar    *v_i;
 
   PetscFunctionBegin;
-  if (A && !a->getrow_utriangular) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format. Getting the upper triangular part of row, run with -mat_getrow_uppertriangular, call MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR) or MatGetRowUpperTriangular()");
+  if (A && !a->getrow_utriangular) SETERRQ(PETSC_ERR_SUP,"MatGetRow is not supported for SBAIJ matrix format. Getting the upper triangular part of row, run with -mat_getrow_uppertriangular, call MatSetOption(mat,MAT_GETROW_UPPERTRIANGULAR,PETSC_TRUE) or MatGetRowUpperTriangular()");
   /* Get the upper triangular part of the row */
   bs  = A->rmap.bs;
   ai  = a->i;
@@ -344,7 +325,14 @@ static PetscErrorCode MatView_SeqSBAIJ_ASCII(Mat A,PetscViewer viewer)
   if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
     ierr = PetscViewerASCIIPrintf(viewer,"  block size is %D\n",bs);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_MATLAB) {
-    SETERRQ(PETSC_ERR_SUP,"Matlab format not supported");
+    if (A->factor && bs>1){
+      ierr = PetscPrintf(PETSC_COMM_SELF,"Warning: matrix is factored with bs>1. MatView() with PETSC_VIEWER_ASCII_MATLAB is not supported and ignored!\n");CHKERRQ(ierr);
+      PetscFunctionReturn(0);
+    }
+    Mat aij;
+    ierr = MatConvert(A,MATSEQAIJ,MAT_INITIAL_MATRIX,&aij);CHKERRQ(ierr);
+    ierr = MatView(aij,viewer);CHKERRQ(ierr);
+    ierr = MatDestroy(aij);CHKERRQ(ierr);
   } else if (format == PETSC_VIEWER_ASCII_COMMON) {
     ierr = PetscViewerASCIIUseTabs(viewer,PETSC_NO);CHKERRQ(ierr);
     for (i=0; i<a->mbs; i++) {
@@ -539,17 +527,17 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
   PetscInt     *rp,k,low,high,t,row,nrow,i,col,l,*aj = a->j;
   PetscInt     *ai = a->i,*ailen = a->ilen;
   PetscInt     brow,bcol,ridx,cidx,bs=A->rmap.bs,bs2=a->bs2;
-  MatScalar    *ap,*aa = a->a,zero = 0.0;
+  MatScalar    *ap,*aa = a->a;
   
   PetscFunctionBegin;
   for (k=0; k<m; k++) { /* loop over rows */
     row  = im[k]; brow = row/bs;  
-    if (row < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row);
+    if (row < 0) {v += n; continue;} /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative row: %D",row); */
     if (row >= A->rmap.N) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large: row %D max %D",row,A->rmap.N-1);
     rp   = aj + ai[brow] ; ap = aa + bs2*ai[brow] ;
     nrow = ailen[brow]; 
     for (l=0; l<n; l++) { /* loop over columns */
-      if (in[l] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",in[l]);
+      if (in[l] < 0) {v++; continue;} /* SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Negative column: %D",in[l]); */
       if (in[l] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large: col %D max %D",in[l],A->cmap.n-1);
       col  = in[l] ; 
       bcol = col/bs;
@@ -569,8 +557,8 @@ PetscErrorCode MatGetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
           goto finished;
         }
       } 
-      *v++ = zero;
-       finished:;
+      *v++ = 0.0;
+      finished:;
     }
   }
   PetscFunctionReturn(0);
@@ -835,7 +823,7 @@ PetscErrorCode MatSetValues_SeqSBAIJ(Mat A,PetscInt m,const PetscInt im[],PetscI
         if (a->ignore_ltriangular){
           continue; /* ignore lower triangular values */
         } else {
-          SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR)");
+          SETERRQ(PETSC_ERR_USER,"Lower triangular value cannot be set for sbaij format. Ignoring these values, run with -mat_ignore_lower_triangular or call MatSetOption(mat,MAT_IGNORE_LOWER_TRIANGULAR,PETSC_TRUE)");
         }
       }
       
@@ -1342,7 +1330,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatStoreValues_SeqSBAIJ(Mat mat)
   
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   
   /* allocate space for values if not already there */
@@ -1367,7 +1355,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRetrieveValues_SeqSBAIJ(Mat mat)
   
   PetscFunctionBegin;
   if (aij->nonew != 1) {
-    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NO_NEW_NONZERO_LOCATIONS);first");
+    SETERRQ(PETSC_ERR_ORDER,"Must call MatSetOption(A,MAT_NEW_NONZERO_LOCATIONS,PETSC_FALSE);first");
   }
   if (!aij->saved_values) {
     SETERRQ(PETSC_ERR_ORDER,"Must call MatStoreValues(A);first");
@@ -1569,7 +1557,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
   
-  ierr    = PetscNew(Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
+  ierr    = PetscNewLog(B,Mat_SeqSBAIJ,&b);CHKERRQ(ierr);
   B->data = (void*)b;
   ierr    = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->ops->destroy     = MatDestroy_SeqSBAIJ;
@@ -1582,7 +1570,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqSBAIJ(Mat B)
   b->saved_values     = 0;
   
   
-  b->sorted           = PETSC_FALSE;
   b->roworiented      = PETSC_TRUE;
   b->nonew            = 0;
   b->diag             = 0;
@@ -1790,7 +1777,6 @@ PetscErrorCode MatDuplicate_SeqSBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     }
   }
 
-  c->sorted      = a->sorted;
   c->roworiented = a->roworiented;
   c->nonew       = a->nonew;
 

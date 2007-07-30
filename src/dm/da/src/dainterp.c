@@ -81,7 +81,6 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  if (!DAXPeriodic(pt)){ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
@@ -126,6 +125,8 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   if (vcoors) {
     ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = VecDestroy(cvcoors);CHKERRQ(ierr);
+    ierr = VecDestroy(vcoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -173,7 +174,6 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,2,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
-  if (!DAXPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (i=i_start; i<i_start+m_f; i++) {
@@ -311,7 +311,6 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
@@ -371,6 +370,8 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
   if (vcoors) {
     ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = VecDestroy(cvcoors);CHKERRQ(ierr);
+    ierr = VecDestroy(vcoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
@@ -465,7 +466,6 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  if (!DAXPeriodic(pt) && !DAYPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (j=j_start; j<j_start+n_f; j++) {
@@ -585,7 +585,6 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  if (!DAXPeriodic(pt) && !DAYPeriodic(pt) && !DAZPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   /* loop over local fine grid nodes setting interpolation for those*/
   for (l=l_start; l<l_start+p_f; l++) {
@@ -728,7 +727,6 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(mat,0,dnz,0,onz);CHKERRQ(ierr);
   ierr = MatPreallocateFinalize(dnz,onz);CHKERRQ(ierr);
-  if (!DAXPeriodic(pt) && !DAYPeriodic(pt) && !DAZPeriodic(pt)) {ierr = MatSetOption(mat,MAT_COLUMNS_SORTED);CHKERRQ(ierr);}
 
   ierr = DAGetCoordinates(daf,&vcoors);CHKERRQ(ierr);
   if (vcoors) {
@@ -815,6 +813,8 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   if (vcoors) {
     ierr = DAVecRestoreArray(daf->da_coordinates,vcoors,&coors);CHKERRQ(ierr);
     ierr = DAVecRestoreArray(dac->da_coordinates,cvcoors,&ccoors);CHKERRQ(ierr);
+    ierr = VecDestroy(cvcoors);CHKERRQ(ierr);
+    ierr = VecDestroy(vcoors);CHKERRQ(ierr);
   }
   ierr = MatAssemblyBegin(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(mat,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);

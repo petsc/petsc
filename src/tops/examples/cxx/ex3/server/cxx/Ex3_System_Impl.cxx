@@ -80,14 +80,16 @@ Ex3::System_impl::computeMatrix_impl (
   /* in */::TOPS::Matrix B ) 
 {
   // DO-NOT-DELETE splicer.begin(Ex3.System.computeMatrix)
+  // Use the TOPS.Structured.Matrix port for getting BB
+
   TOPS::Structured::Matrix BB = ::babel_cast< TOPS::Structured::Matrix >(B);
   TOPS::Structured::Solver solver = this->solver;
-  int xs = BB.lower(0);      // first grid point in X and Y directions on this process
-  int ys = BB.lower(1);
-  int zs = BB.lower(2);
-  int xm = BB.length(0);       // number of local grid points in X and Y directions on this process
-  int ym = BB.length(1);
-  int zm = BB.length(2);
+  int xs = BB.getLower(0);      // first grid point in X and Y directions on this process
+  int ys = BB.getLower(1);
+  int zs = BB.getLower(2);
+  int xm = BB.getLength(0);       // number of local grid points in X and Y directions on this process
+  int ym = BB.getLength(1);
+  int zm = BB.getLength(2);
   int i,j,k;
   int mx = solver.length(0);
   int my = solver.length(1);

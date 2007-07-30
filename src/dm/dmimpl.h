@@ -25,7 +25,12 @@
   PetscErrorCode (*coarsenhierarchy)(type,PetscInt,type**);\
 \
   PetscErrorCode (*forminitialguess)(type,PetscErrorCode (*)(void),Vec,void*);\
-  PetscErrorCode (*formfunction)(type,PetscErrorCode (*)(void),Vec,Vec);
+  PetscErrorCode (*formfunction)(type,PetscErrorCode (*)(void),Vec,Vec);\
+\
+  PetscErrorCode (*globaltolocalbegin)(type,Vec,InsertMode,Vec);		\
+  PetscErrorCode (*globaltolocalend)(type,Vec,InsertMode,Vec); \
+  PetscErrorCode (*localtoglobal)(type,Vec,InsertMode,Vec); 
+
 
 typedef struct _DMOps *DMOps;
 struct _DMOps {

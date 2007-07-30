@@ -91,15 +91,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateLRC(Mat A,Mat U, Mat V,Mat *N)
   ierr = MatSetSizes(*N,n,n,PETSC_DECIDE,PETSC_DECIDE);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)*N,MATLRC);CHKERRQ(ierr);
   
-  ierr      = PetscNew(Mat_LRC,&Na);CHKERRQ(ierr);
-  Na->A     = A;
+  ierr       = PetscNewLog(*N,Mat_LRC,&Na);CHKERRQ(ierr);
+  (*N)->data = (void*) Na;
+  Na->A      = A;
 
   ierr      = MatDenseGetLocalMatrix(U,&Na->U);CHKERRQ(ierr);
   ierr      = MatDenseGetLocalMatrix(V,&Na->V);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)A);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)Na->U);CHKERRQ(ierr);
   ierr      = PetscObjectReference((PetscObject)Na->V);CHKERRQ(ierr);
-  (*N)->data = (void*) Na;
 
   ierr                   = VecCreateSeq(PETSC_COMM_SELF,U->cmap.N,&Na->work1);CHKERRQ(ierr);
   ierr                   = VecDuplicate(Na->work1,&Na->work2);CHKERRQ(ierr);

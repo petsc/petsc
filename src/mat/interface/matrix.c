@@ -1318,6 +1318,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetValuesBlocked(Mat mat,PetscInt m,const P
    MatSetValues() and MatGetValues() CANNOT be made in succession
    without intermediate matrix assembly.
 
+   Negative row or column indices will be ignored and those locations in v[] will be 
+   left unchanged.
+
    Level: advanced
 
    Concepts: matrices^accessing values
@@ -1909,7 +1912,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeConstrained(Mat mat,Vec x,Vec 
    number of nonzeros allocated and used, number of mallocs during
    matrix assembly, etc.  Additional information for factored matrices
    is provided (such as the fill ratio, number of mallocs during
-   factorization, etc.).  Much of this info is printed to STDOUT
+   factorization, etc.).  Much of this info is printed to PETSC_STDOUT
    when using the runtime options 
 $       -info -mat_view_info
 
@@ -4208,32 +4211,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    Input Parameters:
 +  mat - the matrix 
 -  option - the option, one of those listed below (and possibly others),
-             e.g., MAT_ROWS_SORTED, MAT_NEW_NONZERO_LOCATION_ERR
 
    Options Describing Matrix Structure:
 +    MAT_SYMMETRIC - symmetric in terms of both structure and value
 .    MAT_HERMITIAN - transpose is the complex conjugation
 .    MAT_STRUCTURALLY_SYMMETRIC - symmetric nonzero structure
-.    MAT_NOT_SYMMETRIC - not symmetric in value
-.    MAT_NOT_HERMITIAN - transpose is not the complex conjugation
-.    MAT_NOT_STRUCTURALLY_SYMMETRIC - not symmetric nonzero structure
-.    MAT_SYMMETRY_ETERNAL - if you would like the symmetry/Hermitian flag
+-    MAT_SYMMETRY_ETERNAL - if you would like the symmetry/Hermitian flag
                             you set to be kept with all future use of the matrix
                             including after MatAssemblyBegin/End() which could
                             potentially change the symmetry structure, i.e. you 
                             KNOW the matrix will ALWAYS have the property you set.
--    MAT_NOT_SYMMETRY_ETERNAL - if MatAssemblyBegin/End() is called then the 
-                                flags you set will be dropped (in case potentially
-                                the symmetry etc was lost).
+
 
    Options For Use with MatSetValues():
    Insert a logically dense subblock, which can be
-+    MAT_ROW_ORIENTED - row-oriented (default)
-.    MAT_COLUMN_ORIENTED - column-oriented
-.    MAT_ROWS_SORTED - sorted by row
-.    MAT_ROWS_UNSORTED - not sorted by row (default)
-.    MAT_COLUMNS_SORTED - sorted by column
--    MAT_COLUMNS_UNSORTED - not sorted by column (default)
+.    MAT_ROW_ORIENTED - row-oriented (default)
 
    Not these options reflect the data you pass in with MatSetValues(); it has 
    nothing to do with how the data is stored internally in the matrix 
@@ -4241,12 +4233,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
 
    When (re)assembling a matrix, we can restrict the input for
    efficiency/debugging purposes.  These options include
-+    MAT_NO_NEW_NONZERO_LOCATIONS - additional insertions will not be
++    MAT_NEW_NONZERO_LOCATIONS - additional insertions will be
         allowed if they generate a new nonzero
-.    MAT_YES_NEW_NONZERO_LOCATIONS - additional insertions will be allowed
-.    MAT_NO_NEW_DIAGONALS - additional insertions will not be allowed if
-         they generate a nonzero in a new diagonal (for block diagonal format only)
-.    MAT_YES_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
+.    MAT_NEW_DIAGONALS - new diagonals will be allowed (for block diagonal format only)
 .    MAT_IGNORE_OFF_PROC_ENTRIES - drops off-processor entries
 .    MAT_NEW_NONZERO_LOCATION_ERR - generates an error for new matrix entry
 -    MAT_USE_HASH_TABLE - uses a hash table to speed up matrix assembly
@@ -4260,7 +4249,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    use the column-oriented option (or convert to the row-oriented 
    format).  
 
-   MAT_NO_NEW_NONZERO_LOCATIONS indicates that any add or insertion 
+   MAT_NEW_NONZERO_LOCATIONS set to PETSC_FALSE indicates that any add or insertion 
    that would generate a new entry in the nonzero structure is instead
    ignored.  Thus, if memory has not alredy been allocated for this particular 
    data, then the insertion is ignored. For dense matrices, in which
@@ -4289,7 +4278,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    searches during matrix assembly. When this flag is set, the hash table
    is created during the first Matrix Assembly. This hash table is
    used the next time through, during MatSetVaules()/MatSetVaulesBlocked()
-   to improve the searching of indices. MAT_NO_NEW_NONZERO_LOCATIONS flag 
+   to improve the searching of indices. MAT_NEW_NONZERO_LOCATIONS flag 
    should be used with MAT_USE_HASH_TABLE flag. This option is currently
    supported by MATMPIBAIJ format only.
 
@@ -4302,15 +4291,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCompress(Mat mat)
    MAT_USE_INODES - indicates using inode version of the code - works with AIJ and 
    ROWBS matrix types
 
-   MAT_DO_NOT_USE_INODES - indicates not using inode version of the code - works
-   with AIJ and ROWBS matrix types (database option "-mat_no_inode")
-
    Level: intermediate
 
    Concepts: matrices^setting options
 
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op)
+PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op,PetscTruth flg)
 {
   PetscErrorCode ierr;
 
@@ -4320,44 +4306,29 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetOption(Mat mat,MatOption op)
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   switch (op) {
   case MAT_SYMMETRIC:
-    mat->symmetric                  = PETSC_TRUE;
-    mat->structurally_symmetric     = PETSC_TRUE;
+    mat->symmetric                  = flg;
+    if (flg) mat->structurally_symmetric     = PETSC_TRUE;
     mat->symmetric_set              = PETSC_TRUE;
-    mat->structurally_symmetric_set = PETSC_TRUE;
+    mat->structurally_symmetric_set = flg;
     break;
   case MAT_HERMITIAN:
-    mat->hermitian                  = PETSC_TRUE;
-    mat->structurally_symmetric     = PETSC_TRUE;
+    mat->hermitian                  = flg;
+    if (flg) mat->structurally_symmetric     = PETSC_TRUE;
     mat->hermitian_set              = PETSC_TRUE;
-    mat->structurally_symmetric_set = PETSC_TRUE;
+    mat->structurally_symmetric_set = flg;
     break;
   case MAT_STRUCTURALLY_SYMMETRIC:
-    mat->structurally_symmetric     = PETSC_TRUE;
-    mat->structurally_symmetric_set = PETSC_TRUE;
-    break;
-  case MAT_NOT_SYMMETRIC:
-    mat->symmetric                  = PETSC_FALSE;
-    mat->symmetric_set              = PETSC_TRUE;
-    break;
-  case MAT_NOT_HERMITIAN:
-    mat->hermitian                  = PETSC_FALSE;
-    mat->hermitian_set              = PETSC_TRUE;
-    break;
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
-    mat->structurally_symmetric     = PETSC_FALSE;
+    mat->structurally_symmetric     = flg;
     mat->structurally_symmetric_set = PETSC_TRUE;
     break;
   case MAT_SYMMETRY_ETERNAL:
-    mat->symmetric_eternal          = PETSC_TRUE;
-    break;
-  case MAT_NOT_SYMMETRY_ETERNAL:
-    mat->symmetric_eternal          = PETSC_FALSE;
+    mat->symmetric_eternal          = flg;
     break;
   default:
     break;
   }
   if (mat->ops->setoption) {
-    ierr = (*mat->ops->setoption)(mat,op);CHKERRQ(ierr);
+    ierr = (*mat->ops->setoption)(mat,op,flg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -4417,7 +4388,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroEntries(Mat mat)
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -4475,7 +4446,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRows(Mat mat,PetscInt numRows,const Pet
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -4535,7 +4506,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsIS(Mat mat,IS is,PetscScalar diag)
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -4601,7 +4572,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatZeroRowsLocal(Mat mat,PetscInt numRows,cons
    but does not release memory.  For the dense and block diagonal
    formats this does not alter the nonzero structure.
 
-   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS) the nonzero structure
+   If the option MatSetOption(mat,MAT_KEEP_ZEROED_ROWS,PETSC_TRUE) the nonzero structure
    of the matrix is not changed (even for AIJ and BAIJ matrices) the values are
    merely zeroed.
 
@@ -5125,11 +5096,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat mat,PetscInt n,const IS 
       ierr = ISEqual(irow[i],icol[i],&eq);CHKERRQ(ierr);
       if (eq) {
 	if (mat->symmetric){
-	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC);CHKERRQ(ierr);
+	  ierr = MatSetOption((*submat)[i],MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 	} else if (mat->hermitian) {
-	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN);CHKERRQ(ierr);
+	  ierr = MatSetOption((*submat)[i],MAT_HERMITIAN,PETSC_TRUE);CHKERRQ(ierr);
 	} else if (mat->structurally_symmetric) {
-	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC);CHKERRQ(ierr);
+	  ierr = MatSetOption((*submat)[i],MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
 	}
       }
     }

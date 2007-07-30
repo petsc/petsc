@@ -220,10 +220,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_Composite(Mat A)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
-
-  ierr = PetscNew(Mat_Composite,&b);CHKERRQ(ierr);
+  ierr = PetscNewLog(A,Mat_Composite,&b);CHKERRQ(ierr);
   A->data = (void*)b;
+  ierr = PetscMemcpy(A->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
 
   ierr = PetscMapSetBlockSize(&A->rmap,1);CHKERRQ(ierr);
   ierr = PetscMapSetBlockSize(&A->cmap,1);CHKERRQ(ierr);
@@ -307,18 +306,19 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateComposite(MPI_Comm comm,PetscInt nmat
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCompositeAddMat(Mat mat,Mat smat)
 {
-  Mat_Composite     *shell = (Mat_Composite*)mat->data;
+  Mat_Composite     *shell;
   PetscErrorCode    ierr;
   Mat_CompositeLink ilink,next;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
   PetscValidHeaderSpecific(smat,MAT_COOKIE,2);
-  ierr        = PetscNew(struct _Mat_CompositeLink,&ilink);CHKERRQ(ierr);
+  ierr        = PetscNewLog(mat,struct _Mat_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
   ierr        = PetscObjectReference((PetscObject)smat);CHKERRQ(ierr);
   ilink->mat  = smat;
 
+  shell = (Mat_Composite*)mat->data;
   next = shell->head;
   if (!next) {
     shell->head  = ilink;

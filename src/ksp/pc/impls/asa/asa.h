@@ -49,8 +49,8 @@ struct __PC_ASA_level {
   Mat        Pt;                           /* tentative restriction operator (P^t) */
 /*   Mat        S;                            /\* prolongation smoother *\/ */
   PetscReal  spec_rad;                     /* estimate of the spectral radius of A */
-  Mat        I;                            /* smoothed prolongator */
-  Mat        It;                           /* smoothed restriction operator */
+  Mat        smP;                            /* smoothed prolongator */
+  Mat        smPt;                           /* smoothed restriction operator */
   
   MPI_Comm   comm;                         /* communicator object for this level */
 

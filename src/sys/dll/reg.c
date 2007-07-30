@@ -558,7 +558,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListPrintTypes(PetscFList list,MPI_Comm com
   char           p[64];
 
   PetscFunctionBegin;
-  if (!fd) fd = stdout;
+  if (!fd) fd = PETSC_STDOUT;
 
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
   if (prefix) {ierr = PetscStrcat(p,prefix);CHKERRQ(ierr);}

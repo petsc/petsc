@@ -130,19 +130,19 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ierr   = PetscMalloc(nsplit*sizeof(PetscInt),&jac->csize);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
       if (jac->defaultsplit) {
-	ierr     = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
+        ierr = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
         jac->csize[i] = ccsize/nsplit;
       } else {
         if (ilink->nfields > 1) {
-	  PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
-	  ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
-	  for (j=0; j<nslots; j++) {
-	    for (k=0; k<nfields; k++) {
-	      ii[nfields*j + k] = rstart + bs*j + fields[k];
-	    }
-	  }
-	  ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
-	  ierr = PetscFree(ii);CHKERRQ(ierr);
+          PetscInt   *ii,j,k,nfields = ilink->nfields,*fields = ilink->fields;
+          ierr = PetscMalloc(ilink->nfields*nslots*sizeof(PetscInt),&ii);CHKERRQ(ierr);
+          for (j=0; j<nslots; j++) {
+            for (k=0; k<nfields; k++) {
+              ii[nfields*j + k] = rstart + bs*j + fields[k];
+            }
+          }
+          ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
+          ierr = PetscFree(ii);CHKERRQ(ierr);
         } else { 
           ierr = ISCreateStride(pc->comm,nslots,ilink->fields[0],bs,&jac->is[i]);CHKERRQ(ierr);
         }
@@ -683,8 +683,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_FieldSplit(PC pc)
   PC_FieldSplit  *jac;
 
   PetscFunctionBegin;
-  ierr = PetscNew(PC_FieldSplit,&jac);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_FieldSplit));CHKERRQ(ierr);
+  ierr = PetscNewLog(pc,PC_FieldSplit,&jac);CHKERRQ(ierr);
   jac->bs        = -1;
   jac->nsplits   = 0;
   jac->type      = PC_COMPOSITE_ADDITIVE;

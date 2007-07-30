@@ -481,9 +481,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_QCG(KSP ksp)
   KSP_QCG        *cgP;
 
   PetscFunctionBegin;
-  ierr = PetscMalloc(sizeof(KSP_QCG),&cgP);CHKERRQ(ierr);
-  ierr = PetscMemzero(cgP,sizeof(KSP_QCG));CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_QCG));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_QCG,&cgP);CHKERRQ(ierr);
   ksp->data                      = (void*)cgP;
   ksp->pc_side                   = PC_SYMMETRIC;
   ksp->ops->setup                = KSPSetUp_QCG;

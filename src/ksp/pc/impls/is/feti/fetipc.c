@@ -19,7 +19,7 @@ int PCCreate_Feti(PC pc)
 
     PetscFunctionBegin;
 
-    PetscNew(PC_Feti,&pcfeti);
+    PetscNewLog(pc,PC_Feti,&pcfeti);
     PetscMemzero(pc->ops,sizeof(struct _PCOps));
 
     pc->ops->apply               = PCApply_Feti;

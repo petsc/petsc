@@ -20,7 +20,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
     SETERRQ(PETSC_ERR_ORDER,"ASCII PetscViewer destroyed before restoring singleton PetscViewer");
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
-  if (!rank && vascii->fd != stderr && vascii->fd != stdout) {
+  if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
     if (vascii->fd) fclose(vascii->fd);
     if (vascii->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
@@ -552,8 +552,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_ASCII(PetscViewer viewer,c
     ierr = PetscStrcmp(name,"stdout",&isstdout);CHKERRQ(ierr);
     /* empty filename means stdout */
     if (name[0] == 0)  isstdout = PETSC_TRUE;
-    if (isstderr)      vascii->fd = stderr;
-    else if (isstdout) vascii->fd = stdout;
+    if (isstderr)      vascii->fd = PETSC_STDERR;
+    else if (isstdout) vascii->fd = PETSC_STDOUT;
     else {
 
 
@@ -653,7 +653,7 @@ PetscErrorCode PetscViewerRestoreSingleton_ASCII(PetscViewer viewer,PetscViewer 
   }
 
   ascii->sviewer             = 0;
-  vascii->fd                 = stdout;
+  vascii->fd                 = PETSC_STDOUT;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII;
   ierr                       = PetscViewerDestroy(*outviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -717,7 +717,7 @@ PetscErrorCode PetscViewerRestoreSubcomm_ASCII(PetscViewer viewer,MPI_Comm subco
   }
 
   ascii->sviewer             = 0;
-  vascii->fd                 = stdout;
+  vascii->fd                 = PETSC_STDOUT;
   (*outviewer)->ops->destroy = PetscViewerDestroy_ASCII; 
   ierr = PetscViewerDestroy(*outviewer);CHKERRQ(ierr);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -733,7 +733,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
   PetscErrorCode    ierr;
 
   PetscFunctionBegin;
-  ierr         = PetscNew(PetscViewer_ASCII,&vascii);CHKERRQ(ierr);
+  ierr         = PetscNewLog(viewer,PetscViewer_ASCII,&vascii);CHKERRQ(ierr);
   viewer->data = (void*)vascii;
 
   viewer->ops->destroy          = PetscViewerDestroy_ASCII;
@@ -744,7 +744,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_ASCII(PetscViewer viewer)
   viewer->ops->restoresubcomm   = PetscViewerRestoreSubcomm_ASCII;
 
   /* defaults to stdout unless set with PetscViewerFileSetName() */
-  vascii->fd             = stdout;
+  vascii->fd             = PETSC_STDOUT;
   vascii->mode           = FILE_MODE_WRITE;
   vascii->bviewer        = 0;
   vascii->sviewer        = 0;

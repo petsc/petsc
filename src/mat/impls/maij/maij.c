@@ -155,7 +155,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MAIJ(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr     = PetscNew(Mat_MPIMAIJ,&b);CHKERRQ(ierr);
+  ierr     = PetscNewLog(A,Mat_MPIMAIJ,&b);CHKERRQ(ierr);
   A->data  = (void*)b;
   ierr = PetscMemzero(A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   A->factor           = 0;
@@ -2443,7 +2443,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqMAIJ_SeqAIJ(Mat A, MatType newty
     }
   }
   ierr = MatCreateSeqAIJ(PETSC_COMM_SELF,dof*m,dof*n,0,ilen,&B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree(ilen);CHKERRQ(ierr);
   ierr = PetscMalloc(nmax*sizeof(PetscInt),&icols);CHKERRQ(ierr);
   ii   = 0;
@@ -2501,7 +2500,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_MPIMAIJ_MPIAIJ(Mat A, MatType newty
     }
   }
   ierr = MatCreateMPIAIJ(A->comm,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N,0,dnz,0,onz,&B);CHKERRQ(ierr);
-  ierr = MatSetOption(B,MAT_COLUMNS_SORTED);CHKERRQ(ierr);
   ierr = PetscFree2(dnz,onz);CHKERRQ(ierr);
 
   ierr   = PetscMalloc2(nmax,PetscInt,&icols,onmax,PetscInt,&oicols);CHKERRQ(ierr);

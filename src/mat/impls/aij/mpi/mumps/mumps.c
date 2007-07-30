@@ -821,7 +821,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,
 
   PetscFunctionBegin;
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
 
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatDuplicate(A,MAT_COPY_VALUES,&B);CHKERRQ(ierr);
@@ -991,7 +991,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newt
   }
 
   ierr = PetscObjectGetComm((PetscObject)A,&comm);CHKERRQ(ierr);
-  ierr = PetscNew(Mat_MUMPS,&mumps);CHKERRQ(ierr);
+  ierr = PetscNewLog(B,Mat_MUMPS,&mumps);CHKERRQ(ierr);
 
   mumps->MatDuplicate              = A->ops->duplicate;
   mumps->MatView                   = A->ops->view;

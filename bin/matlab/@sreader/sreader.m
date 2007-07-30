@@ -7,8 +7,9 @@ function O = sreader(socketnumber)
 %  files or sockets
 %
 if nargin == 0
-  socketnumber = 5000;
+  S = struct('fd', sopen())
+else
+  S = struct('fd', sopen(socketnumber))
 end
-S = struct('fd', sopen(socketnumber))
 O = class(S,'sreader');
 

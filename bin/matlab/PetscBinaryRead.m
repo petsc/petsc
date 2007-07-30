@@ -18,19 +18,21 @@ if nargin == 1
   comp = 0;
 end
 
-if ischar(inarg) 
+if nargin == 0
+  fd = sreader();
+else if ischar(inarg) 
   fd = freader(inarg);
 else if isnumeric(inarg)
-       fd = sreader(inarg)
-     else
-% otherwise assume it is a freader or sreader and handles read()
-       fd = inarg
-     end
+  fd = sreader(inarg);
+else % assume it is a freader or sreader and handles read()
+  fd = inarg;
+end
+end
 end
 
 if comp == 'cell'
   if nargin == 3
-    narg = cnt
+    narg = cnt;
   else
     narg   = 1000;  
   end
@@ -46,7 +48,7 @@ for l=1:narg
       varargout(1) = {result};
       return 
     else 
-      disp('File does not have that many items')
+      disp('File/Socket does not have that many items')
     end
     return
   end
@@ -116,4 +118,7 @@ for l=1:narg
 end
 
 % close the reader if we opened it
-if ischar(inarg) | isinteger(inarg) close(fd); end;
+
+if nargin > 0
+  if ischar(inarg) | isinteger(inarg) close(fd); end;
+end

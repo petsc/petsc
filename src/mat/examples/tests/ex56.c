@@ -38,7 +38,7 @@ int main(int argc,char **args)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
   if (flg) { 
-    ierr = MatSetOption(A,MAT_COLUMN_ORIENTED);CHKERRQ(ierr); 
+    ierr = MatSetOption(A,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr); 
     eval = 6;
   } else {
     eval = 9;
@@ -63,7 +63,7 @@ int main(int argc,char **args)
 
   /*
   This option does not work for rectangular matrices
-  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR);CHKERRQ(ierr);
+  ierr = MatSetOption(A,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE);CHKERRQ(ierr);
   */
   
   ierr = MatSetValuesBlocked(A,2,row,3,col,&x[0][0],INSERT_VALUES);CHKERRQ(ierr);

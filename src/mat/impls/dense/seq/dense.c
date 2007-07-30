@@ -663,13 +663,14 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
 { 
   Mat_SeqDense *mat = (Mat_SeqDense*)A->data;
   PetscInt     i,j;
-  PetscScalar  *vpt = v;
 
   PetscFunctionBegin;
   /* row-oriented output */ 
   for (i=0; i<m; i++) {
+    if (indexm[i] < 0) {v += n;continue;}
     for (j=0; j<n; j++) {
-      *vpt++ = mat->v[indexn[j]*mat->lda + indexm[i]];
+      if (indexn[i] < 0) {v++; continue;}
+      *v++ = mat->v[indexn[j]*mat->lda + indexm[i]];
     }
   }
   PetscFunctionReturn(0);
@@ -1247,7 +1248,7 @@ PetscErrorCode MatNorm_SeqDense(Mat A,NormType type,PetscReal *nrm)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetOption_SeqDense"
-PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op)
+PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscTruth flg)
 {
   Mat_SeqDense   *aij = (Mat_SeqDense*)A->data;
   PetscErrorCode ierr;
@@ -1255,30 +1256,17 @@ PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op)
   PetscFunctionBegin;
   switch (op) {
   case MAT_ROW_ORIENTED:
-    aij->roworiented = PETSC_TRUE;
+    aij->roworiented = flg;
     break;
-  case MAT_COLUMN_ORIENTED:
-    aij->roworiented = PETSC_FALSE;
-    break;
-  case MAT_ROWS_SORTED: 
-  case MAT_ROWS_UNSORTED:
-  case MAT_COLUMNS_SORTED:
-  case MAT_COLUMNS_UNSORTED:
-  case MAT_NO_NEW_NONZERO_LOCATIONS:
-  case MAT_YES_NEW_NONZERO_LOCATIONS:
+  case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
-  case MAT_NO_NEW_DIAGONALS:
-  case MAT_YES_NEW_DIAGONALS:
+  case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
   case MAT_SYMMETRIC:
   case MAT_STRUCTURALLY_SYMMETRIC:
-  case MAT_NOT_SYMMETRIC:
-  case MAT_NOT_STRUCTURALLY_SYMMETRIC:
   case MAT_HERMITIAN:
-  case MAT_NOT_HERMITIAN:
   case MAT_SYMMETRY_ETERNAL:
-  case MAT_NOT_SYMMETRY_ETERNAL:
     ierr = PetscInfo1(A,"Option %s ignored\n",MatOptions[op]);CHKERRQ(ierr);
     break;
   default:
@@ -1967,11 +1955,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   ierr = PetscMapSetUp(&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapSetUp(&B->cmap);CHKERRQ(ierr);
 
-  ierr            = PetscNew(Mat_SeqDense,&b);CHKERRQ(ierr);
+  ierr            = PetscNewLog(B,Mat_SeqDense,&b);CHKERRQ(ierr);
   ierr            = PetscMemcpy(B->ops,&MatOps_Values,sizeof(struct _MatOps));CHKERRQ(ierr);
   B->factor       = 0;
   B->mapping      = 0;
-  ierr = PetscLogObjectMemory(B,sizeof(struct _p_Mat));CHKERRQ(ierr);
   B->data         = (void*)b;
 
 

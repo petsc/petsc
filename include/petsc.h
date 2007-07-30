@@ -747,7 +747,8 @@ M*/
   Concepts: memory allocation
 
 M*/
-#define PetscNew(A,b)        (PetscMalloc(sizeof(A),(b)) || PetscMemzero(*(b),sizeof(A)))
+#define PetscNew(A,b)      (PetscMalloc(sizeof(A),(b)) || PetscMemzero(*(b),sizeof(A)))
+#define PetscNewLog(o,A,b) (PetscNew(A,b) || ((o) ? PetscLogObjectMemory(o,sizeof(A)) : 0))
 
 /*MC
    PetscFree - Frees memory
@@ -1706,5 +1707,3 @@ M*/
 
 PETSC_EXTERN_CXX_END
 #endif
-
-

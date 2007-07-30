@@ -894,10 +894,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Shell(PC pc)
   PC_Shell       *shell;
 
   PetscFunctionBegin;
-  ierr                = PetscNew(PC_Shell,&shell);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(pc,sizeof(PC_Shell));CHKERRQ(ierr);
-  pc->data         = (void*)shell;
-  pc->name         = 0;
+  ierr = PetscNewLog(pc,PC_Shell,&shell);CHKERRQ(ierr);
+  pc->data  = (void*)shell;
+  pc->name  = 0;
 
   pc->ops->destroy         = PCDestroy_Shell;
   pc->ops->view            = PCView_Shell;

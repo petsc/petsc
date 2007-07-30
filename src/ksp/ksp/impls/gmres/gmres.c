@@ -811,8 +811,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GMRES(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscNew(KSP_GMRES,&gmres);CHKERRQ(ierr);
-  ierr = PetscLogObjectMemory(ksp,sizeof(KSP_GMRES));CHKERRQ(ierr);
+  ierr = PetscNewLog(ksp,KSP_GMRES,&gmres);CHKERRQ(ierr);
   ksp->data                              = (void*)gmres;
 
 

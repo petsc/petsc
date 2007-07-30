@@ -79,7 +79,7 @@ static PetscErrorCode PetscViewerDestroy_Socket(PetscViewer viewer)
 #else
     ierr = close(vmatlab->port);
 #endif
-    if (ierr) SETERRQ(PETSC_ERR_LIB,"System error closing socket");
+    if (ierr) SETERRQ(PETSC_ERR_SYS,"System error closing socket");
   }
   ierr = PetscFree(vmatlab);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -99,7 +99,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
   PetscFunctionBegin;
   if (!(hp=gethostbyname(hostname))) {
     perror("SEND: error gethostbyname: ");   
-    SETERRQ1(PETSC_ERR_LIB,"system error open connection to %s",hostname);
+    SETERRQ1(PETSC_ERR_SYS,"system error open connection to %s",hostname);
   }
   ierr = PetscMemzero(&sa,sizeof(sa));CHKERRQ(ierr);
   ierr = PetscMemcpy(&sa.sin_addr,hp->h_addr,hp->h_length);CHKERRQ(ierr);
@@ -108,7 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
   sa.sin_port = htons((u_short) portnum);
   while (flg) {
     if ((s=socket(hp->h_addrtype,SOCK_STREAM,0)) < 0) {
-      perror("SEND: error socket");  SETERRQ(PETSC_ERR_LIB,"system error");
+      perror("SEND: error socket");  SETERRQ(PETSC_ERR_SYS,"system error");
     }
     if (connect(s,(struct sockaddr*)&sa,sizeof(sa)) < 0) {
 #if defined(PETSC_HAVE_WSAGETLASTERROR)
@@ -124,7 +124,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         Sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
+        perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
       }
 #else
       if (errno == EADDRINUSE) {
@@ -138,7 +138,7 @@ PetscErrorCode PETSC_DLLEXPORT SOCKCall_Private(char *hostname,int portnum,int *
         /* (*PetscErrorPrintf)("SEND: forcefully rejected\n"); */
         sleep((unsigned) 1);
       } else {
-        perror(NULL); SETERRQ(PETSC_ERR_LIB,"system error");
+        perror(NULL); SETERRQ(PETSC_ERR_SYS,"system error");
       }
 #endif
       flg = PETSC_TRUE;
@@ -239,7 +239,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
     if (tflg) {
       ierr = PetscOptionsAtoi(sdef,&def);CHKERRQ(ierr);
     } else {
-      def = DEFAULTPORT;
+      def = PETSCSOCKETDEFAULTPORT;
     }
     ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
 
@@ -261,7 +261,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Socket(PetscViewer v)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  ierr                   = PetscNew(PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
+  ierr                   = PetscNewLog(v,PetscViewer_Socket,&vmatlab);CHKERRQ(ierr);
   vmatlab->port          = 0;
   v->data                = (void*)vmatlab;
   v->ops->destroy        = PetscViewerDestroy_Socket;
@@ -306,7 +306,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
     if (tflg) {
       ierr = PetscOptionsAtoi(portn,&port);CHKERRQ(ierr);
     } else {
-      port = DEFAULTPORT;
+      port = PETSCSOCKETDEFAULTPORT;
     }
   }
   if (!machine) {

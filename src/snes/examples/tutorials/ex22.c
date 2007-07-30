@@ -235,6 +235,7 @@ PetscErrorCode ExactSolution(DMComposite packer,Vec U)
   if (w) w[0] = .25;
   ierr = PFApplyVec(pf,x,u_global);CHKERRQ(ierr);
   ierr = PFDestroy(pf);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
   ierr = DMCompositeRestoreAccess(packer,U,&w,&u_global,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
