@@ -1,98 +1,182 @@
-//  mpi includes
-#include <mpi.h>
 
-//  petsc includes
-#include <petsc.h>
-#include <petscvec.h>
+/* Program usage:  mpiexec ex1 [-help] [all PETSc options] */
 
-//  std includes
+static char help[] = "Basic vector routines.\n\n";
 
-//  useful definitions
-#define SIZE 36
+/*T
+   Concepts: vectors^basic routines;
+   Processors: n
+T*/
 
-int
-main(int argc, char** argv) {
+/* 
+  Include "petscvec.h" so that we can use vectors.  Note that this file
+  automatically includes:
+     petsc.h       - base PETSc routines   petscis.h     - index sets
+     petscsys.h    - system routines       petscviewer.h - viewers
+*/
 
-    //  Initialize the test code
-    MPI_Init(&argc, &argv);
-    PetscInitialize(&argc, &argv, PETSC_NULL, PETSC_NULL);
+#include "petscvec.h"
 
-    //  Grab some useful MPI information
-    MPI_Comm comm = MPI_COMM_WORLD;
-    int rank, size;
-    MPI_Comm_rank(comm, &rank);
-    MPI_Comm_size(comm, &size);
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc,char **argv)
+{
+  Vec            x,y,w;               /* vectors */
+  Vec            *z;                    /* array of vectors */
+  PetscReal      norm,v,v1,v2;
+  PetscInt       n = 20;
+  PetscErrorCode ierr;
+  PetscTruth     flg;
+  PetscScalar    one = 1.0,two = 2.0,three = 3.0,dots[3],dot;
 
-    //  Create test vectors
-    Vec phin, eps;
-    VecCreate(comm, &phin);
-    VecSetSizes(phin, PETSC_DECIDE, SIZE);
-    VecSetFromOptions(phin);
-    VecDuplicate(phin, &eps);
+  ierr = PetscInitialize(&argc,&argv,(char*)0,help);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-n",&n,PETSC_NULL);CHKERRQ(ierr);
 
-    //  Put data into one of the vectors
-    PetscInt ix[9];
-    PetscScalar vecval[9] = {1.0};
+  /* 
+     Create a vector, specifying only its global dimension.
+     When using VecCreate(), VecSetSizes() and VecSetFromOptions(), the vector format 
+     (currently parallel, shared, or sequential) is determined at runtime.  Also, the 
+     parallel partitioning of the vector is determined by PETSc at runtime.
 
-    printf("%g %g %g %g %g %g %g %g %g\n",vecval[0],vecval[1],vecval[2],vecval[3],vecval[4],vecval[5],vecval[6],vecval[7],vecval[8]);
-    if (rank == 0) {
-        ix[0]=0;
-        ix[1]=1;
-        ix[2]=2;
-        ix[3]=6;
-        ix[4]=7;
-        ix[5]=8;
-        ix[6]=12;
-        ix[7]=13;
-        ix[8]=14;
-        VecSetValues(phin, 9, ix, vecval, INSERT_VALUES);
-    }
-    if (rank == 1) {
-        ix[0]=3;
-        ix[1]=4;
-        ix[2]=5;
-        ix[3]=9;
-        ix[4]=10;
-        ix[5]=11;
-        ix[6]=15;
-        ix[7]=16;
-        ix[8]=17;
-        VecSetValues(phin, 9, ix, vecval, INSERT_VALUES);
-    }
-    if (rank == 2) {
-        ix[0]=18;
-        ix[1]=19;
-        ix[2]=20;
-        ix[3]=24;
-        ix[4]=25;
-        ix[5]=26;
-        ix[6]=30;
-        ix[7]=31;
-        ix[8]=32;
-        VecSetValues(phin, 9, ix, vecval, INSERT_VALUES);
-    }
-    if (rank == 3) {
-        ix[0]=21;
-        ix[1]=22;
-        ix[2]=23;
-        ix[3]=27;
-        ix[4]=28;
-        ix[5]=29;
-        ix[6]=33;
-        ix[7]=34;
-        ix[8]=35;
-        VecSetValues(phin, 9, ix, vecval, INSERT_VALUES);
-    }
+     Routines for creating particular vector types directly are:
+        VecCreateSeq() - uniprocessor vector
+        VecCreateMPI() - distributed vector, where the user can
+                         determine the parallel partitioning
+        VecCreateShared() - parallel vector that uses shared memory
+                            (available only on the SGI); otherwise,
+                            is the same as VecCreateMPI()
 
-    //  Finalize the vector construction
-    VecAssemblyBegin(phin);
-    VecAssemblyEnd(phin);
+     With VecCreate(), VecSetSizes() and VecSetFromOptions() the option -vec_type mpi or 
+     -vec_type shared causes the particular type of vector to be formed.
 
-    //  Free initialized variables
-    VecDestroy(phin);
+  */
 
-    //  Finalize the test code
-    PetscFinalize();
-    MPI_Finalize();
+  ierr = VecCreate(PETSC_COMM_WORLD,&x);CHKERRQ(ierr);
+  ierr = VecSetSizes(x,PETSC_DECIDE,n);CHKERRQ(ierr);
+  ierr = VecSetFromOptions(x);CHKERRQ(ierr);
 
+  /*
+     Duplicate some work vectors (of the same format and
+     partitioning as the initial vector).
+  */
+  ierr = VecDuplicate(x,&y);CHKERRQ(ierr);
+  ierr = VecDuplicate(x,&w);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+
+
+  /*
+     Duplicate more work vectors (of the same format and
+     partitioning as the initial vector).  Here we duplicate
+     an array of vectors, which is often more convenient than
+     duplicating individual ones.
+  */
+  ierr = VecDuplicateVecs(x,3,&z);CHKERRQ(ierr); 
+
+  /*
+     Set the vectors to entries to a constant value.
+  */
+  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = VecSet(y,two);CHKERRQ(ierr);
+  ierr = VecSet(z[0],one);CHKERRQ(ierr);
+  ierr = VecSet(z[1],two);CHKERRQ(ierr);
+  ierr = VecSet(z[2],three);CHKERRQ(ierr);
+
+  /*
+     Demonstrate various basic vector routines.
+  */
+  ierr = VecDot(x,x,&dot);CHKERRQ(ierr);
+  ierr = VecMDot(x,3,z,dots);CHKERRQ(ierr);
+
+  /* 
+     Note: If using a complex numbers version of PETSc, then
+     PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
+     (when using real numbers) it is undefined.
+  */
+#if defined(PETSC_USE_COMPLEX)
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt) (PetscRealPart(dot)));CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)PetscRealPart(dots[0]),
+                             (PetscInt)PetscRealPart(dots[1]),(PetscInt)PetscRealPart(dots[2]));CHKERRQ(ierr);
+#else
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D\n",(PetscInt)dot);CHKERRQ(ierr);
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"Vector length %D %D %D\n",(PetscInt)dots[0],
+                             (PetscInt)dots[1],(PetscInt)dots[2]);CHKERRQ(ierr);
+#endif
+
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"All other values should be near zero\n");CHKERRQ(ierr);
+
+  ierr = VecScale(x,two);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecScale %G\n",v);CHKERRQ(ierr);
+
+
+  ierr = VecCopy(x,w);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecCopy  %G\n",v);CHKERRQ(ierr);
+
+  ierr = VecAXPY(y,three,x);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-8.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAXPY %G\n",v);CHKERRQ(ierr);
+
+  ierr = VecAYPX(y,two,x);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecAYPX %G\n",v);CHKERRQ(ierr);
+
+  ierr = VecSwap(x,y);CHKERRQ(ierr);
+  ierr = VecNorm(y,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-2.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %G\n",v);CHKERRQ(ierr);
+  ierr = VecNorm(x,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-18.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecSwap  %G\n",v);CHKERRQ(ierr);
+
+  ierr = VecWAXPY(w,two,x,y);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-38.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecWAXPY %G\n",v);CHKERRQ(ierr);
+
+  ierr = VecPointwiseMult(w,y,x);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr); 
+  v = norm-36.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseMult %G\n",v);CHKERRQ(ierr);
+
+  ierr = VecPointwiseDivide(w,x,y);CHKERRQ(ierr);
+  ierr = VecNorm(w,NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-9.0*sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecPointwiseDivide %G\n",v);CHKERRQ(ierr);
+
+  dots[0] = one;
+  dots[1] = three;
+  dots[2] = two;
+  ierr = VecSet(x,one);CHKERRQ(ierr);
+  ierr = VecMAXPY(x,3,dots,z);CHKERRQ(ierr);
+  ierr = VecNorm(z[0],NORM_2,&norm);CHKERRQ(ierr);
+  v = norm-sqrt((double)n); if (v > -PETSC_SMALL && v < PETSC_SMALL) v = 0.0; 
+  ierr = VecNorm(z[1],NORM_2,&norm);CHKERRQ(ierr);
+  v1 = norm-2.0*sqrt((double)n); if (v1 > -PETSC_SMALL && v1 < PETSC_SMALL) v1 = 0.0; 
+  ierr = VecNorm(z[2],NORM_2,&norm);CHKERRQ(ierr);
+  v2 = norm-3.0*sqrt((double)n); if (v2 > -PETSC_SMALL && v2 < PETSC_SMALL) v2 = 0.0; 
+  ierr = PetscPrintf(PETSC_COMM_WORLD,"VecMAXPY %G %G %G \n",v,v1,v2);CHKERRQ(ierr);
+
+  /* 
+     Test whether vector has been corrupted (just to demonstrate this
+     routine) not needed in most application codes.
+  */
+  ierr = VecValid(x,&flg);CHKERRQ(ierr);
+  if (!flg) SETERRQ(1,"Corrupted vector.");
+
+  /* 
+     Free work space.  All PETSc objects should be destroyed when they
+     are no longer needed.
+  */
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = VecDestroy(w);CHKERRQ(ierr);
+  ierr = VecDestroyVecs(z,3);CHKERRQ(ierr);
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  return 0;
 }
+ 
