@@ -38,7 +38,7 @@ PetscErrorCode BaseTest(const ALE::Obj<xsifter_type>& xsifter, ALE::Test::XSifte
     base = xsifter->base();
   }
   else {
-    base = xsifter->base((xsifter_type::predicate_type) options.predicate);
+    base = xsifter->base();
   }
 
 

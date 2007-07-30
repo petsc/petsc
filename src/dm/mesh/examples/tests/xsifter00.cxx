@@ -122,6 +122,7 @@ int main(int argc, char *argv[])
     std::cout << "\n";
   }//test2
 #endif
+
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }// main()
