@@ -181,8 +181,10 @@ $                       save on communication overhead
 $                    preconditioned - default for left preconditioning 
 $                    unpreconditioned - see KSPSetNormType()
 $                    natural - see KSPSetNormType()
-.    -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
-.    -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
+.   -ksp_check_norm_iteration it - do not compute residual norm until iteration number it (does compute at 0th iteration)
+$       works only for PCBCGS and and PCCG
+.   -ksp_constant_null_space - assume the operator (matrix) has the constant vector in its null space
+.   -ksp_test_null_space - tests the null space set with KSPSetNullSpace() to see if it truly is a null space
 .   -ksp_knoll - compute initial guess by applying the preconditioner to the right hand side
 .   -ksp_monitor_cancel - cancel all previous convergene monitor routines set
 .   -ksp_monitor <optional filename> - print residual norm at each iteration
@@ -244,8 +246,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
       if (indx == (PetscInt)KSP_NORM_NO) {
         ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
       }
-      ierr = KSPSetNormType(ksp,(KSPNormType)indx);CHKERRQ(ierr);
+      ierr = KSPSetNormType(ksp,(KSPNormType)indx);CHKERRQ(ierr);  
     }
+    ierr = PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",&flg);CHKERRQ(ierr);
     if (flg) {

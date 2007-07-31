@@ -46,10 +46,14 @@ class FEMQuadrature(script.Script):
     import FIAT.shapes
 
     femCls = getattr(script.Script.importModule('FIAT.'+self.family), self.family)
-    self.generator.run([femCls(FIAT.shapes.LINE, self.order),
-                        femCls(FIAT.shapes.TRIANGLE, self.order),
-                        femCls(FIAT.shapes.TETRAHEDRON, self.order)],
-                       filename = sys.argv[1])
+    defautFemCls = getattr(script.Script.importModule('FIAT.Lagrange'), 'Lagrange')
+    elements = []
+    for shape in [FIAT.shapes.LINE, FIAT.shapes.TRIANGLE, FIAT.shapes.TETRAHEDRON]:
+      try:
+        elements.append(femCls(shape, self.order))
+      except:
+        elements.append(defautFemCls(shape, max(1, self.order)))
+    self.generator.run(elements, filename = sys.argv[1])
     return
 
 if __name__ == '__main__':

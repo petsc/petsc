@@ -105,7 +105,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->debug            = 0;
   options->run              = RUN_FULL;
   options->dim              = 2;
-  options->structured       = PETSC_TRUE;
+  options->structured       = PETSC_FALSE;
   options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.0;
@@ -271,32 +271,25 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
     PetscMPIInt size;
 
     if (options->generateMesh) {
-      Mesh boundary;
-
-      ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
+      ierr = MeshCreate(comm, &options->bdMesh);CHKERRQ(ierr);
       if (dim == 2) {
         double lower[2] = {0.0, 0.0};
         double upper[2] = {1.0, 1.0};
         int    edges[2] = {1, 1};
 
         Obj<ALE::Mesh> mB = ALE::MeshBuilder::createParticleInSquareBoundary(comm, lower, upper, edges, options->particleRadius, options->particleEdges, options->debug);
-        ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
+        ierr = MeshSetMesh(options->bdMesh, mB);CHKERRQ(ierr);
       } else if (dim == 3) {
         double lower[3] = {0.0, 0.0, 0.0};
         double upper[3] = {1.0, 1.0, 1.0};
         int    faces[3] = {1, 1, 1};
 
-        Obj<ALE::Mesh> mB = ALE::MeshBuilder::createCubeBoundary(comm, lower, upper, faces, options->debug);
-        ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
+        Obj<ALE::Mesh> mB = ALE::MeshBuilder::createParticleInCubeBoundary(comm, lower, upper, faces, options->particleRadius, options->particleEdges, options->particleEdges, options->debug);
+        ierr = MeshSetMesh(options->bdMesh, mB);CHKERRQ(ierr);
       } else {
         SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", dim);
       }
-      ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
-      ierr = MeshDestroy(boundary);CHKERRQ(ierr);
-
-      ierr = MeshCreate(comm, &options->bdMesh);CHKERRQ(ierr);
-      Obj<ALE::Mesh> mB = new ALE::Mesh(comm, dim-1, options->debug);
-      ierr = MeshSetMesh(options->bdMesh, mB);CHKERRQ(ierr);
+      ierr = MeshGenerate(options->bdMesh, options->interpolate, &mesh);CHKERRQ(ierr);
     } else {
       std::string baseFilename(options->baseFilename);
       std::string coordFile = baseFilename+".nodes";
@@ -1366,6 +1359,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       ierr = CreateProblem_gen_0((DM) options->bdMesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     } else if (options->dim == 3) {
       ierr = CreateProblem_gen_2(dm, "u", numBC, markers, funcs, options->exactFunc);CHKERRQ(ierr);
+      ierr = CreateProblem_gen_1((DM) options->bdMesh, "u", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }

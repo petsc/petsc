@@ -225,7 +225,7 @@ getmpiexec:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .dvi .ps .F95 .f95 .fiat
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .jpg .dvi .ps .F95 .f95 .fiat
 
 #
 #
@@ -245,6 +245,10 @@ getmpiexec:
 	fig2dev -L pdf $< $*.pdf
 .fig.eps:
 	fig2dev -L eps $< $*.eps
+.fig.jpg:
+	fig2dev -L jpeg $< $*.jpg
+.pdf.jpg:
+	convert $< $*.jpg
 .eps.pdf:
 	epstopdf $< -o=$*.pdf
 .dvi.ps:
