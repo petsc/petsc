@@ -208,12 +208,12 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
 {
   PetscErrorCode    ierr;
   PetscInt          *idx;
-  PetscInt          n,ncols,i,j,k;
+  PetscInt          start,end,n,ncols,i,j,k;
   MatFactorInfo     info;
   // IS                perm, iperm;
   const PetscInt    *cols_c;
   const PetscScalar *vals_c;
-  PetscInt          *rows, *cols;
+  PetscInt          *rows, *cols, *dnz, *onz;
   PetscScalar       *vals, *diag, absval;
   Mat               *pre;
   graph_traits<Graph>::out_edge_iterator e, e_end;
@@ -227,7 +227,10 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
 
   EdgeKeep edge_keep_g = get(edge_keep_t(),g);
 
-  ierr = PetscMalloc(n*sizeof(PetscScalar),&diag);CHKERRQ(ierr);
+  ierr = PetscMalloc3(n,PetscScalar,&diag,n,PetscInt,&dnz,n,PetscInt,&onz);CHKERRQ(ierr);
+  ierr = PetscMemzero(dnz, n * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = PetscMemzero(onz, n * sizeof(PetscInt));CHKERRQ(ierr);
+  ierr = MatGetOwnershipRange(mat, &start, &end);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = MatGetRow(mat,i,&ncols,&cols_c,&vals_c);CHKERRQ(ierr);
     diag[i] = 0;
@@ -261,11 +264,26 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
 
   ierr = PetscMalloc3(1,PetscInt,&rows,n,PetscInt,&cols,n,PetscScalar,&vals);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
+    for (tie(e, e_end) = out_edges(i,g); e != e_end; e++) {
+      if (get(edge_keep_g,*e)) {
+        const PetscInt col =  target(*e,g);
+
+        if (col >= start && col < end) {
+          dnz[i]++;
+        } else {
+          onz[i]++;
+        }
+      }
+    }
+  }
+  ierr = MatSeqAIJSetPreallocation(*pre, 0, dnz);CHKERRQ(ierr);
+  ierr = MatMPIAIJSetPreallocation(*pre, 0, dnz, 0, onz);CHKERRQ(ierr);
+  for (i=0; i<n; i++) {
     rows[0] = i;
     k = 0;
     for (tie(e, e_end) = out_edges(i,g); e != e_end; e++) {
       if (get(edge_keep_g,*e)) {
-	cols[k++] = target(*e,g);
+        cols[k++] = target(*e,g);
       }
     }
     MatGetValues(mat,1,rows,k,cols,vals);
@@ -278,7 +296,7 @@ PetscErrorCode AugmentedLowStretchSpanningTree(Mat mat,Mat *prefact,PetscTruth a
     MatSetValues(*pre,1,rows,k+1,cols,vals,INSERT_VALUES);CHKERRQ(ierr);
   }
   ierr = PetscFree3(rows,cols,vals);CHKERRQ(ierr);
-  ierr = PetscFree(diag);CHKERRQ(ierr);
+  ierr = PetscFree3(diag,dnz,onz);CHKERRQ(ierr);
 
   ierr = MatAssemblyBegin(*pre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(*pre,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
