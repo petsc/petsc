@@ -2,15 +2,15 @@ import SocketServer
 from socket import *
 from urllib import *
 import string
-from os import fdopen
 import threading
 from re import search
+import pickle
+import __builtin__
+import os
+import datetime
 
-# Strings to return to the Zope webpage
 global startmsg
-global sockfd
 global users
-global n
 
 class User(object):
 	def __init__(self, msg):
@@ -55,6 +55,7 @@ class User(object):
 
 def removeUser(i):
 	global users
+	i = i.strip()
 	del users[i]
 
 def createuser(i):
@@ -63,7 +64,7 @@ def createuser(i):
 	i = i.strip()
 	users[i] = User(startmsg)
 
-# Is handler for information received on the socket
+#Socket handler
 class RecHandler(SocketServer.StreamRequestHandler):
 	def handle(self):
 		global users
@@ -145,21 +146,46 @@ class RecHandler(SocketServer.StreamRequestHandler):
 #Start the server and intilize the global variables
 def runserver():
 	global startmsg
-	global sockfd
-	global n
 	global users
+	__builtin__.User = User
 	startmsg = "No Output"
 	d = User(startmsg)
 	users = {"default" : d}
-	n = "default"
-	#threading used so Zope server can display startserver page
 	serv = SocketServer.ThreadingTCPServer(("", 9999), RecHandler)
 	sockfd = serv.fileno()
 	thread = threading.Thread(target=serv.serve_forever)
 	thread.setDaemon(1)
 	thread.start()
-	#serv.serve_forever()
 	return "TCP server started"
+
+def gettime():	
+	today = datetime.datetime.now()
+	cur = today.ctime()
+	cur = cur.replace(" ", "")
+	cur = cur.replace(":", ".")
+	return cur
+
+def createpickle(i):
+	global users
+	i = i.strip()
+	petscdir = os.environ["PETSC_DIR"]
+	cur = gettime()
+	f = open(petscdir+"/zope/Extensions/pickle/"+i+"_"+cur, "w")
+	pickle.dump(users[i], f)
+	f.close()
+
+def getpickles():
+	petscdir = os.environ["PETSC_DIR"]
+	files = os.listdir(petscdir + "/zope/Extensions/pickle/")
+	return files
+
+def unpickle(i):
+	global users
+	i = i.strip()
+	petscdir = os.environ["PETSC_DIR"]
+	f = open(petscdir+"/zope/Extensions/pickle/"+i)
+	loc = i.split("_")
+	users[loc[0]] = pickle.load(f)
 
 def getgs(i):
 	global users
@@ -186,12 +212,6 @@ def geterror(i):
 	i = i.strip()
 	return users[i].geterror()
 
-def setn(i):
-	global n
-	global users
-	if users.has_key(i):
-		n = i
-
 def checkuser(i):
 	global users
 	i = i.strip()
@@ -212,10 +232,6 @@ def getstatus(i):
 		return "Active Program"
 	else: 
 		return "Not Active"
-
-def getuser():
-	global n
-	return n
 
 def clearoutput(i):
 	global users
