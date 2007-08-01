@@ -522,9 +522,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic; 
 #else
-    PetscScalar ic;
-    ic = 1.I;
-    PETSC_i = ic;
+    PETSC_i = I;
 #endif
   }
 
