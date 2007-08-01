@@ -87,7 +87,7 @@ void (*signal())();
   def checkC99Complex(self):
     '''Check for complex numbers in in C99 std'''
     includes = '#include <complex.h>\n'
-    body     = 'double complex x;\n'
+    body     = 'double complex x;\n x = I;\n'
     if self.checkLink(includes, body):
       self.addDefine('HAVE_C99_COMPLEX', 1)
       self.c99_complex = 1
