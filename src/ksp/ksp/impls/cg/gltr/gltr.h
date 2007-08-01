@@ -17,7 +17,7 @@ typedef struct {
   PetscReal *norm_r;		/* Record of residual values from CG         */
 
   PetscReal *rwork;		/* Real workspace for solver computations    */
-  PetscInt  *iwork;		/* Integer workspace for solver computations */
+  PetscBLASInt  *iwork;		/* Integer workspace for solver computations */
 
   PetscReal radius;
   PetscReal norm_d;

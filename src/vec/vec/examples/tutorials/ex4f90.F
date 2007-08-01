@@ -34,7 +34,8 @@
 
        PetscScalar  xwork(6)
        PetscScalar, pointer ::  xx_v(:),yy_v(:)
-       integer i,n,ierr,loc(6)
+       PetscInt i,n,loc(6)
+       PetscErrorCode ierr
        Vec     x,y
 
 
@@ -60,7 +61,7 @@
 !  natural size for a particular problem (not one that is as long
 !  as the full vector).
 
-       call VecSetValues(x,6,loc,xwork,INSERT_VALUES,ierr)
+       call VecSetValues(x,n,loc,xwork,INSERT_VALUES,ierr)
 
 !  Assemble vector
 

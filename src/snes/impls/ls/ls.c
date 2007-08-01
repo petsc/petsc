@@ -186,7 +186,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
-        PetscFunctionReturn(0);
+        break;
       }
     }
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);

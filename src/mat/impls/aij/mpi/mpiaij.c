@@ -1792,7 +1792,8 @@ PetscErrorCode MatSolve_MPIAIJ(Mat A, Vec b, Vec x)
 
 typedef struct { /* used by MatGetRedundantMatrix() for reusing matredundant */
   PetscInt       nzlocal,nsends,nrecvs;
-  PetscInt       *send_rank,*sbuf_nz,*sbuf_j,**rbuf_j;
+  PetscMPIInt    *send_rank;
+  PetscInt       *sbuf_nz,*sbuf_j,**rbuf_j;
   PetscScalar    *sbuf_a,**rbuf_a;
   PetscErrorCode (*MatDestroy)(Mat);
 } Mat_Redundant;
@@ -4198,6 +4199,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   PetscInt               i,j,k,l,ll,nrecvs,nsends,nrows,*srow,*rstarts,*rstartsj = 0,*sstarts,*sstartsj,len;
   MPI_Request            *rwaits = PETSC_NULL,*swaits = PETSC_NULL;
   MPI_Status             *sstatus,rstatus;
+  PetscMPIInt            jj;
   PetscInt               *cols,sbs,rbs;
   PetscScalar            *vals;
 
@@ -4264,7 +4266,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     /* recvs and sends of i-array are completed */
     i = nrecvs;
     while (i--) {
-      ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrecvs,rwaits,&jj,&rstatus);CHKERRQ(ierr);
     }
     if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
 
@@ -4320,7 +4322,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
     /* recvs and sends of j-array are completed */  
     i = nrecvs;
     while (i--) {
-      ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
+      ierr = MPI_Waitany(nrecvs,rwaits,&jj,&rstatus);CHKERRQ(ierr);
     }
     if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}
   } else if (scall == MAT_REUSE_MATRIX){
@@ -4361,7 +4363,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetBrowsOfAoCols(Mat A,Mat B,MatReuse scall
   /* recvs and sends of a-array are completed */
   i = nrecvs;
   while (i--) {
-    ierr = MPI_Waitany(nrecvs,rwaits,&j,&rstatus);CHKERRQ(ierr);
+    ierr = MPI_Waitany(nrecvs,rwaits,&jj,&rstatus);CHKERRQ(ierr);
   }
   if (nsends) {ierr = MPI_Waitall(nsends,swaits,sstatus);CHKERRQ(ierr);}  
   ierr = PetscFree2(rwaits,swaits);CHKERRQ(ierr); 

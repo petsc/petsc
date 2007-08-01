@@ -38,14 +38,19 @@
       Vec     x,u,b
       Mat     A
       KSP    ksp
-      integer i,j,II,JJ,ierr,m,n
-      integer Istart,Iend,flg,nsteps
+      PetscInt i,j,II,JJ,m,n
+      PetscInt Istart,Iend
+      PetscInt nsteps,one
+      PetscErrorCode ierr
+      PetscTruth flg
       PetscScalar  v
+      
 
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       m      = 3
       n      = 3
       nsteps = 2
+      one    = 1
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-m',m,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-nsteps',nsteps,    &
@@ -77,22 +82,22 @@
         j = II - i*n  
         if (i.gt.0) then
           JJ = II - n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (i.lt.m-1) then
           JJ = II + n
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.gt.0) then
           JJ = II - 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         if (j.lt.n-1) then
           JJ = II + 1
-          call MatSetValues(A,1,II,1,JJ,v,ADD_VALUES,ierr)
+          call MatSetValues(A,one,II,one,JJ,v,ADD_VALUES,ierr)
         endif
         v = 4.0
-        call  MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call  MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  10   continue
 
 !  Assemble matrix, using the 2-step process:
@@ -159,16 +164,20 @@
 !      A2 - preconditioning matrix
 !
       PetscScalar  v,val
-      integer II,ierr,Istart,Iend,count,nsteps
+      PetscInt II,Istart,Iend
+      PetscInt count,nsteps,one
+      PetscErrorCode ierr
       Mat     A
       KSP     ksp
       Vec     x,b,u
 
 ! Use common block to retain matrix between successive subroutine calls
       Mat              A2
-      integer          rank,pflag
+      PetscMPIInt      rank
+      PetscTruth       pflag
       common /my_data/ A2,pflag,rank
 
+      one = 1
 ! First time thorough: Create new matrix to define the linear system
       if (count .eq. 1) then
         call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
@@ -188,7 +197,7 @@
       call MatGetOwnershipRange(A,Istart,Iend,ierr)
       do 20, II=Istart,Iend-1
         v = 2.0
-        call MatSetValues(A,1,II,1,II,v,ADD_VALUES,ierr)
+        call MatSetValues(A,one,II,one,II,v,ADD_VALUES,ierr)
  20   continue
       call MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY,ierr)
       if (pflag .ne. 0) then
