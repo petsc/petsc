@@ -24,8 +24,10 @@
 #include "include/finclude/petscmat.h90"
 
       Mat A
-      integer i,j,m,n,ierr
-      integer rstart,rend
+      PetscErrorCode ierr
+      PetscInt i,j,m,n
+      PetscInt rstart,rend
+      PetscInt one
       PetscScalar  v
       PetscScalar, pointer :: array(:,:)
 
@@ -34,6 +36,7 @@
 
       m = 3
       n = 2
+      one = 1
 !
 !      Create a parallel dense matrix shared by all processors 
 !
@@ -46,7 +49,7 @@
       do 10, i=0,m-1
         do 20, j=0,n-1
           v = 9.d0/(i+j+1)
-          call MatSetValues(A,1,i,1,j,v,INSERT_VALUES,ierr)
+          call MatSetValues(A,one,i,one,j,v,INSERT_VALUES,ierr)
  20     continue
  10   continue
 

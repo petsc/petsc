@@ -279,7 +279,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 .seealso DMCoarsenHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,int nlevels,DM **dmf)
+PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM **dmf)
 {
   PetscErrorCode ierr;
 
@@ -307,7 +307,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,int nlevels,DM **dmf)
 .seealso DMRefineHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, int nlevels, DM **dmc)
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM **dmc)
 {
   PetscErrorCode ierr;
 

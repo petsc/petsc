@@ -18,9 +18,10 @@ int main(int argc,char **argv)
   PetscRandom    rnd;
   PetscScalar    value;
   PetscErrorCode ierr;
-  PetscMPIInt    rank,view_rank=-1;
+  PetscMPIInt    rank;
+  PetscInt       view_rank=-1;
 #if defined (PETSC_USE_LOG)
-  int            event;
+  PetscEvent     event;
 #endif
 
   PetscInitialize(&argc,&argv,(char *)0,help);
@@ -39,7 +40,7 @@ int main(int argc,char **argv)
   ierr = PetscMalloc(n*sizeof(PetscInt),&values);CHKERRQ(ierr);
   for (i=0; i<n; i++) {
     ierr = PetscRandomGetValue(rnd,&value);CHKERRQ(ierr);
-    if (view_rank == rank) {
+    if (view_rank == (PetscInt)rank) {
       ierr = PetscPrintf(PETSC_COMM_SELF,"[%D] value[%d] = %g\n",rank,i,PetscRealPart(value));CHKERRQ(ierr);
     }
     values[i] = (PetscInt)(n*PetscRealPart(value) + 2.0);

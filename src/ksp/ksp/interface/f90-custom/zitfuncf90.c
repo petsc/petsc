@@ -9,7 +9,7 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL kspgetresidualhistoryf90_(KSP *ksp,F90Array1d *indices,int *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL kspgetresidualhistoryf90_(KSP *ksp,F90Array1d *indices,PetscInt *n,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscReal *hist;
   *ierr = KSPGetResidualHistory(*ksp,&hist,n); if (*ierr) return;

@@ -185,7 +185,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 #else
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
   PetscReal *t_soln, *t_diag, *t_offd, *e_valu, *e_vect, *e_rwrk;
-  PetscInt  *e_iblk, *e_splt, *e_iwrk;
+  PetscBLASInt  *e_iblk, *e_splt, *e_iwrk;
 
   PetscErrorCode ierr;
   MatStructure  pflag;
@@ -199,8 +199,8 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   PetscReal coef1, coef2, coef3, root1, root2, obj1, obj2;
   PetscReal norm_t, norm_w, pert;
   PetscInt  i, j, max_cg_its, max_lanczos_its, max_newton_its, sigma;
-  PetscInt  t_size = 0, il, iu, e_valus, e_splts, info;
-  PetscInt  nrhs, nldb;
+  PetscBLASInt t_size = 0, il, iu, e_valus, e_splts, info;
+  PetscBLASInt nrhs, nldb;
 
   KSPConvergedReason reason;
   PetscTruth diagonalscale;

@@ -835,7 +835,8 @@ M*/
 PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DALocalFunction1 jacobian,DALocalFunction1 ad_function,DALocalFunction1 admf_function)
 {
   PetscErrorCode ierr;
-  PetscInt       i,nlevels = dmmg[0]->nlevels,cookie;
+  PetscInt       i,nlevels = dmmg[0]->nlevels;
+  PetscCookie    cookie;
   PetscErrorCode (*computejacobian)(SNES,Vec,Mat*,Mat*,MatStructure*,void*) = 0;
 
 

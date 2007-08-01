@@ -463,7 +463,8 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt    flag, size,nodesize;
+  PetscMPIInt    flag, size;
+  PetscInt       nodesize;
   PetscTruth     flg;
   char           hostname[256];
 
@@ -583,14 +584,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    ierr = PetscOpenMPSpawn(nodesize);CHKERRQ(ierr); 
+    ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); 
 #else
     SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
 #endif
   } else {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOpenMPMerge(nodesize);CHKERRQ(ierr); 
+      ierr = PetscOpenMPMerge((PetscMPIInt) nodesize);CHKERRQ(ierr); 
     }
   }
 
