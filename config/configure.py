@@ -31,7 +31,7 @@ def check_petsc_arch(opts):
         opts.append(useName)
   return
 
-def chkcygwin():
+def chkbrokencygwin():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c cygwin').read()
     if buf.find('1.5.11-1') > -1:
@@ -39,8 +39,14 @@ def chkcygwin():
     else:
       return 0
   return 0
-  
-def chkcygwinpython():
+
+def chkusingwindowspython():
+  if os.path.exists('/usr/bin/cygcheck.exe'):
+    if sys.platform != 'cygwin':
+      return 1
+  return 0
+
+def chkcygwinpythonver():
   if os.path.exists('/usr/bin/cygcheck.exe'):
     buf = os.popen('/usr/bin/cygcheck.exe -c python').read()
     if (buf.find('2.4') > -1) or (buf.find('2.5') > -1) or (buf.find('2.6') > -1):
@@ -103,7 +109,7 @@ def petsc_configure(configure_options):
     sys.exit(3)
 
   # Check for broken cygwin
-  if chkcygwin():
+  if chkbrokencygwin():
     print '================================================================================='
     print ' *** cygwin-1.5.11-1 detected. config/configure.py fails with this version   ***'
     print ' *** Please upgrade to cygwin-1.5.12-1 or newer version. This can  ***'
@@ -119,13 +125,19 @@ def petsc_configure(configure_options):
    *** RHL9 detected. Threads do not work correctly with this distribution ***
     ****** Disabling thread usage for this run of config/configure.py *******
 ================================================================================''')
-
-  # Threads don't work for cygwin & python-2.4
-  if chkcygwinpython():
+  # Make sure cygwin-python is used on windows
+  if chkusingwindowspython():
+    print '================================================================================='
+    print ' *** Non-cygwin python detected. Please rerun config/configure.py with cygwin-python ***'
+    print '================================================================================='
+    sys.exit(3)
+    
+  # Threads don't work for cygwin & python-2.4, 2.5 etc..
+  if chkcygwinpythonver():
     sys.argv.append('--useThreads=0')
     extraLogs.append('''\
 ================================================================================
-** Cygwin-python-2.4 detected. Threads do not work correctly with this version *
+** Cygwin-python-2.4/2.5 detected. Threads do not work correctly with this version *
  ********* Disabling thread usage for this run of config/configure.py **********
 ================================================================================''')
           
