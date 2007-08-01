@@ -483,8 +483,8 @@ class Configure(config.package.Package):
     self.executeTest(self.checkESSL)
     self.executeTest(self.checkPESSL)
     self.executeTest(self.checkMissing)
-    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'single') and not self.f2cpkg:
-      raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble/single')
+    if (self.defaultPrecision == 'longdouble' or self.defaultPrecision == 'int') and not self.f2cpkg:
+      raise RuntimeError('Need to use --download-c-blas-lapack when using --with-precision=longdouble/int')
     return
 
 if __name__ == '__main__':
