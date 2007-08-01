@@ -1659,7 +1659,7 @@ PetscErrorCode MatZeroRows_SeqBAIJ(Mat A,PetscInt is_n,const PetscInt is_idx[],P
     row   = rows[j];
     if (row < 0 || row > A->rmap.N) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"row %D out of range",row);
     count = (baij->i[row/bs +1] - baij->i[row/bs])*bs;
-    aa    = baij->a + baij->i[row/bs]*bs2 + (row%bs);
+    aa    = ((MatScalar*)(baij->a)) + baij->i[row/bs]*bs2 + (row%bs);
     if (sizes[i] == bs && !baij->keepzeroedrows) {
       if (diag != 0.0) {
         if (baij->ilen[row/bs] > 0) {
