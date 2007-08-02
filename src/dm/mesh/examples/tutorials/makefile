@@ -73,6 +73,10 @@ stokes: stokes_quadrature.h stokes.o chkopts
 	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
 	${RM} -f stokes.o
 
+stokesPeriodic: stokesPeriodic_quadrature.h stokesPeriodic.o chkopts
+	-${CLINKER} -o stokesPeriodic stokesPeriodic.o ${PETSC_SNES_LIB}
+	${RM} -f stokesPeriodic.o
+
 grade2: stokes_quadrature.h grade2.o chkopts
 	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
 	${RM} -f grade2.o

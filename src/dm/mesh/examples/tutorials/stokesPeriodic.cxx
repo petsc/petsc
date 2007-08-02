@@ -31,7 +31,7 @@ typedef struct {
   AssemblyType  operatorAssembly;                             // The type of operator assembly 
 } Options;
 
-#include "stokes_quadrature.h"
+#include "stokesPeriodic_quadrature.h"
 
 double zero(const double x[]) {
   return 0.0;
@@ -39,6 +39,26 @@ double zero(const double x[]) {
 
 double constant(const double x[]) {
   return -3.0;
+}
+
+double linear_2d_u(const double x[]) {
+  return 5.0 - 14.0*x[0];
+}
+
+double linear_2d_v(const double x[]) {
+  return 12.0*x[1];
+}
+
+double cubic_2d_u(const double x[]) {
+  return x[0] - 3.0*x[0]*x[0] + 2.0*x[0]*x[0]*x[0];
+}
+
+double cubic_2d_v(const double x[]) {
+  return -1.0*x[1] + 6.0*x[0]*(1.0 - x[0])*x[1];
+}
+
+double quadratic_2d_p(const double x[]) {
+  return x[0]*(1.0 - x[0]) - 1.0/6.0;
 }
 
 double quadratic_2d_u(const double x[]) {
@@ -49,7 +69,7 @@ double quadratic_2d_v(const double x[]) {
   return x[1]*x[1] - 2.0*x[0]*x[1];
 }
 
-double quadratic_2d_p(const double x[]) {
+double linear_2d_p(const double x[]) {
   return x[0] + x[1] - 1.0;
 }
 
@@ -196,6 +216,154 @@ PetscErrorCode ViewMesh(Mesh mesh, const char filename[])
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "EnforcePeriodicity"
+PetscErrorCode EnforcePeriodicity(Mesh mesh)
+{
+  typedef std::pair<ALE::Mesh::point_type,int> opoint_type;
+  Obj<ALE::Mesh> m;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  const Obj<ALE::Mesh::sieve_type>&           sieve       = m->getSieve();
+  const Obj<ALE::Mesh::label_sequence>&       vertices    = m->depthStratum(0);
+  const ALE::Mesh::label_sequence::iterator   vEnd        = vertices->end();
+  const Obj<ALE::Mesh::real_section_type>&    coordinates = m->getRealSection("coordinates");
+  std::set<ALE::Mesh::point_type>             keep;
+  std::set<ALE::Mesh::point_type>             replace;
+  std::map<ALE::Mesh::point_type,opoint_type> vMap;
+
+  // Identify vertices along periodic boundary
+  for(ALE::Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vEnd; ++v_iter) {
+    const ALE::Mesh::real_section_type::value_type *coords = coordinates->restrictPoint(*v_iter);
+
+    if (coords[0] == 0.0) {
+      keep.insert(*v_iter);
+    } else if (coords[0] == 1.0) {
+      replace.insert(*v_iter);
+    }
+  }
+  // Match up vertices
+  for(std::set<ALE::Mesh::point_type>::iterator k_iter = keep.begin(); k_iter != keep.end(); ++k_iter) {
+    const ALE::Mesh::real_section_type::value_type *kCoords = coordinates->restrictPoint(*k_iter);
+    bool found = false;
+
+    for(std::set<ALE::Mesh::point_type>::iterator r_iter = replace.begin(); r_iter != replace.end(); ++r_iter) {
+      const ALE::Mesh::real_section_type::value_type *rCoords = coordinates->restrictPoint(*r_iter);
+
+      if (kCoords[1] == rCoords[1]) {
+        vMap[*r_iter] = opoint_type(*k_iter, 0);
+        found = true;
+        break;
+      }
+    }
+    if (!found) SETERRQ(PETSC_ERR_ARG_WRONG, "Failed to find corresponding vertices on periodic boundary");
+  }
+  // Include edges on boundary
+  for(std::set<ALE::Mesh::point_type>::iterator r1_iter = replace.begin(); r1_iter != replace.end(); ++r1_iter) {
+    for(std::set<ALE::Mesh::point_type>::iterator r2_iter = replace.begin(); r2_iter != replace.end(); ++r2_iter) {
+      if (*r1_iter == *r2_iter) continue;
+      const Obj<ALE::Mesh::sieve_type::supportSet> edge = sieve->nJoin(*r1_iter, *r2_iter, 1);
+
+      if (edge->size()) {
+        const ALE::Mesh::point_type& e  = *edge->begin();
+        const ALE::Mesh::point_type& v1 = vMap[*sieve->cone(e)->begin()].first;
+        const ALE::Mesh::point_type& f  = *sieve->nJoin(vMap[*r1_iter].first, vMap[*r2_iter].first, 1)->begin();
+        const ALE::Mesh::point_type& v2 = *sieve->cone(f)->begin();
+
+        keep.insert(f);
+        replace.insert(e);
+        vMap[e] = opoint_type(f, v1 == v2);
+        sieve->removeBasePoint(e);
+      }
+    }
+  }
+  // Replace components in points
+  for(int d = 1; d < m->depth(); ++d) {
+    const Obj<ALE::Mesh::label_sequence>&     stratum = m->depthStratum(1);
+    const ALE::Mesh::label_sequence::iterator bEnd    = stratum->end();
+
+    for(ALE::Mesh::label_sequence::iterator b_iter = stratum->begin(); b_iter != bEnd; ++b_iter) {
+      const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*b_iter);
+
+      std::vector<ALE::Mesh::point_type> newCone;
+      bool doReplace = false;
+
+      for(ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+        if (replace.find(*p_iter) != replace.end()) {
+          newCone.push_back(vMap[*p_iter].first);
+          doReplace = true;
+        } else {
+          newCone.push_back(*p_iter);
+        }
+      }
+      if (doReplace) {
+        sieve->clearCone(*b_iter);
+        int color = 0;
+        for(std::vector<ALE::Mesh::point_type>::const_iterator p_iter = newCone.begin(); p_iter != newCone.end(); ++p_iter) {
+          sieve->addArrow(*p_iter, *b_iter, color++);
+        }
+      }
+    }
+  }
+  const Obj<ALE::Mesh::label_sequence>&     boundaryCells = m->getLabelStratum("marker", 2);
+  const Obj<ALE::Mesh::arrow_section_type>& orientation   = m->getArrowSection("orientation");
+  const ALE::Mesh::label_sequence::iterator bcEnd         = boundaryCells->end();
+
+  for(ALE::Mesh::label_sequence::iterator b_iter = boundaryCells->begin(); b_iter != bcEnd; ++b_iter) {
+    const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*b_iter);
+    std::vector<ALE::Mesh::point_type> newCone;
+    bool doReplace = false;
+
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator p_iter = cone->begin(); p_iter != cone->end(); ++p_iter) {
+      if (replace.find(*p_iter) != replace.end()) {
+        const ALE::Mesh::point_type newPoint = vMap[*p_iter].first;
+
+        newCone.push_back(newPoint);
+        const ALE::Mesh::arrow_section_type::point_type oldArrow(*p_iter, *b_iter);
+        const ALE::Mesh::arrow_section_type::point_type newArrow(newPoint, *b_iter);
+        ALE::Mesh::arrow_section_type::value_type o = orientation->restrictPoint(oldArrow)[0];
+
+        if (!vMap[*p_iter].second) {o = -(o+1);}
+        orientation->addPoint(newArrow);
+        orientation->updatePoint(newArrow, &o);
+        doReplace = true;
+      } else {
+        newCone.push_back(*p_iter);
+      }
+    }
+    if (doReplace) {
+      sieve->clearCone(*b_iter);
+      int color = 0;
+      for(std::vector<ALE::Mesh::point_type>::const_iterator p_iter = newCone.begin(); p_iter != newCone.end(); ++p_iter) {
+        sieve->addArrow(*p_iter, *b_iter, color++);
+      }
+    }
+  }
+  // Remove points from BC
+  const Obj<ALE::Mesh::label_type>& marker = m->getLabel("marker");
+
+  for(std::set<ALE::Mesh::point_type>::iterator k_iter = keep.begin(); k_iter != keep.end(); ++k_iter) {
+    if (m->depth(*k_iter) == 0) {
+      const ALE::Mesh::real_section_type::value_type *kCoords = coordinates->restrictPoint(*k_iter);
+
+      if ((kCoords[1] > 0.0) && (kCoords[1] < 1.0)) {
+        m->setValue(marker, *k_iter, 0);
+      }
+    } else {
+      m->setValue(marker, *k_iter, 0);
+    }
+  }
+  // Remove old points
+  for(std::set<ALE::Mesh::point_type>::iterator r_iter = replace.begin(); r_iter != replace.end(); ++r_iter) {
+    sieve->removeCapPoint(*r_iter);
+  }
+  m->stratify();
+  m->setPeriodicity(0, true);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 {
@@ -256,6 +424,9 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
 
     ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
     m->markBoundaryCells("marker");
+  }
+  if (options->solnType == SOLN_RIDGE) {
+    ierr = EnforcePeriodicity(mesh);CHKERRQ(ierr);
   }
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
   if (view) {ierr = ViewMesh(mesh, "stokes.vtk");CHKERRQ(ierr);}
@@ -329,7 +500,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
       ierr = SectionRealGetSection(X, sX);CHKERRQ(ierr);
       x = (PetscScalar *) m->restrictNew(sX, *c_iter);
     }
-    if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+    if (detJ <= 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
     ierr = PetscMemzero(elemVec, totBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
@@ -437,7 +608,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
       }
     }
     if (options->debug) {
-      std::cout << "Element vector:" << std::endl;
+      std::cout << "Element vector for " << *c_iter << ":" << std::endl;
       for(int f = 0; f < totBasisFuncs; ++f) {
         std::cout << "  " << elemVec[f] << std::endl;
       }
@@ -606,7 +777,6 @@ EXTERN_C_END
 #define __FUNCT__ "Jac_Unstructured_Calculated"
 PetscErrorCode Jac_Unstructured_Calculated(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Options         *options = (Options *) ctx;
   Obj<ALE::Mesh>   m;
   PetscQuadrature *q;
   PetscErrorCode   ierr;
@@ -652,7 +822,6 @@ PetscErrorCode Laplacian_2D_MF2(Mat A, Vec x, Vec y)
   ierr = SectionRealToVec(X, mesh, SCATTER_REVERSE, x);CHKERRQ(ierr);
 
   const Obj<ALE::Mesh::label_sequence>& cells = m->heightStratum(0);
-  const int                             dim   = m->getDimension();
   int           numBasisFuncs;
   PetscScalar  *elemVec;
 
@@ -688,11 +857,10 @@ EXTERN_C_END
 #define __FUNCT__ "Jac_Unstructured_Stored"
 PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Options       *options = (Options *) ctx;
   SectionReal    op;
   Obj<ALE::Mesh> m;
   int            numQuadPoints, numBasisFuncs;
-  const double  *quadPoints, *quadWeights, *basis, *basisDer;
+  const double  *quadWeights, *basisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -752,7 +920,6 @@ PetscErrorCode Jac_Unstructured_Stored(Mesh mesh, SectionReal section, Mat A, vo
 #define __FUNCT__ "Jac_Unstructured"
 PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  Options       *options = (Options *) ctx;
   Obj<ALE::Mesh::real_section_type> s;
   Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
@@ -787,7 +954,6 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter, ++field) {
       const Obj<ALE::Discretization>& disc          = m->getDiscretization(*f_iter);
       const int                       numQuadPoints = disc->getQuadratureSize();
-      const double                   *quadPoints    = disc->getQuadraturePoints();
       const double                   *quadWeights   = disc->getQuadratureWeights();
       const int                       numBasisFuncs = disc->getBasisSize();
       const double                   *basis         = disc->getBasis();
@@ -881,8 +1047,8 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
         options->funcs[2]  = constant;
       } else if (options->solnType == SOLN_RIDGE) {
         options->funcs[0]  = zero;
-        options->funcs[1]  = constant;
-        options->funcs[2]  = constant;
+        options->funcs[1]  = linear_2d_u;
+        options->funcs[2]  = linear_2d_v;
       }
     } else {
       SETERRQ(PETSC_ERR_SUP, "No support for Neumann conditions");
@@ -907,14 +1073,22 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   if (options->dim == 1) {
     ierr = CreateProblem_gen_0(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_p);CHKERRQ(ierr);
-    velFuncs[0] = quadratic_2d_u;
-    ierr = CreateProblem_gen_1(dm, "u", 1, velMarkers, velFuncs,   quadratic_2d_u);CHKERRQ(ierr);
+    velFuncs[0] = cubic_2d_u;
+    ierr = CreateProblem_gen_1(dm, "u", 1, velMarkers, velFuncs,   cubic_2d_u);CHKERRQ(ierr);
   } else if (options->dim == 2) {
-    ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_p);CHKERRQ(ierr);
-    velFuncs[0] = quadratic_2d_u;
-    ierr = CreateProblem_gen_3(dm, "u", 1, velMarkers, velFuncs,   quadratic_2d_u);CHKERRQ(ierr);
-    velFuncs[0] = quadratic_2d_v;
-    ierr = CreateProblem_gen_3(dm, "v", 1, velMarkers, velFuncs,   quadratic_2d_v);CHKERRQ(ierr);
+    if (options->solnType == SOLN_SIMPLE) {
+      ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL, PETSC_NULL, linear_2d_p);CHKERRQ(ierr);
+      velFuncs[0] = quadratic_2d_u;
+      ierr = CreateProblem_gen_3(dm, "u", 1, velMarkers, velFuncs,   quadratic_2d_u);CHKERRQ(ierr);
+      velFuncs[0] = quadratic_2d_v;
+      ierr = CreateProblem_gen_3(dm, "v", 1, velMarkers, velFuncs,   quadratic_2d_v);CHKERRQ(ierr);
+    } else if (options->solnType == SOLN_RIDGE) {
+      ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_2d_p);CHKERRQ(ierr);
+      velFuncs[0] = cubic_2d_u;
+      ierr = CreateProblem_gen_3(dm, "u", 1, velMarkers, velFuncs,   cubic_2d_u);CHKERRQ(ierr);
+      velFuncs[0] = cubic_2d_v;
+      ierr = CreateProblem_gen_3(dm, "v", 1, velMarkers, velFuncs,   cubic_2d_v);CHKERRQ(ierr);
+    }
   } else if (options->dim == 3) {
     ierr = CreateProblem_gen_4(dm, "p", 0, PETSC_NULL, PETSC_NULL, quadratic_3d_p);CHKERRQ(ierr);
     velFuncs[0] = quadratic_3d_u;
