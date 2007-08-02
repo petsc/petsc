@@ -14,7 +14,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL matgetarrayf90_(Mat *mat,F90Array2d *ptr,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  int    m,n;
+  PetscInt     m,n;
   *ierr = MatGetArray(*mat,&fa);       if (*ierr) return;
   *ierr = MatGetLocalSize(*mat,&m,&n); if (*ierr) return;
   *ierr = F90Array2dCreate(fa,PETSC_SCALAR,1,m,1,n,ptr PETSC_F90_2PTR_PARAM(ptrd));

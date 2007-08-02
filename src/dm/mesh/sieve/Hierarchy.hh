@@ -619,7 +619,6 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
   const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::real_section_type>& spacing = m->getRealSection("spacing");
   const ALE::Obj<ALE::Mesh::label_type> hdepth = m->createLabel("hdepth");
-  const ALE::Obj<ALE::Mesh::label_type> dompoint = m->createLabel("dominating_point");
   if (info)PetscPrintf(m->comm(), "Original Mesh: %d vertices, %d elements\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());
   const ALE::Obj<ALE::Mesh::sieve_type> sieve = m->getSieve();
   const ALE::Obj<ALE::Mesh::label_sequence>& vertices = m->depthStratum(0);
@@ -631,7 +630,6 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
 
     v_point = *v_iter;
     v_bound = m->getValue(boundary, v_point);
-    m->setValue(dompoint, v_point, -1);
     m->setValue(hdepth, v_point, 0);
     v_space = *spacing->restrictPoint(v_point);
 
@@ -652,7 +650,6 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
     ALE::Obj<ALE::Mesh> coarsen_mesh = new ALE::Mesh(m->comm(), m->debug());
     coarsen_mesh->setSieve(coarsen_sieve);
     ALE::Obj<ALE::Mesh::label_type> coarsen_candidates = m->createLabel("candidates");
-    ALE::Obj<ALE::Mesh::label_type> traversal = coarsen_mesh->createLabel("traversal");
     v_iter = vertices->begin();
     v_iter_end = vertices->end();
     while (v_iter != v_iter_end) {
@@ -737,9 +734,18 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
           while (mte_iter != mte_iter_end) {
             if (*mte_iter != c_edge) {
               coarsen_sieve->addArrow(n_point, *mte_iter);
-              comparison_list.push_front(*mte_iter);
+              if (coarsen_sieve->cone(*mte_iter)->size() == 2) {  //it's one of the edges that should be eliminated here, don't compare across it.
+                support_list.push_front(*mte_iter); //save for elimination because we don't want to screw up the iterator
+              } else { //compare across the just-changed edge
+                comparison_list.push_back(*mte_iter);
+              }
             }
             mte_iter++;
+          }
+          while (!support_list.empty()) {
+            ALE::Mesh::point_type delete_this_point = *support_list.begin();
+            support_list.pop_front();
+            coarsen_sieve->removeBasePoint(delete_this_point);
           }
           coarsen_sieve->removeBasePoint(c_edge);
           coarsen_sieve->removeCapPoint(c_point);
@@ -836,9 +842,18 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
           while (mte_iter != mte_iter_end) {
             if (*mte_iter != c_edge) {
               coarsen_sieve->addArrow(n_point, *mte_iter); 
-              if (m->getValue(boundary, *mte_iter) == 1) comparison_list.push_front(*mte_iter);
+              if (coarsen_sieve->cone(*mte_iter)->size() == 2) {  //it's one of the edges that should be eliminated here, don't compare across it.
+                support_list.push_front(*mte_iter); //save for elimination because we don't want to screw up the iterator
+              } else { //compare across the just-changed edge
+                if (m->getValue(boundary, *mte_iter) == 1) comparison_list.push_back(*mte_iter);
+              }
             }
             mte_iter++;
+          }
+          while (!support_list.empty()) {
+            ALE::Mesh::point_type delete_this_point = *support_list.begin();
+            support_list.pop_front();
+            coarsen_sieve->removeBasePoint(delete_this_point);
           }
           coarsen_sieve->removeBasePoint(c_edge);
           coarsen_sieve->removeCapPoint(c_point);

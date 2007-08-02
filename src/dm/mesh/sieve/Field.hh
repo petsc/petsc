@@ -1067,14 +1067,15 @@ namespace ALE {
           const typename bc_type::value_type *cDof    = this->getConstraintDof(p);
           int                                 offset  = 0;
           int                                 cOffset = 0;
-          int                                 j       = 0;
+          int                                 j       = -1;
 
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
             int       cInd = (dim - tDim)-1;
 
-            for(int i = 0, k = start+tDim+offset; i < dim; ++i, ++j) {
+            j += dim;
+            for(int i = 0, k = start+tDim+offset; i < dim; ++i, --j) {
               if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {
                 if (!freeOnly) indices[(*indx)++] = -(offset+i+1);
                 if (skipConstraints) --k;
@@ -1083,6 +1084,7 @@ namespace ALE {
                 indices[(*indx)++] = --k;
               }
             }
+            j       += dim;
             offset  += dim;
             cOffset += dim - tDim;
           }
@@ -1243,10 +1245,11 @@ namespace ALE {
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
-            int       cInd = (dim - tDim)-1;
+            const int sDim = dim - tDim;
+            int       cInd = 0;
 
             for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
-              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {--cInd; continue;}
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
               array[j] = v[k];
             }
             offset  += dim;
@@ -1300,10 +1303,11 @@ namespace ALE {
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
-            int       cInd = (dim - tDim)-1;
+            const int sDim = dim - tDim;
+            int       cInd = 0;
 
-            for(int i = 0, k = dim+offset; i < dim; ++i, ++j, --k) {
-              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {--cInd; continue;}
+            for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
               array[j] += v[k];
             }
             offset  += dim;
@@ -1357,10 +1361,11 @@ namespace ALE {
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
-            int       cInd = (dim - tDim)-1;
+            const int sDim = dim - tDim;
+            int       cInd = 0;
 
-            for(int i = 0, k = tDim+offset; i < dim; ++i, ++j) {
-              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {--cInd; continue;}
+            for(int i = 0, k = tDim+offset-1; i < dim; ++i, ++j) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
               array[j] = v[--k];
             }
             offset  += dim;
@@ -1414,10 +1419,11 @@ namespace ALE {
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
-            int       cInd = (dim - tDim)-1;
+            const int sDim = dim - tDim;
+            int       cInd = 0;
 
-            for(int i = 0, k = tDim+offset; i < dim; ++i, ++j) {
-              if ((cInd >= 0) && (j == cDof[cInd+cOffset])) {--cInd; continue;}
+            for(int i = 0, k = tDim+offset-1; i < dim; ++i, ++j) {
+              if ((cInd < sDim) && (j == cDof[cInd+cOffset])) {++cInd; continue;}
               array[j] += v[--k];
             }
             offset  += dim;
@@ -1453,13 +1459,13 @@ namespace ALE {
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
-            int       cInd = (dim - tDim)-1;
+            int       cInd = 0;
 
             for(int i = 0; i < dim; ++i, ++j) {
               if (cInd < 0) break;
               if (j == cDof[cInd+cOffset]) {
                 array[j] = v[cInd+cOffset];
-                --cInd;
+                ++cInd;
               }
             }
             cOffset += dim - tDim;
@@ -1495,13 +1501,13 @@ namespace ALE {
           for(int space = 0; space < this->getNumSpaces(); ++space) {
             const int  dim = this->getFiberDimension(p, space);
             const int tDim = this->getConstrainedFiberDimension(p, space);
-            int       cInd = (dim - tDim)-1;
+            int       cInd = 0;
 
-            for(int i = 0, k = dim+offset; i < dim; ++i, ++j, --k) {
+            for(int i = 0, k = dim+offset-1; i < dim; ++i, ++j, --k) {
               if (cInd < 0) break;
               if (j == cDof[cInd+cOffset]) {
                 array[j] = v[k];
-                --cInd;
+                ++cInd;
               }
             }
             offset  += dim;

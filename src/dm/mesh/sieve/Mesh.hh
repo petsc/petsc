@@ -1058,6 +1058,7 @@ namespace ALE {
   protected:
     int                  _dim;
     discretizations_type _discretizations;
+    std::map<int,double> _periodicity;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = NumberingFactory::singleton(debug);
@@ -1077,11 +1078,13 @@ namespace ALE {
       }
       return names;
     };
+    bool getPeriodicity(const int d) {return this->_periodicity[d];};
+    void setPeriodicity(const int d, const double length) {this->_periodicity[d] = length;};
   public: // Mesh geometry
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double    *coords = this->restrict(coordinates, e);
-      const int        dim    = 2;
-      double           invDet;
+      const double *coords = this->restrict(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -1095,6 +1098,23 @@ namespace ALE {
           }
         }
         detJ = J[0]*J[3] - J[1]*J[2];
+        if (detJ < 0.0) {
+          const double  xLength = this->_periodicity[0];
+
+          if (xLength != 0.0) {
+            double v0x = coords[0*dim+0];
+
+            if (v0x == 0.0) {
+              v0x = v0[0] = xLength;
+            }
+            for(int f = 0; f < dim; f++) {
+              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+
+              J[0*dim+f] = 0.5*(px - v0x);
+            }
+          }
+          detJ = J[0]*J[3] - J[1]*J[2];
+        }
         PetscLogFlops(8 + 3);
       }
       if (invJ) {
