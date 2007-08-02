@@ -269,7 +269,11 @@ def startprog(path, args):
 	if os.fork() == 0:
 		path = path.strip()
 		args = args.strip()
-		os.execv(path, ("",args,))
+		args = args.replace(" ", "")
+		args = args.split(",")
+		a = ["", "-zope"]
+		a[2:] = args
+		os.execv(path,a)
 		exit(0)
 
 if __name__ == '__main__':
