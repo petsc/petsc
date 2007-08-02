@@ -40,6 +40,7 @@
 
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
+  PetscScalar *bdiag,*ibdiag;               /* diagonal blocks of matrix */
   PetscTruth use;
   PetscInt   node_count;                    /* number of inodes */
   PetscInt   *size;                         /* size of each inode */

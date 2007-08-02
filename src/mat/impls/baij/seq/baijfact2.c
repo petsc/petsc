@@ -3063,7 +3063,6 @@ PetscErrorCode MatSolve_SeqBAIJ_1_NaturalOrdering(Mat A,Vec bb,Vec xx)
    except that the data structure of Mat_SeqAIJ is slightly different.
    Not a good example of code reuse.
 */
-EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat);
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatILUFactorSymbolic_SeqBAIJ"
@@ -3075,8 +3074,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
   PetscInt       *r,*ic,prow,n = a->mbs,*ai = a->i,*aj = a->j;
   PetscInt       *ainew,*ajnew,jmax,*fill,*xi,nz,*im,*ajfill,*flev;
   PetscInt       *dloc,idx,row,m,fm,nzf,nzi,reallocate = 0,dcount = 0;
-  PetscInt       incrlev,nnz,i,bs = A->rmap.bs,bs2 = a->bs2,levels,diagonal_fill;
-  PetscTruth     col_identity,row_identity;
+  PetscInt       incrlev,nnz,i,bs = A->rmap.bs,bs2 = a->bs2,levels,diagonal_fill,dd;
+  PetscTruth     col_identity,row_identity,flg;
   PetscReal      f;
 
   PetscFunctionBegin;
@@ -3091,7 +3090,8 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
     ierr = MatDuplicate_SeqBAIJ(A,MAT_DO_NOT_COPY_VALUES,fact);CHKERRQ(ierr);
     (*fact)->factor = FACTOR_LU;
     b               = (Mat_SeqBAIJ*)(*fact)->data;
-    ierr = MatMissingDiagonal_SeqBAIJ(*fact);CHKERRQ(ierr);
+    ierr = MatMissingDiagonal_SeqBAIJ(*fact,&flg,&dd);CHKERRQ(ierr);
+    if (flg) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry in row %D",dd);
     b->row        = isrow;
     b->col        = iscol;
     ierr          = PetscObjectReference((PetscObject)isrow);CHKERRQ(ierr);

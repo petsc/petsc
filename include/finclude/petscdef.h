@@ -160,9 +160,9 @@
 #endif
 
 #if defined(PETSC_HAVE_FLUSH)
-#define PETSCFLUSH(a)    call flush(a)
+#define PetscFlush(a)    call flush(a)
 #elif defined(PETSC_HAVE_FLUSH_)
-#define PETSCFLUSH(a)    call flush_(a)
+#define PetscFlush(a)    call flush_(a)
 #else
 #define PETSCFLUSH(a)
 #endif

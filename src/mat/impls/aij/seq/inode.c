@@ -1629,6 +1629,131 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
   PetscFunctionReturn(0);
 }
 
+#include "src/inline/ilu.h"
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatRelax_Inode"
+PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
+{
+  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar        *x,d,*xs,sum,*t,scale,*ibdiag,*bdiag;
+  PetscScalar  *v = a->a, *b, *bs,*xb, *ts;
+  PetscErrorCode     ierr;
+  PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row;
+   PetscInt     *idx,*diag = a->diag;
+
+  PetscFunctionBegin;
+  if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0");
+
+  its = its*lits;
+
+  if (!a->inode.ibdiag) {
+    /* calculate space needed for diagonal blocks */
+    for (i=0; i<m; i++) {
+      cnt += sizes[i]*sizes[i];
+    }
+    ierr   = PetscMalloc2(cnt,PetscScalar,&a->inode.ibdiag,cnt,PetscScalar,&a->inode.bdiag);CHKERRQ(ierr);
+    ibdiag = a->inode.ibdiag;
+    bdiag  = a->inode.bdiag;
+    /* copy over the diagonal blocks and invert them */
+
+    cnt = 0;
+    for (i=0, row = 0; i<m; i++) {
+      for (j=0; j<sizes[i]; j++) {
+        ierr = PetscMemcpy(bdiag + cnt + j*sizes[i],v + diag[row+j] - j,sizes[i]*sizeof(PetscScalar));CHKERRQ(ierr);
+      }
+      ierr = PetscMemcpy(ibdiag+cnt,bdiag+cnt,sizes[i]*sizes[i]*sizeof(PetscScalar));CHKERRQ(ierr);
+      
+      switch(sizes[i]) {
+        case 1:
+          /* Create matrix data structure */
+          if (!ibdiag[cnt]) SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+          ierr = ibdiag[cnt] = 1.0/ibdiag[cnt];
+          break;
+        case 2:
+          ierr = Kernel_A_gets_inverse_A_2(ibdiag+cnt);CHKERRQ(ierr);
+          break;
+        case 3:
+          ierr = Kernel_A_gets_inverse_A_3(ibdiag+cnt);CHKERRQ(ierr);
+          break;
+        case 4:
+          ierr = Kernel_A_gets_inverse_A_4(ibdiag+cnt);CHKERRQ(ierr);
+          break;
+        case 5:
+          ierr = Kernel_A_gets_inverse_A_5(ibdiag+cnt);CHKERRQ(ierr);
+          break;
+       default:
+	 SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+      }
+
+
+      cnt += sizes[i]*sizes[i];
+      row += sizes[i];
+    }
+  }
+  ibdiag = a->inode.ibdiag;
+  bdiag  = a->inode.bdiag;
+
+  ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
+  if (xx != bb) {
+    ierr = VecGetArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);
+  } else {
+    b = x;
+  }
+
+  /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
+  xs   = x;
+  if (flag & SOR_ZERO_INITIAL_GUESS) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+
+      for (i=0; i<m; i++) {
+
+      }
+
+      xb = x;
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    } else xb = b;
+    if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
+        (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
+      for (i=0; i<m; i++) {
+
+      }
+      ierr = PetscLogFlops(m);CHKERRQ(ierr);
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+
+      for (i=m-1; i>=0; i--) {
+
+      }
+
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    }
+    its--;
+  }
+  while (its--) {
+    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
+
+      for (i=0; i<m; i++) {
+
+      }
+
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    }
+    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
+
+      for (i=m-1; i>=0; i--) {
+
+      }
+
+      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
+    }
+  }
+  ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
+  if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+  PetscFunctionReturn(0);
+} 
+
+
 /*
     samestructure indicates that the matrix has not changed its nonzero structure so we 
     do not need to recompute the inodes 
@@ -1678,6 +1803,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     ierr = PetscInfo2(A,"Found %D nodes out of %D rows. Not using Inode routines\n",node_count,m);CHKERRQ(ierr);
   } else {
     A->ops->mult            = MatMult_Inode;
+    A->ops->relax           = MatRelax_Inode;
     A->ops->multadd         = MatMultAdd_Inode;
     A->ops->solve           = MatSolve_Inode;
     A->ops->lufactornumeric = MatLUFactorNumeric_Inode;

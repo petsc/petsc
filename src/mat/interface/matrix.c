@@ -57,6 +57,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatImaginaryPart"
 /*@
@@ -85,6 +86,40 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
   if (!mat->ops->imaginarypart) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->imaginarypart)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMissingDiagonal"
+/*@
+   MatMissingDiagonal - Determine if sparse matrix is missing a diagonal entry (or block entry for BAIJ matrices)
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameters:
++  missing - is any diagonal missing
+-  dd - first diagonal entry that is missing (optional)
+
+   Level: advanced
+
+
+.seealso: MatRealPart()
+@*/
+
+PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat mat,PetscTruth *missing,PetscInt *dd)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->missingdiagonal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->missingdiagonal)(mat,missing,dd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -2916,6 +2951,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
   if (mat->cmap.N != x->map.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap.N,x->map.N);
   if (mat->rmap.N != b->map.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->rmap.N,b->map.N);
   if (mat->rmap.n != b->map.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %D %D",mat->rmap.n,b->map.n);
+  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
+  if (lits <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires local its %D positive",lits);
+
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   if (mat->ops->relax) {

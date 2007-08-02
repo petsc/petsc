@@ -1,6 +1,7 @@
 #! /bin/sh
 
 pushd ${PETSC_DIR}/zope
+cp -f var/data.fs.hg var/data.fs
 
 PYTHON=`which python`"2.4"
 CONFIG_FILE="${PETSC_DIR}/zope/zope.conf"
