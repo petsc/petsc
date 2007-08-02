@@ -254,7 +254,8 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   VecScatter_MPI_General *from = (VecScatter_MPI_General*) ctx->fromdata;
   VecScatter_MPI_General *to   = ( VecScatter_MPI_General*) ctx->todata;
   PetscInt               i,j,k;
-  PetscMPIInt            *sindices,*sstarts,*sprocs,*rindices,*rstarts,*rprocs,nrecvs;
+  PetscInt               *sindices,*sstarts,*rindices,*rstarts;
+  PetscMPIInt            *sprocs,*rprocs,nrecvs;
   MPI_Request            *swaits,*rwaits;
   MPI_Comm               comm = A->comm;
   PetscMPIInt            tag = ctx->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;

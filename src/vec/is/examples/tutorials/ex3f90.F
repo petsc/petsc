@@ -21,8 +21,10 @@
 #include "finclude/petscis.h"
 #include "finclude/petscis.h90"
 
-      integer n,ierr,bs,issize,inputindices(4)
-      integer, pointer :: indices(:)
+      PetscErrorCode ierr
+      PetscInt n,bs,issize
+      PetscInt inputindices(4)
+      PetscInt, pointer :: indices(:)
       IS       set
       PetscTruth isablock;
 

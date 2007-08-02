@@ -444,7 +444,12 @@ remote_sshrsync:
 #---------------------------------------------------------------------------------------
 
 deleteshared:
-	${RM} ${INSTALL_LIB_DIR}/*.${SL_LINKER_SUFFIX} ${INSTALL_LIB_DIR}/so_locations
+	@for LIBNAME in ${SHLIBS}; \
+	do \
+           echo ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+           ${RM} ${INSTALL_LIB_DIR}/$${LIBNAME}.${SL_LINKER_SUFFIX}; \
+	done
+	${RM} ${INSTALL_LIB_DIR}/so_locations
 
 noshared:
 # ---------------------------------------------------------------------------------------

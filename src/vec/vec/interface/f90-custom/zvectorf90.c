@@ -19,7 +19,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL vecgetarrayf90_(Vec *x,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   PetscScalar *fa;
-  int    len;
+  PetscInt     len;
   *__ierr = VecGetArray(*x,&fa);      if (*__ierr) return;
   *__ierr = VecGetLocalSize(*x,&len); if (*__ierr) return;
   *__ierr = F90Array1dCreate(fa,PETSC_SCALAR,1,len,ptr PETSC_F90_2PTR_PARAM(ptrd));

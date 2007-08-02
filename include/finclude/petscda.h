@@ -14,7 +14,7 @@
 #define DMComposite PetscFortranAddr
 #define DM PetscFortranAddr
 
-#define DALocalInfo integer
+#define DALocalInfo PetscInt
 !
 !   DA_LOCAL_INFO_SIZE is one large than the size incase the DA is larger than an integer (on 64 bit systems).
 !   non-int fields are not accessiable from fortran.

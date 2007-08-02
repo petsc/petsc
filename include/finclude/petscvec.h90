@@ -23,7 +23,7 @@
       Interface 
         Subroutine VecDuplicateVecsF90(v,m,vs,ierr)
           Vec, pointer :: vs(:)
-          integer m
+          PetscInt m
           PetscErrorCode ierr
           Vec     v
         End Subroutine
@@ -36,7 +36,7 @@
       Interface 
         Subroutine VecDestroyVecsF90(vs,m,ierr)
           Vec, pointer :: vs(:)
-          integer m
+          PetscInt m
           PetscErrorCode ierr
         End Subroutine
       End Interface

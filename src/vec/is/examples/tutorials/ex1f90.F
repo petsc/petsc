@@ -20,10 +20,14 @@
 #include "finclude/petscis.h"
 #include "finclude/petscis.h90"
 
-      integer ierr,indices(5),rank,n
-      integer, pointer :: idx(:)
+      PetscErrorCode ierr
+      PetscInt indices(5),n
+      PetscInt five
+      PetscMPIInt rank
+      PetscInt, pointer :: idx(:)
       IS      is
 
+      five = 5
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -35,7 +39,7 @@
       indices(3) = rank + 3 
       indices(4) = rank + 4 
       indices(5) = rank + 5 
-      call ISCreateGeneral(PETSC_COMM_SELF,5,indices,is,ierr)
+      call ISCreateGeneral(PETSC_COMM_SELF,five,indices,is,ierr)
 
 !  Print the index set to stdout
 

@@ -41,7 +41,10 @@
       Vec              x,y,w
       Vec, pointer :: z(:)
       double precision norm,v,v1,v2
-      integer          n,ierr,flg,rank
+      PetscInt         n,ithree
+      PetscErrorCode   ierr
+      PetscMPIInt      rank
+      PetscTruth       flg
       PetscScalar      one,two,three
       PetscScalar      dots(3),dot
 
@@ -54,6 +57,7 @@
       two   = 2.0
       three = 3.0
       n     = 20
+      ithree = 3
       call PetscOptionsGetInt(PETSC_NULL_CHARACTER,'-n',n,flg,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,rank,ierr)
 
@@ -83,7 +87,7 @@
 !  an array of vectors, which is often more convenient than
 !  duplicating individual ones.
 
-      call VecDuplicateVecsF90(x,3,z,ierr)
+      call VecDuplicateVecsF90(x,ithree,z,ierr)
 
 !  Set the vectors to entries to a constant value.
 
@@ -96,7 +100,7 @@
 !  Demonstrate various basic vector routines.
 
       call VecDot(x,x,dot,ierr)
-      call VecMDot(x,3,z,dots,ierr)
+      call VecMDot(x,ithree,z,dots,ierr)
 
 !  Note: If using a complex numbers version of PETSc, then
 !  PETSC_USE_COMPLEX is defined in the makefiles; otherwise,
@@ -185,7 +189,7 @@
       dots(2) = three
       dots(3) = two
       call VecSet(x,one,ierr)
-      call VecMAXPY(x,3,dots,z,ierr)
+      call VecMAXPY(x,ithree,dots,z,ierr)
       call VecNorm(z(1),NORM_2,norm,ierr)
       v = norm-sqrt(dble(n))
       if (v .gt. -1.d-10 .and. v .lt. 1.d-10) v = 0.0
@@ -216,7 +220,7 @@
       call VecDestroy(x,ierr)
       call VecDestroy(y,ierr)
       call VecDestroy(w,ierr)
-      call VecDestroyVecsF90(z,3,ierr)
+      call VecDestroyVecsF90(z,ithree,ierr)
       call PetscFinalize(ierr)
 
       end

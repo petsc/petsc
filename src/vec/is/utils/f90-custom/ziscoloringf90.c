@@ -12,7 +12,7 @@
 
 EXTERN_C_BEGIN
 
-void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,int *n,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL iscoloringgetisf90_(ISColoring *iscoloring,PetscInt *n,F90Array1d *ptr,int *__ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
   IS *lis;
   PetscFortranAddr *newisint;
