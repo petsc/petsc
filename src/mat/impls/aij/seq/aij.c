@@ -1258,6 +1258,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+  VecView(bb,0);VecView(xx,0);
   PetscFunctionReturn(0);
 } 
 

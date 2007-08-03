@@ -1635,12 +1635,12 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
 #define __FUNCT__ "MatRelax_Inode"
 PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
 {
-  Mat_SeqAIJ         *a = (Mat_SeqAIJ*)A->data;
-  PetscScalar        *x,d,*xs,sum,*t,scale,*ibdiag,*bdiag;
-  PetscScalar  *v = a->a, *b, *bs,*xb, *ts;
-  PetscErrorCode     ierr;
-  PetscInt           n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row;
-   PetscInt     *idx,*diag = a->diag;
+  Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
+  PetscScalar     *x,d,*xs,sum,*t,scale,*ibdiag,*bdiag,sum1,sum2,sum3,tmp0,tmp1,tmp2,tmp3,*v1;
+  PetscScalar     *v = a->a, *b, *bs,*xb, *ts;
+  PetscErrorCode  ierr;
+  PetscInt        n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2,i3;
+  PetscInt        *idx,*diag = a->diag,*ii = a->i,sz;
 
   PetscFunctionBegin;
   if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0");
@@ -1706,7 +1706,34 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   if (flag & SOR_ZERO_INITIAL_GUESS) {
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
 
-      for (i=0; i<m; i++) {
+      for (i=0, row=0; i<m; i++) {
+        sz  = diag[row] - ii[row];
+        v1  = a->a + ii[row];
+        idx = a->j + ii[row];
+
+        /* see comments for MatMult_Inode() for how this is coded */
+        switch (sizes[i]){              
+          case 1 :
+      
+            sum1  = b[row];
+            for(n = 0; n<sz-1; n+=2) {
+              i1   = idx[0];          
+              i2   = idx[1];          
+              idx += 2;
+              tmp0 = x[i1];
+              tmp1 = x[i2]; 
+              sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+            }
+     
+            if (n == sz-1){          
+              tmp0  = x[*idx++];
+              sum1 -= *v1++ * tmp0;
+            }
+            x[row++] = sum1*(*ibdiag++);
+            break;
+	  default:
+   	    SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+        }
 
       }
 
@@ -1715,41 +1742,60 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
     } else xb = b;
     if ((flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP) && 
         (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP)) {
-      for (i=0; i<m; i++) {
+      cnt = 0;
+      for (i=0, row=0; i<m; i++) {
 
+        switch (sizes[i]){              
+          case 1 :
+            x[row++] *= bdiag[cnt++];
+            break;
+	  default:
+   	    SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+        }
       }
       ierr = PetscLogFlops(m);CHKERRQ(ierr);
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
 
-      for (i=m-1; i>=0; i--) {
+      ibdiag = a->inode.ibdiag+A->rmap.n-sizes[m-1];  
+      for (i=m-1, row=A->rmap.n-sizes[m-1]; i>=0; i--) {
+        sz  = ii[row+1] - diag[row] - 1;
+        v1  = a->a + diag[row] + 1;
+        idx = a->j + diag[row] + 1;
 
+        /* see comments for MatMult_Inode() for how this is coded */
+        switch (sizes[i]){              
+          case 1 :
+      
+            sum1  = xb[row];
+            for(n = 0; n<sz-1; n+=2) {
+              i1   = idx[0];          
+              i2   = idx[1];          
+              idx += 2;
+              tmp0 = x[i1];
+              tmp1 = x[i2]; 
+              sum1 -= v1[0] * tmp0 + v1[1] * tmp1; v1 += 2;
+            }
+     
+            if (n == sz-1){          
+              tmp0  = x[*idx++];
+              sum1 -= *v1++ * tmp0;
+            }
+            x[row--] = sum1*(*ibdiag--);
+            break;
+	  default:
+   	    SETERRQ1(PETSC_ERR_SUP,"Inode size %D not supported",sizes[i]);
+        }
       }
 
       ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
     }
     its--;
   }
-  while (its--) {
-    if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
-
-      for (i=0; i<m; i++) {
-
-      }
-
-      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
-    }
-    if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
-
-      for (i=m-1; i>=0; i--) {
-
-      }
-
-      ierr = PetscLogFlops(a->nz);CHKERRQ(ierr);
-    }
-  }
+  if (its) SETERRQ(PETSC_ERR_SUP,"Currently no support for multiply SOR sweeps using inode version of AIJ matrix format;\n run with the option -mat_no_inode");
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
+  VecView(bb,0); VecView(xx,0);
   PetscFunctionReturn(0);
 } 
 
@@ -1795,7 +1841,7 @@ PetscErrorCode Mat_CheckInode(Mat A,PetscTruth samestructure)
     i    = j;
   }
   /* If not enough inodes found,, do not use inode version of the routines */
-  if (!a->inode.size && m && node_count > 0.9*m) {
+  if (!a->inode.size && m && node_count > 1.9*m) {
     ierr = PetscFree(ns);CHKERRQ(ierr);
     a->inode.node_count     = 0;
     a->inode.size           = PETSC_NULL;
