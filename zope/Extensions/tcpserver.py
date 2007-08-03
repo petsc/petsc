@@ -11,6 +11,7 @@ import datetime
 
 global startmsg
 global users
+global pdir
 
 class User(object):
 	def __init__(self, msg):
@@ -147,6 +148,8 @@ class RecHandler(SocketServer.StreamRequestHandler):
 def runserver():
 	global startmsg
 	global users
+	global pdir
+	pdir = "/zope/pickle/"
 	__builtin__.User = User
 	startmsg = "No Output"
 	d = User(startmsg)
@@ -166,24 +169,46 @@ def gettime():
 	return cur
 
 def createpickle(i):
+	checkpickledir()
 	global users
+	global pdir
 	i = i.strip()
 	petscdir = os.environ["PETSC_DIR"]
 	cur = gettime()
-	f = open(petscdir+"/zope/Extensions/pickle/"+i+"_"+cur, "w")
+	f = open(petscdir+pdir+i+"_"+cur, "w")
 	pickle.dump(users[i], f)
 	f.close()
 
-def getpickles():
+def getpickles2(i):
+	global pdir
+	i = i.strip()
 	petscdir = os.environ["PETSC_DIR"]
-	files = os.listdir(petscdir + "/zope/Extensions/pickle/")
+	files = os.listdir(petscdir + pdir)
+	us =[] 
+	for u in files:
+		if u.find(i) >= 0:
+			us.append(u)
+	print us
+	return us
+
+def checkpickledir():
+	e = os.environ["PETSC_DIR"]
+	path = e+pdir
+	if not os.access(path, os.F_OK):
+		os.mkdir(path)
+
+def getpickles():
+	checkpickledir()
+	petscdir = os.environ["PETSC_DIR"]
+	files = os.listdir(petscdir + pdir)
 	return files
 
 def unpickle(i):
+	checkpickledir()
 	global users
 	i = i.strip()
 	petscdir = os.environ["PETSC_DIR"]
-	f = open(petscdir+"/zope/Extensions/pickle/"+i)
+	f = open(petscdir+pdir+i)
 	loc = i.split("_")
 	users[loc[0]] = pickle.load(f)
 
@@ -239,6 +264,17 @@ def clearoutput(i):
 	i = i.strip()
 	if users.has_key(i):
 		users[i].replaceall(startmsg)
+
+def startprog(path, args):
+	if os.fork() == 0:
+		path = path.strip()
+		args = args.strip()
+		args = args.replace(" ", "")
+		args = args.split(",")
+		a = ["", "-zope"]
+		a[2:] = args
+		os.execv(path,a)
+		exit(0)
 
 if __name__ == '__main__':
 	runserver()

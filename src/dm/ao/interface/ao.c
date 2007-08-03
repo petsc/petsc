@@ -70,14 +70,14 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (!ao) PetscFunctionReturn(0);
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
   if (--ao->refct > 0) PetscFunctionReturn(0);
-
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
-
-  ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+  /* destroy the internal part */
+  if (ao->ops->destroy) {
+    ierr = (*ao->ops->destroy)(ao);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(ao);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
