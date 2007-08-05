@@ -257,6 +257,11 @@ class Configure(script.Script):
     self.language.pop()
     return self.language[-1]
 
+  def getPreprocessor(self):
+    preprocessor       = self.framework.getPreprocessorObject(self.language[-1])
+    preprocessor.checkSetup()
+    return preprocessor.getProcessor()
+
   def getCompiler(self):
     compiler            = self.framework.getCompilerObject(self.language[-1])
     compiler.checkSetup()
