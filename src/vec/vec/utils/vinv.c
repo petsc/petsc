@@ -1117,6 +1117,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   PetscValidHeaderSpecific(s, VEC_COOKIE,1);
   PetscValidHeaderSpecific(t, VEC_COOKIE,2);
 
+  ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,s->comm);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
   ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
   ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
@@ -1134,6 +1135,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
   ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
   ierr = PetscLogFlops(4*n);CHKERRQ(ierr);  
+  ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,s->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
