@@ -152,6 +152,8 @@ struct _MatOps {
   PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
+  PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
+  /*115*/
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum

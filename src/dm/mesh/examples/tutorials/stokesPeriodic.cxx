@@ -42,7 +42,7 @@ double constant(const double x[]) {
 }
 
 double linear_2d_u(const double x[]) {
-  return 5.0 - 14.0*x[0];
+  return 5.0 - 10.0*x[0];
 }
 
 double linear_2d_v(const double x[]) {
