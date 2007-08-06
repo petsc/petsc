@@ -2974,3 +2974,160 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIBAIJGetSeqBAIJ(Mat A,Mat *Ad,Mat *Ao,Pet
   *colmap = a->garray;
   PetscFunctionReturn(0);
 }  
+
+/*
+    Special version for direct calls from Fortran (to eliminate two function call overheads 
+*/
+#if defined(PETSC_HAVE_FORTRAN_CAPS)
+#define matmpibaijsetvaluesblocked_ MATMPIBAIJSETVALUESBLOCKED
+#elif !defined(PETSC_HAVE_FORTRAN_UNDERSCORE)
+#define matmpibaijsetvaluesblocked_ matmpibaijsetvaluesblocked
+#endif
+
+#undef __FUNCT__  
+#define __FUNCT__ "matmpibiajsetvaluesblocked"
+/*@C
+  MatMPIBAIJSetValuesBlocked - Direct Fortran call to replace call to MatSetValuesBlocked()
+
+  Collective on Mat
+
+  Input Parameters:
++ mat - the matrix
+. min - number of input rows
+. im - input rows
+. nin - number of input columns
+. in - input columns
+. v - numerical values input
+- addvin - INSERT_VALUES or ADD_VALUES
+
+  Notes: This has a complete copy of MatSetValuesBlocked_MPIBAIJ() which is terrible code un-reuse.
+
+  Level: advanced
+
+.seealso:   MatSetValuesBlocked()
+@*/
+PetscErrorCode matmpibaijsetvaluesblocked_(Mat *matin,PetscInt *min,const PetscInt im[],PetscInt *nin,const PetscInt in[],const MatScalar v[],InsertMode *addvin)
+{
+  /* convert input arguments to C version */
+  Mat             mat = *matin;
+  PetscInt        m = *min, n = *nin; 
+  InsertMode      addv = *addvin;
+
+  Mat_MPIBAIJ     *baij = (Mat_MPIBAIJ*)mat->data;
+  const MatScalar *value;
+  MatScalar       *barray=baij->barray;
+  PetscTruth      roworiented = baij->roworiented;
+  PetscErrorCode  ierr;
+  PetscInt        i,j,ii,jj,row,col,rstart=baij->rstartbs;
+  PetscInt        rend=baij->rendbs,cstart=baij->cstartbs,stepval;
+  PetscInt        cend=baij->cendbs,bs=mat->rmap.bs,bs2=baij->bs2;
+  
+  PetscFunctionBegin;
+  /* tasks normally handled by MatSetValuesBlocked() */
+  if (mat->insertmode == NOT_SET_VALUES) {
+    mat->insertmode = addv;
+  }
+#if defined(PETSC_USE_DEBUG) 
+  else if (mat->insertmode != addv) {
+    SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Cannot mix add values and insert values");
+  }
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+#endif
+  if (mat->assembled) {
+    mat->was_assembled = PETSC_TRUE; 
+    mat->assembled     = PETSC_FALSE;
+  }
+  ierr = PetscLogEventBegin(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+
+
+  if(!barray) {
+    ierr         = PetscMalloc(bs2*sizeof(MatScalar),&barray);CHKERRQ(ierr);
+    baij->barray = barray;
+  }
+
+  if (roworiented) { 
+    stepval = (n-1)*bs;
+  } else {
+    stepval = (m-1)*bs;
+  }
+  for (i=0; i<m; i++) {
+    if (im[i] < 0) continue;
+#if defined(PETSC_USE_DEBUG)
+    if (im[i] >= baij->Mbs) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row too large, row %D max %D",im[i],baij->Mbs-1);
+#endif
+    if (im[i] >= rstart && im[i] < rend) {
+      row = im[i] - rstart;
+      for (j=0; j<n; j++) {
+        /* If NumCol = 1 then a copy is not required */
+        if ((roworiented) && (n == 1)) {
+          barray = (MatScalar*)v + i*bs2;
+        } else if((!roworiented) && (m == 1)) {
+          barray = (MatScalar*)v + j*bs2;
+        } else { /* Here a copy is required */
+          if (roworiented) { 
+            value = v + i*(stepval+bs)*bs + j*bs;
+          } else {
+            value = v + j*(stepval+bs)*bs + i*bs;
+          }
+          for (ii=0; ii<bs; ii++,value+=stepval) {
+            for (jj=0; jj<bs; jj++) {
+              *barray++  = *value++; 
+            }
+          }
+          barray -=bs2;
+        }
+          
+        if (in[j] >= cstart && in[j] < cend){
+          col  = in[j] - cstart;
+          ierr = MatSetValuesBlocked_SeqBAIJ_MatScalar(baij->A,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+        }
+        else if (in[j] < 0) continue;
+#if defined(PETSC_USE_DEBUG)
+        else if (in[j] >= baij->Nbs) {SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column too large, col %D max %D",in[j],baij->Nbs-1);}
+#endif
+        else {
+          if (mat->was_assembled) {
+            if (!baij->colmap) {
+              ierr = CreateColmap_MPIBAIJ_Private(mat);CHKERRQ(ierr);
+            }
+
+#if defined(PETSC_USE_DEBUG)
+#if defined (PETSC_USE_CTABLE)
+            { PetscInt data;
+              ierr = PetscTableFind(baij->colmap,in[j]+1,&data);CHKERRQ(ierr);
+              if ((data - 1) % bs) SETERRQ(PETSC_ERR_PLIB,"Incorrect colmap");
+            }
+#else
+            if ((baij->colmap[in[j]] - 1) % bs) SETERRQ(PETSC_ERR_PLIB,"Incorrect colmap");
+#endif
+#endif
+#if defined (PETSC_USE_CTABLE)
+	    ierr = PetscTableFind(baij->colmap,in[j]+1,&col);CHKERRQ(ierr);
+            col  = (col - 1)/bs;
+#else
+            col = (baij->colmap[in[j]] - 1)/bs;
+#endif
+            if (col < 0 && !((Mat_SeqBAIJ*)(baij->A->data))->nonew) {
+              ierr = DisAssemble_MPIBAIJ(mat);CHKERRQ(ierr); 
+              col =  in[j];              
+            }
+          }
+          else col = in[j];
+          ierr = MatSetValuesBlocked_SeqBAIJ_MatScalar(baij->B,1,&row,1,&col,barray,addv);CHKERRQ(ierr);
+        }
+      }
+    } else {
+      if (!baij->donotstash) {
+        if (roworiented) {
+          ierr = MatStashValuesRowBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+        } else {
+          ierr = MatStashValuesColBlocked_Private(&mat->bstash,im[i],n,in,v,m,n,i);CHKERRQ(ierr);
+        }
+      }
+    }
+  }
+  
+  /* task normally handled by MatSetValuesBlocked() */
+  ierr = PetscLogEventEnd(MAT_SetValues,mat,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
