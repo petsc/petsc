@@ -1,6 +1,6 @@
 import SocketServer
 from socket import *
-from urllib import *
+import urllib
 import string
 import threading
 from re import search
@@ -20,6 +20,7 @@ class User(object):
 		self.info = msg
 		self.error = msg
 		self.status = -1
+		self.update = 1
 	def addgs(self, mgs):
 		self.gs += mgs
 	def replacegs(self, msg):
@@ -53,6 +54,12 @@ class User(object):
 		self.glast = msg
 		self.info = msg
 		self.error = msg
+	def getupdate(self):
+		return self.update
+	def newinfo(self):
+		self.update = 1
+	def old(self):
+		self.update = 0
 
 def removeUser(i):
 	global users
@@ -142,6 +149,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 					curr.addinfo(end)
 				if not errorcheck:
 					curr.error(end)
+				curr.newinfo()
 				break
 
 #Start the server and intilize the global variables
@@ -275,6 +283,20 @@ def startprog(path, args):
 		a[2:] = args
 		os.execv(path,a)
 		exit(0)
+
+def getupdate(i):
+	global users
+	i = i.strip()
+	u = users[i].getupdate()
+	if u:
+		return "new"
+	else:
+		return "old"
+
+def old(i):
+	global users
+	i = i.strip()
+	users[i].old()
 
 if __name__ == '__main__':
 	runserver()
