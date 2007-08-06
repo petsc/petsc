@@ -13,6 +13,15 @@ class Configure(PETSc.package.Package):
   def Install(self):
 
     args = ['--prefix='+self.installDir]
+    self.framework.pushLanguage('C')
+    args.extend('CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+    args.extend('CPP="'+self.framework.getPreprocessor()+'"')
+    self.framework.popLanguage()
+    if hasattr(self.compilers, 'CXX'):
+      self.framework.pushLanguage('Cxx')
+      args.append('CXX="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"')
+      args.extend('CPP="'+self.framework.getPreprocessor()+'"')
+      self.framework.popLanguage()
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,self.package), 'w')
     fd.write(args)
