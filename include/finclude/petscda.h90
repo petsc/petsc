@@ -2,6 +2,7 @@
 !
 !  Additional DA include file for use of PETSc with Fortran 90/HPF
 !
+#if !defined (PETSC_AVOID_DECLARATIONS)
 
       Interface 
         Subroutine DAGetGlobalIndicesF90(v,n,array,ierr)
@@ -88,6 +89,7 @@
         End Subroutine
       End Interface DAVecRestoreArrayF90
 
+#endif
 !
 !     End of DA Fortran 90 include file for the PETSc package
 !

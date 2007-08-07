@@ -2,6 +2,8 @@
 !
 !  Additional IS include file for use of PETSc with Fortran 90/HPF
 !
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
       Interface 
         Subroutine ISGetIndicesF90(i,array,ierr)
           PetscInt, pointer :: array(:)
@@ -56,6 +58,7 @@
         End Subroutine
       End Interface
 
+#endif
 !
 !     End of IS Fortran 90 include file for the PETSc package
 !
