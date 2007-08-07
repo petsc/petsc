@@ -536,6 +536,7 @@ PetscErrorCode VecSetValues_Seq(Vec xin,PetscInt ni,const PetscInt ix[],const Pe
     for (i=0; i<ni; i++) {
       if (xin->stash.ignorenegidx == PETSC_TRUE && ix[i] < 0) continue;
 #if defined(PETSC_USE_DEBUG)
+      if (ix[i] < 0) SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D cannot be negative",ix[i]);
       if (ix[i] >= xin->map.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Out of range index value %D maximum %D",ix[i],xin->map.n);
 #endif
       xx[ix[i]] += y[i];
