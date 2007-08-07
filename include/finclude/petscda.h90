@@ -57,7 +57,8 @@
         Subroutine DMCompositeGetAccessvpvp(dm, v,d1,d2,d3,d4,ierr)
           DM  dm
           Vec v,d1,d3
-          double precision,pointer :: d2(:),d4(:)          
+          PetscScalar,pointer :: d2(:)
+          PetscScalar,pointer :: d4(:)          
           PetscErrorCode ierr
         End Subroutine
       End Interface
@@ -66,7 +67,8 @@
         Subroutine DMCompositeRestoreAccessvpvp(dm, v,d1,d2,d3,d4,ierr)
           DM  dm
           Vec v,d1,d3
-          double precision,pointer :: d2(:),d4(:)          
+          PetscScalar,pointer :: d2(:)
+          PetscScalar,pointer :: d4(:)          
           PetscErrorCode ierr
         End Subroutine
       End Interface
@@ -75,7 +77,7 @@
         Subroutine DAVecGetArrayF901(Da, v,d1,ierr)
           DA  da
           Vec v
-          double precision,pointer :: d1(:)
+          PetscScalar,pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
       End Interface DAVecGetArrayF90
@@ -84,7 +86,7 @@
         Subroutine DAVecRestoreArrayF901(da, v,d1,ierr)
           DA  da
           Vec v
-          double precision,pointer :: d1(:)
+          PetscScalar,pointer :: d1(:)
           PetscErrorCode ierr
         End Subroutine
       End Interface DAVecRestoreArrayF90

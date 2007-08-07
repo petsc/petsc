@@ -16,10 +16,12 @@
 
 #if !defined (PETSC_AVOID_DECLARATIONS)
 
-      PetscEnum AO_BASIC,AO_ADVANCED
+      PetscEnum AO_BASIC
+      PetscEnum AO_ADVANCED
       parameter (AO_BASIC = 0,AO_ADVANCED = 1)
 
-      PetscEnum AODATA_BASIC,AODATA_ADVANCED
+      PetscEnum AODATA_BASIC
+      PetscEnum AODATA_ADVANCED
       parameter (AODATA_BASIC=0,AODATA_ADVANCED=1)
 !
 !  End of Fortran include file for the AO package in PETSc
