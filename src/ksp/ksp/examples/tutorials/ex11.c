@@ -140,6 +140,7 @@ int main(int argc,char **args)
   
   if (use_random) {
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&rctx);CHKERRQ(ierr);
+    ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
     ierr = VecSetRandom(u,rctx);CHKERRQ(ierr);
   } else {
     ierr = VecSet(u,pfive);CHKERRQ(ierr);
