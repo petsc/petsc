@@ -13,6 +13,7 @@ global startmsg
 global users
 global pdir
 
+#Structure used to store all the PETSc output information
 class User(object):
 	def __init__(self, msg):
 		self.gs = msg
@@ -104,18 +105,8 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			line = self.rfile.readline()
 			linestrip = line.strip()
 			joinline = "".join(line)
-			if joinline.rfind("<<<user>>>") >= 0:
-				joinline = joinline.lstrip("<<<user>>>")
-				n = joinline
-				if users.has_key(n):
-					curr = users[n]
-				else:
-					users[n] = User(startmsg)
-					curr = users[n]
-				continue
 			# Check to see if the string is info or error output
 			endinfo = search(r'\[[0-9]+\]', joinline)
-			infocheckRE = (endinfo != None)
 			errorinfo = joinline.rfind("PETSC ERROR:")
 			if joinline.rfind("<<<start>>>") >= 0:
 				curr.replacestatus(1)
@@ -123,7 +114,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			if joinline.rfind("<<<end>>>") >= 0:
 				curr.replacestatus(0)
 				joinline = joinline.lstrip("<<<end>>>")
-			if infocheckRE :
+			if endinfo != None :
 				if infocheck:
 					if curr.getinfo() == startmsg:
 						curr.replaceinfo("")
@@ -169,6 +160,7 @@ def runserver():
 	thread.start()
 	return "TCP server started"
 
+#Return a formated timestap for the pickle file name
 def gettime():	
 	today = datetime.datetime.now()
 	cur = today.ctime()
@@ -176,6 +168,7 @@ def gettime():
 	cur = cur.replace(":", ".")
 	return cur
 
+#Create pickle of users current data
 def createpickle(i):
 	checkpickledir()
 	global users
@@ -187,18 +180,7 @@ def createpickle(i):
 	pickle.dump(users[i], f)
 	f.close()
 
-def getpickles2(i):
-	global pdir
-	i = i.strip()
-	petscdir = os.environ["PETSC_DIR"]
-	files = os.listdir(petscdir + pdir)
-	us =[] 
-	for u in files:
-		if u.find(i) >= 0:
-			us.append(u)
-	print us
-	return us
-
+#If a pickle directory does not exist, create one
 def checkpickledir():
 	e = os.environ["PETSC_DIR"]
 	path = e+pdir
@@ -211,6 +193,7 @@ def getpickles():
 	files = os.listdir(petscdir + pdir)
 	return files
 
+#Returns user information to previous state
 def unpickle(i):
 	checkpickledir()
 	global users
@@ -219,6 +202,7 @@ def unpickle(i):
 	f = open(petscdir+pdir+i)
 	loc = i.split("_")
 	users[loc[0]] = pickle.load(f)
+	users[loc[0]].newinfo()
 
 def getgs(i):
 	global users
@@ -272,7 +256,9 @@ def clearoutput(i):
 	i = i.strip()
 	if users.has_key(i):
 		users[i].replaceall(startmsg)
+	users[i].newinfo()
 
+#Fork off a new process started by the user of the webpage
 def startprog(path, args):
 	if os.fork() == 0:
 		path = path.strip()
