@@ -37,16 +37,16 @@ class QuadratureGenerator(script.Script):
   def getArray(self, name, values, comment = None, typeName = 'double'):
     from Cxx import Array
     from Cxx import Initializer
-    import Numeric
+    import numpy
 
-    values = Numeric.array(values)
+    values = numpy.array(values)
     arrayInit = Initializer()
-    arrayInit.children = map(self.Cxx.getDouble, Numeric.ravel(values))
+    arrayInit.children = map(self.Cxx.getDouble, numpy.ravel(values))
     arrayInit.list = True
     arrayDecl = Array()
     arrayDecl.children = [name]
     arrayDecl.type = self.Cxx.typeMap[typeName]
-    arrayDecl.size = self.Cxx.getInteger(Numeric.size(values))
+    arrayDecl.size = self.Cxx.getInteger(numpy.size(values))
     arrayDecl.static = True
     arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
@@ -126,7 +126,7 @@ class QuadratureGenerator(script.Script):
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
     import FIAT.shapes
-    import Numeric
+    import numpy
 
     self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
     points = quadrature.get_points()
@@ -141,11 +141,11 @@ class QuadratureGenerator(script.Script):
       basisName = name+'Basis'+ext
       basisDerName = name+'BasisDerivatives'+ext
       perm = self.getBasisFuncOrder(element)
-      basisTab = Numeric.transpose(basis.tabulate(points))
-      basisDerTab = Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+      basisTab = numpy.transpose(basis.tabulate(points))
+      basisDerTab = numpy.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
       if not perm is None:
-        basisTabOld    = Numeric.array(basisTab)
-        basisDerTabOld = Numeric.array(basisDerTab)
+        basisTabOld    = numpy.array(basisTab)
+        basisDerTabOld = numpy.array(basisDerTab)
         for q in range(len(points)):
           for i,pi in enumerate(perm):
             basisTab[q][i]    = basisTabOld[q][pi]
@@ -597,7 +597,7 @@ class QuadratureGenerator(script.Script):
     from GenericCompiler import CodePurpose
     import CxxVisitor
 
-    # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
+    # May need to move setupPETScLogging() here because PETSc clients are currently interfering with numpy
     source = {'Cxx': [self.getQuadratureFile(filename, defns)]}
     outputs = {'Cxx': CxxVisitor.Output()}
     self.logPrint('Writing element source', debugSection = 'codegen')
