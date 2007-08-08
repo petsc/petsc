@@ -384,8 +384,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
   PetscTruth flgz;
+  PetscTruth flgzout;
   ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
+  ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout); CHKERRQ(ierr);
   if(flgz){
+    extern FILE* PETSC_ZOPEFD;
+    extern FILE* PETSC_STDOUT;
     char hostname[256];
     int remoteport = 9999;
     int listenport = 9998;
@@ -395,13 +399,19 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
     ierr=PetscOpenSocket(hostname, remoteport, &PETSC_SOCKFD);CHKERRQ(ierr);
     PETSC_LISTEN_CHECK = 1; 
     ierr=PetscSocketListen(hostname, listenport, &PETSC_LISTENFD);CHKERRQ(ierr);
-    PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
-    PETSC_STDERR = PETSC_STDOUT;
     char username[256];
-    ierr = PetscGetUserName(username, 256);
-    fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
-    fprintf(PETSC_STDOUT, "<<<start>>>");
-  }
+    if(flgzout){
+      PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
+      ierr = PetscGetUserName(username, 256);
+      fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
+      fprintf(PETSC_STDOUT, "<<<start>>>");
+    }
+    else{
+      PETSC_ZOPEFD = fdopen(PETSC_SOCKFD, "w");
+      ierr = PetscGetUserName(username, 256);
+      fprintf(PETSC_ZOPEFD, "<<<user>>> %s\n",username);
+      fprintf(PETSC_ZOPEFD, "<<<start>>>");
+    }}
 
   /*
         Setup profiling and logging
