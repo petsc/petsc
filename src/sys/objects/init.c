@@ -28,6 +28,12 @@ PetscTruth  PETSC_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalRank = -1;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
 
+#if defined(PETSC_ZOPEFD)
+PETSC_ZOPEFD = 0;
+#else
+FILE * PETSC_ZOPEFD = 0;
+#endif
+
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */
@@ -383,32 +389,31 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   ierr = PetscOptionsGetString(PETSC_NULL,"-on_error_emacs",emacsmachinename,128,&flg1);CHKERRQ(ierr);
   if (flg1 && !rank) {ierr = PetscPushErrorHandler(PetscEmacsClientErrorHandler,emacsmachinename);CHKERRQ(ierr)}
 
+  /*
+    Activates new sockets for zope if needed
+  */
   PetscTruth flgz;
   PetscTruth flgzout;
   ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
   ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout); CHKERRQ(ierr);
   if(flgz){
     extern FILE* PETSC_ZOPEFD;
-    extern FILE* PETSC_STDOUT;
+    int sockfd; 
     char hostname[256];
+    char username[256];
     int remoteport = 9999;
-    int listenport = 9998;
     ierr=PetscOptionsGetString(PETSC_NULL, "-zope", hostname, 256, &flgz);CHKERRQ(ierr);
     if(!hostname[0]){
       ierr=PetscGetHostName(hostname,256); CHKERRQ(ierr);}
-    ierr=PetscOpenSocket(hostname, remoteport, &PETSC_SOCKFD);CHKERRQ(ierr);
-    PETSC_LISTEN_CHECK = 1; 
-    ierr=PetscSocketListen(hostname, listenport, &PETSC_LISTENFD);CHKERRQ(ierr);
-    char username[256];
+    ierr=PetscOpenSocket(hostname, remoteport, &sockfd);CHKERRQ(ierr);
+    ierr = PetscGetUserName(username, 256);
+    PETSC_ZOPEFD = fdopen(sockfd, "w");
     if(flgzout){
-      PETSC_STDOUT = fdopen(PETSC_SOCKFD, "w");
-      ierr = PetscGetUserName(username, 256);
+      PETSC_STDOUT = PETSC_ZOPEFD;
       fprintf(PETSC_STDOUT, "<<<user>>> %s\n",username);
       fprintf(PETSC_STDOUT, "<<<start>>>");
     }
     else{
-      PETSC_ZOPEFD = fdopen(PETSC_SOCKFD, "w");
-      ierr = PetscGetUserName(username, 256);
       fprintf(PETSC_ZOPEFD, "<<<user>>> %s\n",username);
       fprintf(PETSC_ZOPEFD, "<<<start>>>");
     }}

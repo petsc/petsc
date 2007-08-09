@@ -111,7 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   
   extern FILE * PETSC_ZOPEFD;
   PetscFormatConvert(format,newformat,8*1024); 
-  if(PETSC_ZOPEFD != NULL){
+  if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
     va_copy(s, Argp);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
