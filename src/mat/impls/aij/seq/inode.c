@@ -1638,6 +1638,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   Mat_SeqAIJ      *a = (Mat_SeqAIJ*)A->data;
   PetscScalar     *x,*xs,*ibdiag,*bdiag,sum1,sum2,sum3,sum4,sum5,tmp0,tmp1,tmp2,tmp3,*v1,*v2,*v3,*v4,*v5;
   PetscScalar     *v = a->a,*b,*xb,tmp4,tmp5,x1,x2,x3,x4,x5;
+  PetscReal       zeropivot = 1.0e-15;
   PetscErrorCode  ierr;
   PetscInt        n,m = a->inode.node_count,*sizes = a->inode.size,cnt = 0,i,j,row,i1,i2;
   PetscInt        *idx,*diag = a->diag,*ii = a->i,sz,k;
@@ -1670,8 +1671,8 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       switch(sizes[i]) {
         case 1:
           /* Create matrix data structure */
-          if (!ibdiag[cnt]) SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
-          ierr = ibdiag[cnt] = 1.0/ibdiag[cnt];
+          if (PetscAbsScalar(ibdiag[cnt]) < zeropivot) SETERRQ1(PETSC_ERR_MAT_LU_ZRPVT,"Zero pivot on row %D",row);
+          ibdiag[cnt] = 1.0/ibdiag[cnt];
           break;
         case 2:
           ierr = Kernel_A_gets_inverse_A_2(ibdiag+cnt);CHKERRQ(ierr);

@@ -448,6 +448,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitian(Mat,PetscReal,PetscTruth
 PetscPolymorphicFunction(MatIsHermitian,(Mat A),(A,0,&t),PetscTruth,t)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsSymmetricKnown(Mat,PetscTruth*,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianKnown(Mat,PetscTruth*,PetscTruth*);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat,PetscTruth *,PetscInt *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatLoad(PetscViewer,MatType,Mat*);
 PetscPolymorphicFunction(MatLoad,(PetscViewer v,MatType t),(v,t,&a),Mat,a)
 
