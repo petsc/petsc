@@ -140,6 +140,8 @@ class RecHandler(SocketServer.StreamRequestHandler):
 					curr.addinfo(end)
 				if not errorcheck:
 					curr.error(end)
+				if curr.getstatus() == 0:
+					createpickle(n)
 				curr.newinfo()
 				break
 
