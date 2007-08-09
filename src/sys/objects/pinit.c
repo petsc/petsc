@@ -869,8 +869,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
 
   if(PETSC_LISTEN_CHECK){
     PETSC_LISTEN_CHECK = 0;
-    extern FILE * PETSC_STDOUT;
-    fprintf(PETSC_STDOUT, "<<<end>>>");
+    extern FILE * PETSC_ZOPEFD;
+    if(PETSC_ZOPEFD != NULL) fprintf(PETSC_ZOPEFD, "<<<end>>>");
+    else fprintf(PETSC_STDOUT, "<<<end>>>"); 
     close(PETSC_LISTENFD);}
 
 /*
