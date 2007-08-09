@@ -219,7 +219,7 @@ typedef int PetscInt;
       You can use PETSC_STDOUT as a replacement of stdout. You can also change
     the value of PETSC_STDOUT to redirect all standard output elsewhere
 */
-FILE* PETSC_ZOPEFD;
+extern FILE* PETSC_ZOPEFD;
 extern FILE* PETSC_STDOUT;
 
 /*
