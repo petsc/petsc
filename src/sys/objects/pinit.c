@@ -5,11 +5,6 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
-#include "zope.h"
-
-int PETSC_SOCKFD = 0;
-int PETSC_LISTENFD = 0;
-int PETSC_LISTEN_CHECK = 0;
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
@@ -867,12 +862,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
-  if(PETSC_LISTEN_CHECK){
-    PETSC_LISTEN_CHECK = 0;
-    extern FILE * PETSC_ZOPEFD;
-    if(PETSC_ZOPEFD != NULL) fprintf(PETSC_ZOPEFD, "<<<end>>>");
-    else fprintf(PETSC_STDOUT, "<<<end>>>"); 
-    close(PETSC_LISTENFD);}
+  extern FILE * PETSC_ZOPEFD;
+  if(PETSC_ZOPEFD != NULL){ 
+    if (PETSC_ZOPEFD != PETSC_STDOUT) fprintf(PETSC_ZOPEFD, "<<<end>>>");
+    else fprintf(PETSC_STDOUT, "<<<end>>>");}
 
 /*
 

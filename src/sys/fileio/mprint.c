@@ -21,6 +21,9 @@ FILE *PETSC_STDOUT = 0;
 */
 FILE *PETSC_STDERR = 0;
 
+/*
+     Used to output to Zope
+*/
 FILE *PETSC_ZOPEFD = 0;
 
 #undef __FUNCT__  
@@ -113,7 +116,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   
   extern FILE * PETSC_ZOPEFD;
   PetscFormatConvert(format,newformat,8*1024); 
-  if(PETSC_ZOPEFD != NULL){
+  if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
     va_copy(s, Argp);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
