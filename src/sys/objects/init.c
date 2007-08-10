@@ -28,12 +28,6 @@ PetscTruth  PETSC_DLLEXPORT PetscFinalizeCalled   = PETSC_FALSE;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalRank = -1;
 PetscMPIInt PETSC_DLLEXPORT PetscGlobalSize = -1;
 
-#if defined(PETSC_ZOPEFD)
-PETSC_ZOPEFD = 0;
-#else
-FILE * PETSC_ZOPEFD = 0;
-#endif
-
 #if defined(PETSC_USE_COMPLEX)
 #if defined(PETSC_COMPLEX_INSTANTIATE)
 template <> class std::complex<double>; /* instantiate complex template class */

@@ -267,8 +267,8 @@ def startprog(path, args):
 		args = args.strip()
 		args = args.replace(" ", "")
 		args = args.split(",")
-		a = ["", "-zope"]
-		a[2:] = args
+		a = ["", "-zope", "-nostdout"]
+		a[3:] = args
 		os.execv(path,a)
 		exit(0)
 

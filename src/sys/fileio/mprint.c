@@ -21,6 +21,11 @@ FILE *PETSC_STDOUT = 0;
 */
 FILE *PETSC_STDERR = 0;
 
+/*
+     Used to output to Zope
+*/
+FILE *PETSC_ZOPEFD = 0;
+
 #undef __FUNCT__  
 #define __FUNCT__ "PetscFormatConvert"
 PetscErrorCode PETSC_DLLEXPORT PetscFormatConvert(const char *format,char *newformat,PetscInt size)
