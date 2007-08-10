@@ -83,7 +83,7 @@ PETSC_EXTERN_CXX_BEGIN
    Not Collective
 
    Synopsis:
-   void SETERRQ(PetscErrorCode errorcode,char *message)
+   PetscErrorCode SETERRQ(PetscErrorCode errorcode,char *message)
 
 
    Input Parameters:
@@ -112,7 +112,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ1(PetscErrorCode errorcode,char *formatmessage,arg)
+   PetscErrorCode SETERRQ1(PetscErrorCode errorcode,char *formatmessage,arg)
 
 
    Input Parameters:
@@ -139,7 +139,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
+   PetscErrorCode SETERRQ2(PetscErrorCode errorcode,char *formatmessage,arg1,arg2)
 
 
    Input Parameters:
@@ -167,7 +167,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
+   PetscErrorCode SETERRQ3(PetscErrorCode errorcode,char *formatmessage,arg1,arg2,arg3)
 
 
    Input Parameters:
@@ -204,7 +204,7 @@ M*/
    Not Collective
 
    Synopsis:
-   void CHKERRQ(PetscErrorCode errorcode)
+   PetscErrorCode CHKERRQ(PetscErrorCode errorcode)
 
 
    Input Parameters:
