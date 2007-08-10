@@ -25,7 +25,7 @@ PetscErrorCode MatMult_SeqFFTW(Mat A,Vec x,Vec y)
   PetscErrorCode ierr;
   Mat_FFTW       *fftw = (Mat_FFTW*)A->data;
   PetscScalar    *x_array,*y_array;
-  PetscInt       i,ndim=fftw->ndim,*dim=fftw->dim;
+  PetscInt       ndim=fftw->ndim,*dim=fftw->dim;
 
   PetscFunctionBegin;
   ierr = VecGetArray(x,&x_array);CHKERRQ(ierr);
