@@ -219,6 +219,7 @@ typedef int PetscInt;
       You can use PETSC_STDOUT as a replacement of stdout. You can also change
     the value of PETSC_STDOUT to redirect all standard output elsewhere
 */
+
 extern FILE* PETSC_STDOUT;
 
 /*
@@ -226,6 +227,12 @@ extern FILE* PETSC_STDOUT;
     the value of PETSC_STDERR to redirect all standard error elsewhere
 */
 extern FILE* PETSC_STDERR;
+
+/*
+      PETSC_ZOPEFD is used to send data to the PETSc webpage.  It can be used
+    in conjunction with PETSC_STDOUT, or by itself.
+*/
+extern FILE* PETSC_ZOPEFD;
 
 #if !defined(PETSC_USE_EXTERN_CXX) && defined(__cplusplus)
 /*MC

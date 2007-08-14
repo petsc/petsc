@@ -140,6 +140,8 @@ class RecHandler(SocketServer.StreamRequestHandler):
 					curr.addinfo(end)
 				if not errorcheck:
 					curr.error(end)
+				if curr.getstatus() == 0:
+					createpickle(n)
 				curr.newinfo()
 				break
 
@@ -265,8 +267,8 @@ def startprog(path, args):
 		args = args.strip()
 		args = args.replace(" ", "")
 		args = args.split(",")
-		a = ["", "-zope"]
-		a[2:] = args
+		a = ["", "-zope", "-nostdout"]
+		a[3:] = args
 		os.execv(path,a)
 		exit(0)
 

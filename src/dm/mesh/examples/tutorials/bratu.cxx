@@ -1623,7 +1623,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
     ExactSolType sol;
 
     sol.vec = DMMGGetx(dmmg);
-    ierr = CheckError(DMMGGetDM(dmmg), sol, options);CHKERRQ(ierr);
+    if (DMMGGetLevels(dmmg) == 1) {ierr = CheckError(DMMGGetDM(dmmg), sol, options);CHKERRQ(ierr);}
   } else {
     Mesh        mesh = (Mesh) DMMGGetDM(dmmg);
     SectionReal solution;
