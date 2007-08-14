@@ -3146,7 +3146,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(mat->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     newtype = mtype;
   }
