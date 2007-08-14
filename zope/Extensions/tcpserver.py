@@ -22,6 +22,7 @@ class User(object):
 		self.error = msg
 		self.status = -1
 		self.update = 1
+		self.autopickle = 0
 	def addgs(self, mgs):
 		self.gs += mgs
 	def replacegs(self, msg):
@@ -61,6 +62,12 @@ class User(object):
 		self.update = 1
 	def old(self):
 		self.update = 0
+	def ap(self):
+		self.autopickle = 1
+	def noap(self):
+		self.autopickle = 0
+	def returnap(self):
+		return self.autopickle
 
 def removeUser(i):
 	global users
@@ -140,7 +147,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 					curr.addinfo(end)
 				if not errorcheck:
 					curr.error(end)
-				if curr.getstatus() == 0:
+				if curr.getstatus() == 0 and curr.returnap() == 1:
 					createpickle(n)
 				curr.newinfo()
 				break
@@ -286,5 +293,15 @@ def old(i):
 	i = i.strip()
 	users[i].old()
 
+def setautopickle(i):
+	global users
+	i = i.strip()
+	users[i].ap()
+
+def setnoautopickle(i):
+	global users
+	i = i.strip()
+	users[i].noap()
+	
 if __name__ == '__main__':
 	runserver()
