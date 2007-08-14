@@ -20,12 +20,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     if(!host){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "unknown host");}
     sin.sin_family = AF_INET;
-    ierr = PetscMemcpy(host->h_addr, (char *)&sin.sin_addr, host->h_length); CHKERRQ(ierr);
+    ierr = PetscMemcpy((char *)&sin.sin_addr,host->h_addr, host->h_length); CHKERRQ(ierr);
     sin.sin_port = htons(portnum);
     /* active open */
     if((*clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new socket for client");}
-    if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){ 
+    if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new connection for client");
         close(*clientfd);}
     PetscFunctionReturn(0);
