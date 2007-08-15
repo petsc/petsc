@@ -163,9 +163,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   da->ops->refine             = DARefine;
   da->ops->coarsen            = DACoarsen;
   da->ops->getaggregates      = DAGetAggregates;
-  da->dim        = 1;
-  da->interptype = DA_Q1;
-  da->refine_x   = refine_x;
+  da->dim                     = 1;
+  da->interptype              = DA_Q1;
+  da->refine_x                = refine_x;
   ierr = PetscMalloc(dof*sizeof(char*),&da->fieldname);CHKERRQ(ierr);
   ierr = PetscMemzero(da->fieldname,dof*sizeof(char*));CHKERRQ(ierr);
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr); 
@@ -276,7 +276,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
     for (i=0; i<x; i++) { idx [nn++] = xs + i;}
     
     if ((xe+s)<=M*dof) {for (i=0;  i<s;     i++) {idx[nn++]=xe+i;}}
-    else             {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;   }}
+    else               {for (i=xe; i<(M*dof); i++) {idx[nn++]=i;}}
   }
 
   ierr = ISCreateGeneral(comm,nn,idx,&from);CHKERRQ(ierr);

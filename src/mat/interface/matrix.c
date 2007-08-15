@@ -2498,19 +2498,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat mat,Vec b,Vec x)
 
    Input Parameters:
 +  mat - the factored matrix
--  b - the right-hand-side vector
+-  b - the right-hand-side matrix  (dense matrix)
 
    Output Parameter:
-.  x - the result vector
+.  x - the result matrix (dense matrix)
 
    Notes:
-   The vectors b and x cannot be the same.  I.e., one cannot
+   The matrices b and x cannot be the same.  I.e., one cannot
    call MatMatSolve(A,x,x).
 
    Notes:
-   Most users should employ the simplified KSP interface for linear solvers
+   Most users should usually employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., KSPCreate().
+   See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
+   at a time.
 
    Level: developer
 
