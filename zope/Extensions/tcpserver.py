@@ -179,7 +179,6 @@ def gettime():
 
 #Create pickle of users current data
 def createpickle(i):
-	checkpickledir()
 	global users
 	global pdir
 	i = i.strip()
@@ -197,14 +196,12 @@ def checkpickledir():
 		os.mkdir(path)
 
 def getpickles():
-	checkpickledir()
 	petscdir = os.environ["PETSC_DIR"]
 	files = os.listdir(petscdir + pdir)
 	return files
 
 #Returns user information to previous state
 def unpickle(i):
-	checkpickledir()
 	global users
 	i = i.strip()
 	petscdir = os.environ["PETSC_DIR"]
