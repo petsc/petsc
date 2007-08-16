@@ -62,8 +62,17 @@ Users Manual</strong></a></li>
       </ul>
       <h3>Usage</h3>
       <ul>
-          <li>To start the Zope server, run petsc/zope/zope</li>
+          <li>To start the Zope server automatically, run petsc/zope/zope</li>
+	  <li>The Zope server can also be started manually with the following commands if problems occur: 
+	  <menu>
+	     <li>cp petsc/zope/var/data.fs.hg petsc/zope/var/Data.fs</li>
+	     <li>/petsc/zope/zopemanual</li>
+	     <li>point your browser to http://localhost:9673/PETSc/startserver, it will display "TCP server started" if the startup was successful</li>
+	  </menu>
 	  <li>View the webpage at http://localhost:9673/PETSc/</li>
+	  <menu>
+	     <li>On your first visit to the site, you will prompted for your username.  This is the username that you will be running your PETSc code under.
+	  </menu>
 	  <li>Run your PETSc program with the -zope option to have output sent to stdout and Zope.</li>
 	  <li>An argument to the -zope option can be given to specify a machine Zope is currently running on, otherwise it defaults to localhost</li>
 	  <li>Add the -nostdout option to have PETSc print only to Zope</li>
