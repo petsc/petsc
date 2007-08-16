@@ -1,7 +1,7 @@
 #define PETSCKSP_DLL
 
 /* 
-   Provides an interface to the ML 4.0 smoothed Aggregation 
+   Provides an interface to the ML 5.0 smoothed Aggregation 
 */
 #include "private/pcimpl.h"   /*I "petscpc.h" I*/
 #include "src/ksp/pc/impls/mg/mgimpl.h"                    /*I "petscmg.h" I*/

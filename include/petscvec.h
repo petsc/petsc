@@ -459,7 +459,7 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerMathematicaPutVector(PetscVi
 
 /*S
      Vecs - Collection of vectors where the data for the vectors is stored in 
-            one continquous memory
+            one contiguous memory
 
    Level: advanced
 
