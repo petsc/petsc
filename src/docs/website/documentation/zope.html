@@ -52,26 +52,28 @@ Users Manual</strong></a></li>
       <p align="left"> 
       Zope can be used to generate a webpage containing all output of a 
       PETSc program.  This output is organized on the webpage, and can 
-      be saved for later review.
+      be saved for later review.<br/><br/>
+      All commands are from the toplevel PETSc directory [using bash shell]
       <h3> Requirements and installation </h3>
       <ul> 
           <li>A current version of Zope, download information can be found at www.zope.org</li>
 	  <li>Python2.4, at the time of writing this Zope is not compatible with python2.5 or higher</li>
-	  <li>The ZOPE_HOME environmental  variable must be set to the Zope home directory.  For example /usr/lib/zope2.9</li>
-	  <li>run python petsc/zope/configure.py to verify correct directories</li>
+	  <li>The ZOPE_HOME environmental  variable must be set to the Zope home directory.  For example <span
+ style="font-weight: bold;">/usr/lib/zope2.9</span></li>
+	  <li>run <font color="#ff0000">python ./zope/configure.py</font> to verify correct directories</li>
       </ul>
       <h3>Usage</h3>
       <ul>
-          <li>To start the Zope server automatically, run petsc/zope/zope</li>
-	  <li>The Zope server can also be started manually with the following commands if problems occur: 
+          <li>To start the Zope server automatically, run <font color="#ff0000">./zope/zope</font></li>
+	  <li>The Zope server can also be started manually with the following commands if a problem occurs:
 	  <menu>
-	     <li>cp petsc/zope/var/data.fs.hg petsc/zope/var/Data.fs</li>
-	     <li>/petsc/zope/zopemanual</li>
-	     <li>point your browser to http://localhost:9673/PETSc/startserver, it will display "TCP server started" if the startup was successful</li>
+	     <li><font color="#ff0000">cp ./zope/var/data.fs.hg ./zope/var/Data.fs </font></li>
+	     <li><font color="#ff0000">./zope/zopemanual</font></li>
+	     <li>point your browser to <font color="#ff0000">http://localhost:9673/PETSc/startserver</font>, it will display "TCP server started" if the startup was successful</li>
 	  </menu>
-	  <li>View the webpage at http://localhost:9673/PETSc/</li>
+	  <li>View the webpage at <font color="#ff0000">http://localhost:9673/PETSc/</font></li>
 	  <menu>
-	     <li>On your first visit to the site, you will prompted for your username.  This is the username that you will be running your PETSc code under.
+	     <li>On your first visit to the site, you will be prompted for your username.  This is the username that you will be running your PETSc code under.
 	  </menu>
 	  <li>Run your PETSc program with the -zope option to have output sent to stdout and Zope.</li>
 	  <li>An argument to the -zope option can be given to specify a machine Zope is currently running on, otherwise it defaults to localhost</li>
