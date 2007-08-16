@@ -783,9 +783,13 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
   il = 1;
   iu = 1;
 
+#if defined(PETSC_MISSING_LAPACK_DSTEBZ)
+  SETERRQ(PETSC_ERR_SUP,"DSTEBZ - Lapack routine is unavailable.");
+#else
   LAPACKstebz_("I", "E", &t_size, &vl, &vu, &il, &iu, &cg->eigen_tol,
                cg->diag, cg->offd + 1, &e_valus, &e_splts, e_valu, 
                e_iblk, e_splt, e_rwrk, e_iwrk, &info);
+#endif
 
   if ((0 != info) || (1 != e_valus)) {
     /*************************************************************************/
@@ -816,7 +820,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       t_offd[i] = cg->offd[i];
     }
 
+#if defined(PETSC_MISSING_LAPACK_DPTTRF)
+  SETERRQ(PETSC_ERR_SUP,"DPTTRF - Lapack routine is unavailable.");
+#else
     LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info);
+#endif
     if (0 == info) {
       break;
     }
@@ -837,7 +845,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     t_soln[i] = 0.0;
   }
 
+#if defined(PETSC_MISSING_LAPACK_DPTTRS)
+  SETERRQ(PETSC_ERR_SUP,"DPTTRS - Lapack routine is unavailable.");
+#else
   LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info);
+#endif
   if (0 != info) {
     /*************************************************************************/
     /* Calculation of the initial step failed; return the Steihaug-Toint     */
@@ -871,10 +883,13 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /* This is the hard case; compute the eigenvector associated with the  */
       /* minimum eigenvalue and move along this direction to the boundary.   */
       /***********************************************************************/
-
+#if defined(PETSC_MISSING_LAPACK_DSTEIN)
+  SETERRQ(PETSC_ERR_SUP,"DSTEIN - Lapack routine is unavailable.");
+#else
       LAPACKstein_(&t_size, cg->diag, cg->offd + 1, &e_valus, e_valu,
 		   e_iblk, e_splt, e_vect, &nldb, 
 		   e_rwrk, e_iwrk, e_iwrk + t_size, &info);
+#endif
       if (0 != info) {
 	/*********************************************************************/
 	/* Calculation of the minimum eigenvalue failed.  Return the         */
@@ -977,8 +992,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
       /***********************************************************************/
 
       PetscMemcpy(e_rwrk, t_soln, sizeof(PetscReal)*t_size);
-      
+#if defined(PETSC_MISSING_LAPACK_DPTTRS)
+  SETERRQ(PETSC_ERR_SUP,"DPTTRS - Lapack routine is unavailable.");
+#else      
       LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, e_rwrk, &nldb, &info);
+#endif
       if (0 != info) {
 	/*********************************************************************/
 	/* Calculation of the step failed; return the Steihaug-Toint         */
@@ -1010,7 +1028,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 	t_offd[j] = cg->offd[j];
       }
 
+#if defined(PETSC_MISSING_LAPACK_DPTTRF)
+  SETERRQ(PETSC_ERR_SUP,"DPTTRF - Lapack routine is unavailable.");
+#else
       LAPACKpttrf_(&t_size, t_diag, t_offd + 1, &info);
+#endif
       if (0 != info) {
 	/*********************************************************************/
 	/* Calculation of factorization failed; return the Steihaug-Toint    */
@@ -1031,7 +1053,11 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 	t_soln[j] = 0.0;
       }
 
+#if defined(PETSC_MISSING_LAPACK_DPTTRS)
+  SETERRQ(PETSC_ERR_SUP,"DPTTRS - Lapack routine is unavailable.");
+#else
       LAPACKpttrs_(&t_size, &nrhs, t_diag, t_offd + 1, t_soln, &nldb, &info);
+#endif
       if (0 != info) {
 	/*********************************************************************/
 	/* Calculation of the step failed; return the Steihaug-Toint         */
