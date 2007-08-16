@@ -1,4 +1,4 @@
-fom socket import *
+from socket import *
 import string
 
 def sendoptions(iname, value):
