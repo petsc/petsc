@@ -1,17 +1,13 @@
-ALL: lib
-SPECIALFASTLIB = yes
-specialfastlib: lib
 #requirespackage 'PETSC_USE_F90_SRC_IMPL'
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = f90_cwrap.c
-SOURCEF  = f90_fwrap.F
-SOURCEH  = 
+SOURCEC  =
+SOURCEF  = f90_cwrap.c
+SOURCEH  =
 OBJSC    =
-OBJSC	 = ${SOURCEC:.c=.o}
-OBJSF	 = ${SOURCEF:.F=.o}
-DIRS     = 
+OBJSF	 = f90_cwrap.o
+DIRS     = fsrc
 LIBBASE  = libpetsc
 MANSEC   = Sys
 LOCDIR   = src/sys/f90-src/
