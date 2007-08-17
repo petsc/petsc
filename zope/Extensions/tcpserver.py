@@ -166,7 +166,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 				if not logcheck:
 					curr.addlog(end)
 				if curr.getstatus() == 0 and curr.returnap() == 1:
-					createpickle(n)
+					createpickle(n, "noname")
 				curr.newinfo()
 				break
 
@@ -196,12 +196,16 @@ def gettime():
 	return cur
 
 #Create pickle of users current data
-def createpickle(i):
+def createpickle(i, n):
 	global users
 	global pdir
 	i = i.strip()
+	n = n.strip()
 	petscdir = os.environ["PETSC_DIR"]
-	cur = gettime()
+	if n == "noname":
+		cur = gettime()
+	else:
+		cur = n
 	f = open(petscdir+pdir+i+"_"+cur, "w")
 	pickle.dump(users[i], f)
 	f.close()
