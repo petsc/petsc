@@ -9,7 +9,8 @@ static char help[] = "Tests various 1-dimensional DA routines.\n\n";
 int main(int argc,char **argv)
 {
   PetscMPIInt    rank;
-  PetscInt       M = 13,w=1,s=1,wrap=1;
+  PetscInt       M = 13,s=1,dof=1;
+  DAPeriodicType wrap = DA_XPERIODIC;
   PetscErrorCode ierr;
   DA             da;
   PetscViewer    viewer;
@@ -27,11 +28,12 @@ int main(int argc,char **argv)
 
   /* Readoptions */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-M",&M,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-w",&w,PETSC_NULL);CHKERRQ(ierr); 
+  ierr = PetscOptionsGetEnum(PETSC_NULL,"-wrap",DAPeriodicTypes,(PetscEnum*)&wrap,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL,"-dof",&dof,PETSC_NULL);CHKERRQ(ierr); 
   ierr = PetscOptionsGetInt(PETSC_NULL,"-s",&s,PETSC_NULL);CHKERRQ(ierr); 
 
   /* Create distributed array and get vectors */
-  ierr = DACreate1d(PETSC_COMM_WORLD,(DAPeriodicType)wrap,M,w,s,PETSC_NULL,&da);CHKERRQ(ierr);
+  ierr = DACreate1d(PETSC_COMM_WORLD,wrap,M,dof,s,PETSC_NULL,&da);CHKERRQ(ierr);
   ierr = DAView(da,viewer);CHKERRQ(ierr);
   ierr = DACreateGlobalVector(da,&global);CHKERRQ(ierr);
   ierr = DACreateLocalVector(da,&local);CHKERRQ(ierr);

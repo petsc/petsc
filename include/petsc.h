@@ -1379,8 +1379,6 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscMPIDump(FILE*);
 #define PetscObjectGrantAccess(obj)  0
 #define PetscObjectDepublish(obj)    0
 
-
-
 /*
       This code allows one to pass a MPI communicator between 
     C and Fortran. MPI 2.0 defines a standard API for doing this.
@@ -1403,7 +1401,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscSNPrintf(char*,size_t,const char [],
 /* These are used internally by PETSc ASCII IO routines*/
 #include <stdarg.h>
 EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVSNPrintf(char*,size_t,const char[],va_list);
-EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintf(FILE*,const char[],va_list);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  (*PetscVFPrintf)(FILE*,const char[],va_list);
+EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintfDefault(FILE*,const char[],va_list);
 
 /*MC
     PetscErrorPrintf - Prints error messages.
@@ -1417,18 +1416,22 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintf(FILE*,const char[],va_list)
 .   format - the usual printf() format string 
 
    Options Database Keys:
-+    -error_output_stderr - cause error messages to be printed to stderr instead of the
-         (default) stdout
++    -error_output_stdout - cause error messages to be printed to stdout instead of the
+         (default) stderr
 -    -error_output_none to turn off all printing of error messages (does not change the way the 
           error is handled.)
 
    Notes: Use
-     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the 
-           error is handled.) and
-     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
+$     PetscErrorPrintf = PetscErrorPrintfNone; to turn off all printing of error messages (does not change the way the 
+$                        error is handled.) and
+$     PetscErrorPrintf = PetscErrorPrintfDefault; to turn it back on
 
+          Use
+     PETSC_STDERR = FILE* obtained from a file open etc. to have stderr printed to the file. 
+     PETSC_STDOUT = FILE* obtained from a file open etc. to have stdout printed to the file. 
 
-  
+          Use
+      PetscPushErrorHandler() to provide your own error handler that determines what kind of messages to print
 
    Level: developer
 
@@ -1438,7 +1441,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT  PetscVFPrintf(FILE*,const char[],va_list)
     Concepts: error messages^printing
     Concepts: printing^error messages
 
-.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf()
+.seealso: PetscFPrintf(), PetscSynchronizedPrintf(), PetscHelpPrintf(), PetscPrintf(), PetscErrorHandlerPush()
 M*/
 EXTERN PETSC_DLLEXPORT PetscErrorCode (*PetscErrorPrintf)(const char[],...);
 

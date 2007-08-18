@@ -71,10 +71,12 @@
       PetscEnum DA_XZPERIODIC
       PetscEnum DA_YZPERIODIC
       PetscEnum DA_ZPERIODIC
+      PetscEnum DA_XYZGHOSTED
 
       parameter (DA_NONPERIODIC = 0,DA_XPERIODIC = 1,DA_YPERIODIC = 2)
       parameter (DA_XYPERIODIC = 3,DA_XYZPERIODIC = 4)
       parameter (DA_XZPERIODIC = 5,DA_YZPERIODIC = 6,DA_ZPERIODIC = 7)
+      parameter (DA_XYZGHOSTED = 8)
 !
 ! DA Directions
 !

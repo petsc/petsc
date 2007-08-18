@@ -52,10 +52,14 @@ M*/
 
    Level: beginner
 
+   DA_XYZGHOSTED means that ghost points are put around all the physical boundaries
+   in the local representation of the Vec (i.e. DACreate/GetLocalVector().
+
 .seealso: DACreate1d(), DACreate2d(), DACreate3d(), DA, DACreate()
 E*/
 typedef enum { DA_NONPERIODIC,DA_XPERIODIC,DA_YPERIODIC,DA_XYPERIODIC,
-               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC} DAPeriodicType;
+               DA_XYZPERIODIC,DA_XZPERIODIC,DA_YZPERIODIC,DA_ZPERIODIC,DA_XYZGHOSTED} DAPeriodicType;
+extern const char *DAPeriodicTypes[];
 
 /*E
     DAInterpolationType - Defines the type of interpolation that will be returned by 
