@@ -1,5 +1,5 @@
 
-static char help[] = "Tests MatSetValues() for column oriented storage.\n\n"; 
+static char help[] = "Tests MatSetValues().\n\n"; 
 
 #include "petscmat.h"
 
@@ -20,8 +20,8 @@ int main(int argc,char **args)
   ierr = MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,n,n);CHKERRQ(ierr);
   ierr = MatSetFromOptions(C);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-column_oriented",&flg);CHKERRQ(ierr);
-  if (flg) {ierr = MatSetOption(C,MAT_COLUMN_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL,"-row_oriented",&flg);CHKERRQ(ierr);
+  if (flg) {ierr = MatSetOption(C,MAT_ROW_ORIENTED,PETSC_TRUE);CHKERRQ(ierr);}
   for (i=0; i<6; i++) v[i] = (PetscReal)i;
   midx[0] = 0; midx[1] = 2; midx[2] = 3;
   nidx[0] = 1; nidx[1] = 3;

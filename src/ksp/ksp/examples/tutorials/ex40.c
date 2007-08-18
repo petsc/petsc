@@ -16,7 +16,7 @@ PetscErrorCode computeMinEigVal(Mat A, PetscInt its, PetscScalar *eig);
 int main(int Argc,char **Args)
 {
   PetscTruth      flg;
-  PetscInt        n = 6;
+  PetscInt        n = 6,i;
   PetscScalar     rho = 1.0;
   PetscReal       h;
   PetscReal       beta = 1.0;
@@ -50,7 +50,7 @@ int main(int Argc,char **Args)
   rho *= 1./(2.*h);
   
   /* Geometry info */
-  for(int i=0; i<2; i++) {
+  for(i=0; i<2; i++) {
     nodes[i] = n;
     periodic[i] = PETSC_TRUE;
     refine[i] = 3;
