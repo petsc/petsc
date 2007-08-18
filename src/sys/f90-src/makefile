@@ -1,12 +1,13 @@
 #requirespackage 'PETSC_USE_F90_SRC_IMPL'
 
+ALL: lib
 CFLAGS   =
 FFLAGS   =
-SOURCEC  =
-SOURCEF  = f90_cwrap.c
+SOURCEC  = f90_cwrap.c
+SOURCEF  =
 SOURCEH  =
-OBJSC    =
-OBJSF	 = f90_cwrap.o
+OBJSC    = f90_cwrap.o 
+OBJSF	 =
 DIRS     = fsrc
 LIBBASE  = libpetsc
 MANSEC   = Sys
