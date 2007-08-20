@@ -99,6 +99,34 @@ PetscErrorCode PETSC_DLLEXPORT PetscVSNPrintf(char *str,size_t len,const char *f
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscZopeLog"
+
+PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
+  /* no malloc since may be called by error handler */
+  char     newformat[8*1024];
+  char     log[8*1024];
+  
+  extern FILE * PETSC_ZOPEFD;
+  char logstart[] = " <<<log>>>";
+  size_t len;
+  PetscFormatConvert(format,newformat,8*1024);
+  PetscStrlen(logstart, &len);
+  PetscMemcpy(log, logstart, len);
+  size_t formatlen;
+  PetscStrlen(newformat, &formatlen);
+  PetscMemcpy(&(log[len]), newformat, formatlen);
+  if(PETSC_ZOPEFD != NULL){
+#if defined(PETSC_HAVE_VPRINTF_CHAR)
+  vfprintf(PETSC_ZOPEFD,log,(char *)Argp);
+#else
+  vfprintf(PETSC_ZOPEFD,log,Argp);
+  fflush(PETSC_ZOPEFD);
+#endif
+}
+  return 0;
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscVFPrintf"
 /* 
    All PETSc standard out and error messages are sent through this function; so, in theory, this can
@@ -115,7 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   char     newformat[8*1024];
   
   extern FILE * PETSC_ZOPEFD;
-  PetscFormatConvert(format,newformat,8*1024); 
+  PetscFormatConvert(format,newformat,8*1024);
   if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
     va_copy(s, Argp);

@@ -20,8 +20,10 @@ class User(object):
 		self.glast = msg
 		self.info = msg
 		self.error = msg
+		self.log = msg
 		self.status = -1
 		self.update = 1
+		self.autopickle = 0
 	def addgs(self, mgs):
 		self.gs += mgs
 	def replacegs(self, msg):
@@ -46,6 +48,12 @@ class User(object):
 		self.error = msg
 	def geterror(self):
 		return self.error
+	def addlog(self, msg):
+		self.log +=msg
+	def replacelog(self, msg):
+		self.log = msg
+	def getlog(self):
+		return self.log
 	def getstatus(self):
 		return self.status
 	def replacestatus(self, i):
@@ -55,12 +63,19 @@ class User(object):
 		self.glast = msg
 		self.info = msg
 		self.error = msg
+		self.log = msg
 	def getupdate(self):
 		return self.update
 	def newinfo(self):
 		self.update = 1
 	def old(self):
 		self.update = 0
+	def ap(self):
+		self.autopickle = 1
+	def noap(self):
+		self.autopickle = 0
+	def returnap(self):
+		return self.autopickle
 
 def removeUser(i):
 	global users
@@ -92,7 +107,7 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			else:
 				users[n] = User(startmsg)
 				curr = users[n]
-		infocheck = errorcheck = 1
+		infocheck = logcheck = errorcheck = 1
 		#Checks to see if this is the first time the strings are used
 		if curr.getgs() == startmsg: 
 			curr.replacegs("")
@@ -108,19 +123,27 @@ class RecHandler(SocketServer.StreamRequestHandler):
 			# Check to see if the string is info or error output
 			endinfo = search(r'\[[0-9]+\]', joinline)
 			errorinfo = joinline.rfind("PETSC ERROR:")
-			if joinline.rfind("<<<start>>>") >= 0:
+			if joinline.find("<<<start>>>") >= 0:
 				curr.replacestatus(1)
-				joinline = joinline.lstrip("<<<start>>>")
-			if joinline.rfind("<<<end>>>") >= 0:
+				joinline = joinline.strip("<<<start>>>")
+			if joinline.find("<<<end>>>") >= 0:
 				curr.replacestatus(0)
-				joinline = joinline.lstrip("<<<end>>>")
+				joinline = joinline.strip("<<<end>>>")
 			if endinfo != None :
 				if infocheck:
 					if curr.getinfo() == startmsg:
 						curr.replaceinfo("")
 					infocheck = 0
 					curr.addinfo(start)
-				curr.addinfo(joinline.lstrip("<<info>>"))
+				curr.addinfo(joinline)
+			elif joinline.find("<<<log>>>") >=0:
+				if logcheck:
+					if curr.getlog() == startmsg:
+						curr.replacelog("")
+					logcheck = 0
+					curr.addlog(start)
+				joinline = joinline.strip(" <<<log>>>");
+				curr.addlog(joinline)
 			elif errorinfo >= 0:
 				if errorcheck:
 					if curr.geterror() == startmsg:
@@ -139,9 +162,11 @@ class RecHandler(SocketServer.StreamRequestHandler):
 				if not infocheck:
 					curr.addinfo(end)
 				if not errorcheck:
-					curr.error(end)
-				if curr.getstatus() == 0:
-					createpickle(n)
+					curr.adderror(end)
+				if not logcheck:
+					curr.addlog(end)
+				if curr.getstatus() == 0 and curr.returnap() == 1:
+					createpickle(n, "noname")
 				curr.newinfo()
 				break
 
@@ -171,13 +196,16 @@ def gettime():
 	return cur
 
 #Create pickle of users current data
-def createpickle(i):
-	checkpickledir()
+def createpickle(i, n):
 	global users
 	global pdir
 	i = i.strip()
+	n = n.strip()
 	petscdir = os.environ["PETSC_DIR"]
-	cur = gettime()
+	if n == "noname":
+		cur = gettime()
+	else:
+		cur = n
 	f = open(petscdir+pdir+i+"_"+cur, "w")
 	pickle.dump(users[i], f)
 	f.close()
@@ -190,14 +218,12 @@ def checkpickledir():
 		os.mkdir(path)
 
 def getpickles():
-	checkpickledir()
 	petscdir = os.environ["PETSC_DIR"]
 	files = os.listdir(petscdir + pdir)
 	return files
 
 #Returns user information to previous state
 def unpickle(i):
-	checkpickledir()
 	global users
 	i = i.strip()
 	petscdir = os.environ["PETSC_DIR"]
@@ -230,6 +256,11 @@ def geterror(i):
 	global users
 	i = i.strip()
 	return users[i].geterror()
+
+def getlog(i):
+	global users
+	i = i.strip()
+	return users[i].getlog()
 
 def checkuser(i):
 	global users
@@ -286,5 +317,15 @@ def old(i):
 	i = i.strip()
 	users[i].old()
 
+def setautopickle(i):
+	global users
+	i = i.strip()
+	users[i].ap()
+
+def setnoautopickle(i):
+	global users
+	i = i.strip()
+	users[i].noap()
+	
 if __name__ == '__main__':
 	runserver()

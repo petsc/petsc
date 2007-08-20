@@ -1,7 +1,7 @@
 #! /bin/sh
 
 pushd ${PETSC_DIR}/zope
-cp -f var/data.fs.hg var/data.fs
+cp -f var/data.fs.hg var/Data.fs
 
 PYTHON=`which python`"2.4"
 CONFIG_FILE="${PETSC_DIR}/zope/zope.conf"
@@ -13,7 +13,8 @@ export PYTHONPATH SOFTWARE_HOME
 exec "$PYTHON" "$ZOPE_RUN" -C "$CONFIG_FILE" "$@"   &
 sleep 1
 
-wget "http://localhost:9673/PETSc/startserver"  >& /dev/null
+wget -q "http://localhost:9673/PETSc/startserver"  >& /dev/null
+rm startserver*
 if [ "$?" != 0 ]; then
   curl "http://localhost:9673/PETSc/startserver" >& /dev/null
   if [ "$?" != 0 ]; then

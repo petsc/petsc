@@ -20,12 +20,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     if(!host){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "unknown host");}
     sin.sin_family = AF_INET;
-    ierr = PetscMemcpy(host->h_addr, (char *)&sin.sin_addr, host->h_length); CHKERRQ(ierr);
+    ierr = PetscMemcpy((char *)&sin.sin_addr,host->h_addr, host->h_length); CHKERRQ(ierr);
     sin.sin_port = htons(portnum);
     /* active open */
     if((*clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new socket for client");}
-    if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){ 
+    if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new connection for client");
         close(*clientfd);}
     PetscFunctionReturn(0);
@@ -35,7 +35,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
  * Recieve function with error handeling
  *
  */
-PetscErrorCode PETSC_DLLEXPORT Recv(int fd, void *buf, size_t len, int flags, unsigned int *size){
+PetscErrorCode PETSC_DLLEXPORT PetscFdRecv(int fd, void *buf, size_t len, int flags, unsigned int *size){
   ssize_t recvLen;
 
   PetscFunctionBegin;
@@ -49,7 +49,7 @@ PetscErrorCode PETSC_DLLEXPORT Recv(int fd, void *buf, size_t len, int flags, un
  * Write function with error handeling
  *
  */
-PetscErrorCode PETSC_DLLEXPORT Write(int fd, void *buf, size_t len, unsigned int *size){
+PetscErrorCode PETSC_DLLEXPORT PetscFdWrite(int fd, void *buf, size_t len, unsigned int *size){
   ssize_t sendLen;
 
   PetscFunctionBegin;
@@ -112,11 +112,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
         /* If a connection is found, fork off process to handle the connection */
         if(fork() == 0){
           close(*listenfd);
-          Recv(newfd, iname, MAX_BUF, 0, &len);
+          PetscFdRecv(newfd, iname, MAX_BUF, 0, &len);
 	  iname[len] = '\0';
 	  printf("len = %d iname = %s\n",len, iname);
-	  Write(newfd, iname, MAX_BUF, &len2);
-          Recv(newfd, value, MAX_BUF, 0, &len);
+	  PetscFdWrite(newfd, iname, MAX_BUF, &len2);
+          PetscFdRecv(newfd, value, MAX_BUF, 0, &len);
 	  value[len] = '\0';
 	  printf("len = %d value = %s\n", len, value);
 	  ierr = PetscOptionsSetValue(iname, value); CHKERRQ(ierr);
