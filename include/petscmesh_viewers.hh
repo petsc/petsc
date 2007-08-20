@@ -50,7 +50,11 @@ class VTKViewer {
     if (dim == 3) {
       ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), dim);CHKERRQ(ierr);
+      if (name == "") {
+	ierr = PetscViewerASCIIPrintf(viewer, "SCALARS Unknown double %d\n", dim);CHKERRQ(ierr);
+      } else {
+	ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), dim);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
     }
     ierr = writeSection(field, fiberDim, numbering, viewer, enforceDim);CHKERRQ(ierr);
