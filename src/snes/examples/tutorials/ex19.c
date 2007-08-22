@@ -14,7 +14,6 @@ The flow can be driven with the lid or with bouyancy or both:\n\
    Concepts: multicomponent
    Processors: n
 T*/
-
 /* ------------------------------------------------------------------------
 
     We thank David E. Keyes for contributing the driven cavity discretization
