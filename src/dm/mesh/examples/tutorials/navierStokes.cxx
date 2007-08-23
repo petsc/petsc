@@ -29,7 +29,7 @@ typedef struct {
   BCType        bcType;                                       // The type of boundary conditions
   ExactSolType  exactSol;                                     // The discrete exact solution
   AssemblyType  operatorAssembly;                             // The type of operator assembly 
-  double        Re;                                           // The coefficient of advection
+  PetscTruth    outputEquation;                               // Output a text form of the equations
 } Options;
 
 #include "navierStokes_quadrature.h"
@@ -106,27 +106,29 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->refinementLimit  = 0.0;
   options->bcType           = DIRICHLET;
   options->operatorAssembly = ASSEMBLY_FULL;
+  options->outputEquation   = PETSC_FALSE;
 
   ierr = PetscOptionsBegin(comm, "", "Stokes Problem Options", "DMMG");CHKERRQ(ierr);
-    ierr = PetscOptionsInt("-debug", "The debugging level", "stokes.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-debug", "The debugging level", "navierStokes.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
     run = options->run;
-    ierr = PetscOptionsEList("-run", "The run type", "stokes.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-run", "The run type", "navierStokes.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
     options->run = (RunType) run;
-    ierr = PetscOptionsEList("-solution", "The solution type", "stokes.cxx", solnTypes, 2, solnTypes[options->solnType], &soln, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-solution", "The solution type", "navierStokes.cxx", solnTypes, 2, solnTypes[options->solnType], &soln, PETSC_NULL);CHKERRQ(ierr);
     options->solnType = (SolutionType) soln;
-    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "stokes.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "stokes.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "stokes.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
-    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "stokes.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "navierStokes.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "navierStokes.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "navierStokes.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "navierStokes.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     filename << "data/stokes_" << options->dim <<"d";
     ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
-    ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "stokes.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "navierStokes.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     bc = options->bcType;
-    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","stokes.cxx",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-bc_type","Type of boundary condition","navierStokes.cxx",bcTypes,2,bcTypes[options->bcType],&bc,PETSC_NULL);CHKERRQ(ierr);
     options->bcType = (BCType) bc;
     as = options->operatorAssembly;
-    ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","stokes.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","navierStokes.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
     options->operatorAssembly = (AssemblyType) as;
+    ierr = PetscOptionsTruth("-output_eq", "Output the equations as text", "navierStokes.cxx", options->outputEquation, &options->outputEquation, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -326,7 +328,9 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = PetscMalloc2(totBasisFuncs,PetscScalar,&elemVec,totBasisFuncs*totBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
+  if (options->outputEquation) {std::cout << "EQUATION SET" << std::endl;}
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+    if (options->outputEquation) {std::cout << "Cell " << *c_iter << std::endl;}
     PetscScalar *x;
     int          field = 0;
 
@@ -460,6 +464,55 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
         std::cout << "Constant element vector for field " << *f_iter << ":" << std::endl;
         for(int f = 0; f < numBasisFuncs; ++f) {
           std::cout << "  " << elemVec[indices[f]] << std::endl;
+        }
+      }
+      if (options->outputEquation) {
+	Obj<ALE::Mesh::real_section_type> s;
+
+	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+	const Obj<ALE::Mesh::order_type>& order            = m->getFactory()->getGlobalOrder(m, "default", s);
+	const ALE::Mesh::indices_type     indicesBlock     = m->getIndices(s, *c_iter, order);
+	const PetscInt                   *globalIndices    = indicesBlock.first;
+	const int&                        numGlobalIndices = indicesBlock.second;
+
+        for(int f = 0; f < numBasisFuncs; ++f) {
+          std::cout << "Eq. " << globalIndices[indices[f]] << ": ";
+          std::cout << elemVec[indices[f]];
+	  for(int g = 0; g < totBasisFuncs; ++g) {
+	    std::cout << " + " << elemMat[f*totBasisFuncs+g] << "*" << "u_" << globalIndices[g];
+	  }
+	  if (field != 0) {
+	    const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
+	    const int                       numUFuncs = u->getBasisSize();
+	    const double                   *uBasis    = u->getBasis();
+	    const int                      *uIndices  = u->getIndices();
+	    const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
+	    const int                       numVFuncs = v->getBasisSize();
+	    const double                   *vBasis    = v->getBasis();
+	    const int                      *vIndices  = v->getIndices();
+
+	    for(int i = 0; i < numUFuncs; ++i) {
+	      for(int g = 0; g < numBasisFuncs; ++g) {
+		PetscScalar coeff = 0.0;
+
+		for(int q = 0; q < numQuadPoints; ++q) {
+		  coeff += uBasis[q*numUFuncs+i]*basisDer[(q*numBasisFuncs+g)*dim+0]*quadWeights[q]*detJ;
+		}
+		std::cout << " + " << coeff << "*" << "u_" << globalIndices[uIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
+	      }
+	    }
+	    for(int i = 0; i < numVFuncs; ++i) {
+	      for(int g = 0; g < numBasisFuncs; ++g) {
+		PetscScalar coeff = 0.0;
+
+		for(int q = 0; q < numQuadPoints; ++q) {
+		  coeff += vBasis[q*numVFuncs+i]*basisDer[(q*numBasisFuncs+g)*dim+0]*quadWeights[q]*detJ;
+		}
+		std::cout << " + " << coeff << "*" << "u_" << globalIndices[vIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
+	      }
+	    }
+	  }
+          std::cout << std::endl;
         }
       }
       // Add linear contribution
