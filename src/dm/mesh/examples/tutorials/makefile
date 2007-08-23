@@ -81,6 +81,10 @@ stokesVector: stokesVector_quadrature.h stokesVector.o chkopts
 	-${CLINKER} -o stokesVector stokesVector.o ${PETSC_SNES_LIB}
 	${RM} -f stokesVector.o
 
+navierStokes: navierStokes_quadrature.h navierStokes.o chkopts
+	-${CLINKER} -o navierStokes navierStokes.o ${PETSC_SNES_LIB}
+	${RM} -f navierStokes.o
+
 grade2: stokes_quadrature.h grade2.o chkopts
 	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
 	${RM} -f grade2.o
