@@ -2,24 +2,25 @@
 /* Context for using preconditioned conjugate gradient method to minimized a */
 /* quadratic function subject to a trust region constraint.  If the matrix   */
 /* is indefinite, a direction of negative curvature may be encountered.  If  */
-/* a direction of negative curvature is found, then we follow it to the      */
-/* boundary of the trust region.                                             */
+/* a direction of negative curvature is found during the first iteration,    */
+/* then it is a preconditioned gradient direction and we follow it to the    */
+/* boundary of the trust region.  If a direction of negative curvature is    */
+/* encountered on subsequent iterations, then we terminate the algorithm.    */
 /*                                                                           */
 /* This method is described in:                                              */
-/*   T. Steihaug, "The Conjugate Gradient Method and Trust Regions in Large  */
-/*     Scale Optimization", SIAM Journal on Numerical Analysis, 20,          */
-/*     pages 626-637, 1983.                                                  */
+/*   S. Nash, "Newton-type Minimization via the Lanczos Method", SIAM        */
+/*     Journal on Numerical Analysis, 21, pages 553-572, 1984.               */
 /*****************************************************************************/
 
-#ifndef __STCG
-#define __STCG
+#ifndef __NASH
+#define __NASH
 
 typedef struct {
   PetscReal radius;
   PetscReal norm_d;
   PetscReal o_fcn;
   PetscInt dtype;
-} KSP_STCG;
+} KSP_NASH;
 
 #endif
 
