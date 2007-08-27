@@ -253,12 +253,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   /* Create Global to Local Vector Scatter Context */
   /* global to local must retrieve ghost points */
   if  (wrap == DA_XYZGHOSTED) {
-    if (!rank) {
-      ierr = ISCreateStride(comm,(Xe-xs),xs,1,&to);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = ISCreateStride(comm,(xe-xs),s,1,&to);CHKERRQ(ierr);
+    } else if (!rank) {
+      ierr = ISCreateStride(comm,(Xe-xs),s,1,&to);CHKERRQ(ierr);
     } else if (rank == size-1) {
-      ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
-    } else {
       ierr = ISCreateStride(comm,(xe-Xs),0,1,&to);CHKERRQ(ierr);
+    } else {
+      ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
     }
   } else {
     ierr = ISCreateStride(comm,(Xe-Xs),0,1,&to);CHKERRQ(ierr);
