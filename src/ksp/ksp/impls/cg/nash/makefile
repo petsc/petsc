@@ -3,15 +3,14 @@ ALL: lib
 
 CFLAGS   =
 FFLAGS   =
-SOURCEC  = cg.c cgeig.c cgtype.c
+SOURCEC  = nash.c
 SOURCEF  =
-SOURCEH  = cgctx.h 
-OBJSC    = cg.o cgeig.o cgtype.o
+SOURCEH  =
+OBJSC    = nash.o
 OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = cgne gltr nash stcg
 MANSEC   = KSP
-LOCDIR   = src/ksp/ksp/impls/cg/
+LOCDIR   = src/ksp/ksp/impls/cg/nash/
 
 include ${PETSC_DIR}/conf/base
 include ${PETSC_DIR}/conf/test

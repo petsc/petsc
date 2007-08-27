@@ -16,8 +16,8 @@
 #include <sys/errno.h>
 
 PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int *clientfd);
-PetscErrorCode PETSC_DLLEXPORT Recv(int fd, void *buf, size_t len, int flags, unsigned int *size);
-PetscErrorCode PETSC_DLLEXPORT Write(int fd, void *buf, size_t len, unsigned int *size);
+PetscErrorCode PETSC_DLLEXPORT PetscFdRecv(int fd, void *buf, size_t len, int flags, unsigned int *size);
+PetscErrorCode PETSC_DLLEXPORT PetscFdWrite(int fd, void *buf, size_t len, unsigned int *size);
 PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, int *listenfd);
 
 #endif

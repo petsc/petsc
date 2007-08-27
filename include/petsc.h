@@ -1636,9 +1636,10 @@ M*/
 M*/
 
 /*MC
-    PetscScalar - PETSc type that represents either a double precision real number,  
-       a double precision complex number, a single precision real number, a long double or an int
-       if the code is configured with --with-scalar-type=complex,float,longdouble,int
+    PetscScalar - PETSc type that represents either a double precision real number, a double precision
+       complex number, a single precision real number, a long double or an int - if the code is configured 
+       with --with-scalar-type=real,complex --with-precision=single,double,longdouble,int,matsingle
+
 
    Level: beginner
 

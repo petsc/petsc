@@ -821,18 +821,6 @@ runex56:
 	   else echo "Possible problem with ex56_1, diffs above"; fi; \
 	   ${RM} -f ex56_1.tmp
 
-runex56_2:
-	-@${MPIEXEC} -np 1  ./ex56  -column_oriented > ex56_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex56_2.out ex56_2.tmp) then true; \
-	   else echo "Possible problem with ex56_2, diffs above"; fi; \
-	   ${RM} -f ex56_2.tmp
-
-runex56_3:
-	-@${MPIEXEC} -np 3  ./ex56 -column_oriented > ex56_3.tmp 2>&1;   \
-	   if (${DIFF} output/ex56_3.out ex56_3.tmp) then true; \
-	   else echo "Possible problem with ex56_3, diffs above"; fi; \
-	   ${RM} -f ex56_3.tmp
-
 runex56_4:
 	-@${MPIEXEC} -np 3  ./ex56 -ass_extern > ex56_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_4.out ex56_4.tmp) then true; \
@@ -1117,7 +1105,7 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex
                                  runex31 runex31_2 ex31.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
                                  ex35.rm ex37.PETSc runex37 ex37.rm ex38.PETSc ex38.rm ex43.PETSc ex43.rm ex48.PETSc \
                                  runex48 ex48.rm ex49.PETSc ex49.rm ex51.PETSc runex51 ex51.rm ex52.PETSc ex52.rm \
-                                 ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_2  runex56_3  runex56_4 runex56_5 \
+                                 ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_4 runex56_5 \
                                  ex56.rm ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm ex76.PETSc runex76 \
                                  runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm ex78.PETSc \
                                  ex78.rm ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 

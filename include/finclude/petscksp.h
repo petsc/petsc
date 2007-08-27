@@ -18,6 +18,7 @@
 #define KSPCHEBYCHEV 'chebychev'
 #define KSPCG 'cg'
 #define KSPCGNE 'cgne'
+#define KSPNASH 'nash'
 #define KSPSTCG 'stcg'
 #define KSPGLTR 'gltr'
 #define KSPGMRES 'gmres'

@@ -1,13 +1,22 @@
-/*
-    Context for using preconditioned CG to minimize a quadratic function
- */
+/*****************************************************************************/
+/* Context for using preconditioned conjugate gradient method to minimized a */
+/* quadratic function subject to a trust region constraint.  If the matrix   */
+/* is indefinite, a direction of negative curvature may be encountered.  If  */
+/* a direction of negative curvature is found, we continue to build the      */
+/* tridiagonal Lanczos matrix for a fixed number of iterations.  After this  */
+/* matrix is computed, we compute a global solution to solve the trust-      */
+/* region problem with the tridiagonal approximation by using a variant of   */
+/* the More'-Sorenson algorithm.  The direction is then constructed from     */
+/* this solution.                                                            */
+/*                                                                           */
+/* This method is described in:                                              */
+/*   N. Gould, S. Lucidi, M. Roma, and Ph. Toint, "Solving the Trust-Region  */
+/*     Subproblem using the Lanczos Method", SIAM Journal on Optimization,   */
+/*     9, pages 504-525, 1999.                                               */
+/*****************************************************************************/
 
 #ifndef __GLTR
 #define __GLTR
-
-#define GLTR_PRECONDITIONED_DIRECTION	0
-#define GLTR_UNPRECONDITIONED_DIRECTION	1
-#define GLTR_DIRECTION_TYPES		2
 
 typedef struct {
   PetscReal *diag;		/* Diagonal part of Lanczos matrix           */
@@ -17,7 +26,7 @@ typedef struct {
   PetscReal *norm_r;		/* Record of residual values from CG         */
 
   PetscReal *rwork;		/* Real workspace for solver computations    */
-  PetscBLASInt  *iwork;		/* Integer workspace for solver computations */
+  PetscBLASInt *iwork;		/* Integer workspace for solver computations */
 
   PetscReal radius;
   PetscReal norm_d;
@@ -29,14 +38,14 @@ typedef struct {
   PetscReal eigen_tol;		/* Tolerance used when computing eigenvalue  */
   PetscReal newton_tol;		/* Tolerance used for newton method          */
 
-  PetscInt  alloced;		/* Size of workspace vectors allocated	     */
-  PetscInt  init_alloc;		/* Initial size for workspace vectors        */
+  PetscInt alloced;		/* Size of workspace vectors allocated	     */
+  PetscInt init_alloc;		/* Initial size for workspace vectors        */
 
-  PetscInt  max_its;		/* Maximum cg and lanczos iterations         */
-  PetscInt  max_cg_its;		/* Maximum conjugate gradient iterations     */
-  PetscInt  max_lanczos_its;	/* Maximum lanczos iterations		     */
-  PetscInt  max_newton_its;	/* Maximum newton iterations                 */
-  PetscInt  dtype;              /* Method used to measure the norm of step   */
+  PetscInt max_its;		/* Maximum cg and lanczos iterations         */
+  PetscInt max_cg_its;		/* Maximum conjugate gradient iterations     */
+  PetscInt max_lanczos_its;	/* Maximum lanczos iterations		     */
+  PetscInt max_newton_its;	/* Maximum newton iterations                 */
+  PetscInt dtype;		/* Method used to measure the norm of step   */
 } KSP_GLTR;
 
 #endif
