@@ -1392,15 +1392,18 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
 PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_MPI_General *,VecScatter);
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterCreateLocal_PtoS"
-/*
-     sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
-   to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
+#define __FUNCT__ "VecScatterCreateLocal"
+/*@
+     VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send a receive.
 
-    Probably does not handle sends to self properly. It should remove those from the counts that are used
-    in allocating space inside of the from struct
-*/
-PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
+
+     Notes:  sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
+      to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
+
+       Probably does not handle sends to self properly. It should remove those from the counts that are used
+      in allocating space inside of the from struct
+@*/
+PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)
 {
   VecScatter_MPI_General *from, *to;
   PetscInt       sendSize, recvSize;
