@@ -6836,6 +6836,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
   if (B->rmap.N!=A->cmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap.N,A->cmap.N);
+  if (scall == MAT_REUSE_MATRIX){
+    PetscValidPointer(*C,5);
+    PetscValidHeaderSpecific(*C,MAT_COOKIE,5);
+  }
   if (fill == PETSC_DEFAULT) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);
