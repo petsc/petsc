@@ -429,7 +429,7 @@ PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
     ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     col_lens[4+i] = nz;
     ierr = PetscMemcpy(&cval[ict],col,nz*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&anonz[ict],anonz,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(&anonz[ict],val,nz*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     ict += nz;
   }
@@ -493,7 +493,7 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e  %18.16ei \n",
              i+1,col[j]+1,PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
 #else
-          ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16ei \n",i+1,col[j]+1,val[j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e \n",i+1,col[j]+1,val[j]);CHKERRQ(ierr);
 #endif
         }
       }
