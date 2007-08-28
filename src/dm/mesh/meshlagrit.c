@@ -76,5 +76,53 @@ namespace ALE {
       ALE::SieveBuilder<Mesh>::buildCoordinates(mesh, dim, coordinates);
       return mesh;
     };
+    void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
+      PetscViewer    viewer;
+      FILE          *f;
+      char           buf[2048];
+      PetscInt       numPsets;
+      PetscErrorCode ierr;
+
+      if (mesh->commRank() != 0) return;
+      ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
+      ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);
+      ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
+      ierr = PetscViewerFileSetName(viewer, filename.c_str());
+      ierr = PetscViewerASCIIGetPointer(viewer, &f);
+      // Read header
+      if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+      // Check file type
+      const char *x = strtok(buf, " ");
+      std::string fileType("pset");
+      if (fileType != x) throw ALE::Exception("Invalid file type");
+      // Ignore set type
+      x = strtok(NULL, " ");
+      // Number of psets
+      x = strtok(NULL, " ");
+      numPsets = atoi(x);
+      for(PetscInt p = 0; p < numPsets; ++p) {
+        if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+        // Read name
+        x = strtok(buf, " ");
+        const Obj<Mesh::label_type>& label = mesh->createLabel(x);
+        // Vertices per line
+        x = strtok(NULL, " ");
+        const PetscInt vertsPerLine = atoi(x);
+        // Total vertices
+        x = strtok(NULL, " ");
+        const PetscInt totalVerts = atoi(x);
+
+        for(PetscInt v = 0; v < totalVerts; ++v) {
+          if (v%vertsPerLine == 0) {
+            if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
+            x = strtok(buf, " ");
+          } else {
+            x = strtok(NULL, " ");
+          }
+          mesh->setValue(label, atoi(x), 1);
+        }
+      }
+      ierr = PetscViewerDestroy(viewer);
+    };
   }
 }
