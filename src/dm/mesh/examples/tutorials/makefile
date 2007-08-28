@@ -105,6 +105,10 @@ dolfin: dolfin.o chkopts
 	-${CLINKER} -o dolfin dolfin.o ${PETSC_DM_LIB}
 	${RM} -f dolfin.o
 
+lagrit: lagrit.o chkopts
+	-${CLINKER} -o lagrit lagrit.o ${PETSC_DM_LIB}
+	${RM} -f lagrit.o
+
 rt: rt_quadrature.h rt.o chkopts
 	-${CLINKER} -o rt rt.o ${PETSC_SNES_LIB}
 	${RM} -f rt.o
