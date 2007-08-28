@@ -9,7 +9,8 @@ class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
     self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
-
+    self.complex      = 1
+    
   def Install(self):
 
     if self.framework.argDB['with-batch']:
