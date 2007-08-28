@@ -145,6 +145,14 @@ choke me
       self.addDefine('HAVE_FREE_RETURN_INT', 1)
     return
 
+  def checkVariableArgumentLists(self):
+    '''Checks whether the variable argument list functionality is working'''
+    if self.checkCompile('#include <stdarg.h>\n', '  va_list l1, l2;\n  va_copy(l1, l2);\n  return 0;\n'):
+      self.addDefine('HAVE_VA_COPY', 1)
+    elif self.checkCompile('#include <stdarg.h>\n', '  va_list l1, l2;\n  __va_copy(l1, l2);\n  return 0;\n'):
+      self.addDefine('HAVE___VA_COPY', 1)
+    return
+
   def configure(self):
     self.executeTest(self.checkMemcmp)
     self.executeTest(self.checkSysinfo)
@@ -152,5 +160,6 @@ choke me
     if hasattr(self.compilers, 'CXX'):
       self.executeTest(self.checkSignalHandlerType)
     self.executeTest(self.checkFreeReturnType)
+    self.executeTest(self.checkVariableArgumentLists)
     map(lambda function: self.executeTest(self.check, function), self.functions)
     return
