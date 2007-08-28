@@ -8,8 +8,10 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
-    self.complex      = 1
+    self.download         = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/c2html.tar.gz']
+    self.complex          = 1
+    self.double           = 0;
+    self.requires32bitint = 0;
     
   def Install(self):
 
