@@ -145,7 +145,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,
   PetscFormatConvert(format,newformat,8*1024); 
   if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
+#if defined(PETSC_HAVE_VA_COPY)
     va_copy(s, Argp);
+#elif defined(PETSC_HAVE___VA_COPY)
+    __va_copy(s, Argp);
+#else
+    SETERRQ(PETSC_ERR_SUP_SYS,"Zope not supported due to missing va_copy()");
+#endif
+
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
     vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
 #else
