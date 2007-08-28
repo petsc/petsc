@@ -185,6 +185,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     ierr = KSPGetConvergedReason(snes->ksp,&kspreason);CHKERRQ(ierr);
     if (kspreason < 0) {
       if (++snes->numLinearSolveFailures >= snes->maxLinearSolveFailures) {
+        ierr = PetscInfo2(snes,"iter=%D, number linear solve failures %D greater than current SNES allowed, stopping solve\n",snes->iter,snes->numLinearSolveFailures);CHKERRQ(ierr);
         snes->reason = SNES_DIVERGED_LINEAR_SOLVE;
         break;
       }

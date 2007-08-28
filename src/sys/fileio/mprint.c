@@ -20,7 +20,6 @@ FILE *PETSC_STDOUT = 0;
      writes to go to terminal XX; assuming you have write permission there
 */
 FILE *PETSC_STDERR = 0;
-
 /*
      Used to output to Zope
 */
@@ -137,23 +136,23 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
 
    No error handling because may be called by error handler
 */
-PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list Argp)
+PetscErrorCode PETSC_DLLEXPORT PetscVFPrintfDefault(FILE *fd,const char *format,va_list Argp)
 {
   /* no malloc since may be called by error handler */
-  char     newformat[8*1024];
-  
-  extern FILE * PETSC_ZOPEFD;
-  PetscFormatConvert(format,newformat,8*1024);
+  char        newformat[8*1024];
+  extern FILE *PETSC_ZOPEFD;
+
+  PetscFormatConvert(format,newformat,8*1024); 
   if(PETSC_ZOPEFD != NULL && PETSC_ZOPEFD != PETSC_STDOUT){
     va_list s;
     va_copy(s, Argp);
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
-  vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
+    vfprintf(PETSC_ZOPEFD,newformat,(char *)s);
 #else
-  vfprintf(PETSC_ZOPEFD,newformat,s);
-  fflush(PETSC_ZOPEFD);
+    vfprintf(PETSC_ZOPEFD,newformat,s);
+    fflush(PETSC_ZOPEFD);
 #endif
-}
+  }
 
 #if defined(PETSC_HAVE_VPRINTF_CHAR)
   vfprintf(fd,newformat,(char *)Argp);
@@ -161,8 +160,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscVFPrintf(FILE *fd,const char *format,va_list
   vfprintf(fd,newformat,Argp);
   fflush(fd);
 #endif
-
-  
   return 0;
 }
 
@@ -240,9 +237,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedPrintf(MPI_Comm comm,const char 
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -302,10 +299,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscSynchronizedFPrintf(MPI_Comm comm,FILE* fp,c
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
     queuefile = fp;
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -424,9 +421,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFPrintf(MPI_Comm comm,FILE* fd,const char fo
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   }
@@ -495,9 +492,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscPrintf(MPI_Comm comm,const char format[],...
     } else {
       nformat = (char*)format;
     }
-    ierr = PetscVFPrintf(PETSC_STDOUT,nformat,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,nformat,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,nformat,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,nformat,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
     if (sub1) {ierr = PetscFree(nformat);CHKERRQ(ierr);}
@@ -519,9 +516,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscHelpPrintfDefault(MPI_Comm comm,const char f
   if (!rank) {
     va_list Argp;
     va_start(Argp,format);
-    ierr = PetscVFPrintf(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(PETSC_STDOUT,format,Argp);CHKERRQ(ierr);
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
     }
     va_end(Argp);
   }
