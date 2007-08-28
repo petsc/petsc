@@ -175,7 +175,8 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag); CHKERRQ(ierr);
 
-  max_cg_its = ksp->max_it;
+  ierr = VecGetSize(d, &max_cg_its); CHKERRQ(ierr);
+  max_cg_its = PetscMin(max_cg_its, ksp->max_it);
   ksp->its = 0;
 
   /***************************************************************************/
