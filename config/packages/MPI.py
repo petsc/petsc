@@ -226,17 +226,6 @@ class Configure(config.package.Package):
       self.addPrototype('#define MPI_Comm_c2f(a) (a)')
     return
 
-  def configureMPICHShared(self):
-    '''MPICH cannot be used with shared libraries on the Mac, reject if trying'''
-    if config.setCompilers.Configure.isDarwin():
-      if not self.setCompilers.staticLibraries:
-        for lib in self.lib:
-          if lib.find('mpich') >= 0:
-            raise RuntimeError('Sorry, we have not been able to figure out how to use shared libraries on the \n \
-              Mac with MPICH. Either run config/configure.py with --with-shared=0 or use LAM instead of MPICH; \n\
-              for instance with --download-lam=1')
-    return
-
   def checkDownload(self, requireDownload = 1):
     '''Check if we should download LAM or MPICH'''
 
@@ -552,7 +541,6 @@ class Configure(config.package.Package):
     # Satish check here if the self.directory is truly the MPI root directory with mpicc underneath it
     # if not then set it to None
 
-    #self.executeTest(self.configureMPICHShared)
     self.executeTest(self.configureConversion)
     self.executeTest(self.configureTypes)
     self.executeTest(self.configureMissingPrototypes)
