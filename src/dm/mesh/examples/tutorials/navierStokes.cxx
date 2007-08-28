@@ -38,10 +38,6 @@ double zero(const double x[]) {
   return 0.0;
 }
 
-double constant(const double x[]) {
-  return -3.0;
-}
-
 double rhs_u_2d(const double x[]) {
   return 2.0*x[0]*x[0]*x[0] - 2*x[0]*x[0]*x[1] + 2.0*x[0]*x[1]*x[1] - 3.0;
 }
@@ -60,6 +56,18 @@ double quadratic_2d_v(const double x[]) {
 
 double quadratic_2d_p(const double x[]) {
   return x[0] + x[1] - 1.0;
+}
+
+double rhs_u_3d(const double x[]) {
+  return 2.0*x[0]*x[0]*x[0] - 2.0*x[0]*x[0]*x[1] - 2.0*x[0]*x[0]*x[2] + 4.0*x[0]*x[1]*x[2] - 3.0;
+}
+
+double rhs_v_3d(const double x[]) {
+  return 2.0*x[1]*x[1]*x[1] - 2.0*x[0]*x[1]*x[1] - 2.0*x[1]*x[1]*x[2] + 4.0*x[0]*x[1]*x[2] - 3.0;
+}
+
+double rhs_w_3d(const double x[]) {
+  return 2.0*x[2]*x[2]*x[2] - 2.0*x[0]*x[2]*x[2] - 2.0*x[1]*x[2]*x[2] + 4.0*x[0]*x[1]*x[2] - 3.0;
 }
 
 double quadratic_3d_u(const double x[]) {
@@ -980,9 +988,9 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   } else if (options->dim == 3) {
     if (options->bcType == DIRICHLET) {
       options->funcs[0]  = zero;
-      options->funcs[1]  = constant;
-      options->funcs[2]  = constant;
-      options->funcs[3]  = constant;
+      options->funcs[1]  = rhs_u_3d;
+      options->funcs[2]  = rhs_v_3d;
+      options->funcs[3]  = rhs_w_3d;
     } else {
       SETERRQ(PETSC_ERR_SUP, "No support for Neumann conditions");
     }
