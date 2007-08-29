@@ -419,8 +419,9 @@ M*/
 M*/
 
 /*MC
-     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of the
-           preconditioner is applied.
+     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of 
+           the preconditioner is applied. Also used when the KSPSkipConverged() convergence 
+           test rutine is set in KSP.
 
 
    Level: beginner

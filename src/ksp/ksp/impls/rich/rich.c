@@ -109,12 +109,12 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     }
 
     ierr = VecAXPY(x,scale,z);CHKERRQ(ierr);    /*   x  <- x + scale z */
+
     if (ksp->normtype != KSP_NORM_NO) {
       ierr       = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
       ksp->rnorm = rnorm;
       ierr       = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
       KSPLogResidualHistory(ksp,rnorm);
-
       ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
       if (ksp->reason) break;
     }
@@ -123,7 +123,6 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
     ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
   }
   if (!ksp->reason) {
-    ksp->reason = KSP_DIVERGED_ITS;
     if (ksp->normtype != KSP_NORM_NO) {
       if (ksp->normtype == KSP_NORM_UNPRECONDITIONED){
         ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- r'*r     */
@@ -131,17 +130,21 @@ PetscErrorCode  KSPSolve_Richardson(KSP ksp)
         ierr = KSP_PCApply(ksp,r,z);CHKERRQ(ierr);   /*   z <- B r          */
         ierr = VecNorm(z,NORM_2,&rnorm);CHKERRQ(ierr);     /*   rnorm <- z'*z     */
       }
+      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ksp->rnorm = rnorm;
+      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      KSPLogResidualHistory(ksp,rnorm);
+      KSPMonitor(ksp,i,rnorm);
     }
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-    ksp->rnorm = rnorm;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-    KSPLogResidualHistory(ksp,rnorm);
-    KSPMonitor(ksp,i,rnorm);
-    i--;
-  } else if (!ksp->reason) {
-    ksp->reason = KSP_DIVERGED_ITS;
+    if (ksp->its >= ksp->max_it) {
+      if (ksp->normtype != KSP_NORM_NO) {
+	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+	if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
+      } else { 
+	ksp->reason = KSP_CONVERGED_ITS;
+      }
+    }
   }
-
   PetscFunctionReturn(0);
 }
 

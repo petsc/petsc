@@ -362,7 +362,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
     ierr     = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
   }
   /* mark lack of convergence */
-  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscFunctionReturn(0);
 }
