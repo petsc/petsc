@@ -240,9 +240,10 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
   ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag); CHKERRQ(ierr);
 
-  max_cg_its      = PetscMin(cg->max_cg_its, ksp->max_it);
+  ierr = VecGetSize(d, &max_cg_its); CHKERRQ(ierr);
+  max_cg_its = PetscMin(max_cg_its, ksp->max_it);
   max_lanczos_its = cg->max_lanczos_its;
-  max_newton_its  = cg->max_newton_its;
+  max_newton_its = cg->max_newton_its;
   ksp->its = 0;
 
   /***************************************************************************/
@@ -1408,7 +1409,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 {
   KSP_GLTR *cg = (KSP_GLTR *)ksp->data;
-  PetscInt size;
+  PetscInt max_its, size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -1429,7 +1430,7 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
   /* Determine the total maximum number of iterations.                       */
   /***************************************************************************/
 
-  cg->max_its = cg->max_cg_its + cg->max_lanczos_its + 1;
+  max_its = ksp->max_it + cg->max_lanczos_its + 1;
 
   /***************************************************************************/
   /* Set work vectors needed by conjugate gradient method and allocate       */
@@ -1438,15 +1439,15 @@ PetscErrorCode KSPSetUp_GLTR(KSP ksp)
 
   ierr = KSPDefaultGetWork(ksp, 3); CHKERRQ(ierr);
 
-  size = 5*cg->max_its*sizeof(PetscReal);
+  size = 5*max_its*sizeof(PetscReal);
   ierr = PetscMalloc(size, &cg->diag); CHKERRQ(ierr);
   ierr = PetscMemzero(cg->diag, size); CHKERRQ(ierr);
   ierr = PetscLogObjectMemory(ksp, size); CHKERRQ(ierr);
 
-  cg->offd   = cg->diag  + cg->max_its;
-  cg->alpha  = cg->offd  + cg->max_its;
-  cg->beta   = cg->alpha + cg->max_its;
-  cg->norm_r = cg->beta  + cg->max_its;
+  cg->offd   = cg->diag  + max_its;
+  cg->alpha  = cg->offd  + max_its;
+  cg->beta   = cg->alpha + max_its;
+  cg->norm_r = cg->beta  + max_its;
   PetscFunctionReturn(0);
 }
 
@@ -1559,7 +1560,6 @@ PetscErrorCode KSPSetFromOptions_GLTR(KSP ksp)
   ierr = PetscOptionsReal("-ksp_gltr_eigen_tol", "Eigenvalue tolerance", "", cg->eigen_tol, &cg->eigen_tol, PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscOptionsReal("-ksp_gltr_newton_tol", "Newton tolerance", "", cg->newton_tol, &cg->newton_tol, PETSC_NULL); CHKERRQ(ierr);
 
-  ierr = PetscOptionsInt("-ksp_gltr_max_cg_its", "Maximum Conjugate Gradient Iters", "", cg->max_cg_its, &cg->max_cg_its, PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gltr_max_lanczos_its", "Maximum Lanczos Iters", "", cg->max_lanczos_its, &cg->max_lanczos_its, PETSC_NULL); CHKERRQ(ierr);
   ierr = PetscOptionsInt("-ksp_gltr_max_newton_its", "Maximum Newton Iters", "", cg->max_newton_its, &cg->max_newton_its, PETSC_NULL); CHKERRQ(ierr);
 
@@ -1607,11 +1607,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_GLTR(KSP ksp)
   cg->alloced = 0;
   cg->init_alloc = 1024;
 
-  cg->max_cg_its = 10000;
   cg->max_lanczos_its = 20;
   cg->max_newton_its  = 10;
-
-  cg->max_its = cg->max_cg_its + cg->max_lanczos_its + 1;
 
   ksp->pc_side = PC_LEFT;
 

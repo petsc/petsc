@@ -41,8 +41,6 @@ typedef struct {
   PetscInt alloced;		/* Size of workspace vectors allocated	     */
   PetscInt init_alloc;		/* Initial size for workspace vectors        */
 
-  PetscInt max_its;		/* Maximum cg and lanczos iterations         */
-  PetscInt max_cg_its;		/* Maximum conjugate gradient iterations     */
   PetscInt max_lanczos_its;	/* Maximum lanczos iterations		     */
   PetscInt max_newton_its;	/* Maximum newton iterations                 */
   PetscInt dtype;		/* Method used to measure the norm of step   */
