@@ -241,7 +241,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
     if (itcount >= ksp->max_it) {
-      ksp->reason = KSP_DIVERGED_ITS;
+      if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
