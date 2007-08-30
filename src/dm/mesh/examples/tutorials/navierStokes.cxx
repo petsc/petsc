@@ -372,37 +372,32 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           }
         }
         PetscScalar funcVal      = (*funcs[field])(coords);
-	PetscScalar advectionVal = 0.0;
+        PetscScalar advectionVal = 0.0;
 
-	if (field != 0) {
-	  const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
-	  const int                       numUFuncs = u->getBasisSize();
-	  const double                   *uBasis    = u->getBasis();
-	  const int                      *uIndices  = u->getIndices();
-	  const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
-	  const int                       numVFuncs = v->getBasisSize();
-	  const double                   *vBasis    = v->getBasis();
-	  const int                      *vIndices  = v->getIndices();
-	  PetscScalar                     velVal[2]   = {0.0, 0.0};
-	  PetscScalar                     refDer[2]   = {0.0, 0.0};
-	  PetscScalar                     fieldDer[2] = {0.0, 0.0};
+        if (field != 0) {
+          PetscScalar velVal[3]    = {0.0, 0.0, 0.0};
+          PetscScalar refDer[3]    = {0.0, 0.0, 0.0};
+          PetscScalar fieldDer[3]  = {0.0, 0.0, 0.0};
+          char        fieldName[2] = {'u', 0};
 
-	  for(int f = 0; f < numUFuncs; ++f) {
-	    velVal[0] += x[uIndices[f]]*uBasis[q*numUFuncs+f];
-	  }
-	  for(int f = 0; f < numVFuncs; ++f) {
-	    velVal[1] += x[vIndices[f]]*vBasis[q*numVFuncs+f];
-	  }
-	  for(int d = 0; d < dim; ++d) {
-	    for(int f = 0; f < numBasisFuncs; ++f) {
-	      refDer[d] += x[indices[f]]*basisDer[(q*numBasisFuncs+f)*dim+d];
-	    }
-	  }
-	  for(int d = 0; d < dim; ++d) {
-	    for(int e = 0; e < dim; ++e) fieldDer[d] += invJ[e*dim+d]*refDer[e];
-	    advectionVal += velVal[d]*fieldDer[d];
-	  }
-	}
+          for(int d = 0; d < dim; ++d, ++fieldName[0]) {
+            const Obj<ALE::Discretization>& field     = m->getDiscretization(fieldName);
+            const int                       numFFuncs = field->getBasisSize();
+            const double                   *fBasis    = field->getBasis();
+            const int                      *fIndices  = field->getIndices();
+
+            for(int f = 0; f < numFFuncs; ++f) {
+              velVal[d] += x[fIndices[f]]*fBasis[q*numFFuncs+f];
+            }
+            for(int f = 0; f < numBasisFuncs; ++f) {
+              refDer[d] += x[indices[f]]*basisDer[(q*numBasisFuncs+f)*dim+d];
+            }
+          }
+          for(int d = 0; d < dim; ++d) {
+            for(int e = 0; e < dim; ++e) fieldDer[d] += invJ[e*dim+d]*refDer[e];
+            advectionVal += velVal[d]*fieldDer[d];
+          }
+        }
         // Loop over trial functions
         for(int f = 0; f < numBasisFuncs; ++f) {
           // Constant part
@@ -410,29 +405,21 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           // Linear part
           //if (*f_iter == "pressure") {
           if (field == 0) {
-            // Divergence of u
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
-            const int                       numUFuncs = u->getBasisSize();
-            const double                   *uBasisDer = u->getBasisDerivatives();
-            const int                      *uIndices  = u->getIndices();
+            char fieldName[2] = {'u', 0};
 
-            for(int g = 0; g < numUFuncs; ++g) {
-              PetscScalar uDiv = 0.0;
+            // Divergence of velocity
+            for(int d = 0; d < dim; ++d, ++fieldName[0]) {
+              const Obj<ALE::Discretization>& field     = m->getDiscretization(fieldName);
+              const int                       numFFuncs = field->getBasisSize();
+              const double                   *fBasisDer = field->getBasisDerivatives();
+              const int                      *fIndices  = field->getIndices();
 
-              for(int e = 0; e < dim; ++e) uDiv += invJ[e*dim+0]*uBasisDer[(q*numUFuncs+g)*dim+e];
-              elemMat[f*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
-            }
-            // Divergence of v
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
-            const int                       numVFuncs = v->getBasisSize();
-            const double                   *vBasisDer = v->getBasisDerivatives();
-            const int                      *vIndices  = v->getIndices();
+              for(int g = 0; g < numFFuncs; ++g) {
+                PetscScalar fDiv = 0.0;
 
-            for(int g = 0; g < numVFuncs; ++g) {
-              PetscScalar vDiv = 0.0;
-
-              for(int e = 0; e < dim; ++e) vDiv += invJ[e*dim+1]*vBasisDer[(q*numVFuncs+g)*dim+e];
-              elemMat[f*totBasisFuncs+vIndices[g]] += basis[q*numBasisFuncs+f]*vDiv*quadWeights[q]*detJ;
+                for(int e = 0; e < dim; ++e) fDiv += invJ[e*dim+d]*fBasisDer[(q*numFFuncs+g)*dim+e];
+                elemMat[f*totBasisFuncs+fIndices[g]] += basis[q*numBasisFuncs+f]*fDiv*quadWeights[q]*detJ;
+              }
             }
           } else {
             // Advection term u\cdot\nabla u
@@ -475,51 +462,44 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
         }
       }
       if (options->outputEquation) {
-	Obj<ALE::Mesh::real_section_type> s;
+        Obj<ALE::Mesh::real_section_type> s;
 
-	ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-	const Obj<ALE::Mesh::order_type>& order            = m->getFactory()->getGlobalOrder(m, "default", s);
-	const ALE::Mesh::indices_type     indicesBlock     = m->getIndices(s, *c_iter, order);
-	const PetscInt                   *globalIndices    = indicesBlock.first;
-	const int&                        numGlobalIndices = indicesBlock.second;
+        ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+        const Obj<ALE::Mesh::order_type>& order            = m->getFactory()->getGlobalOrder(m, "default", s);
+        const ALE::Mesh::indices_type     indicesBlock     = m->getIndices(s, *c_iter, order);
+        const PetscInt                   *globalIndices    = indicesBlock.first;
+        const int&                        numGlobalIndices = indicesBlock.second;
 
         for(int f = 0; f < numBasisFuncs; ++f) {
           std::cout << "Eq. " << globalIndices[indices[f]] << ": ";
           std::cout << elemVec[indices[f]];
-	  for(int g = 0; g < totBasisFuncs; ++g) {
-	    std::cout << " + " << elemMat[f*totBasisFuncs+g] << "*" << "u_" << globalIndices[g];
-	  }
-	  if (field != 0) {
-	    const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
-	    const int                       numUFuncs = u->getBasisSize();
-	    const double                   *uBasis    = u->getBasis();
-	    const int                      *uIndices  = u->getIndices();
-	    const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
-	    const int                       numVFuncs = v->getBasisSize();
-	    const double                   *vBasis    = v->getBasis();
-	    const int                      *vIndices  = v->getIndices();
+          for(int g = 0; g < totBasisFuncs; ++g) {
+            std::cout << " + " << elemMat[f*totBasisFuncs+g] << "*" << "u_" << globalIndices[g];
+          }
+          if (field != 0) {
+            char fieldName[2] = {'u', 0};
 
-	    for(int i = 0; i < numUFuncs; ++i) {
-	      for(int g = 0; g < numBasisFuncs; ++g) {
-		PetscScalar coeff = 0.0;
+            for(int d = 0; d < dim; ++d, ++fieldName[0]) {
+              const Obj<ALE::Discretization>& field     = m->getDiscretization(fieldName);
+              const int                       numFFuncs = field->getBasisSize();
+              const double                   *fBasis    = field->getBasis();
+              const int                      *fIndices  = field->getIndices();
 
-		for(int q = 0; q < numQuadPoints; ++q) {
-		  coeff += uBasis[q*numUFuncs+i]*basisDer[(q*numBasisFuncs+g)*dim+0]*quadWeights[q]*detJ;
-		}
-		std::cout << " + " << coeff << "*" << "u_" << globalIndices[uIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
-	      }
-	    }
-	    for(int i = 0; i < numVFuncs; ++i) {
-	      for(int g = 0; g < numBasisFuncs; ++g) {
-		PetscScalar coeff = 0.0;
+              for(int i = 0; i < numFFuncs; ++i) {
+                for(int g = 0; g < numBasisFuncs; ++g) {
+                  PetscScalar coeff = 0.0;
 
-		for(int q = 0; q < numQuadPoints; ++q) {
-		  coeff += vBasis[q*numVFuncs+i]*basisDer[(q*numBasisFuncs+g)*dim+0]*quadWeights[q]*detJ;
-		}
-		std::cout << " + " << coeff << "*" << "u_" << globalIndices[vIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
-	      }
-	    }
-	  }
+                  for(int q = 0; q < numQuadPoints; ++q) {
+                    PetscScalar fieldDer[3]  = {0.0, 0.0, 0.0};
+
+                    for(int e = 0; e < dim; ++e) fieldDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+                    coeff += fBasis[q*numFFuncs+i]*fieldDer[d]*quadWeights[q]*detJ;
+                  }
+                  std::cout << " + " << coeff << "*" << "u_" << globalIndices[fIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
+                }
+              }
+            }
+          }
           std::cout << std::endl;
         }
       }
@@ -902,29 +882,21 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
         for(int f = 0; f < numBasisFuncs; ++f) {
           //if (*f_iter == "pressure") {
           if (field == 0) {
-            // Divergence of u
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
-            const int                       numUFuncs = u->getBasisSize();
-            const double                   *uBasisDer = u->getBasisDerivatives();
-            const int                      *uIndices  = u->getIndices();
+            char fieldName[2] = {'u', 0};
 
-            for(int g = 0; g < numUFuncs; ++g) {
-              PetscScalar uDiv = 0.0;
+            // Divergence of velocity
+            for(int d = 0; d < dim;++d, ++fieldName[0]) {
+              const Obj<ALE::Discretization>& field     = m->getDiscretization(fieldName);
+              const int                       numFFuncs = field->getBasisSize();
+              const double                   *fBasisDer = field->getBasisDerivatives();
+              const int                      *fIndices  = field->getIndices();
 
-              for(int e = 0; e < dim; ++e) uDiv += invJ[e*dim+0]*uBasisDer[(q*numUFuncs+g)*dim+e];
-              elemMat[indices[f]*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
-            }
-            // Divergence of v
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
-            const int                       numVFuncs = v->getBasisSize();
-            const double                   *vBasisDer = v->getBasisDerivatives();
-            const int                      *vIndices  = v->getIndices();
+              for(int g = 0; g < numFFuncs; ++g) {
+                PetscScalar fDiv = 0.0;
 
-            for(int g = 0; g < numVFuncs; ++g) {
-              PetscScalar vDiv = 0.0;
-
-              for(int e = 0; e < dim; ++e) vDiv += invJ[e*dim+1]*vBasisDer[(q*numVFuncs+g)*dim+e];
-              elemMat[indices[f]*totBasisFuncs+vIndices[g]] += basis[q*numBasisFuncs+f]*vDiv*quadWeights[q]*detJ;
+                for(int e = 0; e < dim; ++e) fDiv += invJ[e*dim+d]*fBasisDer[(q*numFFuncs+g)*dim+e];
+                elemMat[indices[f]*totBasisFuncs+fIndices[g]] += basis[q*numBasisFuncs+f]*fDiv*quadWeights[q]*detJ;
+              }
             }
           } else {
             // Laplacian of u or v
