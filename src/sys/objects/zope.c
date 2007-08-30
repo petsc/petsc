@@ -75,7 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
     int newfd;
     typedef struct sockaddr SA;
     socklen_t sin_size, sout_size;
-    int PETSC_LISTEN_CHECK;
+    int PETSC_LISTEN_CHECK = 0;
     PetscErrorCode ierr;
     
     PetscFunctionBegin;
