@@ -330,7 +330,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   */
   if (wrap == DA_XYZGHOSTED) {
     PetscInt *tmpidx;
-    if (!rank) { /* must preprend -1 marker for ghost location that have no global value */
+    if (size == 1) {
+      ierr = PetscMalloc((nn+2*s)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
+      for (i=0; i<s; i++) tmpidx[i] = -1;
+      ierr = PetscMemcpy(tmpidx+s,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);
+      for (i=nn+s; i<nn+2*s; i++) tmpidx[i] = -1;
+      ierr = PetscFree(idx);CHKERRQ(ierr);
+      idx  = tmpidx;
+      nn  += 2*s;
+    } else if (!rank) { /* must preprend -1 marker for ghost location that have no global value */
       ierr = PetscMalloc((nn+s)*sizeof(PetscInt),&tmpidx);CHKERRQ(ierr);
       for (i=0; i<s; i++) tmpidx[i] = -1;
       ierr = PetscMemcpy(tmpidx+s,idx,nn*sizeof(PetscInt));CHKERRQ(ierr);

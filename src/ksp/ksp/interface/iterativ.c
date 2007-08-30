@@ -307,7 +307,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSkipConverged"
 /*@C
-   KSPSkipConverged - Convergence test that NEVER returns as converged.
+   KSPSkipConverged - Convergence test that do not return as converged
+   until the maximum number of iterations is reached.
 
    Collective on KSP
 
@@ -318,13 +319,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
 -  dummy - unused convergence context 
 
    Returns:
-.  reason - always KSP_CONVERGED_ITERATING
+.  reason - KSP_CONVERGED_ITERATING, KSP_CONVERGED_ITS
 
-   Notes:
-   This is used as the convergence test with the option KSPSetNormType(ksp,KSP_NORM_NO),
-   since norms of the residual are not computed. Convergence is then declared 
-   after a fixed number of iterations have been used. Useful when one is 
-   using CG or Bi-CG-stab as a smoother.
+   Notes: 
+   This should be used as the convergence test with the option
+   KSPSetNormType(ksp,KSP_NORM_NO), since norms of the residual are
+   not computed. Convergence is then declared after the maximum number
+   of iterations have been reached. Useful when one is using CG or
+   BiCGStab as a smoother.
                     
    Level: advanced
 
@@ -336,6 +338,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(reason,4);
+  *reason = KSP_CONVERGED_ITERATING;
+  if (n >= ksp->max_it) *reason = KSP_CONVERGED_ITS;
   PetscFunctionReturn(0);
 }
 
