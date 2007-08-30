@@ -477,33 +477,26 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
             std::cout << " + " << elemMat[f*totBasisFuncs+g] << "*" << "u_" << globalIndices[g];
           }
           if (field != 0) {
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
-            const int                       numUFuncs = u->getBasisSize();
-            const double                   *uBasis    = u->getBasis();
-            const int                      *uIndices  = u->getIndices();
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
-            const int                       numVFuncs = v->getBasisSize();
-            const double                   *vBasis    = v->getBasis();
-            const int                      *vIndices  = v->getIndices();
+            char fieldName[2] = {'u', 0};
 
-            for(int i = 0; i < numUFuncs; ++i) {
-              for(int g = 0; g < numBasisFuncs; ++g) {
-                PetscScalar coeff = 0.0;
+            for(int d = 0; d < dim; ++d, ++fieldName[0]) {
+              const Obj<ALE::Discretization>& field     = m->getDiscretization(fieldName);
+              const int                       numFFuncs = field->getBasisSize();
+              const double                   *fBasis    = field->getBasis();
+              const int                      *fIndices  = field->getIndices();
 
-                for(int q = 0; q < numQuadPoints; ++q) {
-                  coeff += uBasis[q*numUFuncs+i]*basisDer[(q*numBasisFuncs+g)*dim+0]*quadWeights[q]*detJ;
+              for(int i = 0; i < numFFuncs; ++i) {
+                for(int g = 0; g < numBasisFuncs; ++g) {
+                  PetscScalar coeff = 0.0;
+
+                  for(int q = 0; q < numQuadPoints; ++q) {
+                    PetscScalar fieldDer[3]  = {0.0, 0.0, 0.0};
+
+                    for(int e = 0; e < dim; ++e) fieldDer[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+                    coeff += fBasis[q*numFFuncs+i]*fieldDer[d]*quadWeights[q]*detJ;
+                  }
+                  std::cout << " + " << coeff << "*" << "u_" << globalIndices[fIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
                 }
-                std::cout << " + " << coeff << "*" << "u_" << globalIndices[uIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
-              }
-            }
-            for(int i = 0; i < numVFuncs; ++i) {
-              for(int g = 0; g < numBasisFuncs; ++g) {
-                PetscScalar coeff = 0.0;
-
-                for(int q = 0; q < numQuadPoints; ++q) {
-                  coeff += vBasis[q*numVFuncs+i]*basisDer[(q*numBasisFuncs+g)*dim+0]*quadWeights[q]*detJ;
-                }
-                std::cout << " + " << coeff << "*" << "u_" << globalIndices[vIndices[i]] << "*" << "u_" << globalIndices[indices[g]];
               }
             }
           }
