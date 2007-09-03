@@ -56,7 +56,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
     sDisc->setBasisSize(disc->getBasisSize());
     sDisc->setBasis(disc->getBasis());
     sDisc->setBasisDerivatives(disc->getBasisDerivatives());
-    for(int d = 0; d < m->getDimension(); ++d) {
+    for(int d = 0; d <= m->getDimension(); ++d) {
       sDisc->setNumDof(d, disc->getNumDof(d));
       sDisc->setDofClass(d, disc->getDofClass(d));
     }
