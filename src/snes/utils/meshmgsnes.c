@@ -20,10 +20,12 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   DALocalFunction1 jac;
   ALE::Obj<ALE::Mesh> m;
   ALE::Obj<ALE::Mesh::real_section_type> sX;
+  PetscTruth       fasDebug;
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
   ierr = PetscPrintf(dmmg[0]->comm, "  FAS mesh relaxation\n");CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(dmmg[0]->prefix, "-dmmg_fas_debug", &fasDebug);CHKERRQ(ierr);
   if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "Relaxation requires global its %D positive", its);
   ierr = MeshCreate(PETSC_COMM_SELF, &smallMesh);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_SELF, 1, PETSC_NULL, &smallDmmg);CHKERRQ(ierr);
@@ -102,21 +104,24 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         for(std::map<std::string, ALE::Obj<ALE::Discretization> >::iterator d_iter = sDiscs.begin(); d_iter != sDiscs.end(); ++d_iter) {
           sm->setDiscretization(d_iter->first, d_iter->second);
         }
-        cellMarker->view("Cell marker");
         sm->setupField(ssX);
         for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
           sm->updateAll(ssX, *b_iter, m->restrictNew(sX, *b_iter));
         }
-        sX->view("Initial solution guess");
-        ssX->view("Cell solution guess");
+        if (fasDebug) {
+          sX->view("Initial solution guess");
+          ssX->view("Cell solution guess");
+        }
         ierr = MeshSetMesh(smallMesh, sm);CHKERRQ(ierr);
         ierr = DMMGSetDM(smallDmmg, (DM) smallMesh);CHKERRQ(ierr);
         ierr = DMMGSetSNESLocal(smallDmmg, func, jac, 0, 0);CHKERRQ(ierr);
         ierr = DMMGSolve(smallDmmg);CHKERRQ(ierr);
         ierr = SectionRealToVec(cellX, smallMesh, SCATTER_REVERSE, DMMGGetx(smallDmmg));CHKERRQ(ierr);
-        ssX->view("Cell solution final");
         m->updateAll(sX, *c_iter, sm->restrictNew(ssX, *c_iter));
-        sX->view("Final solution");
+        if (fasDebug) {
+          ssX->view("Cell solution final");
+          sX->view("Final solution");
+        }
       }
     }
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
@@ -143,9 +148,11 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
 {
   PetscReal      norm;
   PetscInt       i, j, k;
+  PetscTruth     fasDebug;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  ierr = PetscOptionsHasName(dmmg[0]->prefix, "-dmmg_fas_debug", &fasDebug);CHKERRQ(ierr);
   ierr = VecSet(dmmg[level]->r, 0.0);CHKERRQ(ierr);
   for(j = 1; j <= level; ++j) {
     if (!dmmg[j]->inject) {
@@ -208,6 +215,13 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
     ierr = Relax_Mesh(dmmg, (Mesh) dmmg[0]->dm, SOR_SYMMETRIC_SWEEP, dmmg[0]->coarsesmooth, dmmg[0]->x);CHKERRQ(ierr);
     if (level == 0 || dmmg[0]->monitorall) {
       ierr = DMMGFormFunctionMesh(0,dmmg[0]->x,dmmg[0]->w,dmmg[0]);CHKERRQ(ierr);
+      if (fasDebug) {
+        SectionReal residual;
+
+        ierr = MeshGetSectionReal((Mesh) dmmg[0]->dm, "default", &residual);CHKERRQ(ierr);
+        ierr = SectionRealView(residual, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);
+        ierr = SectionRealDestroy(residual);CHKERRQ(ierr);
+      }
       ierr = VecAXPY(dmmg[0]->w,-1.0,dmmg[0]->r);CHKERRQ(ierr);
       ierr = VecNorm(dmmg[0]->w,NORM_2,&norm);CHKERRQ(ierr);
       for (k=0; k<level+1; k++) {ierr = PetscPrintf(dmmg[0]->comm,"  ");CHKERRQ(ierr);}

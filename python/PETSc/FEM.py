@@ -226,6 +226,31 @@ class QuadratureGenerator(script.Script):
         cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 1), self.Cxx.getArrayRef(quadVar, 'q'))), Break()])
     return
 
+  def getIntegratorPoints(self, n, element):
+    from FIAT import shapes
+    from Cxx import Define
+    import numpy
+
+    ids  = element.Udual.entity_ids
+    pts  = element.Udual.pts
+    perm = self.getBasisFuncOrder(element)
+    ext  = '_'+str(n)
+    dim  = shapes.dimension(element.function_space().base.shape)
+    if dim == 1:
+      num = len(ids[1][0]) + len(ids[0][0])*2
+    elif dim == 2:
+      num = len(ids[2][0]) + len(ids[1][0])*3 + len(ids[0][0])*3
+    elif dim == 3:
+      num = len(ids[3][0]) + len(ids[2][0])*4 + len(ids[1][0])*6 + len(ids[0][0])*4
+    numPoints = Define()
+    numPoints.identifier = 'NUM_DUAL_POINTS'+ext
+    numPoints.replacementText = str(num)
+    dualPoints = numpy.zeros((num, dim))
+    for i in range(num):
+      for d in range(dim):
+        dualPoints[i][d] = pts[perm[i]][d]
+    return [numPoints, self.getArray(self.Cxx.getVar('dualPoints'+ext), dualPoints, 'Dual points\n   - (x1,y1,x2,y2,...)')]
+
   def getIntegratorSetup_PointEvaluation(self, n, element):
     import FIAT.shapes
     from Cxx import Break, CompoundStatement, Function, Pointer, Switch
@@ -583,6 +608,7 @@ class QuadratureGenerator(script.Script):
           quadrature = self.createQuadrature(shape, self.quadDegree)
         defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
+        defns.extend(self.getIntegratorPoints(n, element))
         defns.extend(self.getIntegratorSetup(n, element))
         defns.extend(self.getSectionSetup(n, element))
         n += element.function_space().tensor_shape()[0]
