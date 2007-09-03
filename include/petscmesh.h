@@ -174,7 +174,9 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateMatrix(Mesh, SectionReal, MatT
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalRealVector(Mesh, SectionReal, Vec *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh,VecScatter *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshCreateGlobalScatter(Mesh,SectionReal,VecScatter *);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalFunction(Mesh, PetscErrorCode (**)(Mesh, SectionReal, SectionReal, void*));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh, PetscErrorCode (*)(Mesh, SectionReal, SectionReal, void*));
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalJacobian(Mesh, PetscErrorCode (**)(Mesh, SectionReal, Mat, void*));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalJacobian(Mesh, PetscErrorCode (*)(Mesh, SectionReal, Mat, void*));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFormFunction(Mesh, SectionReal, SectionReal, void*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT MeshFormJacobian(Mesh, SectionReal, Mat, void*);

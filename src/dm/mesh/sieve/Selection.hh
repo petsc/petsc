@@ -463,6 +463,39 @@ namespace ALE {
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
+    template<typename Points>
+    static Obj<mesh_type> submesh(const Obj<mesh_type>& mesh, const Obj<Points>& points) {
+      const Obj<sieve_type>& sieve     = mesh->getSieve();
+      Obj<mesh_type>         newMesh   = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
+      Obj<sieve_type>        newSieve  = new sieve_type(mesh->comm(), mesh->debug());
+      Obj<PointSet>          newPoints = new PointSet();
+      Obj<PointSet>          modPoints = new PointSet();
+      Obj<PointSet>          tmpPoints;
+
+      newMesh->setSieve(newSieve);
+      for(typename Points::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        newPoints->insert(*p_iter);
+        do {
+          modPoints->clear();
+          for(typename PointSet::iterator np_iter = newPoints->begin(); np_iter != newPoints->end(); ++np_iter) {
+            const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(*np_iter);
+            int c = 0;
+
+            for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++c) {
+              newSieve->addArrow(*c_iter, *np_iter, c);
+            }
+            modPoints->insert(cone->begin(), cone->end());
+          }
+          tmpPoints = newPoints;
+          newPoints = modPoints;
+          modPoints = tmpPoints;
+        } while(newPoints->size());
+      }
+      newMesh->stratify();
+      newMesh->setRealSection("coordinates", mesh->getRealSection("coordinates"));
+      newMesh->setArrowSection("orientation", mesh->getArrowSection("orientation"));
+      return newMesh;
+    };
   protected:
     static Obj<mesh_type> boundary_uninterpolated(const Obj<mesh_type>& mesh) {
       const Obj<typename mesh_type::label_sequence>&     cells    = mesh->heightStratum(0);
@@ -481,7 +514,7 @@ namespace ALE {
         // - if not, its a boundary face
         //subsets(cell, faceSize, inserter);
       }
-    }
+    };
     static Obj<mesh_type> boundary_interpolated(const Obj<mesh_type>& mesh) {
       Obj<mesh_type>                                     newMesh  = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
       Obj<sieve_type>                                    newSieve = new sieve_type(mesh->comm(), mesh->debug());
@@ -499,7 +532,7 @@ namespace ALE {
       }
       newMesh->setSieve(newSieve);
       newMesh->stratify();
-    }
+    };
   public:
     static Obj<mesh_type> boundary(const Obj<mesh_type>& mesh) {
       const int dim   = mesh->getDimension();
