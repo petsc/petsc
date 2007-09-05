@@ -683,7 +683,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
         SETERRQ(PETSC_ERR_SUP, "Must use ADIC for structured FAS.");
 #endif
       } else {
+#if defined(PETSC_HAVE_SIEVE)
         dmmg[i]->solve       = DMMGSolveFAS_Mesh;
+#endif
       }
     } else {
       dmmg[i]->solve         = DMMGSolveSNES;

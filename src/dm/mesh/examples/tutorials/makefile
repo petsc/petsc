@@ -105,8 +105,8 @@ dolfin: dolfin.o chkopts
 	-${CLINKER} -o dolfin dolfin.o ${PETSC_DM_LIB}
 	${RM} -f dolfin.o
 
-lagrit: lagrit.o chkopts
-	-${CLINKER} -o lagrit lagrit.o ${PETSC_DM_LIB}
+lagrit: CohesiveTopology.o lagrit.o chkopts
+	-${CLINKER} -o lagrit CohesiveTopology.o lagrit.o ${PETSC_DM_LIB}
 	${RM} -f lagrit.o
 
 rt: rt_quadrature.h rt.o chkopts
