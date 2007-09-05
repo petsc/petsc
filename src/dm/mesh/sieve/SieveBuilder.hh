@@ -357,7 +357,9 @@ namespace ALE {
                 std::cout << "  Adding vertex " << typename sieve_type::point_type(cells[c*corners+b]+firstVertex) << std::endl;
               }
             }
-            std::cout << "Adding cell " << cell << " dim " << dim << std::endl;
+            if ((numCells < 10000) || (c%1000 == 0)) {
+              std::cout << "Adding cell " << cell << " dim " << dim << std::endl;
+            }
           }
         }
       }
@@ -367,11 +369,17 @@ namespace ALE {
       const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
       const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
       const int numCells = bundle->heightStratum(0)->size();
+      const int debug    = bundle->debug();
 
       coordinates->setFiberDimension(vertices, embedDim);
       bundle->allocate(coordinates);
       for(typename Bundle_::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
         coordinates->updatePoint(*v_iter, &(coords[(*v_iter - numCells)*embedDim]));
+        if (debug) {
+          if ((numCells < 10000) || ((*v_iter)%1000 == 0)) {
+            std::cout << "Adding coordinates for vertex " << *v_iter << std::endl;
+          }
+        }
       }
     };
   };

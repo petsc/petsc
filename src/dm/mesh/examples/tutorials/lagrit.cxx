@@ -4,6 +4,8 @@ static char help[] = "Testing the interface with LaGriT";
 #include <petscmesh_formats.hh>
 #include <Selection.hh>
 
+#include "CohesiveTopology.hh"
+
 using ALE::Obj;
 
 PetscErrorCode ConstructBoundary(const Obj<ALE::Mesh>& mesh, Obj<ALE::Mesh> boundary) {
@@ -23,6 +25,7 @@ int main(int argc, char **argv)
   PetscInt       debug = 0;
   PetscTruth     doBoundary  = PETSC_FALSE;
   PetscTruth     interpolate = PETSC_FALSE;
+  PetscTruth     split       = PETSC_FALSE;
   PetscTruth     view        = PETSC_FALSE;
   PetscErrorCode ierr;
 
@@ -37,6 +40,7 @@ int main(int argc, char **argv)
     psetFilename = pset;
     ierr = PetscOptionsTruth("-boundary", "Construct the boundary mesh", "lagrit.cxx", doBoundary, &doBoundary, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Interpolate the mesh", "lagrit.cxx", interpolate, &interpolate, PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-split", "Split the mesh along a fault", "lagrit.cxx", split, &split, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-view", "View the mesh", "lagrit.cxx", view, &view, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
@@ -44,15 +48,19 @@ int main(int argc, char **argv)
     std::cout << "Reading mesh from file " << filename << std::endl;
     Obj<ALE::Mesh> mesh = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, filename, interpolate, debug);
     if (psetFilename != "") {
+      if (view) {mesh->view("");}
       ALE::LaGriT::Builder::readFault(mesh, psetFilename);
-    }
-    if (view) {
-      mesh->view("");
-      const ALE::Mesh::labels_type& labels = mesh->getLabels();
+      if (split) {
+        ALE::Obj<ALE::Mesh> fault;
 
-      for(ALE::Mesh::labels_type::const_iterator l_iter = labels.begin(); l_iter != labels.end(); ++l_iter) {
-        l_iter->second->view(l_iter->first);
+        pylith::faults::CohesiveTopology::create(&fault, mesh, mesh->getIntSection("pfault_no4"), 42, true);
+        if (view) {
+          fault->view("Fault Mesh");
+          mesh->view("Cohesive Mesh");
+        }
       }
+    } else if (view) {
+      mesh->view("");
     }
     if (doBoundary) {
       Obj<ALE::Mesh> boundary;

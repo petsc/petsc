@@ -20,12 +20,12 @@ namespace ALE {
       ierr = PetscViewerASCIIGetPointer(viewer, &f);
       // Read header
       if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
-      // Number of elements
-      const char *x = strtok(buf, " ");
-      numElements = atoi(x);
       // Number of vertices
-      x = strtok(NULL, " ");
+      const char *x = strtok(buf, " ");
       numVertices = atoi(x);
+      // Number of elements
+      x = strtok(NULL, " ");
+      numElements = atoi(x);
       // Element type
       x = strtok(NULL, " ");
       // ???
@@ -77,6 +77,7 @@ namespace ALE {
       return mesh;
     };
     void Builder::readFault(Obj<Builder::Mesh> mesh, const std::string& filename) {
+      const int      numCells = mesh->heightStratum(0)->size();
       PetscViewer    viewer;
       FILE          *f;
       char           buf[2048];
@@ -104,7 +105,7 @@ namespace ALE {
         if (fgets(buf, 2048, f) == NULL) throw ALE::Exception("File ended prematurely");
         // Read name
         x = strtok(buf, " ");
-        const Obj<Mesh::label_type>& label = mesh->createLabel(x);
+        const Obj<Mesh::int_section_type>& fault = mesh->getIntSection(x);
         // Vertices per line
         x = strtok(NULL, " ");
         const PetscInt vertsPerLine = atoi(x);
@@ -119,8 +120,11 @@ namespace ALE {
           } else {
             x = strtok(NULL, " ");
           }
-          mesh->setValue(label, atoi(x), 1);
+          const int v = atoi(x) + numCells - 1;
+
+          fault->setFiberDimension(v, 1);
         }
+        fault->allocatePoint();
       }
       ierr = PetscViewerDestroy(viewer);
     };
