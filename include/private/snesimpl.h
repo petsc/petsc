@@ -28,23 +28,23 @@ struct _p_SNES {
   PETSCHEADER(struct _SNESOps);
 
   /*  ------------------------ User-provided stuff -------------------------------*/
-  void  *user;		                        /* user-defined context */
+  void  *user;		          /* user-defined context */
 
-  Vec   vec_sol,vec_sol_always;                 /* pointer to solution */
-  Vec   vec_sol_update_always;                  /* pointer to solution update */
+  Vec  vec_rhs;                  /* If non-null, solve F(x) = rhs */
+  Vec  vec_sol;                  /* pointer to solution */
 
-  Vec            vec_func,vec_func_always;               /* pointer to function */
-  Vec            afine;                                  /* If non-null solve F(x) = afine */
-  void           *funP;                                  /* user-defined function context */
+  Vec  vec_func;                 /* pointer to function */
+  void *funP;                    /* user-defined function context */
+		       		 
+  Mat  jacobian;                 /* Jacobian matrix */
+  Mat  jacobian_pre;             /* preconditioner matrix */
+  void *jacP;                    /* user-defined Jacobian context */
+  KSP  ksp;                      /* linear solver context */
 
-
-  Mat            jacobian;                               /* Jacobian matrix */
-  Mat            jacobian_pre;                           /* preconditioner matrix */
-  void           *jacP;                                  /* user-defined Jacobian context */
-  KSP            ksp;                                   /* linear solver context */
-
-  Vec            scaling;                                /* scaling vector */
-  void           *scaP;                                  /* scaling context */
+  Vec  vec_sol_update;           /* pointer to solution update */
+		       		 
+  Vec  scaling;                  /* scaling vector */
+  void *scaP;                    /* scaling context */
 
   /* ------------------------Time stepping hooks-----------------------------------*/
 
@@ -75,6 +75,7 @@ struct _p_SNES {
   PetscReal   xtol;            /* relative tolerance in solution */
   PetscReal   deltatol;        /* trust region convergence tolerance */
   PetscTruth  printreason;     /* print reason for convergence/divergence after each solve */
+
   /* ------------------------ Default work-area management ---------------------- */
 
   PetscInt    nwork;              
@@ -96,12 +97,8 @@ struct _p_SNES {
   PetscInt    numLinearSolveFailures;
   PetscInt    maxLinearSolveFailures;
 
- /*
-   These are REALLY ugly and don't belong here, but since they must 
-  be destroyed at the conclusion we have to put them somewhere.
- */
   PetscTruth  ksp_ewconv;        /* flag indicating use of Eisenstat-Walker KSP convergence criteria */
-  void        *kspconvctx;       /* KSP convergence context */
+  void        *kspconvctx;       /* Eisenstat-Walker KSP convergence context */
 
   PetscReal   ttol;           /* used by default convergence test routine */
 

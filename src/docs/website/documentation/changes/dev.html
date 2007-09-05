@@ -559,17 +559,35 @@ in the PETSc Development Version</font></p>
       
       <p><u><b>SNES:</b></u></p>
 
-
-
-      
+     
       
       
       <ul>
 
 
+      <li>SNESSetRhs() and SNESSetSolution() were removed.  Use
+      instead SNESSolve(snes, b, x) to pass right hand side (optional,
+      can be PETSC_NULL) and solution (required).</li>
 
+      <li>SNES now takes ownership of user-provided vector for right
+      hand side and solution passed to SNESSolve(), and until the next
+      SNESSolve() is called.</li>
+
+      <li>SNES now takes ownership of user-provided vector for
+      function evalutation passed to SNESSetFunction(), thus this
+      vector can be safely destroyed after this call.</li>
+
+      <li>SNESConverged_LS() and SNESConverged_LS() were removed. Use
+      SNESDefaultConverged() or SNESSkipConverged() as convergence
+      test.</li>
+
+      <li>Option -snes_convergence_test was added, accepting values
+      default|short, for setting SNESDefaultConverged() or
+      SNESSkipConverged() as convergence test.</li>
       
-      
+      <li>Option -snes_no_convergence_test was removed. Use instead
+      "-snes_convergence_test skip".</li>
+
       
       </ul>
 
