@@ -1260,6 +1260,7 @@ PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscTruth flg)
     break;
   case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:

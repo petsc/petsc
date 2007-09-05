@@ -423,7 +423,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
             }
           } else {
             // Advection term u\cdot\nabla u
-	    elemVec[indices[f]] += basis[q*numBasisFuncs+f]*advectionVal*quadWeights[q]*detJ;
+            elemVec[indices[f]] += basis[q*numBasisFuncs+f]*advectionVal*quadWeights[q]*detJ;
             // Laplacian of u or v
             for(int d = 0; d < dim; ++d) {
               t_der[d] = 0.0;

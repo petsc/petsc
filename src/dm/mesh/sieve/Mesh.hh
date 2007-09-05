@@ -979,7 +979,6 @@ namespace ALE {
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->setBoundaryCondition("default", boundaryCondition);};
     const Obj<BoundaryCondition>& getBoundaryCondition(const std::string& name) {return this->_boundaryConditions[name];};
     void setBoundaryCondition(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
-    void setDiscretization(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
     Obj<std::set<std::string> > getBoundaryConditions() const {
       Obj<std::set<std::string> > names = std::set<std::string>();
 
