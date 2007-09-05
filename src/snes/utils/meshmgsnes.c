@@ -5,6 +5,7 @@
 #include <Selection.hh>
 #endif
 
+#ifdef PETSC_HAVE_SIEVE
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
 
 /* Nonlinear relaxation on all the equations with an initial guess in x */
@@ -271,3 +272,4 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
   theend:
   PetscFunctionReturn(0);
 }
+#endif
