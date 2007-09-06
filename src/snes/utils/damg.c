@@ -549,6 +549,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,dmmg[nlevels-1]->mtype,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     if (!dmmg[nlevels-1]->J) {
       dmmg[nlevels-1]->J = dmmg[nlevels-1]->B;
+      ierr = PetscObjectReference((PetscObject) dmmg[nlevels-1]->J);CHKERRQ(ierr);
     }
     if (func) {
       ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
@@ -558,6 +559,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
         ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
         if (!dmmg[i]->J) {
           dmmg[i]->J = dmmg[i]->B;
+          ierr = PetscObjectReference((PetscObject) dmmg[i]->J);CHKERRQ(ierr);
         }
       }
     }
@@ -572,6 +574,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
       } 
       if (!dmmg[i]->J) {
         dmmg[i]->J = dmmg[i]->B;
+        ierr = PetscObjectReference((PetscObject) dmmg[i]->J);CHKERRQ(ierr);
       }
 
       ierr = KSPCreate(dmmg[i]->comm,&dmmg[i]->ksp);CHKERRQ(ierr);
@@ -587,7 +590,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   for (i=0; i<nlevels; i++) {
     if (!dmmg[i]->galerkin) {
       if (func) {
-	ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
+        ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
       }
     }
   }
@@ -602,8 +605,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
     if (ismg) {
       for (i=0; i<=level; i++) {
-	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
-	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
+        ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       }
     }
   }
