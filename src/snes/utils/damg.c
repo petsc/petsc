@@ -283,7 +283,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
       SETERRQ(PETSC_ERR_SUP, "Sequential coarsening not yet implemented");
     }
   }
-  // Cleanup old structures (should use some private Destroy() instead)
+  /* Cleanup old structures (should use some private Destroy() instead) */
   for(i = 0; i < nlevels; ++i) {
     if (dmmg[i]->B) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr); dmmg[i]->B = PETSC_NULL;}
     if (dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr); dmmg[i]->J = PETSC_NULL;}
