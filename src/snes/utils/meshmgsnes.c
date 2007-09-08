@@ -51,7 +51,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   for(ALE::Mesh::names_type::iterator f_iter = fields->begin(); f_iter != fields->end(); ++f_iter) {
     const ALE::Obj<ALE::Discretization>& disc  = m->getDiscretization(*f_iter);
     ALE::Obj<ALE::Discretization>        sDisc = new ALE::Discretization(disc->comm(), disc->debug());
-    ALE::Obj<ALE::BoundaryCondition>     sBC   = new ALE::BoundaryCondition(disc->comm(), disc->debug());
 
     sDisc->setQuadratureSize(disc->getQuadratureSize());
     sDisc->setQuadraturePoints(disc->getQuadraturePoints());
@@ -63,11 +62,15 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
       sDisc->setNumDof(d, disc->getNumDof(d));
       sDisc->setDofClass(d, disc->getDofClass(d));
     }
-    sBC->setLabelName("marker");
-    sBC->setMarker(1);
-    sBC->setFunction(PETSC_NULL);
-    sBC->setDualIntegrator(PETSC_NULL);
-    sDisc->setBoundaryCondition(sBC);
+    if (disc->getBoundaryConditions()->size()) {
+      std::cout << "Adding BC for field " << *f_iter << std::endl;
+      ALE::Obj<ALE::BoundaryCondition> sBC = new ALE::BoundaryCondition(disc->comm(), disc->debug());
+      sBC->setLabelName("marker");
+      sBC->setMarker(1);
+      sBC->setFunction(PETSC_NULL);
+      sBC->setDualIntegrator(PETSC_NULL);
+      sDisc->setBoundaryCondition(sBC);
+    }
     sDiscs[*f_iter] = sDisc;
   }
   while(its--) {
@@ -90,13 +93,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
 
           for(ALE::Mesh::coneArray::iterator cl_iter = closure->begin(); cl_iter != end; ++cl_iter) {
             if (isCell) {
-              if (*cl_iter == *c_iter) {
-                sm->setValue(cellMarker, *cl_iter, 0);
-              } else {
-                sm->setValue(cellMarker, *cl_iter, m->getValue(marker, *cl_iter));
-              }
+              sm->setValue(cellMarker, *cl_iter, m->getValue(marker, *cl_iter));
             } else {
-              if (sm->getValue(cellMarker, *cl_iter, -1) < 0) {
+              if (sm->height(*cl_iter) == 0) {
+                sm->setValue(cellMarker, *cl_iter, 2);
+              } else if (sm->getValue(cellMarker, *cl_iter, -1) < 0) {
                 sm->setValue(cellMarker, *cl_iter, 1);
               }
             }
@@ -105,7 +106,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         for(std::map<std::string, ALE::Obj<ALE::Discretization> >::iterator d_iter = sDiscs.begin(); d_iter != sDiscs.end(); ++d_iter) {
           sm->setDiscretization(d_iter->first, d_iter->second);
         }
-        sm->setupField(ssX);
+        sm->setupField(ssX, 2, true);
         for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
           sm->updateAll(ssX, *b_iter, m->restrictNew(sX, *b_iter));
         }

@@ -975,6 +975,7 @@ namespace ALE {
       }
     };
   public:
+    const bool hasBoundaryCondition() {return (this->_boundaryConditions.find("default") != this->_boundaryConditions.end());};
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->getBoundaryCondition("default");};
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->setBoundaryCondition("default", boundaryCondition);};
     const Obj<BoundaryCondition>& getBoundaryCondition(const std::string& name) {return this->_boundaryConditions[name];};
@@ -1576,7 +1577,7 @@ namespace ALE {
         }
       }
     };
-    void setupField(const Obj<real_section_type>& s, const int cellMarker = 2) {
+    void setupField(const Obj<real_section_type>& s, const int cellMarker = 2, const bool noUpdate = false) {
       const Obj<names_type>& discs  = this->getDiscretizations();
       const int              debug  = s->debug();
       names_type             bcLabels;
@@ -1635,7 +1636,7 @@ namespace ALE {
                     if (debug) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
                     for(int d = 0; d < fDim; ++d, ++v[f]) {
                       dofs[++i] = off+d;
-                      values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                      if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
                       if (debug) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
                     }
                     // Allow only one condition per point
@@ -1693,7 +1694,9 @@ namespace ALE {
               }
             }
           }
-          this->updateAll(s, *c_iter, values);
+          if (!noUpdate) {
+            this->updateAll(s, *c_iter, values);
+          }
         }
         delete [] dofs;
         delete [] values;
