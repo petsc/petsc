@@ -53,7 +53,7 @@ ex1: ex1.o chkopts
 	${RM} -f ex1.o
 
 sifter1: sifter1.o chkopts
-	-${CLINKER} -o sifter1 sifter1.o ${PETSC_DM_LIB}
+	-${CLINKER} -o sifter1 sifter1.o ${PETSC_DM_LIB} -lcppunit
 	${RM} -f sifter1.o
 
 sieve2: sieve2.o chkopts

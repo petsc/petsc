@@ -24,7 +24,7 @@ static PetscErrorCode PetscFixSlashN(const char *in, char **out)
   PetscFunctionBegin;
   ierr = PetscStrallocpy(in,out);CHKERRQ(ierr);
   ierr = PetscStrlen(*out,&len);CHKERRQ(ierr);
-  for (i=0; i<len-1; i++) {
+  for (i=0; i<(int)len-1; i++) {
     if ((*out)[i] == '\\' && (*out)[i+1] == 'n') {(*out)[i] = ' '; (*out)[i+1] = '\n';}
   }
   PetscFunctionReturn(0);
