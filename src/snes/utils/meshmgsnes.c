@@ -8,6 +8,45 @@
 #ifdef PETSC_HAVE_SIEVE
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
 
+PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
+  Mesh           mesh = (Mesh) dmmg->dm;
+  Vec            nS   = nulls[0];
+  SectionReal    nullSpace;
+  PetscErorrCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshGetSectionReal(mesh, "nullSpace", &nullSpace);CHKERRQ(ierr);
+  {
+    ALE::Obj<ALE::Mesh> m;
+    ALE::Obj<ALE::Mesh::real_section_type> s;
+
+    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+    ierr = SectionRealGetSection(nullSpace, s);CHKERRQ(ierr);
+    ALE::Obj<ALE::Discretization> disc = m->getDiscretization("p");
+    const int dim = m->getDimension();
+
+    for(int d = 0; d <= dim; ++d) {
+      const int numDof = disc->getNumDof(d);
+
+      if (numDof) {
+        ALE::Obj<ALE::Mesh::label_sequence>&      stratum = m->depthStratum(d);
+        const ALE::Mesh::label_sequence::iterator end     = stratum->end();
+        double                                    values  = new double[numDof];
+
+        for(ALE::Mesh::label_sequence::iterator p_iter = stratum->begin(); p_iter != end; ++p_iter) {
+          for(int i = 0; i < numDof; ++i) values[i] = 1.0;
+          s->updatePoint(*p_iter, values);
+        }
+      }
+    }
+  }
+  ierr = SectionRealToVec(nullSpace, mesh, SCATTER_FORWARD, nS);CHKERRQ(ierr);
+  std::cout << "Null space:" << std::endl;
+  ierr = VecView(nS, PETSC_VIEWER_STDOUT_SELF);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(nullSpace);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* Nonlinear relaxation on all the equations with an initial guess in x */
 EXTERN_C_BEGIN
 #undef __FUNCT__  
@@ -30,7 +69,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "Relaxation requires global its %D positive", its);
   ierr = MeshCreate(PETSC_COMM_SELF, &smallMesh);CHKERRQ(ierr);
   ierr = DMMGCreate(PETSC_COMM_SELF, 1, PETSC_NULL, &smallDmmg);CHKERRQ(ierr);
-  ierr = DMMGSetMatType(smallDmmg, MATSEQDENSE);CHKERRQ(ierr);
+  //ierr = DMMGSetMatType(smallDmmg, MATSEQDENSE);CHKERRQ(ierr);
   ierr = DMMGSetPrefix(smallDmmg, "fas_");CHKERRQ(ierr);
   ierr = DMMGSetUser(smallDmmg, 0, DMMGGetUser(dmmg, 0));CHKERRQ(ierr);
   ierr = DMMGGetSNESLocal(dmmg, &func, &jac);CHKERRQ(ierr);
@@ -86,6 +125,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
 
         ierr = PetscPrintf(dmmg[0]->comm, "    forward sweep cell %d\n", *c_iter);CHKERRQ(ierr);
         ierr = SectionRealSetSection(cellX, ssX);CHKERRQ(ierr);
+        // Assign BC to mesh
         for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
           const ALE::Obj<ALE::Mesh::coneArray> closure = ALE::SieveAlg<ALE::Mesh>::closure(m, *b_iter);
           const ALE::Mesh::coneArray::iterator end     = closure->end();
@@ -106,7 +146,17 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         for(std::map<std::string, ALE::Obj<ALE::Discretization> >::iterator d_iter = sDiscs.begin(); d_iter != sDiscs.end(); ++d_iter) {
           sm->setDiscretization(d_iter->first, d_iter->second);
         }
+        // Create field
         sm->setupField(ssX, 2, true);
+        // Setup DMMG
+        ierr = MeshSetMesh(smallMesh, sm);CHKERRQ(ierr);
+        ierr = DMMGSetDM(smallDmmg, (DM) smallMesh);CHKERRQ(ierr);
+        ierr = DMMGSetSNESLocal(smallDmmg, func, jac, 0, 0);CHKERRQ(ierr);
+        // Construct null space, if necessary
+        ierr = DMMGSetNullSpace(smallDmmg, PETSC_FALSE, 1, CreateNullSpace);CHKERRQ(ierr);
+        ALE::Obj<ALE::Mesh::real_section_type> nullSpace = sm->getRealSection("nullSpace");
+        sm->setupField(nullSpace, 2, true);
+        // Fill in intial guess with BC values
         for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
           sm->updateAll(ssX, *b_iter, m->restrictNew(sX, *b_iter));
         }
@@ -114,10 +164,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
           sX->view("Initial solution guess");
           ssX->view("Cell solution guess");
         }
-        ierr = MeshSetMesh(smallMesh, sm);CHKERRQ(ierr);
-        ierr = DMMGSetDM(smallDmmg, (DM) smallMesh);CHKERRQ(ierr);
-        ierr = DMMGSetSNESLocal(smallDmmg, func, jac, 0, 0);CHKERRQ(ierr);
+        // Solve
         ierr = DMMGSolve(smallDmmg);CHKERRQ(ierr);
+        // Update global solution with local solution
         ierr = SectionRealToVec(cellX, smallMesh, SCATTER_REVERSE, DMMGGetx(smallDmmg));CHKERRQ(ierr);
         m->updateAll(sX, *c_iter, sm->restrictNew(ssX, *c_iter));
         if (fasDebug) {
