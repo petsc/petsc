@@ -1247,14 +1247,11 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
 
   PetscFunctionBegin;
 
-
- if (!snes->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
-
   ierr = VecDuplicate(dmmg[level]->x,&Sk);CHKERRQ(ierr);
-  snes->vec_sol = snes->vec_sol_always = dmmg[level]->x;
-  if (!snes->setupcalled) {
-    ierr = SNESSetUp(snes);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectReference((PetscObject)dmmg[level]->x);CHKERRQ(ierr);
+  if (snes->vec_sol) { ierr = VecDestroy(snes->vec_sol);CHKERRQ(ierr); }
+  snes->vec_sol = dmmg[level]->x;
+  if (!snes->setupcalled) { ierr = SNESSetUp(snes);CHKERRQ(ierr); }
   if (snes->conv_hist_reset) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
@@ -1295,7 +1292,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   // dmmg[level]->rrtol= snes->ttol;
 
   // set this to store the old grad 
-  Gradold=snes->vec_sol_update_always;
+  Gradold=snes->vec_sol_update;
   
   // compute the search direction Y
   // I need to put Q(x)=x-FAS(x) here
@@ -1429,8 +1426,6 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   if (F != snes->vec_func) {
     ierr = VecCopy(F,snes->vec_func);CHKERRQ(ierr);
   }
-  snes->vec_sol_always  = snes->vec_sol;
-  snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
     ierr = PetscInfo1(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_MAX_IT;

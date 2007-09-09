@@ -379,7 +379,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultConverged(SNES snes,PetscInt it,Pe
 -  dummy - unused context
 
    Output Parameter:
-.   reason  - SNES_CONVERGED_ITERATING or SNES_DIVERGED_FNORM_NAN
+.   reason  - SNES_CONVERGED_ITERATING, SNES_CONVERGED_ITS, or SNES_DIVERGED_FNORM_NAN
 
    Notes:
    Convergence is then declared after a fixed number of iterations have been used.

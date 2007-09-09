@@ -31,6 +31,32 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
   PetscFunctionReturn(0);
 }
 
+/* ---------------------------------------------------------------- */
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_TR_Converged_Private"
+/*
+   SNES_TR_Converged_Private -test convergence JUST for 
+   the trust region tolerance.
+
+*/
+static PetscErrorCode SNES_TR_Converged_Private(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
+{
+  SNES_TR        *neP = (SNES_TR *)snes->data;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  *reason = SNES_CONVERGED_ITERATING;
+  if (neP->delta < xnorm * snes->deltatol) {
+    ierr = PetscInfo3(snes,"Converged due to trust region param %G<%G*%G\n",neP->delta,xnorm,snes->deltatol);CHKERRQ(ierr);
+    *reason = SNES_CONVERGED_TR_DELTA;
+  } else if (snes->nfuncs >= snes->max_funcs) {
+    ierr = PetscInfo1(snes,"Exceeded maximum number of function evaluations: %D\n",snes->max_funcs);CHKERRQ(ierr);
+    *reason = SNES_DIVERGED_FUNCTION_COUNT;
+  }
+  PetscFunctionReturn(0);
+}
+
+
 /*
    SNESSolve_TR - Implements Newton's Method with a very simple trust 
    region approach for solving systems of nonlinear equations. 
@@ -42,11 +68,11 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
 static PetscErrorCode SNESSolve_TR(SNES snes)
 {
   SNES_TR             *neP = (SNES_TR*)snes->data;
-  Vec                 X,F,Y,G,TMP,Ytmp;
+  Vec                 X,F,Y,G,Ytmp;
   PetscErrorCode      ierr;
   PetscInt            maxits,i,lits;
   MatStructure        flg = DIFFERENT_NONZERO_PATTERN;
-  PetscReal           rho,fnorm,gnorm,gpnorm,xnorm,delta,nrm,ynorm,norm1;
+  PetscReal           rho,fnorm,gnorm,gpnorm,xnorm=0,delta,nrm,ynorm,norm1;
   PetscScalar         cnorm;
   KSP                 ksp;
   SNESConvergedReason reason = SNES_CONVERGED_ITERATING;
@@ -76,12 +102,9 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
 
   /* set parameter for default relative tolerance convergence test */
   snes->ttol = fnorm*snes->rtol;
-  
-  /* XXX Sould we use snes->ops->converged like in SNESLS ?*/
-  if (fnorm < snes->abstol) {snes->reason = SNES_CONVERGED_FNORM_ABS; PetscFunctionReturn(0);}
-  if (snes->ops->converged) {
-    ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);         /* xnorm = || X || */
-  }
+  /* test convergence */
+  ierr = (*snes->ops->converged)(snes,snes->iter,0.0,0.0,fnorm,&snes->reason,snes->cnvP);CHKERRQ(ierr);
+  if (snes->reason) PetscFunctionReturn(0);
 
   /* Set the stopping criteria to use the More' trick. */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
@@ -98,10 +121,9 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = (*snes->ops->update)(snes, snes->iter);CHKERRQ(ierr);
     }
 
+    /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNESComputeJacobian(snes,X,&snes->jacobian,&snes->jacobian_pre,&flg);CHKERRQ(ierr);
     ierr = KSPSetOperators(snes->ksp,snes->jacobian,snes->jacobian_pre,flg);CHKERRQ(ierr);
-
-    /* Solve J Y = F, where J is Jacobian matrix */
     ierr = SNES_KSPSolve(snes,snes->ksp,F,Ytmp);CHKERRQ(ierr);
     ierr = KSPGetIterationNumber(snes->ksp,&lits);CHKERRQ(ierr);
     snes->linear_its += lits;
@@ -127,7 +149,7 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
         ynorm = nrm;
       }
       ierr = VecAYPX(Y,-1.0,X);CHKERRQ(ierr);            /* Y <- X - Y */
-      ierr = VecCopy(X,snes->vec_sol_update_always);CHKERRQ(ierr);
+      ierr = VecCopy(X,snes->vec_sol_update);CHKERRQ(ierr);
       ierr = SNESComputeFunction(snes,Y,G);CHKERRQ(ierr); /*  F(X) */
       ierr = VecNorm(G,NORM_2,&gnorm);CHKERRQ(ierr);      /* gnorm <- || g || */
       if (fnorm == gpnorm) rho = 0.0;
@@ -144,9 +166,8 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       ierr = PetscInfo(snes,"Trying again in smaller region\n");CHKERRQ(ierr);
       /* check to see if progress is hopeless */
       neP->itflag = PETSC_FALSE;
-      if (snes->ops->converged) {
-	ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
-      }
+      ierr = SNES_TR_Converged_Private(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
+      if (!reason) { ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr); }
       if (reason) {
         /* We're not progressing, so return with the current iterate */
         SNESMonitor(snes,i+1,fnorm);
@@ -156,38 +177,29 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
       snes->numFailures++;
     }
     if (!breakout) {
+      /* Update function and solution vectors */
       fnorm = gnorm;
+      ierr = VecCopy(G,F);CHKERRQ(ierr);
+      ierr = VecCopy(Y,X);CHKERRQ(ierr);
+      /* Monitor convergence */
       ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
       snes->iter = i+1;
       snes->norm = fnorm;
       ierr = PetscObjectGrantAccess(snes);CHKERRQ(ierr);
-      TMP = F; F = G; snes->vec_func_always = F; G = TMP;
-      TMP = X; X = Y; snes->vec_sol_always  = X; Y = TMP;
-      SNESLogConvHistory(snes,fnorm,lits);
-      SNESMonitor(snes,i+1,fnorm);
-      /* Test for convergence */
+      SNESLogConvHistory(snes,snes->norm,lits);
+      SNESMonitor(snes,snes->iter,snes->norm);
+      /* Test for convergence, xnorm = || X || */
       neP->itflag = PETSC_TRUE;
-      if (snes->ops->converged) {
-	ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr);	/* xnorm = || X || */
-	ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
-      }
+      if (snes->ops->converged != SNESSkipConverged) { ierr = VecNorm(X,NORM_2,&xnorm);CHKERRQ(ierr); }
+      ierr = (*snes->ops->converged)(snes,snes->iter,xnorm,ynorm,fnorm,&reason,snes->cnvP);CHKERRQ(ierr);
       if (reason) break;
     } else {
       break;
     }
   }
-  /* Verify solution is in corect location */
-  if (X != snes->vec_sol) {
-    ierr = VecCopy(X,snes->vec_sol);CHKERRQ(ierr);
-  }
-  if (F != snes->vec_func) {
-    ierr = VecCopy(F,snes->vec_func);CHKERRQ(ierr);
-  }
-  snes->vec_sol_always  = snes->vec_sol;
-  snes->vec_func_always = snes->vec_func; 
   if (i == maxits) {
     ierr = PetscInfo1(snes,"Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
-    reason = SNES_DIVERGED_MAX_IT;
+    if (!reason) reason = SNES_DIVERGED_MAX_IT;
   }
   ierr = PetscObjectTakeAccess(snes);CHKERRQ(ierr);
   snes->reason = reason;
@@ -202,12 +214,15 @@ static PetscErrorCode SNESSetUp_TR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (!snes->vec_sol_update) {
+    ierr = VecDuplicate(snes->vec_sol,&snes->vec_sol_update);CHKERRQ(ierr);
+    ierr = PetscLogObjectParent(snes,snes->vec_sol_update);CHKERRQ(ierr);
+  }
   if (!snes->work) {
-    snes->nwork = 4;
+    snes->nwork = 3;
     ierr = VecDuplicateVecs(snes->vec_sol,snes->nwork,&snes->work);CHKERRQ(ierr);
     ierr = PetscLogObjectParents(snes,snes->nwork,snes->work);CHKERRQ(ierr);
   }
-  snes->vec_sol_update_always = snes->work[3];
   PetscFunctionReturn(0);
 }
 /*------------------------------------------------------------*/
@@ -218,8 +233,14 @@ static PetscErrorCode SNESDestroy_TR(SNES snes)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (snes->vec_sol_update) {
+    ierr = VecDestroy(snes->vec_sol_update);CHKERRQ(ierr);
+    snes->vec_sol_update = PETSC_NULL;
+  }
   if (snes->nwork) {
     ierr = VecDestroyVecs(snes->work,snes->nwork);CHKERRQ(ierr);
+    snes->nwork = 0;
+    snes->work  = PETSC_NULL;
   }
   ierr = PetscFree(snes->data);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -265,77 +286,6 @@ static PetscErrorCode SNESView_TR(SNES snes,PetscViewer viewer)
   }
   PetscFunctionReturn(0);
 }
-
-/* ---------------------------------------------------------------- */
-#undef __FUNCT__  
-#define __FUNCT__ "SNESConverged_TR"
-/*@C
-   SNESConverged_TR - Monitors the convergence of the trust region
-   method SNESTR for solving systems of nonlinear equations (default).
-
-   Collective on SNES
-
-   Input Parameters:
-+  snes - the SNES context
-.  xnorm - 2-norm of current iterate
-.  pnorm - 2-norm of current step 
-.  fnorm - 2-norm of function
--  dummy - unused context
-
-   Output Parameter:
-.   reason - one of
-$  SNES_CONVERGED_FNORM_ABS       - (fnorm < abstol),
-$  SNES_CONVERGED_PNORM_RELATIVE  - (pnorm < xtol*xnorm),
-$  SNES_CONVERGED_FNORM_RELATIVE  - (fnorm < rtol*fnorm0),
-$  SNES_DIVERGED_FUNCTION_COUNT   - (nfct > maxf),
-$  SNES_DIVERGED_FNORM_NAN        - (fnorm == NaN),
-$  SNES_CONVERGED_TR_DELTA        - (delta < xnorm*deltatol),
-$  SNES_CONVERGED_ITERATING       - (otherwise)
-
-   where
-+    delta    - trust region paramenter
-.    deltatol - trust region size tolerance,
-                set with SNESSetTrustRegionTolerance()
-.    maxf - maximum number of function evaluations,
-            set with SNESSetTolerances()
-.    nfct - number of function evaluations,
-.    abstol - absolute function norm tolerance,
-            set with SNESSetTolerances()
--    xtol - relative function norm tolerance,
-            set with SNESSetTolerances()
-
-   Level: intermediate
-
-.keywords: SNES, nonlinear, default, converged, convergence
-
-.seealso: SNESSetConvergenceTest(), SNESEisenstatWalkerConverged()
-@*/
-PetscErrorCode PETSCSNES_DLLEXPORT SNESConverged_TR(SNES snes,PetscInt it,PetscReal xnorm,PetscReal pnorm,PetscReal fnorm,SNESConvergedReason *reason,void *dummy)
-{
-  SNES_TR        *neP;
-  PetscErrorCode ierr;
-
-  PetscFunctionBegin;
-  PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  PetscValidType(snes,1);
-  PetscValidPointer(reason,6);
-  neP = (SNES_TR *)snes->data;
-  if (fnorm != fnorm) {
-    ierr = PetscInfo(snes,"Failed to converged, function norm is NaN\n");CHKERRQ(ierr);
-    *reason = SNES_DIVERGED_FNORM_NAN;
-  } else if (neP->delta < xnorm * snes->deltatol) {
-    ierr = PetscInfo3(snes,"Converged due to trust region param %G<%G*%G\n",neP->delta,xnorm,snes->deltatol);CHKERRQ(ierr);
-    *reason = SNES_CONVERGED_TR_DELTA;
-  } else if (neP->itflag) {
-    ierr = SNESDefaultConverged(snes,it,xnorm,pnorm,fnorm,reason,dummy);CHKERRQ(ierr);
-  } else if (snes->nfuncs >= snes->max_funcs) {
-    ierr = PetscInfo2(snes,"Exceeded maximum number of function evaluations: %D > %D\n",snes->nfuncs,snes->max_funcs);CHKERRQ(ierr);
-    *reason = SNES_DIVERGED_FUNCTION_COUNT;
-  } else {
-    *reason = SNES_CONVERGED_ITERATING;
-  }
-  PetscFunctionReturn(0);
-}
 /* ------------------------------------------------------------ */
 /*MC
       SNESTR - Newton based nonlinear solver that uses a trust region
@@ -375,10 +325,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_TR(SNES snes)
   snes->ops->setup	     = SNESSetUp_TR;
   snes->ops->solve	     = SNESSolve_TR;
   snes->ops->destroy	     = SNESDestroy_TR;
-  snes->ops->converged	     = SNESConverged_TR;
   snes->ops->setfromoptions  = SNESSetFromOptions_TR;
   snes->ops->view            = SNESView_TR;
-  snes->nwork                = 0;
   
   ierr			= PetscNewLog(snes,SNES_TR,&neP);CHKERRQ(ierr);
   snes->data	        = (void*)neP;
