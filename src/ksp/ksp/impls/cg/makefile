@@ -9,7 +9,7 @@ SOURCEH  = cgctx.h
 OBJSC    = cg.o cgeig.o cgtype.o
 OBJSF    =
 LIBBASE  = libpetscksp
-DIRS     = cgne gltr stcg
+DIRS     = cgne gltr nash stcg
 MANSEC   = KSP
 LOCDIR   = src/ksp/ksp/impls/cg/
 

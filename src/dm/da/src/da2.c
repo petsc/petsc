@@ -1378,20 +1378,47 @@ PetscErrorCode PETSCDM_DLLEXPORT DASetLocalJacobian(DA da,DALocalFunction1 lj)
    Input Parameter:
 .  da - initial distributed array
 
-   Output Parameters:
+   Output Parameter:
 .  lf - the local function
 
    Level: intermediate
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DASetLocalFunction()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalJacobian(), DASetLocalFunction()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalFunction(DA da,DALocalFunction1 *lf)
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (lf)       *lf = da->lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "DAGetLocalJacobian"
+/*@C
+       DAGetLocalJacobian - Gets from a DA a local jacobian
+
+   Collective on DA
+
+   Input Parameter:
+.  da - initial distributed array
+
+   Output Parameter:
+.  lj - the local jacobian
+
+   Level: intermediate
+
+.keywords:  distributed array, refine
+
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetLocalFunction(), DASetLocalJacobian()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DAGetLocalJacobian(DA da,DALocalFunction1 *lj)
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(da,DA_COOKIE,1);
+  if (lj) *lj = da->lj;
   PetscFunctionReturn(0);
 }
 

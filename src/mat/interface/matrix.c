@@ -57,6 +57,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRealPart(Mat mat)
   PetscFunctionReturn(0);
 }
 
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatImaginaryPart"
 /*@
@@ -85,6 +86,40 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatImaginaryPart(Mat mat)
   if (!mat->ops->imaginarypart) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = (*mat->ops->imaginarypart)(mat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MatMissingDiagonal"
+/*@
+   MatMissingDiagonal - Determine if sparse matrix is missing a diagonal entry (or block entry for BAIJ matrices)
+
+   Collective on Mat
+
+   Input Parameter:
+.  mat - the matrix
+
+   Output Parameters:
++  missing - is any diagonal missing
+-  dd - first diagonal entry that is missing (optional)
+
+   Level: advanced
+
+
+.seealso: MatRealPart()
+@*/
+
+PetscErrorCode PETSCMAT_DLLEXPORT MatMissingDiagonal(Mat mat,PetscTruth *missing,PetscInt *dd)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
+  PetscValidType(mat,1);
+  if (!mat->assembled) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for unassembled matrix");
+  if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
+  if (!mat->ops->missingdiagonal) SETERRQ1(PETSC_ERR_SUP,"Mat type %s",mat->type_name);
+  ierr = (*mat->ops->missingdiagonal)(mat,missing,dd);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -564,7 +599,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatView(Mat mat,PetscViewer viewer)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatScaleSystem"
-/*@C
+/*@
    MatScaleSystem - Scale a vector solution and right hand side to 
    match the scaling of a scaled matrix.
   
@@ -609,7 +644,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatScaleSystem(Mat mat,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUnScaleSystem"
-/*@C
+/*@
    MatUnScaleSystem - Unscales a vector solution and right hand side to 
    match the original scaling of a scaled matrix.
   
@@ -651,7 +686,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatUnScaleSystem(Mat mat,Vec b,Vec x)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatUseScaledForm"
-/*@C
+/*@
    MatUseScaledForm - For matrix storage formats that scale the 
    matrix (for example MPIRowBS matrices are diagonally scaled on
    assembly) indicates matrix operations (MatMult() etc) are 
@@ -2463,19 +2498,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSolve(Mat mat,Vec b,Vec x)
 
    Input Parameters:
 +  mat - the factored matrix
--  b - the right-hand-side vector
+-  b - the right-hand-side matrix  (dense matrix)
 
    Output Parameter:
-.  x - the result vector
+.  x - the result matrix (dense matrix)
 
    Notes:
-   The vectors b and x cannot be the same.  I.e., one cannot
+   The matrices b and x cannot be the same.  I.e., one cannot
    call MatMatSolve(A,x,x).
 
    Notes:
-   Most users should employ the simplified KSP interface for linear solvers
+   Most users should usually employ the simplified KSP interface for linear solvers
    instead of working directly with matrix algebra routines such as this.
-   See, e.g., KSPCreate().
+   See, e.g., KSPCreate(). However KSP can only solve for one vector (column of X)
+   at a time.
 
    Level: developer
 
@@ -2916,6 +2952,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRelax(Mat mat,Vec b,PetscReal omega,MatSORT
   if (mat->cmap.N != x->map.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec x: global dim %D %D",mat->cmap.N,x->map.N);
   if (mat->rmap.N != b->map.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: global dim %D %D",mat->rmap.N,b->map.N);
   if (mat->rmap.n != b->map.n) SETERRQ2(PETSC_ERR_ARG_SIZ,"Mat mat,Vec b: local dim %D %D",mat->rmap.n,b->map.n);
+  if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D positive",its);
+  if (lits <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG,"Relaxation requires local its %D positive",lits);
+
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
   ierr = PetscLogEventBegin(MAT_Relax,mat,b,x,0);CHKERRQ(ierr);
   if (mat->ops->relax) {
@@ -3108,7 +3147,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert(Mat mat, MatType newtype,MatReuse r
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = PetscOptionsGetString(PETSC_NULL,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(mat->prefix,"-matconvert_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     newtype = mtype;
   }
@@ -3466,7 +3505,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatTranspose"
-/*@C
+/*@
    MatTranspose - Computes an in-place or out-of-place transpose of a matrix.
 
    Collective on Mat
@@ -3507,7 +3546,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatTranspose(Mat mat,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsTranspose"
-/*@C
+/*@
    MatIsTranspose - Test whether a matrix is another one's transpose, 
         or its own, in which case it tests symmetry.
 
@@ -3553,7 +3592,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsTranspose(Mat A,Mat B,PetscReal tol,Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatIsHermitianTranspose"
-/*@C
+/*@
    MatIsHermitianTranspose - Test whether a matrix is another one's Hermitian transpose, 
 
    Collective on Mat
@@ -3598,7 +3637,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatIsHermitianTranspose(Mat A,Mat B,PetscReal 
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPermute"
-/*@C
+/*@
    MatPermute - Creates a new matrix with rows and columns permuted from the 
    original.
 
@@ -3641,7 +3680,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatPermute(Mat mat,IS row,IS col,Mat *B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatPermuteSparsify"
-/*@C
+/*@
   MatPermuteSparsify - Creates a new matrix with rows and columns permuted from the 
   original and sparsified to the prescribed tolerance.
 
@@ -5932,7 +5971,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatRestrict(Mat A,Vec x,Vec y)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatNullSpaceAttach"
-/*@C
+/*@
    MatNullSpaceAttach - attaches a null space to a matrix.
         This null space will be removed from the resulting vector whenever
         MatMult() is called
@@ -6797,6 +6836,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMatMult(Mat A,Mat B,MatReuse scall,PetscRea
   if (B->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix"); 
   PetscValidPointer(C,3);
   if (B->rmap.N!=A->cmap.N) SETERRQ2(PETSC_ERR_ARG_SIZ,"Matrix dimensions are incompatible, %D != %D",B->rmap.N,A->cmap.N);
+  if (scall == MAT_REUSE_MATRIX){
+    PetscValidPointer(*C,5);
+    PetscValidHeaderSpecific(*C,MAT_COOKIE,5);
+  }
   if (fill == PETSC_DEFAULT) fill = 2.0;
   if (fill < 1.0) SETERRQ1(PETSC_ERR_ARG_SIZ,"Expected fill=%G must be >= 1.0",fill);
   ierr = MatPreallocated(A);CHKERRQ(ierr);

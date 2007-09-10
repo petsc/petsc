@@ -7,13 +7,8 @@
 !       problem SFI:  <parameter> = Bratu parameter (0 <= par <= 6.81)
 !
 !   Modified from ex5f90.F by Mike McCourt <mccomic@iit.edu>
-!   for testing Fortran interface on SNESLineSearchSet() and SNESLineSearchSetPostCheck()
-!
-!/*T
-!  Concepts: SNES^parallel Bratu example
-!  Concepts: DA^using distributed arrays;
-!  Processors: n
-!T*/
+!   for testing Fortran interface on 
+!   SNESLineSearchSet(), SNESLineSearchSetPreCheck(), SNESLineSearchSetPostCheck()
 !
 !  --------------------------------------------------------------------------
 ! 
@@ -173,18 +168,19 @@
 !     matrix_free - flag - 1 indicates matrix-free version
 !
 !
-      SNES                   snes
-      Vec                    x,r
-      Mat                    J
-      integer                its,matrix_free,flg,ierr
-      double precision       lambda_max,lambda_min
-      type (userctx)         user
+      SNES                snes
+      Vec                 x,r
+      Mat                 J
+      integer             its,matrix_free,flg,ierr
+      double precision    lambda_max,lambda_min
+      type (userctx)      user
+      PetscTruth          test_linesearch,test_check
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
 
       external FormInitialGuess,FormJacobian,FormLineSearch
-      external FormPostCheck
+      external FormPostCheck,FormPreCheck
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 !  Initialize program
@@ -305,8 +301,20 @@
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
 
       call SNESSetFromOptions(snes,ierr)
-      call SNESLineSearchSet(snes,FormLineSearch,user,ierr)
-      call SNESLineSearchSetPostCheck(snes,FormPostCheck,user,ierr) 
+      test_linesearch = 0
+      test_check      = 0
+      call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,'-test_check',
+     &                          test_check,PETSC_NULL_INTEGER,ierr)
+      if (test_check.eq.1) then
+        call SNESLineSearchSetPreCheck(snes,FormPreCheck,user,ierr)
+        call SNESLineSearchSetPostCheck(snes,FormPostCheck,user,ierr) 
+      else
+        call PetscOptionsGetTruth(PETSC_NULL_CHARACTER,
+     &       '-test_linesearch',test_linesearch,PETSC_NULL_INTEGER,ierr)
+        if (test_linesearch.eq.1) then
+          call SNESLineSearchSet(snes,FormLineSearch,user,ierr)
+        end if
+      end if
  
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
@@ -694,7 +702,7 @@
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
+!       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,ierr)
 
       return
       end
@@ -819,18 +827,21 @@
       return
       end
 
+      subroutine FormPreCheck(snes,X,Y,user,changed_Y,ierr)
+      use f90module
+
+      SNES           snes
+      Vec            X,Y
+      type (userctx) user
+      PetscTruth     changed_Y
+      PetscErrorCode ierr
+
+     	write(*,*)"Inside formPreCheck, user%xm=",user%xm        
+      end subroutine formPreCheck
+
       subroutine FormPostCheck(snes,X,Y,W,user,changed_Y,changed_W,ierr)
       use f90module
-      implicit none
-#include "include/finclude/petsc.h"
-#include "include/finclude/petscvec.h"
-#include "include/finclude/petscda.h"
-#include "include/finclude/petscis.h"
-#include "include/finclude/petscmat.h"
-#include "include/finclude/petscksp.h"
-#include "include/finclude/petscpc.h"
-#include "include/finclude/petscsnes.h"
-#include "include/finclude/petscvec.h90"
+
       SNES           snes
       Vec            X,Y,W
       type (userctx) user
@@ -838,6 +849,5 @@
       PetscErrorCode ierr
 
      	write(*,*)"Inside formPostCheck, user%xm=",user%xm        
-      return
       end subroutine formPostCheck
 

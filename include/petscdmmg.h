@@ -97,7 +97,9 @@ EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetNullSpace(DMMG*,PetscTruth,Pets
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetMatType(DMMG*,MatType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetISColoringType(DMMG*,ISColoringType);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetPrefix(DMMG*,const char*);
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGFormFunction(SNES,Vec,Vec,void *);
 
+EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGGetSNESLocal(DMMG*,DALocalFunction1*,DALocalFunction1*);
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNESLocal_Private(DMMG*,DALocalFunction1,DALocalFunction1,DALocalFunction1,DALocalFunction1);
 #if defined(PETSC_HAVE_ADIC)
 #  define DMMGSetSNESLocal(dmmg,function,jacobian,ad_function,admf_function) \

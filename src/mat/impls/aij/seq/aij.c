@@ -1069,7 +1069,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
 
   PetscFunctionBegin;
   its = its*lits;
-  if (its <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
 
   diag = a->diag;
   if (!a->idiag) {
@@ -1261,6 +1260,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
 } 
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetInfo_SeqAIJ"
@@ -2464,7 +2464,9 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqAIJ,
        0,
 /*110*/MatMatSolve_SeqAIJ,
        0,
-       MatGetRowMin_SeqAIJ
+       MatGetRowMin_SeqAIJ,
+       0,
+       MatMissingDiagonal_SeqAIJ
 };
 
 EXTERN_C_BEGIN

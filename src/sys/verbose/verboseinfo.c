@@ -205,7 +205,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
   fflush(PetscInfoFile);
   if (petsc_history) {
-    PetscVFPrintf(petsc_history, message, Argp);CHKERRQ(ierr);
+    (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);
   }
   va_end(Argp);
   PetscFunctionReturn(0);

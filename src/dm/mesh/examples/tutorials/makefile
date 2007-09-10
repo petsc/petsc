@@ -77,6 +77,14 @@ stokesPeriodic: stokesPeriodic_quadrature.h stokesPeriodic.o chkopts
 	-${CLINKER} -o stokesPeriodic stokesPeriodic.o ${PETSC_SNES_LIB}
 	${RM} -f stokesPeriodic.o
 
+stokesVector: stokesVector_quadrature.h stokesVector.o chkopts
+	-${CLINKER} -o stokesVector stokesVector.o ${PETSC_SNES_LIB}
+	${RM} -f stokesVector.o
+
+navierStokes: navierStokes_quadrature.h navierStokes.o chkopts
+	-${CLINKER} -o navierStokes navierStokes.o ${PETSC_SNES_LIB}
+	${RM} -f navierStokes.o
+
 grade2: stokes_quadrature.h grade2.o chkopts
 	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
 	${RM} -f grade2.o
@@ -96,6 +104,10 @@ subduction: subduction_quadrature.h subduction.o chkopts
 dolfin: dolfin.o chkopts
 	-${CLINKER} -o dolfin dolfin.o ${PETSC_DM_LIB}
 	${RM} -f dolfin.o
+
+lagrit: CohesiveTopology.o lagrit.o chkopts
+	-${CLINKER} -o lagrit CohesiveTopology.o lagrit.o ${PETSC_DM_LIB}
+	${RM} -f lagrit.o
 
 rt: rt_quadrature.h rt.o chkopts
 	-${CLINKER} -o rt rt.o ${PETSC_SNES_LIB}

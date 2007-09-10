@@ -254,6 +254,8 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
 
+   You must call DACreateNaturalVector() before using this routine
+
 .keywords: distributed array, global to local, begin
 
 .seealso: DAGlobalToNaturalEnd(), DALocalToGlobal(), DACreate2d(), 

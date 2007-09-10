@@ -37,16 +37,16 @@ class QuadratureGenerator(script.Script):
   def getArray(self, name, values, comment = None, typeName = 'double'):
     from Cxx import Array
     from Cxx import Initializer
-    import Numeric
+    import numpy
 
-    values = Numeric.array(values)
+    values = numpy.array(values)
     arrayInit = Initializer()
-    arrayInit.children = map(self.Cxx.getDouble, Numeric.ravel(values))
+    arrayInit.children = map(self.Cxx.getDouble, numpy.ravel(values))
     arrayInit.list = True
     arrayDecl = Array()
     arrayDecl.children = [name]
     arrayDecl.type = self.Cxx.typeMap[typeName]
-    arrayDecl.size = self.Cxx.getInteger(Numeric.size(values))
+    arrayDecl.size = self.Cxx.getInteger(numpy.size(values))
     arrayDecl.static = True
     arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
@@ -126,7 +126,7 @@ class QuadratureGenerator(script.Script):
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
     import FIAT.shapes
-    import Numeric
+    import numpy
 
     self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
     points = quadrature.get_points()
@@ -141,11 +141,11 @@ class QuadratureGenerator(script.Script):
       basisName = name+'Basis'+ext
       basisDerName = name+'BasisDerivatives'+ext
       perm = self.getBasisFuncOrder(element)
-      basisTab = Numeric.transpose(basis.tabulate(points))
-      basisDerTab = Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+      basisTab = numpy.transpose(basis.tabulate(points))
+      basisDerTab = numpy.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
       if not perm is None:
-        basisTabOld    = Numeric.array(basisTab)
-        basisDerTabOld = Numeric.array(basisDerTab)
+        basisTabOld    = numpy.array(basisTab)
+        basisDerTabOld = numpy.array(basisDerTab)
         for q in range(len(points)):
           for i,pi in enumerate(perm):
             basisTab[q][i]    = basisTabOld[q][pi]
@@ -225,6 +225,31 @@ class QuadratureGenerator(script.Script):
         cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 0), -1.0), caseLabel = face)
         cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 1), self.Cxx.getArrayRef(quadVar, 'q'))), Break()])
     return
+
+  def getIntegratorPoints(self, n, element):
+    from FIAT import shapes
+    from Cxx import Define
+    import numpy
+
+    ids  = element.Udual.entity_ids
+    pts  = element.Udual.pts
+    perm = self.getBasisFuncOrder(element)
+    ext  = '_'+str(n)
+    dim  = shapes.dimension(element.function_space().base.shape)
+    if dim == 1:
+      num = len(ids[1][0]) + len(ids[0][0])*2
+    elif dim == 2:
+      num = len(ids[2][0]) + len(ids[1][0])*3 + len(ids[0][0])*3
+    elif dim == 3:
+      num = len(ids[3][0]) + len(ids[2][0])*4 + len(ids[1][0])*6 + len(ids[0][0])*4
+    numPoints = Define()
+    numPoints.identifier = 'NUM_DUAL_POINTS'+ext
+    numPoints.replacementText = str(num)
+    dualPoints = numpy.zeros((num, dim))
+    for i in range(num):
+      for d in range(dim):
+        dualPoints[i][d] = pts[perm[i]][d]
+    return [numPoints, self.getArray(self.Cxx.getVar('dualPoints'+ext), dualPoints, 'Dual points\n   - (x1,y1,x2,y2,...)')]
 
   def getIntegratorSetup_PointEvaluation(self, n, element):
     import FIAT.shapes
@@ -583,6 +608,7 @@ class QuadratureGenerator(script.Script):
           quadrature = self.createQuadrature(shape, self.quadDegree)
         defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
+        defns.extend(self.getIntegratorPoints(n, element))
         defns.extend(self.getIntegratorSetup(n, element))
         defns.extend(self.getSectionSetup(n, element))
         n += element.function_space().tensor_shape()[0]
@@ -597,7 +623,7 @@ class QuadratureGenerator(script.Script):
     from GenericCompiler import CodePurpose
     import CxxVisitor
 
-    # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
+    # May need to move setupPETScLogging() here because PETSc clients are currently interfering with numpy
     source = {'Cxx': [self.getQuadratureFile(filename, defns)]}
     outputs = {'Cxx': CxxVisitor.Output()}
     self.logPrint('Writing element source', debugSection = 'codegen')

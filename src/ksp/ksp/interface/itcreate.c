@@ -107,8 +107,8 @@ PetscFList KSPList = 0;
 -  normtype - one of 
 $   KSP_NORM_NO - skips computing the norm, this should only be used if you are using
 $                 the Krylov method as a smoother with a fixed small number of iterations.
-$                 You must also call KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);
-$                 supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
+$                 Implicitly sets KSPSkipConverged as KSP convergence test.
+$                 Supported only by CG, Richardson, Bi-CG-stab, CR, and CGS methods.
 $   KSP_NORM_PRECONDITIONED - the default for left preconditioned solves, uses the l2 norm
 $                 of the preconditioned residual
 $   KSP_NORM_UNPRECONDITIONED - uses the l2 norm of the true b - Ax residual, supported only by
@@ -137,8 +137,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
   if (normtype == KSP_NORM_NO) {
-    ierr = PetscInfo(ksp,"Warning seting KSPNormType to skip computing the norm\n\
-  make sure you set the KSP convergence test to KSPSkipConvergence\n");CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
+    ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
+ KSP convergence test is implicitly set to KSPSkipConverged\n");CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

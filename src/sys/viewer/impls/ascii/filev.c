@@ -419,7 +419,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
     if (petsc_history) {
       tab = ascii->tab;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -820,11 +820,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
     while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fp,"  ");CHKERRQ(ierr);}
 
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fp,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
     fflush(fp);
     queuefile = fp;
     if (petsc_history) {
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);
@@ -962,12 +962,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
     while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
 
     va_start(Argp,format);
-    ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
+    ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
     fflush(fd);
     if (petsc_history) {
       tab = ascii->tab + ctx->tabs;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
-      ierr = PetscVFPrintf(petsc_history,format,Argp);CHKERRQ(ierr);
+      ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
       fflush(petsc_history);
     }
     va_end(Argp);

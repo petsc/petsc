@@ -1,0 +1,5 @@
+#!/bin/sh
+ 
+PROCNAME="zope.conf"
+PID=`ps -ef | grep -i $PROCNAME | grep -v grep | awk {'print $2'} | head -1`
+kill -9 $PID

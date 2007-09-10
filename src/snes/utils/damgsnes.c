@@ -17,6 +17,9 @@ extern PetscErrorCode DMMGSolveFASb(DMMG*,PetscInt);
 extern PetscErrorCode DMMGSolveFAS_NGMRES(DMMG*,PetscInt);
 extern PetscErrorCode DMMGComputeJacobianWithAdic(SNES,Vec,Mat*,Mat*,MatStructure*,void*);
 #endif
+#if defined(PETSC_HAVE_SIEVE)
+extern PetscErrorCode DMMGSolveFAS_Mesh(DMMG *, PetscInt);
+#endif
 
 EXTERN_C_BEGIN
 EXTERN PetscErrorCode PETSCSNES_DLLEXPORT NLFCreate_DAAD(NLF*);
@@ -547,19 +550,36 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
   PetscErrorCode          ierr;
   PetscInt                i,nlevels = dmmg[0]->nlevels,period = 1;
   PetscTruth              snesmonitor,mffdoperator,mffd,fdjacobian;
+  PetscTruth              useFAS = PETSC_FALSE, fasBlock, fasGMRES;
+  PetscTruth              monitor, monitorAll;
+  PetscInt                fasPresmooth = 1, fasPostsmooth = 1, fasCoarsesmooth = 1, fasMaxIter = 2;
+  PetscReal               fasRtol = 1.0e-8, fasAbstol = 1.0e-50;
 #if defined(PETSC_HAVE_ADIC)
   PetscTruth              mfadoperator,mfad,adjacobian;
 #endif
   PetscViewerASCIIMonitor ascii;
   MPI_Comm                comm;
+  PetscCookie             cookie;
 
   PetscFunctionBegin;
   if (!dmmg)     SETERRQ(PETSC_ERR_ARG_NULL,"Passing null as DMMG");
   if (!jacobian) jacobian = DMMGComputeJacobianWithFD;
+  ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm, &cookie);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(dmmg[0]->comm,PETSC_NULL,"DMMG Options","SNES");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(dmmg[0]->comm,dmmg[0]->prefix,"DMMG Options","SNES");CHKERRQ(ierr);
+    ierr = PetscOptionsName("-dmmg_monitor","Monitor DMMG iterations","DMMG",&monitor);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-dmmg_monitor_all","Monitor DMMG iterations","DMMG",&monitorAll);CHKERRQ(ierr);
+    ierr = PetscOptionsTruth("-dmmg_fas","Use the Full Approximation Scheme","DMMGSetSNES",useFAS,&useFAS,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-dmmg_fas_block","Use point-block smoothing","DMMG",&fasBlock);CHKERRQ(ierr);
+    ierr = PetscOptionsName("-dmmg_fas_ngmres","Use Nonlinear GMRES","DMMG",&fasGMRES);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dmmg_fas_presmooth","Number of downward smoother iterates","DMMG",fasPresmooth,&fasPresmooth,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dmmg_fas_postsmooth","Number of upward smoother iterates","DMMG",fasPostsmooth,&fasPostsmooth,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dmmg_fas_coarsesmooth","Number of coarse smoother iterates","DMMG",fasCoarsesmooth,&fasCoarsesmooth,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-dmmg_fas_rtol","Relative tolerance for FAS","DMMG",fasRtol,&fasRtol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsReal("-dmmg_fas_atol","Absolute tolerance for FAS","DMMG",fasAbstol,&fasAbstol,PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscOptionsInt("-dmmg_fas_max_its","Maximum number of iterates per smoother","DMMG",fasMaxIter,&fasMaxIter,PETSC_NULL);CHKERRQ(ierr);
+
     ierr = PetscOptionsName("-dmmg_snes_monitor","Monitor nonlinear convergence","SNESMonitorSet",&snesmonitor);CHKERRQ(ierr);
-
 
     ierr = PetscOptionsName("-dmmg_jacobian_fd","Compute sparse Jacobian explicitly with finite differencing","DMMGSetSNES",&fdjacobian);CHKERRQ(ierr);
     if (fdjacobian) jacobian = DMMGComputeJacobianWithFD;
@@ -600,6 +620,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       if (mffd) {
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
+        ierr = PetscObjectReference((PetscObject) dmmg[i]->B);CHKERRQ(ierr);
       }
 #if defined(PETSC_HAVE_ADIC)
     } else if (mfadoperator) {
@@ -609,15 +630,19 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       if (mfad) {
         dmmg[i]->B = dmmg[i]->J;
         jacobian   = DMMGComputeJacobianWithMF;
+        ierr = PetscObjectReference((PetscObject) dmmg[i]->B);CHKERRQ(ierr);
       }
 #endif
     }
     
-    if (!dmmg[i]->B) {
-      ierr = DMGetMatrix(dmmg[i]->dm,dmmg[i]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
-    } 
-    if (!dmmg[i]->J) {
-      dmmg[i]->J = dmmg[i]->B;
+    if (!useFAS) {
+      if (!dmmg[i]->B) {
+        ierr = DMGetMatrix(dmmg[i]->dm,dmmg[i]->mtype,&dmmg[i]->B);CHKERRQ(ierr);
+      } 
+      if (!dmmg[i]->J) {
+        dmmg[i]->J = dmmg[i]->B;
+        ierr = PetscObjectReference((PetscObject) dmmg[i]->B);CHKERRQ(ierr);
+      }
     }
 
     ierr = DMMGSetUpLevel(dmmg,dmmg[i]->ksp,i+1);CHKERRQ(ierr);
@@ -642,9 +667,29 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
       }
     }
 
-    dmmg[i]->solve           = DMMGSolveSNES;
     dmmg[i]->computejacobian = jacobian;
     dmmg[i]->computefunction = function;
+    if (useFAS) {
+      if (cookie == DA_COOKIE) {
+#if defined(PETSC_HAVE_ADIC)
+        if (fasBlock) {
+          dmmg[i]->solve     = DMMGSolveFASb;
+        } else if(fasGMRES) {
+          dmmg[i]->solve     = DMMGSolveFAS_NGMRES;
+        } else {
+          dmmg[i]->solve     = DMMGSolveFAS4;
+        }
+#else
+        SETERRQ(PETSC_ERR_SUP, "Must use ADIC for structured FAS.");
+#endif
+      } else {
+#if defined(PETSC_HAVE_SIEVE)
+        dmmg[i]->solve       = DMMGSolveFAS_Mesh;
+#endif
+      }
+    } else {
+      dmmg[i]->solve         = DMMGSolveSNES;
+    }
   }
 
   if (jacobian == DMMGComputeJacobianWithFD) {
@@ -668,9 +713,17 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     }
 #endif
   }
-  for (i=0; i<nlevels; i++) {
-    ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
-    ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
+  if (!useFAS) {
+    for (i=0; i<nlevels; i++) {
+      ierr = SNESSetJacobian(dmmg[i]->snes,dmmg[i]->J,dmmg[i]->B,DMMGComputeJacobian_Multigrid,dmmg);CHKERRQ(ierr);
+      ierr = SNESSetFromOptions(dmmg[i]->snes);CHKERRQ(ierr);
+    }
+
+    ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_jacobian_period",&period,PETSC_NULL);CHKERRQ(ierr);
+    for (i=0; i<nlevels; i++) {
+      dmmg[i]->updatejacobian       = PETSC_TRUE;
+      dmmg[i]->updatejacobianperiod = period;
+    }
   }
 
   /* Create interpolation scaling */
@@ -678,80 +731,52 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetSNES(DMMG *dmmg,PetscErrorCode (*funct
     ierr = DMGetInterpolationScale(dmmg[i-1]->dm,dmmg[i]->dm,dmmg[i]->R,&dmmg[i]->Rscale);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsGetInt(PETSC_NULL,"-dmmg_jacobian_period",&period,PETSC_NULL);CHKERRQ(ierr);
-  for (i=0; i<nlevels; i++) {
-    dmmg[i]->updatejacobian       = PETSC_TRUE;
-    dmmg[i]->updatejacobianperiod = period;
-  }
-
-#if defined(PETSC_HAVE_ADIC)
-  { 
+  if (useFAS) {
     PetscTruth flg;
-    ierr = PetscOptionsHasName(PETSC_NULL,"-dmmg_fas",&flg);CHKERRQ(ierr);
+
+    for(i = 0; i < nlevels; i++) {
+      ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
+      if (cookie == DA_COOKIE) {
+#if defined(PETSC_HAVE_ADIC)
+        ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
+        ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
+        ierr = NLFDAADSetCtx_DAAD(dmmg[i]->nlf,dmmg[i]->user);CHKERRQ(ierr);
+        ierr = NLFDAADSetResidual_DAAD(dmmg[i]->nlf,dmmg[i]->r);CHKERRQ(ierr);
+        ierr = NLFDAADSetNewtonIterations_DAAD(dmmg[i]->nlf,fasMaxIter);CHKERRQ(ierr);
+#endif
+      } else {
+      }
+
+      dmmg[i]->monitor      = monitor;
+      dmmg[i]->monitorall   = monitorAll;
+      dmmg[i]->presmooth    = fasPresmooth;
+      dmmg[i]->postsmooth   = fasPostsmooth;
+      dmmg[i]->coarsesmooth = fasCoarsesmooth;
+      dmmg[i]->rtol         = fasRtol;
+      dmmg[i]->abstol       = fasAbstol;
+    }
+
+    ierr = PetscOptionsHasName(0, "-dmmg_fas_view", &flg);CHKERRQ(ierr);
     if (flg) {
-      PetscTruth block = PETSC_FALSE;
-      PetscTruth ngmres = PETSC_FALSE;
-      PetscInt   newton_its;
-      ierr = PetscOptionsHasName(0,"-dmmg_fas_view",&flg);CHKERRQ(ierr);
-      for (i=0; i<nlevels; i++) {
-	ierr = NLFCreate_DAAD(&dmmg[i]->nlf);CHKERRQ(ierr);
-	ierr = NLFDAADSetDA_DAAD(dmmg[i]->nlf,(DA)dmmg[i]->dm);CHKERRQ(ierr);
-	ierr = NLFDAADSetCtx_DAAD(dmmg[i]->nlf,dmmg[i]->user);CHKERRQ(ierr);
-	ierr = NLFDAADSetResidual_DAAD(dmmg[i]->nlf,dmmg[i]->r);CHKERRQ(ierr);
-        ierr = VecDuplicate(dmmg[i]->b,&dmmg[i]->w);CHKERRQ(ierr);
-
-        dmmg[i]->monitor    = PETSC_FALSE;
-        ierr = PetscOptionsHasName(0,"-dmmg_fas_monitor",&dmmg[i]->monitor);CHKERRQ(ierr);
-        dmmg[i]->monitorall = PETSC_FALSE;
-        ierr = PetscOptionsHasName(0,"-dmmg_fas_monitor_all",&dmmg[i]->monitorall);CHKERRQ(ierr);
-        dmmg[i]->presmooth  = 2;
-        ierr = PetscOptionsGetInt(0,"-dmmg_fas_presmooth",&dmmg[i]->presmooth,0);CHKERRQ(ierr);
-        dmmg[i]->postsmooth = 2;
-        ierr = PetscOptionsGetInt(0,"-dmmg_fas_postsmooth",&dmmg[i]->postsmooth,0);CHKERRQ(ierr);
-        dmmg[i]->coarsesmooth = 2;
-        ierr = PetscOptionsGetInt(0,"-dmmg_fas_coarsesmooth",&dmmg[i]->coarsesmooth,0);CHKERRQ(ierr);
-
-        dmmg[i]->rtol = 1.e-8;
-        ierr = PetscOptionsGetReal(0,"-dmmg_fas_rtol",&dmmg[i]->rtol,0);CHKERRQ(ierr);
-        dmmg[i]->abstol = 1.e-50;
-        ierr = PetscOptionsGetReal(0,"-dmmg_fas_atol",&dmmg[i]->abstol,0);CHKERRQ(ierr);
-
-        newton_its = 2;
-        ierr = PetscOptionsGetInt(0,"-dmmg_fas_newton_its",&newton_its,0);CHKERRQ(ierr);
-        ierr = NLFDAADSetNewtonIterations_DAAD(dmmg[i]->nlf,newton_its);CHKERRQ(ierr);
-
-        if (flg) {
-          if (i == 0) {
-            ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"  rtol %G atol %G\n",dmmg[i]->rtol,dmmg[i]->abstol);CHKERRQ(ierr);
-	    ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %D\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
-          } else {
-	    ierr = PetscPrintf(dmmg[i]->comm,"  level %D   presmooths    %D\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
-	    ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %D\n",dmmg[i]->postsmooth);CHKERRQ(ierr);
-            ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",newton_its);CHKERRQ(ierr);
-          }
-        }
-        ierr = PetscOptionsHasName(0,"-dmmg_fas_block",&block);CHKERRQ(ierr);
-        ierr = PetscOptionsHasName(0,"-dmmg_fas_ngmres",&ngmres);CHKERRQ(ierr);
-	if (block) {
-          dmmg[i]->solve = DMMGSolveFASb;
-          if (flg) {
-            ierr = PetscPrintf(dmmg[i]->comm,"  using point-block smoothing\n");CHKERRQ(ierr);
-          }
-	} else if(ngmres) {
-          dmmg[i]->solve = DMMGSolveFAS_NGMRES;
-          if (flg) {
-            ierr = PetscPrintf(dmmg[i]->comm,"  using non-linear gmres\n");CHKERRQ(ierr);
-          }
+      for(i = 0; i < nlevels; i++) {
+        if (i == 0) {
+          ierr = PetscPrintf(dmmg[i]->comm,"FAS Solver Parameters\n");CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"  rtol %G atol %G\n",dmmg[i]->rtol,dmmg[i]->abstol);CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"             coarsesmooths %D\n",dmmg[i]->coarsesmooth);CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",fasMaxIter);CHKERRQ(ierr);
         } else {
-          dmmg[i]->solve = DMMGSolveFAS4;
+          ierr = PetscPrintf(dmmg[i]->comm,"  level %D   presmooths    %D\n",i,dmmg[i]->presmooth);CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"             postsmooths   %D\n",dmmg[i]->postsmooth);CHKERRQ(ierr);
+          ierr = PetscPrintf(dmmg[i]->comm,"             Newton iterations %D\n",fasMaxIter);CHKERRQ(ierr);
+        }
+        if (fasBlock) {
+          ierr = PetscPrintf(dmmg[i]->comm,"  using point-block smoothing\n");CHKERRQ(ierr);
+        } else if(fasGMRES) {
+          ierr = PetscPrintf(dmmg[i]->comm,"  using non-linear gmres\n");CHKERRQ(ierr);
         }
       }
     }
   }
-#endif
-   
   PetscFunctionReturn(0);
 }
 
@@ -783,6 +808,45 @@ PetscErrorCode DMMGSetSNESLocalFD(DMMG *dmmg,DALocalFunction1 function)
   PetscFunctionReturn(0);
 }
 
+
+#undef __FUNCT__  
+#define __FUNCT__ "DMMGSetSNESLocal_Private"
+/*@
+  DMMGGetSNESLocal - Returns the local functions for residual and Jacobian evaluation.
+
+  Collective on DMMG
+
+  Input Parameter:
+. dmmg - the context
+
+  Output Parameters:
++ function - the function that defines the nonlinear system
+- jacobian - function defines the local part of the Jacobian
+
+  Level: intermediate
+
+.seealso DMMGCreate(), DMMGDestroy, DMMGSetKSP(), DMMGSetSNES(), DMMGSetSNESLocal()
+@*/
+PetscErrorCode DMMGGetSNESLocal(DMMG *dmmg,DALocalFunction1 *function, DALocalFunction1 *jacobian)
+{
+  PetscCookie    cookie;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetCookie((PetscObject) dmmg[0]->dm, &cookie);CHKERRQ(ierr);
+  if (cookie == DA_COOKIE) {
+    ierr = DAGetLocalFunction((DA) dmmg[0]->dm, function);CHKERRQ(ierr);
+    ierr = DAGetLocalJacobian((DA) dmmg[0]->dm, jacobian);CHKERRQ(ierr);
+  } else {
+#ifdef PETSC_HAVE_SIEVE
+    ierr = MeshGetLocalFunction((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,SectionReal,void*)) function);CHKERRQ(ierr);
+    ierr = MeshGetLocalJacobian((Mesh) dmmg[0]->dm, (PetscErrorCode (**)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
+#else
+    SETERRQ(PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
+#endif
+  }
+  PetscFunctionReturn(0);
+}
 
 /*M
     DMMGSetSNESLocal - Sets the local user function that defines the nonlinear set of equations
@@ -862,7 +926,7 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
       ierr = DASetLocalAdicFunction((DA)dmmg[i]->dm,ad_function);CHKERRQ(ierr);
       ierr = DASetLocalAdicMFFunction((DA)dmmg[i]->dm,admf_function);CHKERRQ(ierr);
     }
-  CHKMEMQ;
+    CHKMEMQ;
   } else {
 #ifdef PETSC_HAVE_SIEVE
     ierr = DMMGSetSNES(dmmg, DMMGFormFunctionMesh, DMMGComputeJacobianMesh);CHKERRQ(ierr);
@@ -871,7 +935,9 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
       dmmg[i]->lfj = (PetscErrorCode (*)(void)) function; 
       ierr = MeshSetLocalJacobian((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
     }
-  CHKMEMQ;
+    CHKMEMQ;
+#else
+    SETERRQ(PETSC_ERR_SUP, "Unstructured grids only supported when Sieve is enabled.\nReconfigure with --with-sieve.");
 #endif
   }
   CHKMEMQ;

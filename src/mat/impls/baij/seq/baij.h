@@ -43,7 +43,7 @@ EXTERN PetscErrorCode MatCholeskyFactorSymbolic_SeqBAIJ(Mat,IS,MatFactorInfo*,Ma
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatCholeskyFactorNumeric_SeqBAIJ_N_NaturalOrdering(Mat,MatFactorInfo*,Mat*);
 EXTERN PetscErrorCode MatDuplicate_SeqBAIJ(Mat,MatDuplicateOption,Mat*);
-EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat);
+EXTERN PetscErrorCode MatMissingDiagonal_SeqBAIJ(Mat,PetscTruth*,PetscInt*);
 EXTERN PetscErrorCode MatMarkDiagonal_SeqBAIJ(Mat);
 
 EXTERN PetscErrorCode MatLUFactorSymbolic_SeqBAIJ(Mat,IS,IS,MatFactorInfo*,Mat*);

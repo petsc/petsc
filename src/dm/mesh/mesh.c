@@ -398,6 +398,12 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetMesh(Mesh mesh, const ALE::Obj<ALE::Mesh
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   mesh->m = m;
+  if (mesh->globalScatter) {
+    PetscErrorCode ierr;
+
+    ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);
+    mesh->globalScatter = PETSC_NULL;
+  }
   PetscFunctionReturn(0);
 }
 
@@ -836,12 +842,32 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetGlobalScatter(Mesh mesh, VecScatter *sca
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "MeshGetLocalFunction"
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalFunction(Mesh mesh, PetscErrorCode (**lf)(Mesh, SectionReal, SectionReal, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  if (lf) *lf = mesh->lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "MeshSetLocalFunction"
 PetscErrorCode PETSCDM_DLLEXPORT MeshSetLocalFunction(Mesh mesh, PetscErrorCode (*lf)(Mesh, SectionReal, SectionReal, void *))
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   mesh->lf = lf;
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "MeshSetLocalJacobian"
+PetscErrorCode PETSCDM_DLLEXPORT MeshGetLocalJacobian(Mesh mesh, PetscErrorCode (**lj)(Mesh, SectionReal, Mat, void *))
+{
+  PetscFunctionBegin;
+  PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
+  if (lj) *lj = mesh->lj;
   PetscFunctionReturn(0);
 }
 

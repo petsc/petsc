@@ -55,6 +55,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister(&VEC_Min,                 "VecMin",           VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_DotBarrier,          "VecDotBarrier",    VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_Dot,                 "VecDot",           VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&VEC_DotNormBarrier,      "VecDotNormBarrier",VEC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&VEC_DotNorm,             "VecDotNorm2",      VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_MDotBarrier,         "VecMDotBarrier",   VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_MDot,                "VecMDot",          VEC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&VEC_TDot,                "VecTDot",          VEC_COOKIE);CHKERRQ(ierr);
@@ -84,6 +86,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   ierr = PetscLogEventRegister(&VEC_Normalize,           "VecNormalize",     VEC_COOKIE);CHKERRQ(ierr);
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(VEC_DotBarrier, PETSC_FALSE);CHKERRQ(ierr);
+  ierr = PetscLogEventSetActiveAll(VEC_DotNormBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_MDotBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_NormBarrier, PETSC_FALSE);CHKERRQ(ierr);
   ierr = PetscLogEventSetActiveAll(VEC_SetValues, PETSC_FALSE);CHKERRQ(ierr);
@@ -119,6 +122,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
     ierr = PetscLogEventActivate(VEC_ScatterBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_NormBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_DotBarrier);CHKERRQ(ierr);
+    ierr = PetscLogEventActivate(VEC_DotNormBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_MDotBarrier);CHKERRQ(ierr);
     ierr = PetscLogEventActivate(VEC_ReduceBarrier);CHKERRQ(ierr);
   }

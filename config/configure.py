@@ -86,16 +86,25 @@ def petsc_configure(configure_options):
   for l in range(0,len(sys.argv)):
     name = sys.argv[l]
     if name.find('enable-') >= 0:
-      sys.argv[l] = name.replace('enable-','with-')
-      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=1'
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('enable-','with-')+'=1'
+      else:
+        head, tail = name.split('=', 1)
+        sys.argv[l] = head.replace('enable-','with-')+'='+tail
     if name.find('disable-') >= 0:
-      sys.argv[l] = name.replace('disable-','with-')
-      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
-      elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('disable-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('disable-','with-')+'='+tail
     if name.find('without-') >= 0:
-      sys.argv[l] = name.replace('without-','with-')
-      if name.find('=') == -1: sys.argv[l] = sys.argv[l]+'=0'
-      elif name.endswith('=1'): sys.argv[l].replace('=1','=0')
+      if name.find('=') == -1:
+        sys.argv[l] = name.replace('without-','with-')+'=0'
+      else:
+        head, tail = name.split('=', 1)
+        if tail == '1': tail = '0'
+        sys.argv[l] = head.replace('without-','with-')+'='+tail
 
   # Check for sudo
   if os.getuid() == 0:

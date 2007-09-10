@@ -63,6 +63,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(A,viewer);CHKERRQ(ierr);
     }
+    if (!gnorm) gnorm = 1; /* just in case */
     ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
@@ -122,7 +123,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   snes->ops->solve	     = SNESSolve_Test;
   snes->ops->destroy	     = SNESDestroy_Test;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
-  snes->ops->converged	     = 0;
   snes->ops->view            = 0;
 
   ierr			= PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);

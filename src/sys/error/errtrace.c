@@ -50,7 +50,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscIgnoreErrorHandler(int line,const char *fun,
 static char  arch[10],hostname[64],username[16],pname[PETSC_MAX_PATH_LEN],date[64];
 static PetscTruth PetscErrorPrintfInitializeCalled = PETSC_FALSE;
 static char version[256];
-static FILE *PetscErrorPrintfFILE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscErrorPrintfInitialize"
@@ -61,7 +60,7 @@ static FILE *PetscErrorPrintfFILE = 0;
 PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
 {
   PetscErrorCode ierr;
-  PetscTruth     use_stderr;
+  PetscTruth     use_stdout,use_none;
 
   PetscFunctionBegin;
   ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
@@ -71,11 +70,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize()
   ierr = PetscGetDate(date,64);CHKERRQ(ierr);
   ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stderr",&use_stderr);CHKERRQ(ierr);
-  if (use_stderr) {
-    PetscErrorPrintfFILE = PETSC_STDERR;
-  } else {
-    PetscErrorPrintfFILE = PETSC_STDOUT;
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_stdout",&use_stdout);CHKERRQ(ierr);
+  if (use_stdout) {
+    PETSC_STDERR = PETSC_STDOUT;
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL,"-error_output_none",&use_none);CHKERRQ(ierr);
+  if (use_none) {
+    PetscErrorPrintf = PetscErrorPrintfNone;
   }
   PetscErrorPrintfInitializeCalled = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -104,7 +105,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 
   if (!PetscErrorPrintfCalled) {
     PetscErrorPrintfCalled = PETSC_TRUE;
-    if (PetscErrorPrintfFILE == 0) PetscErrorPrintfFILE = PETSC_STDERR;
 
     /*
         On the SGI machines and Cray T3E, if errors are generated  "simultaneously" by
@@ -120,15 +120,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfDefault(const char format[],...)
 #endif
   }
     
-  PetscFPrintf(PETSC_COMM_SELF,PetscErrorPrintfFILE,"[%d]PETSC ERROR: ",PetscGlobalRank);
+  PetscFPrintf(PETSC_COMM_SELF,PETSC_STDERR,"[%d]PETSC ERROR: ",PetscGlobalRank);
   va_start(Argp,format);
-  PetscVFPrintf(PetscErrorPrintfFILE,format,Argp);
+  (*PetscVFPrintf)(PETSC_STDERR,format,Argp);
   va_end(Argp);
-
   return 0;
 }
-
-
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscTraceBackErrorHandler" 

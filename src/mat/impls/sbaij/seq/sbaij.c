@@ -15,7 +15,7 @@
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatMissingDiagonal_SeqSBAIJ"
-PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A)
+PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A,PetscTruth *missing,PetscInt *dd)
 {
   Mat_SeqSBAIJ   *a = (Mat_SeqSBAIJ*)A->data; 
   PetscErrorCode ierr;
@@ -24,8 +24,13 @@ PetscErrorCode MatMissingDiagonal_SeqSBAIJ(Mat A)
   PetscFunctionBegin;
   ierr = MatMarkDiagonal_SeqSBAIJ(A);CHKERRQ(ierr);
   diag = a->diag;
+  *missing = PETSC_FALSE;
   for (i=0; i<a->mbs; i++) {
-    if (jj[diag[i]] != i) SETERRQ1(PETSC_ERR_ARG_CORRUPT,"Matrix is missing diagonal number %D",i);
+    if (jj[diag[i]] != i) {
+      *missing    = PETSC_TRUE;
+      if (dd) *dd = i;
+      break;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -1316,7 +1321,12 @@ static struct _MatOps MatOps_Values = {MatSetValues_SeqSBAIJ,
        MatRealPart_SeqSBAIJ,
        MatImaginaryPart_SeqSBAIJ,
        MatGetRowUpperTriangular_SeqSBAIJ,
-       MatRestoreRowUpperTriangular_SeqSBAIJ
+       MatRestoreRowUpperTriangular_SeqSBAIJ,
+/*110*/0,
+       0,
+       0,
+       0,
+       MatMissingDiagonal_SeqSBAIJ
 };
 
 EXTERN_C_BEGIN

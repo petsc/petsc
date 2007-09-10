@@ -1392,32 +1392,45 @@ PETSC_STATIC_INLINE void Scatter_12(PetscInt n,const PetscInt *indicesx,const Pe
 PetscErrorCode VecScatterCreateCommon_PtoS(VecScatter_MPI_General *,VecScatter_MPI_General *,VecScatter);
 
 #undef __FUNCT__  
-#define __FUNCT__ "VecScatterCreateLocal_PtoS"
-/*
-     sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
-   to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
+#define __FUNCT__ "VecScatterCreateLocal"
+/*@
+     VecScatterCreateLocal - Creates a VecScatter from a list of messages it must send a receive.
 
-    Probably does not handle sends to self properly. It should remove those from the counts that are used
-    in allocating space inside of the from struct
-*/
-PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs,VecScatter ctx)
+     Collective on VecScatter
+
+   Input Parameters:
++     VecScatter - obtained with VecScatterCreateEmpty()
+.     nsends -
+.     sendSizes -
+.     sendProcs -
+.     sendIdx - indices where the sent entries are obtained from (in local, on process numbering), this is one long array of size \sum_{i=0,i<nsends} sendSizes[i]
+.     nrecvs - number of receives to expect
+.     recvSizes - 
+.     recvProcs - processes who are sending to me
+.     recvIdx - indices of where received entries are to be put, (in local, on process numbering), this is one long array of size \sum_{i=0,i<nrecvs} recvSizes[i]
+-
+
+     Notes:  sendSizes[] and recvSizes[] cannot have any 0 entries. If you want to support having 0 entries you need
+      to change the code below to "compress out" the sendProcs[] and recvProcs[] entries that have 0 entries.
+
+       Probably does not handle sends to self properly. It should remove those from the counts that are used
+      in allocating space inside of the from struct
+
+@*/
+PetscErrorCode VecScatterCreateLocal(VecScatter ctx,PetscInt nsends,const PetscInt sendSizes[],const PetscInt sendProcs[],const PetscInt sendIdx[],PetscInt nrecvs,const PetscInt recvSizes[],const PetscInt recvProcs[],const PetscInt recvIdx[],PetscInt bs)
 {
   VecScatter_MPI_General *from, *to;
-  PetscInt       sendSize, recvSize;
-  PetscInt       n, i;
-  PetscErrorCode ierr;
+  PetscInt               sendSize, recvSize;
+  PetscInt               n, i;
+  PetscErrorCode         ierr;
 
   /* allocate entire send scatter context */
   ierr = PetscNewLog(ctx,VecScatter_MPI_General,&to);CHKERRQ(ierr);
   to->n = nsends; 
   for(n = 0, sendSize = 0; n < to->n; n++) {sendSize += sendSizes[n];}
   ierr = PetscMalloc(to->n*sizeof(MPI_Request),&to->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(bs*sendSize,PetscScalar,&to->values,
-                      sendSize,PetscInt,&to->indices,
-                      to->n+1,PetscInt,&to->starts,
-                      to->n,PetscMPIInt,&to->procs);CHKERRQ(ierr);
-  ierr = PetscMalloc2(PetscMax(to->n,nrecvs),MPI_Status,&to->sstatus,
-                      PetscMax(to->n,nrecvs),MPI_Status,&to->rstatus);CHKERRQ(ierr);
+  ierr = PetscMalloc4(bs*sendSize,PetscScalar,&to->values,sendSize,PetscInt,&to->indices,to->n+1,PetscInt,&to->starts,to->n,PetscMPIInt,&to->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc2(PetscMax(to->n,nrecvs),MPI_Status,&to->sstatus,PetscMax(to->n,nrecvs),MPI_Status,&to->rstatus);CHKERRQ(ierr);
   to->starts[0] = 0;
   for(n = 0; n < to->n; n++) {
     if (sendSizes[n] <=0 ) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"sendSizes[n=%D] = %D cannot be less than 1",n,sendSizes[n]);
@@ -1434,10 +1447,7 @@ PetscErrorCode VecScatterCreateLocal_PtoS(PetscInt nsends,const PetscInt sendSiz
   from->n = nrecvs;
   for(n = 0, recvSize = 0; n < from->n; n++) {recvSize += recvSizes[n];}
   ierr = PetscMalloc(from->n*sizeof(MPI_Request),&from->requests);CHKERRQ(ierr);
-  ierr = PetscMalloc4(bs*recvSize,PetscScalar,&from->values,
-                      recvSize,PetscInt,&from->indices,
-                      from->n+1,PetscInt,&from->starts,
-                      from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
+  ierr = PetscMalloc4(bs*recvSize,PetscScalar,&from->values,recvSize,PetscInt,&from->indices,from->n+1,PetscInt,&from->starts,from->n,PetscMPIInt,&from->procs);CHKERRQ(ierr);
   from->starts[0] = 0;
   for(n = 0; n < from->n; n++) {
     if (recvSizes[n] <=0 ) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"recvSizes[n=%D] = %D cannot be less than 1",n,recvSizes[n]);

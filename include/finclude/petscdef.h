@@ -12,20 +12,6 @@
 !
 #include "petscconf.h"
 !
-#define MPI_Comm integer
-!
-#define PetscEnum integer
-!
-#define PetscTruth PetscEnum
-#define PetscDataType PetscEnum
-#define PetscFPTrap PetscEnum
-
-#define PetscErrorCode integer
-#define PetscCookie integer
-#define PetscEvent integer
-#define PetscMPIInt integer
-!
-!
 ! The real*8,complex*16 notatiton is used so that the 
 ! PETSc double/complex variables are not affected by 
 ! compiler options like -r4,-r8, sometimes invoked 
@@ -53,6 +39,31 @@
 #define PetscInt integer4
 #endif
 
+#if (PETSC_SIZEOF_INT == 4)
+#define PetscFortranInt integer4
+#elif (PETSC_SIZEOF_INT == 8)
+#define PetscFortranInt integer8
+#else
+#error "Unknown integer size"
+#endif
+!
+#if defined(PETSC_HAVE_MPIUNI)
+#define MPI_Comm PetscFortranInt
+#define PetscMPIInt PetscFortranInt
+#else
+#define MPI_Comm integer
+#define PetscMPIInt integer
+#endif
+!
+#define PetscEnum PetscFortranInt
+#define PetscErrorCode PetscFortranInt
+#define PetscCookie PetscFortranInt
+#define PetscEvent PetscFortranInt
+!
+#define PetscTruth PetscEnum
+#define PetscDataType PetscEnum
+#define PetscFPTrap PetscEnum
+!
 #if defined (PETSC_USE_FORTRANKIND)
 #define PetscFortranFloat real(kind=selected_real_kind(5))
 #define PetscFortranDouble real(kind=selected_real_kind(10))
@@ -160,9 +171,9 @@
 #endif
 
 #if defined(PETSC_HAVE_FLUSH)
-#define PETSCFLUSH(a)    call flush(a)
+#define PetscFlush(a)    call flush(a)
 #elif defined(PETSC_HAVE_FLUSH_)
-#define PETSCFLUSH(a)    call flush_(a)
+#define PetscFlush(a)    call flush_(a)
 #else
 #define PETSCFLUSH(a)
 #endif
