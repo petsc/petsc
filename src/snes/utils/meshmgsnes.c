@@ -12,7 +12,7 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
   Mesh           mesh = (Mesh) dmmg->dm;
   Vec            nS   = nulls[0];
   SectionReal    nullSpace;
-  PetscErorrCode ierr;
+  PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetSectionReal(mesh, "nullSpace", &nullSpace);CHKERRQ(ierr);
@@ -29,9 +29,9 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
       const int numDof = disc->getNumDof(d);
 
       if (numDof) {
-        ALE::Obj<ALE::Mesh::label_sequence>&      stratum = m->depthStratum(d);
-        const ALE::Mesh::label_sequence::iterator end     = stratum->end();
-        double                                    values  = new double[numDof];
+        const ALE::Obj<ALE::Mesh::label_sequence>& stratum = m->depthStratum(d);
+        const ALE::Mesh::label_sequence::iterator  end     = stratum->end();
+        double                                    *values  = new double[numDof];
 
         for(ALE::Mesh::label_sequence::iterator p_iter = stratum->begin(); p_iter != end; ++p_iter) {
           for(int i = 0; i < numDof; ++i) values[i] = 1.0;
