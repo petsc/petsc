@@ -52,10 +52,6 @@ ex1: ex1.o chkopts
 	-${CLINKER} -o ex1 ex1.o ${PETSC_DM_LIB}
 	${RM} -f ex1.o
 
-sifter1: sifter1.o chkopts
-	-${CLINKER} -o sifter1 sifter1.o ${PETSC_DM_LIB} -lcppunit
-	${RM} -f sifter1.o
-
 sieve2: sieve2.o chkopts
 	-${CLINKER} -o sieve2 sieve2.o ${PETSC_DM_LIB}
 	${RM} -f sieve2.o
@@ -91,6 +87,10 @@ operator1: operator1.o chkopts
 subset: subset.o chkopts
 	-${CLINKER} -o subset subset.o ${PETSC_DM_LIB}
 	${RM} -f subset.o
+
+unitTests: sifter1.o sieve1.o unitTests.o chkopts
+	-${CLINKER} -o unitTests sifter1.o sieve1.o unitTests.o ${PETSC_DM_LIB} -lcppunit
+	${RM} -f unitTests.o
 #-----------------------------------------------------------------
 xsifter00: xsifter00.o chkopts
 	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB}

@@ -1,18 +1,11 @@
-static char help[] = "Sifter Performance Stress Tests.\n\n";
-
 #include <petsc.h>
-#include "sifterTest.hh"
+#include "unitTests.hh"
 
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/BriefTestProgressListener.h>
-#include <cppunit/TestResult.h>
-#include <cppunit/TestResultCollector.h>
-#include <cppunit/TestRunner.h>
-#include <cppunit/TextOutputter.h>
 
-typedef ALE::Test::Point       Point;
-typedef ALE::Test::sifter_type sifter_type;
+typedef ALE::Point                               point_type;
+typedef ALE::Sifter<point_type, point_type, int> sifter_type;
 
 typedef struct {
   int      debug; // The debugging level
@@ -21,7 +14,7 @@ typedef struct {
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
-PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
+static PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
   PetscErrorCode ierr;
 
@@ -73,6 +66,9 @@ PetscErrorCode ConeTest(const ALE::Obj<sifter_type>& sifter, Options *options)
 
   CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
   CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
+  if (options->debug) {
+    ierr = PetscPrintf(sifter->comm(), "Average time per cone: %gs\n", eventInfo.time/(options->iters*base->size()));CHKERRQ(ierr);
+  }
   CPPUNIT_ASSERT((eventInfo.time < 2.0 * options->iters / 5000));
   PetscFunctionReturn(0);
 }
@@ -86,8 +82,13 @@ PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options
   long count = 0;
 
   PetscFunctionBegin;
-  ALE::LogStage stage = ALE::LogStageRegister("Support Test");
+  ALE::LogStage  stage = ALE::LogStageRegister("Support Test");
+  PetscEvent     supportEvent;
+  PetscErrorCode ierr;
+
+  ierr = PetscLogEventRegister(&supportEvent, "Support", PETSC_OBJECT_COOKIE);
   ALE::LogStagePush(stage);
+  ierr = PetscLogEventBegin(supportEvent,0,0,0,0);
   for(int r = 0; r < options->iters; r++) {
     for(sifter_type::traits::baseSequence::iterator c_iter = cap->begin(); c_iter != cap->end(); ++c_iter) {
       const ALE::Obj<sifter_type::traits::supportSequence>& support = sifter->support(*c_iter);
@@ -97,8 +98,22 @@ PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options
       }
     }
   }
+  ierr = PetscLogEventEnd(supportEvent,0,0,0,0);
   ALE::LogStagePop(stage);
   CPPUNIT_ASSERT_EQUAL(count, numSupportArrows*options->iters);
+  StageLog     stageLog;
+  EventPerfLog eventLog;
+
+  ierr = PetscLogGetStageLog(&stageLog);CHKERRQ(ierr);
+  ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);CHKERRQ(ierr);
+  EventPerfInfo eventInfo = eventLog->eventInfo[supportEvent];
+
+  CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
+  CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
+  if (options->debug) {
+    ierr = PetscPrintf(sifter->comm(), "Average time per support: %gs\n", eventInfo.time/(options->iters*cap->size()));CHKERRQ(ierr);
+  }
+  CPPUNIT_ASSERT((eventInfo.time < 2.0 * options->iters / 5000));
   PetscFunctionReturn(0);
 }
 
@@ -118,7 +133,7 @@ public :
   /// Setup data.
   void setUp(void) {
     ProcessOptions(PETSC_COMM_WORLD, &this->_options);
-    this->_sifter = ALE::Test::SifterTest::createHatSifter(PETSC_COMM_WORLD);
+    this->_sifter = ALE::Test::SifterBuilder::createHatSifter<sifter_type>(PETSC_COMM_WORLD);
   };
 
   /// Tear down data.
@@ -135,7 +150,16 @@ public :
   };
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION (TestSifter);
+
+#undef __FUNCT__
+#define __FUNCT__ "RegisterSifterSuite"
+PetscErrorCode RegisterSifterSuite() {
+  CPPUNIT_TEST_SUITE_REGISTRATION (TestSifter);
+  PetscFunctionBegin;
+  PetscFunctionReturn(0);
+}
+
+#if 0
 
 #undef __FUNCT__
 #define __FUNCT__ "RunUnitTests"
@@ -165,10 +189,10 @@ PetscErrorCode RunUnitTests()
     outputter.write();
   } catch (...) {
     abort();
-  } // catch
+  }
 
   PetscFunctionReturn(result.wasSuccessful() ? 0 : 1);
-} // main
+}
 
 #undef __FUNCT__
 #define __FUNCT__ "main"
@@ -183,3 +207,5 @@ int main(int argc, char *argv[])
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+#endif
