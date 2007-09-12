@@ -14,10 +14,10 @@ namespace ALE {
 
         for(int b = 0; b < baseSize; b++) {
           cone->clear();
-          cone->push_back(Point(1, b*2-1));
-          cone->push_back(Point(1, b*2+0));
-          cone->push_back(Point(1, b*2+1));
-          sifter->addCone(cone, Point(0, b));
+          cone->push_back(b*2-1);
+          cone->push_back(b*2+0);
+          cone->push_back(b*2+1);
+          sifter->addCone(cone, b);
         }
         return sifter;
       };

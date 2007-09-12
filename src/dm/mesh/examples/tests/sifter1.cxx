@@ -4,7 +4,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/extensions/HelperMacros.h>
 
-typedef ALE::Point                               point_type;
+typedef int                                      point_type;
 typedef ALE::Sifter<point_type, point_type, int> sifter_type;
 
 typedef struct {
@@ -34,8 +34,10 @@ static PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 PetscErrorCode ConeTest(const ALE::Obj<sifter_type>& sifter, Options *options)
 {
   ALE::Obj<sifter_type::traits::baseSequence> base = sifter->base();
-  long numConeArrows = (long) base->size()*3;
-  long count = 0;
+  const int    baseSize       = base->size();
+  const double maxTimePerCone = 6.0e-6;
+  const long   numConeArrows  = (long) baseSize*3;
+  long         count          = 0;
 
   PetscFunctionBegin;
   ALE::LogStage  stage = ALE::LogStageRegister("Cone Test");
@@ -67,9 +69,9 @@ PetscErrorCode ConeTest(const ALE::Obj<sifter_type>& sifter, Options *options)
   CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
   CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
   if (options->debug) {
-    ierr = PetscPrintf(sifter->comm(), "Average time per cone: %gs\n", eventInfo.time/(options->iters*base->size()));CHKERRQ(ierr);
+    ierr = PetscPrintf(sifter->comm(), "Average time per cone: %gs\n", eventInfo.time/(options->iters*baseSize));CHKERRQ(ierr);
   }
-  CPPUNIT_ASSERT((eventInfo.time < 2.0 * options->iters / 5000));
+  CPPUNIT_ASSERT((eventInfo.time < maxTimePerCone * baseSize * options->iters));
   PetscFunctionReturn(0);
 }
 
@@ -78,8 +80,10 @@ PetscErrorCode ConeTest(const ALE::Obj<sifter_type>& sifter, Options *options)
 PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options)
 {
   ALE::Obj<sifter_type::traits::capSequence> cap = sifter->cap();
-  long numSupportArrows = (long) ((cap->size() - 1)*3)/2;
-  long count = 0;
+  const int    capSize           = cap->size();
+  const double maxTimePerSupport = 6.0e-6;
+  const long   numSupportArrows  = (long) ((capSize - 1)*3)/2;
+  long         count             = 0;
 
   PetscFunctionBegin;
   ALE::LogStage  stage = ALE::LogStageRegister("Support Test");
@@ -111,9 +115,9 @@ PetscErrorCode SupportTest(const ALE::Obj<sifter_type>& sifter, Options *options
   CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
   CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
   if (options->debug) {
-    ierr = PetscPrintf(sifter->comm(), "Average time per support: %gs\n", eventInfo.time/(options->iters*cap->size()));CHKERRQ(ierr);
+    ierr = PetscPrintf(sifter->comm(), "Average time per support: %gs\n", eventInfo.time/(options->iters*capSize));CHKERRQ(ierr);
   }
-  CPPUNIT_ASSERT((eventInfo.time < 2.0 * options->iters / 5000));
+  CPPUNIT_ASSERT((eventInfo.time < maxTimePerSupport * capSize * options->iters));
   PetscFunctionReturn(0);
 }
 
