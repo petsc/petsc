@@ -1583,7 +1583,7 @@ namespace ALE {
       names_type             bcLabels;
       int                    maxDof;
 
-      maxDof = setFiberDimensions(s, discs, bcLabels);
+      maxDof = this->setFiberDimensions(s, discs, bcLabels);
       this->calculateIndices();
       this->calculateIndicesExcluded(s, discs);
       this->allocate(s);
