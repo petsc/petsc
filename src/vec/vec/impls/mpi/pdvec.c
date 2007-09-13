@@ -726,6 +726,64 @@ PetscErrorCode VecView_MPI_HDF4(Vec xin,PetscViewer viewer)
 }
 #endif
 
+#if defined(PETSC_HAVE_HDF5)
+
+#undef __FUNCT__  
+#define __FUNCT__ "VecView_MPI_HDF5"
+PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
+{
+  hid_t  filespace; /* file dataspace identifier */
+  hid_t	 plist_id;  /* property list identifier */
+  hid_t  dset_id;   /* dataset identifier */
+  hid_t  memspace;  /* memory dataspace identifier */
+  hid_t  file_id;
+  herr_t status;
+  /* PetscInt       bs        = xin->map.bs > 0 ? xin->map.bs : 1; */
+  int            rank      = 1; /* Could have rank 2 for blocked vectors */
+  hsize_t        dims[1]   = {xin->map.N};
+  hsize_t        count[1]  = {xin->map.n};
+  hsize_t        offset[1];
+  PetscInt       low;
+  PetscScalar   *x;
+  PetscErrorCode ierr;
+
+  ierr = PetscViewerHDF5GetFileId(viewer, &file_id);CHKERRQ(ierr);
+
+  /* Create the dataspace for the dataset */
+  filespace = H5Screate_simple(rank, dims, NULL); 
+
+  /* Create the dataset with default properties and close filespace */
+  dset_id = H5Dcreate(file_id, "Vec", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
+  H5Sclose(filespace);
+
+  /* Each process defines a dataset and writes it to the hyperslab in the file */
+  memspace = H5Screate_simple(rank, count, NULL);
+
+  /* Select hyperslab in the file */
+  ierr = VecGetOwnershipRange(xin, &low, PETSC_NULL);CHKERRQ(ierr);
+  offset[0] = low;
+  filespace = H5Dget_space(dset_id);
+  status = H5Sselect_hyperslab(filespace, H5S_SELECT_SET, offset, NULL, count, NULL);CHKERRQ(status);
+
+  /* Create property list for collective dataset write */
+  plist_id = H5Pcreate(H5P_DATASET_XFER);
+  status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
+  /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
+    
+  ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
+  status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
+  status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
+  ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
+
+  /* Close/release resources */
+  H5Pclose(plist_id);
+  H5Sclose(filespace);
+  H5Sclose(memspace);
+  H5Dclose(dset_id);
+  PetscFunctionReturn(0);
+}
+#endif
+
 #undef __FUNCT__  
 #define __FUNCT__ "VecView_MPI"
 PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
@@ -740,6 +798,9 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_HDF4)
   PetscTruth     ishdf4;
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  PetscTruth     ishdf5;
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   PetscTruth     ismatlab;
@@ -757,6 +818,9 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #endif
 #if defined(PETSC_HAVE_HDF4)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF4,&ishdf4);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_HDF5,&ishdf5);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_MATLAB,&ismatlab);CHKERRQ(ierr);
@@ -785,6 +849,10 @@ PetscErrorCode VecView_MPI(Vec xin,PetscViewer viewer)
 #if defined(PETSC_HAVE_HDF4)
   } else if (ishdf4) {
     ierr = VecView_MPI_HDF4(xin,viewer);CHKERRQ(ierr);
+#endif
+#if defined(PETSC_HAVE_HDF5)
+  } else if (ishdf5) {
+    ierr = VecView_MPI_HDF5(xin,viewer);CHKERRQ(ierr);
 #endif
 #if defined(PETSC_HAVE_MATLAB_ENGINE) && !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE)
   } else if (ismatlab) {
