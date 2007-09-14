@@ -754,7 +754,7 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
 
   /* Create the dataset with default properties and close filespace */
   dset_id = H5Dcreate(file_id, "Vec", H5T_NATIVE_DOUBLE, filespace, H5P_DEFAULT);
-  H5Sclose(filespace);
+  status = H5Sclose(filespace);CHKERRQ(status);
 
   /* Each process defines a dataset and writes it to the hyperslab in the file */
   memspace = H5Screate_simple(rank, count, NULL);
@@ -769,17 +769,17 @@ PetscErrorCode VecView_MPI_HDF5(Vec xin, PetscViewer viewer)
   plist_id = H5Pcreate(H5P_DATASET_XFER);
   status = H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_COLLECTIVE);CHKERRQ(status);
   /* To write dataset independently use H5Pset_dxpl_mpio(plist_id, H5FD_MPIO_INDEPENDENT) */
-    
+
   ierr = VecGetArray(xin, &x);CHKERRQ(ierr);
   status = H5Dwrite(dset_id, H5T_NATIVE_DOUBLE, memspace, filespace, plist_id, x);CHKERRQ(status);
   status = H5Fflush(file_id, H5F_SCOPE_GLOBAL);CHKERRQ(status);
   ierr = VecRestoreArray(xin, &x);CHKERRQ(ierr);
 
   /* Close/release resources */
-  H5Pclose(plist_id);
-  H5Sclose(filespace);
-  H5Sclose(memspace);
-  H5Dclose(dset_id);
+  status = H5Pclose(plist_id);CHKERRQ(status);
+  status = H5Sclose(filespace);CHKERRQ(status);
+  status = H5Sclose(memspace);CHKERRQ(status);
+  status = H5Dclose(dset_id);CHKERRQ(status);
   PetscFunctionReturn(0);
 }
 #endif
