@@ -16,7 +16,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPLGMRESSetAugDim_C,(KSP,PetscInt),(ksp,dim));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPLGMRESSetAugDim_C",(KSP,PetscInt),(ksp,dim));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -27,7 +27,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPLGMRESSetConstant_C,(KSP),(ksp));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPLGMRESSetConstant_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

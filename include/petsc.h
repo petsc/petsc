@@ -1195,7 +1195,7 @@ typedef PetscErrorCode (*PetscErrorCodeFunction)(void);
 */
 #define  PetscTryMethod(obj,A,B,C) \
   0;{ PetscErrorCode (*f)B, __ierr; \
-    __ierr = PetscObjectQueryFunction((PetscObject)obj,#A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
+    __ierr = PetscObjectQueryFunction((PetscObject)obj,A,(PetscVoidStarFunction)&f);CHKERRQ(__ierr); \
     if (f) {__ierr = (*f)C;CHKERRQ(__ierr);}\
   }
 #define  PetscUseMethod(obj,A,B,C) \

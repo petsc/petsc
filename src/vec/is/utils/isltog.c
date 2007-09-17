@@ -3,7 +3,7 @@
 #include "petscvec.h"   /*I "petscsys.h" I*/
 #include "include/private/isimpl.h"    /*I "petscis.h"  I*/
 
-PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE = -1;
+PetscCookie PETSCVEC_DLLEXPORT IS_LTOGM_COOKIE = 0;
 
 #undef __FUNCT__  
 #define __FUNCT__ "ISLocalToGlobalMappingGetSize"
@@ -184,17 +184,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (n) {
-    PetscValidIntPointer(indices,3);
-  }
+  if (n) PetscValidIntPointer(indices,3);
   PetscValidPointer(mapping,4);
   *mapping = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
   ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  if (IS_LTOGM_COOKIE == -1) {
-    ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,"IS L to G Mapping");CHKERRQ(ierr);
-  }
 
   ierr = PetscHeaderCreate(*mapping,_p_ISLocalToGlobalMapping,int,IS_LTOGM_COOKIE,0,"ISLocalToGlobalMapping",
 			   cm,ISLocalToGlobalMappingDestroy,ISLocalToGlobalMappingView);CHKERRQ(ierr);
@@ -204,8 +199,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingCreateNC(MPI_Comm cm,Pet
   ierr = PetscLogObjectMemory(*mapping,n*sizeof(PetscInt));CHKERRQ(ierr);
 
   /*
-      Do not create the global to local mapping. This is only created if 
-     ISGlobalToLocalMapping() is called 
+    Do not create the global to local mapping. This is only created if 
+    ISGlobalToLocalMapping() is called 
   */
   (*mapping)->globals = 0;
   PetscFunctionReturn(0);
@@ -239,6 +234,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
   PetscInt       *ii,i,n;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(inmap,IS_LTOGM_COOKIE,1);
+  PetscValidPointer(outmap,1);
   if (bs > 1) {
     n    = inmap->n/bs;
     if (n*bs != inmap->n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Pointwise mapping length is not divisible by block size");
@@ -274,12 +271,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalM
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
-  PetscValidPointer(mapping,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
   if (--mapping->refct > 0) PetscFunctionReturn(0);
-  if (mapping->refct < 0) {
-    SETERRQ(PETSC_ERR_PLIB,"Mapping already destroyed");
-  }
-
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
   ierr = PetscFree(mapping->globals);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
@@ -315,7 +308,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingApplyIS(ISLocalToGlobalM
   PetscInt       n,i,*idxin,*idxmap,*idxout,Nmax = mapping->n;
 
   PetscFunctionBegin;
-  PetscValidPointer(mapping,1);
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
   PetscValidHeaderSpecific(is,IS_COOKIE,2);
   PetscValidPointer(newis,3);
 
@@ -445,6 +438,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISGlobalToLocalMappingApply(ISLocalToGlobalMap
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
   if (!mapping->globals) {
     ierr = ISGlobalToLocalMappingSetUp_Private(mapping);CHKERRQ(ierr);
   }
@@ -535,6 +529,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
   PetscTruth     debug = PETSC_FALSE;
 
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
   ierr   = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   ierr   = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (size == 1) {
@@ -959,21 +954,3 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlo
   }
   PetscFunctionReturn(0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -153,7 +153,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetCoordinates(PC pc,PetscInt dim,PetscReal 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,PCSetCoordinates_C,(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCSetCoordinates_C",(PC,PetscInt,PetscReal*),(pc,dim,coords));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -181,6 +181,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSASetVectors(PC pc,PetscInt nvects,PetscReal
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(pc,PCSASetVectors_C,(PC,PetscInt,PetscReal*),(pc,nvects,vects));CHKERRQ(ierr);
+  ierr = PetscTryMethod(pc,"PCSASetVectors_C",(PC,PetscInt,PetscReal*),(pc,nvects,vects));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
