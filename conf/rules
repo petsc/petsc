@@ -225,7 +225,7 @@ getmpiexec:
 #
 #
 
-.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .eps .pdf .jpg .dvi .ps .F95 .f95 .fiat
+.SUFFIXES: .F  .F90 .f90 ${SUFFIXES} .PETSc .C .cc .cpp .cxx .r .rm .so .html .ad .m .tex .mtex .make .sidl .fig .svg .eps .pdf .jpg .png .dvi .ps .F95 .f95 .fiat
 
 #
 #
@@ -253,6 +253,10 @@ getmpiexec:
 	epstopdf $< -o=$*.pdf
 .dvi.ps:
 	dvips -o $*.ps $<
+.svg.png:
+	inkscape --export-png=$*.png $<
+.svg.pdf:
+	inkscape --export-pdf=$*.pdf $<
 # Need to define PYTHON
 .fiat.h:
 	@if [ "${ELEMENT}" != "" ]; then \
