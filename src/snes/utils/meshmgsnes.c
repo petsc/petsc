@@ -64,11 +64,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   PetscErrorCode   ierr;
 
   PetscFunctionBegin;
-  ierr = PetscPrintf(dmmg[0]->comm, "  FAS mesh relaxation\n");CHKERRQ(ierr);
   ierr = PetscOptionsHasName(dmmg[0]->prefix, "-dmmg_fas_debug", &fasDebug);CHKERRQ(ierr);
+  if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "  FAS mesh relaxation\n");CHKERRQ(ierr);}
   if (its <= 0) SETERRQ1(PETSC_ERR_ARG_WRONG, "Relaxation requires global its %D positive", its);
   ierr = MeshCreate(PETSC_COMM_SELF, &smallMesh);CHKERRQ(ierr);
-  ierr = DMMGCreate(PETSC_COMM_SELF, 1, PETSC_NULL, &smallDmmg);CHKERRQ(ierr);
+  ierr = DMMGCreate(PETSC_COMM_SELF, -1, PETSC_NULL, &smallDmmg);CHKERRQ(ierr);
   //ierr = DMMGSetMatType(smallDmmg, MATSEQDENSE);CHKERRQ(ierr);
   ierr = DMMGSetPrefix(smallDmmg, "fas_");CHKERRQ(ierr);
   ierr = DMMGSetUser(smallDmmg, 0, DMMGGetUser(dmmg, 0));CHKERRQ(ierr);
@@ -102,7 +102,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
       sDisc->setDofClass(d, disc->getDofClass(d));
     }
     if (disc->getBoundaryConditions()->size()) {
-      std::cout << "Adding BC for field " << *f_iter << std::endl;
+      if (fasDebug) {std::cout << "Adding BC for field " << *f_iter << std::endl;}
       ALE::Obj<ALE::BoundaryCondition> sBC = new ALE::BoundaryCondition(disc->comm(), disc->debug());
       sBC->setLabelName("marker");
       sBC->setMarker(1);
@@ -113,7 +113,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
     sDiscs[*f_iter] = sDisc;
   }
   while(its--) {
-    ierr = PetscPrintf(dmmg[0]->comm, "    forward sweep %d\n", its);CHKERRQ(ierr);
+    if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "    forward sweep %d\n", its);CHKERRQ(ierr);}
     if (flag & SOR_FORWARD_SWEEP || flag & SOR_LOCAL_FORWARD_SWEEP){
       // Loop over all cells
       //   This is an overlapping block SOR, but it is easier and seems more natural than doing each unknown
@@ -123,7 +123,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         ALE::Obj<ALE::Mesh::real_section_type>      ssX        = sm->getRealSection("default");
         const ALE::Obj<ALE::Mesh::label_type>&      cellMarker = sm->createLabel("marker");
 
-        ierr = PetscPrintf(dmmg[0]->comm, "    forward sweep cell %d\n", *c_iter);CHKERRQ(ierr);
+        if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "    forward sweep cell %d\n", *c_iter);CHKERRQ(ierr);}
         ierr = SectionRealSetSection(cellX, ssX);CHKERRQ(ierr);
         // Assign BC to mesh
         for(ALE::Mesh::sieve_type::supportSet::iterator b_iter = cellBlock->begin(); b_iter != cellBlock->end(); ++b_iter) {
@@ -152,8 +152,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         ierr = MeshSetMesh(smallMesh, sm);CHKERRQ(ierr);
         ierr = DMMGSetDM(smallDmmg, (DM) smallMesh);CHKERRQ(ierr);
         ierr = DMMGSetSNESLocal(smallDmmg, func, jac, 0, 0);CHKERRQ(ierr);
-        // Construct null space, if necessary
-        ierr = DMMGSetNullSpace(smallDmmg, PETSC_FALSE, 1, CreateNullSpace);CHKERRQ(ierr);
+        // TODO: Construct null space, if necessary
+        // ierr = DMMGSetNullSpace(smallDmmg, PETSC_FALSE, 1, CreateNullSpace);CHKERRQ(ierr);
         ALE::Obj<ALE::Mesh::real_section_type> nullSpace = sm->getRealSection("nullSpace");
         sm->setupField(nullSpace, 2, true);
         // Fill in intial guess with BC values
@@ -205,11 +205,11 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
   PetscFunctionBegin;
   ierr = PetscOptionsHasName(dmmg[0]->prefix, "-dmmg_fas_debug", &fasDebug);CHKERRQ(ierr);
   ierr = VecSet(dmmg[level]->r, 0.0);CHKERRQ(ierr);
-  for(j = 1; j <= level; ++j) {
-    if (!dmmg[j]->inject) {
-      ierr = DMGetInjection(dmmg[j-1]->dm, dmmg[j]->dm, &dmmg[j]->inject);CHKERRQ(ierr);
-    }
-  }
+/*   for(j = 1; j <= level; ++j) { */
+/*     if (!dmmg[j]->inject) { */
+/*       ierr = DMGetInjection(dmmg[j-1]->dm, dmmg[j]->dm, &dmmg[j]->inject);CHKERRQ(ierr); */
+/*     } */
+/*   } */
 
   for(i = 0; i < 100; i++) {
     ierr = PetscPrintf(dmmg[0]->comm, "FAS iteration %d\n", i);CHKERRQ(ierr);
@@ -242,8 +242,9 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
       ierr = MatRestrict(dmmg[j]->R, dmmg[j]->w, dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(Q*x_fine) */
-      ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-      ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+      ierr = MatRestrict(dmmg[j]->R, dmmg[j]->x, dmmg[j-1]->x);CHKERRQ(ierr); 
+/*       ierr = VecScatterBegin(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); */
+/*       ierr = VecScatterEnd(dmmg[j]->inject,dmmg[j]->x,dmmg[j-1]->x,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); */
       ierr = DMMGFormFunctionMesh(0,dmmg[j-1]->x,dmmg[j-1]->w,dmmg[j-1]);CHKERRQ(ierr);
 
       /* residual_coarse = F(Q*x_fine) + R*(residual_fine - F(x_fine)) */
@@ -253,7 +254,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
       ierr = VecCopy(dmmg[j-1]->x,dmmg[j-1]->b);CHKERRQ(ierr);
     }
 
-    ierr = PetscPrintf(dmmg[0]->comm, "  FAS coarse grid\n");CHKERRQ(ierr);
+    if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "  FAS coarse grid\n");CHKERRQ(ierr);}
     if (level == 0) {
       ierr = DMMGFormFunctionMesh(0,dmmg[0]->x,dmmg[0]->w,dmmg[0]);CHKERRQ(ierr);
       ierr = VecAYPX(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);

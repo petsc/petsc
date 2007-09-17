@@ -576,6 +576,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
       newmesh->setDiscretization(*f_iter, m->getDiscretization(*f_iter));
     }
+    newmesh->markBoundaryCells("marker", 1, 2, true);
     newmesh->setupField(s);
 
     ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);

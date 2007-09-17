@@ -1334,16 +1334,40 @@ namespace ALE {
       }
     };
   public: // Discretization
-    void markBoundaryCells(const std::string& name, const int marker = 1, const int newMarker = 2) {
+    void markBoundaryCells(const std::string& name, const int marker = 1, const int newMarker = 2, const bool onlyVertices = false) {
       const Obj<label_type>&     label    = this->getLabel(name);
       const Obj<label_sequence>& boundary = this->getLabelStratum(name, marker);
       const Obj<sieve_type>&     sieve    = this->getSieve();
 
-      for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-        if (this->height(*e_iter) == 1) {
-          const point_type cell = *sieve->support(*e_iter)->begin();
+      if (!onlyVertices) {
+        const label_sequence::iterator end = boundary->end();
 
-          this->setValue(label, cell, newMarker);
+        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != end; ++e_iter) {
+          if (this->height(*e_iter) == 1) {
+            const point_type cell = *sieve->support(*e_iter)->begin();
+
+            this->setValue(label, cell, newMarker);
+          }
+        }
+      } else {
+        const label_sequence::iterator end   = boundary->end();
+        const int                      depth = this->depth();
+
+        for(label_sequence::iterator v_iter = boundary->begin(); v_iter != end; ++v_iter) {
+          const Obj<supportArray>      support = sieve->nSupport(*v_iter, depth);
+          const supportArray::iterator sEnd    = support->end();
+
+          for(supportArray::iterator c_iter = support->begin(); c_iter != sEnd; ++c_iter) {
+            const Obj<sieve_type::traits::coneSequence>&     cone = sieve->cone(*c_iter);
+            const sieve_type::traits::coneSequence::iterator cEnd = cone->end();
+
+            for(sieve_type::traits::coneSequence::iterator e_iter = cone->begin(); e_iter != cEnd; ++e_iter) {
+              if (sieve->support(*e_iter)->size() == 1) {
+                this->setValue(label, *c_iter, newMarker);
+                break;
+              }
+            }
+          }
         }
       }
     };
