@@ -39,8 +39,8 @@ PetscInt main(PetscInt argc,char **args)
   } 
 
   /* Solve eigenvalue problem: A*evec = eval*evec */
-#if defined(PETSC_MISSING_LAPACK_DSTEBZ)
-  SETERRQ(PETSC_ERR_SUP,"DSTEBZ - Lapack routine is unavailable.");
+#if defined(PETSC_MISSING_LAPACK_STEBZ)
+  SETERRQ(PETSC_ERR_SUP,"STEBZ - Lapack routine is unavailable.");
 #else
   printf(" LAPACKstebz_: compute %d eigenvalues...\n",nevs);    
   LAPACKstebz_("I","E",&n,&vl,&vu,&il,&iu,&tol,D,E,&nevs,&nsplit,evals,iblock,isplit,work,iwork,&info);
@@ -50,8 +50,8 @@ PetscInt main(PetscInt argc,char **args)
   printf(" LAPACKstein_: compute %d eigenvectors...\n",nevs); 
   ierr = PetscMalloc(n*nevs*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
   ierr = PetscMalloc(nevs*sizeof(PetscInt),&ifail);CHKERRQ(ierr);
-#if defined(PETSC_MISSING_LAPACK_DSTEIN)
-  SETERRQ(PETSC_ERR_SUP,"DSTEIN - Lapack routine is unavailable.");
+#if defined(PETSC_MISSING_LAPACK_STEIN)
+  SETERRQ(PETSC_ERR_SUP,"STEIN - Lapack routine is unavailable.");
 #else
   LAPACKstein_(&n,D,E,&nevs,evals,iblock,isplit,evecs_array,&n,work,iwork,ifail,&info);
   if (info) SETERRQ1(PETSC_ERR_USER,"LAPACKstein_ fails. info %d",info); 
