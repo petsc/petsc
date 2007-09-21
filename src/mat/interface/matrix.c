@@ -3455,6 +3455,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetRowSum(Mat mat, Vec v)
     for(col = 0; col < ncols; col++) {
       array[row - start] += vals[col];
     }
+    ierr = MatRestoreRow(mat, row, &ncols, &cols, &vals);CHKERRQ(ierr);
   }
   ierr = VecRestoreArray(v, &array);CHKERRQ(ierr);
   ierr = PetscObjectStateIncrease((PetscObject) v);CHKERRQ(ierr);

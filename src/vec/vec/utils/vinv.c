@@ -241,7 +241,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *id
 
     ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
     in[0] = max;
-    in[1] = rstart+id;
+    in[1] = rstart+id+start;
     ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,v->comm);CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
