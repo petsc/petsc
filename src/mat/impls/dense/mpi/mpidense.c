@@ -590,7 +590,7 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
   int               fd;
   PetscInt          header[4],mmax,N = mat->cmap.N,i,j,m,k;
   PetscMPIInt       rank,tag  = ((PetscObject)viewer)->tag,size;
-  PetscScalar       *work,*v;
+  PetscScalar       *work,*v,*vv;
   Mat_SeqDense      *a = (Mat_SeqDense*)mdn->A->data;
   MPI_Status        status;
 
@@ -624,31 +624,31 @@ static PetscErrorCode MatView_MPIDense_Binary(Mat mat,PetscViewer viewer)
         m    = mat->rmap.n;
 	v    = a->v;
         for (j=0; j<N; j++) {
-	  for (i=0; i<m; i++) {
-	    work[i + j*N] = *v++;
+          for (i=0; i<m; i++) {
+	    work[j + i*N] = *v++;
 	  }
 	}
 	ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
-
         /* get largest work array to receive messages from other processes, excludes process zero */
         mmax = 0;
         for (i=1; i<size; i++) {
           mmax = PetscMax(mmax,mat->rmap.range[i+1] - mat->rmap.range[i]);
         }
-	ierr = PetscMalloc(mmax*N*sizeof(PetscScalar),&v);CHKERRQ(ierr);
+	ierr = PetscMalloc(mmax*N*sizeof(PetscScalar),&vv);CHKERRQ(ierr);
+        v = vv;
         for (k=1; k<size; k++) {
           m    = mat->rmap.range[k+1] - mat->rmap.range[k];
           ierr = MPI_Recv(v,m*N,MPIU_SCALAR,k,tag,mat->comm,&status);CHKERRQ(ierr);
 
-	  for (j=0; j<N; j++) {
-	    for (i=0; i<m; i++) {
-	      work[i + j*N] = *v++;
+          for (j=0; j<N; j++) {
+            for (i=0; i<m; i++) {
+              work[j + i*N] = *v++;
 	    }
 	  }
 	  ierr = PetscBinaryWrite(fd,work,m*N,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
         }
         ierr = PetscFree(work);CHKERRQ(ierr);
-        ierr = PetscFree(v);CHKERRQ(ierr);
+        ierr = PetscFree(vv);CHKERRQ(ierr);
       } else {
         ierr = MPI_Send(a->v,mat->rmap.n*mat->cmap.N,MPIU_SCALAR,0,tag,mat->comm);CHKERRQ(ierr);
       }

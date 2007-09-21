@@ -850,9 +850,9 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     /* write out matrix, by rows */
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
     v    = a->v;
-    for (i=0; i<m; i++) {
-      for (j=0; j<n; j++) {
-        vals[i + j*m] = *v++;
+    for (j=0; j<n; j++) {
+      for (i=0; i<m; i++) {
+        vals[j + i*n] = *v++;
       }
     }
     ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
