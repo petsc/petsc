@@ -132,8 +132,8 @@ EXTERN_C_BEGIN
 #  define BLASgemm_    ZGEMM
 #  define LAPACKgesvd_ ZGESVD
 #  define LAPACKgeev_  ZGEEV
-#  define LAPACKsyev_  ZSYEV
-#  define LAPACKsyevx_ ZSYEVX
+#  define LAPACKsyev_  ZHEEV  
+#  define LAPACKsyevx_ ZHEEVX 
 #  define LAPACKsygv_  ZSYGV
 #  define LAPACKsygvx_ ZSYGVX
 #  define LAPACKpttrs_ ZPTTRS 
