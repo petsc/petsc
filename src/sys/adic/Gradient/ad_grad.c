@@ -9,6 +9,10 @@
 */
 
 #include "petsc.h"
+/* Change macro in PetscLogFlops() so can be used in void function */
+#undef SETERRQ1
+#define SETERRQ1(ierr,b,c) CHKERRABORT(MPI_COMM_SELF,ierr) 
+
 #include <stdarg.h>
 
 #include "ad_deriv.h"
