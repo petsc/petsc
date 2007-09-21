@@ -23,13 +23,13 @@ class Configure(config.base.Configure):
     '''Find a default debugger and determine its arguments'''
     # We use the framework in order to remove the PETSC_ namespace
     if 'with-debugger' in self.framework.argDB:
-      self.framework.getExecutable(self.framework.argDB['with-debugger'], getFullPath = 1)
+      self.getExecutable(self.framework.argDB['with-debugger'], getFullPath = 1)
       if not hasattr(self,self.framework.argDB['with-debugger']):
         raise RuntimeError('Cannot locate debugger indicated using --with-debugger='+self.framework.argDB['with-debugger'])
     else:                               
-      self.framework.getExecutable('gdb', getFullPath = 1)
-      self.framework.getExecutable('dbx', getFullPath = 1)
-      self.framework.getExecutable('xdb', getFullPath = 1)
+      self.getExecutable('gdb', getFullPath = 1)
+      self.getExecutable('dbx', getFullPath = 1)
+      self.getExecutable('xdb', getFullPath = 1)
       
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1)
