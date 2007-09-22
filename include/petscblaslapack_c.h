@@ -100,8 +100,8 @@ EXTERN_C_BEGIN
 # define BLASgemm_    zgemm
 # define LAPACKgesvd_ zgesvd
 # define LAPACKgeev_  zgeev
-# define LAPACKsyev_  zsyev
-# define LAPACKsyevx_ zsyevx
+# define LAPACKsyev_  zheev /* zsyev */
+# define LAPACKsyevx_ zheevx /* zsyevx */
 # define LAPACKsygv_  zsygv
 # define LAPACKsygvx_ zsygvx
 # define LAPACKpttrs_ zpttrs 

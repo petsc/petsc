@@ -108,10 +108,10 @@ EXTERN void  ZGESVD(_fcd,_fcd,PetscBLASInt *,PetscBLASInt*,PetscScalar *,PetscBL
 #define LAPACKgeev_(a,b,c,d,e,f,g,h,i,j,k,l,m,n)    ZGEEV(_cptofcd((a),1),_cptofcd((b),1),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n))
 EXTERN void  ZGEEV(_fcd,_fcd,PetscBLASInt *,PetscScalar *,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
 
-#define LAPACKsyev_(a,b,c,d,e,f,g,h,i,j)            ZSYEV((a),(b),(c),(d),(e),(f),(g),(h),(i),(j))
-EXTERN void  ZSYEV(const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
-#define LAPACKsyevx_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u)    ZSYEVX((a),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
-EXTERN void  ZSYEVX(const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*);
+#define LAPACKsyev_(a,b,c,d,e,f,g,h,i,j)            ZHEEV((a),(b),(c),(d),(e),(f),(g),(h),(i),(j))
+EXTERN void  ZHEEV(const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*);
+#define LAPACKsyevx_(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u)    ZHEEVX((a),(b),(c),(d),(e),(f),(g),(h),(i),(j),(k),(l),(m),(n),(o),(p),(q),(r),(s),(t),(u))
+EXTERN void  ZHEEVX(const char*,const char*,const char*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscReal*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscReal*,PetscBLASInt*,PetscBLASInt*,PetscBLASInt*);
 
 #define LAPACKsygv_(a,b,c,d,e,f,g,h,i,j,k,l)        ZSYGV((a),_cptofcd((b),1),_cptofcd((c),1),(d),(e),(f),(g),(h),(i),(j),(k),(l))
 EXTERN void  ZSYGV(PetscBLASInt*,_fcd,_fcd,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscBLASInt*,PetscScalar*,PetscScalar*,PetscBLASInt*,PetscBLASInt*);
