@@ -153,17 +153,19 @@ struct _n_StageLog {
  */
 
 #if defined(PETSC_USE_COMPLEX)
+#define PetscLogFlopsNoCheck(n) (_TotalFlops += (4*n),0)
 #define PetscLogFlops(n) 0; \
   {\
     PetscLogDouble _tmp_flops = (n);   \
-    if (_tmp_flops < 0)  { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"PetscLogFlops: folp-count given is neagitive: %5.2f", _tmp_flops); } \
+    if (_tmp_flops < 0)  { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"PetscLogFlops: flop-count given is neagitive: %5.2f", _tmp_flops); } \
     _TotalFlops += 4*_tmp_flops; \
   }
 #else
+#define PetscLogFlopsNoCheck(n) (_TotalFlops += (n),0)
 #define PetscLogFlops(n) 0; \
   {\
     PetscLogDouble _tmp_flops = (n);   \
-    if (_tmp_flops < 0)  { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"PetscLogFlops: folp-count given is neagitive: %5.2f", _tmp_flops); } \
+    if (_tmp_flops < 0)  { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"PetscLogFlops: flop-count given is neagitive: %5.2f", _tmp_flops); } \
     _TotalFlops += _tmp_flops; \
   }
 #endif
