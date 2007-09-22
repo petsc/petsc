@@ -134,8 +134,10 @@ class Configure(config.package.Package):
 
     if self.framework.argDB['download-c-blas-lapack']:
       self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/f2cblaslapack.tar.gz'
+      self.downloadname = 'c-blas-lapack'
     elif self.framework.argDB['download-f-blas-lapack']:
       self.download= 'ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/fblaslapack.tar.gz'
+      self.downloadname = 'f-blas-lapack'
         
     if self.framework.argDB['download-c-blas-lapack'] == 1 or isinstance(self.framework.argDB['download-c-blas-lapack'], str):
       if isinstance(self.framework.argDB['download-c-blas-lapack'], str):
@@ -292,20 +294,15 @@ class Configure(config.package.Package):
     confdir = os.path.join(self.defaultInstallDir,self.arch,'conf')
     if not os.path.isdir(os.path.join(packages,f2c+'blaslapack')):
       self.framework.log.write('Actually need to ftp '+l+'blaslapack\n')
-      import urllib
+
+      import install.retrieval
+      retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
+      retriever.setup()
+          
       try:
-        urllib.urlretrieve(self.download,os.path.join(packages,f2c+'blaslapack.tar.gz'))
-      except:
-        raise RuntimeError('Error downloading '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
-      try:
-        self.executeShellCommand('cd '+packages+'; gunzip '+f2c+'blaslapack.tar.gz', log = self.framework.log, timeout = 360.0)
-      except:
-        raise RuntimeError('Error unzipping '+f2c+'blaslapack.tar.gz requested with -with-'+l+'-blas-lapack option')
-      try:
-        self.executeShellCommand('cd '+packages+'; tar -xf '+f2c+'blaslapack.tar', log = self.framework.log, timeout = 360.0)
-      except:
-        raise RuntimeError('Error doing tar -xf '+f2c+'blaslapack.tar requested with -with-'+l+'-blas-lapack option')
-      os.unlink(os.path.join(packages,f2c+'blaslapack.tar'))
+        retriever.genericRetrieve(self.download,packages,self.downloadname)
+      except RuntimeError, e:
+        raise RuntimeError(e)
       self.framework.actions.addArgument('BLAS/LAPACK', 'Download', 'Downloaded PETSc '+f2c+'blaslapack into '+os.path.dirname(libdir))
     else:
       self.framework.log.write('Found '+l+'blaslapack, do not need to download\n')
