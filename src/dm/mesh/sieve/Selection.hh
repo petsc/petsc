@@ -384,6 +384,7 @@ namespace ALE {
     };
   public:
     // This takes in a section and creates a submesh from the vertices in the section chart
+    //   This is a hyperplane of one dimension lower than the mesh
     static Obj<mesh_type> submesh_uninterpolated(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1, const bool boundaryFaces = true) {
       const int              dim        = (dimension > 0) ? dimension : mesh->getDimension()-1;
       Obj<mesh_type>         submesh    = new mesh_type(mesh->comm(), dim, mesh->debug());
@@ -395,6 +396,8 @@ namespace ALE {
       int                   *indices    = new int[faceSize];
       int                    f          = sieve->base()->size() + sieve->cap()->size();
       const int              debug      = mesh->debug();
+      const int              depth      = mesh->depth();
+      const int              height     = mesh->height();
       const typename int_section_type::chart_type&          chart    = label->getChart();
       const typename int_section_type::chart_type::iterator chartEnd = chart.end();
       PointSet               submeshVertices, submeshCells;
@@ -408,7 +411,7 @@ namespace ALE {
       const typename PointSet::const_iterator svEnd   = submeshVertices.end();
 
       for(typename PointSet::const_iterator sv_iter = svBegin; sv_iter != svEnd; ++sv_iter) {
-        const Obj<typename sieveAlg::supportArray>& cells = sieveAlg::nSupport(mesh, *sv_iter, mesh->depth());
+        const Obj<typename sieveAlg::supportArray>& cells = sieveAlg::nSupport(mesh, *sv_iter, depth);
         const typename sieveAlg::supportArray::iterator cBegin = cells->begin();
         const typename sieveAlg::supportArray::iterator cEnd   = cells->end();
     
@@ -416,7 +419,7 @@ namespace ALE {
         for(typename sieveAlg::supportArray::iterator c_iter = cBegin; c_iter != cEnd; ++c_iter) {
           if (debug) std::cout << "  Checking cell " << *c_iter << std::endl;
           if (submeshCells.find(*c_iter) != submeshCells.end())	continue;
-          const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *c_iter, mesh->height());
+          const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *c_iter, height);
           const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
           const typename sieveAlg::coneArray::iterator vEnd   = cone->end();
 
@@ -429,6 +432,8 @@ namespace ALE {
           }
           if ((int) face->size() > faceSize) {
             if (!boundaryFaces) throw ALE::Exception("Invalid fault mesh: Too many vertices of an element on the fault");
+            // Here we allow a set of vertices to lie completely on a boundary cell (like a corner tetrahedron)
+            //   We have to take all the faces, and discard those in the interior
             FaceInserter inserter(mesh, sieve, subSieve, f, *c_iter,
                                   numCorners, indices, &origVertices, &faceVertices, &submeshCells);
             PointArray faceVec(face->begin(), face->end());
@@ -452,6 +457,8 @@ namespace ALE {
       throw ALE::Exception("Not implemented");
     };
   public:
+    // This takes in a section and creates a submesh from the vertices in the section chart
+    //   This is a hyperplane of one dimension lower than the mesh
     static Obj<mesh_type> submesh(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1) {
       const int dim   = mesh->getDimension();
       const int depth = mesh->depth();
@@ -463,6 +470,8 @@ namespace ALE {
       }
       throw ALE::Exception("Cannot handle partially interpolated meshes");
     };
+    // This creates a submesh consisting of the union of the closures of the given points
+    //   This mesh is the same dimension as in the input mesh
     template<typename Points>
     static Obj<mesh_type> submesh(const Obj<mesh_type>& mesh, const Obj<Points>& points) {
       const Obj<sieve_type>& sieve     = mesh->getSieve();

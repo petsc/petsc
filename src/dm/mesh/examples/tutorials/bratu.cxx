@@ -743,6 +743,14 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
   // Exchange neighbors
   ierr = SectionRealComplete(section);CHKERRQ(ierr);
+  // Subtract the constant
+  if (m->hasRealSection("constant")) {
+    const Obj<ALE::Mesh::real_section_type>& constant = m->getRealSection("constant");
+    Obj<ALE::Mesh::real_section_type>        s;
+
+    ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    s->axpy(-1.0, constant);
+  }
   PetscFunctionReturn(0);
 }
 
