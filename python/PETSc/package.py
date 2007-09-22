@@ -263,7 +263,6 @@ class Package(config.base.Configure):
 
     retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
-    failureMessage = []
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
       try:
@@ -271,9 +270,8 @@ class Package(config.base.Configure):
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
-        failureMessage.append('  Failed to download '+url+'\n'+str(e))
-    failureMessage = 'Unable to download '+self.package+' from locations '+str(self.download)+'\n'+'\n'.join(failureMessage)
-    raise RuntimeError(failureMessage)
+        pass
+    raise RuntimeError(e)
 
   # Check is the dir matches something in the excludename list
   def matchExcludeDir(self,dir):
