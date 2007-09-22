@@ -45,20 +45,26 @@ class Retriever(logger.Logger):
        - All the logic for removing old versions, updating etc. must move'''
     import config.base
 
-    self.logPrint('Downloading '+url+' to '+os.path.join(root, name))
-    archive    = name+'.tar'
+    archive    = '_d_'+name+'.tar'
     archiveZip = archive+'.gz'
     localFile  = os.path.join(root, archiveZip)
+
+    self.logPrint('Downloading '+url+' to '+localFile)
+    
     if os.path.exists(localFile):
       os.remove(localFile)
     try:
       urllib.urlretrieve(url, localFile)
     except Exception, e:
+      filename   = os.path.basename(urlparse.urlparse(url)[2])
+
       failureMessage = '''\
-Unable to download %s
-You may be off the network. Connect to the internet and run config/configure.py again
-or obtain %s and rerun using --download-%s=<location of downloaded tarball>
-''' % (name, url, name)
+Unable to download package %s from: %s
+* If your network is disconnected - please reconnect and rerun config/configure.py
+* Alternatively, you can download the above URL manually, to /yourselectedlocation/%s
+  and use the configure option:
+  --download-%s=/yourselectedlocation/%s
+''' % (name, url, filename, name, filename)
       raise RuntimeError(failureMessage)
     self.logPrint('Uncompressing '+localFile)
     try:
