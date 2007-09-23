@@ -219,7 +219,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
     for(j = level; j > 0; j--) {
       ierr = PetscPrintf(dmmg[0]->comm, "  FAS level %d\n", j);CHKERRQ(ierr);
       /* Relax on fine mesh to obtain x^{new}_{fine}, residual^{new}_{fine} = F_{fine}(x^{new}_{fine}) \approx 0 */
-      ierr = Relax_Mesh(dmmg, (Mesh) dmmg[j]->dm, SOR_SYMMETRIC_SWEEP, dmmg[j]->presmooth, dmmg[j]->x);CHKERRQ(ierr);
+      ierr = Relax_Mesh(dmmg, (Mesh) dmmg[j]->dm, SOR_SYMMETRIC_SWEEP, dmmg[j]->presmooth, dmmg[j]->x, dmmg[j]->r);CHKERRQ(ierr);
       ierr = DMMGFormFunctionMesh(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
 
       /* residual^{old}_fine} - residual^{new}_{fine} = F(x^{old}_{fine}) - residual^{new}_{fine} */
@@ -268,7 +268,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
         dmmg[level]->rrtol = norm*dmmg[level]->rtol;
       }
     }
-    ierr = Relax_Mesh(dmmg, (Mesh) dmmg[0]->dm, SOR_SYMMETRIC_SWEEP, dmmg[0]->coarsesmooth, dmmg[0]->x);CHKERRQ(ierr);
+    ierr = Relax_Mesh(dmmg, (Mesh) dmmg[0]->dm, SOR_SYMMETRIC_SWEEP, dmmg[0]->coarsesmooth, dmmg[0]->x, dmmg[0]->r);CHKERRQ(ierr);
     if (level == 0 || dmmg[0]->monitorall) {
       ierr = DMMGFormFunctionMesh(0,dmmg[0]->x,dmmg[0]->w,dmmg[0]);CHKERRQ(ierr);
       if (fasDebug) {
@@ -306,7 +306,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
 
       /* Relax residual_fine - F(x_fine)  = 0 */
       for (k=0; k<dmmg[j]->postsmooth; k++) {
-        ierr = Relax_Mesh(dmmg, (Mesh) dmmg[j]->dm, SOR_SYMMETRIC_SWEEP, 1, dmmg[j]->x);CHKERRQ(ierr);
+        ierr = Relax_Mesh(dmmg, (Mesh) dmmg[j]->dm, SOR_SYMMETRIC_SWEEP, 1, dmmg[j]->x, dmmg[j]->r);CHKERRQ(ierr);
       }
 
       if (dmmg[j]->monitorall) {
