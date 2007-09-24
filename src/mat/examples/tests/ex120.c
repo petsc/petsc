@@ -109,7 +109,6 @@ PetscInt main(PetscInt argc,char **args)
   bn    = (PetscBLASInt)n;
   ierr = PetscMalloc(n*sizeof(PetscReal),&evals);CHKERRQ(ierr);
   ierr = PetscMalloc(lwork*sizeof(PetscScalar),&work);CHKERRQ(ierr);
-  //ierr = PetscMalloc((3*n-2)*sizeof(PetscReal),&rwork);CHKERRQ(ierr); 
   ierr = MatGetArray(A_dense,&arrayA);CHKERRQ(ierr);
 
   if (TestZHEEV){ /* test zheev() */
@@ -126,11 +125,10 @@ PetscInt main(PetscInt argc,char **args)
     ierr = PetscMalloc((7*n+1)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
     ierr = PetscMalloc((5*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);
     ierr = PetscMalloc((n+1)*sizeof(PetscBLASInt),&ifail);CHKERRQ(ierr);
-    //ifail = iwork + 5*n;
       
     /* in the case "I", vl and vu are not referenced */
     vl = 0.0; vu = 8.0;
-    //LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);  
+    LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);  
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(ifail);CHKERRQ(ierr);
   }
@@ -157,10 +155,9 @@ PetscInt main(PetscInt argc,char **args)
   ierr = CkEigenSolutions(cklvl,A,il-1,iu-1,evals,evecs,tols);CHKERRQ(ierr);
   for (i=0; i<nevs; i++){ ierr = VecDestroy(evecs[i]);CHKERRQ(ierr);}
   ierr = PetscFree(evecs);CHKERRQ(ierr);
-#ifdef TMP    
+    
   /* Free work space. */
-  if (TestSYEVX){ierr = PetscFree(evecs_array);CHKERRQ(ierr);}
-#endif //TMP    
+  if (!TestZHEEV){ierr = PetscFree(evecs_array);CHKERRQ(ierr);}  
   ierr = PetscFree(evals);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
   ierr = PetscFree(rwork);CHKERRQ(ierr);

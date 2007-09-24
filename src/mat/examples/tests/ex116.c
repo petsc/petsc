@@ -16,7 +16,7 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  Mat            A,A_dense; //,mats[2],A_sp;    
+  Mat            A,A_dense;    
   Vec            *evecs;
   PetscViewer    fd;                /* viewer */
   char           file[1][PETSC_MAX_PATH_LEN];     /* input file name */

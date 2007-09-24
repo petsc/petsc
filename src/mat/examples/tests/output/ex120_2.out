@@ -1,0 +1,3 @@
+ LAPACKsyevx: compute 1 to 7-th eigensolutions...
+    max|(x_j^T*x_i) - delta_ji|: 6.04172e-16
+    max_resi:                    7.6846e-10
