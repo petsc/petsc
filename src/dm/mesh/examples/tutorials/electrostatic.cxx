@@ -37,6 +37,7 @@ typedef struct {
   double        detJ;                        // The determinant of J
   double       *coords;                      // The coordinates of a quadrature point
   double       *normal;                      // The normal to the active face
+  double       *tangent;                     // The tangent to the active face
   // Physical Data
   double        waterEpsilon;                // The dielectric constant for the water
   double        particleEpsilon;             // The dielectric constant for the water
@@ -52,6 +53,10 @@ PetscScalar zero(const double x[]) {
 
 PetscScalar constant(const double x[]) {
   return -4.0;
+}
+
+PetscScalar constantField_2d(const double x[]) {
+  return -x[0];
 }
 
 PetscScalar nonlinear_2d(const double x[]) {
@@ -326,7 +331,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       m->view("Mesh");
     }
-    ierr = PetscMalloc5(dim,double,&options->coords,dim,double,&options->v0,dim*dim,double,&options->J,dim*dim,double,&options->invJ,dim,double,&options->normal);CHKERRQ(ierr);
+    ierr = PetscMalloc6(dim,double,&options->coords,dim,double,&options->v0,dim*dim,double,&options->J,dim*dim,double,&options->invJ,dim,double,&options->normal,dim,double,&options->tangent);CHKERRQ(ierr);
     *dm = (DM) mesh;
   }
   PetscFunctionReturn(0);
@@ -344,7 +349,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
   } else {
     ierr = MeshDestroy(options->bdMesh);CHKERRQ(ierr);
     ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
-    ierr = PetscFree5(options->coords, options->v0, options->J, options->invJ, options->normal);CHKERRQ(ierr);
+    ierr = PetscFree6(options->coords, options->v0, options->J, options->invJ, options->normal, options->tangent);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -532,6 +537,43 @@ PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscS
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "computeFaceGeometry"
+PetscErrorCode computeFaceGeometry(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::point_type cell, const ALE::Mesh::point_type face, const int f, const Obj<ALE::Mesh::arrow_section_type>& orientation, const double invJ[], double normal[], double tangent[]) {
+  const ALE::Mesh::arrow_section_type::point_type arrow(cell, face);
+  const bool   reversed = (orientation->restrictPoint(arrow)[0] == -1);
+  const int    dim      = mesh->getDimension();
+  PetscScalar  norm     = 0.0;
+  double      *vec      = tangent;
+
+  PetscFunctionBegin;
+  if (f == 0) {
+    vec[0] = 0.0;        vec[1] = -1.0;
+  } else if (f == 1) {
+    vec[0] = 0.70710678; vec[1] = 0.70710678;
+  } else if (f == 2) {
+    vec[0] = -1.0;       vec[1] = 0.0;
+  }
+  for(int d = 0; d < dim; ++d) {
+    normal[d] = 0.0;
+    for(int e = 0; e < dim; ++e) normal[d] += invJ[e*dim+d]*vec[e];
+    if (reversed) normal[d] = -normal[d];
+    norm += normal[d]*normal[d];
+  }
+  norm = std::sqrt(norm);
+  for(int d = 0; d < dim; ++d) {
+    normal[d] /= norm;
+  }
+  // 2D only right now
+  tangent[0] =  normal[1];
+  tangent[1] = -normal[0];
+  std::cout << "Cell: " << cell << " Face: " << face << "("<<f<<")" << std::endl;
+  for(int d = 0; d < dim; ++d) {
+    std::cout << "Normal["<<d<<"]: " << normal[d] << " Tangent["<<d<<"]: " << tangent[d] << std::endl;
+  }
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode cellResidual(const Obj<ALE::Discretization>& disc, PetscScalar x[], PetscScalar t_der[], PetscScalar b_der[], PetscScalar elemVec[], PetscScalar elemMat[], double epsilon, Options *options) {
   const int      dim    = options->dim;
   double        *v0     = options->v0;
@@ -600,11 +642,12 @@ PetscErrorCode cellResidual(const Obj<ALE::Discretization>& disc, PetscScalar x[
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode faceResidual(const Obj<ALE::Mesh::label_type>& particleBd, const Obj<ALE::Discretization>& disc, PetscScalar x[], PetscScalar b_der[], PetscScalar elemVec[], PetscScalar elemMat[], double epsilonJump, Options *options) {
-  const int      dim    = options->dim;
-  double        *invJ   = options->invJ;
-  double         detJ   = options->detJ;
-  double        *normal = options->normal;
+PetscErrorCode faceResidual(const Obj<ALE::Mesh::label_type>& particleBd, const Obj<ALE::Discretization>& disc, PetscScalar x[], PetscScalar b_der[], PetscScalar elemVec[], PetscScalar elemMat[], double epsilon, Options *options) {
+  const int      dim     = options->dim;
+  double        *invJ    = options->invJ;
+  double         detJ    = options->detJ;
+  double        *normal  = options->normal;
+  double        *tangent = options->tangent;
   const int      numQuadPoints = disc->getQuadratureSize();
   const double  *quadWeights   = disc->getQuadratureWeights();
   const int      numBasisFuncs = disc->getBasisSize();
@@ -627,9 +670,12 @@ PetscErrorCode faceResidual(const Obj<ALE::Mesh::label_type>& particleBd, const 
           b_der[d] = 0.0;
           for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
         }
-        PetscScalar product = 0.0;
-        for(int d = 0; d < dim; ++d) product += normal[d]*b_der[d];
-        elemMat[f*numBasisFuncs+g] += basis[q*numBasisFuncs+f]*epsilonJump*product*quadWeights[q]*detJ;
+        PetscScalar productN = 0.0, productT = 0.0;
+        for(int d = 0; d < dim; ++d) {
+          productN += normal[d]*b_der[d];
+          productT += tangent[d]*b_der[d];
+        }
+        elemMat[f*numBasisFuncs+g] += basis[q*numBasisFuncs+f]*(epsilon*productN + productT)*quadWeights[q]*detJ;
       }
     }
   }    
@@ -693,12 +739,35 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     ierr = cellResidual(disc, x, t_der, b_der, elemVec, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
   }
+  // Loop over water boundary
+  const Obj<ALE::Mesh::label_type>&         particleBd   = m->getLabel("particleBd");
+  const Obj<ALE::Mesh::label_sequence>&     waterBdCells = m->getLabelStratum("particleBd", 3);
+  const ALE::Mesh::label_sequence::iterator wBdBegin     = waterBdCells->begin();
+  const ALE::Mesh::label_sequence::iterator wBdEnd       = waterBdCells->end();
+
+  for(ALE::Mesh::label_sequence::iterator c_iter = wBdBegin; c_iter != wBdEnd; ++c_iter) {
+    const Obj<ALE::Mesh::sieve_type::traits::coneSequence>&     cone   = sieve->cone(*c_iter);
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cBegin = cone->begin();
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cEnd   = cone->end();
+    int                                                         f      = 0;
+
+    m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
+    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
+      if (m->getValue(particleBd, *f_iter)) {
+        PetscScalar *x;
+
+        ierr = computeFaceGeometry(m, *c_iter, *f_iter, f, orientation, options->invJ, options->normal, options->tangent);CHKERRQ(ierr);
+        ierr = SectionRealRestrict(X, *f_iter, &x);CHKERRQ(ierr);
+        ierr = faceResidual(particleBd, bdDisc, x, b_der, elemVec, elemMat, options->waterEpsilon, options);CHKERRQ(ierr);
+        ierr = SectionRealUpdateAdd(section, *f_iter, elemVec);CHKERRQ(ierr);
+      }
+    }
+  }
   // Loop over particle boundary
-  const Obj<ALE::Mesh::label_type>&         particleBd      = m->getLabel("particleBd");
   const Obj<ALE::Mesh::label_sequence>&     particleBdCells = m->getLabelStratum("particleBd", 2);
   const ALE::Mesh::label_sequence::iterator pBdBegin        = particleBdCells->begin();
   const ALE::Mesh::label_sequence::iterator pBdEnd          = particleBdCells->end();
-  const double                              jump            = options->particleEpsilon - options->waterEpsilon;
 
   for(ALE::Mesh::label_sequence::iterator c_iter = pBdBegin; c_iter != pBdEnd; ++c_iter) {
     const Obj<ALE::Mesh::sieve_type::traits::coneSequence>&     cone   = sieve->cone(*c_iter);
@@ -710,34 +779,11 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
       if (m->getValue(particleBd, *f_iter)) {
-        const ALE::Mesh::arrow_section_type::point_type arrow(*c_iter, *f_iter);
-        const bool   reversed = (orientation->restrictPoint(arrow)[0] == -1);
-        PetscScalar  norm = 0.0;
         PetscScalar *x;
 
-        if (f == 0) {
-          t_der[0] = 0.0;        t_der[1] = -1.0;
-        } else if (f == 1) {
-          t_der[0] = 0.70710678; t_der[1] = 0.70710678;
-        } else if (f == 2) {
-          t_der[0] = -1.0;       t_der[1] = 0.0;
-        }
-        for(int d = 0; d < dim; ++d) {
-          options->normal[d] = 0.0;
-          for(int e = 0; e < dim; ++e) options->normal[d] += options->invJ[e*dim+d]*t_der[e];
-          if (reversed) options->normal[d] = -options->normal[d];
-          //options->normal[d] *= std::sqrt(options->detJ);
-          norm += options->normal[d]*options->normal[d];
-        }
-        for(int d = 0; d < dim; ++d) {
-          options->normal[d] /= std::sqrt(norm);
-        }        
-        if (reversed) {
-          options->normal[0] = -options->normal[0];
-          options->normal[1] = -options->normal[1];
-        }
+        ierr = computeFaceGeometry(m, *c_iter, *f_iter, f, orientation, options->invJ, options->normal, options->tangent);CHKERRQ(ierr);
         ierr = SectionRealRestrict(X, *f_iter, &x);CHKERRQ(ierr);
-        ierr = faceResidual(particleBd, bdDisc, x, b_der, elemVec, elemMat, jump, options);CHKERRQ(ierr);
+        ierr = faceResidual(particleBd, bdDisc, x, b_der, elemVec, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
         ierr = SectionRealUpdateAdd(section, *f_iter, elemVec);CHKERRQ(ierr);
       }
     }
@@ -1281,6 +1327,10 @@ PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options)
   }
   delete [] centroid;
   ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
+  // Label:
+  //   particles faces:   1
+  //   particle bd cells: 2
+  //   water bd cells:    3
   const Obj<ALE::Mesh::sieve_type>&         sieve           = m->getSieve();
   const Obj<ALE::Mesh::label_type>&         particleBdLabel = m->createLabel("particleBd");
   const Obj<ALE::Mesh::label_sequence>&     faces           = m->heightStratum(1);
@@ -1299,7 +1349,9 @@ PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options)
         m->setValue(particleBdLabel, *f_iter, 1);
         if (valA == 2) {
           m->setValue(particleBdLabel, cellA, 2);
+          m->setValue(particleBdLabel, cellB, 3);
         } else {
+          m->setValue(particleBdLabel, cellA, 3);
           m->setValue(particleBdLabel, cellB, 2);
         }
       }
@@ -1319,9 +1371,9 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       if (options->lambda > 0.0) {
         options->func    = nonlinear_2d;
       } else {
-        options->func    = constant;
+        options->func    = zero;
       }
-      options->exactFunc = quadratic_2d;
+      options->exactFunc = constantField_2d;
     } else {
       options->func      = linear_2d;
       options->exactFunc = cubic_2d;
