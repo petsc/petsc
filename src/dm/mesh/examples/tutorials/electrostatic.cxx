@@ -1305,7 +1305,7 @@ PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options)
       }
     }
   }
-  particleBdLabel->view("particleBdLabel");
+  if (options->debug) {particleBdLabel->view("particleBdLabel");}
   PetscFunctionReturn(0);
 }
 
