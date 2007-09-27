@@ -173,6 +173,9 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
   PetscFunctionReturn(0);
 }
 
+
+PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options);
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateParticle"
 PetscErrorCode CreateParticle(Mesh mesh, SectionInt *particle)
@@ -181,6 +184,7 @@ PetscErrorCode CreateParticle(Mesh mesh, SectionInt *particle)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, particle);CHKERRQ(ierr);
   const Obj<ALE::Mesh::label_sequence>&     cells = m->heightStratum(0);
@@ -690,6 +694,7 @@ PetscErrorCode faceResidual(const Obj<ALE::Mesh::label_type>& particleBd, const 
 
 #undef __FUNCT__
 #define __FUNCT__ "Rhs_Unstructured"
+
 PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
 {
   Options       *options = (Options *) ctx;
@@ -712,6 +717,9 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = SectionRealZero(section);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscScalar,&t_der,dim,PetscScalar,&b_der,numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   // Loop over water cells
+  
+  if (!m->hasLabel("particle")){ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
+
   const Obj<ALE::Mesh::label_sequence>&     waterCells = m->getLabelStratum("particle", 1);
   const ALE::Mesh::label_sequence::iterator wBegin     = waterCells->begin();
   const ALE::Mesh::label_sequence::iterator wEnd       = waterCells->end();
@@ -1254,6 +1262,9 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
 
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&t_der,dim,PetscScalar,&b_der,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+
+  if (!m->hasLabel("particle")){ ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
+
   // Loop over water cells
   const Obj<ALE::Mesh::label_sequence>&     waterCells = m->getLabelStratum("particle", 1);
   const ALE::Mesh::label_sequence::iterator wBegin     = waterCells->begin();
@@ -1415,7 +1426,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
-    ierr = CreateParticleLabel(mesh, options); CHKERRQ(ierr);
+   // ierr = CreateParticleLabel(mesh, options); CHKERRQ(ierr);
     const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
     s->setDebug(options->debug);
     m->setupField(s);
@@ -1495,6 +1506,7 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     delete [] values;
     delete [] v0;
     delete [] J;
+    if (!m->hasLabel("particle")){ierr = CreateParticleLabel((Mesh)mesh, options);CHKERRQ(ierr);}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
     if (flag) {s->view("Exact Solution");}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);

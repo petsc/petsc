@@ -59,13 +59,149 @@ void SetupTriangulateio(triangulateio * input, triangulateio * output) {
 }
 #endif
 
+double vertex_angle (const ALE::Obj<ALE::Mesh::real_section_type> coords, int dim, ALE::Mesh::point_type p, ALE::Mesh::point_type q, ALE::Mesh::point_type r) {
+
+// o is our origin point, p is one endpoint, q is the other; find their angle given the coordinates
+  double p_coords[dim], q_coords[dim], r_coords[dim], mag_q, mag_r, dot_product, angle;
+  PetscErrorCode ierr;
+  ierr = PetscMemcpy(p_coords, coords->restrictPoint(p), dim*sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMemcpy(q_coords, coords->restrictPoint(q), dim*sizeof(double));CHKERRQ(ierr);
+  ierr = PetscMemcpy(r_coords, coords->restrictPoint(r), dim*sizeof(double));CHKERRQ(ierr);
+  for (int i = 0; i < dim; i++) {
+    mag_q += (p_coords[i] - q_coords[i])*(p_coords[i] - q_coords[i]);
+    mag_r += (p_coords[i] - r_coords[i])*(p_coords[i] - r_coords[i]);
+    dot_product += (p_coords[i] -q_coords[i])*(p_coords[i] - r_coords[i]);
+  }
+  if (mag_q == 0 || mag_r == 0) return 0.;
+  angle = acos(dot_product/sqrt(mag_q*mag_r));
+  return angle;
+} 
+
+double Curvature(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type v) {
+  //Make it work for 2D and 3D in an abstract fashion.  we know that the 
+  //integral of the curvature over a triangle fan in 3D is merely the sum
+  //of the angles radiating from its centerpoint minus 2pi, and that
+  //the point on the triangle fan will be a singularity of curvature
+
+  double pi = 3.14159265358979323846;
+  const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
+  double curvature;
+//  PetscErrorCode ierr;
+  int dim = m->getDimension();  
+  if (m->depth(v) != 0) {
+    throw ALE::Exception("Curvature only defined on vertices");
+  }
+
+  double triangleSum = 0.;
+
+  ALE::Obj<ALE::Mesh::sieve_type> s = m->getSieve();
+
+  if (dim == 3) {
+    if (m->depth() == 1) { //uninterpolated case, we have to ID the faces
+      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> cells = s->support(v);
+      ALE::Mesh::sieve_type::supportSequence::iterator c_iter = cells->begin();
+      ALE::Mesh::sieve_type::supportSequence::iterator c_iter_end = cells->end();
+      while (c_iter != c_iter_end) {
+        //why must cells and corners both start with c?
+        ALE::Obj<ALE::Mesh::sieve_type::coneSequence> tips = s->cone(*c_iter);
+        ALE::Mesh::sieve_type::coneSequence::iterator t_iter = tips->begin();
+        ALE::Mesh::sieve_type::coneSequence::iterator t_iter_exclude = tips->begin();
+        ALE::Mesh::sieve_type::coneSequence::iterator t_iter_end = tips->end();
+        ALE::Obj<ALE::Mesh::sieve_type::supportSet> face;
+        while (t_iter_exclude != t_iter_end) {
+          face->clear();
+          if (*t_iter_exclude != v) {
+            t_iter = tips->begin();
+            while (t_iter != t_iter_end) {
+              //make the face into a supportSet
+              if (t_iter != t_iter_exclude) {
+                face->insert(*t_iter);
+              }
+              t_iter++;
+            }
+            if (s->nJoin1(face)->size() == 1) { //face on boundary
+              //compute the angle
+              if (face->size() != 3) throw ALE::Exception("Curvature: Bad face size");
+              ALE::Mesh::sieve_type::supportSet::iterator tf_iter = face->begin();
+              ALE::Mesh::sieve_type::supportSet::iterator tf_iter_end = face->end();
+              
+              ALE::Mesh::point_type v_op[2]; //opposing vertices
+              int index = 0;
+              while (tf_iter != tf_iter_end) {
+                if (*tf_iter != v) {
+                  v_op[index] = *tf_iter;
+                  index++;
+                }
+                tf_iter++;
+              }
+              triangleSum += vertex_angle(coordinates, dim, v, v_op[0], v_op[1]);
+            } //end face-on-boundary if
+          } //end t_iter_exclude != v if
+          t_iter_exclude++;
+        }
+        c_iter++;
+      }
+    } else {
+    //the triangles are there for us!
+      ALE::Obj<ALE::Mesh::sieve_type::supportArray> faces = s->nSupport(v, 2);
+      ALE::Mesh::sieve_type::supportArray::iterator f_iter = faces->begin();
+      ALE::Mesh::sieve_type::supportArray::iterator f_iter_end = faces->end();
+      while (f_iter != f_iter_end) {
+        if (s->support(*f_iter)->size() == 1) { //boundary edge
+          ALE::Obj<ALE::Mesh::sieve_type::coneSequence> tips = s->cone(*f_iter);
+          if (tips->size() != 3) throw ALE::Exception("Curvature: wrong size face");
+          ALE::Mesh::sieve_type::coneSequence::iterator tf_iter = tips->begin();
+          ALE::Mesh::sieve_type::coneSequence::iterator tf_iter_end = tips->end();
+          int index = 0;
+          ALE::Mesh::point_type v_op[2];
+          while (tf_iter != tf_iter_end) {
+                if (*tf_iter != v) {
+                  v_op[index] = *tf_iter;
+                  index++;
+                }
+                tf_iter++;
+          }
+          triangleSum += vertex_angle(coordinates, dim, v, v_op[0], v_op[1]);
+        }
+        f_iter++;
+      }
+    }
+    curvature = 2*pi - triangleSum;
+  } else if (dim == 2) {
+    ALE::Obj<ALE::Mesh::sieve_type::supportArray> surrounding_triangles = s->nSupport(v, m->depth());
+    ALE::Mesh::sieve_type::supportArray::iterator st_iter = surrounding_triangles->begin();
+    ALE::Mesh::sieve_type::supportArray::iterator st_iter_end = surrounding_triangles->end();
+    while (st_iter != st_iter_end) {
+      ALE::Obj<ALE::Mesh::sieve_type::coneArray> tips = s->nCone(*st_iter, m->depth());
+      if (tips->size() != 3) throw ALE::Exception("Curvature: not a triangle!");
+      ALE::Mesh::sieve_type::coneArray::iterator t_iter = tips->begin();
+      ALE::Mesh::sieve_type::coneArray::iterator t_iter_end = tips->end();
+      ALE::Mesh::point_type v_op[2];
+      int index = 0;
+      while (t_iter != t_iter_end) {
+        if (*t_iter != v) {
+          v_op[index] = *t_iter;
+          index++;
+        }
+        t_iter++;
+      }
+      triangleSum += vertex_angle(coordinates, dim, v, v_op[0], v_op[1]);
+      st_iter++;
+    }
+    curvature = fabs(triangleSum - pi);    
+  } //end of dimension 2 case
+  return curvature;
+}
+
+
+#if 0
+
 double Curvature_2D(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type p) {
   PetscErrorCode ierr;
   const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   ALE::Obj<ALE::Mesh::label_type> boundary = m->getLabel("marker");
   int dim = m->getDimension();
   if (dim != 2) throw ALE::Exception("Called the 2D curvature routine on a non-2D mesh.");
-  if (m->height(p) != 2) throw ALE::Exception("Curvatures available for interpolated meshes only.");
   double pCoords[dim], qCoords[dim], rCoords[dim];
   double normvec[dim];
   
@@ -237,6 +373,8 @@ double Curvature(ALE::Obj<ALE::Mesh> m, ALE::Mesh::point_type p) {
   else throw ALE::Exception("Cannot do Curvature in dimensions other than 2 and 3D.");
 }
 
+#endif
+
 //MeshSpacingFunction: Build the spacing function in the "spacing" section on the mesh.  
 
 PetscErrorCode MeshSpacingFunction(Mesh mesh) {
@@ -297,10 +435,44 @@ PetscErrorCode MeshIDBoundary(Mesh mesh) {
   //to make it work for interpolated and noninterpolated meshes we will only work with the top and bottom
   int interplevels = m->height(*m->depthStratum(0)->begin());
   if (interplevels == 1) { //noninterpolated case -- fix later as join is broken
-    throw ALE::Exception("Cannot Properly ID the boundary for non-interpolated meshes (Join is broken)");
-   //ACTUALLY: go over cells, if a cell has support(cone(cell))->size <= dim it's on the boundary
-   //do this later, as we only care about interpolated right now and this is only used for
-   //meshes we're given scant information about.
+    //throw ALE::Exception("Cannot Properly ID the boundary for non-interpolated meshes (Join is broken)");
+    ALE::Obj<ALE::Mesh::label_sequence> cells = m->heightStratum(0);
+    ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
+    ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
+    while (c_iter != c_iter_end) {
+      //for now just do for simplicial meshes
+      ALE::Obj<ALE::Mesh::sieve_type::coneSequence> corners = m->getSieve()->cone(*c_iter);
+      ALE::Mesh::sieve_type::coneSequence::iterator v_iter = corners->begin();
+      ALE::Mesh::sieve_type::coneSequence::iterator v_remove = corners->begin();
+      ALE::Mesh::sieve_type::coneSequence::iterator v_iter_end = corners->end();
+      while (v_remove != v_iter_end) {
+        ALE::Obj<ALE::Mesh::sieve_type::supportSet> face = ALE::Mesh::sieve_type::supportSet();
+        v_iter = corners->begin();
+        while (v_iter != v_iter_end) {
+          if (v_iter != v_remove) {
+          face->insert(*v_iter);
+          }
+          v_iter++;
+        }
+        if (m->getSieve()->nJoin1(face)->size() == 1) {
+          ALE::Mesh::sieve_type::supportSet::iterator f_iter = face->begin();
+          ALE::Mesh::sieve_type::supportSet::iterator f_iter_end = face->end();
+          while (f_iter != f_iter_end){
+            m->setValue(boundary, *f_iter, 1);
+            ALE::Obj<ALE::Mesh::sieve_type::supportSequence> f_support = m->getSieve()->support(*f_iter);
+            ALE::Mesh::sieve_type::supportSequence::iterator fs_iter = f_support->begin();
+            ALE::Mesh::sieve_type::supportSequence::iterator fs_iter_end = f_support->end();
+            while (fs_iter != fs_iter_end) {
+              m->setValue(boundary,*fs_iter, 2);
+              fs_iter++;
+            }
+            f_iter++;
+          }
+       }
+        v_remove++;
+      }
+      c_iter++;
+    }
   } else {
     const ALE::Obj<ALE::Mesh::label_sequence>& faces = m->heightStratum(1);
     ALE::Mesh::label_sequence::iterator f_iter = faces->begin();
@@ -578,14 +750,13 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
     }
     newmesh->markBoundaryCells("marker", 1, 2, true);
     newmesh->setupField(s);
-
     ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
     return newmesh;
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateHierarchyLabel_Link"
-PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLevels, Mesh * outmeshes, Mat * outmats = PETSC_NULL) {
+PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLevels, Mesh * outmeshes, Mat * outmats = PETSC_NULL, double curvatureCutoff = 1.0) {
     PetscErrorCode ierr;
   
   PetscFunctionBegin;
@@ -609,9 +780,9 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
   
   ierr = MeshGetMesh(finemesh, m);CHKERRQ(ierr);
   int interplevels = m->height(*m->depthStratum(0)->begin());
-  if (interplevels == 1) { //noninterpolated case -- fix later as join is broken
-    throw ALE::Exception("Cannot Coarsen a Non-Interpolated Mesh (for now, fix is easy)");
-  }
+  //if (interplevels == 1) { //noninterpolated case -- fix later as join is broken
+  //  throw ALE::Exception("Cannot Coarsen a Non-Interpolated Mesh (for now, fix is easy)");
+  //}
   int dim = m->getDimension();
 
   if (!m->hasLabel("marker"))ierr = MeshIDBoundary(finemesh);CHKERRQ(ierr);
@@ -619,28 +790,35 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
 
   const ALE::Obj<ALE::Mesh::real_section_type>& coordinates = m->getRealSection("coordinates");
   const ALE::Obj<ALE::Mesh::real_section_type>& spacing = m->getRealSection("spacing");
+  const ALE::Obj<ALE::Mesh::int_section_type>& seen = m->getIntSection("seen");
+  seen->setFiberDimension(m->depthStratum(0), 1);
+  m->allocate(seen);
   const ALE::Obj<ALE::Mesh::label_type> hdepth = m->createLabel("hdepth");
   if (info)PetscPrintf(m->comm(), "Original Mesh: %d vertices, %d elements\n", m->depthStratum(0)->size(), m->heightStratum(0)->size());
   const ALE::Obj<ALE::Mesh::sieve_type> sieve = m->getSieve();
   const ALE::Obj<ALE::Mesh::label_sequence>& vertices = m->depthStratum(0);
   ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
   ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
+  ALE::Mesh::point_type max_vertex_index = -1;
 
   //Setup, find the minimum and maximum spacing values and force in high-curvature nodes.
+
   while(v_iter != v_iter_end) {
 
     v_point = *v_iter;
     v_bound = m->getValue(boundary, v_point);
     m->setValue(hdepth, v_point, 0);
     v_space = *spacing->restrictPoint(v_point);
-
+    if (*v_iter > max_vertex_index) max_vertex_index = *v_iter;
     if ((v_space > maxspace) || (maxspace == -1.)) maxspace = v_space;
     if ((v_space < minspace) || (minspace == -1.)) minspace = v_space;
-
-    if (m->depth(v_point) == 0 && v_bound == 1) if (Curvature(m, v_point) > 0.2) {
-      m->setValue(hdepth, v_point, nLevels-1);
+    if (m->depth(v_point) == 0 && v_bound == 1) {
+        double cur_curvature = Curvature(m, v_point);
+        if (info && fabs(cur_curvature) > curvatureCutoff) PetscPrintf(m->comm(), "Curvy point: %f\n", cur_curvature);
+        if (fabs(cur_curvature) > curvatureCutoff) m->setValue(hdepth, v_point, nLevels-1);
     }
-
+    int pt_val = 0;
+    seen->updatePoint(*v_iter, &pt_val);
     v_iter++;
   }
   for (int curLevel = nLevels-1; curLevel > 0; curLevel--) {
@@ -653,15 +831,37 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
     ALE::Obj<ALE::Mesh::label_type> coarsen_candidates = m->createLabel("candidates");
     v_iter = vertices->begin();
     v_iter_end = vertices->end();
-    while (v_iter != v_iter_end) {
-      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> adjacent_edges = sieve->support(*v_iter);
-      ALE::Mesh::sieve_type::supportSequence::iterator ae_iter = adjacent_edges->begin();
-      ALE::Mesh::sieve_type::supportSequence::iterator ae_iter_end = adjacent_edges->end();
-      while (ae_iter != ae_iter_end) {
-        coarsen_sieve->addArrow(*v_iter, *ae_iter);
-        ae_iter++;
+    if (interplevels > 1) { //interpolated case; merely copy the edges out
+      while (v_iter != v_iter_end) {
+        ALE::Obj<ALE::Mesh::sieve_type::supportSequence> adjacent_edges = sieve->support(*v_iter);
+        ALE::Mesh::sieve_type::supportSequence::iterator ae_iter = adjacent_edges->begin();
+        ALE::Mesh::sieve_type::supportSequence::iterator ae_iter_end = adjacent_edges->end();
+        while (ae_iter != ae_iter_end) {
+          coarsen_sieve->addArrow(*v_iter, *ae_iter);
+          ae_iter++;
+        }
+        v_iter++;
       }
-      v_iter++;
+    } else { //noninterpolated case, build the edges
+      //ALE::Mesh::sieve_type::supportSet seen; sets have logarithmic complexity
+      ALE::Mesh::point_type min_coarsen_edge_index = max_vertex_index + 1;
+      while (v_iter != v_iter_end) {
+        //get the neighbors of this point
+        ALE::Obj<ALE::Mesh::sieve_type::coneSet> mockup_edge_endpoints = sieve->cone(sieve->support(*v_iter));
+        ALE::Mesh::sieve_type::coneSet::iterator m_iter = mockup_edge_endpoints->begin();
+        ALE::Mesh::sieve_type::coneSet::iterator m_iter_end = mockup_edge_endpoints->end();
+        while (m_iter != m_iter_end) {
+          if (*m_iter != *v_iter && *seen->restrictPoint(*m_iter) == 0) {
+            coarsen_sieve->addArrow(*v_iter, min_coarsen_edge_index);
+            coarsen_sieve->addArrow(*m_iter, min_coarsen_edge_index);
+            min_coarsen_edge_index++;
+          }
+          m_iter++;
+        }
+        int pt_val = 1;
+        seen->updatePoint(*v_iter, &pt_val);
+        v_iter++;
+      }
     }
     coarsen_mesh->stratify();
     //Interior Pass: Eliminate Nodes that collide with already included nodes or the boundary.
@@ -729,9 +929,13 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
         if (dist < current_beta*(n_space + c_space)) {
           //remove the point and this edge from existence and link its neighbors up with the eliminating point, adding the neighboring edges to THE LIST.
           m->setValue(coarsen_candidates, c_point, 0);
+
+          //Replace this with a more intelligent topology reconnection eventually.
+
           ALE::Obj<ALE::Mesh::sieve_type::supportSequence> move_these_edges = coarsen_sieve->support(c_point);
           ALE::Mesh::sieve_type::supportSequence::iterator mte_iter = move_these_edges->begin();
           ALE::Mesh::sieve_type::supportSequence::iterator mte_iter_end = move_these_edges->end();
+
           while (mte_iter != mte_iter_end) {
             if (*mte_iter != c_edge) {
               coarsen_sieve->addArrow(n_point, *mte_iter);
@@ -758,13 +962,13 @@ PetscErrorCode MeshCreateHierarchyLabel_Link(Mesh finemesh, double beta, int nLe
     }
 
     ALE::Obj<ALE::Mesh::label_sequence> new_candidate_options = m->getLabelStratum("candidates", 1);
-    ALE::Mesh::label_sequence::iterator new_candidate = new_candidate_options->begin();
+    ALE::Mesh::point_type new_candidate_point = *new_candidate_options->begin();
     if (new_candidate_options->size() == 0) {
       notDone = false;
     } else { //add this point to the mesh, adding its neighbors to the comparison queue.
-      m->setValue(coarsen_candidates, *new_candidate, 0);
-      m->setValue(hdepth, *new_candidate, curLevel);
-      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(*new_candidate);
+      m->setValue(coarsen_candidates, new_candidate_point, 0);
+      m->setValue(hdepth, new_candidate_point, curLevel);
+      ALE::Obj<ALE::Mesh::sieve_type::supportSequence> neighbor_edges = coarsen_sieve->support(new_candidate_point);
       ALE::Mesh::sieve_type::supportSequence::iterator ne_iter = neighbor_edges->begin();
       ALE::Mesh::sieve_type::supportSequence::iterator ne_iter_end = neighbor_edges->end();
       while (ne_iter != ne_iter_end) {
@@ -930,6 +1134,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
   ALE::Mesh::label_sequence::iterator v_iter = vertices->begin();
   ALE::Mesh::label_sequence::iterator v_iter_end = vertices->end();
   double maxspace = -1., minspace = -1., dist;
+  ALE::Mesh::point_type max_vertex_index = -1;
   while(v_iter != v_iter_end) {
     //initialize the label to 0.
     m->setValue(hdepth, *v_iter, 0);
@@ -937,6 +1142,7 @@ PetscErrorCode MeshCreateHierarchyLabel(Mesh finemesh, double beta, int nLevels,
     double vspace = *spacing->restrictPoint(*v_iter);
     if ((vspace > maxspace) || (maxspace == -1.)) maxspace = vspace;
     if ((vspace < minspace) || (minspace == -1.)) minspace = vspace;
+    if (*v_iter > max_vertex_index) max_vertex_index = *v_iter;
     v_iter++;
   }
   //PUT IN PART FOR AUTOMATICALLY ADDING HIGH-CURVATURE BOUNDARY NODES

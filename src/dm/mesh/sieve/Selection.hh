@@ -519,6 +519,7 @@ namespace ALE {
 
         // For each face
         // - determine if its legal
+        
         // - determine if its part of a neighboring cell
         // - if not, its a boundary face
         //subsets(cell, faceSize, inserter);
@@ -614,6 +615,8 @@ namespace ALE {
       return newMesh;
     };
   };
+
+
 }
 
 #endif
