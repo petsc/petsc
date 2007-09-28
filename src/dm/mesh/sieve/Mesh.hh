@@ -1938,9 +1938,9 @@ namespace ALE {
 
           sieve->addArrow(vertices[vertexA], edge, order++);
           sieve->addArrow(vertices[vertexB], edge, order++);
-          mesh->setValue(markers, edge, 1);
-          mesh->setValue(markers, vertices[vertexA], 1);
-          mesh->setValue(markers, vertices[vertexB], 1);
+          mesh->setValue(markers, edge, 2);
+          mesh->setValue(markers, vertices[vertexA], 2);
+          mesh->setValue(markers, vertices[vertexB], 2);
         }
       }
       mesh->stratify();
