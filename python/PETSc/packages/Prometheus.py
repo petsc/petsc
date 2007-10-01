@@ -8,7 +8,7 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download          = ['http://www.columbia.edu/~ma2325/Prometheus-1.8.6.tar.gz']
+    self.download          = ['http://www.columbia.edu/~ma2325/Prometheus-1.8.7.tar.gz']
     self.functions         = []
     self.includes          = []
     self.liblist           = [['libpromfei.a','libprometheus.a']]
@@ -33,15 +33,23 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
 
-    args = 'PETSC_INCLUDE = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
-    args += 'BUILD_DIR  = '+self.packageDir+'\n'
-    args += 'LIB_DIR  = $(BUILD_DIR)/lib/\n'
-    args += 'RANLIB = '+self.setCompilers.RANLIB+'\n'
-    args += 'AR      = '+self.setCompilers.AR+'\n'
-    args += 'ARFLAGS = '+self.setCompilers.AR_FLAGS+'\n'
-    args += 'RM      = '+self.programs.RM+'\n'
+    args = ''
+    args += 'SHELL          = '+self.programs.SHELL+'\n'
+    args += 'CP             = '+self.programs.cp+'\n'
+    args += 'RM             = '+self.programs.RM+'\n'
+    args += 'MKDIR          = '+self.programs.mkdir+'\n'
+
+
+    args += 'PREFIX         = '+self.installDir+'\n'
+    args += 'BUILD_DIR      = '+self.packageDir+'\n'
+    args += 'LIB_DIR        = $(BUILD_DIR)/lib/\n'
+    args += 'PETSC_INCLUDE  = -I'+os.path.join(self.petscdir.dir,self.arch.arch,'include')+' -I'+os.path.join(self.petscdir.dir)+' -I'+os.path.join(self.petscdir.dir,'include')+' '+self.headers.toString(self.mpi.include+self.parmetis.include)+'\n'
+    args += 'RANLIB         = '+self.setCompilers.RANLIB+'\n'
+    args += 'AR             = '+self.setCompilers.AR+'\n'
+    args += 'ARFLAGS        = '+self.setCompilers.AR_FLAGS+'\n'
+
     self.framework.pushLanguage('C++')
-    args += 'CXX = '+self.framework.getCompiler()
+    args += 'CXX            = '+self.framework.getCompiler()
     args += ' -DPROM_HAVE_METIS'
     # Instead of doing all this, we could try to have Prometheus just use the PETSc bmake
     # files. But need to pass in USE_EXTERN_CXX flag AND have a C and C++ compiler
@@ -60,8 +68,9 @@ class Configure(PETSc.package.Package):
       args += ' -DSTDCALL=__stdcall'
       args += ' -DHAVE_FORTRAN_CAPS=1'
       args += ' -DHAVE_FORTRAN_MIXED_STR_ARG=1'
- 
-    args += '\nPETSCFLAGS = '+self.framework.getCompilerFlags()+'\n'
+
+    args += '\n'
+    args += 'PETSCFLAGS     = '+self.framework.getCompilerFlags()+'\n'
     self.framework.popLanguage()
     fd = file(os.path.join(self.packageDir,'makefile.petsc'),'w')
     fd.write(args)
@@ -87,16 +96,13 @@ class Configure(PETSc.package.Package):
 
   def postProcess(self):
     if self.compilePrometheus:
-      self.logPrintBox('Compiling Prometheus; this may take several minutes')
-      output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; rm -f lib/*.a; make clean prom PETSC_ARCH='+self.arch.arch+'; mv '+os.path.join('lib','lib*.a')+' '+os.path.join(self.installDir,'lib'),timeout=250, log = self.framework.log)[0]
-      self.framework.log.write(output)
-      output  = config.base.Configure.executeShellCommand('cp '+os.path.join(self.packageDir,'include','*.*')+' '+os.path.join(self.packageDir,'fei_prom','*.h')+' '+os.path.join(self.installDir,'include'),timeout=250, log = self.framework.log)[0]      
-      self.framework.log.write(output)
       try:
-        output  = config.base.Configure.executeShellCommand(self.setCompilers.RANLIB+' '+os.path.join(self.installDir,'lib')+'/lib*.a', timeout=250, log = self.framework.log)[0]
+        self.logPrintBox('Compiling Prometheus; this may take several minutes')
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'; make clean cleanlib; make prom minstall',timeout=250, log = self.framework.log)[0]
         self.framework.log.write(output)
       except RuntimeError, e:
-        raise RuntimeError('Error running ranlib on PROMETHEUS libraries: '+str(e))
+        raise RuntimeError('Error running make on ParMetis: '+str(e))
+      self.checkInstall(output,'makefile.petsc')
 
 if __name__ == '__main__':
   import config.framework

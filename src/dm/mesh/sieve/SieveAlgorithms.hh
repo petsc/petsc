@@ -455,6 +455,49 @@ namespace ALE {
       }
       return nSupport;
     };
+    static Obj<sieve_type> Link(const Obj<bundle_type>& bundle, const point_type& p) {
+      const Obj<sieve_type>&         link_sieve          = new sieve_type(bundle->comm(),  bundle->debug());
+      const Obj<sieve_type>&         sieve               = bundle->getSieve();
+      const int                      depth               = bundle->depth(p);
+      const int                      interpolation_depth = bundle->height(p)+depth;
+      Obj<coneArray>                 nSupport            = new supportArray();
+      supportSet                     seen;
+      //in either case, copy the closure of the cells surrounding the point to the new sieve
+      static Obj<supportArray> neighboring_cells = sieve->nSupport(sieve->nCone(p, depth), interpolation_depth);
+      static typename supportArray::iterator nc_iter = neighboring_cells->begin();
+      static typename supportArray::iterator nc_iter_end = neighboring_cells->end();
+      while (nc_iter != nc_iter_end) {
+        addClosure(sieve, link_sieve, *nc_iter);
+        nc_iter++;
+      }
+      if (interpolation_depth == 1) { //noninterpolated case
+       //remove the point, allowing the copied closure to contract to a surface.
+
+       if (depth != 0) {
+         static Obj<coneArray> point_cone = sieve->cone(p);
+         static typename coneArray::iterator pc_iter =  point_cone->begin();
+         static typename coneArray::iterator pc_iter_end = point_cone->end();
+         while (pc_iter != pc_iter_end) {
+           link_sieve->removePoint(*pc_iter);
+           pc_iter++;
+         }
+       }
+       link_sieve->removePoint(p);
+
+      } else { //interpolated case: remove the point, its closure, and the support of that closure, 
+
+        static Obj<supportArray> surrounding_support = sieve->Star(sieve->nCone(p, depth));
+        static typename supportArray::iterator ss_iter = surrounding_support->begin();
+        static typename supportArray::iterator ss_iter_end = surrounding_support->end();
+        while (ss_iter != ss_iter_end) {
+          link_sieve->removePoint(*ss_iter);
+          ss_iter++;
+        }
+        link_sieve->removePoint(p);
+      }
+      link_sieve->stratify();
+      return link_sieve;
+    };
   };
 }
 
