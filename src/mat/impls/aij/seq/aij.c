@@ -648,6 +648,8 @@ PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat A,MatAssemblyType mode)
   A->same_nonzero = PETSC_TRUE;
 
   ierr = MatAssemblyEnd_Inode(A,mode);CHKERRQ(ierr);
+
+  a->idiagvalid = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
 
@@ -709,7 +711,7 @@ PetscErrorCode MatDestroy_SeqAIJ(Mat A)
   }
   ierr = PetscFree(a->diag);CHKERRQ(ierr);
   ierr = PetscFree2(a->imax,a->ilen);CHKERRQ(ierr);
-  ierr = PetscFree(a->idiag);CHKERRQ(ierr);
+  ierr = PetscFree3(a->idiag,a->mdiag,a->ssor_work);CHKERRQ(ierr);
   ierr = PetscFree(a->solve_work);CHKERRQ(ierr);
   if (a->icol) {ierr = ISDestroy(a->icol);CHKERRQ(ierr);}
   ierr = PetscFree(a->saved_values);CHKERRQ(ierr);
@@ -1056,6 +1058,46 @@ PetscErrorCode MatMissingDiagonal_SeqAIJ(Mat A,PetscTruth *missing,PetscInt *d)
   PetscFunctionReturn(0);
 }
 
+EXTERN_C_BEGIN
+#undef __FUNCT__  
+#define __FUNCT__ "MatInvertDiagonal_SeqAIJ"
+PetscErrorCode PETSCMAT_DLLEXPORT MatInvertDiagonal_SeqAIJ(Mat A,PetscScalar omega,PetscScalar fshift)
+{
+  Mat_SeqAIJ     *a = (Mat_SeqAIJ*) A->data;
+  PetscErrorCode ierr;
+  PetscInt       i,*diag,m = A->rmap.n;
+  PetscScalar    *v = a->a,*idiag,*mdiag;
+
+  PetscFunctionBegin;
+  if (a->idiagvalid) PetscFunctionReturn(0);
+  ierr = MatMarkDiagonal_SeqAIJ(A);CHKERRQ(ierr);
+  diag = a->diag;
+  if (!a->idiag) {
+    ierr     = PetscMalloc3(m,PetscScalar,&a->idiag,m,PetscScalar,&a->mdiag,m,PetscScalar,&a->ssor_work);CHKERRQ(ierr);
+    ierr     = PetscLogObjectMemory(A, 3*m*sizeof(PetscScalar));CHKERRQ(ierr);
+    v        = a->a;
+  }
+  mdiag = a->mdiag;
+  idiag = a->idiag;
+   
+  if (omega == 1.0 && !fshift) {
+    for (i=0; i<m; i++) {
+      mdiag[i] = v[diag[i]];
+      if (!PetscAbsScalar(mdiag[i])) SETERRQ1(PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
+      idiag[i] = 1.0/v[diag[i]];
+    }
+    ierr = PetscLogFlops(m);CHKERRQ(ierr);
+  } else {
+    for (i=0; i<m; i++) {
+      mdiag[i] = v[diag[i]];
+      idiag[i] = omega/(fshift + v[diag[i]]);
+    }
+    ierr = PetscLogFlops(2*m);CHKERRQ(ierr);
+  }
+  a->idiagvalid = PETSC_TRUE;
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__  
 #define __FUNCT__ "MatRelax_SeqAIJ"
 PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,PetscReal fshift,PetscInt its,PetscInt lits,Vec xx)
@@ -1070,33 +1112,15 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   PetscFunctionBegin;
   its = its*lits;
 
-  diag = a->diag;
-  if (!a->idiag) {
-    ierr     = PetscMalloc(3*m*sizeof(PetscScalar),&a->idiag);CHKERRQ(ierr);
-    ierr     = PetscLogObjectMemory(A, 3*m*sizeof(PetscScalar));CHKERRQ(ierr);
-    a->ssor  = a->idiag + m;
-    mdiag    = a->ssor + m;
-    v        = a->a;
+  if (fshift != a->fshift || omega != a->omega) a->idiagvalid = PETSC_FALSE; /* must recompute idiag[] */
+  if (!a->idiagvalid) {ierr = MatInvertDiagonal_SeqAIJ(A,omega,fshift);CHKERRQ(ierr);}
+  a->fshift = fshift;
+  a->omega  = omega;
 
-    /* this is wrong when fshift omega changes each iteration */
-    if (omega == 1.0 && !fshift) {
-      for (i=0; i<m; i++) {
-        mdiag[i]    = v[diag[i]];
-        if (!PetscAbsScalar(mdiag[i])) SETERRQ1(PETSC_ERR_ARG_INCOMP,"Zero diagonal on row %D",i);
-        a->idiag[i] = 1.0/v[diag[i]];
-      }
-      ierr = PetscLogFlops(m);CHKERRQ(ierr);
-    } else {
-      for (i=0; i<m; i++) {
-        mdiag[i]    = v[diag[i]];
-        a->idiag[i] = omega/(fshift + v[diag[i]]);
-      }
-      ierr = PetscLogFlops(2*m);CHKERRQ(ierr);
-    }
-  }
-  t     = a->ssor;
+  diag = a->diag;
+  t     = a->ssor_work;
   idiag = a->idiag;
-  mdiag = a->idiag + 2*m;
+  mdiag = a->mdiag;
 
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
   if (xx != bb) {
@@ -1104,14 +1128,14 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   } else {
     b = x;
   }
-
+  CHKMEMQ;
   /* We count flops by assuming the upper triangular and lower triangular parts have the same number of nonzeros */
   xs   = x;
   if (flag == SOR_APPLY_UPPER) {
    /* apply (U + D/omega) to the vector */
     bs = b;
     for (i=0; i<m; i++) {
-        d    = fshift + a->a[diag[i]];
+        d    = fshift + mdiag[i];
         n    = a->i[i+1] - diag[i] - 1;
         idx  = a->j + diag[i] + 1;
         v    = a->a + diag[i] + 1;
@@ -1258,7 +1282,7 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   if (bb != xx) {ierr = VecRestoreArray(bb,(PetscScalar**)&b);CHKERRQ(ierr);}
-  PetscFunctionReturn(0);
+  CHKMEMQ;  PetscFunctionReturn(0);
 } 
 
 
@@ -3015,7 +3039,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqAIJ(Mat B)
   B->spptr             = 0;
   b->saved_values      = 0;
   b->idiag             = 0;
-  b->ssor              = 0;
+  b->mdiag             = 0;
+  b->ssor_work         = 0;
+  b->omega             = 1.0;
+  b->fshift            = 0.0;
+  b->idiagvalid        = PETSC_FALSE;
   b->keepzeroedrows    = PETSC_FALSE;
   b->xtoy              = 0;
   b->XtoY              = 0;
@@ -3129,11 +3157,11 @@ PetscErrorCode MatDuplicate_SeqAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
     for (i=0; i<m; i++) {
       c->diag[i] = a->diag[i];
     }
-  } else c->diag        = 0;
-  c->solve_work         = 0;
+  } else c->diag           = 0;
+  c->solve_work            = 0;
   c->saved_values          = 0;
   c->idiag                 = 0;
-  c->ssor                  = 0;
+  c->ssor_work             = 0;
   c->keepzeroedrows        = a->keepzeroedrows;
   c->free_a                = PETSC_TRUE;
   c->free_ij               = PETSC_TRUE;
