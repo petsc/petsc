@@ -1020,8 +1020,6 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
   Vec            bb1;
 
   PetscFunctionBegin;
-  if (its <= 0 || lits <= 0) SETERRQ2(PETSC_ERR_ARG_WRONG,"Relaxation requires global its %D and local its %D both positive",its,lits);
-
   ierr = VecDuplicate(bb,&bb1);CHKERRQ(ierr);
 
   if ((flag & SOR_LOCAL_SYMMETRIC_SWEEP) == SOR_LOCAL_SYMMETRIC_SWEEP){
@@ -1039,8 +1037,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
-      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,lits,xx);
-      CHKERRQ(ierr);
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_SYMMETRIC_SWEEP,fshift,lits,lits,xx);CHKERRQ(ierr);
     }
   } else if (flag & SOR_LOCAL_FORWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1056,8 +1053,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
-      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_FORWARD_SWEEP,fshift,lits,PETSC_NULL,xx);
-      CHKERRQ(ierr);
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_FORWARD_SWEEP,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr);
     }
   } else if (flag & SOR_LOCAL_BACKWARD_SWEEP){
     if (flag & SOR_ZERO_INITIAL_GUESS) {
@@ -1073,8 +1069,7 @@ PetscErrorCode MatRelax_MPIAIJ(Mat matin,Vec bb,PetscReal omega,MatSORType flag,
       ierr = (*mat->B->ops->multadd)(mat->B,mat->lvec,bb,bb1);CHKERRQ(ierr);
 
       /* local sweep */
-      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_BACKWARD_SWEEP,fshift,lits,PETSC_NULL,xx);
-      CHKERRQ(ierr);
+      ierr = (*mat->A->ops->relax)(mat->A,bb1,omega,SOR_BACKWARD_SWEEP,fshift,lits,PETSC_NULL,xx);CHKERRQ(ierr);
     }
   } else {
     SETERRQ(PETSC_ERR_SUP,"Parallel SOR not supported");
@@ -3129,6 +3124,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscI
    Output Parameter:
 .  A - the matrix 
 
+   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   MatXXXXSetPreallocation() paradgm instead of this routine directly. This is definitely
+   true if you plan to use the external direct solvers such as SuperLU, MUMPS or Spooles.
+   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+
    Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
@@ -4485,7 +4485,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ
+.seealso: MatCreateMPIAIJ()
 M*/
 
 EXTERN_C_BEGIN

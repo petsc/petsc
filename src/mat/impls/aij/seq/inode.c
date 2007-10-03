@@ -1644,21 +1644,23 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
   PetscInt        *idx,*diag = a->diag,*ii = a->i,sz,k;
 
   PetscFunctionBegin;
-  if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0");
+  if (omega != 1.0) SETERRQ(PETSC_ERR_SUP,"No support for omega != 1.0; use -mat_no_inode");
+  if (fshift != 0.0) SETERRQ(PETSC_ERR_SUP,"No support for fshift != 0.0; use -mat_no_inode");
+  if (flag & SOR_EISENSTAT) SETERRQ(PETSC_ERR_SUP,"No support for Eisenstat trick; use -mat_no_inode");
 
-  its = its*lits;
-
-  if (!a->inode.ibdiag) {
-    /* calculate space needed for diagonal blocks */
-    for (i=0; i<m; i++) {
-      cnt += sizes[i]*sizes[i];
+  if (!a->inode.ibdiagvalid) {
+    if (!a->inode.ibdiag) {
+      /* calculate space needed for diagonal blocks */
+      for (i=0; i<m; i++) {
+	cnt += sizes[i]*sizes[i];
+      }
+      a->inode.bdiagsize = cnt;
+      ierr   = PetscMalloc2(cnt,PetscScalar,&a->inode.ibdiag,cnt,PetscScalar,&a->inode.bdiag);CHKERRQ(ierr);
     }
-    a->inode.bdiagsize = cnt;
-    ierr   = PetscMalloc2(cnt,PetscScalar,&a->inode.ibdiag,cnt,PetscScalar,&a->inode.bdiag);CHKERRQ(ierr);
+
+    /* copy over the diagonal blocks and invert them */
     ibdiag = a->inode.ibdiag;
     bdiag  = a->inode.bdiag;
-    /* copy over the diagonal blocks and invert them */
-
     cnt = 0;
     for (i=0, row = 0; i<m; i++) {
       for (j=0; j<sizes[i]; j++) {
@@ -1692,6 +1694,7 @@ PetscErrorCode MatRelax_Inode(Mat A,Vec bb,PetscReal omega,MatSORType flag,Petsc
       cnt += sizes[i]*sizes[i];
       row += sizes[i];
     }
+    a->inode.ibdiagvalid = PETSC_TRUE;
   }
   ibdiag = a->inode.ibdiag;
   bdiag  = a->inode.bdiag;

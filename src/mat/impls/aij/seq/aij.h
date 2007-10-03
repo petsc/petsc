@@ -41,7 +41,8 @@
 /* Info about i-nodes (identical nodes) helper class for SeqAIJ */
 typedef struct {
   PetscScalar *bdiag,*ibdiag;               /* diagonal blocks of matrix used for MatRelax_Inode() */
-  PetscInt    bdiagsize;                    /* length of bdiag and ibdiag */
+  PetscInt    bdiagsize;                       /* length of bdiag and ibdiag */
+  PetscTruth  ibdiagvalid;                     /* do ibdiag[] and bdiag[] contain the most recent values */
 
   PetscTruth use;
   PetscInt   node_count;                    /* number of inodes */
@@ -65,9 +66,13 @@ EXTERN PetscErrorCode MatILUFactorSymbolic_Inode(Mat A,IS isrow,IS iscol,MatFact
 typedef struct {
   SEQAIJHEADER(PetscScalar);
   Mat_Inode    inode;
-  PetscScalar  *saved_values;    /* location for stashing nonzero values of matrix */
-  PetscScalar  *idiag,*ssor;     /* inverse of diagonal entries; space for eisen */
-  ISColoring   coloring;         /* set with MatADSetColoring() used by MatADSetValues() */
+  PetscScalar  *saved_values;             /* location for stashing nonzero values of matrix */
+
+  PetscScalar  *idiag,*mdiag,*ssor_work;  /* inverse of diagonal entries, diagonal values and workspace for Eisenstat trick */
+  PetscTruth   idiagvalid;                     /* current idiag[] and mdiag[] are valid */
+  PetscScalar  fshift,omega;                   /* last used omega and fshift */
+
+  ISColoring   coloring;                  /* set with MatADSetColoring() used by MatADSetValues() */
 } Mat_SeqAIJ;
 
 /*

@@ -716,15 +716,19 @@ PetscErrorCode MatDuplicate_SuperLU_DIST(Mat A, MatDuplicateOption op, Mat *M) {
   If SuperLU_DIST is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SuperLU_DIST solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU_DIST) then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
 
   This matrix inherits from MATSEQAIJ when constructed with a single process communicator,
   and from MATMPIAIJ otherwise.  As a result, for single process communicators, 
-  MatSeqAIJSetPreallocation is supported, and similarly MatMPIAIJSetPreallocation is supported 
+  MatSeqAIJSetPreallocation() is supported, and similarly MatMPIAIJSetPreallocation() is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
   conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
-  without data copy.
+  without data copy; but this MUST be called AFTER the matrix values are set. 
+
+  
 
   Options Database Keys:
 + -mat_type superlu_dist - sets the matrix type to "superlu_dist" during a call to MatSetFromOptions()
