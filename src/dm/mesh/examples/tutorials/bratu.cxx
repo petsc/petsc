@@ -1659,7 +1659,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
-      double offset[3] = {0.7, 0.0, 0.0};
+      double offset[3] = {0.7, 0.0, 0.25};
       ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyVertices(dmmg, viewer, offset);CHKERRQ(ierr);
