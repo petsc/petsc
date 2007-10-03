@@ -398,6 +398,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       m->view("Mesh");
     }
+    ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_simple", &view);CHKERRQ(ierr);
+    if (view) {ierr = MeshView(mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     *dm = (DM) mesh;
   }
   PetscFunctionReturn(0);

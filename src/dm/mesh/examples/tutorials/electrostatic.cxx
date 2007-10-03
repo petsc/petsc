@@ -768,7 +768,6 @@ static PetscScalar cellBasisDer3D[192] = {
 
 #undef __FUNCT__
 #define __FUNCT__ "Rhs_Unstructured"
-
 PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
 {
   Options       *options = (Options *) ctx;
@@ -797,10 +796,9 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   }
   ierr = SectionRealZero(section);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscScalar,&t_der,dim,PetscScalar,&b_der,numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+  // Must create the label on coarser meshes if it is missing
+  if (!m->hasLabel("particle")) {ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
   // Loop over water cells
-  
-  if (!m->hasLabel("particle")){ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
-
   const Obj<ALE::Mesh::label_sequence>&     waterCells = m->getLabelStratum("particle", 1);
   const ALE::Mesh::label_sequence::iterator wBegin     = waterCells->begin();
   const ALE::Mesh::label_sequence::iterator wEnd       = waterCells->end();
@@ -1420,9 +1418,8 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
   }
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&t_der,dim,PetscScalar,&b_der,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
-
-  if (!m->hasLabel("particle")){ ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
-
+  // Must create the label on coarser meshes if it is missing
+  if (!m->hasLabel("particle")) {ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
   // Loop over water cells
   const Obj<ALE::Mesh::label_sequence>&     waterCells = m->getLabelStratum("particle", 1);
   const ALE::Mesh::label_sequence::iterator wBegin     = waterCells->begin();
@@ -1635,7 +1632,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
     } else {
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
-   // ierr = CreateParticleLabel(mesh, options); CHKERRQ(ierr);
+    ierr = CreateParticleLabel(mesh, options); CHKERRQ(ierr);
     radius  = options->particleRadius;
     epsilon = options->particleEpsilon;
 #if 0
@@ -1737,7 +1734,6 @@ PetscErrorCode CreateExactSolution(DM dm, Options *options)
     delete [] values;
     delete [] v0;
     delete [] J;
-    if (!m->hasLabel("particle")){ierr = CreateParticleLabel((Mesh)mesh, options);CHKERRQ(ierr);}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
     if (flag) {s->view("Exact Solution");}
     ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
