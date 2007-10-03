@@ -647,11 +647,13 @@ EXTERN_C_END
   If MPIAIJSPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMPIAIJSPOOLES), then 
+  optionally call MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateMPIAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATMPIAIJ type without data copy.
+  This matrix inherits from MATMPIAIJ.  As a result, MatMPIAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATMPIAIJ type without data copy AFTER the matrix values have been set.
 
   Consult Spooles documentation for more information about the options database keys below.
 

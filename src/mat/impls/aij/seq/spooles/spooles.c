@@ -564,11 +564,13 @@ PetscErrorCode MatDuplicate_Spooles(Mat A, MatDuplicateOption op, Mat *M) {
   If SPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQAIJSPOOLES), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateSeqAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy.
+  This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATSEQAIJ type without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type seqaijspooles - sets the matrix type to "seqaijspooles" during a call to MatSetFromOptions()
@@ -613,12 +615,14 @@ EXTERN_C_END
   If SPOOLES is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SPOOLES solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJSPOOLES), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
   This matrix type is supported for double precision real and complex.
 
-  This matrix inherits from MATAIJ.  As a result, MatSeqAIJSetPreallocation and MatMPIAIJSetPreallocation are
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATAIJ type without data copy.
+  This matrix inherits from MATAIJ.  As a result, MatSeqAIJSetPreallocation() and MatMPIAIJSetPreallocation() are
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATAIJ type without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type aijspooles - sets the matrix type to "aijspooles" during a call to MatSetFromOptions()

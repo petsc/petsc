@@ -555,11 +555,13 @@ PetscErrorCode MatDuplicate_SuperLU(Mat A, MatDuplicateOption op, Mat *M) {
   If SuperLU is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes SuperLU solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSUPERLU), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
 
   This matrix inherits from MATSEQAIJ.  As a result, MatSeqAIJSetPreallocation() is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQAIJ type without data copy.
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATSEQAIJ type AFTER the matrix values are set without data copy.
 
   Options Database Keys:
 + -mat_type superlu - sets the matrix type to "superlu" during a call to MatSetFromOptions()

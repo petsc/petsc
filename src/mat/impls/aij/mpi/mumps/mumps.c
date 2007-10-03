@@ -879,7 +879,9 @@ EXTERN_C_END
   If MUMPS is installed (see the manual for instructions
   on how to declare the existence of external packages),
   a matrix type can be constructed which invokes MUMPS solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJMUMPS).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATAIJMUMPS), then 
+  optionally call MatSeqAIJSetPreallocation() or MatMPIAIJSetPreallocation() etc DO NOT
+  call MatCreateSeqAIJ/MPIAIJ() directly or the preallocation information will be LOST!
 
   If created with a single process communicator, this matrix type inherits from MATSEQAIJ.
   Otherwise, this matrix type inherits from MATMPIAIJ.  Hence for single process communicators,
@@ -887,7 +889,7 @@ EXTERN_C_END
   for communicators controlling multiple processes.  It is recommended that you call both of
   the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
   conversion to or from the MATSEQAIJ or MATMPIAIJ type (depending on the communicator size)
-  without data copy.
+  without data copy AFTER the matrix values are set.
 
   Options Database Keys:
 + -mat_type aijmumps - sets the matrix type to "aijmumps" during a call to MatSetFromOptions()
@@ -1057,15 +1059,17 @@ PetscErrorCode MatDuplicate_MUMPS(Mat A, MatDuplicateOption op, Mat *M) {
   If MUMPS is installed (see the manual for instructions
   on how to declare the existence of external packages),
   a matrix type can be constructed which invokes MUMPS solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJMUMPS).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJMUMPS), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
   If created with a single process communicator, this matrix type inherits from MATSEQSBAIJ.
   Otherwise, this matrix type inherits from MATMPISBAIJ.  Hence for single process communicators,
-  MatSeqSBAIJSetPreallocation is supported, and similarly MatMPISBAIJSetPreallocation is supported 
+  MatSeqSBAIJSetPreallocation() is supported, and similarly MatMPISBAIJSetPreallocation() is supported 
   for communicators controlling multiple processes.  It is recommended that you call both of
-  the above preallocation routines for simplicity.  One can also call MatConvert for an inplace
+  the above preallocation routines for simplicity.  One can also call MatConvert() for an inplace
   conversion to or from the MATSEQSBAIJ or MATMPISBAIJ type (depending on the communicator size)
-  without data copy.
+  without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type sbaijmumps - sets the matrix type to "sbaijmumps" during a call to MatSetFromOptions()

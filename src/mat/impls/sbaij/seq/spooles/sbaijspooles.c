@@ -141,11 +141,13 @@ EXTERN_C_END
   If Spooles is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSEQSBAIJSPOOLES), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSEQSBAIJ type without data copy.
+  This matrix inherits from MATSEQSBAIJ.  As a result, MatSeqSBAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATSEQSBAIJ type without data copy, after the matrix values have been set.
 
   Options Database Keys:
 + -mat_type seqsbaijspooles - sets the matrix type to seqsbaijspooles during calls to MatSetFromOptions()
@@ -189,11 +191,13 @@ EXTERN_C_END
   If Spooles is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATSBAIJSPOOLES), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation and MatMPISBAIJSetPreallocation are 
+  This matrix inherits from MATSBAIJ.  As a result, MatSeqSBAIJSetPreallocation() and MatMPISBAIJSetPreallocation() are 
   supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATSBAIJ type without data copy.
+  the MATSBAIJ type without data copy after the matrix values have been set.
 
   Options Database Keys:
 + -mat_type sbaijspooles - sets the matrix type to sbaijspooles during calls to MatSetFromOptions()

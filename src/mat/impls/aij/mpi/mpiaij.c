@@ -3082,6 +3082,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateMPIAIJWithArrays(MPI_Comm comm,PetscI
    Output Parameter:
 .  A - the matrix 
 
+   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   MatXXXXSetPreallocation() paradgm instead of this routine directly. This is definitely
+   true if you plan to use the external direct solvers such as SuperLU, MUMPS or Spooles.
+   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+
    Notes:
    If the *_nnz parameter is given then the *_nz parameter is ignored
 
@@ -4438,7 +4443,7 @@ EXTERN_C_END
 
   Level: beginner
 
-.seealso: MatCreateMPIAIJ
+.seealso: MatCreateMPIAIJ()
 M*/
 
 EXTERN_C_BEGIN

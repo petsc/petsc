@@ -183,11 +183,13 @@ EXTERN_C_END
   If Spooles is installed (see the manual for
   instructions on how to declare the existence of external packages),
   a matrix type can be constructed which invokes Spooles solvers.
-  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES).
+  After calling MatCreate(...,A), simply call MatSetType(A,MATMPISBAIJSPOOLES), then 
+  optionally call MatSeqSBAIJSetPreallocation() or MatMPISBAIJSetPreallocation() DO NOT
+  call MatCreateSeqSBAIJ/MPISBAIJ() directly or the preallocation information will be LOST!
 
-  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation is 
-  supported for this matrix type.  One can also call MatConvert for an inplace conversion to or from 
-  the MATMPISBAIJ type without data copy.
+  This matrix inherits from MATMPISBAIJ.  As a result, MatMPISBAIJSetPreallocation() is 
+  supported for this matrix type.  One can also call MatConvert() for an inplace conversion to or from 
+  the MATMPISBAIJ type without data copy AFTER the matrix values have been set.
 
   Options Database Keys:
 + -mat_type mpisbaijspooles - sets the matrix type to mpisbaijspooles during a call to MatSetFromOptions()

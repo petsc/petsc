@@ -2694,6 +2694,11 @@ PetscErrorCode MatLoad_SeqBAIJ(PetscViewer viewer, MatType type,Mat *A)
    Output Parameter:
 .  A - the matrix 
 
+   It is recommended that one use the MatCreate(), MatSetType() and/or MatSetFromOptions(),
+   MatXXXXSetPreallocation() paradgm instead of this routine directly. This is definitely
+   true if you plan to use the external direct solvers such as SuperLU, MUMPS or Spooles.
+   [MatXXXXSetPreallocation() is, for example, MatSeqAIJSetPreallocation]
+
    Options Database Keys:
 .   -mat_no_unroll - uses code that does not unroll the loops in the 
                      block calculations (much slower)
