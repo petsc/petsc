@@ -217,15 +217,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);
-    ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(ksp->type_name?ksp->type_name:KSPGMRES),type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)ksp)->comm,((PetscObject)ksp)->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);
+    ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name?((PetscObject)ksp)->type_name:KSPGMRES),type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
     }
     /*
       Set the type if it was never set.
     */
-    if (!ksp->type_name) {
+    if (!((PetscObject)ksp)->type_name) {
       ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
     }
 
@@ -269,7 +269,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     if (flg) {
       MatNullSpace nsp;
 
-      ierr = MatNullSpaceCreate(ksp->comm,PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceCreate(((PetscObject)ksp)->comm,PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
       ierr = KSPSetNullSpace(ksp,nsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
     }
@@ -300,7 +300,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
@@ -315,7 +315,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor_true_residual","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
@@ -324,7 +324,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsString("-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
@@ -332,7 +332,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*

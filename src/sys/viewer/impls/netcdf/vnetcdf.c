@@ -77,7 +77,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Netcdf(PetscViewer viewer,
   PetscErrorCode      ierr;
   PetscViewer_Netcdf  *vnetcdf = (PetscViewer_Netcdf*)viewer->data;
   PetscFileMode type = vnetcdf->nctype;
-  MPI_Comm            comm = viewer->comm;
+  MPI_Comm            comm = ((PetscObject)viewer)->comm;
   PetscTruth          flg;
   char                fname[PETSC_MAX_PATH_LEN];
   

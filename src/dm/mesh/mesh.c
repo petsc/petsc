@@ -247,7 +247,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
   } else if (isdraw){ 
     SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", viewer->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -553,7 +553,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (--mesh->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)mesh)->refct > 0) PetscFunctionReturn(0);
   if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);

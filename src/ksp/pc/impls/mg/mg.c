@@ -296,14 +296,14 @@ PetscErrorCode PCSetFromOptions_MG(PC pc)
       levels = mg[0]->levels;
       for (i=0; i<levels; i++) {  
         sprintf(eventname,"MGSetup Level %d",(int)i);
-        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsetup,eventname,pc->cookie);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsetup,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
         sprintf(eventname,"MGSmooth Level %d",(int)i);
-        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsolve,eventname,pc->cookie);CHKERRQ(ierr);
+        ierr = PetscLogEventRegister(&mg[i]->eventsmoothsolve,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
         if (i) {
           sprintf(eventname,"MGResid Level %d",(int)i);
-          ierr = PetscLogEventRegister(&mg[i]->eventresidual,eventname,pc->cookie);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(&mg[i]->eventresidual,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
           sprintf(eventname,"MGInterp Level %d",(int)i);
-          ierr = PetscLogEventRegister(&mg[i]->eventinterprestrict,eventname,pc->cookie);CHKERRQ(ierr);
+          ierr = PetscLogEventRegister(&mg[i]->eventinterprestrict,eventname,((PetscObject)pc)->cookie);CHKERRQ(ierr);
         }
       }
     }
@@ -534,14 +534,14 @@ static PetscErrorCode PCSetUp_MG(PC pc)
    Only support one or the other at the same time.
   */
 #if defined(PETSC_USE_SOCKET_VIEWER)
-  ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_matlab",&dump);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)pc)->prefix,"-pc_mg_dump_matlab",&dump);CHKERRQ(ierr);
   if (dump) {
-    viewer = PETSC_VIEWER_SOCKET_(pc->comm);
+    viewer = PETSC_VIEWER_SOCKET_(((PetscObject)pc)->comm);
   }
 #endif
-  ierr = PetscOptionsHasName(pc->prefix,"-pc_mg_dump_binary",&dump);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)pc)->prefix,"-pc_mg_dump_binary",&dump);CHKERRQ(ierr);
   if (dump) {
-    viewer = PETSC_VIEWER_BINARY_(pc->comm);
+    viewer = PETSC_VIEWER_BINARY_(((PetscObject)pc)->comm);
   }
 
   if (viewer) {
@@ -594,7 +594,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetLevels(PC pc,PetscInt levels,MPI_Comm *
     SETERRQ(PETSC_ERR_ORDER,"Number levels already set for MG\n\
     make sure that you call PCMGSetLevels() before KSPSetFromOptions()");
   }
-  ierr                     = PCMGCreate_Private(pc->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
+  ierr                     = PCMGCreate_Private(((PetscObject)pc)->comm,levels,pc,comms,&mg);CHKERRQ(ierr);
   mg[0]->am                = PC_MG_MULTIPLICATIVE;
   pc->data                 = (void*)mg;
   pc->ops->applyrichardson = PCApplyRichardson_MG;

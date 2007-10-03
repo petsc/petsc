@@ -196,7 +196,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Matlab(PetscViewer viewer)
 
   PetscFunctionBegin;
   ierr         = PetscNewLog(viewer,PetscViewer_Matlab,&e);CHKERRQ(ierr);
-  ierr         = MPI_Comm_rank(viewer->comm,&e->rank);CHKERRQ(ierr);
+  ierr         = MPI_Comm_rank(((PetscObject)viewer)->comm,&e->rank);CHKERRQ(ierr);
   e->btype     = (PetscFileMode)-1;
   viewer->data = (void*) e;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)viewer,"PetscViewerFileSetName_C","PetscViewerFileSetName_Matlab",

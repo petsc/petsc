@@ -104,7 +104,7 @@ static PetscErrorCode PCSetUp_SPAI(PC pc)
 		   ispai->cache_size,
 	       ispai->verbose); CHKERRQ(ierr);
 
-  ierr = ConvertMatrixToMat(pc->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
+  ierr = ConvertMatrixToMat(((PetscObject)pc)->comm,ispai->M,&ispai->PM);CHKERRQ(ierr);
 
   /* free the SPAI matrices */
   sp_free_matrix(ispai->B);
@@ -651,7 +651,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
   ispai->verbose    = 0;     
 
   ispai->sp         = 1;     
-  ierr = MPI_Comm_dup(pc->comm,&(ispai->comm_spai));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(ispai->comm_spai));CHKERRQ(ierr);
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCSPAISetEpsilon_C",
                     "PCSPAISetEpsilon_SPAI",

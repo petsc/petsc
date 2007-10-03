@@ -155,7 +155,7 @@ PetscErrorCode KSPSolve_NASH(KSP ksp)
 
   ierr = PCDiagonalScale(ksp->pc, &diagonalscale); CHKERRQ(ierr);
   if (diagonalscale) {
-    SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ksp->type_name);
+    SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
   }
 
   if (cg->radius < 0.0) {

@@ -93,9 +93,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDot(Vec x,Vec y,PetscScalar *val)
   if (x->map.N != y->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->map.n != y->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->dot)(x,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_DotBarrier,x,y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -158,9 +158,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecNorm(Vec x,NormType type,PetscReal *val)
     if (flg) PetscFunctionReturn(0);
   }
 
-  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->norm)(x,type,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_NormBarrier,x,0,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
 
   if (type!=NORM_1_AND_2) {
     ierr = PetscObjectComposedDataSetReal((PetscObject)x,NormIds[type],*val);CHKERRQ(ierr);
@@ -438,7 +438,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSet(Vec x,PetscScalar alpha)
  {
    PetscReal alpha_local,alpha_max;
    alpha_local = PetscAbsScalar(alpha);
-   ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,x->comm);CHKERRQ(ierr);
+   ierr = MPI_Allreduce(&alpha_local,&alpha_max,1,MPIU_REAL,MPI_MAX,((PetscObject)x)->comm);CHKERRQ(ierr);
    if (alpha_local != alpha_max) SETERRQ(PETSC_ERR_ARG_WRONG,"Same value should be used across all processors");
  }
 #endif
@@ -1034,9 +1034,9 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecMDot(Vec x,PetscInt nv,const Vec y[],PetscS
   if (x->map.N != (*y)->map.N) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector global lengths");
   if (x->map.n != (*y)->map.n) SETERRQ(PETSC_ERR_ARG_INCOMP,"Incompatible vector local lengths");
 
-  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierBegin(VEC_MDotBarrier,x,*y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   ierr = (*x->ops->mdot)(x,nv,y,val);CHKERRQ(ierr);
-  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,x->comm);CHKERRQ(ierr);
+  ierr = PetscLogEventBarrierEnd(VEC_MDotBarrier,x,*y,0,0,((PetscObject)x)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

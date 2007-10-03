@@ -145,7 +145,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefault(SNES snes,PetscInt its,Pet
 
   PetscFunctionBegin;
   if (!dummy) {
-    ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %14.12e \n",its,fgnorm);CHKERRQ(ierr);
   if (!dummy) {
@@ -240,7 +240,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorSetRatio(SNES snes,PetscViewerASCI
 
   PetscFunctionBegin;
   if (!viewer) {
-    ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
   } 
   ierr = PetscNewLog(snes,SNESMonitorRatioContext,&ctx);
@@ -271,7 +271,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESMonitorDefaultShort(SNES snes,PetscInt it
 
   PetscFunctionBegin;
   if (!dummy) {
-    ierr = PetscViewerASCIIMonitorCreate(snes->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
   if (fgnorm > 1.e-9) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D SNES Function norm %G \n",its,fgnorm);CHKERRQ(ierr);

@@ -42,7 +42,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeExplicitOperator(KSP ksp,Mat *mat)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(mat,2);
-  comm = ksp->comm;
+  comm = ((PetscObject)ksp)->comm;
 
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
@@ -132,7 +132,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
   Mat                BA;
   PetscErrorCode     ierr;
   PetscMPIInt        size,rank;
-  MPI_Comm           comm = ksp->comm;
+  MPI_Comm           comm = ((PetscObject)ksp)->comm;
   PetscScalar        *array;
   Mat                A;
   PetscInt           m,row,nz,i,n,dummy;
@@ -146,7 +146,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPComputeEigenvaluesExplicitly(KSP ksp,PetscI
 
   ierr = MatGetSize(BA,&n,&n);CHKERRQ(ierr);
   if (size > 1) { /* assemble matrix on first processor */
-    ierr = MatCreate(ksp->comm,&A);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)ksp)->comm,&A);CHKERRQ(ierr);
     if (!rank) {
       ierr = MatSetSizes(A,n,n,n,n);CHKERRQ(ierr);
     } else {

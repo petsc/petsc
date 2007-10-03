@@ -18,7 +18,7 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   PetscTruth     iascii,isdraw;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_DRAW,&isdraw);CHKERRQ(ierr);
@@ -80,7 +80,9 @@ PetscErrorCode DAView_1d(DA da,PetscViewer viewer)
   PetscFunctionReturn(0);
 }
 
+#if 0
 EXTERN PetscErrorCode DAPublish_Petsc(PetscObject);
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "DACreate1d"
@@ -155,7 +157,6 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate1d(MPI_Comm comm,DAPeriodicType wrap,Pe
   M = tM;
 
   ierr = PetscHeaderCreate(da,_p_DA,struct _DAOps,DA_COOKIE,0,"DA",comm,DADestroy,DAView);CHKERRQ(ierr);
-  da->bops->publish           = DAPublish_Petsc;
   da->ops->globaltolocalbegin = DAGlobalToLocalBegin;
   da->ops->globaltolocalend   = DAGlobalToLocalEnd;
   da->ops->localtoglobal      = DALocalToGlobal;
@@ -383,14 +384,14 @@ PetscErrorCode DAView_Private(DA da)
   PetscViewer    view;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(da->comm,da->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)da)->comm,((PetscObject)da)->prefix,"Distributed array (DA) options","DA");CHKERRQ(ierr); 
     ierr = PetscOptionsTruth("-da_view","Print information about the DA's distribution","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
     if (flg1) {
-      ierr = PetscViewerASCIIGetStdout(da->comm,&view);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&view);CHKERRQ(ierr);
       ierr = DAView(da,view);CHKERRQ(ierr);
     }
     ierr = PetscOptionsTruth("-da_view_draw","Draw how the DA is distributed","DAView",PETSC_FALSE,&flg1,PETSC_NULL);CHKERRQ(ierr);
-    if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(da->comm));CHKERRQ(ierr);}
+    if (flg1) {ierr = DAView(da,PETSC_VIEWER_DRAW_(((PetscObject)da)->comm));CHKERRQ(ierr);}
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

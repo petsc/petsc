@@ -64,11 +64,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetType(PC pc, PCType type)
   ierr = PetscTypeCompare((PetscObject)pc,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(PCList,pc->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PCList,((PetscObject)pc)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PC type %s",type);
   /* Destroy the previous private PC context */
   if (pc->ops->destroy) { ierr =  (*pc->ops->destroy)(pc);CHKERRQ(ierr); }
-  ierr = PetscFListDestroy(&pc->qlist);CHKERRQ(ierr);
+  ierr = PetscFListDestroy(&((PetscObject)pc)->qlist);CHKERRQ(ierr);
   /* Reinitialize function pointers in PCOps structure */
   ierr = PetscMemzero(pc->ops,sizeof(struct _PCOps));CHKERRQ(ierr);
   /* XXX Is this OK?? */
@@ -132,7 +132,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC pc,PCType *meth)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidPointer(meth,2);
-  *meth = (PCType) pc->type_name;
+  *meth = (PCType) ((PetscObject)pc)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -168,17 +168,17 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC pc)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
 
   if (!PCRegisterAllCalled) {ierr = PCRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(pc->comm,pc->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
-    if (!pc->type_name) {
+  ierr = PetscOptionsBegin(((PetscObject)pc)->comm,((PetscObject)pc)->prefix,"Preconditioner (PC) Options","PC");CHKERRQ(ierr);
+    if (!((PetscObject)pc)->type_name) {
       ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
     } else {
-      def = pc->type_name;
+      def = ((PetscObject)pc)->type_name;
     }
 
     ierr = PetscOptionsList("-pc_type","Preconditioner","PCSetType",PCList,def,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PCSetType(pc,type);CHKERRQ(ierr);
-    } else if (!pc->type_name){
+    } else if (!((PetscObject)pc)->type_name){
       ierr = PCSetType(pc,def);CHKERRQ(ierr);
     } 
 

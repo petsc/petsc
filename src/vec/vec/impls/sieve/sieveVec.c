@@ -458,7 +458,7 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "VecCreate_Sieve"
 PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Sieve(Vec v)
 {
-  ALE::Mesh::field_type *field = new ALE::Mesh::field_type(v->comm, 0);
+  ALE::Mesh::field_type *field = new ALE::Mesh::field_type(((PetscObject)v)->comm, 0);
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

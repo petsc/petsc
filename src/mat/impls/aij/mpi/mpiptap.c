@@ -72,7 +72,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapsymbolic_mpiaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",A->type_name,P->type_name);
+    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapsymbolic_mpiaij)(A,P,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -86,7 +86,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapnumeric_mpiaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",A->type_name,P->type_name);
+    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapnumeric_mpiaij)(A,P,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -109,7 +109,7 @@ PetscErrorCode MatPtAPSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   PetscInt             nlnk,*lnk,*owners_co,*coi,*coj,i,k,pnz,row;
   PetscInt             am=A->rmap.n,pN=P->cmap.N,pn=P->cmap.n;  
   PetscBT              lnkbt;
-  MPI_Comm             comm=A->comm;
+  MPI_Comm             comm=((PetscObject)A)->comm;
   PetscMPIInt          size,rank,tag,*len_si,*len_s,*len_ri; 
   PetscInt             **buf_rj,**buf_ri,**buf_ri_k;
   PetscInt             len,proc,*dnz,*onz,*owners;
@@ -501,7 +501,7 @@ PetscErrorCode MatPtAPNumeric_MPIAIJ_MPIAIJ(Mat A,Mat P,Mat C)
   PetscInt             i,j,k,anz,pnz,apnz,nextap,row,*cj;
   MatScalar            *ada=ad->a,*aoa=ao->a,*apa,*pa,*ca,*pa_loc,*pa_oth;
   PetscInt             am=A->rmap.n,cm=C->rmap.n,pon=(p->B)->cmap.n; 
-  MPI_Comm             comm=C->comm;
+  MPI_Comm             comm=((PetscObject)C)->comm;
   PetscMPIInt          size,rank,taga,*len_s;
   PetscInt             *owners,proc,nrows,**buf_ri_k,**nextrow,**nextci;
   PetscInt             **buf_ri,**buf_rj;  

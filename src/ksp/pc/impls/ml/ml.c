@@ -131,7 +131,7 @@ PetscErrorCode PCSetUp_ML(PC pc)
   /*--------------------------------*/
   /* covert A to Aloc to be used by ML at fine grid */
   A = pc->pmat;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   pc_ml->size = size;
   if (size > 1){ 
     if (reuse) Aloc = PetscMLdata->Aloc;
@@ -241,17 +241,17 @@ PetscErrorCode PCSetUp_ML(PC pc)
   if (!reuse){
     for (level=0; level<fine_level; level++){  
       level1 = level + 1;
-      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].x);CHKERRQ(ierr); 
+      ierr = VecCreate(gridctx[level].((PetscObject)A)->comm,&gridctx[level].x);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->cmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
       ierr = PCMGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
    
-      ierr = VecCreate(gridctx[level].A->comm,&gridctx[level].b);CHKERRQ(ierr); 
+      ierr = VecCreate(gridctx[level].((PetscObject)A)->comm,&gridctx[level].b);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
       ierr = PCMGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
     
-      ierr = VecCreate(gridctx[level1].A->comm,&gridctx[level1].r);CHKERRQ(ierr); 
+      ierr = VecCreate(gridctx[level1].((PetscObject)A)->comm,&gridctx[level1].r);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr); 
       ierr = PCMGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr);
@@ -529,7 +529,7 @@ int PetscML_matvec(ML_Operator *ML_data,int in_length,double p[],int out_length,
   PetscScalar    *pwork=ml->pwork; 
   PetscInt       i;
 
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1){
     ierr = VecPlaceArray(ml->x,p);CHKERRQ(ierr);
   } else {
@@ -554,7 +554,7 @@ int PetscML_comm(double p[],void *ML_data)
   PetscInt       i,in_length=A->rmap.n,out_length=ml->Aloc->cmap.n;
   PetscScalar    *array;
 
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) return 0;
   
   ierr = VecPlaceArray(ml->y,p);CHKERRQ(ierr); 

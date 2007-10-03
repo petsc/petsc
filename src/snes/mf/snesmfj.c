@@ -133,7 +133,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT MatCreateSNESMF(SNES snes,Mat *J)
   
   ierr = VecGetLocalSize(snes->vec_func,&n);CHKERRQ(ierr);
   ierr = VecGetSize(snes->vec_func,&N);CHKERRQ(ierr);
-  ierr = MatCreateMFFD(snes->comm,n,n,N,N,J);CHKERRQ(ierr);
+  ierr = MatCreateMFFD(((PetscObject)snes)->comm,n,n,N,N,J);CHKERRQ(ierr);
   ierr = MatMFFDSetFunction(*J,(PetscErrorCode (*)(void*,Vec,Vec))SNESComputeFunction,snes);CHKERRQ(ierr);
   (*J)->ops->assemblyend = MatAssemblyEnd_SNESMF;
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)*J,"MatMFFDSetBase_C","MatMFFDSetBase_SNESMF",MatMFFDSetBase_SNESMF);CHKERRQ(ierr);
