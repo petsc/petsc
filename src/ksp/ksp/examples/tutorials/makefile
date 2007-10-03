@@ -693,13 +693,13 @@ runex38:
 	   ${RM} -f ex38_1.tmp
 
 runex39:
-	-@${MPIEXEC} -np 1 ./ex39 -ksp_monitor_short  > ex39_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex39 -mat_no_inode -ksp_monitor_short  > ex39_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex39_1.out ex39_1.tmp) then true; \
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   ${RM} -f ex39_1.tmp
 
 runex40:
-	-@${MPIEXEC} -np 1 ./ex40 -ksp_monitor_short  > ex40_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex40 -mat_no_inode -ksp_monitor_short  > ex40_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex40_1.out ex40_1.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp
