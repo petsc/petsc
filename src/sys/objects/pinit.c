@@ -644,6 +644,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscMPIInt    rank;
   int            nopt;
   PetscTruth     flg1,flg2,flg3;
+  extern FILE   *PETSC_ZOPEFD;
   
   PetscFunctionBegin;
 
@@ -862,7 +863,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
-  extern FILE * PETSC_ZOPEFD;
   if(PETSC_ZOPEFD != NULL){ 
     if (PETSC_ZOPEFD != PETSC_STDOUT) fprintf(PETSC_ZOPEFD, "<<<end>>>");
     else fprintf(PETSC_STDOUT, "<<<end>>>");}

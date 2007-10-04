@@ -5,6 +5,9 @@
 #include <Selection.hh>
 #endif
 
+/* Just to set iterations */
+#include "include/private/snesimpl.h"      /*I "petscsnes.h"  I*/
+
 #ifdef PETSC_HAVE_SIEVE
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
 
@@ -60,6 +63,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   DALocalFunction1 jac;
   ALE::Obj<ALE::Mesh> m;
   ALE::Obj<ALE::Mesh::real_section_type> sX;
+  ALE::Obj<ALE::Mesh::real_section_type> sB;
   PetscTruth       fasDebug;
   PetscErrorCode   ierr;
 
@@ -79,6 +83,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
   ierr = SectionRealGetSection(sectionX, sX);CHKERRQ(ierr);
   ierr = MeshGetSectionReal(mesh, "constant", &sectionB);CHKERRQ(ierr);
   ierr = SectionRealToVec(sectionB, mesh, SCATTER_REVERSE, B);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(sectionB, sB);CHKERRQ(ierr);
   ierr = SectionRealCreate(PETSC_COMM_SELF, &cellX);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::sieve_type>&     sieve   = m->getSieve();
   const ALE::Obj<ALE::Mesh::label_sequence>& cells   = m->heightStratum(0);
@@ -150,6 +155,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
         }
         // Create field
         sm->setupField(ssX, 2, true);
+        // Setup constant
+        sm->setRealSection("constant", sB);
         // Setup DMMG
         ierr = MeshSetMesh(smallMesh, sm);CHKERRQ(ierr);
         ierr = DMMGSetDM(smallDmmg, (DM) smallMesh);CHKERRQ(ierr);
@@ -180,6 +187,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT Relax_Mesh(DMMG *dmmg, Mesh mesh, MatSORType f
     if (flag & SOR_BACKWARD_SWEEP || flag & SOR_LOCAL_BACKWARD_SWEEP){
     }
   }
+  sB->zero();
   ierr = SectionRealToVec(sectionX, mesh, SCATTER_FORWARD, X);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionX);CHKERRQ(ierr);
   ierr = SectionRealDestroy(sectionB);CHKERRQ(ierr);
@@ -200,6 +208,7 @@ EXTERN_C_END
 #define __FUNCT__ "DMMGSolveFAS_Mesh"
 PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
 {
+  SNES           snes = dmmg[level]->snes;
   PetscReal      norm;
   PetscInt       i, j, k;
   PetscTruth     fasDebug;
@@ -214,10 +223,10 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
 /*     } */
 /*   } */
 
-  for(i = 0; i < 100; i++) {
+  for(i = 0, snes->iter = 1; i < 100; ++i, ++snes->iter) {
     ierr = PetscPrintf(dmmg[0]->comm, "FAS iteration %d\n", i);CHKERRQ(ierr);
     for(j = level; j > 0; j--) {
-      ierr = PetscPrintf(dmmg[0]->comm, "  FAS level %d\n", j);CHKERRQ(ierr);
+      if (dmmg[j]->monitorall) {ierr = PetscPrintf(dmmg[0]->comm, "  FAS level %d\n", j);CHKERRQ(ierr);}
       /* Relax on fine mesh to obtain x^{new}_{fine}, residual^{new}_{fine} = F_{fine}(x^{new}_{fine}) \approx 0 */
       ierr = Relax_Mesh(dmmg, (Mesh) dmmg[j]->dm, SOR_SYMMETRIC_SWEEP, dmmg[j]->presmooth, dmmg[j]->x, dmmg[j]->r);CHKERRQ(ierr);
       ierr = DMMGFormFunctionMesh(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
@@ -228,6 +237,10 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
       if (j == level || dmmg[j]->monitorall) {
         /* norm( residual_fine - f(x_fine) ) */
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
+        if (dmmg[j]->monitorall) {
+          for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
+          ierr = PetscPrintf(dmmg[j]->comm,"FAS lvl %d function norm %G\n",j,norm);CHKERRQ(ierr);
+        }
         if (j == level) {
           if (norm < dmmg[level]->abstol) goto theend; 
           if (i == 0) {
@@ -235,10 +248,6 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
           } else {
             if (norm < dmmg[level]->rrtol) goto theend;
           }
-        }
-        if (dmmg[j]->monitorall) {
-          for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-          ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
         }
       }
 
@@ -258,7 +267,10 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
       ierr = VecCopy(dmmg[j-1]->x,dmmg[j-1]->b);CHKERRQ(ierr);
     }
 
-    if (fasDebug) {ierr = PetscPrintf(dmmg[0]->comm, "  FAS coarse grid\n");CHKERRQ(ierr);}
+    if (dmmg[0]->monitorall) {
+      for (k=0; k<level+1; k++) {ierr = PetscPrintf(dmmg[0]->comm,"  ");CHKERRQ(ierr);}
+      ierr = PetscPrintf(dmmg[0]->comm, "FAS coarse grid\n");CHKERRQ(ierr);
+    }
     if (level == 0) {
       ierr = DMMGFormFunctionMesh(0,dmmg[0]->x,dmmg[0]->w,dmmg[0]);CHKERRQ(ierr);
       ierr = VecAYPX(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
@@ -301,7 +313,7 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
         ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS lvl %d function norm before postsmooth %G\n",j,norm);CHKERRQ(ierr);
       }
 
       /* Relax residual_fine - F(x_fine)  = 0 */
@@ -309,13 +321,17 @@ PetscErrorCode DMMGSolveFAS_Mesh(DMMG *dmmg, PetscInt level)
         ierr = Relax_Mesh(dmmg, (Mesh) dmmg[j]->dm, SOR_SYMMETRIC_SWEEP, 1, dmmg[j]->x, dmmg[j]->r);CHKERRQ(ierr);
       }
 
-      if (dmmg[j]->monitorall) {
+      if ((j == level) || dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */
         ierr = DMMGFormFunctionMesh(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
         ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
+        ierr = PetscPrintf(dmmg[j]->comm,"FAS lvl %d function norm %G\n",j,norm);CHKERRQ(ierr);
+        if (j == level) {
+          if (norm < dmmg[level]->abstol) goto theend; 
+          if (norm < dmmg[level]->rrtol) goto theend;
+        }
       }
     }
 

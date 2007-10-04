@@ -936,12 +936,16 @@ PetscErrorCode DMMGSetSNESLocal_Private(DMMG *dmmg,DALocalFunction1 function,DAL
       ierr = MeshSetLocalJacobian((Mesh) dmmg[i]->dm, (PetscErrorCode (*)(Mesh,SectionReal,Mat,void*)) jacobian);CHKERRQ(ierr);
       // Setup a work section
       SectionReal defaultSec, constantSec;
+      PetscTruth  hasConstant;
 
       ierr = MeshGetSectionReal((Mesh) dmmg[i]->dm, "default", &defaultSec);CHKERRQ(ierr);
-      ierr = SectionRealDuplicate(defaultSec, &constantSec);CHKERRQ(ierr);
-      ierr = PetscObjectSetName((PetscObject) constantSec, "constant");CHKERRQ(ierr);
-      ierr = MeshSetSectionReal((Mesh) dmmg[i]->dm, constantSec);CHKERRQ(ierr);
-      ierr = SectionRealDestroy(constantSec);CHKERRQ(ierr);
+      ierr = MeshHasSectionReal((Mesh) dmmg[i]->dm, "constant", &hasConstant);CHKERRQ(ierr);
+      if (!hasConstant) {
+        ierr = SectionRealDuplicate(defaultSec, &constantSec);CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) constantSec, "constant");CHKERRQ(ierr);
+        ierr = MeshSetSectionReal((Mesh) dmmg[i]->dm, constantSec);CHKERRQ(ierr);
+        ierr = SectionRealDestroy(constantSec);CHKERRQ(ierr);
+      }
     }
     CHKMEMQ;
 #else
