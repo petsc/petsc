@@ -108,10 +108,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscZopeLog(const char *format,va_list Argp){
   extern FILE * PETSC_ZOPEFD;
   char logstart[] = " <<<log>>>";
   size_t len;
+  size_t formatlen;
   PetscFormatConvert(format,newformat,8*1024);
   PetscStrlen(logstart, &len);
   PetscMemcpy(log, logstart, len);
-  size_t formatlen;
   PetscStrlen(newformat, &formatlen);
   PetscMemcpy(&(log[len]), newformat, formatlen);
   if(PETSC_ZOPEFD != NULL){

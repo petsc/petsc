@@ -7,7 +7,9 @@
 #include "petscerror.h"
 #include <stdio.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+#ifdef PETSC_HAVE_SYS_SOCKET_H
+  #include <sys/socket.h>
+#endif
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdlib.h>
