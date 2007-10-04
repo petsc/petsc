@@ -2156,6 +2156,47 @@ PetscErrorCode MatGetRedundantMatrix_MPIAIJ(Mat mat,PetscInt nsubcomm,MPI_Comm s
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetRowMin_MPIAIJ"
+PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
+{
+  Mat_MPIAIJ    *mat    = (Mat_MPIAIJ *) A->data;
+  PetscInt       n      = A->rmap.n;
+  PetscInt       cstart = A->cmap.rstart;
+  PetscInt      *cmap   = mat->garray;
+  PetscInt      *diagIdx, *offdiagIdx;
+  Vec            diagV, offdiagV;
+  PetscScalar   *a, *diagA, *offdiagA;
+  PetscInt       r;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMalloc2(n,PetscInt,&diagIdx,n,PetscInt,&offdiagIdx);CHKERRQ(ierr);
+  ierr = VecCreateSeq(A->comm, n, &diagV);CHKERRQ(ierr);
+  ierr = VecCreateSeq(A->comm, n, &offdiagV);CHKERRQ(ierr);
+  ierr = MatGetRowMin(mat->A, diagV,    diagIdx);CHKERRQ(ierr);
+  ierr = MatGetRowMin(mat->B, offdiagV, offdiagIdx);CHKERRQ(ierr);
+  ierr = VecGetArray(v,        &a);CHKERRQ(ierr);
+  ierr = VecGetArray(diagV,    &diagA);CHKERRQ(ierr);
+  ierr = VecGetArray(offdiagV, &offdiagA);CHKERRQ(ierr);
+  for(r = 0; r < n; ++r) {
+    if (diagA[r] <= offdiagA[r]) {
+      a[r]   = diagA[r];
+      idx[r] = cstart + diagIdx[r];
+    } else {
+      a[r]   = offdiagA[r];
+      idx[r] = cmap[offdiagIdx[r]];
+    }
+  }
+  ierr = VecRestoreArray(v,        &a);CHKERRQ(ierr);
+  ierr = VecRestoreArray(diagV,    &diagA);CHKERRQ(ierr);
+  ierr = VecRestoreArray(offdiagV, &offdiagA);CHKERRQ(ierr);
+  ierr = VecDestroy(diagV);CHKERRQ(ierr);
+  ierr = VecDestroy(offdiagV);CHKERRQ(ierr);
+  ierr = PetscFree2(diagIdx, offdiagIdx);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -2284,7 +2325,8 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
        0,
 /*110*/0,
-       MatGetRedundantMatrix_MPIAIJ};
+       MatGetRedundantMatrix_MPIAIJ,
+       MatGetRowMin_MPIAIJ};
 
 /* ----------------------------------------------------------------------------------------*/
 

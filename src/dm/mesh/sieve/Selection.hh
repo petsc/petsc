@@ -453,8 +453,53 @@ namespace ALE {
       if (debug) submesh->view("Submesh");
       return submesh;
     };
-    static Obj<mesh_type> submesh_interpolated(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1) {
-      throw ALE::Exception("Not implemented");
+    // This takes in a section and creates a submesh from the vertices in the section chart
+    //   This is a hyperplane of one dimension lower than the mesh
+    static Obj<mesh_type> submesh_interpolated(const Obj<mesh_type>& mesh, const Obj<int_section_type>& label, const int dimension = -1, const bool boundaryFaces = true) {
+      const int debug  = mesh->debug();
+      const int depth  = mesh->depth();
+      const int height = mesh->height();
+      const typename int_section_type::chart_type&          chart        = label->getChart();
+      const typename int_section_type::chart_type::iterator chartEnd     = chart.end();
+      const Obj<PointSet>                                   submeshFaces = new PointSet();
+      PointSet submeshVertices;
+
+      for(typename int_section_type::chart_type::iterator c_iter = chart.begin(); c_iter != chartEnd; ++c_iter) {
+        //assert(!mesh->depth(*c_iter));
+        submeshVertices.insert(*c_iter);
+      }
+      const typename PointSet::const_iterator svBegin = submeshVertices.begin();
+      const typename PointSet::const_iterator svEnd   = submeshVertices.end();
+
+      for(typename PointSet::const_iterator sv_iter = svBegin; sv_iter != svEnd; ++sv_iter) {
+        const Obj<typename sieveAlg::supportArray>& faces = sieveAlg::nSupport(mesh, *sv_iter, depth-1);
+        const typename sieveAlg::supportArray::iterator fBegin = faces->begin();
+        const typename sieveAlg::supportArray::iterator fEnd   = faces->end();
+    
+        if (debug) std::cout << "Checking submesh vertex " << *sv_iter << std::endl;
+        for(typename sieveAlg::supportArray::iterator f_iter = fBegin; f_iter != fEnd; ++f_iter) {
+          if (debug) std::cout << "  Checking face " << *f_iter << std::endl;
+          if (submeshFaces->find(*f_iter) != submeshFaces->end())	continue;
+          const Obj<typename sieveAlg::coneArray>& cone = sieveAlg::nCone(mesh, *f_iter, height-1);
+          const typename sieveAlg::coneArray::iterator vBegin = cone->begin();
+          const typename sieveAlg::coneArray::iterator vEnd   = cone->end();
+          bool                                         found  = true;
+
+          for(typename sieveAlg::coneArray::iterator v_iter = vBegin; v_iter != vEnd; ++v_iter) {
+            if (submeshVertices.find(*v_iter) != svEnd) {
+              if (debug) std::cout << "    contains submesh vertex " << *v_iter << std::endl;
+            } else {
+              found = false;
+            }
+          }
+          if (found) {
+            if (boundaryFaces) {throw ALE::Exception("Not finished: should check that it is a boundary face");}
+            if (debug) std::cout << "  Is a face on the submesh" << std::endl;
+            submeshFaces->insert(*f_iter);
+          }
+        }
+      }
+      return submesh(mesh, submeshFaces, mesh->getDimension()-1);
     };
   public:
     // This takes in a section and creates a submesh from the vertices in the section chart
@@ -464,7 +509,7 @@ namespace ALE {
       const int depth = mesh->depth();
 
       if (dim == depth) {
-        return submesh_interpolated(mesh, label, dimension);
+        return submesh_interpolated(mesh, label, dimension, false);
       } else if (depth == 1) {
         return submesh_uninterpolated(mesh, label, dimension);
       }
@@ -473,9 +518,9 @@ namespace ALE {
     // This creates a submesh consisting of the union of the closures of the given points
     //   This mesh is the same dimension as in the input mesh
     template<typename Points>
-    static Obj<mesh_type> submesh(const Obj<mesh_type>& mesh, const Obj<Points>& points) {
+    static Obj<mesh_type> submesh(const Obj<mesh_type>& mesh, const Obj<Points>& points, const int dim = -1) {
       const Obj<sieve_type>& sieve     = mesh->getSieve();
-      Obj<mesh_type>         newMesh   = new mesh_type(mesh->comm(), mesh->getDimension(), mesh->debug());
+      Obj<mesh_type>         newMesh   = new mesh_type(mesh->comm(), dim >= 0 ? dim : mesh->getDimension(), mesh->debug());
       Obj<sieve_type>        newSieve  = new sieve_type(mesh->comm(), mesh->debug());
       Obj<PointSet>          newPoints = new PointSet();
       Obj<PointSet>          modPoints = new PointSet();
@@ -487,13 +532,31 @@ namespace ALE {
         do {
           modPoints->clear();
           for(typename PointSet::iterator np_iter = newPoints->begin(); np_iter != newPoints->end(); ++np_iter) {
-            const Obj<typename sieve_type::traits::coneSequence>& cone = sieve->cone(*np_iter);
+            const Obj<typename sieve_type::traits::coneSequence>&     cone = sieve->cone(*np_iter);
+            const typename sieve_type::traits::coneSequence::iterator end  = cone->end();
             int c = 0;
 
-            for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter, ++c) {
+            for(typename sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != end; ++c_iter, ++c) {
               newSieve->addArrow(*c_iter, *np_iter, c);
             }
             modPoints->insert(cone->begin(), cone->end());
+          }
+          tmpPoints = newPoints;
+          newPoints = modPoints;
+          modPoints = tmpPoints;
+        } while(newPoints->size());
+        newPoints->insert(*p_iter);
+        do {
+          modPoints->clear();
+          for(typename PointSet::iterator np_iter = newPoints->begin(); np_iter != newPoints->end(); ++np_iter) {
+            const Obj<typename sieve_type::traits::supportSequence>&     support = sieve->support(*np_iter);
+            const typename sieve_type::traits::supportSequence::iterator end     = support->end();
+            int s = 0;
+
+            for(typename sieve_type::traits::supportSequence::iterator s_iter = support->begin(); s_iter != end; ++s_iter, ++s) {
+              newSieve->addArrow(*np_iter, *s_iter, s);
+            }
+            modPoints->insert(support->begin(), support->end());
           }
           tmpPoints = newPoints;
           newPoints = modPoints;
@@ -618,5 +681,299 @@ namespace ALE {
 
 
 }
+
+#if 0
+namespace ALE {
+  class MySelection {
+  public:
+    typedef ALE::SieveAlg<ALE::Mesh> sieveAlg;
+    typedef ALE::Selection<ALE::Mesh> selection;
+    typedef ALE::Mesh::sieve_type sieve_type;
+    typedef ALE::Mesh::int_section_type int_section_type;
+    typedef ALE::Mesh::real_section_type real_section_type;
+    typedef std::set<ALE::Mesh::point_type> PointSet;
+    typedef std::vector<ALE::Mesh::point_type> PointArray;
+  public:
+    template<class InputPoints>
+    static bool _compatibleOrientation(const Obj<Mesh>& mesh,
+                                       const ALE::Mesh::point_type& p,
+                                       const ALE::Mesh::point_type& q,
+                                       const int numFaultCorners,
+                                       const int faultFaceSize,
+                                       const int faultDepth,
+                                       const Obj<InputPoints>& points,
+                                       int indices[],
+                                       PointArray *origVertices,
+                                       PointArray *faceVertices,
+                                       PointArray *neighborVertices)
+    {
+      typedef ALE::Selection<ALE::Mesh> selection;
+      const int debug = mesh->debug();
+      bool compatible;
+
+      bool eOrient = selection::getOrientedFace(mesh, p, points, numFaultCorners, indices, origVertices, faceVertices);
+      bool nOrient = selection::getOrientedFace(mesh, q, points, numFaultCorners, indices, origVertices, neighborVertices);
+
+      if (faultFaceSize > 1) {
+        if (debug) {
+          for(PointArray::iterator v_iter = faceVertices->begin(); v_iter != faceVertices->end(); ++v_iter) {
+            std::cout << "  face vertex " << *v_iter << std::endl;
+          }
+          for(PointArray::iterator v_iter = neighborVertices->begin(); v_iter != neighborVertices->end(); ++v_iter) {
+            std::cout << "  neighbor vertex " << *v_iter << std::endl;
+          }
+        }
+        compatible = !(*faceVertices->begin() == *neighborVertices->begin());
+      } else {
+        compatible = !(nOrient == eOrient);
+      }
+      return compatible;
+    };
+    static void _replaceCell(const Obj<sieve_type>& sieve,
+                             const ALE::Mesh::point_type cell,
+                             std::map<int,int> *vertexRenumber,
+                             const int debug)
+    {
+      bool       replace = false;
+      PointArray newVertices;
+
+      const Obj<sieve_type::traits::coneSequence>& cCone = sieve->cone(cell);
+
+      for(sieve_type::traits::coneSequence::iterator v_iter = cCone->begin(); v_iter != cCone->end(); ++v_iter) {
+        if (vertexRenumber->find(*v_iter) != vertexRenumber->end()) {
+          if (debug) std::cout << "    vertex " << (*vertexRenumber)[*v_iter] << std::endl;
+          newVertices.insert(newVertices.end(), (*vertexRenumber)[*v_iter]);
+          replace = true;
+        } else {
+          if (debug) std::cout << "    vertex " << *v_iter << std::endl;
+          newVertices.insert(newVertices.end(), *v_iter);
+        } // if/else
+      } // for
+      if (replace) {
+        if (debug) std::cout << "  Replacing cell " << cell << std::endl;
+        sieve->clearCone(cell);
+        int color = 0;
+        for(PointArray::const_iterator v_iter = newVertices.begin(); v_iter != newVertices.end(); ++v_iter) {
+          sieve->addArrow(*v_iter, cell, color++);
+        } // for
+      }
+    };
+    template<class InputPoints>
+    static void _computeCensoredDepth(const Obj<ALE::Mesh>& mesh,
+                                      const Obj<ALE::Mesh::label_type>& depth,
+                                      const Obj<ALE::Mesh::sieve_type>& sieve,
+                                      const Obj<InputPoints>& points,
+                                      const ALE::Mesh::point_type& firstCohesiveCell,
+                                      const Obj<std::set<ALE::Mesh::point_type> >& modifiedPoints)
+    {
+      modifiedPoints->clear();
+
+      for(typename InputPoints::iterator p_iter = points->begin(); p_iter != points->end(); ++p_iter) {
+        if (*p_iter >= firstCohesiveCell) continue;
+        // Compute the max depth of the points in the cone of p, and add 1
+        int d0 = mesh->getValue(depth, *p_iter, -1);
+        int d1 = mesh->getMaxValue(depth, sieve->cone(*p_iter), -1) + 1;
+
+        if(d1 != d0) {
+          mesh->setValue(depth, *p_iter, d1);
+          modifiedPoints->insert(*p_iter);
+        }
+      }
+      // FIX: We would like to avoid the copy here with support()
+      if(modifiedPoints->size() > 0) {
+        _computeCensoredDepth(mesh, depth, sieve, sieve->support(modifiedPoints), firstCohesiveCell, modifiedPoints);
+      }
+    };
+    static void create(const Obj<Mesh>& mesh, Obj<Mesh> fault, const Obj<Mesh::int_section_type>& groupField) {
+      static PetscEvent CreateFaultMesh_Event = 0, OrientFaultMesh_Event = 0, AddCohesivePoints_Event = 0, SplitMesh_Event = 0;
+
+      if (!CreateFaultMesh_Event) {
+        PetscLogEventRegister(&CreateFaultMesh_Event, "CreateFaultMesh", 0);
+      }
+      if (!OrientFaultMesh_Event) {
+        PetscLogEventRegister(&OrientFaultMesh_Event, "OrientFaultMesh", 0);
+      }
+      if (!AddCohesivePoints_Event) {
+        PetscLogEventRegister(&AddCohesivePoints_Event, "AddCohesivePoints", 0);
+      }
+      if (!SplitMesh_Event) {
+        PetscLogEventRegister(&SplitMesh_Event, "SplitMesh", 0);
+      }
+
+      const Obj<sieve_type>& sieve = mesh->getSieve();
+      const int  debug      = mesh->debug();
+      int        numCorners = 0;    // The number of vertices in a mesh cell
+      int        faceSize   = 0;    // The number of vertices in a mesh face
+      int       *indices    = NULL; // The indices of a face vertex set in a cell
+      PointArray origVertices;
+      PointArray faceVertices;
+      PointArray neighborVertices;
+      const bool constraintCell = false;
+
+      if (!mesh->commRank()) {
+        numCorners = sieve->nCone(*mesh->heightStratum(0)->begin(), mesh->depth())->size();
+        faceSize   = selection::numFaceVertices(*mesh->heightStratum(0)->begin(), mesh);
+        indices    = new int[faceSize];
+      }
+
+      //int f = sieve->base()->size() + sieve->cap()->size();
+      //ALE::Obj<PointSet> face = new PointSet();
+  
+      // Create a sieve which captures the fault
+      PetscLogEventBegin(CreateFaultMesh_Event,0,0,0,0);
+      fault = ALE::Selection<ALE::Mesh>::submesh(mesh, groupField);
+      if (debug) {fault->view("Fault mesh");}
+      PetscLogEventEnd(CreateFaultMesh_Event,0,0,0,0);
+      // Orient the fault sieve
+      PetscLogEventBegin(OrientFaultMesh_Event,0,0,0,0);
+      const Obj<sieve_type>&                faultSieve = fault->getSieve();
+      const ALE::Obj<Mesh::label_sequence>& fFaces     = fault->heightStratum(1);
+      int faultDepth      = fault->depth()-1; // Depth of fault cells
+      int numFaultCorners = 0; // The number of vertices in a fault cell
+
+      if (!fault->commRank()) {
+        numFaultCorners = faultSieve->nCone(*fFaces->begin(), faultDepth)->size();
+        if (debug) std::cout << "  Fault corners " << numFaultCorners << std::endl;
+        assert(numFaultCorners == faceSize);
+      }
+      PetscLogEventEnd(OrientFaultMesh_Event,0,0,0,0);
+
+      // Add new shadow vertices and possibly Lagrange multipler vertices
+      PetscLogEventBegin(AddCohesivePoints_Event,0,0,0,0);
+      const ALE::Obj<Mesh::label_sequence>&   fVertices  = fault->depthStratum(0);
+      const ALE::Obj<std::set<std::string> >& groupNames = mesh->getIntSections();
+      Mesh::point_type newPoint = sieve->base()->size() + sieve->cap()->size();
+      std::map<int,int> vertexRenumber;
+  
+      for(Mesh::label_sequence::iterator v_iter = fVertices->begin(); v_iter != fVertices->end(); ++v_iter, ++newPoint) {
+        vertexRenumber[*v_iter] = newPoint;
+        if (debug) {std::cout << "Duplicating " << *v_iter << " to " << vertexRenumber[*v_iter] << std::endl;}
+
+        // Add shadow and constraint vertices (if they exist) to group
+        // associated with fault
+        groupField->addPoint(newPoint, 1);
+        if (constraintCell) groupField->addPoint(newPoint+1, 1);
+
+        // Add shadow vertices to other groups, don't add constraint
+        // vertices (if they exist) because we don't want BC, etc to act
+        // on constraint vertices
+        for(std::set<std::string>::const_iterator name = groupNames->begin(); name != groupNames->end(); ++name) {
+          const ALE::Obj<int_section_type>& group = mesh->getIntSection(*name);
+          if (group->hasPoint(*v_iter)) group->addPoint(newPoint, 1);
+        }
+        if (constraintCell) newPoint++;
+      }
+      for(std::set<std::string>::const_iterator name = groupNames->begin(); name != groupNames->end(); ++name) {
+        mesh->reallocate(mesh->getIntSection(*name));
+      }
+
+      // Split the mesh along the fault sieve and create cohesive elements
+      const Obj<ALE::Mesh::label_sequence>&     faces       = fault->depthStratum(1);
+      const Obj<ALE::Mesh::arrow_section_type>& orientation = mesh->getArrowSection("orientation");
+      int firstCohesiveCell = newPoint;
+      PointSet replaceCells;
+      PointSet noReplaceCells;
+
+      for(ALE::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter, ++newPoint) {
+        if (debug) std::cout << "Considering fault face " << *f_iter << std::endl;
+        const ALE::Obj<sieve_type::traits::supportSequence>& cells = faultSieve->support(*f_iter);
+        const ALE::Mesh::arrow_section_type::point_type arrow(*cells->begin(), *f_iter);
+        bool reversed = orientation->restrictPoint(arrow)[0] < 0;
+        const ALE::Mesh::point_type cell = *cells->begin();
+
+        if (debug) std::cout << "  Checking orientation against cell " << cell << std::endl;
+        if (numFaultCorners == 2) reversed = orientation->restrictPoint(arrow)[0] == -2;
+        if (reversed) {
+          replaceCells.insert(cell);
+          noReplaceCells.insert(*(++cells->begin()));
+        } else {
+          replaceCells.insert(*(++cells->begin()));
+          noReplaceCells.insert(cell);
+        }
+        //selection::getOrientedFace(mesh, cell, &vertexRenumber, numCorners, indices, &origVertices, &faceVertices);
+        //const Obj<sieve_type::coneArray> faceCone = faultSieve->nCone(*f_iter, faultDepth);
+
+        // Adding cohesive cell (not interpolated)
+        const Obj<sieve_type::coneArray>&     fCone  = faultSieve->nCone(*f_iter, faultDepth);
+        const sieve_type::coneArray::iterator fBegin = fCone->begin();
+        const sieve_type::coneArray::iterator fEnd   = fCone->end();
+        int color = 0;
+
+        if (debug) {std::cout << "  Creating cohesive cell " << newPoint << std::endl;}
+        for(sieve_type::coneArray::iterator v_iter = fBegin; v_iter != fEnd; ++v_iter) {
+          if (debug) {std::cout << "    vertex " << *v_iter << std::endl;}
+          sieve->addArrow(*v_iter, newPoint, color++);
+        }
+        for(sieve_type::coneArray::iterator v_iter = fBegin; v_iter != fEnd; ++v_iter) {
+          if (debug) {std::cout << "    shadow vertex " << vertexRenumber[*v_iter] << std::endl;}
+          sieve->addArrow(vertexRenumber[*v_iter], newPoint, color++);
+        }
+      }
+      PetscLogEventEnd(AddCohesivePoints_Event,0,0,0,0);
+      // Replace all cells with a vertex on the fault that share a face with this one, or with one that does
+      PetscLogEventBegin(SplitMesh_Event,0,0,0,0);
+      const int_section_type::chart_type&          chart    = groupField->getChart();
+      const int_section_type::chart_type::iterator chartEnd = chart.end();
+
+      for(PointSet::const_iterator v_iter = chart.begin(); v_iter != chartEnd; ++v_iter) {
+        bool modified = true;
+
+        while(modified) {
+          modified = false;
+          const Obj<sieve_type::traits::supportSequence>&     neighbors = sieve->support(*v_iter);
+          const sieve_type::traits::supportSequence::iterator end       = neighbors->end();
+
+          for(sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != end; ++n_iter) {
+            if (replaceCells.find(*n_iter)   != replaceCells.end())   continue;
+            if (noReplaceCells.find(*n_iter) != noReplaceCells.end()) continue;
+            if (*n_iter >= firstCohesiveCell) continue;
+            if (debug) std::cout << "  Checking fault neighbor " << *n_iter << std::endl;
+            // If neighbors shares a faces with anyone in replaceCells, then add
+            for(PointSet::const_iterator c_iter = replaceCells.begin(); c_iter != replaceCells.end(); ++c_iter) {
+              const ALE::Obj<sieve_type::coneSet>& preFace = sieve->nMeet(*c_iter, *n_iter, mesh->depth());
+
+              if ((int) preFace->size() == faceSize) {
+                if (debug) std::cout << "    Scheduling " << *n_iter << " for replacement" << std::endl;
+                replaceCells.insert(*n_iter);
+                modified = true;
+                break;
+              }
+            }
+          }
+        }
+      }
+      for(PointSet::const_iterator c_iter = replaceCells.begin(); c_iter != replaceCells.end(); ++c_iter) {
+        _replaceCell(sieve, *c_iter, &vertexRenumber, debug);
+      }
+      if (!fault->commRank()) delete [] indices;
+      mesh->stratify();
+      const ALE::Obj<Mesh::label_type>& label          = mesh->createLabel(std::string("censored depth"));
+      const ALE::Obj<PointSet>          modifiedPoints = new PointSet();
+      _computeCensoredDepth(mesh, label, mesh->getSieve(), mesh->getSieve()->roots(), firstCohesiveCell, modifiedPoints);
+      if (debug) mesh->view("Mesh with Cohesive Elements");
+
+      // Fix coordinates
+      const Obj<real_section_type>&         coordinates = mesh->getRealSection("coordinates");
+      const Obj<ALE::Mesh::label_sequence>& fVertices2  = fault->depthStratum(0);
+
+      for(ALE::Mesh::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
+        coordinates->addPoint(vertexRenumber[*v_iter], coordinates->getFiberDimension(*v_iter));
+        if (constraintCell) {
+          coordinates->addPoint(vertexRenumber[*v_iter]+1, coordinates->getFiberDimension(*v_iter));
+        }
+      }
+      mesh->reallocate(coordinates);
+      for(ALE::Mesh::label_sequence::iterator v_iter = fVertices2->begin(); v_iter != fVertices2->end(); ++v_iter) {
+        coordinates->updatePoint(vertexRenumber[*v_iter], coordinates->restrictPoint(*v_iter));
+        if (constraintCell) {
+        coordinates->updatePoint(vertexRenumber[*v_iter]+1, coordinates->restrictPoint(*v_iter));
+        }
+      }
+      if (debug) coordinates->view("Coordinates with shadow vertices");
+      PetscLogEventEnd(SplitMesh_Event,0,0,0,0);
+    };
+  };
+};
+#endif
 
 #endif
