@@ -241,17 +241,17 @@ PetscErrorCode PCSetUp_ML(PC pc)
   if (!reuse){
     for (level=0; level<fine_level; level++){  
       level1 = level + 1;
-      ierr = VecCreate(gridctx[level].((PetscObject)A)->comm,&gridctx[level].x);CHKERRQ(ierr); 
+      ierr = VecCreate(((PetscObject)gridctx[level].A)->comm,&gridctx[level].x);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level].x,gridctx[level].A->cmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(gridctx[level].x,VECMPI);CHKERRQ(ierr); 
       ierr = PCMGSetX(pc,level,gridctx[level].x);CHKERRQ(ierr); 
    
-      ierr = VecCreate(gridctx[level].((PetscObject)A)->comm,&gridctx[level].b);CHKERRQ(ierr); 
+      ierr = VecCreate(((PetscObject)gridctx[level].A)->comm,&gridctx[level].b);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level].b,gridctx[level].A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(gridctx[level].b,VECMPI);CHKERRQ(ierr); 
       ierr = PCMGSetRhs(pc,level,gridctx[level].b);CHKERRQ(ierr); 
     
-      ierr = VecCreate(gridctx[level1].((PetscObject)A)->comm,&gridctx[level1].r);CHKERRQ(ierr); 
+      ierr = VecCreate(((PetscObject)gridctx[level1].A)->comm,&gridctx[level1].r);CHKERRQ(ierr); 
       ierr = VecSetSizes(gridctx[level1].r,gridctx[level1].A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetType(gridctx[level1].r,VECMPI);CHKERRQ(ierr); 
       ierr = PCMGSetR(pc,level1,gridctx[level1].r);CHKERRQ(ierr);
