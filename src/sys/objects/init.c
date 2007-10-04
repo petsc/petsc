@@ -214,7 +214,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
 {
   char           string[64],mname[PETSC_MAX_PATH_LEN],*f;
   MPI_Comm       comm = PETSC_COMM_WORLD;
-  PetscTruth     flg1,flg2,flg3,flag;
+  PetscTruth     flg1,flg2,flg3,flag,flgz,flgzout;
   PetscErrorCode ierr;
   PetscInt       si;
   int            i;
@@ -383,8 +383,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsCheckInitial_Private(void)
   /*
     Activates new sockets for zope if needed
   */
-  PetscTruth flgz;
-  PetscTruth flgzout;
   ierr=PetscOptionsHasName(PETSC_NULL,"-zope", &flgz); CHKERRQ(ierr);
   ierr=PetscOptionsHasName(PETSC_NULL,"-nostdout", &flgzout); CHKERRQ(ierr);
   if(flgz){
