@@ -865,7 +865,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   }
 
-  ierr = PetscInfo(0,"Using MUMPS for LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using MUMPS for LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -1033,7 +1033,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newt
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   }
 
-  ierr = PetscInfo(0,"Using MUMPS for Cholesky factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using MUMPS for Cholesky factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);

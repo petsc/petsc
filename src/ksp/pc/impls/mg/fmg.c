@@ -3,11 +3,11 @@
 */
 #include "src/ksp/pc/impls/mg/mgimpl.h"
 
-EXTERN PetscErrorCode PCMGMCycle_Private(PC_MG **,PetscTruth*);
+EXTERN PetscErrorCode PCMGMCycle_Private(PC,PC_MG **,PetscTruth*);
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGFCycle_Private"
-PetscErrorCode PCMGFCycle_Private(PC_MG **mg)
+PetscErrorCode PCMGFCycle_Private(PC pc,PC_MG **mg)
 {
   PetscErrorCode ierr;
   PetscInt       i,l = mg[0]->levels;
@@ -23,12 +23,12 @@ PetscErrorCode PCMGFCycle_Private(PC_MG **mg)
   /* work our way up through the levels */
   ierr = VecSet(mg[0]->x,0.0);CHKERRQ(ierr);
   for (i=0; i<l-1; i++) {
-    ierr = PCMGMCycle_Private(&mg[i],PETSC_NULL);CHKERRQ(ierr);
+    ierr = PCMGMCycle_Private(pc,&mg[i],PETSC_NULL);CHKERRQ(ierr);
     if (mg[i]->eventinterprestrict) {ierr = PetscLogEventBegin(mg[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolate(mg[i+1]->interpolate,mg[i]->x,mg[i+1]->x);CHKERRQ(ierr); 
     if (mg[i]->eventinterprestrict) {ierr = PetscLogEventEnd(mg[i]->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
   }
-  ierr = PCMGMCycle_Private(&mg[l-1],PETSC_NULL);CHKERRQ(ierr);
+  ierr = PCMGMCycle_Private(pc,&mg[l-1],PETSC_NULL);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

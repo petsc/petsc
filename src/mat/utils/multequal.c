@@ -63,7 +63,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultEqual(Mat A,Mat B,PetscInt n,PetscTruth
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %D-th MatMult() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %D-th MatMult() %G\n",k,r1);CHKERRQ(ierr);
       break;
     } 
   }
@@ -135,7 +135,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultAddEqual(Mat A,Mat B,PetscInt n,PetscTr
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %d-th MatMultAdd() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultAdd() %G\n",k,r1);CHKERRQ(ierr);
       break;
     }
   }
@@ -206,7 +206,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeEqual(Mat A,Mat B,PetscInt n,P
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %d-th MatMultTranspose() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultTranspose() %G\n",k,r1);CHKERRQ(ierr);
       break;
     } 
   }
@@ -278,7 +278,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMultTransposeAddEqual(Mat A,Mat B,PetscInt 
     }
     if (r1 > tol) {
       *flg = PETSC_FALSE;
-      ierr = PetscInfo2(0,"Error: %d-th MatMultTransposeAdd() %G\n",k,r1);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"Error: %d-th MatMultTransposeAdd() %G\n",k,r1);CHKERRQ(ierr);
       break;
     }
   }

@@ -8,7 +8,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCMGMCycle_Private"
-PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
+PetscErrorCode PCMGMCycle_Private(PC pc,PC_MG **mglevels,PetscTruth *converged)
 {
   PC_MG          *mg = *mglevels,*mgc;
   PetscErrorCode ierr;
@@ -32,9 +32,9 @@ PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
       if (rnorm <= mg->ttol) {
         *converged = PETSC_TRUE;
         if (rnorm < mg->abstol) {
-          ierr = PetscInfo2(0,"Linear solver has converged. Residual norm %G is less than absolute tolerance %G\n",rnorm,mg->abstol);CHKERRQ(ierr);
+          ierr = PetscInfo2(pc,"Linear solver has converged. Residual norm %G is less than absolute tolerance %G\n",rnorm,mg->abstol);CHKERRQ(ierr);
         } else {
-          ierr = PetscInfo2(0,"Linear solver has converged. Residual norm %G is less than relative tolerance times initial residual norm %G\n",rnorm,mg->ttol);CHKERRQ(ierr);
+          ierr = PetscInfo2(pc,"Linear solver has converged. Residual norm %G is less than relative tolerance times initial residual norm %G\n",rnorm,mg->ttol);CHKERRQ(ierr);
         }
         PetscFunctionReturn(0);
       }
@@ -46,7 +46,7 @@ PetscErrorCode PCMGMCycle_Private(PC_MG **mglevels,PetscTruth *converged)
     if (mg->eventinterprestrict) {ierr = PetscLogEventEnd(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = VecSet(mgc->x,0.0);CHKERRQ(ierr);
     while (cycles--) {
-      ierr = PCMGMCycle_Private(mglevels-1,converged);CHKERRQ(ierr); 
+      ierr = PCMGMCycle_Private(pc,mglevels-1,converged);CHKERRQ(ierr); 
     }
     if (mg->eventinterprestrict) {ierr = PetscLogEventBegin(mg->eventinterprestrict,0,0,0,0);CHKERRQ(ierr);}
     ierr = MatInterpolateAdd(mg->interpolate,mgc->x,mg->x,mg->x);CHKERRQ(ierr);
@@ -164,7 +164,7 @@ static PetscErrorCode PCDestroy_MG(PC pc)
 
 
 EXTERN PetscErrorCode PCMGACycle_Private(PC_MG**);
-EXTERN PetscErrorCode PCMGFCycle_Private(PC_MG**);
+EXTERN PetscErrorCode PCMGFCycle_Private(PC,PC_MG**);
 EXTERN PetscErrorCode PCMGKCycle_Private(PC_MG**);
 
 /*
@@ -194,7 +194,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
   if (mg[0]->am == PC_MG_MULTIPLICATIVE) {
     ierr = VecSet(x,0.0);CHKERRQ(ierr);
     for (i=0; i<mg[0]->cyclesperpcapply; i++) {
-      ierr = PCMGMCycle_Private(mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PCMGMCycle_Private(pc,mg+levels-1,PETSC_NULL);CHKERRQ(ierr);
     }
   } 
   else if (mg[0]->am == PC_MG_ADDITIVE) {
@@ -204,7 +204,7 @@ static PetscErrorCode PCApply_MG(PC pc,Vec b,Vec x)
     ierr = PCMGKCycle_Private(mg);CHKERRQ(ierr);
   }
   else {
-    ierr = PCMGFCycle_Private(mg);CHKERRQ(ierr);
+    ierr = PCMGFCycle_Private(pc,mg);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -238,7 +238,7 @@ static PetscErrorCode PCApplyRichardson_MG(PC pc,Vec b,Vec x,Vec w,PetscReal rto
   }
 
   while (its-- && !converged) {
-    ierr = PCMGMCycle_Private(mg+levels-1,&converged);CHKERRQ(ierr);
+    ierr = PCMGMCycle_Private(pc,mg+levels-1,&converged);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }

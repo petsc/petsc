@@ -10,7 +10,7 @@
 */ 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLSCheckLocalMin_Private"
-PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *ismin)
+PetscErrorCode SNESLSCheckLocalMin_Private(SNES snes,Mat A,Vec F,Vec W,PetscReal fnorm,PetscTruth *ismin)
 {
   PetscReal      a1;
   PetscErrorCode ierr;
@@ -23,7 +23,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
     /* Compute || J^T F|| */
     ierr = MatMultTranspose(A,F,W);CHKERRQ(ierr);
     ierr = VecNorm(W,NORM_2,&a1);CHKERRQ(ierr);
-    ierr = PetscInfo1(0,"|| J^T F|| %G near zero implies found a local minimum\n",a1/fnorm);CHKERRQ(ierr);
+    ierr = PetscInfo1(snes,"|| J^T F|| %G near zero implies found a local minimum\n",a1/fnorm);CHKERRQ(ierr);
     if (a1/fnorm < 1.e-4) *ismin = PETSC_TRUE;
   } else {
     Vec         work;
@@ -37,7 +37,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
     ierr = VecDot(F,work,&result);CHKERRQ(ierr);
     ierr = VecDestroy(work);CHKERRQ(ierr);
     a1   = PetscAbsScalar(result)/(fnorm*wnorm);
-    ierr = PetscInfo1(0,"(F^T J random)/(|| F ||*||random|| %G near zero implies found a local minimum\n",a1);CHKERRQ(ierr);
+    ierr = PetscInfo1(snes,"(F^T J random)/(|| F ||*||random|| %G near zero implies found a local minimum\n",a1);CHKERRQ(ierr);
     if (a1 < 1.e-4) *ismin = PETSC_TRUE;
   }
   PetscFunctionReturn(0);
@@ -48,7 +48,7 @@ PetscErrorCode SNESLSCheckLocalMin_Private(Mat A,Vec F,Vec W,PetscReal fnorm,Pet
 */ 
 #undef __FUNCT__  
 #define __FUNCT__ "SNESLSCheckResidual_Private"
-PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
+PetscErrorCode SNESLSCheckResidual_Private(SNES snes,Mat A,Vec F,Vec X,Vec W1,Vec W2)
 {
   PetscReal      a1,a2;
   PetscErrorCode ierr;
@@ -65,7 +65,7 @@ PetscErrorCode SNESLSCheckResidual_Private(Mat A,Vec F,Vec X,Vec W1,Vec W2)
     ierr = VecNorm(W1,NORM_2,&a1);CHKERRQ(ierr);
     ierr = VecNorm(W2,NORM_2,&a2);CHKERRQ(ierr);
     if (a1) {
-      ierr = PetscInfo1(0,"||J^T(F-Ax)||/||F-AX|| %G near zero implies inconsistent rhs\n",a2/a1);CHKERRQ(ierr);
+      ierr = PetscInfo1(snes,"||J^T(F-Ax)||/||F-AX|| %G near zero implies inconsistent rhs\n",a2/a1);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -200,7 +200,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
     }
 
     if (PetscLogPrintInfo){
-      ierr = SNESLSCheckResidual_Private(snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
+      ierr = SNESLSCheckResidual_Private(snes,snes->jacobian,F,Y,G,W);CHKERRQ(ierr);
     }
 
     /* Compute a (scaled) negative update in the line search routine: 
@@ -216,7 +216,7 @@ PetscErrorCode SNESSolve_LS(SNES snes)
       if (++snes->numFailures >= snes->maxFailures) {
 	PetscTruth ismin;
         snes->reason = SNES_DIVERGED_LS_FAILURE;
-        ierr = SNESLSCheckLocalMin_Private(snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
+        ierr = SNESLSCheckLocalMin_Private(snes,snes->jacobian,G,W,gnorm,&ismin);CHKERRQ(ierr);
         if (ismin) snes->reason = SNES_DIVERGED_LOCAL_MIN;
         break;
       }

@@ -159,7 +159,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
                          ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    ierr = PetscInfo((void*)obj,"Efficiency warning, copying array in XXXGetArray() due\n\
+    ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");CHKERRQ(ierr);
   }
   *res = itmp2;
