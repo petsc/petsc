@@ -206,13 +206,13 @@ static PetscErrorCode PetscDrawDestroy_PS(PetscDraw draw)
  
   PetscFunctionBegin;
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"\nshowpage\n");CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(draw->prefix,"-draw_ps_show",&show);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)draw)->prefix,"-draw_ps_show",&show);CHKERRQ(ierr);
   if (show) {
     ierr = PetscViewerFileGetName(ps->ps_file,&filename);CHKERRQ(ierr);    
     ierr = PetscStrcpy(par,"ghostview ");CHKERRQ(ierr);
     ierr = PetscStrcat(par,filename);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_POPEN)    
-    ierr = PetscPOpen(draw->comm,PETSC_NULL,par,"r",PETSC_NULL);CHKERRQ(ierr);
+    ierr = PetscPOpen(((PetscObject)draw)->comm,PETSC_NULL,par,"r",PETSC_NULL);CHKERRQ(ierr);
 #else
     SETERRQ(PETSC_ERR_SUP_SYS,"Cannot run external programs on this machine");
 #endif
@@ -300,7 +300,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawCreate_PS(PetscDraw draw)
   ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
   ierr = PetscNew(PetscDraw_PS,&ps);CHKERRQ(ierr);
   ierr = PetscMemcpy(draw->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
-  ierr = PetscViewerASCIIOpen(draw->comm,draw->display,&ps->ps_file);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIOpen(((PetscObject)draw)->comm,draw->display,&ps->ps_file);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%!PS-Adobe-2.0\n");CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Creator: PETSc %s\n",version);CHKERRQ(ierr);
   ierr = PetscViewerASCIIPrintf(ps->ps_file,"%%%%Title: %s\n",draw->display);CHKERRQ(ierr);

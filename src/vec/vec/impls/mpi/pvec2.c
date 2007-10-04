@@ -18,7 +18,7 @@ PetscErrorCode VecMDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
     ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
   ierr = VecMDot_Seq(xin,nv,y,work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
   }
@@ -37,7 +37,7 @@ PetscErrorCode VecMTDot_MPI(Vec xin,PetscInt nv,const Vec y[],PetscScalar *z)
     ierr = PetscMalloc(nv*sizeof(PetscScalar),&work);CHKERRQ(ierr);
   }
   ierr = VecMTDot_Seq(xin,nv,y,work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(work,z,nv,MPIU_SCALAR,PetscSum_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
   if (nv > 128) {
     ierr = PetscFree(work);CHKERRQ(ierr);
   }
@@ -80,25 +80,25 @@ PetscErrorCode VecNorm_MPI(Vec xin,NormType type,PetscReal *z)
       work *= work;
     }
 #endif
-    ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,&sum,1,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z = sqrt(sum);
     ierr = PetscLogFlops(2*xin->map.n);CHKERRQ(ierr);
   } else if (type == NORM_1) {
     /* Find the local part */
     ierr = VecNorm_Seq(xin,NORM_1,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else if (type == NORM_INFINITY) {
     /* Find the local max */
     ierr = VecNorm_Seq(xin,NORM_INFINITY,&work);CHKERRQ(ierr);
     /* Find the global max */
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else if (type == NORM_1_AND_2) {
     PetscReal temp[2];
     ierr = VecNorm_Seq(xin,NORM_1,temp);CHKERRQ(ierr);
     ierr = VecNorm_Seq(xin,NORM_2,temp+1);CHKERRQ(ierr);
     temp[1] = temp[1]*temp[1];
-    ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPI_SUM,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(temp,z,2,MPIU_REAL,MPI_SUM,((PetscObject)xin)->comm);CHKERRQ(ierr);
     z[1] = sqrt(z[1]);
   }
   PetscFunctionReturn(0);
@@ -165,14 +165,14 @@ PetscErrorCode VecMax_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 
   /* Find the global max */
   if (!idx) {
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MAX,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
     PetscInt  rstart;
     rstart = xin->map.rstart;
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMax_Local_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (PetscInt)z2[1];
   }
@@ -192,7 +192,7 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
 
   /* Find the global Min */
   if (!idx) {
-    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MIN,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(&work,z,1,MPIU_REAL,MPI_MIN,((PetscObject)xin)->comm);CHKERRQ(ierr);
   } else {
     PetscReal work2[2],z2[2];
     PetscInt       rstart;
@@ -200,7 +200,7 @@ PetscErrorCode VecMin_MPI(Vec xin,PetscInt *idx,PetscReal *z)
     ierr = VecGetOwnershipRange(xin,&rstart,PETSC_NULL);CHKERRQ(ierr);
     work2[0] = work;
     work2[1] = *idx + rstart;
-    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMin_Local_Op,xin->comm);CHKERRQ(ierr);
+    ierr = MPI_Allreduce(work2,z2,2,MPIU_REAL,VecMin_Local_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
     *z   = z2[0];
     *idx = (PetscInt)z2[1];
   }

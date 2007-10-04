@@ -52,7 +52,7 @@ static PetscErrorCode PCView_ASM(PC pc,PetscViewer viewer)
       ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: total subdomain blocks not yet set, amount of overlap = %D\n",jac->overlap);CHKERRQ(ierr);
     }
     ierr = PetscViewerASCIIPrintf(viewer,"  Additive Schwarz: restriction/interpolation type - %s\n",PCASMTypes[jac->type]);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     if (jac->same_local_solves) {
       ierr = PetscViewerASCIIPrintf(viewer,"  Local solve is same for all blocks, in the following KSP and PC objects:\n");CHKERRQ(ierr);
       ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -111,12 +111,12 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     if (osm->n == PETSC_DECIDE && osm->n_local_true == PETSC_DECIDE) { 
       /* no subdomains given, use one per processor */
       osm->n_local_true = osm->n_local = 1;
-      ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+      ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
       osm->n = size;
     } else if (osm->n == PETSC_DECIDE) { /* determine global number of subdomains */
       PetscInt inwork[2],outwork[2];
       inwork[0] = inwork[1] = osm->n_local_true;
-      ierr = MPI_Allreduce(inwork,outwork,1,MPIU_2INT,PetscMaxSum_Op,pc->comm);CHKERRQ(ierr);
+      ierr = MPI_Allreduce(inwork,outwork,1,MPIU_2INT,PetscMaxSum_Op,((PetscObject)pc)->comm);CHKERRQ(ierr);
       osm->n_local = outwork[0];
       osm->n       = outwork[1];
     }
@@ -430,8 +430,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMSetTotalSubdomains_ASM(PC pc,PetscInt N,I
   /*
      Split the subdomains equally amoung all processors 
   */
-  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   n = N/size + ((N % size) > rank);
   if (pc->setupcalled && n != osm->n_local_true) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"PCASMSetTotalSubdomains() should be called before PCSetup().");
   if (!pc->setupcalled){
@@ -489,7 +489,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCASMGetSubKSP_ASM(PC pc,PetscInt *n_local,Pet
 
   if (n_local)     *n_local     = jac->n_local_true;
   if (first_local) {
-    ierr = MPI_Scan(&jac->n_local_true,first_local,1,MPIU_INT,MPI_SUM,pc->comm);CHKERRQ(ierr);
+    ierr = MPI_Scan(&jac->n_local_true,first_local,1,MPIU_INT,MPI_SUM,((PetscObject)pc)->comm);CHKERRQ(ierr);
     *first_local -= jac->n_local_true;
   }
   *ksp                         = jac->ksp;

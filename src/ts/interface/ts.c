@@ -29,8 +29,8 @@ static PetscErrorCode TSSetTypeFromOptions(TS ts)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (ts->type_name) {
-    defaultType = ts->type_name;
+  if (((PetscObject)ts)->type_name) {
+    defaultType = ((PetscObject)ts)->type_name;
   } else {
     defaultType = TS_EULER;
   }
@@ -81,7 +81,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts, TS_COOKIE,1);
-  ierr = PetscOptionsBegin(ts->comm, ts->prefix, "Time step options", "TS");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)ts)->comm, ((PetscObject)ts)->prefix, "Time step options", "TS");CHKERRQ(ierr);
 
     /* Handle generic TS options */
     ierr = PetscOptionsInt("-ts_max_steps","Maximum number of time steps","TSSetDuration",ts->max_steps,&ts->max_steps,PETSC_NULL);CHKERRQ(ierr);
@@ -95,7 +95,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetFromOptions(TS ts)
     /* Monitor options */
     ierr = PetscOptionsString("-ts_monitor","Monitor timestep size","TSMonitorDefault","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ts->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_monitor_draw","Monitor timestep size graphically","TSMonitorLG",&opt);CHKERRQ(ierr);
@@ -165,21 +165,21 @@ PetscErrorCode PETSCTS_DLLEXPORT TSViewFromOptions(TS ts,const char title[])
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(ts->prefix, "-ts_view", fileName, PETSC_MAX_PATH_LEN, &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)ts)->prefix, "-ts_view", fileName, PETSC_MAX_PATH_LEN, &opt);CHKERRQ(ierr);
   if (opt && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(ts->comm,fileName,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(((PetscObject)ts)->comm,fileName,&viewer);CHKERRQ(ierr);
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(ts->prefix, "-ts_view_draw", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ts)->prefix, "-ts_view_draw", &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscViewerDrawOpen(ts->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
+    ierr = PetscViewerDrawOpen(((PetscObject)ts)->comm, 0, 0, 0, 0, 300, 300, &viewer);CHKERRQ(ierr);
     ierr = PetscViewerDrawGetDraw(viewer, 0, &draw);CHKERRQ(ierr);
     if (title) {
       ierr = PetscDrawSetTitle(draw, (char *)title);CHKERRQ(ierr);
     } else {
-      ierr = PetscObjectName((PetscObject) ts);CHKERRQ(ierr);
-      ierr = PetscDrawSetTitle(draw, ts->name);CHKERRQ(ierr);
+      ierr = PetscObjectName((PetscObject)ts);CHKERRQ(ierr);
+      ierr = PetscDrawSetTitle(draw, ((PetscObject)ts)->name);CHKERRQ(ierr);
     }
     ierr = TSView(ts, viewer);CHKERRQ(ierr);
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
@@ -546,7 +546,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSView(TS ts,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(ts->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)ts)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(ts,1,viewer,2);
@@ -871,7 +871,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetUp(TS ts)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
   if (!ts->vec_sol) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Must call TSSetSolution() first");
-  if (!ts->type_name) {
+  if (!((PetscObject)ts)->type_name) {
     ierr = TSSetType(ts,TS_EULER);CHKERRQ(ierr);
   }
   ierr = (*ts->ops->setup)(ts);CHKERRQ(ierr);
@@ -902,7 +902,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSDestroy(TS ts)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ts,TS_COOKIE,1);
-  if (--ts->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)ts)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ts);CHKERRQ(ierr);
@@ -1331,7 +1331,7 @@ PetscErrorCode TSMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,void *
 
   PetscFunctionBegin;
   if (!ctx) {
-    ierr = PetscViewerASCIIMonitorCreate(ts->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"timestep %D dt %G time %G\n",step,ts->time_step,ptime);CHKERRQ(ierr);
   if (!ctx) {
@@ -1377,7 +1377,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSStep(TS ts,PetscInt *steps,PetscReal *ptime)
   ierr = PetscLogEventEnd(TS_Step, ts, 0, 0, 0);CHKERRQ(ierr);
 
   if (!PetscPreLoadingOn) {
-    ierr = TSViewFromOptions(ts,ts->name);CHKERRQ(ierr);
+    ierr = TSViewFromOptions(ts,((PetscObject)ts)->name);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -1782,7 +1782,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSMonitorSolution(TS ts,PetscInt step,PetscReal
 
   PetscFunctionBegin;
   if (!dummy) {
-    viewer = PETSC_VIEWER_DRAW_(ts->comm);
+    viewer = PETSC_VIEWER_DRAW_(((PetscObject)ts)->comm);
   }
   ierr = VecView(x,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);

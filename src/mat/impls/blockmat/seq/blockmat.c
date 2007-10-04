@@ -655,7 +655,7 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,PetscInt csize,M
     if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size");
     ierr = MatZeroEntries(C);CHKERRQ(ierr);
   } else {  
-    ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     if (A->symmetric) {
       ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -997,7 +997,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
   A->preallocated  = PETSC_FALSE;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"Matrix Option","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Matrix Option","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatBlockMatSetPreallocation_C",

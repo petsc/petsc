@@ -43,7 +43,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AOView(AO ao,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ao->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)ao)->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   ierr = (*ao->ops->view)(ao,viewer);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -71,7 +71,7 @@ PetscErrorCode PETSCDM_DLLEXPORT AODestroy(AO ao)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ao,AO_COOKIE,1);
-  if (--ao->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)ao)->refct > 0) PetscFunctionReturn(0);
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ao);CHKERRQ(ierr);
   /* destroy the internal part */

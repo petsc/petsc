@@ -46,7 +46,7 @@ PetscErrorCode MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_unneeded       = (double)0;
   info->assemblies        = (double)A->num_ass;
   info->mallocs           = 0;
-  info->memory            = A->mem;
+  info->memory            = ((PetscObject)A)->mem;
   info->fill_ratio_given  = 0;
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -138,9 +138,9 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   Mat            newi;
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,&newi);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&newi);CHKERRQ(ierr);
   ierr = MatSetSizes(newi,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(newi,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(newi,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     l = (Mat_SeqDense*)newi->data;
@@ -1086,9 +1086,9 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,Mat *matout)
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
 
-    ierr  = MatCreate(A->comm,&tmat);CHKERRQ(ierr);
+    ierr  = MatCreate(((PetscObject)A)->comm,&tmat);CHKERRQ(ierr);
     ierr  = MatSetSizes(tmat,A->cmap.n,A->rmap.n,A->cmap.n,A->rmap.n);CHKERRQ(ierr);
-    ierr  = MatSetType(tmat,A->type_name);CHKERRQ(ierr);
+    ierr  = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr  = MatSeqDenseSetPreallocation(tmat,PETSC_NULL);CHKERRQ(ierr);
     tmatd = (Mat_SeqDense*)tmat->data;
     v = mat->v; v2 = tmatd->v;
@@ -1365,9 +1365,9 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
     ierr = MatSetSizes(newmat,nrows,ncols,nrows,ncols);CHKERRQ(ierr);
-    ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
 
@@ -1949,7 +1949,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
   B->rmap.bs = B->cmap.bs = 1;

@@ -421,7 +421,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecView_MPI_DA(Vec xin,PetscViewer viewer)
     ierr = DAGlobalToNaturalBegin(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = DAGlobalToNaturalEnd(da,xin,INSERT_VALUES,natural);CHKERRQ(ierr);
     ierr = PetscObjectName((PetscObject)xin);CHKERRQ(ierr);
-    ierr = PetscObjectSetName((PetscObject)natural,xin->name);CHKERRQ(ierr);
+    ierr = PetscObjectSetName((PetscObject)natural,((PetscObject)xin)->name);CHKERRQ(ierr);
     ierr = VecView(natural,viewer);CHKERRQ(ierr);
     ierr = VecDestroy(natural);CHKERRQ(ierr);
   }
@@ -452,7 +452,7 @@ PetscErrorCode PETSCDM_DLLEXPORT VecLoadIntoVector_Binary_DA(PetscViewer viewer,
   ierr = DANaturalToGlobalEnd(da,natural,INSERT_VALUES,xin);CHKERRQ(ierr);
   ierr = VecDestroy(natural);CHKERRQ(ierr);
   ierr = PetscInfo(xin,"Loading vector from natural ordering into DA\n");CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(xin->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)xin)->prefix,"-vecload_block_size",&bs,&flag);CHKERRQ(ierr);
   if (flag && bs != da->w) {
     ierr = PetscInfo2(xin,"Block size in file %D not equal to DA's dof %D\n",bs,da->w);CHKERRQ(ierr);
   }

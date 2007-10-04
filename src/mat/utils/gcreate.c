@@ -3,6 +3,7 @@
 #include "include/private/matimpl.h"       /*I "petscmat.h"  I*/
 #include "petscsys.h"
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "MatPublish_Base"
 static PetscErrorCode MatPublish_Base(PetscObject obj)
@@ -10,7 +11,7 @@ static PetscErrorCode MatPublish_Base(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
-
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreate"
@@ -80,7 +81,6 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm comm,Mat *A)
   ierr = PetscMapInitialize(comm,&B->rmap);CHKERRQ(ierr);
   ierr = PetscMapInitialize(comm,&B->cmap);CHKERRQ(ierr);
   B->preallocated  = PETSC_FALSE;
-  B->bops->publish = MatPublish_Base;
   *A               = B;
   PetscFunctionReturn(0);
 }
@@ -185,11 +185,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetString(B->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)B)->prefix,"-mat_type",mtype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatSetType(B,mtype);CHKERRQ(ierr);
   }
-  if (!B->type_name) {
+  if (!((PetscObject)B)->type_name) {
     ierr = MatSetType(B,MATAIJ);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
@@ -245,11 +245,11 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
 
   PetscFunctionBegin;
   /* save the parts of A we need */
-  Abops = A->bops;
+  Abops = ((PetscObject)A)->bops;
   Aops  = A->ops;
-  refct = A->refct;
-  mtype = A->type_name; A->type_name = 0;
-  mname = A->name; A->name = 0;
+  refct = ((PetscObject)A)->refct;
+  mtype = ((PetscObject)A)->type_name; ((PetscObject)A)->type_name = 0;
+  mname = ((PetscObject)A)->name; ((PetscObject)A)->name = 0;
   spptr = A->spptr;
 
   /* free all the interior data structures from mat */
@@ -264,12 +264,12 @@ PetscErrorCode MatHeaderCopy(Mat A,Mat C)
   ierr  = PetscMemcpy(A,C,sizeof(struct _p_Mat));CHKERRQ(ierr);
 
   /* return the parts of A we saved */
-  A->bops      = Abops;
-  A->ops       = Aops;
-  A->qlist     = 0;
-  A->refct     = refct;
-  A->type_name = mtype;
-  A->name      = mname;
+  ((PetscObject)A)->bops      = Abops;
+  A->ops                      = Aops;
+  ((PetscObject)A)->qlist     = 0;
+  ((PetscObject)A)->refct     = refct;
+  ((PetscObject)A)->type_name = mtype;
+  ((PetscObject)A)->name      = mname;
   A->spptr     = spptr;
 
   ierr = PetscHeaderDestroy(C);CHKERRQ(ierr);

@@ -590,7 +590,7 @@ void PETSCMAT_DLLEXPORT matsetvaluesblocked4_(Mat *AA,PetscInt *mm,const PetscIn
   MatScalar         *ap,*aa = a->a,*bap;
 
   PetscFunctionBegin;
-  if (A->rmap.bs != 4) SETERRABORT(A->comm,PETSC_ERR_ARG_WRONG,"Can only be called with a block size of 4");
+  if (A->rmap.bs != 4) SETERRABORT(((PetscObject)A)->comm,PETSC_ERR_ARG_WRONG,"Can only be called with a block size of 4");
   stepval = (n-1)*4;
   for (k=0; k<m; k++) { /* loop over added rows */
     row  = im[k]; 
@@ -1019,9 +1019,9 @@ PetscErrorCode MatTranspose_SeqBAIJ(Mat A,Mat *B)
 #endif
 
   for (i=0; i<ai[mbs]; i++) col[aj[i]] += 1;
-  ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,A->cmap.n,A->rmap.N,A->cmap.n,A->rmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,PETSC_NULL,col);CHKERRQ(ierr);
   ierr = PetscFree(col);CHKERRQ(ierr);
   ierr = PetscMalloc(2*bs*sizeof(PetscInt),&rows);CHKERRQ(ierr);
@@ -2222,7 +2222,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
     nz             = 0;
   }
 
-  ierr = PetscOptionsBegin(B->comm,B->prefix,"Block options for SEQBAIJ matrix 1","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)B)->comm,((PetscObject)B)->prefix,"Block options for SEQBAIJ matrix 1","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_block_size","Set the blocksize used to store the matrix","MatSeqBAIJSetPreallocation",bs,&newbs,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -2255,7 +2255,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqBAIJSetPreallocation_SeqBAIJ(Mat B,Petsc
   }
 
   b       = (Mat_SeqBAIJ*)B->data;
-  ierr = PetscOptionsBegin(B->comm,PETSC_NULL,"Optimize options for SEQBAIJ matrix 2 ","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)B)->comm,PETSC_NULL,"Optimize options for SEQBAIJ matrix 2 ","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-mat_no_unroll","Do not optimize for block size (slow)",PETSC_NULL,PETSC_FALSE,&flg,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
 
@@ -2375,7 +2375,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBAIJ(Mat B)
   Mat_SeqBAIJ    *b;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
   ierr    = PetscNewLog(B,Mat_SeqBAIJ,&b);CHKERRQ(ierr);
@@ -2449,9 +2449,9 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   if (a->i[mbs] != nz) SETERRQ(PETSC_ERR_PLIB,"Corrupt matrix");
 
   *B = 0;
-  ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
   ierr = MatSetSizes(C,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = PetscMemcpy(C->ops,A->ops,sizeof(struct _MatOps));CHKERRQ(ierr);
   c    = (Mat_SeqBAIJ*)C->data;
 
@@ -2515,7 +2515,7 @@ PetscErrorCode MatDuplicate_SeqBAIJ(Mat A,MatDuplicateOption cpvalues,Mat *B)
   }
   C->same_nonzero = A->same_nonzero;
   *B = C;
-  ierr = PetscFListDuplicate(A->qlist,&C->qlist);CHKERRQ(ierr);
+  ierr = PetscFListDuplicate(((PetscObject)A)->qlist,&((PetscObject)C)->qlist);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

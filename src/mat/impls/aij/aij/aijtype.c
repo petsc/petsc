@@ -28,7 +28,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJ(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
@@ -64,7 +64,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_CRL(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQCRL);CHKERRQ(ierr);
   } else {

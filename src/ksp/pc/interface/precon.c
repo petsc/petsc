@@ -19,7 +19,7 @@ PetscErrorCode PCGetDefaultType_Private(PC pc,const char* type[])
   PetscTruth     flg1,flg2,set,flg3;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (pc->pmat) {
     PetscErrorCode (*f)(Mat,PetscTruth*,MatReuse,Mat*);
     ierr = PetscObjectQueryFunction((PetscObject)pc->pmat,"MatGetDiagonalBlock_C",(void (**)(void))&f);CHKERRQ(ierr);
@@ -75,7 +75,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC pc)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
-  if (--pc->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)pc)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(pc);CHKERRQ(ierr);
@@ -254,6 +254,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleRight(PC pc,Vec in,Vec out)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "PCPublish_Petsc"
 static PetscErrorCode PCPublish_Petsc(PetscObject obj)
@@ -261,6 +262,7 @@ static PetscErrorCode PCPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCCreate"
@@ -298,7 +300,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate(MPI_Comm comm,PC *newpc)
 #endif
 
   ierr = PetscHeaderCreate(pc,_p_PC,struct _PCOps,PC_COOKIE,-1,"PC",comm,PCDestroy,PCView);CHKERRQ(ierr);
-  pc->bops->publish        = PCPublish_Petsc;
 
   pc->mat                  = 0;
   pc->pmat                 = 0;
@@ -777,7 +778,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCSetUp(PC pc)
     ierr = PetscInfo(pc,"Setting up PC with different nonzero pattern\n");CHKERRQ(ierr);
   }
 
-  if (!pc->type_name) {
+  if (!((PetscObject)pc)->type_name) {
     ierr = PCGetDefaultType_Private(pc,&def);CHKERRQ(ierr);
     ierr = PCSetType(pc,def);CHKERRQ(ierr);
   }
@@ -1092,7 +1093,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStr
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (mat) {
     if (!pc->mat) {
-      ierr = MatCreate(pc->comm,&pc->mat);CHKERRQ(ierr);
+      ierr = MatCreate(((PetscObject)pc)->comm,&pc->mat);CHKERRQ(ierr);
       if (!pc->pmat && !pmat) { /* user did NOT request pmat, so make same as mat */
         pc->pmat = pc->mat;
         ierr     = PetscObjectReference((PetscObject)pc->pmat);CHKERRQ(ierr); 
@@ -1102,7 +1103,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperators(PC pc,Mat *mat,Mat *pmat,MatStr
   }  
   if (pmat) {
     if (!pc->pmat) {
-      ierr = MatCreate(pc->comm,&pc->mat);CHKERRQ(ierr);
+      ierr = MatCreate(((PetscObject)pc)->comm,&pc->mat);CHKERRQ(ierr);
       if (!pc->mat && !mat) { /* user did NOT request mat, so make same as pmat */
         pc->mat = pc->pmat;
         ierr    = PetscObjectReference((PetscObject)pc->mat);CHKERRQ(ierr); 
@@ -1431,7 +1432,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(pc->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)pc)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(pc,1,viewer,2);
@@ -1440,8 +1441,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCView(PC pc,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);
-    if (pc->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"PC Object:(%s)\n",pc->prefix);CHKERRQ(ierr);
+    if (((PetscObject)pc)->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"PC Object:(%s)\n",((PetscObject)pc)->prefix);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"PC Object:\n");CHKERRQ(ierr);
     }
@@ -1580,7 +1581,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCComputeExplicitOperator(PC pc,Mat *mat)
   PetscValidHeaderSpecific(pc,PC_COOKIE,1);
   PetscValidPointer(mat,2);
 
-  comm = pc->comm;
+  comm = ((PetscObject)pc)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   if (!pc->pmat) SETERRQ(PETSC_ERR_ORDER,"You must call KSPSetOperators() or PCSetOperators() before this call");

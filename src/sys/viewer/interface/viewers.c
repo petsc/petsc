@@ -108,7 +108,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewersGetViewer(PetscViewers viewers,PetscI
     viewers->viewer = v;
   }
   if (!viewers->viewer[n]) {
-    ierr = PetscViewerCreate(viewers->comm,&viewers->viewer[n]);CHKERRQ(ierr);
+    ierr = PetscViewerCreate(((PetscObject)viewers)->comm,&viewers->viewer[n]);CHKERRQ(ierr);
   }
   *viewer = viewers->viewer[n];
   PetscFunctionReturn(0);

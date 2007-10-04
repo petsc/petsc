@@ -52,15 +52,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPView(KSP ksp,PetscViewer viewer)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(ksp->comm);
+  if (!viewer) viewer = PETSC_VIEWER_STDOUT_(((PetscObject)ksp)->comm);
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(ksp,1,viewer,2);
 
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     ierr = KSPGetType(ksp,&type);CHKERRQ(ierr);
-    if (ksp->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",ksp->prefix);CHKERRQ(ierr);
+    if (((PetscObject)ksp)->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:(%s)\n",((PetscObject)ksp)->prefix);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"KSP Object:\n");CHKERRQ(ierr);
     }
@@ -202,6 +202,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetNormType(KSP ksp, KSPNormType *normtype)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "KSPPublish_Petsc"
 static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
@@ -209,6 +210,7 @@ static PetscErrorCode KSPPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPSetOperators"
@@ -416,9 +418,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 #endif
 
   ierr = PetscHeaderCreate(ksp,_p_KSP,struct _KSPOps,KSP_COOKIE,-1,"KSP",comm,KSPDestroy,KSPView);CHKERRQ(ierr);
-  ksp->bops->publish = KSPPublish_Petsc;
 
-  ksp->type          = -1;
   ksp->max_it        = 10000;
   ksp->pc_side       = PC_LEFT;
   ksp->rtol          = 1.e-5;
@@ -508,7 +508,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetType(KSP ksp, KSPType type)
   ierr = PetscTypeCompare((PetscObject)ksp,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(KSPList,ksp->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(KSPList,((PetscObject)ksp)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested KSP type %s",type);
   /* Destroy the previous private KSP context */
   if (ksp->ops->destroy) { ierr = (*ksp->ops->destroy)(ksp);CHKERRQ(ierr); }
@@ -571,7 +571,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetType(KSP ksp,KSPType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(type,2);
-  *type = ksp->type_name;
+  *type = ((PetscObject)ksp)->type_name;
   PetscFunctionReturn(0);
 }
 

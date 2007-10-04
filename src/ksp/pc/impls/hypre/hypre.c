@@ -1050,7 +1050,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_HYPRE(PC pc)
   jac->comm_hypre          = MPI_COMM_NULL;
   jac->hypre_type          = PETSC_NULL;
   /* duplicate communicator for hypre */
-  ierr = MPI_Comm_dup(pc->comm,&(jac->comm_hypre));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)pc)->comm,&(jac->comm_hypre));CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPRESetType_C","PCHYPRESetType_HYPRE",PCHYPRESetType_HYPRE);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCHYPREGetType_C","PCHYPREGetType_HYPRE",PCHYPREGetType_HYPRE);CHKERRQ(ierr);
   PetscFunctionReturn(0);

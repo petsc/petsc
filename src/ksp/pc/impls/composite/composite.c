@@ -265,7 +265,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCompositeAddPC_Composite(PC pc,PCType type)
   PetscFunctionBegin;
   ierr        = PetscNewLog(pc,struct _PC_CompositeLink,&ilink);CHKERRQ(ierr);
   ilink->next = 0;
-  ierr = PCCreate(pc->comm,&ilink->pc);CHKERRQ(ierr);
+  ierr = PCCreate(((PetscObject)pc)->comm,&ilink->pc);CHKERRQ(ierr);
 
   jac  = (PC_Composite*)pc->data;
   next = jac->head;

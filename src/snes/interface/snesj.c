@@ -54,7 +54,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
   const char     *list[2] = {"ds","wp"};
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetReal(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   eval_fct = SNESComputeFunction;
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);

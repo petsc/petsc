@@ -82,7 +82,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* generate the scatter context 
      -- Mvctx and lvec are not used by MatMult_MPISBAIJ(), but usefule for some applications */
-  ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
   ierr = VecScatterCreate(gvec,from,sbaij->lvec,to,&sbaij->Mvctx);CHKERRQ(ierr); 
 
   sbaij->garray = garray;
@@ -96,7 +96,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
 
   /* create parallel vector that is used by SBAIJ matrix to scatter from/into */
   lsize = (mbs + ec)*bs;
-  ierr = VecCreateMPI(mat->comm,lsize,PETSC_DETERMINE,&sbaij->slvec0);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,lsize,PETSC_DETERMINE,&sbaij->slvec0);CHKERRQ(ierr);
   ierr = VecDuplicate(sbaij->slvec0,&sbaij->slvec1);CHKERRQ(ierr);
   ierr = VecGetSize(sbaij->slvec0,&vec_size);CHKERRQ(ierr);
 
@@ -135,7 +135,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ(Mat mat)
   ierr = VecRestoreArray(sbaij->slvec0,&ptr);CHKERRQ(ierr); 
 
   ierr = PetscFree(stmp);CHKERRQ(ierr);
-  ierr = MPI_Barrier(mat->comm);CHKERRQ(ierr);
+  ierr = MPI_Barrier(((PetscObject)mat)->comm);CHKERRQ(ierr);
   
   ierr = PetscLogObjectParent(mat,sbaij->sMvctx);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(mat,sbaij->slvec0);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ PetscErrorCode MatSetUpMultiply_MPISBAIJ_2comm(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   ierr = VecScatterCreate(gvec,from,baij->lvec,to,&baij->Mvctx);CHKERRQ(ierr);
 
@@ -353,7 +353,7 @@ PetscErrorCode DisAssemble_MPISBAIJ(Mat A)
   }
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(Bnew,B->rmap.bs,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   

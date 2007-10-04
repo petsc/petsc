@@ -75,7 +75,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDestroy(PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
-  if (--viewer->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)viewer)->refct > 0) PetscFunctionReturn(0);
 
   ierr = PetscObjectDepublish(viewer);CHKERRQ(ierr);
 
@@ -120,7 +120,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetType(PetscViewer viewer,PetscViewer
 {
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
-  *type = (PetscViewerType) viewer->type_name;
+  *type = (PetscViewerType) ((PetscObject)viewer)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -284,7 +284,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer view
   PetscValidHeaderSpecific(v,PETSC_VIEWER_COOKIE,1);
   PetscValidType(v,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(v->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)v)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(v,1,viewer,2);
@@ -293,8 +293,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscViewerView(PetscViewer v,PetscViewer view
   if (iascii) {
     ierr = PetscViewerGetFormat(viewer,&format);CHKERRQ(ierr);  
     if (format == PETSC_VIEWER_ASCII_INFO || format == PETSC_VIEWER_ASCII_INFO_DETAIL) {
-      if (v->prefix) {
-        ierr = PetscViewerASCIIPrintf(viewer,"PetscViewer Object:(%s)\n",v->prefix);CHKERRQ(ierr);
+      if (((PetscObject)v)->prefix) {
+        ierr = PetscViewerASCIIPrintf(viewer,"PetscViewer Object:(%s)\n",((PetscObject)v)->prefix);CHKERRQ(ierr);
       } else {
         ierr = PetscViewerASCIIPrintf(viewer,"PetscViewer Object:\n");CHKERRQ(ierr);
       }

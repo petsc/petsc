@@ -96,7 +96,7 @@ PetscErrorCode MPICRL_create_crl(Mat A)
 
   ierr = PetscMalloc((a->B->cmap.n+nd)*sizeof(PetscScalar),&array);CHKERRQ(ierr);
   /* xwork array is actually B->n+nd long, but we define xwork this length so can copy into it */
-  ierr = VecCreateMPIWithArray(A->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)A)->comm,nd,PETSC_DECIDE,array,&crl->xwork);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,a->B->cmap.n,array+nd,&crl->fwork);CHKERRQ(ierr);
   crl->array = array;
   crl->xscat = a->Mvctx;
