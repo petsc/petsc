@@ -40,7 +40,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetType(PetscRandom rnd, PetscRandomTy
   ierr = PetscTypeCompare((PetscObject)rnd, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFListFind(PetscRandomList,rnd->comm,  type,(void (**)(void)) &r);CHKERRQ(ierr); 
+  ierr = PetscFListFind(PetscRandomList,((PetscObject)rnd)->comm,  type,(void (**)(void)) &r);CHKERRQ(ierr); 
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown random type: %s", type);
 
   if (rnd->ops->destroy) {
@@ -81,7 +81,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetType(PetscRandom rnd, PetscRandomTy
   if (!PetscRandomRegisterAllCalled) {
     ierr = PetscRandomRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  *type = rnd->type_name;
+  *type = ((PetscObject)rnd)->type_name;
   PetscFunctionReturn(0);
 }
 

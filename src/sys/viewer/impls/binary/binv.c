@@ -28,7 +28,7 @@ PetscErrorCode PetscViewerGetSingleton_Binary(PetscViewer viewer,PetscViewer *ou
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data,*obinary;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr    = PetscViewerCreate(PETSC_COMM_SELF,outviewer);CHKERRQ(ierr);
     ierr    = PetscViewerSetType(*outviewer,PETSC_VIEWER_BINARY);CHKERRQ(ierr);
@@ -48,7 +48,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Binary(PetscViewer viewer,PetscViewer
   PetscErrorCode rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscFree((*outviewer)->data);CHKERRQ(ierr);
     ierr = PetscHeaderDestroy(*outviewer);CHKERRQ(ierr);
@@ -227,7 +227,7 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
   int                rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
   if ((!rank || vbinary->btype == FILE_MODE_READ) && vbinary->fdes) {
     close(vbinary->fdes);
     if (!rank && vbinary->storecompressed) {
@@ -360,7 +360,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryRead(PetscViewer viewer,void *da
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
-  ierr = PetscBinarySynchronizedRead(viewer->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedRead(((PetscObject)viewer)->comm,vbinary->fdes,data,count,dtype);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -391,7 +391,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerBinaryWrite(PetscViewer viewer,void *d
   PetscErrorCode     ierr;
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)viewer->data;
 
-  ierr = PetscBinarySynchronizedWrite(viewer->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
+  ierr = PetscBinarySynchronizedWrite(((PetscObject)viewer)->comm,vbinary->fdes,data,count,dtype,istemp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -665,10 +665,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
   if (type == (PetscFileMode) -1) {
     SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerBinarySetFileType() before PetscViewerFileSetName()");
   }
-  ierr = PetscOptionsGetTruth(viewer->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetTruth(viewer->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)viewer)->prefix,"-viewer_binary_skip_info",&vbinary->skipinfo,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)viewer)->prefix,"-viewer_binary_skip_options",&vbinary->skipoptions,PETSC_NULL);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
 
   /* copy name so we can edit it */
   ierr = PetscStrallocpy(name,&vbinary->filename);CHKERRQ(ierr);
@@ -692,7 +692,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
 
     if (type == FILE_MODE_READ){
       /* possibly get the file from remote site or compressed file */
-      ierr  = PetscFileRetrieve(viewer->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+      ierr  = PetscFileRetrieve(((PetscObject)viewer)->comm,vbinary->filename,bname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       fname = bname;
       if (!rank && !found) {
         SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot locate file: %s on node zero",vbinary->filename);
@@ -759,7 +759,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
     ierr = PetscStrcat(infoname,".info");CHKERRQ(ierr);
     ierr = PetscFixFilename(infoname,iname);CHKERRQ(ierr);
     if (type == FILE_MODE_READ) {
-      ierr = PetscFileRetrieve(viewer->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
+      ierr = PetscFileRetrieve(((PetscObject)viewer)->comm,iname,infoname,PETSC_MAX_PATH_LEN,&found);CHKERRQ(ierr);
       if (found) {
         vbinary->fdes_info = fopen(infoname,"r");
         if (vbinary->fdes_info) {

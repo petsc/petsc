@@ -68,7 +68,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIAIJ_Once(Mat C,PetscInt imax,IS is[]
   MPI_Status     *s_status,*recv_status;
 
   PetscFunctionBegin;
-  comm   = C->comm;
+  comm   = ((PetscObject)C)->comm;
   size   = c->size;
   rank   = c->rank;
   m      = C->rmap.N;
@@ -568,8 +568,8 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
   PetscScalar    *sendbuf,*recvbuf,*a_sendbuf,*b_sendbuf;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
 
   if (scall == MAT_INITIAL_MATRIX) {
     /* ----------------------------------------------------------------
@@ -586,14 +586,14 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
       recvcounts[i] = A->rmap.range[i+1] - A->rmap.range[i];
       displs[i]     = A->rmap.range[i];
     }
-    ierr  = MPI_Allgatherv(lens+A->rmap.rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,A->comm);CHKERRQ(ierr);
+    ierr  = MPI_Allgatherv(lens+A->rmap.rstart,sendcount,MPIU_INT,lens,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
 
     /* ---------------------------------------------------------------
          Create the sequential matrix of the same type as the local block diagonal
     */
     ierr  = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
     ierr  = MatSetSizes(B,A->rmap.N,A->cmap.N,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr  = MatSetType(B,a->A->type_name);CHKERRQ(ierr);
+    ierr  = MatSetType(B,((PetscObject)a->A)->type_name);CHKERRQ(ierr);
     ierr  = MatSeqAIJSetPreallocation(B,0,lens);CHKERRQ(ierr);
     ierr  = PetscMalloc(sizeof(Mat),Bin);CHKERRQ(ierr);
     **Bin = B;
@@ -644,7 +644,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
     for (i=1; i<size; i++) {
       displs[i] = displs[i-1] + recvcounts[i-1];
     }
-    ierr = MPI_Allgatherv(jsendbuf,sendcount,MPIU_INT,b->j,recvcounts,displs,MPIU_INT,A->comm);CHKERRQ(ierr);
+    ierr = MPI_Allgatherv(jsendbuf,sendcount,MPIU_INT,b->j,recvcounts,displs,MPIU_INT,((PetscObject)A)->comm);CHKERRQ(ierr);
 
     /*--------------------------------------------------------------------
         Assemble the matrix into useable form (note numerical values not yet set)
@@ -715,7 +715,7 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
     displs[i] = displs[i-1] + recvcounts[i-1];
   }
   recvbuf   = b->a;
-  ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,A->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,((PetscObject)A)->comm);CHKERRQ(ierr);
   ierr = PetscFree(recvcounts);CHKERRQ(ierr);
   if (A->symmetric){
     ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
@@ -747,10 +747,10 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
     ierr = ISGetLocalSize(*iscol,&ncol);CHKERRQ(ierr);
     if (rowflag && colflag && nrow == C->rmap.N && ncol == C->cmap.N) {
       wantallmatrix = PETSC_TRUE;
-      ierr = PetscOptionsGetTruth(C->prefix,"-use_fast_submatrix",&wantallmatrix,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscOptionsGetTruth(((PetscObject)C)->prefix,"-use_fast_submatrix",&wantallmatrix,PETSC_NULL);CHKERRQ(ierr);
     }
   }
-  ierr = MPI_Allreduce(&wantallmatrix,&twantallmatrix,1,MPI_INT,MPI_MIN,C->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&wantallmatrix,&twantallmatrix,1,MPI_INT,MPI_MIN,((PetscObject)C)->comm);CHKERRQ(ierr);
   if (twantallmatrix) {
     ierr = MatGetSubMatrix_MPIAIJ_All(C,scall,submat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
@@ -766,7 +766,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
 
   /* Make sure every processor loops through the nstages */
-  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,C->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,((PetscObject)C)->comm);CHKERRQ(ierr);
 
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
@@ -805,8 +805,8 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
   PetscMPIInt    idex,idex2,end;
 
   PetscFunctionBegin;
-  comm   = C->comm;
-  tag0   = C->tag;
+  comm   = ((PetscObject)C)->comm;
+  tag0   = ((PetscObject)C)->tag;
   size   = c->size;
   rank   = c->rank;
   
@@ -1255,7 +1255,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ_Local(Mat C,PetscInt ismax,const IS isro
     for (i=0; i<ismax; i++) {
       ierr = MatCreate(PETSC_COMM_SELF,submats+i);CHKERRQ(ierr);
       ierr = MatSetSizes(submats[i],nrow[i],ncol[i],PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-      ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSeqAIJSetPreallocation(submats[i],0,lens[i]);CHKERRQ(ierr);
     }
   }

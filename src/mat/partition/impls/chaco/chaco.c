@@ -81,7 +81,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
 
     FREE_GRAPH = 0; /* otherwise Chaco will attempt to free memory for adjacency graph */
     
-    ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
 
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
 
@@ -94,7 +94,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         if (flg) {
             SETERRQ(0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
         }
-        PetscPrintf(part->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+        PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
 
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
@@ -187,8 +187,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     }
 
     /* Creation of the index set */
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(part->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)part)->comm, &size);CHKERRQ(ierr);
     nb_locals = mat->rmap.N / size;
     locals = parttab + rank * nb_locals;
     if (rank < mat->rmap.N % size) {
@@ -196,7 +196,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
         locals += rank;
     } else
         locals += mat->rmap.N % size;
-    ierr = ISCreateGeneral(part->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
     /* destroy temporary objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);
@@ -222,14 +222,14 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
 
     PetscFunctionBegin;
 
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
     if (iascii) {
         if (!rank && chaco->mesg_log) {
             ierr = PetscViewerASCIIPrintf(viewer, "%s\n", chaco->mesg_log);CHKERRQ(ierr);
         }
     } else {
-        SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)->type_name);
+        SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)((PetscObject))->type_name);
     }
 
     PetscFunctionReturn(0);

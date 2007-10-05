@@ -278,7 +278,7 @@ PetscErrorCode TSPseudoMonitorDefault(TS ts,PetscInt step,PetscReal ptime,Vec v,
 
   PetscFunctionBegin;
   if (!ctx) {
-    ierr = PetscViewerASCIIMonitorCreate(ts->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
   }
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"TS %D dt %G time %G fnorm %G\n",step,ts->time_step,ptime,pseudo->fnorm);CHKERRQ(ierr);
   if (!ctx) {
@@ -300,7 +300,7 @@ static PetscErrorCode TSSetFromOptions_Pseudo(TS ts)
   ierr = PetscOptionsHead("Pseudo-timestepping options");CHKERRQ(ierr);
     ierr = PetscOptionsName("-ts_monitor","Monitor convergence","TSPseudoMonitorDefault",&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ts->comm,"stdout",0,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ts)->comm,"stdout",0,&viewer);CHKERRQ(ierr);
       ierr = TSMonitorSet(ts,TSPseudoMonitorDefault,viewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-ts_pseudo_increment_dt_from_initial_dt","Increase dt as a ratio from original dt","TSPseudoIncrementDtFromInitialDt",&flg);CHKERRQ(ierr);
@@ -569,7 +569,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Pseudo(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_Pseudo;
 
   /* create the required nonlinear solver context */
-  ierr = SNESCreate(ts->comm,&ts->snes);CHKERRQ(ierr);
+  ierr = SNESCreate(((PetscObject)ts)->comm,&ts->snes);CHKERRQ(ierr);
 
   ierr = PetscNewLog(ts,TS_Pseudo,&pseudo);CHKERRQ(ierr);
   ts->data = (void*)pseudo;

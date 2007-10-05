@@ -67,7 +67,7 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,N,&mbd->lvec);CHKERRQ(ierr);
 
   /* create temporary index set for building scatter-gather */
-  ierr = ISCreateGeneral(mat->comm,ec,garray,&from);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,&from);CHKERRQ(ierr);
   ierr = ISCreateGeneral(PETSC_COMM_SELF,ec,garray,&to);CHKERRQ(ierr);
   ierr = PetscFree(garray);CHKERRQ(ierr);
 
@@ -78,7 +78,7 @@ PetscErrorCode MatSetUpMultiply_MPIBDiag(Mat mat)
   /*
      This is not correct for a rectangular matrix mbd->rmap.N? 
   */
-  ierr = VecCreateMPI(mat->comm,mat->rmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->rmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mbd->lvec,to,&mbd->Mvctx);CHKERRQ(ierr);

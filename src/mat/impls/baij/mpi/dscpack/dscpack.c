@@ -214,7 +214,7 @@ PetscErrorCode MatDestroy_DSCPACK(Mat A)
     } 
     DSC_End(lu->My_DSC_Solver); 
  
-    ierr = MPI_Comm_free(&(lu->comm_dsc));CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&lu->comm_dsc);CHKERRQ(ierr);
     ierr = ISDestroy(lu->my_cols);CHKERRQ(ierr);  
     ierr = PetscFree(lu->replication);CHKERRQ(ierr);
     ierr = VecDestroy(lu->vec_dsc);CHKERRQ(ierr); 
@@ -286,7 +286,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
   Mat            F_diag;
 	
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */
     /* convert A to A_seq */
     if (size > 1) { 
@@ -313,7 +313,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
     }
 
     /* DSC_Solver starts */
-    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, lu->comm_dsc ); 
+    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, ((PetscObject)lu)->comm_dsc ); 
 
     if (lu->dsc_id != -1) {
       ierr = DSC_Order(lu->My_DSC_Solver,lu->order_code,Mbs,a_seq->i,a_seq->j,lu->replication,
@@ -456,9 +456,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
 
   /* Create the factorization matrix F */ 
   ierr = MatGetBlockSize(A,&bs);
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,bs,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIBAIJSetPreallocation(B,bs,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
     
@@ -477,9 +477,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_DSCPACK(Mat A,IS r,MatFactorInfo *info,
   lu->LBLASLevel  = DSC_LBLAS3;
   lu->DBLASLevel  = DSC_DBLAS2;
   lu->max_mem_allowed = 256;
-  ierr = MPI_Comm_dup(A->comm,&(lu->comm_dsc));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&lu->comm_dsc);CHKERRQ(ierr);
   /* Get the runtime input options */
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"DSCPACK Options","Mat");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"DSCPACK Options","Mat");CHKERRQ(ierr); 
 
   ierr = PetscOptionsInt("-mat_dscpack_order","order_code: \n\
          1 = ND, 2 = Hybrid with Minimum Degree, 3 = Hybrid with Minimum Deficiency", \
@@ -804,7 +804,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_DSCPACK(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQBAIJ);CHKERRQ(ierr);
   } else {

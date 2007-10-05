@@ -126,7 +126,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIAIJ(Mat A,Mat B,PetscReal fill,Mat *
 
   /* create mpi matrix C by concatinating C_seq */
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); /* prevent C_seq being destroyed by MatMerge() */
-  ierr = MatMerge(A->comm,mult->C_seq,B->cmap.n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
+  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap.n,MAT_INITIAL_MATRIX,C);CHKERRQ(ierr); 
  
   /* attach the supporting struct to C for reuse of symbolic C */
   ierr = PetscContainerCreate(PETSC_COMM_SELF,&container);CHKERRQ(ierr);
@@ -170,7 +170,7 @@ PetscErrorCode MatMatMultNumeric_MPIAIJ_MPIAIJ(Mat A,Mat B,Mat C)
   ierr = MatMatMult_SeqAIJ_SeqAIJ(mult->A_loc,mult->B_seq,MAT_REUSE_MATRIX,0.0,&mult->C_seq);CHKERRQ(ierr);
 
   ierr = PetscObjectReference((PetscObject)mult->C_seq);CHKERRQ(ierr); 
-  ierr = MatMerge(A->comm,mult->C_seq,B->cmap.n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
+  ierr = MatMerge(((PetscObject)A)->comm,mult->C_seq,B->cmap.n,MAT_REUSE_MATRIX,&C);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
 }
 
@@ -222,7 +222,7 @@ PetscErrorCode MatMatMultSymbolic_MPIAIJ_MPIDense(Mat A,Mat B,PetscReal fill,Mat
   PetscFunctionBegin; 
   ierr = MatMatMultSymbolic_MPIDense_MPIDense(A,B,0.0,C);
 
-  ierr = PetscContainerCreate(A->comm,&cont);CHKERRQ(ierr);
+  ierr = PetscContainerCreate(((PetscObject)A)->comm,&cont);CHKERRQ(ierr);
   ierr = PetscNew(MPIAIJ_MPIDense,&contents);CHKERRQ(ierr);
   ierr = PetscContainerSetPointer(cont,contents);CHKERRQ(ierr);
   ierr = PetscContainerSetUserDestroy(cont,MPIAIJ_MPIDenseDestroy);CHKERRQ(ierr);
@@ -257,8 +257,8 @@ PetscErrorCode MatMPIDenseScatter(Mat A,Mat B,Mat C,Mat *outworkB)
   PetscInt               *sindices,*sstarts,*rindices,*rstarts;
   PetscMPIInt            *sprocs,*rprocs,nrecvs;
   MPI_Request            *swaits,*rwaits;
-  MPI_Comm               comm = A->comm;
-  PetscMPIInt            tag = ctx->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;
+  MPI_Comm               comm = ((PetscObject)A)->comm;
+  PetscMPIInt            tag = ((PetscObject)ctx)->tag,ncols = B->cmap.N, nrows = aij->B->cmap.n,imdex,nrowsB = B->rmap.n;
   MPI_Status             status;
   MPIAIJ_MPIDense        *contents;
   PetscContainer         cont;

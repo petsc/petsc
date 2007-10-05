@@ -48,7 +48,7 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
     A->ops->view                    = MatView_Feti;     
 
 #if 1
-    MatFetiBalance(A->comm,N,&start,&end);              /* determines local domains by a simple formula */
+    MatFetiBalance(((PetscObject)A)->comm,N,&start,&end);              /* determines local domains by a simple formula */
 
     matfeti->n_dom=end-start+1;
     for(int i=0;i<matfeti->n_dom;i++)
@@ -56,7 +56,7 @@ int MatCreate_Feti(Mat A)    /* Constructor for Mat_Feti() */
 	(matfeti->domains[i]).domain_num=start+i;       /* domain-numbers start at 1 */
     }
 #else
-    MPI_Comm_rank(A->comm, &rank);                      /* comm is hidden in PETSCHEADER (!) in struct _p_Mat */
+    MPI_Comm_rank(((PetscObject)A)->comm, &rank);                      /* comm is hidden in PETSCHEADER (!) in struct _p_Mat */
 
     for(int i=0;i<9;i++)
     {
@@ -662,7 +662,7 @@ int MatView_Feti(Mat A, PetscViewer)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"MatView_Feti on processor %d\n",rank);
 
     PetscViewer view;
-    PetscViewerDrawOpen(matfeti->Kcc_ass->comm,FETIDP_VIEWER_XDISPLAY,"K",PETSC_DECIDE,PETSC_DECIDE,400,400,&view);  
+    PetscViewerDrawOpen(matfeti->((PetscObject)Kcc_ass)->comm,FETIDP_VIEWER_XDISPLAY,"K",PETSC_DECIDE,PETSC_DECIDE,400,400,&view);  
     MatView(matfeti->Kcc_ass,view);   
     WAIT("Kcc_ass");
 
@@ -1069,7 +1069,7 @@ int MatFetiConvertScc2Seq(Mat A) /* only internal use; anyway takes a generic Ma
     /* invert Scc; could also be done iteratively */
     SLES * sles=&matfeti->Sccinv;
 
-    SLESCreate(matfeti->Scc->comm,sles); 
+    SLESCreate(matfeti->((PetscObject)Scc)->comm,sles); 
 
     SLESSetOperators(*sles,
 		     matfeti->Scc,
@@ -1782,7 +1782,7 @@ int MatlabInspect(Mat mat, char const * const name, int const domain_num)
     char fname[256]={};
 
     int rank;
-    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);  /*  not mat->comm; all processors would write to the same file
+    MPI_Comm_rank(PETSC_COMM_WORLD, &rank);  /*  not ((PetscObject)mat)->comm; all processors would write to the same file
                                                  if mat was sequential; now if mat is mpi, only the first 
 						 processor will have a nonempty file  */
 
@@ -1792,7 +1792,7 @@ int MatlabInspect(Mat mat, char const * const name, int const domain_num)
     PetscSynchronizedPrintf(PETSC_COMM_WORLD,"Writing %s (%d)\n",fname,rank); 
 
     PetscSynchronizedFlush(PETSC_COMM_WORLD);  /* PetscSynchronizedPrintf needs flush */
-    PetscViewerASCIIOpen(mat->comm,fname,&viewer);
+    PetscViewerASCIIOpen(((PetscObject)mat)->comm,fname,&viewer);
     PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);
 
     char oname[256]={};
@@ -1814,7 +1814,7 @@ int MatFetiMatlabInspect(Mat A)                /* write all data to files; not u
     int rank;
 
     PetscFunctionBegin;
-    MPI_Comm_rank(A->comm, &rank);             /* A->comm ist PETSC_COMM_WORLD anyway */
+    MPI_Comm_rank(((PetscObject)A)->comm, &rank);             /* ((PetscObject)A)->comm ist PETSC_COMM_WORLD anyway */
 #if 1
     PetscViewer viewer;
 
@@ -1889,7 +1889,7 @@ int MatlabInspectVecs(Vec v, int dom)
 
     PetscViewer viewer;
 
-    PetscViewerASCIIOpen(v->comm,fname,&viewer);
+    PetscViewerASCIIOpen(((PetscObject)v)->comm,fname,&viewer);
     PetscViewerSetFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);
 
     char oname[256]={};

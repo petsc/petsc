@@ -654,7 +654,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJSpooles(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
     ierr = MatConvert_SeqAIJ_SeqAIJSpooles(A,MATSEQAIJSPOOLES,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);

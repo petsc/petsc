@@ -181,7 +181,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Mathematica(PetscViewer v)
   v->data         = (void*) vmath;
   v->ops->destroy = PetscViewerDestroy_Mathematica;
   v->ops->flush   = 0;
-  ierr = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &v->type_name);CHKERRQ(ierr);
+  ierr = PetscStrallocpy(PETSC_VIEWER_MATHEMATICA, &((PetscObject)v)->type_name);CHKERRQ(ierr);
 
   vmath->linkname         = PETSC_NULL;
   vmath->linkhost         = PETSC_NULL;
@@ -237,8 +237,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaSetFromOptions(PetscViewer 
   PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(v->comm, &size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(v->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)v)->comm, &size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)v)->comm, &rank);CHKERRQ(ierr);
 
   /* Get link name */
   ierr = PetscOptionsGetString("viewer_", "-math_linkname", linkname, 255, &opt);CHKERRQ(ierr);

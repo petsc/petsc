@@ -276,8 +276,8 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
     ierr = PetscMalloc((2*(n_neigh)+1)*sizeof(MPI_Request),&send_request);CHKERRQ(ierr);
     recv_request = send_request + (n_neigh);
     for (i=1; i<n_neigh; i++) {
-      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,pc->comm,&(send_request[i]));CHKERRQ(ierr);
-      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,pc->comm,&(recv_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Isend((void*)(DZ_OUT[i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,((PetscObject)pc)->comm,&(send_request[i]));CHKERRQ(ierr);
+      ierr = MPI_Irecv((void*)(DZ_IN [i]),n_shared[i],MPIU_SCALAR,neigh[i],tag,((PetscObject)pc)->comm,&(recv_request[i]));CHKERRQ(ierr);
     }
   }
 
@@ -335,12 +335,12 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
 
   {
     PetscMPIInt size;
-    ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
     /* Create the global coarse vectors (rhs and solution). */
-    ierr = VecCreateMPI(pc->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)pc)->comm,1,size,&(pcnn->coarse_b));CHKERRQ(ierr);
     ierr = VecDuplicate(pcnn->coarse_b,&(pcnn->coarse_x));CHKERRQ(ierr);
     /* Create and set the global coarse AIJ matrix. */
-    ierr = MatCreate(pc->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)pc)->comm,&(pcnn->coarse_mat));CHKERRQ(ierr);
     ierr = MatSetSizes(pcnn->coarse_mat,1,1,size,size);CHKERRQ(ierr);
     ierr = MatSetType(pcnn->coarse_mat,MATAIJ);CHKERRQ(ierr);
     ierr = MatSeqAIJSetPreallocation(pcnn->coarse_mat,1,PETSC_NULL);CHKERRQ(ierr);
@@ -353,7 +353,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   {
     PetscMPIInt rank;
     PetscScalar one = 1.0; 
-    ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     /* "Zero out" rows of not-purely-Neumann subdomains */
     if (pcis->pure_neumann) {  /* does NOT zero the row; create an empty index set. The reason is that MatZeroRows() is collective. */
       ierr = MatZeroRows(pcnn->coarse_mat,0,PETSC_NULL,one);CHKERRQ(ierr);
@@ -366,7 +366,7 @@ PetscErrorCode PCNNCreateCoarseMatrix (PC pc)
   /* Create the coarse linear solver context */
   {
     PC  pc_ctx, inner_pc;
-    ierr = KSPCreate(pc->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
+    ierr = KSPCreate(((PetscObject)pc)->comm,&pcnn->ksp_coarse);CHKERRQ(ierr);
     ierr = KSPSetOperators(pcnn->ksp_coarse,pcnn->coarse_mat,pcnn->coarse_mat,SAME_PRECONDITIONER);CHKERRQ(ierr);
     ierr = KSPGetPC(pcnn->ksp_coarse,&pc_ctx);CHKERRQ(ierr);
     ierr = PCSetType(pc_ctx,PCREDUNDANT);CHKERRQ(ierr);                
@@ -569,7 +569,7 @@ PetscErrorCode PCNNBalancing (PC pc, Vec r, Vec u, Vec z, Vec vec1_B, Vec vec2_B
   value *= pcnn->factor_coarse_rhs;  /* This factor is set in CreateCoarseMatrix(). */
   {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
     ierr = VecSetValue(pcnn->coarse_b,rank,value,INSERT_VALUES);CHKERRQ(ierr);
     /*
        Since we are only inserting local values (one value actually) we don't need to do the 

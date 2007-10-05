@@ -4,9 +4,7 @@
  */
 #include "src/vec/vec/impls/mpi/pvecimpl.h"   /*I  "petscvec.h"   I*/
 
-/*
-       Note this code is very similar to VecPublish_Seq()
-*/
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "VecPublish_MPI"
 static PetscErrorCode VecPublish_MPI(PetscObject obj)
@@ -14,6 +12,7 @@ static PetscErrorCode VecPublish_MPI(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef __FUNCT__  
 #define __FUNCT__ "VecDot_MPI"
@@ -24,7 +23,7 @@ PetscErrorCode VecDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecDot_Seq(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
   *z = sum;
   PetscFunctionReturn(0);
 }
@@ -38,7 +37,7 @@ PetscErrorCode VecTDot_MPI(Vec xin,Vec yin,PetscScalar *z)
 
   PetscFunctionBegin;
   ierr = VecTDot_Seq(xin,yin,&work);CHKERRQ(ierr);
-  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,xin->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&sum,1,MPIU_SCALAR,PetscSum_Op,((PetscObject)xin)->comm);CHKERRQ(ierr);
   *z   = sum;
   PetscFunctionReturn(0);
 }
@@ -150,7 +149,6 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
 
   PetscFunctionBegin;
 
-  v->bops->publish   = VecPublish_MPI;
   ierr           = PetscNewLog(v,Vec_MPI,&s);CHKERRQ(ierr);
   v->data        = (void*)s;
   ierr           = PetscMemcpy(v->ops,&DvOps,sizeof(DvOps));CHKERRQ(ierr);
@@ -180,8 +178,8 @@ PetscErrorCode VecCreate_MPI_Private(Vec v,PetscInt nghost,const PetscScalar arr
   /* create the stashes. The block-size for bstash is set later when 
      VecSetValuesBlocked is called.
   */
-  ierr = VecStashCreate_Private(v->comm,1,&v->stash);CHKERRQ(ierr);
-  ierr = VecStashCreate_Private(v->comm,v->map.bs,&v->bstash);CHKERRQ(ierr); 
+  ierr = VecStashCreate_Private(((PetscObject)v)->comm,1,&v->stash);CHKERRQ(ierr);
+  ierr = VecStashCreate_Private(((PetscObject)v)->comm,v->map.bs,&v->bstash);CHKERRQ(ierr); 
                                                         
 #if defined(PETSC_HAVE_MATLAB_ENGINE)
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscMatlabEnginePut_C","VecMatlabEnginePut_Default",VecMatlabEnginePut_Default);CHKERRQ(ierr);
@@ -315,7 +313,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGhostGetLocalForm(Vec g,Vec *l)
   } else if (isseq) {
     *l = g;
   } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG,"Vector type %s does not have local representation",g->type_name);
+    SETERRQ1(PETSC_ERR_ARG_WRONG,"Vector type %s does not have local representation",((PetscObject)g)->type_name);
   }
   ierr = PetscObjectReference((PetscObject)*l);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -612,7 +610,7 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,win->map.n,win->map.N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,0);CHKERRQ(ierr);
   vw   = (Vec_MPI *)(*v)->data;
@@ -635,8 +633,8 @@ PetscErrorCode VecDuplicate_MPI(Vec win,Vec *v)
   (*v)->stash.donotstash = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
   
-  ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
+  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&((PetscObject)(*v))->olist);CHKERRQ(ierr);
+  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&((PetscObject)(*v))->qlist);CHKERRQ(ierr);
   if (win->mapping) {
     ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
     (*v)->mapping = win->mapping;

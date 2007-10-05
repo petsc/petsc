@@ -122,9 +122,9 @@ PetscErrorCode MatGetSubMatrix_SeqBAIJ_Private(Mat A,IS isrow,IS iscol,PetscInt 
     ierr = PetscMemzero(c->ilen,c->mbs*sizeof(PetscInt));CHKERRQ(ierr);
     C = *B;
   } else {  
-    ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows*bs,ncols*bs,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-    ierr = MatSetType(C,A->type_name);CHKERRQ(ierr);
+    ierr = MatSetType(C,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(C,bs,0,lens);CHKERRQ(ierr);
   }
   c = (Mat_SeqBAIJ *)(C->data);
@@ -1539,7 +1539,7 @@ PetscErrorCode MatGetInfo_SeqBAIJ(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_unneeded    = (double)(info->nz_allocated - info->nz_used);
   info->assemblies   = A->num_ass;
   info->mallocs      = a->reallocs;
-  info->memory       = A->mem;
+  info->memory       = ((PetscObject)A)->mem;
   if (A->factor) {
     info->fill_ratio_given  = A->info.fill_ratio_given;
     info->fill_ratio_needed = A->info.fill_ratio_needed;

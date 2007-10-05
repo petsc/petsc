@@ -590,7 +590,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
     ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewers viewers;
-      ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
+      ierr = PetscViewersCreate(((PetscObject)ksp)->comm,&viewers);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPGMRESMonitorKrylov,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);

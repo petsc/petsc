@@ -219,9 +219,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
 
   /*----- put together the new matrix -----*/
 
-  ierr = MatCreate(A->comm,fact);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   (*fact)->factor    = FACTOR_LU;
   (*fact)->assembled = PETSC_TRUE;
@@ -362,9 +362,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreate(A->comm,B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(*B)->data;
@@ -419,7 +419,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
     char        filename[PETSC_MAX_PATH_LEN];
 
     ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"matrix_factor_error.%d",PetscGlobalRank);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(A->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(((PetscObject)A)->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
@@ -1276,9 +1276,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 #endif
 
   /* put together the new matrix */
-  ierr = MatCreate(A->comm,fact);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)(*fact)->data;

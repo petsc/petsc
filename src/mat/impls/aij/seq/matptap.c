@@ -17,7 +17,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapsymbolic_seqaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",A->type_name,P->type_name);
+    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapsymbolic_seqaij)(A,P,fill,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -31,7 +31,7 @@ PetscErrorCode MatPtAPNumeric_SeqAIJ(Mat A,Mat P,Mat C)
 
   PetscFunctionBegin;
   if (!P->ops->ptapnumeric_seqaij) {
-    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",A->type_name,P->type_name);
+    SETERRQ2(PETSC_ERR_SUP,"Not implemented for A=%s and P=%s",((PetscObject)A)->type_name,((PetscObject)P)->type_name);
   }
   ierr = (*P->ops->ptapnumeric_seqaij)(A,P,C);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -135,7 +135,7 @@ PetscErrorCode MatPtAPSymbolic_SeqAIJ_SeqAIJ(Mat A,Mat P,PetscReal fill,Mat *C)
   ierr = PetscMemzero(ca,(ci[pn]+1)*sizeof(MatScalar));CHKERRQ(ierr);
   
   /* put together the new matrix */
-  ierr = MatCreateSeqAIJWithArrays(A->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
+  ierr = MatCreateSeqAIJWithArrays(((PetscObject)A)->comm,pn,pn,ci,cj,ca,C);CHKERRQ(ierr);
 
   /* MatCreateSeqAIJWithArrays flags matrix so PETSc doesn't free the user's arrays. */
   /* Since these are PETSc arrays, change flags to free them as necessary. */

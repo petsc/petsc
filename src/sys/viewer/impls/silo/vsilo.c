@@ -15,7 +15,7 @@ static PetscErrorCode PetscViewerDestroy_Silo(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm, &rank);CHKERRQ(ierr);
   if(!rank) {
     DBClose(silo->file_pointer);
   }
@@ -30,7 +30,7 @@ PetscErrorCode PetscViewerFlush_Silo(PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
   PetscFunctionReturn(0);
 }
@@ -103,7 +103,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSiloOpen(MPI_Comm comm, const char nam
   v->data         = (void*)silo;
   v->ops->destroy = PetscViewerDestroy_Silo;
   v->ops->flush   = PetscViewerFlush_Silo;
-  ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &v->type_name);CHKERRQ(ierr);
+  ierr            = PetscStrallocpy(PETSC_VIEWER_SILO, &((PetscObject)v)->type_name);CHKERRQ(ierr);
 
   ierr = PetscStrncpy(filetemp, name, 251);CHKERRQ(ierr);
   ierr = PetscStrcat(filetemp, ".pdb");CHKERRQ(ierr);
