@@ -153,7 +153,9 @@ EXTERN_C_END
 */
 #elif defined (PETSC_USE_NT_TIME)
 #include <time.h>
+EXTERN_C_BEGIN
 EXTERN PetscLogDouble nt_time(void);
+EXTERN_C_END
 #define PetscTime(v)         (v)=nt_time();
 
 #define PetscTimeSubtract(v) (v)-=nt_time();
