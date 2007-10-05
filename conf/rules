@@ -120,8 +120,7 @@ tree: ${ACTION}
 	      r=`grep -w requirespackage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
-		HCONF=`grep '#define PETSC_' ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | cut -d" " -f2`; \
-                echo $${HCONF} | tr -s ' ' '\n' | grep -w $${PKGFLG} > /dev/null; \
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
