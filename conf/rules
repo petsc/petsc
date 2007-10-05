@@ -117,32 +117,32 @@ cleanadic:
 tree: ${ACTION}
 	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
             if [ -d $$dir ]; then \
-	      r=`fgrep -w requirespackage $$dir/makefile`; \
+	      r=`grep -w requirespackage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
 		HCONF=`grep PETSC_ ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | cut -d" " -f2`; \
-                echo $${HCONF} | fgrep -w $${PKGFLG} > /dev/null; \
+                echo $${HCONF} | grep -w $${PKGFLG} > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
               fi; \
-              r=`fgrep -w requireslanguage $$dir/makefile`; \
+              r=`grep -w requireslanguage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-                echo $$r | fgrep -w ${PETSC_LANGUAGE} > /dev/null; \
+                echo $$r | grep -w ${PETSC_LANGUAGE} > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
               fi; \
-              r=`fgrep -w requiresscalar $$dir/makefile`; \
+              r=`grep -w requiresscalar $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-                echo $$r |  fgrep -w ${PETSC_SCALAR} > /dev/null; \
+                echo $$r |  grep -w ${PETSC_SCALAR} > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
               fi; \
-              r=`fgrep -w requiresprecision $$dir/makefile`; \
+              r=`grep -w requiresprecision $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-                echo $$r |  fgrep -w ${PETSC_PRECISION} > /dev/null; \
+                echo $$r |  grep -w ${PETSC_PRECISION} > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
