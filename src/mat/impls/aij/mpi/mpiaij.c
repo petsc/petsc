@@ -3035,7 +3035,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIAIJWithArrays"
-/*@C
+/*@
      MatCreateMPIAIJWithArrays - creates a MPI AIJ matrix using arrays that contain in standard
          CSR format the local rows.
 
@@ -4563,7 +4563,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatCreateMPIAIJWithSplitArrays"
-/*@C
+/*@
      MatCreateMPIAIJWithSplitArrays - creates a MPI AIJ matrix using arrays that contain the "diagonal"
          and "off-diagonal" part of the matrix in CSR format.
 

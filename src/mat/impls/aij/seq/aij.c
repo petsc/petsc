@@ -2916,7 +2916,7 @@ EXTERN_C_END
 
 #undef  __FUNCT__
 #define __FUNCT__  "MatSeqAIJSetPreallocationCSR"
-/*@C
+/*@
    MatSeqAIJSetPreallocationCSR - Allocates memory for a sparse sequential matrix in AIJ format.  
 
    Input Parameters:
@@ -2928,6 +2928,8 @@ EXTERN_C_END
    Contributed by: Lisandro Dalchin
 
    Level: developer
+
+   The i,j,v values are COPIED with this routine; to avoid the copy use MatCreateSeqAIJWithArrays()
 
 .keywords: matrix, aij, compressed row, sparse, sequential
 
