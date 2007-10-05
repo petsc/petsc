@@ -615,7 +615,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetType"
-/*@C
+/*@
    PCFieldSplitSetType - Sets the type of fieldsplit preconditioner.
    
    Collective on PC

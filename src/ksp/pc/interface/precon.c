@@ -171,7 +171,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleSet(PC pc,Vec s)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDiagonalScaleLeft"
-/*@C
+/*@
    PCDiagonalScaleLeft - Indicates the left scaling to use to apply an additional left and right
       scaling as needed by certain time-stepping codes.
 
@@ -214,7 +214,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCDiagonalScaleLeft(PC pc,Vec in,Vec out)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCDiagonalScaleRight"
-/*@C
+/*@
    PCDiagonalScaleRight - Scales a vector by the right scaling as needed by certain time-stepping codes.
 
    Collective on PC

@@ -3387,7 +3387,7 @@ PetscErrorCode MatSetValuesAdifor_MPIAIJ(Mat A,PetscInt nl,void *advalues)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatMerge"
-/*@C
+/*@
       MatMerge - Creates a single large PETSc matrix by concatinating sequential
                  matrices from each processor
 
@@ -3958,7 +3958,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm comm,Mat seqmat,Pe
 static PetscEvent logkey_getlocalmat = 0;
 #undef __FUNCT__
 #define __FUNCT__ "MatGetLocalMat"
-/*@C
+/*@
      MatGetLocalMat - Creates a SeqAIJ matrix by taking all its local rows
 
     Not Collective

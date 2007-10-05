@@ -12,7 +12,7 @@
 
 #undef __FUNCT__
 #define __FUNCT__ "MatSeqBAIJInvertBlockDiagonal"
-/*@C
+/*@
   MatSeqBAIJInvertBlockDiagonal - Inverts the block diagonal entries.
 
   Collective on Mat

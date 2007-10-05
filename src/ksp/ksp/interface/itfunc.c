@@ -1648,7 +1648,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetDiagonalScale"
-/*@C
+/*@
    KSPGetDiagonalScale - Checks if KSP solver scales the matrix and
                           right hand side
 

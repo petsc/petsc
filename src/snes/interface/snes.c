@@ -884,7 +884,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFunction(SNES snes,Vec r,PetscErrorCod
 .  snes - the SNES context
 
    Output Parameter:
-.  rhs - the right hand side vector or PETSC_NULL for a zero right hand side
+.  rhs - the right hand side vector or PETSC_NULL if the right hand side vector is null
 
    Level: intermediate
 

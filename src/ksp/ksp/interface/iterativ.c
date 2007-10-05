@@ -346,7 +346,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedSetUIRNorm"
-/*@C
+/*@
    KSPDefaultConvergedSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
       instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
@@ -381,7 +381,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedSetUMIRNorm"
-/*@C
+/*@
    KSPDefaultConvergedSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
       In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.

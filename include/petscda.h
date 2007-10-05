@@ -385,6 +385,7 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetColoring(DA,ISColoringType,ISColor
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetMatrix(DA, MatType,Mat *);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetGetMatrix(DA,PetscErrorCode (*)(DA, MatType,Mat *));
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInterpolation(DA,DA,Mat*,Vec*);
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetAggregates(DA,DA,Mat*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DAGetInjection(DA,DA,VecScatter*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetBlockFills(DA,PetscInt*,PetscInt*);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DASetMatPreallocateOnly(DA,PetscTruth);

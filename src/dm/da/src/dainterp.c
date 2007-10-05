@@ -977,7 +977,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetInjection"
-/*@C
+/*@
    DAGetInjection - Gets an injection matrix that maps between 
    grids associated with two DAs.
 
@@ -1029,7 +1029,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetInjection(DA dac,DA daf,VecScatter *inject
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetAggregates"
-/*@C
+/*@
    DAGetAggregates - Gets the aggregates that map between 
    grids associated with two DAs.
 

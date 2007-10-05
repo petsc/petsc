@@ -271,10 +271,7 @@ PetscErrorCode MatPartitioningDestroy_Jostle(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Jostle"
-/*@C
+/*MC
    MAT_PARTITIONING_JOSTLE - Creates a partitioning context via the external package Jostle.
 
    Collective on MPI_Comm
@@ -294,7 +291,11 @@ EXTERN_C_BEGIN
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
-@*/
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Jostle"
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Jostle(MatPartitioning part)
 {
     PetscErrorCode ierr;

@@ -966,7 +966,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
   PetscFunctionReturn(0);
 }
 
-/*@C
+/*@
      DASetRefinementFactor - Set the ratios that the DA grid is refined
 
     Collective on DA
@@ -2184,7 +2184,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAMultiplyByJacobian1WithAdifor(DA da,Vec u,Vec
 
 #undef __FUNCT__  
 #define __FUNCT__ "DASetInterpolationType"
-/*@C
+/*@
        DASetInterpolationType - Sets the type of interpolation that will be 
           returned by DAGetInterpolation()
 

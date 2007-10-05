@@ -197,7 +197,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSetFromOptions(Mat B)
 
 #undef __FUNCT__  
 #define __FUNCT__ "MatSetUpPreallocation"
-/*@C
+/*@
    MatSetUpPreallocation
 
    Collective on Mat

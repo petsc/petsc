@@ -365,11 +365,8 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Party"
-/*@C
-   MAT_PARTITIONING_Party - Creates a partitioning context via the external package Party.
+/*MC
+   MAT_PARTITIONING_PARTY - Creates a partitioning context via the external package Party.
 
    Collective on MPI_Comm
 
@@ -391,7 +388,11 @@ EXTERN_C_BEGIN
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
-@*/
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Party"
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;
