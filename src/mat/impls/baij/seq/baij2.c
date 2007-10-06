@@ -1150,15 +1150,10 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 {
   PetscScalar    zero = 0.0;
   PetscErrorCode ierr;
-#if defined (PETSC_USE_LOG)
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-#endif
 
   PetscFunctionBegin;
   ierr = VecSet(zz,zero);CHKERRQ(ierr);
   ierr = MatMultTransposeAdd_SeqBAIJ(A,xx,zz,zz);CHKERRQ(ierr);
-
-  ierr = PetscLogFlops(2*a->nz*a->bs2 - A->cmap.n);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1167,11 +1162,11 @@ PetscErrorCode MatMultTranspose_SeqBAIJ(Mat A,Vec xx,Vec zz)
 PetscErrorCode MatMultTransposeAdd_SeqBAIJ(Mat A,Vec xx,Vec yy,Vec zz)
 
 {
-  Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
-  PetscScalar    *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
-  MatScalar      *v;
-  PetscErrorCode ierr;
-  PetscInt       mbs,i,*idx,*ii,rval,bs=A->rmap.bs,j,n,bs2=a->bs2,*ib,*ridx=PETSC_NULL;
+  Mat_SeqBAIJ       *a = (Mat_SeqBAIJ*)A->data;
+  PetscScalar       *zb,*x,*z,*xb = 0,x1,x2,x3,x4,x5;
+  MatScalar         *v;
+  PetscErrorCode    ierr;
+  PetscInt          mbs,i,*idx,*ii,rval,bs=A->rmap.bs,j,n,bs2=a->bs2,*ib,*ridx=PETSC_NULL;
   Mat_CompressedRow cprow = a->compressedrow;
   PetscTruth        usecprow=cprow.use;
 
