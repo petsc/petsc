@@ -5,6 +5,8 @@
 #include <Windows.h>
 #define FACTOR   4294967296.0 /* pow(2,32) */
 
+EXTERN_C_BEGIN
+
 #undef __FUNCT__  
 #define __FUNCT__ "nt_time"
 PetscLogDouble PETSC_DLLEXPORT nt_time(void) 
@@ -56,4 +58,7 @@ PetscLogDouble PETSC_DLLEXPORT nt_time(void)
 
   PetscFunctionReturn(ptime);
 }
+
+EXTERN_C_END
+
 #endif

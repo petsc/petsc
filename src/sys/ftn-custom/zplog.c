@@ -21,12 +21,9 @@ void PETSC_STDCALL petsclogeventend_(PetscEvent *e,PetscErrorCode *ierr){
   *ierr = PetscLogEventEnd(*e,0,0,0,0);
 }
 
-/* Change macro in PetscLogFlops() so can be used in void function */
-#undef SETERRQ1
-#define SETERRQ1(ierr,b,c) CHKERRABORT(MPI_COMM_SELF,ierr) 
-
 void PETSC_STDCALL petsclogflops_(int *f,PetscErrorCode *ierr) {
-  *ierr = PetscLogFlops(*f);
+  PetscLogFlopsNoCheck(*f);
+  *ierr = 0;
 }
 
 

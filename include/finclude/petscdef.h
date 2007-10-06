@@ -43,8 +43,6 @@
 #define PetscFortranInt integer4
 #elif (PETSC_SIZEOF_INT == 8)
 #define PetscFortranInt integer8
-#else
-#error "Unknown integer size"
 #endif
 !
 #if defined(PETSC_HAVE_MPIUNI)
