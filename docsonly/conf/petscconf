@@ -11,3 +11,8 @@ SED      = /bin/sed
 OMAKE    = make --no-print-directory
 MKDIR    = mkdir -p
 PDFLATEX = pdflatex
+# dummy variables for target tree
+PETSC_LANGUAGE  = none
+PETSC_SCALAR    = none
+PETSC_PRECISION = none
+

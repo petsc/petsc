@@ -332,7 +332,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate3d(MPI_Comm comm,DAPeriodicType wrap,DA
     if (N > P && n < p) {PetscInt _n = n; n = p; p = _n;}
   } else if (m == PETSC_DECIDE && n == PETSC_DECIDE && p == PETSC_DECIDE) {
     /* try for squarish distribution */
-    n = (PetscInt)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),1./3.));
+    n = (PetscInt)(0.5 + pow(((PetscReal)N*N)*((PetscReal)size)/((PetscReal)P*M),(PetscReal)(1./3.)));
     if (!n) n = 1;
     while (n > 0) {
       pm = size/n;
