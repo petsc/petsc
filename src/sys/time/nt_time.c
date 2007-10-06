@@ -58,6 +58,7 @@ PetscLogDouble PETSC_DLLEXPORT nt_time(void)
 
   PetscFunctionReturn(ptime);
 }
-#endif
 
 EXTERN_C_END
+
+#endif
