@@ -9,10 +9,6 @@
 */
 
 #include "petsc.h"
-/* Change macro in PetscLogFlops() so can be used in void function */
-#undef SETERRQ1
-#define SETERRQ1(ierr,b,c) CHKERRABORT(MPI_COMM_SELF,ierr) 
-
 #include <stdarg.h>
 
 #include "ad_deriv.h"
@@ -41,7 +37,6 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
   static double      alphas[100];
   static DERIV_TYPE* grads[100];
   va_list            parg;
-  PetscErrorCode     ierr;
 
   va_start(parg, ddz);
   for (i = 0; i < arity; i++) {
@@ -65,7 +60,7 @@ void ad_grad_axpy_n(int arity, void* ddz, ...)
       z[i] += alpha*gradv[i];
     }
   }   
-  ierr = PetscLogFlops(2*ad_grad_size*(arity-.5));
+  PetscLogFlopsNoCheck(2*ad_grad_size*(arity-.5));
 }
 
 void mfad_grad_axpy_n(int arity, void* ddz, ...)
@@ -75,7 +70,6 @@ void mfad_grad_axpy_n(int arity, void* ddz, ...)
   static double      alphas[100];
   static DERIV_TYPE* grads[100];
   va_list            parg;
-  PetscErrorCode     ierr;
 
   va_start(parg, ddz);
   for (j = 0; j < arity; j++) {
@@ -94,7 +88,7 @@ void mfad_grad_axpy_n(int arity, void* ddz, ...)
     gradv = DERIV_grad(*grads[j]);
     z[0] += alphas[j]*gradv[0];
   }
-  ierr = PetscLogFlops(2*(arity-.5));
+  PetscLogFlopsNoCheck(2*(arity-.5));
 }
 
 EXTERN_C_END
