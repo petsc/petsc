@@ -327,8 +327,8 @@ PetscErrorCode MatMult_SeqBAIJ_3(Mat A,Vec xx,Vec zz)
   PetscScalar    *x,*z = 0,*xb,sum1,sum2,sum3,x1,x2,x3,*zarray;
   MatScalar      *v;
   PetscErrorCode ierr;
-  PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL;
-  PetscTruth     usecprow=a->compressedrow.use,nonzerorow=0;
+  PetscInt       mbs,i,*idx,*ii,j,n,*ridx=PETSC_NULL,nonzerorow=0;
+  PetscTruth     usecprow=a->compressedrow.use;
   
 
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
