@@ -110,7 +110,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView_Cartesian(Mesh mesh, PetscViewer viewe
   } else if (isdraw){ 
     SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Cartesian Mesh");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

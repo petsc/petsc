@@ -123,7 +123,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     /* Release the SuperLU_DIST process grid. */
     superlu_gridexit(&lu->grid);
     
-    ierr = MPI_Comm_free(&(((PetscObject)lu)->comm_superlu));CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
@@ -463,7 +463,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   */
   set_default_options_dist(&options);
 
-  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(((PetscObject)lu)->comm_superlu));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_superlu));CHKERRQ(ierr);
   ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
   lu->npcol = (PetscMPIInt)(0.5 + sqrt((PetscReal)size)); 
@@ -550,7 +550,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   PetscOptionsEnd();
 
   /* Initialize the SuperLU process grid. */
-  superlu_gridinit(((PetscObject)lu)->comm_superlu, lu->nprow, lu->npcol, &lu->grid);
+  superlu_gridinit(lu->comm_superlu, lu->nprow, lu->npcol, &lu->grid);
 
   /* Initialize ScalePermstruct and LUstruct. */
   ScalePermstructInit(M, N, &lu->ScalePermstruct);

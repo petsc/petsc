@@ -234,7 +234,7 @@ PetscErrorCode TSDestroy_Sundials(TS ts)
   if (cvode->rhs)    {ierr = VecDestroy(cvode->rhs);CHKERRQ(ierr);}
   if (cvode->w1)     {ierr = VecDestroy(cvode->w1);CHKERRQ(ierr);}
   if (cvode->w2)     {ierr = VecDestroy(cvode->w2);CHKERRQ(ierr);}
-  ierr = MPI_Comm_free(&(((PetscObject)cvode)->comm_sundials));CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(cvode->comm_sundials));CHKERRQ(ierr);
   ierr = PetscFree(cvode);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -255,7 +255,7 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
   ierr = VecGetLocalSize(ts->vec_sol,&locsize);CHKERRQ(ierr);
 
   /* allocate the memory for N_Vec y */
-  cvode->y = N_VNew_Parallel(((PetscObject)cvode)->comm_sundials,locsize,glosize);
+  cvode->y = N_VNew_Parallel(cvode->comm_sundials,locsize,glosize);
   if (!cvode->y) SETERRQ(1,"cvode->y is not allocated");
 
   /* initialize N_Vec y */
@@ -797,7 +797,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
 
   cvode->exact_final_time = PETSC_FALSE;
 
-  ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(((PetscObject)cvode)->comm_sundials));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
   /* set tolerance for Sundials */
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;

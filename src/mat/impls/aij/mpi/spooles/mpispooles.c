@@ -32,7 +32,7 @@ PetscErrorCode MatDestroy_MPIAIJSpooles(Mat A)
     SubMtxManager_free(lu->mtxmanager);    
     DenseMtx_free(lu->mtxX);
     DenseMtx_free(lu->mtxY);
-    ierr = MPI_Comm_free(&(((PetscObject)lu)->comm_spooles));CHKERRQ(ierr);
+    ierr = MPI_Comm_free(&(lu->comm_spooles));CHKERRQ(ierr);
     if ( lu->scat ){
       ierr = VecDestroy(lu->vec_spooles);CHKERRQ(ierr); 
       ierr = ISDestroy(lu->iden);CHKERRQ(ierr); 
@@ -98,7 +98,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
                                    by FrontMtx_MPI_split() is unknown */
   lu->firsttag = 0;
   newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->options.msglvl, 
-                                lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                                lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   DenseMtx_free(lu->mtxY);
   lu->mtxY = newY ;
   lu->firsttag += size ;
@@ -113,9 +113,9 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
          to match the final rows and columns in the fronts             */
     IV *rowmapIV ;
     rowmapIV = FrontMtx_MPI_rowmapIV(lu->frontmtx, lu->ownersIV, lu->options.msglvl,
-                                    lu->options.msgFile, ((PetscObject)lu)->comm_spooles);
+                                    lu->options.msgFile, lu->comm_spooles);
     newY = DenseMtx_MPI_splitByRows(lu->mtxY, rowmapIV, lu->stats, lu->options.msglvl, 
-                                   lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                                   lu->options.msgFile, lu->firsttag, lu->comm_spooles);
     DenseMtx_free(lu->mtxY);
     lu->mtxY = newY ;
     IV_free(rowmapIV);
@@ -133,7 +133,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
   solvemanager = SubMtxManager_new();
   SubMtxManager_init(solvemanager, NO_LOCK, 0);
   FrontMtx_MPI_solve(lu->frontmtx, lu->mtxX, lu->mtxY, solvemanager, lu->solvemap, lu->cpus, 
-                   lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                   lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   SubMtxManager_free(solvemanager);
   if ( lu->options.msglvl > 2 ) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n solution in new ordering");CHKERRQ(ierr);
@@ -323,7 +323,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     */
     graph = Graph_new();
     adjIVL = InpMtx_MPI_fullAdjacency(lu->mtxA, lu->stats, 
-              lu->options.msglvl, lu->options.msgFile, ((PetscObject)lu)->comm_spooles);
+              lu->options.msglvl, lu->options.msgFile, lu->comm_spooles);
     nedges = IVL_tsize(adjIVL);
     Graph_init2(graph, 0, M, 0, nedges, M, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
@@ -364,7 +364,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     DVfree(opcounts);
     
     lu->frontETree = ETree_MPI_Bcast(lu->frontETree, root, 
-                             lu->options.msglvl, lu->options.msgFile, ((PetscObject)lu)->comm_spooles);
+                             lu->options.msglvl, lu->options.msgFile, lu->comm_spooles);
     if ( lu->options.msglvl > 2 ) {
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n best front tree");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
@@ -406,7 +406,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     /* redistribute the matrix */
     lu->firsttag = 0 ;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
-                        lu->options.msglvl, lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                        lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
     lu->firsttag += size ;
 
     InpMtx_free(lu->mtxA);
@@ -420,7 +420,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
  
     /* compute the symbolic factorization */
     lu->symbfacIVL = SymbFac_MPI_initFromInpMtx(lu->frontETree, lu->ownersIV, lu->mtxA,
-                     lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                     lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
     lu->firsttag += lu->frontETree->nfront ;
     if ( lu->options.msglvl > 2 ) {
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n local symbolic factorization");CHKERRQ(ierr);
@@ -453,7 +453,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     MPI_Barrier(((PetscObject)A)->comm);
     lu->firsttag = 0;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
-                        lu->options.msglvl, lu->options.msgFile, lu->firsttag,((PetscObject)lu)->comm_spooles);
+                        lu->options.msglvl, lu->options.msgFile, lu->firsttag,lu->comm_spooles);
     lu->firsttag += size ;
 
     InpMtx_free(lu->mtxA);
@@ -486,7 +486,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   chvmanager = ChvManager_new();
   ChvManager_init(chvmanager, NO_LOCK, 0);  
 
-  tagbound = maxTagMPI(((PetscObject)lu)->comm_spooles);
+  tagbound = maxTagMPI(lu->comm_spooles);
   lasttag  = lu->firsttag + 3*lu->frontETree->nfront + 2;
   /* if(!rank) PetscPrintf(PETSC_COMM_SELF,"\n firsttag: %d, nfront: %d\n",lu->firsttag, lu->frontETree->nfront);*/
   if ( lasttag > tagbound ) {
@@ -495,7 +495,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   }
   rootchv = FrontMtx_MPI_factorInpMtx(lu->frontmtx, lu->mtxA, lu->options.tau, droptol,
                      chvmanager, lu->ownersIV, lookahead, &sierr, lu->cpus, 
-                     lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag,((PetscObject)lu)->comm_spooles);
+                     lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag,lu->comm_spooles);
   ChvManager_free(chvmanager);
   lu->firsttag = lasttag;
   if ( lu->options.msglvl > 2 ) {
@@ -537,7 +537,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
                lu->firsttag, lasttag, tagbound); 
   }
   FrontMtx_MPI_postProcess(lu->frontmtx, lu->ownersIV, lu->stats, lu->options.msglvl,
-                         lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                         lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   lu->firsttag += 5*size ;
   if ( lu->options.msglvl > 2 ) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization after post-processing");CHKERRQ(ierr);
@@ -559,7 +559,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
 
   /* redistribute the submatrices of the factors */
   FrontMtx_MPI_split(lu->frontmtx, lu->solvemap, 
-                   lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, ((PetscObject)lu)->comm_spooles);
+                   lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   if ( lu->options.msglvl > 2 ) {
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization after split");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);

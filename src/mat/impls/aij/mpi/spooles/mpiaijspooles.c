@@ -47,7 +47,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJSpooles(Mat A,IS r,IS c,MatFactorInfo *
   lu->flg                  = DIFFERENT_NONZERO_PATTERN;
   lu->options.useQR        = PETSC_FALSE;
 
-  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(((PetscObject)lu)->comm_spooles));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
 
   if (!info->dtcol) {
     lu->options.pivotingflag  = SPOOLES_NO_PIVOTING;

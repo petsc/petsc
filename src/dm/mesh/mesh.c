@@ -247,7 +247,7 @@ PetscErrorCode MeshView_Sieve(const ALE::Obj<ALE::Mesh>& mesh, PetscViewer viewe
   } else if (isdraw){ 
     SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Mesh");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this mesh object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -317,7 +317,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   PetscValidType(mesh, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(mesh->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)mesh)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(mesh, 1, viewer, 2);
@@ -596,7 +596,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
   ierr = PetscTypeCompare((PetscObject)mesh,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(MeshList,mesh->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MeshList,((PetscObject)mesh)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Mesh type %s",type);
   /* Destroy the previous private Mesh context */
   if (mesh->ops->destroy) { ierr = (*mesh->ops->destroy)(mesh);CHKERRQ(ierr); }
@@ -631,7 +631,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,MeshType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
   PetscValidPointer(type,2);
-  *type = mesh->type_name;
+  *type = ((PetscObject)mesh)->type_name;
   PetscFunctionReturn(0);
 }
 

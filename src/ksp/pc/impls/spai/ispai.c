@@ -641,7 +641,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_SPAI(PC pc)
   pc->ops->view            = PCView_SPAI;
   pc->ops->setfromoptions  = PCSetFromOptions_SPAI;
 
-  pc->name          = 0;
   ispai->epsilon    = .4;  
   ispai->nbsteps    = 5;        
   ispai->max        = 5000;            

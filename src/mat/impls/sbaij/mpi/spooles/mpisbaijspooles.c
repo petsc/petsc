@@ -90,7 +90,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   lu->options.useQR        = PETSC_FALSE;
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
-  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(((PetscObject)lu)->comm_spooles));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0); 
 }

@@ -35,7 +35,7 @@ PetscErrorCode SectionRealView_Sieve(SectionReal section, PetscViewer viewer)
   } else if (isdraw){ 
     SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this section object", viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -89,7 +89,7 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidType(section, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(section->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(section, 1, viewer, 2);
@@ -844,7 +844,7 @@ PetscErrorCode SectionIntView_Sieve(SectionInt section, PetscViewer viewer)
   } else if (isdraw){ 
     SETERRQ(PETSC_ERR_SUP, "Draw viewer not implemented for Section");
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this section object", viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by this section object", ((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -898,7 +898,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidType(section, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(section->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(section, 1, viewer, 2);

@@ -159,8 +159,8 @@ PetscErrorCode MatSolve_Plapack(Mat A,Vec b,Vec x)
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,loc_m*loc_stride,loc_buf,&loc_x);CHKERRQ(ierr);
   if (!lu->pla_solved){
     
-    PLA_Temp_comm_row_info(lu->templ,&((PetscObject)lu)->comm_2d,&r_rank,&r_nproc);
-    PLA_Temp_comm_col_info(lu->templ,&((PetscObject)lu)->comm_2d,&c_rank,&c_nproc);
+    PLA_Temp_comm_row_info(lu->templ,&lu->comm_2d,&r_rank,&r_nproc);
+    PLA_Temp_comm_col_info(lu->templ,&lu->comm_2d,&c_rank,&c_nproc);
     /* printf(" [%d] rank: %d %d, nproc: %d %d\n",rank,r_rank,c_rank,r_nproc,c_nproc); */
 
     /* Create IS and cts for VecScatterring */
@@ -334,7 +334,7 @@ PetscErrorCode MatFactorSymbolic_Plapack_Private(Mat A,MatFactorInfo *info,Mat *
 
   /* Create a 2D communicator */
   PLA_Comm_1D_to_2D(comm,lu->nprows,lu->npcols,&comm_2d); 
-  ((PetscObject)lu)->comm_2d = comm_2d;
+  lu->comm_2d = comm_2d;
 
   /* Initialize PLAPACK */
   PLA_Init(comm_2d);
