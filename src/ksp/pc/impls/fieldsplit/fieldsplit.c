@@ -144,7 +144,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
 	  ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
 	  ierr = PetscFree(ii);CHKERRQ(ierr);
         } else { 
-          ierr = ISCreateStride(pc->comm,nslots,ilink->fields[0],bs,&jac->is[i]);CHKERRQ(ierr);
+          ierr = ISCreateStride(pc->comm,nslots,rstart+ilink->fields[0],bs,&jac->is[i]);CHKERRQ(ierr);
         }
         jac->csize[i] = (ccsize/bs)*ilink->nfields;
         ierr = ISSorted(jac->is[i],&sorted);CHKERRQ(ierr);
