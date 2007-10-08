@@ -2180,7 +2180,7 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   ierr = VecGetArray(diagV,    &diagA);CHKERRQ(ierr);
   ierr = VecGetArray(offdiagV, &offdiagA);CHKERRQ(ierr);
   for(r = 0; r < n; ++r) {
-    if (diagA[r] <= offdiagA[r]) {
+    if (PetscAbsScalar(diagA[r]) <= PetscAbsScalar(offdiagA[r])) {
       a[r]   = diagA[r];
       idx[r] = cstart + diagIdx[r];
     } else {
