@@ -44,7 +44,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
     PetscTruth flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
@@ -57,8 +57,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         IS isrow, iscol;
         Mat *A;
 
-        if (flg) 
-          SETERRQ(PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
+        if (flg) SETERRQ(PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
         ierr = PetscPrintf(part->comm,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
@@ -68,9 +67,9 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         ierr = ISDestroy(iscol);CHKERRQ(ierr);
         matSeq = *A;
         ierr   = PetscFree(A);CHKERRQ(ierr);
-    } else
+    } else {
         matSeq = mat;
-
+    }
     /* check for the input format that is supported only for a MPIADJ type 
        and set it to matMPI */
 
@@ -121,7 +120,8 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         part_info(n, vertex_w, edge_p, edge, edge_w, p, part_party, output);
 
 #ifdef PETSC_HAVE_UNISTD_H
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
         count =
             read(fd_pipe[0], party->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)

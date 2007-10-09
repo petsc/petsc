@@ -92,9 +92,11 @@ PetscErrorCode PetscViewerDestroy_ASCII_Subcomm(PetscViewer viewer)
 PetscErrorCode PetscViewerFlush_ASCII_Singleton_0(PetscViewer viewer)
 {
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+  int               err;
 
   PetscFunctionBegin;
-  fflush(vascii->fd);
+  err = fflush(vascii->fd);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   PetscFunctionReturn(0);  
 }
 
@@ -105,11 +107,13 @@ PetscErrorCode PetscViewerFlush_ASCII(PetscViewer viewer)
   PetscMPIInt       rank;
   PetscErrorCode    ierr;
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
+  int               err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
-    fflush(vascii->fd);
+    err = fflush(vascii->fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() call failed");
   }
 
   /*
@@ -395,6 +399,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
   PetscErrorCode    ierr;
   FILE              *fd = ascii->fd;
   PetscTruth        iascii;
+  int               err;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -415,12 +420,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIPrintf(PetscViewer viewer,const c
 
     va_start(Argp,format);
     ierr = PetscVFPrintf(fd,format,Argp);CHKERRQ(ierr);
-    fflush(fd);
+    err = fflush(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     if (petsc_history) {
       tab = ascii->tab;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
+      err = fflush(petsc_history);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     }
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */
@@ -800,6 +807,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
   MPI_Comm          comm;
   FILE              *fp;
   PetscTruth        iascii;
+  int               err;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -821,11 +829,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIISynchronizedPrintf(PetscViewer vi
 
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fp,format,Argp);CHKERRQ(ierr);
-    fflush(fp);
+    err = fflush(fp);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     queuefile = fp;
     if (petsc_history) {
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
+      err = fflush(petsc_history);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     }
     va_end(Argp);
   } else { /* other processors add to local queue */
@@ -943,6 +953,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
   PetscErrorCode    ierr;
   FILE              *fd = ascii->fd;
   PetscTruth        iascii;
+  int               err;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
@@ -963,12 +974,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerASCIIMonitorPrintf(PetscViewerASCIIMon
 
     va_start(Argp,format);
     ierr = (*PetscVFPrintf)(fd,format,Argp);CHKERRQ(ierr);
-    fflush(fd);
+    err = fflush(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     if (petsc_history) {
       tab = ascii->tab + ctx->tabs;
       while (tab--) {ierr = PetscFPrintf(PETSC_COMM_SELF,fd,"  ");CHKERRQ(ierr);}
       ierr = (*PetscVFPrintf)(petsc_history,format,Argp);CHKERRQ(ierr);
-      fflush(petsc_history);
+      err = fflush(petsc_history);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
     }
     va_end(Argp);
   } else if (ascii->bviewer) { /* this is a singleton PetscViewer that is not on process 0 */

@@ -72,6 +72,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
   if (!rank) {
     char arch[10];
+    int  err;
+
     ierr = PetscGetArchType(arch,10);CHKERRQ(ierr);
     ierr = PetscGetDate(date,64);CHKERRQ(ierr);
     ierr = PetscGetVersion(&version,256);CHKERRQ(ierr);
@@ -91,7 +93,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogOpenHistoryFile(const char filename[],FIL
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"%s on a %s, %d proc. with options:\n",pname,arch,size);CHKERRQ(ierr);
     ierr = PetscOptionsPrint(*fd);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
-    fflush(*fd);
+    err = fflush(*fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   }
   PetscFunctionReturn(0); 
 }
@@ -103,6 +106,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
   PetscErrorCode ierr;
   PetscMPIInt    rank;
   char           date[64];
+  int            err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(PETSC_COMM_WORLD,&rank);CHKERRQ(ierr);
@@ -111,8 +115,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscLogCloseHistoryFile(FILE **fd)
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"Finished at %s\n",date);CHKERRQ(ierr);
     ierr = PetscFPrintf(PETSC_COMM_SELF,*fd,"---------------------------------------------------------\n");CHKERRQ(ierr);
-    fflush(*fd);
-    fclose(*fd);
+    err = fflush(*fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
+    err = fclose(*fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");        
   }
   PetscFunctionReturn(0); 
 }

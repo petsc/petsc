@@ -337,8 +337,7 @@ static PetscMPIInt Petsc_Viewer_Socket_keyval = MPI_KEYVAL_INVALID;
 #undef __FUNCT__  
 #define __FUNCT__ "PETSC_VIEWER_SOCKET_"  
 /*@C
-     PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors 
-                     in a communicator.
+     PETSC_VIEWER_SOCKET_ - Creates a socket viewer shared by all processors in a communicator.
 
      Collective on MPI_Comm
 

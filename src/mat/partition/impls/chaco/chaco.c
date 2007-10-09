@@ -74,7 +74,7 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
     MatPartitioning_Chaco *chaco = (MatPartitioning_Chaco *) part->data;
     PetscTruth flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
@@ -111,9 +111,9 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
        and set it to matMPI */
     if (!flg) {
         ierr = MatConvert(matSeq, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
-    } else
+    } else {
         matMPI = matSeq;
-
+    }
     adj = (Mat_MPIAdj *) matMPI->data;  /* finaly adj contains adjacency graph */
 
     {
@@ -163,7 +163,8 @@ static PetscErrorCode MatPartitioningApply_Chaco(MatPartitioning part, IS *parti
             eigtol, seed);
 
 #ifdef PETSC_HAVE_UNISTD_H
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
         count =  read(fd_pipe[0], chaco->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;

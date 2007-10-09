@@ -46,7 +46,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
     PetscTruth             flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int                    fd_stdout, fd_pipe[2], count;
+    int                    fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
@@ -78,8 +78,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     /* convert the the matrix to MPIADJ type if necessary */
     if (!flg) {
         ierr = MatConvert(matSeq, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
-    } else
+    } else {
         matMPI = matSeq;
+    }
 
     adj = (Mat_MPIAdj *) matMPI->data;  /* finaly adj contains adjacency graph */
 
@@ -121,9 +122,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
 
         /* Construction of the strategy */
-        if (scotch->strategy[0] != 0)   /* strcmp(scotch->strategy,"") */
-            PetscStrcpy(strategy, scotch->strategy);
-        else {
+        if (scotch->strategy[0] != 0) {
+            ierr = PetscStrcpy(strategy, scotch->strategy);CHKERRQ(ierr);
+        } else {
             PetscStrcpy(strategy, "b{strat=");
 
             if (scotch->multilevel) {
@@ -178,7 +179,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             SCOTCH_Num listnbr = 0;
             SCOTCH_Arch archptr;        /* file in scotch architecture format */
             SCOTCH_Strat archstrat;
-            int arch_total_size, *parttab_tmp;
+            int arch_total_size, *parttab_tmp,err;
             int cpt;
             char buf[256];
             FILE *file1, *file2;
@@ -228,7 +229,8 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
                 printf("%d ", listtab[i]);
 
             printf("\n");
-            fflush(stdout);
+            err = fflush(stdout);
+            if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
 
             ierr = SCOTCH_stratInit(&archstrat);CHKERRQ(ierr);
             ierr = SCOTCH_stratBipart(&archstrat, "fx");CHKERRQ(ierr);
@@ -259,7 +261,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
         /* dump to mesg_log... */
 #ifdef PETSC_HAVE_UNISTD_H
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+
         count = read(fd_pipe[0], scotch->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;

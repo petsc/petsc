@@ -37,11 +37,10 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     int  size, rank, i;
     Mat mat = part->adj, matMPI;
     Mat_MPIAdj *adj = (Mat_MPIAdj *) mat->data;
-    MatPartitioning_Jostle *jostle_struct =
-        (MatPartitioning_Jostle *) part->data;
+    MatPartitioning_Jostle *jostle_struct = (MatPartitioning_Jostle *) part->data;
     PetscTruth flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
@@ -49,16 +48,15 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     /* check that the number of partitions is equal to the number of processors */
     ierr = MPI_Comm_rank(mat->comm, &rank);CHKERRQ(ierr);
     ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
-    if (part->n != size) {
-        SETERRQ(PETSC_ERR_SUP, "Supports exactly one domain per processor");
-    }
+    if (part->n != size) SETERRQ(PETSC_ERR_SUP, "Supports exactly one domain per processor");
 
     /* convert adjacency matrix to MPIAdj if needed*/
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
     if (!flg) {
         ierr = MatConvert(mat, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
-    } else
+    } else {
         matMPI = mat;
+    }
 
     adj = (Mat_MPIAdj *) matMPI->data;  /* adj contains adjacency graph */
     {
@@ -128,7 +126,8 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
 
 #ifdef PETSC_HAVE_UNISTD_H
         ierr = PetscMalloc(SIZE_LOG * sizeof(char), &(jostle_struct->mesg_log));CHKERRQ(ierr);
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
         count = read(fd_pipe[0], jostle_struct->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;

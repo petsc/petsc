@@ -502,7 +502,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
   PetscErrorCode ierr;
   PetscInt       sleeptime=0;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int            ppid;
+  int            ppid,err;
   PetscMPIInt    rank;
   char           program[PETSC_MAX_PATH_LEN],hostname[256];
   PetscTruth     isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
@@ -569,7 +569,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 #endif
 #endif /* PETSC_CANNOT_START_DEBUGGER */
 
-  fflush(stdout);
+  err = fflush(stdout);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
 
   sleeptime = 25; /* default to sleep waiting for debugger */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);

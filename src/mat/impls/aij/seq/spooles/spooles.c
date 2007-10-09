@@ -124,11 +124,13 @@ PetscErrorCode MatSolve_SeqSpooles(Mat A,Vec b,Vec x)
                  lu->cpus, lu->options.msglvl, lu->options.msgFile);
   }
   if ( lu->options.msglvl > 2 ) {
+    int err;
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n right hand side matrix after permutation");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(mtxY, lu->options.msgFile); 
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n solution matrix in new ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(mtxX, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   /* permute solution into original ordering, then copy to x */  
@@ -247,10 +249,12 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
 
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS); 
   if ( lu->options.msglvl > 0 ) {
+    int err;
     printf("\n\n input matrix");
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n input matrix");CHKERRQ(ierr);
     InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->flg == DIFFERENT_NONZERO_PATTERN){ /* first numeric factorization */  
@@ -269,13 +273,16 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
     lu->graph = Graph_new();
     Graph_init2(lu->graph, 0, neqns, 0, nedges, neqns, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
+      int err;
+
       if (lu->options.useQR){
         ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of A^T A");CHKERRQ(ierr);
       } else {
         ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
       }
       Graph_writeForHumanEye(lu->graph, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
 
     switch (lu->options.ordering) {
@@ -296,9 +303,12 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
     }
 
     if ( lu->options.msglvl > 0 ) {
+      int err;
+
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n front tree from ordering");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }
   
     /* get the permutation, permute the front tree */
@@ -334,6 +344,8 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
       lu->symbfacIVL = SymbFac_initFromInpMtx(lu->frontETree, lu->mtxA);
     }
     if ( lu->options.msglvl > 2 ) {
+      int err;
+
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n old-to-new permutation vector");CHKERRQ(ierr);
       IV_writeForHumanEye(lu->oldToNewIV, lu->options.msgFile);
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n new-to-old permutation vector");CHKERRQ(ierr);
@@ -344,7 +356,8 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n symbolic factorization");CHKERRQ(ierr);
       IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile);
-      fflush(lu->options.msgFile);
+      err = fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
     }  
 
     lu->frontmtx   = FrontMtx_new();
@@ -452,9 +465,12 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   ChvManager_free(chvmanager);
 
   if ( lu->options.msglvl > 0 ) {
+    int err;
+
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   if ( lu->options.symflag == SPOOLES_SYMMETRIC ) { /* || SPOOLES_HERMITIAN ? */
@@ -484,9 +500,12 @@ PetscErrorCode MatFactorNumeric_SeqSpooles(Mat A,MatFactorInfo *info,Mat *F)
   /* post-process the factorization */
   FrontMtx_postProcess(lu->frontmtx, lu->options.msglvl, lu->options.msgFile);
   if ( lu->options.msglvl > 2 ) {
+    int err;
+
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n factor matrix after post-processing");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
-    fflush(lu->options.msgFile);
+    err = fflush(lu->options.msgFile);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
   lu->flg = SAME_NONZERO_PATTERN;
