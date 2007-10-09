@@ -1145,9 +1145,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC pc,PetscTruth *mat,PetscT
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGetFactoredMatrix"
+#define __FUNCT__ "PCFactorGetMatrix"
 /*@
-   PCGetFactoredMatrix - Gets the factored matrix from the
+   PCFactorGetMatrix - Gets the factored matrix from the
    preconditioner context.  This routine is valid only for the LU, 
    incomplete LU, Cholesky, and incomplete Cholesky methods.
 
@@ -1165,7 +1165,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCGetOperatorsSet(PC pc,PetscTruth *mat,PetscT
 
 .keywords: PC, get, factored, matrix
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT PCGetFactoredMatrix(PC pc,Mat *mat)
+PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix(PC pc,Mat *mat)
 {
   PetscErrorCode ierr;
 

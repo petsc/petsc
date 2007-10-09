@@ -311,7 +311,7 @@ int main(int argc,char **args)
         Mat       F;
       
         ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-        ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
+        ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
         ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
       }

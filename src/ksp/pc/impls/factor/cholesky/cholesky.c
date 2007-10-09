@@ -185,8 +185,8 @@ static PetscErrorCode PCView_Cholesky(PC pc,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGetFactoredMatrix_Cholesky"
-static PetscErrorCode PCGetFactoredMatrix_Cholesky(PC pc,Mat *mat)
+#define __FUNCT__ "PCFactorGetMatrix_Cholesky"
+static PetscErrorCode PCFactorGetMatrix_Cholesky(PC pc,Mat *mat)
 {
   PC_Cholesky *dir = (PC_Cholesky*)pc->data;
   
@@ -461,7 +461,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetReuseFill(PC pc,PetscTruth flag)
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCILU, PCLU, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCGetFactoredMatrix(),
+           PCILU, PCLU, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
            PCFactorSetFill(), PCFactorSetShiftNonzero(), PCFactorSetShiftPd(),
 	   PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd()
 
@@ -500,7 +500,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Cholesky(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_Cholesky;
   pc->ops->view              = PCView_Cholesky;
   pc->ops->applyrichardson   = 0;
-  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_Cholesky;
+  pc->ops->getfactoredmatrix = PCFactorGetMatrix_Cholesky;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_Cholesky",
                     PCFactorSetZeroPivot_Cholesky);CHKERRQ(ierr);

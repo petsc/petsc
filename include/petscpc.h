@@ -153,7 +153,7 @@ EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCDestroy(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetFromOptions(PC);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetType(PC,PCType*);
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCGetFactoredMatrix(PC,Mat*);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCFactorGetMatrix(PC,Mat*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCSetModifySubMatrices(PC,PetscErrorCode(*)(PC,PetscInt,const IS[],const IS[],Mat[],void*),void*);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT PCModifySubMatrices(PC,PetscInt,const IS[],const IS[],Mat[],void*);
 
