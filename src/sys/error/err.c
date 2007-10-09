@@ -397,10 +397,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode err)
 
 .seealso: PetscExceptionTry1(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 @*/
-void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
+PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode err)
 {
-  /* if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty"); */
+  PetscFunctionBegin;
+  if (PetscExceptionsCount <= 0)SETERRQ(PETSC_ERR_PLIB,"Stack for PetscExceptions is empty");
   if (PetscErrorIsCatchable(err)) PetscExceptionsCount--;
+  PetscFunctionReturn(0);
 }
 #endif
 

@@ -279,7 +279,7 @@ extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
 extern PetscInt       PetscExceptionsCount;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
 EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
@@ -292,7 +292,7 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
      PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
 
   Input Parameters:
-  + xierr - error code returned from PetscExceptionTry1() 
+  + xierr - error code returned from PetscExceptionTry1() or other PETSc routine
   - zierr - error code you want it to be
 
   Level: advanced
@@ -300,9 +300,9 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
 
-    Use PetscExceptionValue() to see if the current error code is one that has been "tried"
+    Use PetscExceptionValue() to see if an error code is being "tried"
 
-  Concepts: exceptions, exception hanlding
+  Concepts: exceptions, exception handling
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
@@ -359,9 +359,11 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
    Not Collective
 
    Synopsis:
-     PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
+     PetscErrorCode PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
 
   Level: advanced
+
+   No Fortran Equivalent (see PetscExceptionPush() for Fortran)
 
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
@@ -376,7 +378,7 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
           CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 M*/
 extern PetscErrorCode PetscExceptionTmp;
-#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a, (PetscExceptionPop(b) || PetscExceptionTmp))
 
 /*
    Used by PetscExceptionTrySync(). Returns zierr on ALL processes in comm iff xierr is zierr on at least one process and zero on all others.
@@ -452,7 +454,7 @@ extern PetscErrorCode PetscExceptionTmp;
 #endif 
 
 #define PetscExceptionPush(a)                0
-#define PetscExceptionPop(a)
+#define PetscExceptionPop(a)                 0
 #define PetscErrorSetCatchable(a,b)          0
 #define PetscErrorIsCatchable(a)             PETSC_FALSE
 
