@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petsc.h"
 #include "petscmatlab.h"
 

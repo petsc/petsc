@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscsnes.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -184,7 +184,7 @@ void PETSC_STDCALL snesgettype_(SNES *snes,CHAR name PETSC_MIXED_LEN(len),
 #else
   *ierr = PetscStrncpy(name,tname,len);if (*ierr) return;
 #endif
-  FIXRETURNCHAR(name,len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 /* ---------------------------------------------------------*/
 

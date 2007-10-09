@@ -1,6 +1,6 @@
 
 #include "src/dm/da/daimpl.h"
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscmat.h"
 #include "petscda.h"
 

@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscvec.h"
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
 #define vecsettype_               VECSETTYPE
@@ -32,7 +32,7 @@ void PETSC_STDCALL vecgettype_(Vec *vv,CHAR name PETSC_MIXED_LEN(len),PetscError
 #else
   *ierr = PetscStrncpy(name,tname,len);
 #endif
-  FIXRETURNCHAR(name,len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
 EXTERN_C_END

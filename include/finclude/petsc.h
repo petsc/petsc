@@ -57,7 +57,7 @@
 
 !
 !     The numbers used below should match those in 
-!     src/fortran/custom/zpetsc.h
+!     include/private/zpetsc.h
 !
       parameter (PETSC_VIEWER_DRAW_WORLD   = -4) 
       parameter (PETSC_VIEWER_DRAW_SELF    = -5)
@@ -159,6 +159,7 @@
       external PETSC_NULL_FUNCTION
       PetscScalar   PETSC_NULL_SCALAR
       PetscReal     PETSC_NULL_REAL
+      PetscTruth    PETSC_NULL_TRUTH
 !
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
@@ -173,7 +174,8 @@
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
-      common /petscfortran8/ PETSC_NULL_OBJECT
+      common /petscfortran8/ PETSC_NULL_TRUTH
+      common /petscfortran9/ PETSC_NULL_OBJECT
 !
 !     Possible arguments to PetscPushErrorHandler()
 !

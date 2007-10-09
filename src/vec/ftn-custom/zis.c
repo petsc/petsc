@@ -1,5 +1,5 @@
 
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscis.h"
 #ifdef PETSC_HAVE_FORTRAN_CAPS
 #define islocaltoglobalmappingapply_  ISLOCALTOGLOBALMAPPINGAPPLY

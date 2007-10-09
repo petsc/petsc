@@ -1,4 +1,4 @@
-#include "zpetsc.h" 
+#include "private/zpetsc.h" 
 #include "petscsys.h"
 
 #ifdef PETSC_HAVE_FORTRAN_CAPS
