@@ -18,8 +18,7 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 
-typedef enum { GLOBAL,DISTRIBUTED
-} SuperLU_MatInputMode;
+typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
 
 typedef struct {
   int_t                   nprow,npcol,*row,*col;

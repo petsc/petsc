@@ -14,6 +14,7 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   PetscViewer_ASCII *vascii = (PetscViewer_ASCII *)viewer->data;
   PetscViewerLink   *vlink;
   PetscTruth        flg;
+  int               err;
 
   PetscFunctionBegin;
   if (vascii->sviewer) {
@@ -21,7 +22,10 @@ PetscErrorCode PetscViewerDestroy_ASCII(PetscViewer viewer)
   }
   ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
   if (!rank && vascii->fd != stderr && vascii->fd != PETSC_STDOUT) {
-    if (vascii->fd) fclose(vascii->fd);
+    if (vascii->fd) {
+      err = fclose(vascii->fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+    }
     if (vascii->storecompressed) {
       char par[PETSC_MAX_PATH_LEN],buf[PETSC_MAX_PATH_LEN];
       FILE *fp;

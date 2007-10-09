@@ -68,11 +68,13 @@ PetscErrorCode DiffParameterDestroy_More(void *nePv)
 {
   DIFFPAR_MORE   *neP = (DIFFPAR_MORE *)nePv;
   PetscErrorCode ierr;
+  int            err;
 
   PetscFunctionBegin;
   /* Destroy work vectors and close output file */
   ierr = VecDestroyVecs(neP->workv,3);CHKERRQ(ierr);
-  fclose(neP->fp);
+  err = fclose(neP->fp);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
   ierr = PetscFree(neP);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

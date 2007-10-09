@@ -224,7 +224,8 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 {
   PetscViewer_Binary *vbinary = (PetscViewer_Binary*)v->data;
   PetscErrorCode     ierr;
-  int                rank;
+  PetscMPIInt        rank;
+  int                err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
@@ -247,7 +248,10 @@ PetscErrorCode PetscViewerDestroy_Binary(PetscViewer v)
 #endif
     }
   }
-  if (vbinary->fdes_info) fclose(vbinary->fdes_info);
+  if (vbinary->fdes_info) {
+    err = fclose(vbinary->fdes_info);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+  }
   ierr = PetscStrfree(vbinary->filename);CHKERRQ(ierr);
   ierr = PetscFree(vbinary);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -652,14 +656,15 @@ EXTERN_C_BEGIN
 #define __FUNCT__ "PetscViewerFileSetName_Binary" 
 PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,const char name[])
 {
-  int                 rank;
+  PetscMPIInt         rank;
   PetscErrorCode      ierr;
   size_t              len;
   PetscViewer_Binary  *vbinary = (PetscViewer_Binary*)viewer->data;
   const char          *fname;
   char                bname[PETSC_MAX_PATH_LEN],*gz;
   PetscTruth          found;
-  PetscFileMode type = vbinary->btype;
+  PetscFileMode       type = vbinary->btype;
+  int                 err;
 
   PetscFunctionBegin;
   if (type == (PetscFileMode) -1) {
@@ -764,7 +769,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_Binary(PetscViewer viewer,
         vbinary->fdes_info = fopen(infoname,"r");
         if (vbinary->fdes_info) {
           ierr = PetscViewerBinaryLoadInfo(viewer);CHKERRQ(ierr);
-          fclose(vbinary->fdes_info);
+          err  = fclose(vbinary->fdes_info);
+          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
         }
         vbinary->fdes_info = fopen(infoname,"r");
       }
