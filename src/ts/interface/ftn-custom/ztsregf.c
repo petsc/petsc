@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscts.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -32,7 +32,7 @@ void PETSC_STDCALL tsgettype_(TS *ts,CHAR name PETSC_MIXED_LEN(len),PetscErrorCo
 #else
   *ierr = PetscStrncpy(name,tname,len);
 #endif
-  FIXRETURNCHAR(name,len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 }
 
 

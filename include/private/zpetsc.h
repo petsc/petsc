@@ -8,13 +8,14 @@ EXTERN PetscErrorCode PetscScalarAddressToFortran(PetscObject,PetscInt,PetscScal
 EXTERN PetscErrorCode PetscScalarAddressFromFortran(PetscObject,PetscScalar*,size_t,PetscInt,PetscScalar **);
 EXTERN size_t         PetscIntAddressToFortran(PetscInt*,PetscInt*);
 EXTERN PetscInt       *PetscIntAddressFromFortran(PetscInt*,size_t); 
+extern void   *PETSC_NULL_Fortran;
 extern char   *PETSC_NULL_CHARACTER_Fortran;
 extern void   *PETSC_NULL_INTEGER_Fortran;
-extern void   *PETSC_NULL_Fortran;
 extern void   *PETSC_NULL_SCALAR_Fortran;
 extern void   *PETSC_NULL_DOUBLE_Fortran;
 extern void   *PETSC_NULL_REAL_Fortran;
 extern void   *PETSC_NULL_OBJECT_Fortran;
+extern void   *PETSC_NULL_TRUTH_Fortran;
 EXTERN_C_BEGIN
 extern void   (*PETSC_NULL_FUNCTION_Fortran)(void);
 EXTERN_C_END
@@ -71,7 +72,7 @@ EXTERN_C_END
   } \
 }
 #define FREECHAR(a,b) if (b) PetscFreeVoid(b);
-#define FIXRETURNCHAR(a,n)
+#define FIXRETURNCHAR(flg,a,n)
 
 #else
 
@@ -92,8 +93,8 @@ EXTERN_C_END
 
 #define FREECHAR(a,b) if (a != b) PetscFreeVoid(b);
 
-#define FIXRETURNCHAR(a,n) \
-{ \
+#define FIXRETURNCHAR(flg,a,n)			\
+if (flg) {					\
   int __i; \
   for (__i=0; __i<n && a[__i] != 0; __i++) ; \
   for (; __i<n; __i++) a[__i] = ' ' ; \
@@ -107,6 +108,7 @@ EXTERN_C_END
 #define FORTRANNULLDOUBLE(a)   (((void*)a) == PETSC_NULL_DOUBLE_Fortran)
 #define FORTRANNULLREAL(a)     (((void*)a) == PETSC_NULL_REAL_Fortran)
 #define FORTRANNULLOBJECT(a)   (((void*)a) == PETSC_NULL_OBJECT_Fortran)
+#define FORTRANNULLTRUTH(a)    (((void*)a) == PETSC_NULL_TRUTH_Fortran)
 #define FORTRANNULLFUNCTION(a) (((void(*)(void))a) == PETSC_NULL_FUNCTION_Fortran)
 
 

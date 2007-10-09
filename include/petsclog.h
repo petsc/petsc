@@ -360,6 +360,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 #else  /* ---Logging is turned off --------------------------------------------*/
 
 #define PetscLogFlops(n) 0
+#define PetscLogFlopsNoCheck(n)
 
 /*
      With logging turned off, then MPE has to be turned off

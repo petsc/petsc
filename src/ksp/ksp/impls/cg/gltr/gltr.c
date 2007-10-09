@@ -324,7 +324,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
     PetscFunctionReturn(0);
   }
 
-  if (rz <= 0.0) {
+  if (rz < 0.0) {
     /*************************************************************************/
     /* The preconditioner is indefinite.  Because this is the first          */
     /* and we do not have a direction yet, we use the gradient step.  Note   */
@@ -654,7 +654,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     rzm1 = rz;
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z        */
-    if (rz <= 0.0) {
+    if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
@@ -858,7 +858,7 @@ PetscErrorCode KSPSolve_GLTR(KSP ksp)
 
     rzm1 = rz;
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z        */
-    if (rz <= 0.0) {
+    if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
