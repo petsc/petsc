@@ -8,10 +8,12 @@ import PETSc.package
 class Configure(PETSc.package.Package):
   def __init__(self, framework):
     PETSc.package.Package.__init__(self, framework)
-    self.download     = ['']
-    self.functions = []
+    self.download     = ['ftp://ftp.mcs.anl.gov/pub/petsc/externalpackages/hdf5-1.6.6.tar.gz']
+    self.functions = ['H5T_init']
     self.includes  = ['hdf5.h']
-    self.liblist   = [[]]
+    self.liblist   = [['libhdf5.a']]
+    self.needsMath = 1
+    self.extraLib  = ['libz.a']    
     return
 
   def setupDependencies(self, framework):
@@ -25,20 +27,25 @@ class Configure(PETSc.package.Package):
     self.framework.pushLanguage('C')
     args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
     self.framework.popLanguage()
+    if hasattr(self.compilers, 'FC'):
+      self.framework.pushLanguage('FC')
+      args.append('F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
+      args.append('--enable-fortran')
+      self.framework.popLanguage()
     args = ' '.join(args)
-    fd = file(os.path.join(self.packageDir,'phdf5'), 'w')
+    fd = file(os.path.join(self.packageDir,'hdf5'), 'w')
     fd.write(args)
     fd.close()
 
-    if self.installNeeded('pdf5'):
+    if self.installNeeded('hdf5'):
       try:
-        self.logPrintBox('Configuring parallel HDF5; this may take several minutes')
+        self.logPrintBox('Configuring HDF5; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';./configure '+args, timeout=900, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running configure on HDF5: '+str(e))
       try:
-        self.logPrintBox('Compiling parallel HDF5; this may take several minutes')
-        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+'make ; make install', timeout=2500, log = self.framework.log)[0]
+        self.logPrintBox('Compiling HDF5; this may take several minutes')
+        output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+' make ; make install', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on HDF5: '+str(e))
       self.checkInstall(output,'hdf5')
