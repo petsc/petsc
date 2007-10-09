@@ -1337,6 +1337,51 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 }
 
 #undef __FUNCT__  
+#define __FUNCT__ "MeshCreatePFLOTRAN"
+/*@C
+  MeshCreatePFLOTRAN - Create a Mesh from PFLOTRAN HDF5 files.
+
+  Not Collective
+
+  Input Parameters:
++ dim - The topological mesh dimension
+. hdf5Filename - The HDF5 file containing the vertices for each element and vertex coordinates
+. interpolate - The flag for construction of intermediate elements
+
+  Output Parameter:
+. mesh - The Mesh object
+
+  Level: beginner
+
+.keywords: mesh, PFLOTRAN
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshCreatePFLOTRAN(MPI_Comm comm, const int dim, const char hdf5Filename[], PetscTruth interpolate, Mesh *mesh)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscInt            debug = 0;
+  PetscTruth          flag;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  try {
+    m  = ALE::PFLOTRAN::Builder::readMesh(comm, dim, std::string(hdf5Filename), true, interpolate, debug);
+    if (debug) {m->view("Mesh");}
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
+  }
+#if 0
+  if (bcFilename) {
+    ALE::PFLOTRAN::Builder::readBoundary(m, std::string(bcFilename));
+  }
+#endif
+  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "MeshCreatePCICE"
 /*@C
   MeshCreatePCICE - Create a Mesh from PCICE files.
