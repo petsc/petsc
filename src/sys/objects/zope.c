@@ -19,6 +19,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     host = gethostbyname(hostname);
     if(!host){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "unknown host");}
+#ifdef PETSC_HAVE_SYS_SOCKET_H
     sin.sin_family = AF_INET;
     ierr = PetscMemcpy((char *)&sin.sin_addr,host->h_addr, host->h_length); CHKERRQ(ierr);
     sin.sin_port = htons(portnum);
@@ -28,6 +29,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int
     if(connect(*clientfd, (SA*)&sin, sizeof(sin)) < 0){
         SETERRQ(PETSC_ERR_ARG_CORRUPT,"could not create new connection for client");
         close(*clientfd);}
+#else
+  SETERRQ(PETSC_ERR_SUP,"Sockets not supported");
+#endif
     PetscFunctionReturn(0);
 }
 
@@ -78,33 +82,35 @@ PetscErrorCode PETSC_DLLEXPORT PetscFdWrite(int fd, void *buf, size_t len, unsig
 PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, int *listenfd){
     const int MAX_BUF = 256;
     int MAX_PENDING = 1;
-    struct sockaddr_in sin;
     int optval = 1;
     char iname[256];
     char value[256];
     unsigned int len = 0;
     unsigned int len2 = 0;
     int newfd,flags;
+    PetscErrorCode ierr;
+#ifdef PETSC_HAVE_SYS_SOCKET_H
+    struct sockaddr_in sin;
     typedef struct sockaddr SA;
     socklen_t sin_size, sout_size;
     int PETSC_LISTEN_CHECK = 0;
-    PetscErrorCode ierr;
+#endif
     
     PetscFunctionBegin;
+#ifdef PETSC_HAVE_SYS_SOCKET_H
     sin.sin_family = AF_INET;
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_port = htons(portnum);
     /* passive open */
     if((*listenfd = socket(PF_INET, SOCK_STREAM, 0)) < 0){
         SETERRQ(PETSC_ERR_ARG_CORRUPT, "could not make a new socket for server");}
-#ifdef PETSC_HAVE_FCNTL_H
+
     /* Allow for non-blocking on the socket */
     if(!(flags = fcntl(*listenfd, F_GETFL, NULL)))
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"flags error");
     flags = 0 | O_NONBLOCK;
     if(fcntl(*listenfd, F_SETFL, 0 | O_NONBLOCK)) 
       SETERRQ(PETSC_ERR_ARG_CORRUPT,"flags error");
-#endif
     /* so it is possible to reuse port numbers */
     if(setsockopt(*listenfd, SOL_SOCKET, SO_REUSEADDR,
                 (const void *)&optval, sizeof(int)) < 0)
@@ -138,4 +144,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSocketListen(char * hostname, int portnum, i
 	close(newfd);
 	if(!PETSC_LISTEN_CHECK) exit(0);}
       exit(0);}
+#else
+  SETERRQ(PETSC_ERR_SUP,"Sockets not supported");
+#endif
     PetscFunctionReturn(0);}
