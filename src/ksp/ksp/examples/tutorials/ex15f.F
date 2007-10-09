@@ -91,9 +91,9 @@
       call MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,m*n,m*n,ierr)
       call MatSetType(A, MATAIJ,ierr)
       call MatSetFromOptions(A,ierr)
-      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_CHARACTER,5,
+      call MatMPIAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,5,
      &                     PETSC_NULL_CHARACTER,ierr)
-      call MatSeqAIJSetPreallocation(A,5,PETSC_NULL_CHARACTER,ierr)
+      call MatSeqAIJSetPreallocation(A,5,PETSC_NULL_INTEGER,ierr)
 
 !  Currently, all PETSc parallel matrix formats are partitioned by
 !  contiguous chunks of rows across the processors.  Determine which

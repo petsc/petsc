@@ -1,5 +1,5 @@
 
-#include "zpetsc.h" 
+#include "private/zpetsc.h" 
 #include "petscsys.h"
 
 
@@ -68,7 +68,7 @@ void PETSC_STDCALL petscinitializefortran_(int *ierr)
 #if defined(PETSC_USES_CPTOFCD)
 void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull_integer,
                                   void* fnull,void *fnull_scalar,void * fnull_double, void *fnull_real,void* fnull_object,
-                                  void (*fnull_function)(void))
+                                  void* fnull_truth,void (*fnull_function)(void))
 {
   PETSC_NULL_CHARACTER_Fortran  = _fcdtocp(fnull_character);
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
@@ -77,13 +77,14 @@ void PETSC_STDCALL petscsetfortranbasepointers_(_fcd fnull_character,void *fnull
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
   PETSC_NULL_REAL_Fortran       = fnull_real;
   PETSC_NULL_OBJECT_Fortran     = fnull_object;
+  PETSC_NULL_TRUTH_Fortran      = fnull_truth;
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #else
 void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXED_LEN(len),
                                   void *fnull_integer,void* fnull,void *fnull_scalar,void * fnull_double,
   				  void *fnull_real,void *fnull_object,
-                                  void (*fnull_function)(void) PETSC_END_LEN(len))
+                                  void* fnull_truth,void (*fnull_function)(void) PETSC_END_LEN(len))
 {
   PETSC_NULL_CHARACTER_Fortran  = fnull_character;
   PETSC_NULL_INTEGER_Fortran    = fnull_integer;
@@ -91,6 +92,7 @@ void PETSC_STDCALL petscsetfortranbasepointers_(char *fnull_character PETSC_MIXE
   PETSC_NULL_DOUBLE_Fortran     = fnull_double;
   PETSC_NULL_REAL_Fortran       = fnull_real;
   PETSC_NULL_OBJECT_Fortran     = fnull_object;
+  PETSC_NULL_TRUTH_Fortran      = fnull_truth;
   PETSC_NULL_FUNCTION_Fortran   = fnull_function;
 }
 #endif 
