@@ -53,9 +53,10 @@ int main(int argc,char **args)
   /* Test MatSetValuesBlocked() */
   ierr = PetscOptionsHasName(PETSC_NULL,"-test_setvaluesblocked",&flg);CHKERRQ(ierr);
   if (flg) { 
-    PetscScalar bval[bs*bs];
+    PetscScalar *bval;
     row /= bs;
     col = start/bs;
+    ierr = PetscMalloc(bs*bs*sizeof(PetscScalar),&bval);CHKERRQ(ierr);
     /* ierr = PetscPrintf(PETSC_COMM_SELF,"[%d] Set offproc blockvalues, blockrow %d, blockcol: %d\n",rank,row,col);CHKERRQ(ierr); */
     k = 1;
     /* row oriented - defalt */
@@ -67,6 +68,7 @@ int main(int argc,char **args)
     ierr = MatSetValuesBlocked(A,1,&row,1,&col,bval,INSERT_VALUES);CHKERRQ(ierr);
     ierr = MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
+    ierr = PetscFree(bval);CHKERRQ(ierr);
   }
 
   ierr = MatView(A,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);

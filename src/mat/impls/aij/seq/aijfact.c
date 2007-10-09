@@ -1334,6 +1334,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       newshift;
 
   PetscFunctionBegin;
+
   shiftnz   = info->shiftnz;
   shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot; 
@@ -1407,7 +1408,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       sctx.rs = rs;
       sctx.pv = dk;
       ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
-      if (newshift == 1) break;
+
+      if (newshift == 1) {
+        if (!sctx.shift_amount) {
+          sctx.shift_amount = 1e-5;
+        }
+        break;
+      }
    
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk; /* U(k,k) */
