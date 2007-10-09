@@ -118,21 +118,21 @@ choke me
 #endif
 '''
       body = 'char buf[10]; long count=10; sysinfo(1, buf, count);\n'
-      if self.checkCompile(includes, body):
+      if self.checkLink(includes, body):
         self.addDefine('HAVE_SYSINFO_3ARG', 1)
     return
 
   def checkVPrintf(self):
     self.check('vprintf')
     '''Checks whether vprintf requires a char * last argument, and if it does defines HAVE_VPRINTF_CHAR'''
-    if not self.checkCompile('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
+    if not self.checkLink('#include <stdio.h>\n#include <stdarg.h>\n', 'va_list Argp;\nvprintf( "%d", Argp );\n'):
       self.addDefine('HAVE_VPRINTF_CHAR', 1)
     return
 
   def checkSignalHandlerType(self):
     '''Checks the type of C++ signals handlers, and defines SIGNAL_CAST to the correct value'''
     self.pushLanguage('C++')
-    if not self.checkCompile('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler);\n'):
+    if not self.checkLink('#include <signal.h>\nstatic void myhandler(int sig) {}\n', 'signal(SIGFPE,myhandler);\n'):
       self.addDefine('SIGNAL_CAST', '(void (*)(int))')
     else:
       self.addDefine('SIGNAL_CAST', ' ')
@@ -141,15 +141,15 @@ choke me
 
   def checkFreeReturnType(self):
     '''Checks whether free returns void or int, and defines HAVE_FREE_RETURN_INT'''
-    if self.checkCompile('#include <stdlib.h>\n', 'int ierr; void *p; ierr = free(p); return 0;\n'):
+    if self.checkLink('#include <stdlib.h>\n', 'int ierr; void *p; ierr = free(p); return 0;\n'):
       self.addDefine('HAVE_FREE_RETURN_INT', 1)
     return
 
   def checkVariableArgumentLists(self):
     '''Checks whether the variable argument list functionality is working'''
-    if self.checkCompile('#include <stdarg.h>\n', '  va_list l1, l2;\n  va_copy(l1, l2);\n  return 0;\n'):
+    if self.checkLink('#include <stdarg.h>\n', '  va_list l1, l2;\n  va_copy(l1, l2);\n  return 0;\n'):
       self.addDefine('HAVE_VA_COPY', 1)
-    elif self.checkCompile('#include <stdarg.h>\n', '  va_list l1, l2;\n  __va_copy(l1, l2);\n  return 0;\n'):
+    elif self.checkLink('#include <stdarg.h>\n', '  va_list l1, l2;\n  __va_copy(l1, l2);\n  return 0;\n'):
       self.addDefine('HAVE___VA_COPY', 1)
     return
 
