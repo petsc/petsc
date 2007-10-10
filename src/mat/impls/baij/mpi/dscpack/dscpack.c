@@ -313,7 +313,7 @@ PetscErrorCode MatCholeskyFactorNumeric_DSCPACK(Mat A,MatFactorInfo *info,Mat *F
     }
 
     /* DSC_Solver starts */
-    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, ((PetscObject)lu)->comm_dsc ); 
+    DSC_Open0( lu->My_DSC_Solver, number_of_procs, &lu->dsc_id, lu->comm_dsc ); 
 
     if (lu->dsc_id != -1) {
       ierr = DSC_Order(lu->My_DSC_Solver,lu->order_code,Mbs,a_seq->i,a_seq->j,lu->replication,

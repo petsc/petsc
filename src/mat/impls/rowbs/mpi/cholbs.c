@@ -32,7 +32,7 @@ PetscErrorCode MatCholeskyFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat
   }
   /* Form incomplete Cholesky factor */
   mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
-  while ((mbs->ierr = BSfactor(mbs->fpA,((PetscObject)mbs)->comm_fpA,mbs->procinfo))) {
+  while ((mbs->ierr = BSfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
     CHKERRBS(0); mbs->failures++;
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
@@ -72,7 +72,7 @@ PetscErrorCode MatLUFactorNumeric_MPIRowbs(Mat mat,MatFactorInfo *info,Mat *fact
   }
   /* Form incomplete Cholesky factor */
   mbs->ierr = 0; mbs->failures = 0; mbs->alpha = 1.0;
-  while ((mbs->ierr = BSfactor(mbs->fpA,((PetscObject)mbs)->comm_fpA,mbs->procinfo))) {
+  while ((mbs->ierr = BSfactor(mbs->fpA,mbs->comm_fpA,mbs->procinfo))) {
     CHKERRBS(0); mbs->failures++;
     /* Copy only the nonzeros */
     BScopy_nz(mbs->pA,mbs->fpA);CHKERRBS(0);
@@ -118,11 +118,11 @@ PetscErrorCode MatSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
   if (mbs->procinfo->single) {
     /* Use BlockSolve routine for no cliques/inodes */
-    BSfor_solve1(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
-    BSback_solve1(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSfor_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSback_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
-    BSfor_solve(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
-    BSback_solve(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSback_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
 
@@ -171,9 +171,9 @@ PetscErrorCode MatForwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
   if (mbs->procinfo->single){
     /* Use BlockSolve routine for no cliques/inodes */
-    BSfor_solve1(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSfor_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
-    BSfor_solve(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSfor_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
 
@@ -204,9 +204,9 @@ PetscErrorCode MatBackwardSolve_MPIRowbs(Mat mat,Vec x,Vec y)
   ierr = VecGetArray(y,&ya);CHKERRQ(ierr);
   if (mbs->procinfo->single) {
     /* Use BlockSolve routine for no cliques/inodes */
-    BSback_solve1(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSback_solve1(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   } else {
-    BSback_solve(mbs->fpA,ya,((PetscObject)mbs)->comm_pA,mbs->procinfo);CHKERRBS(0);
+    BSback_solve(mbs->fpA,ya,mbs->comm_pA,mbs->procinfo);CHKERRBS(0);
   }
   ierr = VecRestoreArray(y,&ya);CHKERRQ(ierr);
 

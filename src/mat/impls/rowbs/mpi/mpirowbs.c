@@ -516,7 +516,7 @@ static PetscErrorCode MatView_MPIRowbs_Binary(Mat mat,PetscViewer viewer)
       recvcts[i] = recvdisp[i+1] - recvdisp[i];
     }
     /* first four elements of rowlength are the header */
-    rowlengths[0] = mat->cookie;
+    rowlengths[0] = ((PetscObject)mat)->cookie;
     rowlengths[1] = mat->rmap.N;
     rowlengths[2] = mat->cmap.N;
     rowlengths[3] = (int)info.nz_used;
@@ -633,7 +633,7 @@ PetscErrorCode MatView_MPIRowbs(Mat mat,PetscViewer viewer)
   } else if (isbinary) {
     ierr = MatView_MPIRowbs_Binary(mat,viewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIRowbs matrices",((PetscObject)viewer)((PetscObject))->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported by MPIRowbs matrices",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -859,7 +859,7 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
   PetscFunctionBegin;
   if ((mat->was_assembled) && (!mat->same_nonzero)) {  /* Free the old info */
     if (a->pA)       {BSfree_par_mat(a->pA);CHKERRBS(0);}
-    if (((PetscObject)a)->comm_pA)  {BSfree_comm(((PetscObject)a)->comm_pA);CHKERRBS(0);} 
+    if (a->comm_pA)  {BSfree_comm(a->comm_pA);CHKERRBS(0);} 
   }
 
   if ((!mat->same_nonzero) || (!mat->was_assembled)) {
@@ -870,7 +870,7 @@ PetscErrorCode MatAssemblyEnd_MPIRowbs_ForBlockSolve(Mat mat)
     /* Form permuted matrix for efficient parallel execution */
     a->pA = BSmain_perm(a->procinfo,a->A);CHKERRBS(0);
     /* Set up the communication */
-    ((PetscObject)a)->comm_pA = BSsetup_forward(a->pA,a->procinfo);CHKERRBS(0);
+    a->comm_pA = BSsetup_forward(a->pA,a->procinfo);CHKERRBS(0);
   } else {
     /* Repermute the matrix */
     BSmain_reperm(a->procinfo,a->A,a->pA);CHKERRBS(0);
@@ -1186,17 +1186,17 @@ PetscErrorCode MatMult_MPIRowbs(Mat mat,Vec xx,Vec yy)
   ierr = VecGetArray(yy,&yya);CHKERRQ(ierr);
   /* Do lower triangular multiplication:  [ y = L * xwork ] */
   if (bspinfo->single) {
-    BSforward1(bsif->pA,xxa,yya,((PetscObject)bsif)->comm_pA,bspinfo);CHKERRBS(0);
+    BSforward1(bsif->pA,xxa,yya,bsif->comm_pA,bspinfo);CHKERRBS(0);
   }  else {
-    BSforward(bsif->pA,xxa,yya,((PetscObject)bsif)->comm_pA,bspinfo);CHKERRBS(0);
+    BSforward(bsif->pA,xxa,yya,bsif->comm_pA,bspinfo);CHKERRBS(0);
   }
   
   /* Do upper triangular multiplication:  [ y = y + L^{T} * xwork ] */
   if (mat->symmetric) {
     if (bspinfo->single){
-      BSbackward1(bsif->pA,xxa,yya,((PetscObject)bsif)->comm_pA,bspinfo);CHKERRBS(0);
+      BSbackward1(bsif->pA,xxa,yya,bsif->comm_pA,bspinfo);CHKERRBS(0);
     } else {
-      BSbackward(bsif->pA,xxa,yya,((PetscObject)bsif)->comm_pA,bspinfo);CHKERRBS(0);
+      BSbackward(bsif->pA,xxa,yya,bsif->comm_pA,bspinfo);CHKERRBS(0);
     }
   }
   /* not needed for ILU version since forward does it all */
@@ -1251,7 +1251,7 @@ PetscErrorCode MatGetInfo_MPIRowbs(Mat A,MatInfoType flag,MatInfo *info)
   info->block_size     = 1.0;
   info->mallocs        = (double)mat->reallocs;
   isend[0] = mat->nz; isend[1] = mat->maxnz; isend[2] =  mat->maxnz -  mat->nz;
-  isend[3] = A->mem;  isend[4] = info->mallocs;
+  isend[3] = ((PetscObject)A)->mem;  isend[4] = info->mallocs;
 
   if (flag == MAT_LOCAL) {
     info->nz_used      = isend[0];
@@ -1340,10 +1340,10 @@ PetscErrorCode MatDestroy_MPIRowbs(Mat mat)
   if (a->xwork)    {ierr = VecDestroy(a->xwork);CHKERRQ(ierr);}
   if (a->pA)       {BSfree_par_mat(a->pA);CHKERRBS(0);}
   if (a->fpA)      {BSfree_copy_par_mat(a->fpA);CHKERRBS(0);}
-  if (((PetscObject)a)->comm_pA)  {BSfree_comm(((PetscObject)a)->comm_pA);CHKERRBS(0);}
-  if (((PetscObject)a)->comm_fpA) {BSfree_comm(((PetscObject)a)->comm_fpA);CHKERRBS(0);}
+  if (a->comm_pA)  {BSfree_comm(a->comm_pA);CHKERRBS(0);}
+  if (a->comm_fpA) {BSfree_comm(a->comm_fpA);CHKERRBS(0);}
   ierr = PetscFree(a->imax);CHKERRQ(ierr);
-  ierr = MPI_Comm_free(&(((PetscObject)a)->comm_mpirowbs));CHKERRQ(ierr);
+  ierr = MPI_Comm_free(&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = PetscFree(a);CHKERRQ(ierr);
 
   ierr = PetscObjectChangeTypeName((PetscObject)mat,0);CHKERRQ(ierr);
@@ -1614,13 +1614,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   /* Initialize BlockSolve information */
   a->A	      = 0;
   a->pA	      = 0;
-  ((PetscObject)a)->comm_pA  = 0;
+  a->comm_pA  = 0;
   a->fpA      = 0;
-  ((PetscObject)a)->comm_fpA = 0;
+  a->comm_fpA = 0;
   a->alpha    = 1.0;
   a->ierr     = 0;
   a->failures = 0;
-  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(((PetscObject)a)->comm_mpirowbs));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(a->comm_mpirowbs));CHKERRQ(ierr);
   ierr = VecCreateMPI(((PetscObject)A)->comm,A->rmap.n,A->rmap.N,&(a->diag));CHKERRQ(ierr);
   ierr = VecDuplicate(a->diag,&(a->xwork));CHKERRQ(ierr);
   ierr = PetscLogObjectParent(A,a->diag);  PetscLogObjectParent(A,a->xwork);CHKERRQ(ierr);
@@ -1629,7 +1629,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIRowbs(Mat A)
   a->procinfo = bspinfo;
   BSctx_set_id(bspinfo,a->rank);CHKERRBS(0);
   BSctx_set_np(bspinfo,a->size);CHKERRBS(0);
-  BSctx_set_ps(bspinfo,((PetscObject)a)->comm_mpirowbs);CHKERRBS(0);
+  BSctx_set_ps(bspinfo,a->comm_mpirowbs);CHKERRBS(0);
   BSctx_set_cs(bspinfo,INT_MAX);CHKERRBS(0);
   BSctx_set_is(bspinfo,INT_MAX);CHKERRBS(0);
   BSctx_set_ct(bspinfo,IDO);CHKERRBS(0);
@@ -1750,7 +1750,7 @@ PetscErrorCode MatLoad_MPIRowbs(PetscViewer viewer,MatType type,Mat *newmat)
   int          i,nz,j,rstart,rend,fd,*ourlens,*sndcounts = 0,*procsnz;
   int          header[4],rank,size,*rowlengths = 0,M,m,*rowners,maxnz,*cols;
   PetscScalar  *vals;
-  MPI_Comm     comm = ((PetscObject)viewer)((PetscObject))->comm;
+  MPI_Comm     comm = ((PetscObject)viewer)->comm;
   MPI_Status   status;
 
   PetscFunctionBegin;
@@ -1973,8 +1973,8 @@ PetscErrorCode MatIncompleteCholeskyFactorSymbolic_MPIRowbs(Mat mat,IS isrow,Mat
   mbs->fpA = BScopy_par_mat(mbs->pA);CHKERRBS(0);
 
   /* Set up the communication for factorization */
-  if (((PetscObject)mbs)->comm_fpA) {BSfree_comm(((PetscObject)mbs)->comm_fpA);CHKERRBS(0);}
-  ((PetscObject)mbs)->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo);CHKERRBS(0);
+  if (mbs->comm_fpA) {BSfree_comm(mbs->comm_fpA);CHKERRBS(0);}
+  mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo);CHKERRBS(0);
 
   /* 
       Create a new Mat structure to hold the "factored" matrix, 
@@ -2033,8 +2033,8 @@ PetscErrorCode MatILUFactorSymbolic_MPIRowbs(Mat mat,IS isrow,IS iscol,MatFactor
   mbs->fpA = BScopy_par_mat(mbs->pA);CHKERRBS(0); 
 
   /* Set up the communication for factorization */
-  if (((PetscObject)mbs)->comm_fpA) {BSfree_comm(((PetscObject)mbs)->comm_fpA);CHKERRBS(0);}
-  ((PetscObject)mbs)->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo);CHKERRBS(0);
+  if (mbs->comm_fpA) {BSfree_comm(mbs->comm_fpA);CHKERRBS(0);}
+  mbs->comm_fpA = BSsetup_factor(mbs->fpA,mbs->procinfo);CHKERRBS(0);
 
   /* 
       Create a new Mat structure to hold the "factored" matrix,
