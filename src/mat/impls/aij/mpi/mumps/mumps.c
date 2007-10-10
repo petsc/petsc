@@ -270,7 +270,6 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x) {
   PetscScalar    *array;
   Vec            x_seq;
   IS             is_iden,is_petsc;
-  VecScatter     scat_rhs=lu->scat_rhs; 
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -279,8 +278,8 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x) {
   x_seq = lu->b_seq;
   if (lu->size > 1){
     /* MUMPS only supports centralized rhs. Scatter b into a seqential rhs vector */
-    ierr = VecScatterBegin(scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (!lu->myid) {ierr = VecGetArray(x_seq,&array);CHKERRQ(ierr);}
   } else {  /* size == 1 */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
