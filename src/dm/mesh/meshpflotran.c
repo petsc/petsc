@@ -1,5 +1,8 @@
 #include <petscmesh_formats.hh>   /*I      "petscmesh.h"   I*/
+
+#if defined(PETSC_HAVE_HDF5)
 #include <hdf5.h>
+#endif
 
 namespace ALE {
   namespace PFLOTRAN {
@@ -15,6 +18,7 @@ namespace ALE {
       char           buf[2048];
       PetscInt       commRank;
       PetscErrorCode ierr;
+#if defined(PETSC_HAVE_HDF5)
       herr_t         status;
       hid_t          file_id;
       hid_t          group_id;
@@ -25,10 +29,13 @@ namespace ALE {
       hid_t          string_id;
       H5T_class_t    class_type;
       char           element_type[33];
+#endif
 
       ierr = MPI_Comm_rank(comm, &commRank);
 
       if (commRank != 0) return;
+
+#if defined(PETSC_HAVE_HDF5)
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_HDF5);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
@@ -89,7 +96,9 @@ namespace ALE {
 
       dataset_id = H5Dopen(group_id, "Connectivity");
       prop_id = H5Pcreate(H5P_DATASET_XFER);
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
       H5Pset_dxpl_mpio(prop_id, H5FD_MPIO_INDEPENDENT);
+#endif
       H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, prop_id, verts);
       H5Pclose(prop_id); 
       H5Dclose(dataset_id); 
@@ -104,6 +113,9 @@ namespace ALE {
       *vertices = verts;
       PetscPrintf(PETSC_COMM_WORLD,"%d %s elements read.\n",numCells,
                   element_type);
+#else
+      SETERRQ(PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
+#endif
     };
     void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, 
                                   const int dim, int& numVertices, 
@@ -116,6 +128,7 @@ namespace ALE {
       PetscInt       c;
       PetscInt       commRank;
       PetscErrorCode ierr;
+#if defined(PETSC_HAVE_HDF5)
       herr_t         status;
       hid_t          file_id;
       hid_t          group_id;
@@ -126,10 +139,13 @@ namespace ALE {
       hid_t          string_id;
       H5T_class_t    class_type;
       char           element_type[5];
+#endif
 
       ierr = MPI_Comm_rank(comm, &commRank);
 
       if (commRank != 0) return;
+
+#if defined(PETSC_HAVE_HDF5)
       ierr = PetscViewerCreate(PETSC_COMM_SELF, &viewer);
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_HDF5);
       ierr = PetscViewerFileSetMode(viewer, FILE_MODE_READ);
@@ -159,7 +175,9 @@ namespace ALE {
 
       dataset_id = H5Dopen(group_id, "X-Coordinates");
       prop_id = H5Pcreate(H5P_DATASET_XFER);
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
       H5Pset_dxpl_mpio(prop_id, H5FD_MPIO_INDEPENDENT);
+#endif
       H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, prop_id, coord);
       H5Pclose(prop_id); 
       H5Dclose(dataset_id); 
@@ -172,7 +190,9 @@ namespace ALE {
       if (dim > 1) {
         dataset_id = H5Dopen(group_id, "Y-Coordinates");
         prop_id = H5Pcreate(H5P_DATASET_XFER);
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
         H5Pset_dxpl_mpio(prop_id, H5FD_MPIO_INDEPENDENT);
+#endif
         H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, prop_id, 
                 coord);
         H5Pclose(prop_id); 
@@ -187,7 +207,9 @@ namespace ALE {
       if (dim > 2) {
         dataset_id = H5Dopen(group_id, "Z-Coordinates");
         prop_id = H5Pcreate(H5P_DATASET_XFER);
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
         H5Pset_dxpl_mpio(prop_id, H5FD_MPIO_INDEPENDENT);
+#endif
         H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, prop_id,
                 coord);
         H5Pclose(prop_id); 
@@ -205,6 +227,9 @@ namespace ALE {
       numVertices = numVerts;
       *coordinates = coords;
       PetscPrintf(PETSC_COMM_WORLD,"%d vertices read.\n",numVerts);
+#else
+      SETERRQ(PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
+#endif
     };
     Obj<ALE::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, 
                                      const std::string& basename, 

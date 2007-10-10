@@ -82,7 +82,6 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
   
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n 1 matrix in original ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
@@ -109,7 +108,6 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
   lu->firsttag += size ;
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n split DenseMtx Y");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
@@ -131,7 +129,6 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
   }
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n rhs matrix after split");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxY, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
@@ -155,7 +152,6 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
   DenseMtx_permuteRows(lu->mtxX, lu->newToOldIV);
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n solution in old ordering");CHKERRQ(ierr);
     DenseMtx_writeForHumanEye(lu->mtxX, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
@@ -322,7 +318,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
   if ( lu->options.msglvl > 0 ) {
     int err;
-
     printf("[%d] input matrix\n",rank);
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n [%d] input matrix\n",rank);CHKERRQ(ierr);
     InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
@@ -345,10 +340,10 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     Graph_init2(graph, 0, M, 0, nedges, M, nedges, adjIVL, NULL, NULL);
     if ( lu->options.msglvl > 2 ) {
       int err;
-
-      ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
+      err = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n graph of the input matrix");CHKERRQ(ierr);
       Graph_writeForHumanEye(graph, lu->options.msgFile);
       fflush(lu->options.msgFile);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file"); 
     }
 
     switch (lu->options.ordering) {
@@ -370,6 +365,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
 
     Graph_free(graph);
     if ( lu->options.msglvl > 2 ) {
+      int err;
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n front tree from ordering");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
       err = fflush(lu->options.msgFile);
@@ -387,7 +383,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
                              lu->options.msglvl, lu->options.msgFile, lu->comm_spooles);
     if ( lu->options.msglvl > 2 ) {
       int err;
-
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n best front tree");CHKERRQ(ierr);
       ETree_writeForHumanEye(lu->frontETree, lu->options.msgFile);
       err = fflush(lu->options.msgFile);
@@ -440,7 +435,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
     if ( lu->options.msglvl > 2 ) {
       int err;
-
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n split InpMtx");CHKERRQ(ierr);
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
       err = fflush(lu->options.msgFile);
@@ -453,7 +447,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     lu->firsttag += lu->frontETree->nfront ;
     if ( lu->options.msglvl > 2 ) {
       int err;
-
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n local symbolic factorization");CHKERRQ(ierr);
       IVL_writeForHumanEye(lu->symbfacIVL, lu->options.msgFile);
       err = fflush(lu->options.msgFile);
@@ -493,7 +486,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
     if ( lu->options.msglvl > 2 ) {
       int err;
-
       ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n split InpMtx");CHKERRQ(ierr);
       InpMtx_writeForHumanEye(lu->mtxA, lu->options.msgFile);
       err = fflush(lu->options.msgFile);
@@ -535,7 +527,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   lu->firsttag = lasttag;
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
@@ -579,7 +570,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   lu->firsttag += 5*size ;
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization after post-processing");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
@@ -595,7 +585,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
                lu->options.seed, lu->options.msglvl, lu->options.msgFile);
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     SolveMap_writeForHumanEye(lu->solvemap, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
     if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
@@ -606,7 +595,6 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
                    lu->stats, lu->options.msglvl, lu->options.msgFile, lu->firsttag, lu->comm_spooles);
   if ( lu->options.msglvl > 2 ) {
     int err;
-
     ierr = PetscFPrintf(PETSC_COMM_SELF,lu->options.msgFile, "\n\n numeric factorization after split");CHKERRQ(ierr);
     FrontMtx_writeForHumanEye(lu->frontmtx, lu->options.msgFile);
     err = fflush(lu->options.msgFile);
