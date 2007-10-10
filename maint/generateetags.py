@@ -91,17 +91,19 @@ def processDir(tagfile,dirname,names):
       if filename.find(exname) >=0:
         names.remove(name)
   # check for configure generated PETSC_ARCHes
+  rmnames=[]
   for name in names:
-    petscconf = os.path.join(name,'conf','petscconf')
-    if os.path.isfile(petscconf):
-      names.remove(name)
+    if os.path.isdir(os.path.join(name,'conf')):
+      rmnames.append(name)
+  for rmname in rmnames:
+    names.remove(rmname)
   return
 
 def processFiles(dirname,tagfile):
   # list files that can't be done with global match [as above] with complete paths
   import glob
   files= []
-  lists=['bmake/adic*','bmake/common/*','bin/*','bin/*','maint/*','maint/confignightly/*']
+  lists=['conf/*','bin/*','maint/*','maint/confignightly/*']
 
   for glist in lists:
     gfiles = glob.glob(glist)
