@@ -50,7 +50,12 @@ class Configure(PETSc.package.Package):
         raise RuntimeError('Error running make on HDF5: '+str(e))
       self.checkInstall(output,'hdf5')
     return self.installDir
-  
+
+  def configureLibrary(self):
+    PETSc.package.Package.configureLibrary(self)
+    if self.libraries.check(self.dlib,'H5Pset_fapl_mpio'):
+      self.addDefine('HAVE_H5PSET_FAPL_MPIO',1)
+    
 if __name__ == '__main__':
   import config.framework
   import sys
