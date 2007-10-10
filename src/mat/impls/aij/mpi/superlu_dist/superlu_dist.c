@@ -399,8 +399,9 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
       time = time/size; /* average time */
       if (!rank) {
         ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n                              %g / %g / %g\n",time_max,time_min,time);CHKERRQ(ierr);
+      }
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n \    %g\n",time0);CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n    %g\n",time0);CHKERRQ(ierr);
     }
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
