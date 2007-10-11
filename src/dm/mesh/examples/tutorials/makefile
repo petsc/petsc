@@ -113,6 +113,10 @@ rt: rt_quadrature.h rt.o chkopts
 	-${CLINKER} -o rt rt.o ${PETSC_SNES_LIB}
 	${RM} -f rt.o
 
+dirk: dirk.o chkopts
+	-${CLINKER} -o dirk dirk.o ${PETSC_SNES_LIB}
+	${RM} -f dirk.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
