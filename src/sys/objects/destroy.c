@@ -4,16 +4,18 @@
 */
 #include "petsc.h"  /*I   "petsc.h"    I*/
 
-struct _p_Object {
+typedef struct _p_GenericObject* GenericObject;
+
+struct _p_GenericObject {
   PETSCHEADER(int);
 };
 
-PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
+PetscErrorCode PetscObjectDestroy_GenericObject(GenericObject obj)
 {
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeader(obj,1);
-  if (--obj->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -33,7 +35,7 @@ PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
 
    Level: developer
 
-   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_PetscObject()
+   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_GenericObject()
           to make new object classes.
 
     Concepts: destroying object
@@ -43,7 +45,7 @@ PetscErrorCode PetscObjectDestroy_PetscObject(PetscObject obj)
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj)
 {
-  PetscObject    o;
+  GenericObject  o;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -51,12 +53,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_PetscObject,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,PETSC_OBJECT_COOKIE,0,"PetscObject",comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;
   */
-  *obj = o;
+  *obj = (PetscObject)o;
   PetscFunctionReturn(0);
 }
 
@@ -77,7 +79,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 
    Level: developer
 
-   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_PetscObject()
+   Notes: This is a template intended as a starting point to cut and paste with PetscObjectDestroy_GenericObject()
           to make new object classes.
 
     Concepts: destroying object
@@ -87,7 +89,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreate(MPI_Comm comm, PetscObject *obj
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCookie cookie, const char name[], PetscObject *obj)
 {
-  PetscObject    o;
+  GenericObject  o;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -95,12 +97,12 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectCreateGeneric(MPI_Comm comm, PetscCook
 #if !defined(PETSC_USE_DYNAMIC_LIBRARIES)
   ierr = PetscInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
-  ierr = PetscHeaderCreate(o,_p_PetscObject,-1,cookie,0,name,comm,PetscObjectDestroy_PetscObject,0);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(o,_p_GenericObject,-1,cookie,0,name,comm,PetscObjectDestroy_GenericObject,0);CHKERRQ(ierr);
   /* records not yet defined in PetscObject 
   o->data        = 0;
   o->setupcalled = 0;
   */
-  *obj = o;
+  *obj = (PetscObject)o;
   PetscFunctionReturn(0);
 }
 

@@ -45,7 +45,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   flag = 0; 
   ierr = DAGetCorners(da,&xs,&xm,&ys,&ym,&zs,&zm);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
   if (dir == DA_Z) {
     if (da->dim < 3) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"DA_Z invalid for DA dim < 3");
     if (gp < 0 || gp > da->P) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"invalid grid point");
@@ -60,7 +60,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
   } else SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Invalid direction");
 
   ierr = PetscMalloc2(size,PetscInt,&owners,size,PetscMPIInt,&ranks);CHKERRQ(ierr);
-  ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+  ierr = MPI_Allgather(&flag,1,MPIU_INT,owners,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
   ict  = 0;
   ierr = PetscInfo2(da,"DAGetProcessorSubset: dim=%D, direction=%d, procs: ",da->dim,(int)dir);CHKERRQ(ierr);
   for (i=0; i<size; i++) {
@@ -70,9 +70,9 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetProcessorSubset(DA da,DADirection dir,Pets
     }
   }
   ierr = PetscInfo(da,"\n");CHKERRQ(ierr);
-  ierr = MPI_Comm_group(da->comm,&group);CHKERRQ(ierr);
+  ierr = MPI_Comm_group(((PetscObject)da)->comm,&group);CHKERRQ(ierr);
   ierr = MPI_Group_incl(group,ict,ranks,&subgroup);CHKERRQ(ierr);
-  ierr = MPI_Comm_create(da->comm,subgroup,comm);CHKERRQ(ierr);
+  ierr = MPI_Comm_create(((PetscObject)da)->comm,subgroup,comm);CHKERRQ(ierr);
   ierr = PetscFree2(owners,ranks);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 } 

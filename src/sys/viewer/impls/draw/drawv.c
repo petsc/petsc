@@ -111,7 +111,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerDrawGetDraw(PetscViewer viewer,PetscIn
       sprintf( tmp_str, "%s:%d", vdraw->title,windownumber);
       title = tmp_str;
     }
-    ierr = PetscDrawCreate(viewer->comm,vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
+    ierr = PetscDrawCreate(((PetscObject)viewer)->comm,vdraw->display,title,PETSC_DECIDE,PETSC_DECIDE,vdraw->w,vdraw->h,&vdraw->draw[windownumber]);CHKERRQ(ierr);
     ierr = PetscDrawSetFromOptions(vdraw->draw[windownumber]);CHKERRQ(ierr);
   }
   if (draw) *draw = vdraw->draw[windownumber];
@@ -383,7 +383,7 @@ PetscErrorCode PetscViewerGetSingleton_Draw(PetscViewer viewer,PetscViewer *svie
   }
 
   /* only processor zero can use the PetscViewer draw singleton */
-  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr   = PetscViewerCreate(PETSC_COMM_SELF,sviewer);CHKERRQ(ierr);
     ierr   = PetscViewerSetType(*sviewer,PETSC_VIEWER_DRAW);CHKERRQ(ierr);
@@ -411,7 +411,7 @@ PetscErrorCode PetscViewerRestoreSingleton_Draw(PetscViewer viewer,PetscViewer *
   if (!vdraw->singleton_made) {
     SETERRQ(PETSC_ERR_ORDER,"Trying to restore a singleton that was not gotten");
   }
-  ierr = MPI_Comm_rank(viewer->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     vsdraw = (PetscViewer_Draw *)(*sviewer)->data;
     for (i=0; i<vdraw->draw_max; i++) {

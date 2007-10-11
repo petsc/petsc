@@ -68,12 +68,12 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
-  if (--pf->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)pf)->refct > 0) PetscFunctionReturn(0);
 
-  ierr = PetscOptionsHasName(pf->prefix,"-pf_view",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)pf)->prefix,"-pf_view",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(pf->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
     ierr = PFView(pf,viewer);CHKERRQ(ierr);
   }
 
@@ -82,28 +82,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFDestroy(PF pf)
 
   if (pf->ops->destroy) {ierr =  (*pf->ops->destroy)(pf->data);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(pf);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-#undef __FUNCT__  
-#define __FUNCT__ "PFPublish_Petsc"
-static PetscErrorCode PFPublish_Petsc(PetscObject obj)
-{
-#if defined(PETSC_HAVE_AMS)
-  PF              v = (PF) obj;
-  PetscErrorCode ierr;
-#endif
-
-  PetscFunctionBegin;
-
-#if defined(PETSC_HAVE_AMS)
-  /* if it is already published then return */
-  if (v->amem >=0) PetscFunctionReturn(0);
-
-  ierr = PetscObjectPublishBaseBegin(obj);CHKERRQ(ierr);
-  ierr = PetscObjectPublishBaseEnd(obj);CHKERRQ(ierr);
-#endif
-
   PetscFunctionReturn(0);
 }
 
@@ -141,7 +119,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFCreate(MPI_Comm comm,PetscInt dimin,PetscInt
 #endif
 
   ierr = PetscHeaderCreate(newpf,_p_PF,struct _PFOps,PF_COOKIE,-1,"PF",comm,PFDestroy,PFView);CHKERRQ(ierr);
-  newpf->bops->publish    = PFPublish_Petsc;
   newpf->data             = 0;
 
   newpf->ops->destroy     = 0;
@@ -308,7 +285,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFView(PF pf,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(pf->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)pf)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(pf,1,viewer,2);
@@ -412,7 +389,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFRegister(const char sname[],const char path[
 PetscErrorCode PETSCVEC_DLLEXPORT PFGetType(PF pf,PFType *meth)
 {
   PetscFunctionBegin;
-  *meth = (PFType) pf->type_name;
+  *meth = (PFType) ((PetscObject)pf)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -460,7 +437,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetType(PF pf,PFType type,void *ctx)
   pf->data        = 0;
 
   /* Determine the PFCreateXXX routine for a particular function */
-  ierr =  PetscFListFind(PFList,pf->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PFList,((PetscObject)pf)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested PF type %s",type);
   pf->ops->destroy             = 0;
   pf->ops->view                = 0;
@@ -505,7 +482,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PFSetFromOptions(PF pf)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(pf,PF_COOKIE,1);
 
-  ierr = PetscOptionsBegin(pf->comm,pf->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)pf)->comm,((PetscObject)pf)->prefix,"Mathematical functions options","Vec");CHKERRQ(ierr);
     ierr = PetscOptionsList("-pf_type","Type of function","PFSetType",PFList,0,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PFSetType(pf,type,PETSC_NULL);CHKERRQ(ierr);

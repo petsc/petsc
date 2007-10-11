@@ -129,10 +129,10 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
     ierr = PetscInfo(mat,"Using block index set to define scatter\n");
     ierr = PetscMalloc((ec/mat->rmap.bs)*sizeof(PetscInt),&ga);CHKERRQ(ierr);
     for (i=0; i<iec; i++) ga[i] = garray[i*bs];
-    ierr = ISCreateBlock(mat->comm,bs,iec,ga,&from);CHKERRQ(ierr);
+    ierr = ISCreateBlock(((PetscObject)mat)->comm,bs,iec,ga,&from);CHKERRQ(ierr);
     ierr = PetscFree(ga);CHKERRQ(ierr);
   } else {
-    ierr = ISCreateGeneral(mat->comm,ec,garray,&from);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)mat)->comm,ec,garray,&from);CHKERRQ(ierr);
   }
   ierr = ISCreateStride(PETSC_COMM_SELF,ec,0,1,&to);CHKERRQ(ierr);
 
@@ -140,7 +140,7 @@ PetscErrorCode MatSetUpMultiply_MPIAIJ(Mat mat)
   /* this is inefficient, but otherwise we must do either 
      1) save garray until the first actual scatter when the vector is known or
      2) have another way of generating a scatter context without a vector.*/
-  ierr = VecCreateMPI(mat->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,mat->cmap.n,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   /* generate the scatter context */
   ierr = VecScatterCreate(gvec,from,aij->lvec,to,&aij->Mvctx);CHKERRQ(ierr);
@@ -204,7 +204,7 @@ PetscErrorCode DisAssemble_MPIAIJ(Mat A)
   }
   ierr = MatCreate(PETSC_COMM_SELF,&Bnew);CHKERRQ(ierr);
   ierr = MatSetSizes(Bnew,m,n,m,n);CHKERRQ(ierr);
-  ierr = MatSetType(Bnew,B->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(Bnew,((PetscObject)B)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(Bnew,0,nz);CHKERRQ(ierr);
   ierr = PetscFree(nz);CHKERRQ(ierr);
   for (i=0; i<m; i++) {

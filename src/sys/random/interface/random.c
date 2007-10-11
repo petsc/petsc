@@ -40,7 +40,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomDestroy(PetscRandom r)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(r,PETSC_RANDOM_COOKIE,1);
-  if (--r->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)r)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(r);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -202,8 +202,8 @@ static PetscErrorCode PetscRandomSetTypeFromOptions_Private(PetscRandom rnd)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (rnd->type_name) {
-    defaultType = rnd->type_name;
+  if (((PetscObject)rnd)->type_name) {
+    defaultType = ((PetscObject)rnd)->type_name;
   } else {
 #if defined(PETSC_HAVE_DRAND48)    
     defaultType = PETSCRAND48;
@@ -249,7 +249,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
 
-  ierr = PetscOptionsBegin(rnd->comm, rnd->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)rnd)->comm, ((PetscObject)rnd)->prefix, "PetscRandom options", "PetscRandom");CHKERRQ(ierr);
 
     /* Handle PetscRandom type options */
     ierr = PetscRandomSetTypeFromOptions_Private(rnd);CHKERRQ(ierr);
@@ -259,7 +259,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomSetFromOptions(PetscRandom rnd)
       ierr = (*rnd->ops->setfromoptions)(rnd);CHKERRQ(ierr);
     }
   ierr = PetscOptionsEnd();CHKERRQ(ierr);
-  ierr = PetscRandomViewFromOptions(rnd, rnd->name);CHKERRQ(ierr);
+  ierr = PetscRandomViewFromOptions(rnd, ((PetscObject)rnd)->name);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -298,15 +298,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom rnd,PetscViewer viewe
   PetscValidHeaderSpecific(rnd,PETSC_RANDOM_COOKIE,1);
   PetscValidType(rnd,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(rnd->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)rnd)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(rnd,1,viewer,2);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     PetscMPIInt rank;
-    ierr = MPI_Comm_rank(rnd->comm,&rank);CHKERRQ(ierr);
-    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,rnd->type_name,rnd->seed);CHKERRQ(ierr); 
+    ierr = MPI_Comm_rank(((PetscObject)rnd)->comm,&rank);CHKERRQ(ierr);
+    ierr = PetscViewerASCIISynchronizedPrintf(viewer,"[%D] Random type %s, seed %D\n",rank,((PetscObject)rnd)->type_name,rnd->seed);CHKERRQ(ierr); 
     ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
   } else {
     const char *tname;
@@ -343,25 +343,25 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(rnd->prefix, "-random_view", &opt);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)rnd)->prefix, "-random_view", &opt);CHKERRQ(ierr);
   if (opt) {   
-    ierr = PetscOptionsGetString(rnd->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(((PetscObject)rnd)->prefix, "-random_view", typeName, 1024, &opt);CHKERRQ(ierr);
     ierr = PetscStrlen(typeName, &len);CHKERRQ(ierr);
     if (len > 0) {
-      ierr = PetscViewerCreate(rnd->comm, &viewer);CHKERRQ(ierr);
+      ierr = PetscViewerCreate(((PetscObject)rnd)->comm, &viewer);CHKERRQ(ierr);
       ierr = PetscViewerSetType(viewer, typeName);CHKERRQ(ierr);
-      ierr = PetscOptionsGetString(rnd->prefix, "-random_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
+      ierr = PetscOptionsGetString(((PetscObject)rnd)->prefix, "-random_view_file", fileName, 1024, &opt);CHKERRQ(ierr);
       if (opt) {
         ierr = PetscViewerFileSetName(viewer, fileName);CHKERRQ(ierr);
       } else {
-        ierr = PetscViewerFileSetName(viewer, rnd->name);CHKERRQ(ierr);
+        ierr = PetscViewerFileSetName(viewer, ((PetscObject)rnd)->name);CHKERRQ(ierr);
       }
       ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
       ierr = PetscViewerFlush(viewer);CHKERRQ(ierr);
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     } else {    
       PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(rnd->comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)rnd)->comm,&viewer);CHKERRQ(ierr);
       ierr = PetscRandomView(rnd, viewer);CHKERRQ(ierr);
     } 
   }
@@ -428,9 +428,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
 #endif
 
   ierr = PetscHeaderCreate(rr,_p_PetscRandom,struct _PetscRandomOps,PETSC_RANDOM_COOKIE,-1,"PetscRandom",comm,PetscRandomDestroy,0);CHKERRQ(ierr);
-  ierr = PetscMemzero(rr->ops, sizeof(struct _PetscRandomOps));CHKERRQ(ierr);
-  rr->bops->publish = PETSC_NULL;
-  rr->type_name     = PETSC_NULL;
 
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   rr->data  = PETSC_NULL;

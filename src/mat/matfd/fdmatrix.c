@@ -105,7 +105,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringView(MatFDColoring c,PetscViewer 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(c,MAT_FDCOLORING_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(c->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)c)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2); 
   PetscCheckSameComm(c,1,viewer,2);
@@ -353,7 +353,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringSetFromOptions(MatFDColoring matf
   PetscFunctionBegin;
   PetscValidHeaderSpecific(matfd,MAT_FDCOLORING_COOKIE,1);
 
-  ierr = PetscOptionsBegin(matfd->comm,matfd->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)matfd)->comm,((PetscObject)matfd)->prefix,"Jacobian computation via finite differences option","MatFD");CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_err","Square root of relative error in function","MatFDColoringSetParameters",matfd->error_rel,&matfd->error_rel,0);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-mat_fd_coloring_umin","Minimum allowable u magnitude","MatFDColoringSetParameters",matfd->umin,&matfd->umin,0);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_fd_coloring_freq","How often Jacobian is recomputed","MatFDColoringSetFrequency",matfd->freq,&matfd->freq,0);CHKERRQ(ierr);
@@ -380,7 +380,7 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
   PetscViewer    viewer;
 
   PetscFunctionBegin;
-  ierr = PetscViewerASCIIGetStdout(fd->comm,&viewer);CHKERRQ(ierr);
+  ierr = PetscViewerASCIIGetStdout(((PetscObject)fd)->comm,&viewer);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatFDColoringView(fd,viewer);CHKERRQ(ierr);
@@ -393,8 +393,8 @@ PetscErrorCode MatFDColoringView_Private(MatFDColoring fd)
   }
   ierr = PetscOptionsHasName(PETSC_NULL,"-mat_fd_coloring_view_draw",&flg);CHKERRQ(ierr);
   if (flg) {
-    ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
-    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(fd->comm));CHKERRQ(ierr);
+    ierr = MatFDColoringView(fd,PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
+    ierr = PetscViewerFlush(PETSC_VIEWER_DRAW_(((PetscObject)fd)->comm));CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -485,7 +485,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatFDColoringDestroy(MatFDColoring c)
   PetscInt       i;
 
   PetscFunctionBegin;
-  if (--c->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)c)->refct > 0) PetscFunctionReturn(0);
 
   for (i=0; i<c->ncolors; i++) {
     ierr = PetscFree(c->columns[i]);CHKERRQ(ierr);

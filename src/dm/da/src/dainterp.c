@@ -76,7 +76,7 @@ PetscErrorCode DAGetInterpolation_1D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreate(dac->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
@@ -169,7 +169,7 @@ PetscErrorCode DAGetInterpolation_1D_Q0(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix */
-  ierr = MatCreate(dac->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f,m_c,mx,Mx);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,2,PETSC_NULL);CHKERRQ(ierr);
@@ -261,13 +261,13 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr = MPI_Comm_size(dac->comm,&size_c);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(daf->comm,&size_f);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(daf->comm,&rank_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)daf)->comm,&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(daf->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -305,7 +305,7 @@ PetscErrorCode DAGetInterpolation_2D_Q1(DA dac,DA daf,Mat *A)
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreate(daf->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)daf)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -428,13 +428,13 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr = MPI_Comm_size(dac->comm,&size_c);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(daf->comm,&size_f);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(daf->comm,&rank_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)daf)->comm,&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(daf->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f,col_scale*m_c*n_c,dnz,onz);CHKERRQ(ierr);
   for (j=j_start; j<j_start+n_f; j++) {
     for (i=i_start; i<i_start+m_f; i++) {
       /* convert to local "natural" numbering and then to PETSc global numbering */
@@ -460,7 +460,7 @@ PetscErrorCode DAGetInterpolation_2D_Q0(DA dac,DA daf,Mat *A)
       ierr = MatPreallocateSet(row,nc,cols,dnz,onz);CHKERRQ(ierr);
     }
   }
-  ierr = MatCreate(daf->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)daf)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f,col_scale*m_c*n_c,mx*my,col_scale*Mx*My);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -542,13 +542,13 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
 
      In the standard case when size_f == size_c col_scale == 1 and col_shift == 0
   */
-  ierr = MPI_Comm_size(dac->comm,&size_c);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(daf->comm,&size_f);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(daf->comm,&rank_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)dac)->comm,&size_c);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)daf)->comm,&size_f);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)daf)->comm,&rank_f);CHKERRQ(ierr);
   col_scale = size_f/size_c;
   col_shift = Mx*My*Mz*(rank_f/size_c);
 
-  ierr = MatPreallocateInitialize(daf->comm,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(((PetscObject)daf)->comm,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
       for (i=i_start; i<i_start+m_f; i++) {
@@ -579,7 +579,7 @@ PetscErrorCode DAGetInterpolation_3D_Q0(DA dac,DA daf,Mat *A)
       }
     }
   }
-  ierr = MatCreate(daf->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)daf)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f*p_f,col_scale*m_c*n_c*p_c,mx*my*mz,col_scale*Mx*My*Mz);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -671,7 +671,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
   ierr = DAGetGlobalIndices(dac,PETSC_NULL,&idx_c);CHKERRQ(ierr);
 
   /* create interpolation matrix, determining exact preallocation */
-  ierr = MatPreallocateInitialize(dac->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
+  ierr = MatPreallocateInitialize(((PetscObject)dac)->comm,m_f*n_f*p_f,m_c*n_c*p_c,dnz,onz);CHKERRQ(ierr);
   /* loop over local fine grid nodes counting interpolating points */
   for (l=l_start; l<l_start+p_f; l++) {
     for (j=j_start; j<j_start+n_f; j++) {
@@ -721,7 +721,7 @@ PetscErrorCode DAGetInterpolation_3D_Q1(DA dac,DA daf,Mat *A)
       }
     }
   }
-  ierr = MatCreate(dac->comm,&mat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)dac)->comm,&mat);CHKERRQ(ierr);
   ierr = MatSetSizes(mat,m_f*n_f*p_f,m_c*n_c*p_c,mx*my*mz,Mx*My*Mz);CHKERRQ(ierr);
   ierr = MatSetType(mat,MATAIJ);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(mat,0,dnz);CHKERRQ(ierr);
@@ -964,7 +964,7 @@ PetscErrorCode DAGetInjection_2D(DA dac,DA daf,VecScatter *inject)
     }
   }
 
-  ierr = ISCreateBlock(daf->comm,dof,nc,cols,&isf);CHKERRQ(ierr);
+  ierr = ISCreateBlock(((PetscObject)daf)->comm,dof,nc,cols,&isf);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(dac,&vecc);CHKERRQ(ierr);
   ierr = DAGetGlobalVector(daf,&vecf);CHKERRQ(ierr);
   ierr = VecScatterCreate(vecf,isf,vecc,PETSC_NULL,inject);CHKERRQ(ierr);
@@ -1108,7 +1108,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetAggregates(DA dac,DA daf,Mat *rest)
   max_agg_size = (Mf/Mc+1)*(Nf/Nc+1)*(Pf/Pc+1);
 
   /* create the matrix that will contain the restriction operator */
-  ierr = MatCreateMPIAIJ( daf->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
+  ierr = MatCreateMPIAIJ( ((PetscObject)daf)->comm, m_c*n_c*p_c*dofc, m_f*n_f*p_f*doff, Mc*Nc*Pc*dofc, Mf*Nf*Pf*doff,
 			  max_agg_size, PETSC_NULL, max_agg_size, PETSC_NULL, rest); CHKERRQ(ierr);
 
   /* store nodes in the fine grid here */

@@ -38,8 +38,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate(MPI_Comm comm, Vec *vec)
 
   ierr = PetscHeaderCreate(v, _p_Vec, struct _VecOps, VEC_COOKIE, -1, "Vec", comm, VecDestroy, VecView);CHKERRQ(ierr);
   ierr = PetscMemzero(v->ops, sizeof(struct _VecOps));CHKERRQ(ierr);
-  v->bops->publish  = PETSC_NULL /* VecPublish_Petsc */;
-  v->type_name      = PETSC_NULL;
 
   ierr            = PetscMapInitialize(comm,&v->map);CHKERRQ(ierr);
   v->mapping      = PETSC_NULL;

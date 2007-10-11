@@ -41,7 +41,7 @@ PetscErrorCode AOView_Mapping(AO ao, PetscViewer viewer)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(ao->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)ao)->comm, &rank);CHKERRQ(ierr);
   if (rank) PetscFunctionReturn(0);
 
   if (!viewer) {

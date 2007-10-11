@@ -64,14 +64,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideToGeneral(IS inis)
   /* Remove the old stride data set */
   ierr = PetscFree(inis->data);CHKERRQ(ierr);
 
-  inis->type         = IS_GENERAL;
+  ((PetscObject)inis)->type         = IS_GENERAL;
   inis->data         = (void*)sub;
   inis->isperm       = PETSC_FALSE;
   ierr = PetscMemcpy(inis->ops,&myops,sizeof(myops));CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(inis->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)inis)->comm,&viewer);CHKERRQ(ierr);
     ierr = ISView(inis,viewer);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);

@@ -235,7 +235,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
     are listed here for the GUI to display
   */
   ierr = PetscOptionsHead("Socket PetscViewer Options");CHKERRQ(ierr);
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",sdef,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
       ierr = PetscOptionsAtoi(sdef,&def);CHKERRQ(ierr);
     } else {
@@ -244,7 +244,7 @@ PetscErrorCode PetscViewerSetFromOptions_Socket(PetscViewer v)
     ierr = PetscOptionsInt("-viewer_socket_port","Port number to use for socket","PetscViewerSocketSetConnection",def,0,0);CHKERRQ(ierr);
 
     ierr = PetscOptionsString("-viewer_socket_machine","Machine to use for socket","PetscViewerSocketSetConnection",sdef,0,0,0);CHKERRQ(ierr);
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",sdef,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(sdef,256);CHKERRQ(ierr);
     }
@@ -302,7 +302,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
   PetscFunctionBegin;
   if (port <= 0) {
     char portn[16];
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_PORT",portn,16,&tflg);CHKERRQ(ierr);
     if (tflg) {
       ierr = PetscOptionsAtoi(portn,&port);CHKERRQ(ierr);
     } else {
@@ -310,7 +310,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
     }
   }
   if (!machine) {
-    ierr = PetscOptionsGetenv(v->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetenv(((PetscObject)v)->comm,"PETSC_VIEWER_SOCKET_MACHINE",mach,256,&tflg);CHKERRQ(ierr);
     if (!tflg) {
       ierr = PetscGetHostName(mach,256);CHKERRQ(ierr);
     }
@@ -318,7 +318,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerSocketSetConnection(PetscViewer v,cons
     ierr = PetscStrncpy(mach,machine,256);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_rank(v->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)v)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscInfo2(v,"Connecting to socket process on port %D machine %s\n",port,mach);CHKERRQ(ierr);
     ierr = SOCKCall_Private(mach,(int)port,&vmatlab->port);CHKERRQ(ierr);

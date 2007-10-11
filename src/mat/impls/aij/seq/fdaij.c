@@ -141,7 +141,7 @@ PetscErrorCode MatFDColoringCreate_SeqAIJ(Mat mat,ISColoring iscoloring,MatFDCol
   /*
        see the version for MPIAIJ
   */
-  ierr = VecCreateGhost(mat->comm,mat->rmap.n,PETSC_DETERMINE,0,PETSC_NULL,&c->vscale);CHKERRQ(ierr)
+  ierr = VecCreateGhost(((PetscObject)mat)->comm,mat->rmap.n,PETSC_DETERMINE,0,PETSC_NULL,&c->vscale);CHKERRQ(ierr)
   ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
   for (k=0; k<c->ncolors; k++) { 
     ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);

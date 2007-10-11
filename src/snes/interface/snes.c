@@ -51,7 +51,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(snes->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)snes)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
   PetscCheckSameComm(snes,1,viewer,2);
@@ -59,8 +59,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESView(SNES snes,PetscViewer viewer)
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
-    if (snes->prefix) {
-      ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:(%s)\n",snes->prefix);CHKERRQ(ierr);
+    if (((PetscObject)snes)->prefix) {
+      ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:(%s)\n",((PetscObject)snes)->prefix);CHKERRQ(ierr);
     } else {
       ierr = PetscViewerASCIIPrintf(viewer,"SNES Object:\n");CHKERRQ(ierr);
     }
@@ -199,13 +199,13 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
 
-  ierr = PetscOptionsBegin(snes->comm,snes->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr); 
+  ierr = PetscOptionsBegin(((PetscObject)snes)->comm,((PetscObject)snes)->prefix,"Nonlinear solver (SNES) options","SNES");CHKERRQ(ierr); 
     if (!SNESRegisterAllCalled) {ierr = SNESRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-    if (snes->type_name) { deft = snes->type_name; } 
+    if (((PetscObject)snes)->type_name) { deft = ((PetscObject)snes)->type_name; } 
     ierr = PetscOptionsList("-snes_type","Nonlinear solver method","SNESSetType",SNESList,deft,type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = SNESSetType(snes,type);CHKERRQ(ierr);
-    } else if (!snes->type_name) {
+    } else if (!((PetscObject)snes)->type_name) {
       ierr = SNESSetType(snes,deft);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-snes_view","Print detailed information on solver used","SNESView",0);CHKERRQ(ierr);
@@ -248,19 +248,19 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetFromOptions(SNES snes)
 
     ierr = PetscOptionsString("-snes_monitor","Monitor norm of function","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = SNESMonitorSet(snes,SNESMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-snes_ratiomonitor","Monitor ratios of norms of function","SNESMonitorSetRatio","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = SNESMonitorSetRatio(snes,monviewer);CHKERRQ(ierr);
     }
 
     ierr = PetscOptionsString("-snes_monitor_short","Monitor norm of function (fewer digits)","SNESMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(snes->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)snes)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = SNESMonitorSet(snes,SNESMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
 
@@ -720,6 +720,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetKSP(SNES snes,KSP ksp)
   PetscFunctionReturn(0);
 }
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "SNESPublish_Petsc"
 static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
@@ -727,6 +728,7 @@ static PetscErrorCode SNESPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 /* -----------------------------------------------------------*/
 #undef __FUNCT__  
@@ -770,7 +772,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate(MPI_Comm comm,SNES *outsnes)
 #endif
 
   ierr = PetscHeaderCreate(snes,_p_SNES,struct _SNESOps,SNES_COOKIE,0,"SNES",comm,SNESDestroy,SNESView);CHKERRQ(ierr);
-  snes->bops->publish     = SNESPublish_Petsc;
+
   snes->ops->converged    = SNESDefaultConverged;
   snes->max_its           = 50;
   snes->max_funcs	  = 10000;
@@ -1151,11 +1153,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   if (snes->setupcalled) PetscFunctionReturn(0);
 
-  if (!snes->type_name) {
+  if (!((PetscObject)snes)->type_name) {
     ierr = SNESSetType(snes,SNESLS);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_operator",&flg);CHKERRQ(ierr); 
   /*
       This version replaces the user provided Jacobian matrix with a
       matrix-free version but still employs the user-provided preconditioner matrix
@@ -1170,7 +1172,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 
 #if !defined(PETSC_USE_COMPLEX) && !defined(PETSC_USE_SINGLE) && !defined(PETSC_USE_MAT_SINGLE) && !defined(PETSC_USE_LONG_DOUBLE) && !defined(PETSC_USE_INT)
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_operator2",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat J;
     ierr = SNESDefaultMatrixFreeCreate2(snes,snes->vec_sol,&J);CHKERRQ(ierr);
@@ -1180,7 +1182,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetUp(SNES snes)
   }
 #endif
 
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf",&flg);CHKERRQ(ierr); 
   /*
       This version replaces both the user-provided Jacobian and the user-
       provided preconditioner matrix with the default matrix free version.
@@ -1248,7 +1250,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDestroy(SNES snes)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
-  if (--snes->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)snes)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(snes);CHKERRQ(ierr);
@@ -1871,20 +1873,20 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSolve(SNES snes,Vec b,Vec x)
     SETERRQ(PETSC_ERR_PLIB,"Internal error, solver returned without setting converged reason");
   }
   
-  ierr = PetscOptionsGetString(snes->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) {
-    ierr = PetscViewerASCIIOpen(snes->comm,filename,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIOpen(((PetscObject)snes)->comm,filename,&viewer);CHKERRQ(ierr);
     ierr = SNESView(snes,viewer);CHKERRQ(ierr); 
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_test_local_min",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_test_local_min",&flg);CHKERRQ(ierr);
   if (flg && !PetscPreLoadingOn) { ierr = SNESTestLocalMin(snes);CHKERRQ(ierr); }
   if (snes->printreason) {
     if (snes->reason > 0) {
-      ierr = PetscPrintf(snes->comm,"Nonlinear solve converged due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Nonlinear solve converged due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(snes->comm,"Nonlinear solve did not converge due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Nonlinear solve did not converge due to %s\n",SNESConvergedReasons[snes->reason]);CHKERRQ(ierr);
     }
   }
 
@@ -1945,7 +1947,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetType(SNES snes,SNESType type)
   ierr = PetscTypeCompare((PetscObject)snes,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(SNESList,snes->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(SNESList,((PetscObject)snes)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested SNES type %s",type);
   /* Destroy the previous private SNES context */
   if (snes->ops->destroy) { ierr = (*(snes)->ops->destroy)(snes);CHKERRQ(ierr); }
@@ -2010,7 +2012,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetType(SNES snes,SNESType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(snes,SNES_COOKIE,1);
   PetscValidPointer(type,2);
-  *type = snes->type_name;
+  *type = ((PetscObject)snes)->type_name;
   PetscFunctionReturn(0);
 }
 

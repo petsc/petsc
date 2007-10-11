@@ -45,10 +45,10 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGlobalToNaturalAllCreate(DA da,VecScatter *sc
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
-  ierr = ISCreateStride(da->comm,da->Nlocal,0,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)da)->comm,da->Nlocal,0,1,&to);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,to);CHKERRQ(ierr);
-  ierr = ISCreateStride(da->comm,da->Nlocal,da->base,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)da)->comm,da->Nlocal,da->base,1,&from);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecGetSize(global,&N);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,N,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecSetBlockSize(tmplocal,da->w);CHKERRQ(ierr);
@@ -96,12 +96,12 @@ PetscErrorCode PETSCDM_DLLEXPORT DANaturalAllToGlobalCreate(DA da,VecScatter *sc
   ierr = DAGetAO(da,&ao);CHKERRQ(ierr);
 
   /* create the scatter context */
-  ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,da->comm);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(da->comm,m,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&m,&M,1,MPIU_INT,MPI_SUM,((PetscObject)da)->comm);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,m,PETSC_DETERMINE,0,&global);CHKERRQ(ierr);
   ierr = VecGetOwnershipRange(global,&start,PETSC_NULL);CHKERRQ(ierr);
-  ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
   ierr = AOPetscToApplicationIS(ao,from);CHKERRQ(ierr);
-  ierr = ISCreateStride(da->comm,m,start,1,&to);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&to);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,M,0,&tmplocal);CHKERRQ(ierr);
   ierr = VecSetBlockSize(tmplocal,da->w);CHKERRQ(ierr);
   ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);

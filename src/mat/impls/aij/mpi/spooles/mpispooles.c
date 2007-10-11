@@ -61,8 +61,8 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
   
   /* copy b into spooles' rhs mtxY */
   DenseMtx_init(lu->mtxY, lu->options.typeflag, 0, 0, m, 1, 1, m);    
@@ -98,7 +98,7 @@ PetscErrorCode MatSolve_MPISpooles(Mat A,Vec b,Vec x)
     if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   }
 
-  MPI_Barrier(A->comm); /* for initializing firsttag, because the num. of tags used
+  MPI_Barrier(((PetscObject)A)->comm); /* for initializing firsttag, because the num. of tags used
                                    by FrontMtx_MPI_split() is unknown */
   lu->firsttag = 0;
   newY = DenseMtx_MPI_splitByRows(lu->mtxY, lu->vtxmapIV, lu->stats, lu->options.msglvl, 
@@ -207,8 +207,8 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
   Mat             F_diag;
   
   PetscFunctionBegin;	
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
 
   if (lu->flg == DIFFERENT_NONZERO_PATTERN) { /* first numeric factorization */ 
     /* get input parameters */
@@ -375,7 +375,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     opcounts = DVinit(size, 0.0);
     opcounts[rank] = ETree_nFactorOps(lu->frontETree, lu->options.typeflag, lu->options.symflag);
     MPI_Allgather((void*) &opcounts[rank], 1, MPI_DOUBLE,
-              (void*) opcounts, 1, MPI_DOUBLE, A->comm);
+              (void*) opcounts, 1, MPI_DOUBLE, ((PetscObject)A)->comm);
     minops = DVmin(size, opcounts, &root);
     DVfree(opcounts);
     
@@ -475,7 +475,7 @@ PetscErrorCode MatFactorNumeric_MPISpooles(Mat A,MatFactorInfo *info,Mat *F)
     InpMtx_changeStorageMode(lu->mtxA, INPMTX_BY_VECTORS);
 
     /* redistribute the matrix */
-    MPI_Barrier(A->comm);
+    MPI_Barrier(((PetscObject)A)->comm);
     lu->firsttag = 0;
     newA = InpMtx_MPI_split(lu->mtxA, lu->vtxmapIV, lu->stats, 
                         lu->options.msglvl, lu->options.msgFile, lu->firsttag,lu->comm_spooles);

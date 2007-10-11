@@ -54,7 +54,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSSetType(TS ts,TSType type)
   ierr = PetscTypeCompare((PetscObject) ts, type, &match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr = PetscFListFind( TSList,ts->comm, type, (void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscFListFind( TSList,((PetscObject)ts)->comm, type, (void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE, "Unknown TS type: %s", type);
   if (ts->ksp) {
     ierr = KSPDestroy(ts->ksp);CHKERRQ(ierr);
@@ -100,7 +100,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSGetType(TS ts, TSType *type)
   if (!TSRegisterAllCalled) {
     ierr = TSRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
-  *type = ts->type_name;
+  *type = ((PetscObject)ts)->type_name;
   PetscFunctionReturn(0);
 }
 

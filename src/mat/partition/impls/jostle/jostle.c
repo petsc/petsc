@@ -46,8 +46,8 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
     PetscFunctionBegin;
 
     /* check that the number of partitions is equal to the number of processors */
-    ierr = MPI_Comm_rank(mat->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)mat)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
     if (part->n != size) SETERRQ(PETSC_ERR_SUP, "Supports exactly one domain per processor");
 
     /* convert adjacency matrix to MPIAdj if needed*/
@@ -99,7 +99,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
 
         /* library call */
         pjostle_init(&size, &rank);
-        pjostle_comm(&matMPI->comm);
+        pjostle_comm(&((PetscObject)matMPI)->comm);
         jostle_env("format = contiguous");
         jostle_env("timer = off");
 
@@ -144,7 +144,7 @@ static PetscErrorCode MatPartitioningApply_Jostle(MatPartitioning part, IS * par
         ierr = PetscFree(degree);CHKERRQ(ierr);
 
         /* Creation of the index set */
-        ierr = ISCreateGeneral(part->comm, mat->m, partition, partitioning);CHKERRQ(ierr);
+        ierr = ISCreateGeneral(((PetscObject)part)->comm, mat->m, partition, partitioning);CHKERRQ(ierr);
 
         if (matMPI != mat) {
             ierr = MatDestroy(matMPI);CHKERRQ(ierr);
@@ -172,7 +172,7 @@ PetscErrorCode MatPartitioningView_Jostle(MatPartitioning part, PetscViewer view
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", jostle_struct->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject) viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Jostle partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }

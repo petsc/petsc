@@ -36,14 +36,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSingleton(PetscViewer viewer,PetscV
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidPointer(outviewer,2);
-  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = viewer;
   } else if (viewer->ops->getsingleton) {
     ierr = (*viewer->ops->getsingleton)(viewer,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton PetscViewer for type %s",viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot get singleton PetscViewer for type %s",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -73,7 +73,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSingleton(PetscViewer viewer,Pe
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
 
-  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (outviewer) *outviewer = 0;
@@ -118,14 +118,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerGetSubcomm(PetscViewer viewer,MPI_Comm
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
   PetscValidPointer(outviewer,3);
-  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectReference((PetscObject)viewer);CHKERRQ(ierr);
     *outviewer = viewer;
   } else if (viewer->ops->getsubcomm) {
     ierr = (*viewer->ops->getsubcomm)(viewer,subcomm,outviewer);CHKERRQ(ierr);
   } else {
-    SETERRQ1(PETSC_ERR_SUP,"Cannot get subcommunicator PetscViewer for type %s",viewer->type_name);
+    SETERRQ1(PETSC_ERR_SUP,"Cannot get subcommunicator PetscViewer for type %s",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -156,7 +156,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerRestoreSubcomm(PetscViewer viewer,MPI_
   PetscFunctionBegin;
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,1);
 
-  ierr = MPI_Comm_size(viewer->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)viewer)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscObjectDereference((PetscObject)viewer);CHKERRQ(ierr);
     if (outviewer) *outviewer = 0;

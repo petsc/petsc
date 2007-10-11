@@ -180,7 +180,7 @@ PetscErrorCode MatEqual_MPIAdj(Mat A,Mat B,PetscTruth* flg)
   /* if a->j are the same */
   ierr = PetscMemcmp(a->j,b->j,(a->nz)*sizeof(PetscInt),&flag);CHKERRQ(ierr);
 
-  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,A->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&flag,flg,1,MPI_INT,MPI_LAND,((PetscObject)A)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -194,7 +194,7 @@ PetscErrorCode MatGetRowIJ_MPIAdj(Mat A,PetscInt oshift,PetscTruth symmetric,Pet
   Mat_MPIAdj     *a = (Mat_MPIAdj *)A->data;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {*done = PETSC_FALSE; PetscFunctionReturn(0);}
   *m    = A->rmap.n;
   *ia   = a->i;
@@ -451,8 +451,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MPIAdj(Mat B)
   PetscMPIInt    size,rank;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(B->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)B)->comm,&rank);CHKERRQ(ierr);
 
   ierr                = PetscNewLog(B,Mat_MPIAdj,&b);CHKERRQ(ierr);
   B->data             = (void*)b;
