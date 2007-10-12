@@ -37,6 +37,10 @@ class Configure(config.base.Configure):
     import nargs
 
     help.addArgument('Compilers', '-with-f90-interface=<type>', nargs.Arg(None, 'f90src', 'Specify  compiler type for eg: f90src,nof90src,intel8,solaris,rs6000,IRIX,win32,absoft,t3e,alpha,cray_x1,hpux,lahey'))
+    help.addArgument('Compilers', '-with-clib-autodetect',           nargs.ArgBool(None, 1, 'Autodetect C compiler libraries'))
+    help.addArgument('Compilers', '-with-fortranlib-autodetect',     nargs.ArgBool(None, 1, 'Autodetect Fortran compiler libraries'))
+    help.addArgument('Compilers', '-with-cxxlib-autodetect',         nargs.ArgBool(None, 1, 'Autodetect C++ compiler libraries'))
+
     return
 
   def getDispatchNames(self):
@@ -1013,7 +1017,8 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCFormatting)
       self.executeTest(self.checkCStaticInline)
       self.executeTest(self.checkDynamicLoadFlag)
-      self.executeTest(self.checkCLibraries)      
+      if self.framework.argDB['with-clib-autodetect']:
+        self.executeTest(self.checkCLibraries)      
     else:
       self.isGCC = 0
     if hasattr(self.setCompilers, 'CXX'):
@@ -1022,7 +1027,8 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkCxxNamespace)
       self.executeTest(self.checkCxxOptionalExtensions)
       self.executeTest(self.checkCxxStaticInline)
-      self.executeTest(self.checkCxxLibraries)
+      if self.framework.argDB['with-cxxlib-autodetect']:
+        self.executeTest(self.checkCxxLibraries)
     else:
       self.isGCXX = 0
     if hasattr(self.setCompilers, 'FC'):
@@ -1030,7 +1036,8 @@ class Configure(config.base.Configure):
       self.executeTest(self.checkFortranNameMangling)
       self.executeTest(self.checkFortranNameManglingDouble)
       self.executeTest(self.checkFortranPreprocessor)
-      self.executeTest(self.checkFortranLibraries)
+      if self.framework.argDB['with-fortranlib-autodetect']:
+        self.executeTest(self.checkFortranLibraries)
       if hasattr(self.setCompilers, 'CXX'):
         self.executeTest(self.checkFortranLinkingCxx)
       self.executeTest(self.checkFortran90)
