@@ -157,7 +157,10 @@ PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+   Note: this method requires that one be apply to apply the transpose of the preconditioner and operator
+         as well as the operator and preconditioner.
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 
 M*/
 EXTERN_C_BEGIN

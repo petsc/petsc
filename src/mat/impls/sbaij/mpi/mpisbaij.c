@@ -880,25 +880,19 @@ PetscErrorCode MatMult_MPISBAIJ(Mat A,Vec xx,Vec yy)
 
   /* subdiagonal part */  
   ierr = (*a->B->ops->multtranspose)(a->B,xx,a->slvec0b);CHKERRQ(ierr);
-  CHKMEMQ;
+
   /* copy x into the vec slvec0 */
   ierr = VecGetArray(a->slvec0,&from);CHKERRQ(ierr);
   ierr = VecGetArray(xx,&x);CHKERRQ(ierr);
-  CHKMEMQ;
+
   ierr = PetscMemcpy(from,x,bs*mbs*sizeof(MatScalar));CHKERRQ(ierr);
-  CHKMEMQ;
   ierr = VecRestoreArray(a->slvec0,&from);CHKERRQ(ierr);  
-  
-  CHKMEMQ;
-  ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
-  CHKMEMQ;
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr); 
-  CHKMEMQ;
+  
+  ierr = VecScatterBegin(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
   ierr = VecScatterEnd(a->sMvctx,a->slvec0,a->slvec1,ADD_VALUES,SCATTER_FORWARD);CHKERRQ(ierr); 
-    CHKMEMQ;
   /* supperdiagonal part */
   ierr = (*a->B->ops->multadd)(a->B,a->slvec1b,a->slvec1a,yy);CHKERRQ(ierr); 
-    CHKMEMQ;
   PetscFunctionReturn(0);
 }
 
