@@ -23,9 +23,9 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   PetscFunctionBegin;
 
   /* first processor allocates entire array and sends it's address to the others */
-  ierr = PetscSharedMalloc(win->comm,win->map.n*sizeof(PetscScalar),win->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(((PetscObject)win)->comm,win->map.n*sizeof(PetscScalar),win->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr);
 
-  ierr = VecCreate(win->comm,v);CHKERRQ(ierr);
+  ierr = VecCreate(((PetscObject)win)->comm,v);CHKERRQ(ierr);
   ierr = VecSetSizes(*v,win->map.n,win->map.N);CHKERRQ(ierr);
   ierr = VecCreate_MPI_Private(*v,w->nghost,array,win->map);CHKERRQ(ierr);
 
@@ -33,8 +33,8 @@ PetscErrorCode VecDuplicate_Shared(Vec win,Vec *v)
   (*v)->stash.donotstash   = win->stash.donotstash;
   (*v)->stash.ignorenegidx = win->stash.ignorenegidx;
   
-  ierr = PetscOListDuplicate(win->olist,&(*v)->olist);CHKERRQ(ierr);
-  ierr = PetscFListDuplicate(win->qlist,&(*v)->qlist);CHKERRQ(ierr);
+  ierr = PetscOListDuplicate(((PetscObject)win)->olist,&(*v)((PetscObject))->olist);CHKERRQ(ierr);
+  ierr = PetscFListDuplicate(((PetscObject)win)->qlist,&(*v)((PetscObject))->qlist);CHKERRQ(ierr);
 
   if (win->mapping) {
     ierr = PetscObjectReference((PetscObject)win->mapping);CHKERRQ(ierr);
@@ -60,8 +60,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
   PetscScalar    *array;
 
   PetscFunctionBegin;
-  ierr = PetscSplitOwnership(vv->comm,&vv->map.n,&vv->map.N);CHKERRQ(ierr);
-  ierr = PetscSharedMalloc(vv->comm,vv->map.n*sizeof(PetscScalar),vv->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
+  ierr = PetscSplitOwnership(((PetscObject)vv)->comm,&vv->map.n,&vv->map.N);CHKERRQ(ierr);
+  ierr = PetscSharedMalloc(((PetscObject)vv)->comm,vv->map.n*sizeof(PetscScalar),vv->map.N*sizeof(PetscScalar),(void**)&array);CHKERRQ(ierr); 
 
   ierr = VecCreate_MPI_Private(vv,0,array,PETSC_NULL);CHKERRQ(ierr);
   vv->ops->duplicate = VecDuplicate_Shared;
@@ -244,7 +244,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecCreate_Shared(Vec vv)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(vv->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)vv)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {
     SETERRQ(PETSC_ERR_SUP_SYS,"No supported for shared memory vector objects on this machine");
   }

@@ -13,7 +13,7 @@ PetscErrorCode ISDuplicate_General(IS is,IS *newIS)
   IS_General     *sub = (IS_General *)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateGeneral(is->comm,sub->n,sub->idx,newIS);CHKERRQ(ierr);
+  ierr = ISCreateGeneral(((PetscObject)is)->comm,sub->n,sub->idx,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -110,7 +110,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscMalloc(n*sizeof(PetscInt),&ii);CHKERRQ(ierr);
     for (i=0; i<n; i++) {
@@ -127,11 +127,11 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
     ierr = ISInvertPermutation(istmp,PETSC_DECIDE,&nistmp);CHKERRQ(ierr);
     ierr = ISDestroy(istmp);CHKERRQ(ierr);
     /* get the part we need */
-    ierr    = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,is->comm);CHKERRQ(ierr);
+    ierr    = MPI_Scan(&nlocal,&nstart,1,MPIU_INT,MPI_SUM,((PetscObject)is)->comm);CHKERRQ(ierr);
 #if defined(PETSC_USE_DEBUG)
     {
       PetscMPIInt rank;
-      ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
+      ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
       if (rank == size-1) {
         if (nstart != sub->N) SETERRQ2(PETSC_ERR_ARG_INCOMP,"Sum of nlocal lengths %d != total IS length %d",nstart,sub->N);
       }
@@ -139,7 +139,7 @@ PetscErrorCode ISInvertPermutation_General(IS is,PetscInt nlocal,IS *isout)
 #endif
     nstart -= nlocal;
     ierr    = ISGetIndices(nistmp,&idx);CHKERRQ(ierr);
-    ierr    = ISCreateGeneral(is->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    
+    ierr    = ISCreateGeneral(((PetscObject)is)->comm,nlocal,idx+nstart,isout);CHKERRQ(ierr);    
     ierr    = ISRestoreIndices(nistmp,&idx);CHKERRQ(ierr);
     ierr    = ISDestroy(nistmp);CHKERRQ(ierr);
   }
@@ -265,7 +265,7 @@ PetscErrorCode ISCreateGeneral_Private(MPI_Comm comm,IS *is)
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(Nindex->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);
     ierr = ISView(Nindex,viewer);CHKERRQ(ierr);
   }
   *is = Nindex;

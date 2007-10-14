@@ -52,7 +52,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, c
   /* Set up file access property list with parallel I/O access */
   plist_id = H5Pcreate(H5P_FILE_ACCESS);
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
-  H5Pset_fapl_mpio(plist_id, viewer->comm, info);
+  H5Pset_fapl_mpio(plist_id, ((PetscObject)viewer)->comm, info);
+#endif
 #endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {

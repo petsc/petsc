@@ -236,9 +236,9 @@ PetscErrorCode MatGetSubMatrix_SeqBDiag(Mat A,IS isrow,IS iscol,MatReuse scall,M
 
   /* Determine diagonals; then create submatrix */
   bs = A->rmap.bs; /* Default block size remains the same */
-  ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
   ierr = MatSetSizes(newmat,newr,newc,newr,newc);CHKERRQ(ierr);
-  ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(newmat,0,bs,PETSC_NULL,PETSC_NULL);
 
   /* Fill new matrix */
@@ -656,9 +656,9 @@ static PetscErrorCode MatDuplicate_SeqBDiag(Mat A,MatDuplicateOption cpvalues,Ma
   Mat            mat;
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,matout);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,matout);CHKERRQ(ierr);
   ierr = MatSetSizes(*matout,A->rmap.N,A->cmap.n,A->rmap.N,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(*matout,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*matout,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(*matout,a->nd,bs,a->diag,PETSC_NULL);CHKERRQ(ierr);
 
   /* Copy contents of diagonals */
@@ -786,7 +786,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqBDiag(Mat B)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
 

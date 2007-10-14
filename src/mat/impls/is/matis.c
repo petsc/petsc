@@ -186,7 +186,7 @@ PetscErrorCode MatSetLocalToGlobalMapping_IS(Mat A,ISLocalToGlobalMapping mappin
   /* setup the global to local scatter */
   ierr = ISCreateStride(PETSC_COMM_SELF,n,0,1,&to);CHKERRQ(ierr);
   ierr = ISLocalToGlobalMappingApplyIS(mapping,to,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPI(A->comm,A->cmap.n,A->cmap.N,&global);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)A)->comm,A->cmap.n,A->cmap.N,&global);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,is->x,to,&is->ctx);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
   ierr = ISDestroy(to);CHKERRQ(ierr);
@@ -278,7 +278,7 @@ PetscErrorCode MatZeroRowsLocal_IS(Mat A,PetscInt n,const PetscInt rows[],PetscS
     */
     Vec         counter;
     PetscScalar one=1.0, zero=0.0;
-    ierr = VecCreateMPI(A->comm,A->cmap.n,A->cmap.N,&counter);CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)A)->comm,A->cmap.n,A->cmap.N,&counter);CHKERRQ(ierr);
     ierr = VecSet(counter,zero);CHKERRQ(ierr);
     ierr = VecSet(is->x,one);CHKERRQ(ierr);
     ierr = VecScatterBegin(is->ctx,is->x,counter,ADD_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);

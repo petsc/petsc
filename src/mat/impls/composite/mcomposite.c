@@ -95,7 +95,7 @@ PetscErrorCode MatAssemblyEnd_Composite(Mat Y,MatAssemblyType t)
   PetscTruth     flg;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsHasName(Y->prefix,"-mat_composite_merge",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)Y)->prefix,"-mat_composite_merge",&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatCompositeMerge(Y);CHKERRQ(ierr);
   }

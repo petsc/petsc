@@ -71,8 +71,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSplitViewPort(PetscDraw draw)
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isnull);CHKERRQ(ierr);
   if (isnull) PetscFunctionReturn(0);
 
-  ierr = MPI_Comm_rank(draw->comm,&rank);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(draw->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)draw)->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)draw)->comm,&size);CHKERRQ(ierr);
 
   n = (int)(.1 + sqrt((double)size));
   while (n*n < size) {n++;}

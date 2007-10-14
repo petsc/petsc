@@ -21,7 +21,9 @@ make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=
 make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_Complex
 make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_Fortran_Complex
 
-./config/asterix.py --download-prometheus=1 --download-parmetis=1 -PETSC_ARCH=asterix-prometheus
+./config/asterix.py --download-prometheus=1 --download-parmetis=1 -PETSC_ARCH=asterix-prometheus \
+--with-dscpack=1 --with-dscpack-include=/home/balay/soft/linux-fc/DSCPACK1.0/DSC_LIB \
+--with-dscpack-lib=/home/balay/soft/linux-fc/DSCPACK1.0/DSC_LIB/dsclibdbl.a
 make PETSC_ARCH=asterix-prometheus all test
 make PETSC_ARCH=asterix-prometheus tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_PARMETIS
 

@@ -94,7 +94,7 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscTypeCompare((PetscObject)gmat,MATSEQAIJ,&aij);CHKERRQ(ierr);
-    if (!aij) SETERRQ1(PETSC_ERR_SUP,"Currently no support for input matrix of type %s\n",gmat->type_name);
+    if (!aij) SETERRQ1(PETSC_ERR_SUP,"Currently no support for input matrix of type %s\n",((PetscObject)gmat)->type_name);
   }
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
@@ -320,7 +320,7 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
   if (size == 1) {  /* special case where copy of matrix is not needed */
     if (!red->setupcalled) {
       /* create the solver */
-      ierr = KSPCreate(pc->comm,&red->ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
@@ -452,7 +452,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr      = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"OpenMP preconditioner only works for sequential solves");
   /* caste the struct length to a PetscInt for easier MPI calls */
 

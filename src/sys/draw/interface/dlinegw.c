@@ -38,7 +38,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawLineGetWidth(PetscDraw draw,PetscReal *w
   PetscValidScalarPointer(width,2);
   ierr = PetscTypeCompare((PetscObject)draw,PETSC_DRAW_NULL,&isdrawnull);CHKERRQ(ierr);
   if (isdrawnull) PetscFunctionReturn(0);
-  if (!draw->ops->linegetwidth) SETERRQ1(PETSC_ERR_SUP,"This draw object %s does not support getting line width",draw->type_name);
+  if (!draw->ops->linegetwidth) SETERRQ1(PETSC_ERR_SUP,"This draw object %s does not support getting line width",((PetscObject)draw)->type_name);
   ierr = (*draw->ops->linegetwidth)(draw,width);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

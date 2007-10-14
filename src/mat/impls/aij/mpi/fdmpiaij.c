@@ -68,12 +68,12 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
     if (ctype == IS_COLORING_GLOBAL){
       /* Determine the total (parallel) number of columns of this color */
-      ierr = MPI_Comm_size(mat->comm,&size);CHKERRQ(ierr); 
+      ierr = MPI_Comm_size(((PetscObject)mat)->comm,&size);CHKERRQ(ierr); 
       ierr = PetscMalloc(2*size*sizeof(PetscInt*),&ncolsonproc);CHKERRQ(ierr);
       disp = ncolsonproc + size;
 
       nn   = (PetscMPIInt)n;
-      ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&nn,1,MPI_INT,ncolsonproc,1,MPI_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       nctot = 0; for (j=0; j<size; j++) {nctot += ncolsonproc[j];}
       if (!nctot) {
         ierr = PetscInfo(mat,"Coloring of matrix has some unneeded colors with no corresponding rows\n");CHKERRQ(ierr);
@@ -86,7 +86,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
 
       /* Get complete list of columns for color on each processor */
       ierr = PetscMalloc((nctot+1)*sizeof(PetscInt),&cols);CHKERRQ(ierr);
-      ierr = MPI_Allgatherv(is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,mat->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgatherv(is,n,MPIU_INT,cols,ncolsonproc,disp,MPIU_INT,((PetscObject)mat)->comm);CHKERRQ(ierr);
       ierr = PetscFree(ncolsonproc);CHKERRQ(ierr);
     } else if (ctype == IS_COLORING_GHOSTED){
       /* Determine local number of columns of this color on this process, including ghost points */
@@ -228,7 +228,7 @@ PetscErrorCode MatFDColoringCreate_MPIAIJ(Mat mat,ISColoring iscoloring,MatFDCol
        vscale will contain the "diagonal" on processor scalings followed by the off processor
   */
   if (ctype == IS_COLORING_GLOBAL) {
-    ierr = VecCreateGhost(mat->comm,aij->A->rmap.n,PETSC_DETERMINE,aij->B->cmap.n,aij->garray,&c->vscale);CHKERRQ(ierr);
+    ierr = VecCreateGhost(((PetscObject)mat)->comm,aij->A->rmap.n,PETSC_DETERMINE,aij->B->cmap.n,aij->garray,&c->vscale);CHKERRQ(ierr);
     ierr = PetscMalloc(c->ncolors*sizeof(PetscInt*),&c->vscaleforrow);CHKERRQ(ierr);
     for (k=0; k<c->ncolors; k++) { 
       ierr = PetscMalloc((c->nrows[k]+1)*sizeof(PetscInt),&c->vscaleforrow[k]);CHKERRQ(ierr);

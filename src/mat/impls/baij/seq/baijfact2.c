@@ -3240,9 +3240,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqBAIJ(Mat A,IS isrow,IS iscol,MatFactorInf
 #endif
 
     /* put together the new matrix */
-    ierr = MatCreate(A->comm,fact);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
     ierr = MatSetSizes(*fact,bs*n,bs*n,bs*n,bs*n);CHKERRQ(ierr);
-    ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+    ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatSeqBAIJSetPreallocation_SeqBAIJ(*fact,bs,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
     b    = (Mat_SeqBAIJ*)(*fact)->data;
@@ -3342,7 +3342,7 @@ PetscErrorCode MatSeqBAIJ_UpdateFactorNumeric_NaturalOrdering(Mat inA)
     {
       PetscTruth  sse_enabled_local;
       PetscErrorCode ierr;
-      ierr = PetscSSEIsEnabled(inA->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSSEIsEnabled(((PetscObject)inA)->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
       if (sse_enabled_local) {
 #  if defined(PETSC_HAVE_SSE)
         int i,*AJ=a->j,nz=a->nz,n=a->mbs;
@@ -3458,7 +3458,7 @@ PetscErrorCode MatSeqBAIJ_UpdateSolvers(Mat A)
   case 4: 
     {
       PetscTruth sse_enabled_local;
-      ierr = PetscSSEIsEnabled(A->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
+      ierr = PetscSSEIsEnabled(((PetscObject)A)->comm,&sse_enabled_local,PETSC_NULL);CHKERRQ(ierr);
       if (use_natural) {
 #if defined(PETSC_USE_MAT_SINGLE)
         if (sse_enabled_local) { /* Natural + Single + SSE */ 

@@ -46,13 +46,13 @@ PetscErrorCode DiffParameterCreate_More(SNES snes,Vec x,void **outneP)
   w = neP->workv[0];
 
   /* Set components of vector w to random numbers */
-  ierr = PetscRandomCreate(snes->comm,&rctx);CHKERRQ(ierr);
+  ierr = PetscRandomCreate(((PetscObject)snes)->comm,&rctx);CHKERRQ(ierr);
   ierr = PetscRandomSetFromOptions(rctx);CHKERRQ(ierr);
   ierr = VecSetRandom(w,rctx);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);
 
   /* Open output file */
-  ierr = PetscOptionsGetString(snes->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)snes)->prefix,"-snes_mf_noise_file",noise_file,PETSC_MAX_PATH_LEN-1,&flg);CHKERRQ(ierr);
   if (flg) neP->fp = fopen(noise_file,"w"); 
   else     neP->fp = fopen("noise.out","w"); 
   if (!neP->fp) SETERRQ(PETSC_ERR_FILE_OPEN,"Cannot open file");
@@ -93,7 +93,7 @@ PetscErrorCode DiffParameterCompute_More(SNES snes,void *nePv,Vec x,Vec p,double
   PetscInt       iter, k, i, j,  info;
   PetscInt       nf = 7;         /* number of function evaluations */
   PetscInt       fcount;
-  MPI_Comm       comm = snes->comm;
+  MPI_Comm       comm = ((PetscObject)snes)->comm;
   FILE           *fp;
   PetscTruth     noise_test;
 
@@ -239,7 +239,7 @@ PetscErrorCode JacMatMultCompare(SNES snes,Vec x,Vec p,double hopt)
   PetscInt       i;
   PetscTruth     printv;
   char           filename[32];
-  MPI_Comm       comm = snes->comm;
+  MPI_Comm       comm = ((PetscObject)snes)->comm;
 
   PetscFunctionBegin;
 
@@ -306,7 +306,7 @@ PetscErrorCode MyMonitor(SNES snes,PetscInt its,double fnorm,void *dummy)
   PetscFunctionBegin;
   ierr = SNESGetLinearSolveIterations(snes,&lin_its);CHKERRQ(ierr);
   lin_its_total += lin_its;
-  ierr = PetscPrintf(snes->comm, "iter = %D, SNES Function norm = %G, lin_its = %D, total_lin_its = %D\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)snes)->comm, "iter = %D, SNES Function norm = %G, lin_its = %D, total_lin_its = %D\n",its,fnorm,lin_its,lin_its_total);CHKERRQ(ierr);
 
   ierr = SNESUnSetMatrixFreeParameter(snes);CHKERRQ(ierr);
   PetscFunctionReturn(0);

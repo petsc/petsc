@@ -139,7 +139,7 @@ static PetscErrorCode PCSetUp_PBJacobi(PC pc)
   if (!seqbaij && !mpibaij && !baij) {
     SETERRQ(PETSC_ERR_SUP,"Currently only supports BAIJ matrices");
   }
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (mpibaij || (baij && (size > 1))) A = ((Mat_MPIBAIJ*)A->data)->A;
   if (A->rmap.n != A->cmap.n) SETERRQ(PETSC_ERR_SUP,"Supported only for square matrices and square storage");
 

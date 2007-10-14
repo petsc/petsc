@@ -143,7 +143,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetType(PetscDraw draw,PetscDrawType typ
     draw->data = 0;
   }
 
-  ierr =  PetscFListFind(PetscDrawList,draw->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(PetscDrawList,((PetscObject)draw)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown PetscDraw type given: %s",type);
   ierr = PetscObjectChangeTypeName((PetscObject)draw,type);CHKERRQ(ierr);
   draw->data        = 0;
@@ -191,7 +191,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawRegisterDestroy(void)
 PetscErrorCode PETSC_DLLEXPORT PetscDrawGetType(PetscDraw draw,PetscDrawType *type)
 {
   PetscFunctionBegin;
-  *type = draw->type_name;
+  *type = ((PetscObject)draw)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -252,8 +252,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
     ierr = PetscDrawRegisterAll(PETSC_NULL);CHKERRQ(ierr);
   }
 
-  if (draw->type_name) {
-    def = draw->type_name;
+  if (((PetscObject)draw)->type_name) {
+    def = ((PetscObject)draw)->type_name;
   } else {
     ierr = PetscOptionsHasName(PETSC_NULL,"-nox",&nox);CHKERRQ(ierr);
     def  = PETSC_DRAW_NULL;
@@ -268,11 +268,11 @@ PetscErrorCode PETSC_DLLEXPORT PetscDrawSetFromOptions(PetscDraw draw)
     }
 #endif
   }
-  ierr = PetscOptionsBegin(draw->comm,draw->prefix,"Graphics (PetscDraw) Options","Draw");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)draw)->comm,((PetscObject)draw)->prefix,"Graphics (PetscDraw) Options","Draw");CHKERRQ(ierr);
     ierr = PetscOptionsList("-draw_type","Type of graphical output","PetscDrawSetType",PetscDrawList,def,vtype,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = PetscDrawSetType(draw,vtype);CHKERRQ(ierr);
-    } else if (!draw->type_name) {
+    } else if (!((PetscObject)draw)->type_name) {
       ierr = PetscDrawSetType(draw,def);CHKERRQ(ierr);
     }
     ierr = PetscOptionsName("-nox","Run without graphics","None",&nox);CHKERRQ(ierr);

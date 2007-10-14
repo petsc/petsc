@@ -501,8 +501,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 {
   PetscErrorCode ierr;
   PetscInt       sleeptime=0;
+  int            err;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
-  int            ppid,err;
+  int            ppid;
   PetscMPIInt    rank;
   char           program[PETSC_MAX_PATH_LEN],hostname[256];
   PetscTruth     isdbx,isxldb,isxxgdb,isddd,isups,isxdb;
