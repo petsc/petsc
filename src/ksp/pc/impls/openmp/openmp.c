@@ -94,7 +94,7 @@ static PetscErrorCode MatDistribute_MPIAIJ(MPI_Comm comm,Mat gmat,PetscInt m,Mat
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
   if (!rank) {
     ierr = PetscTypeCompare((PetscObject)gmat,MATSEQAIJ,&aij);CHKERRQ(ierr);
-    if (!aij) SETERRQ1(PETSC_ERR_SUP,"Currently no support for input matrix of type %s\n",gmat->type_name);
+    if (!aij) SETERRQ1(PETSC_ERR_SUP,"Currently no support for input matrix of type %s\n",((PetscObject)gmat)->type_name);
   }
   if (reuse == MAT_INITIAL_MATRIX) {
     ierr = MatCreate(comm,&mat);CHKERRQ(ierr);
@@ -262,6 +262,7 @@ static PetscErrorCode PCSetUp_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscMPIInt    rank;
 
   PetscFunctionBegin;
+  red->comm = comm;
   ierr = MPI_Bcast(&red->setupcalled,1,MPIU_INT,0,comm);CHKERRQ(ierr);
   ierr = MPI_Bcast(&red->flag,1,MPI_INT,0,comm);CHKERRQ(ierr);
   if (!red->setupcalled) {
@@ -319,7 +320,7 @@ static PetscErrorCode PCSetUp_OpenMP(PC pc)
   if (size == 1) {  /* special case where copy of matrix is not needed */
     if (!red->setupcalled) {
       /* create the solver */
-      ierr = KSPCreate(pc->comm,&red->ksp);CHKERRQ(ierr);
+      ierr = KSPCreate(((PetscObject)pc)->comm,&red->ksp);CHKERRQ(ierr);
       ierr = KSPSetOptionsPrefix(red->ksp,"openmp_");CHKERRQ(ierr); /* should actually append with global pc prefix */
       ierr = KSPSetOperators(red->ksp,red->gmat,red->gmat,red->flag);CHKERRQ(ierr);
       ierr = KSPSetFromOptions(red->ksp);CHKERRQ(ierr);
@@ -345,6 +346,7 @@ static PetscErrorCode PCApply_OpenMP_MP(MPI_Comm comm,void *ctx)
   PetscFunctionBegin;
   ierr = VecScatterBegin(red->scatter,red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
   ierr = VecScatterEnd(red->scatter,red->xdummy,red->x,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
+  ierr = MPI_Bcast(&red->nonzero_guess,1,MPIU_INT,0,red->comm);CHKERRQ(ierr);
   if (red->nonzero_guess) {
     ierr = VecScatterBegin(red->scatter,red->ydummy,red->y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
     ierr = VecScatterEnd(red->scatter,red->ydummy,red->y,INSERT_VALUES,SCATTER_REVERSE);CHKERRQ(ierr);
@@ -369,7 +371,6 @@ static PetscErrorCode PCApply_OpenMP(PC pc,Vec x,Vec y)
   red->xdummy        = x;
   red->ydummy        = y;
   red->nonzero_guess = pc->nonzero_guess;
-  ierr = MPI_Bcast(&red->nonzero_guess,1,MPIU_INT,0,red->comm);CHKERRQ(ierr);
   ierr = PetscOpenMPRun(red->comm,PCApply_OpenMP_MP,red);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -451,7 +452,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_OpenMP(PC pc)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr      = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr      = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_SIZ,"OpenMP preconditioner only works for sequential solves");
   /* caste the struct length to a PetscInt for easier MPI calls */
 

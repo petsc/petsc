@@ -273,6 +273,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
   size_t         i,len,startIndex;
   FILE           *fd;
   PetscToken     *token;
+  int            err;
 
   PetscFunctionBegin;
   ierr = PetscFixFilename(file,fname);CHKERRQ(ierr);
@@ -319,7 +320,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsInsertFile(const char file[])
       }
       ierr = PetscTokenDestroy(token);CHKERRQ(ierr);
     }
-    fclose(fd);
+    err = fclose(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
   } else {
     SETERRQ1(PETSC_ERR_USER,"Unable to open Options File %s",fname);
   }

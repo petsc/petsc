@@ -400,7 +400,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
   PetscScalar    sum1,sum2,sum3,sum4,sum5,tmp0,tmp1;
   PetscScalar    *v1,*v2,*v3,*v4,*v5,*x,*y;
   PetscErrorCode ierr;
-  PetscInt       *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz;
+  PetscInt       *idx,i1,i2,n,i,row,node_max,*ns,*ii,nsz,sz,nonzerorow=0;
   
 #if defined(PETSC_HAVE_PRAGMA_DISJOINT)
 #pragma disjoint(*x,*y,*v1,*v2,*v3,*v4,*v5)
@@ -419,6 +419,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
   for (i = 0,row = 0; i< node_max; ++i){
     nsz  = ns[i]; 
     n    = ii[1] - ii[0];
+    nonzerorow += (n>0)*nsz;
     ii  += nsz;
     sz   = n;                   /* No of non zeros in this row */
                                 /* Switch on the size of Node */
@@ -573,7 +574,7 @@ static PetscErrorCode MatMult_Inode(Mat A,Vec xx,Vec yy)
   }
   ierr = VecRestoreArray(xx,&x);CHKERRQ(ierr);
   ierr = VecRestoreArray(yy,&y);CHKERRQ(ierr);
-  ierr = PetscLogFlops(2*a->nz - A->rmap.n);CHKERRQ(ierr);
+  ierr = PetscLogFlops(2*a->nz - nonzerorow);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 /* ----------------------------------------------------------- */
@@ -1577,9 +1578,9 @@ PetscErrorCode MatLUFactorNumeric_Inode(Mat A,MatFactorInfo *info,Mat *B)
   C->assembled   = PETSC_TRUE;
   if (sctx.nshift) {
     if (info->shiftnz) {
-      ierr = PetscInfo2(0,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } else if (info->shiftpd) {
-      ierr = PetscInfo4(0,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     }
   }
   ierr = PetscLogFlops(C->cmap.n);CHKERRQ(ierr);
@@ -1624,7 +1625,7 @@ PetscErrorCode MatColoringPatch_Inode(Mat mat,PetscInt ncolors,PetscInt nin,ISCo
     newcolor[i] = colorused[newcolor[i]]-1;
   }
   ierr = PetscFree(colorused);CHKERRQ(ierr);
-  ierr = ISColoringCreate(mat->comm,ncolors,n,newcolor,iscoloring);CHKERRQ(ierr);
+  ierr = ISColoringCreate(((PetscObject)mat)->comm,ncolors,n,newcolor,iscoloring);CHKERRQ(ierr);
   ierr = PetscFree(coloring);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

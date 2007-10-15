@@ -198,7 +198,7 @@ int main(int argc,char **args)
       v = -1.0*(t+0.5); i = Ii/n;
       if (i>0)   {J = Ii - n; ierr = MatSetValues(C1,1,&Ii,1,&J,&v,ADD_VALUES);CHKERRQ(ierr);}
     }
-    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*(Iend-Istart));CHKERRQ(ierr);
 
     /* 
        Assemble matrix, using the 2-step process:
@@ -310,7 +310,7 @@ int main(int argc,char **args)
     }
     ierr = MatAssemblyBegin(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
     ierr = MatAssemblyEnd(C2,MAT_FINAL_ASSEMBLY);CHKERRQ(ierr); 
-    ierr = PetscLogFlops(2*(Istart-Iend));CHKERRQ(ierr);
+    ierr = PetscLogFlops(2*(Iend-Istart));CHKERRQ(ierr);
 
     /* 
        Indicate same nonzero structure of successive linear system matrices

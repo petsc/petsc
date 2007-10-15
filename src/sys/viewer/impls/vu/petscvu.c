@@ -33,7 +33,7 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
     ierr = PetscViewerVUPrintDeferred(viewer, "};\n\n");CHKERRQ(ierr);
   }
   ierr = PetscViewerVUFlushDeferred(viewer);CHKERRQ(ierr);
-  ierr = PetscFClose(viewer->comm, vu->fd);CHKERRQ(ierr);
+  ierr = PetscFClose(((PetscObject)viewer)->comm, vu->fd);CHKERRQ(ierr);
   ierr = PetscStrfree(vu->filename);CHKERRQ(ierr);
   ierr = PetscFree(vu);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -44,12 +44,16 @@ PetscErrorCode PetscViewerDestroy_VU(PetscViewer viewer)
 PetscErrorCode PetscViewerFlush_VU(PetscViewer viewer)
 {
   PetscViewer_VU *vu = (PetscViewer_VU *) viewer->data;
-  int            rank;
+  PetscMPIInt    rank;
+  int            err;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
-  if (!rank) fflush(vu->fd);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm, &rank);CHKERRQ(ierr);
+  if (!rank) {
+    err = fflush(vu->fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
+  }
   PetscFunctionReturn(0);  
 }
 
@@ -78,7 +82,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_VU(PetscViewer viewer, con
 
   PetscFunctionBegin;
   if (!name) PetscFunctionReturn(0);
-  ierr = MPI_Comm_rank(viewer->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)viewer)->comm, &rank);CHKERRQ(ierr);
   if (rank != 0) PetscFunctionReturn(0);
   ierr = PetscStrallocpy(name, &vu->filename);CHKERRQ(ierr);
   ierr = PetscFixFilename(name, fname);CHKERRQ(ierr);
@@ -336,7 +340,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerVUFlushDeferred(PetscViewer viewer)
 
   PetscFunctionBegin;
   for(i = 0; i < vu->queueLength; i++) {
-    PetscFPrintf(viewer->comm, vu->fd, "%s", next->string);
+    PetscFPrintf(((PetscObject)viewer)->comm, vu->fd, "%s", next->string);
     previous = next; 
     next     = next->next;
     ierr     = PetscFree(previous);CHKERRQ(ierr);

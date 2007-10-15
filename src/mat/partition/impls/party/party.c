@@ -44,22 +44,21 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     MatPartitioning_Party *party = (MatPartitioning_Party *) part->data;
     PetscTruth flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int fd_stdout, fd_pipe[2], count;
+    int fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
     /* check if the matrix is sequential, use MatGetSubMatrices if necessary */
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
     if (size > 1) {
         int M, N;
         IS isrow, iscol;
         Mat *A;
 
-        if (flg) 
-          SETERRQ(PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
-        ierr = PetscPrintf(part->comm,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+        if (flg) SETERRQ(PETSC_ERR_SUP,"Distributed matrix format MPIAdj is not supported for sequential partitioners");
+        ierr = PetscPrintf(((PetscObject)part)->comm,"Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, N, 0, 1, &iscol);CHKERRQ(ierr);
@@ -68,9 +67,9 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         ierr = ISDestroy(iscol);CHKERRQ(ierr);
         matSeq = *A;
         ierr   = PetscFree(A);CHKERRQ(ierr);
-    } else
+    } else {
         matSeq = mat;
-
+    }
     /* check for the input format that is supported only for a MPIADJ type 
        and set it to matMPI */
 
@@ -121,7 +120,8 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
         part_info(n, vertex_w, edge_p, edge, edge_w, p, part_party, output);
 
 #ifdef PETSC_HAVE_UNISTD_H
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
         count =
             read(fd_pipe[0], party->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
@@ -139,8 +139,8 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     }
 
     /* Creation of the index set */
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(part->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)part)->comm, &size);CHKERRQ(ierr);
     nb_locals = mat->rmap.N / size;
     locals = parttab + rank * nb_locals;
     if (rank < mat->rmap.N % size) {
@@ -149,7 +149,7 @@ static PetscErrorCode MatPartitioningApply_Party(MatPartitioning part, IS * part
     } else {
         locals += mat->rmap.N % size;
     }
-    ierr = ISCreateGeneral(part->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
     /* destroying old objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);
@@ -172,14 +172,14 @@ PetscErrorCode MatPartitioningView_Party(MatPartitioning part, PetscViewer viewe
   PetscTruth            iascii;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     if (!rank && party->mesg_log) {
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", party->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Party partitioner",((PetscObject) viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Party partitioner",((PetscObject) viewer)((PetscObject))->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -365,11 +365,8 @@ PetscErrorCode MatPartitioningDestroy_Party(MatPartitioning part)
     PetscFunctionReturn(0);
 }
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Party"
-/*@C
-   MAT_PARTITIONING_Party - Creates a partitioning context via the external package Party.
+/*MC
+   MAT_PARTITIONING_PARTY - Creates a partitioning context via the external package Party.
 
    Collective on MPI_Comm
 
@@ -391,7 +388,11 @@ EXTERN_C_BEGIN
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
-@*/
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Party"
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Party(MatPartitioning part)
 {
     PetscErrorCode ierr;

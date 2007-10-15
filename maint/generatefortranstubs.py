@@ -112,9 +112,12 @@ def processDir(arg,dirname,names):
     if name in names:
       names.remove(name)
   # check for configure generated PETSC_ARCHes
+  rmnames=[]
   for name in names:
     if os.path.isdir(os.path.join(name,'conf')):
-      names.remove(name)
+      rmnames.append(name)
+  for rmname in rmnames:
+    names.remove(rmname)
   return
 
 def main(bfort):

@@ -34,7 +34,7 @@ PetscErrorCode ISDuplicate_Stride(IS is,IS *newIS)
   IS_Stride *sub = (IS_Stride*)is->data;
 
   PetscFunctionBegin;
-  ierr = ISCreateStride(is->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)is)->comm,sub->n,sub->first,sub->step,newIS);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -52,7 +52,7 @@ PetscErrorCode ISInvertPermutation_Stride(IS is,PetscInt nlocal,IS *perm)
     IS  tmp;
     PetscInt *indices,n = isstride->n;
     ierr = ISGetIndices(is,&indices);CHKERRQ(ierr);
-    ierr = ISCreateGeneral(is->comm,n,indices,&tmp);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)is)->comm,n,indices,&tmp);CHKERRQ(ierr);
     ierr = ISSetPermutation(tmp); CHKERRQ(ierr);
     ierr = ISRestoreIndices(is,&indices);CHKERRQ(ierr);
     ierr = ISInvertPermutation(tmp,nlocal,perm);CHKERRQ(ierr);
@@ -97,7 +97,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStrideGetInfo(IS is,PetscInt *first,PetscInt
   if (step) PetscValidIntPointer(step,3);
 
   sub = (IS_Stride*)is->data;
-  if (is->type != IS_STRIDE) PetscFunctionReturn(0);
+  if (((PetscObject)is)->type != IS_STRIDE) PetscFunctionReturn(0);
   if (first) *first = sub->first; 
   if (step)  *step  = sub->step;
   PetscFunctionReturn(0);
@@ -129,7 +129,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISStride(IS is,PetscTruth *flag)
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidIntPointer(flag,2);
 
-  if (is->type != IS_STRIDE) *flag = PETSC_FALSE;
+  if (((PetscObject)is)->type != IS_STRIDE) *flag = PETSC_FALSE;
   else                       *flag = PETSC_TRUE;
 
   PetscFunctionReturn(0);
@@ -214,8 +214,8 @@ PetscErrorCode ISView_Stride(IS is,PetscViewer viewer)
   PetscFunctionBegin;
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) { 
-    ierr = MPI_Comm_rank(is->comm,&rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(is->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)is)->comm,&rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)is)->comm,&size);CHKERRQ(ierr);
     if (size == 1) {
       if (is->isperm) {
         ierr = PetscViewerASCIISynchronizedPrintf(viewer,"Index set is permutation\n");CHKERRQ(ierr);
@@ -345,7 +345,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateStride(MPI_Comm comm,PetscInt n,PetscI
   ierr = PetscOptionsHasName(PETSC_NULL,"-is_view",&flg);CHKERRQ(ierr);
   if (flg) {
     PetscViewer viewer;
-    ierr = PetscViewerASCIIGetStdout(Nindex->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)Nindex)->comm,&viewer);CHKERRQ(ierr);
     ierr = ISView(Nindex,viewer);CHKERRQ(ierr);
   }
   *is = Nindex; 

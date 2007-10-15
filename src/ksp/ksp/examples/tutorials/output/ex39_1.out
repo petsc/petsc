@@ -1,49 +1,29 @@
 Initialization stage
-Residual norm of starting guess: 52.672781
-Residual norm of relaxation after 0.0001 20 relaxations: 0.0146671 52.6728
+Residual norm of starting guess: 44.229815
+Residual norm of relaxation after 0.0001 20 relaxations: 0.0148812 44.2298
 Initialization stage: creating level 2
 Level 2 can be treated directly.
 Algorithm will use 2 levels.
-After 1 iterations residual norm is 0.078199
-After 1 iterations Rayleigh quotient of residual is 0.019829
-After 2 iterations residual norm is 0.019928
-After 2 iterations Rayleigh quotient of residual is 0.007237
-After 3 iterations residual norm is 0.009801
-After 3 iterations Rayleigh quotient of residual is 0.005293
-After 4 iterations residual norm is 0.006400
-After 4 iterations Rayleigh quotient of residual is 0.004790
+After 1 iterations residual norm is 0.056338
+After 1 iterations Rayleigh quotient of residual is 0.040647
+After 2 iterations residual norm is 0.018130
+After 2 iterations Rayleigh quotient of residual is 0.040674
 General setup stage
 Adding candidate vector 2
-After 5 iterations residual norm is 0.074784
-After 5 iterations Rayleigh quotient of residual is 0.019257
-After 6 iterations residual norm is 0.024371
-After 6 iterations Rayleigh quotient of residual is 0.007908
-After 7 iterations residual norm is 0.012924
-After 7 iterations Rayleigh quotient of residual is 0.005412
-After 8 iterations residual norm is 0.008598
-After 8 iterations Rayleigh quotient of residual is 0.004489
-After 9 iterations residual norm is 0.006496
-After 9 iterations Rayleigh quotient of residual is 0.004053
+After 3 iterations residual norm is 0.042859
+After 3 iterations Rayleigh quotient of residual is 0.040705
+After 4 iterations residual norm is 0.014310
+After 4 iterations Rayleigh quotient of residual is 0.040586
 General setup stage
 Adding candidate vector 3
-After 10 iterations residual norm is 0.082467
-After 10 iterations Rayleigh quotient of residual is 0.035880
-After 11 iterations residual norm is 0.023210
-After 11 iterations Rayleigh quotient of residual is 0.017490
-After 12 iterations residual norm is 0.010922
-After 12 iterations Rayleigh quotient of residual is 0.013007
-After 13 iterations residual norm is 0.006548
-After 13 iterations Rayleigh quotient of residual is 0.011186
-After 14 iterations residual norm is 0.004415
-After 14 iterations Rayleigh quotient of residual is 0.010117
+After 5 iterations residual norm is 0.027694
+After 5 iterations Rayleigh quotient of residual is 0.042306
+After 6 iterations residual norm is 0.005820
+After 6 iterations Rayleigh quotient of residual is 0.040629
 General setup stage
 Adding candidate vector 4
-  0 KSP Residual norm 48.2072 
-  1 KSP Residual norm 7.62274 
-  2 KSP Residual norm 3.56219 
-  3 KSP Residual norm 1.43425 
-  4 KSP Residual norm 0.457393 
-  5 KSP Residual norm 0.0606526 
-  6 KSP Residual norm 0.00539815 
-  7 KSP Residual norm 0.000490433 
-  8 KSP Residual norm 4.88762e-05 
+  0 KSP Residual norm 2.34278 
+  1 KSP Residual norm 0.195913 
+  2 KSP Residual norm 0.0100163 
+  3 KSP Residual norm 0.000959025 
+  4 KSP Residual norm 1.43311e-05 

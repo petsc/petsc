@@ -319,13 +319,13 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
   }
   
   /* look for type on command line */
-  ierr = PetscOptionsGetString(mat->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
   if (flag) {
     type = tname;
   }
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(MatColoringList,mat->comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatColoringList,((PetscObject)mat)->comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
   ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);

@@ -501,6 +501,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 {
   PetscErrorCode ierr;
   PetscInt       sleeptime=0;
+  int            err;
 #if !defined(PETSC_CANNOT_START_DEBUGGER) 
   int            ppid;
   PetscMPIInt    rank;
@@ -569,7 +570,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscStopForDebugger(void)
 #endif
 #endif /* PETSC_CANNOT_START_DEBUGGER */
 
-  fflush(stdout);
+  err = fflush(stdout);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
 
   sleeptime = 25; /* default to sleep waiting for debugger */
   ierr = PetscOptionsGetInt(PETSC_NULL,"-debugger_pause",&sleeptime,PETSC_NULL);CHKERRQ(ierr);

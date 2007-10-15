@@ -53,7 +53,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedGetMatrix(Sliced slice, MatType mtype,Mat
   ISLocalToGlobalMapping lmap;
 
   PetscFunctionBegin;
-  ierr = MatCreate(slice->comm,J);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)slice)->comm,J);CHKERRQ(ierr);
   ierr = MatSetSizes(*J,slice->n,slice->n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
   ierr = MatSetType(*J,mtype);CHKERRQ(ierr);
   ierr = MatSetBlockSize(*J,slice->bs);CHKERRQ(ierr);
@@ -199,7 +199,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedDestroy(Sliced slice)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (--slice->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)slice)->refct > 0) PetscFunctionReturn(0);
   if (slice->globalvector) {ierr = VecDestroy(slice->globalvector);CHKERRQ(ierr);}
   ierr = PetscHeaderDestroy(slice);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -235,7 +235,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SlicedCreateGlobalVector(Sliced slice,Vec *gvec
   if (slice->globalvector) {
     ierr = VecDuplicate(slice->globalvector,gvec);CHKERRQ(ierr);
   } else {
-    ierr  = VecCreateGhostBlock(slice->comm,slice->bs,slice->n,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,&slice->globalvector);CHKERRQ(ierr);
+    ierr  = VecCreateGhostBlock(((PetscObject)slice)->comm,slice->bs,slice->n,PETSC_DETERMINE,slice->Nghosts,slice->ghosts,&slice->globalvector);CHKERRQ(ierr);
     *gvec = slice->globalvector;
     ierr = PetscObjectReference((PetscObject)*gvec);CHKERRQ(ierr); 
   }

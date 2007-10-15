@@ -183,6 +183,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
   PetscObject    obj = (PetscObject)vobj;
   char           string[8*1024];
   PetscErrorCode ierr;
+  int            err;
 
   PetscFunctionBegin;
   if (obj) PetscValidHeader(obj,1);
@@ -203,7 +204,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscInfo_Private(const char func[],void *vobj, c
   ierr = PetscStrlen(string, &len);CHKERRQ(ierr);
   ierr = PetscVSNPrintf(string+len, 8*1024-len,message, Argp);
   ierr = PetscFPrintf(PETSC_COMM_SELF,PetscInfoFile, "%s", string);CHKERRQ(ierr);
-  fflush(PetscInfoFile);
+  err = fflush(PetscInfoFile);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");        
   if (petsc_history) {
     (*PetscVFPrintf)(petsc_history, message, Argp);CHKERRQ(ierr);
   }

@@ -66,7 +66,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscHeaderDestroy_Private(PetscObject h)
   }
   ierr = PetscCommDestroy(&h->comm);CHKERRQ(ierr);
   ierr = PetscFree(h->bops);CHKERRQ(ierr);
-  ierr = PetscFree(h->ops);CHKERRQ(ierr);
   ierr = PetscOListDestroy(h->olist);CHKERRQ(ierr);
   ierr = PetscFListDestroy(&h->qlist);CHKERRQ(ierr);
   ierr = PetscStrfree(h->type_name);CHKERRQ(ierr);
@@ -446,7 +445,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscContainerDestroy(PetscContainer obj)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(obj,PETSC_CONTAINER_COOKIE,1);
-  if (--obj->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)obj)->refct > 0) PetscFunctionReturn(0);
   if (obj->userdestroy) (*obj->userdestroy)(obj->ptr);
   ierr = PetscHeaderDestroy(obj);CHKERRQ(ierr);
   PetscFunctionReturn(0);

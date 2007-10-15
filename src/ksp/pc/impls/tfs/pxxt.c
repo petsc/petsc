@@ -90,9 +90,9 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XXT(Mat A,IS r,IS c,MatFactorInfo *inf
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr = MatSetSizes(*F,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
-  ierr = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*F,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   B                       = *F;
   B->ops->solve           = MatSolve_MPIAIJ_XXT;
@@ -218,9 +218,9 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_XYT(Mat A,IS r,IS c,MatFactorInfo *inf
 
   PetscFunctionBegin;
   if (A->N != A->M) SETERRQ(PETSC_ERR_ARG_SIZ,"matrix must be square"); 
-  ierr = MatCreate(A->comm,F);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,F);CHKERRQ(ierr);
   ierr = MatSetSizes(*F,A->m,A->n,A->M,A->N);CHKERRQ(ierr);
-  ierr = MatSetType(*F,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*F,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(*F,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   B                       = *F;
   B->ops->solve           = MatSolve_MPIAIJ_XYT;
@@ -269,7 +269,7 @@ PetscErrorCode MatLUFactorSymbolic_MPIAIJ_TFS(Mat A,IS r,IS c,MatFactorInfo *inf
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInfo(0,"Using TFS for MPIAIJ LU factorization and solves\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using TFS for MPIAIJ LU factorization and solves\n");CHKERRQ(ierr);
   if (A->symmetric) {
     ierr = MatLUFactorSymbolic_MPIAIJ_XXT(A,r,c,info,F);CHKERRQ(ierr);
   } else {

@@ -126,7 +126,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorSingularValue(KSP ksp,PetscInt n,Pet
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(ksp->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   if (!ksp->calc_sings) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   } else {
@@ -206,7 +206,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefault(KSP ksp,PetscInt n,PetscReal
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(ksp->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %14.12e \n",n,rnorm);CHKERRQ(ierr);
   if (!dummy) {ierr = PetscViewerASCIIMonitorDestroy(viewer);CHKERRQ(ierr);}
   PetscFunctionReturn(0);
@@ -253,7 +253,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorTrueResidualNorm(KSP ksp,PetscInt n,
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
   
   PetscFunctionBegin;
-  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(ksp->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
   ierr = VecDuplicate(ksp->vec_rhs,&work);CHKERRQ(ierr);
   ierr = KSPBuildResidual(ksp,0,work,&resid);CHKERRQ(ierr);
 
@@ -291,7 +291,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorDefaultShort(KSP ksp,PetscInt its,Pe
   PetscViewerASCIIMonitor viewer = (PetscViewerASCIIMonitor) dummy;
 
   PetscFunctionBegin;
-  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(ksp->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
+  if (!dummy) {ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,"stdout",0,&viewer);CHKERRQ(ierr);}
 
   if (fnorm > 1.e-9) {
     ierr = PetscViewerASCIIMonitorPrintf(viewer,"%3D KSP Residual norm %G \n",its,fnorm);CHKERRQ(ierr);
@@ -346,7 +346,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP ksp,PetscInt n,PetscReal 
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedSetUIRNorm"
-/*@C
+/*@
    KSPDefaultConvergedSetUIRNorm - makes the default convergence test use || B*(b - A*(initial guess))||
       instead of || B*b ||. In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UIRNorm is short for Use Initial Residual Norm.
@@ -381,7 +381,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP ksp)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPDefaultConvergedSetUMIRNorm"
-/*@C
+/*@
    KSPDefaultConvergedSetUMIRNorm - makes the default convergence test use min(|| B*(b - A*(initial guess))||,|| B*b ||)
       In the case of right preconditioner or if KSPSetNormType(ksp,KSP_NORM_UNPRECONDIITONED)
       is used there is no B in the above formula. UMIRNorm is short for Use Minimum Initial Residual Norm.

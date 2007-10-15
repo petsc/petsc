@@ -125,6 +125,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
   PetscTruth         flg,iflg;
   FILE               *fd;
   static PetscMPIInt Petsc_Tmp_keyval = MPI_KEYVAL_INVALID;
+  int                err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -176,14 +177,16 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm comm,PetscTruth *shared)
         if (!fd) {
           SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
         }
-        fclose(fd);
+        err = fclose(fd);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
         fd = fopen(filename,"r");
         if (fd) cnt = 1; else cnt = 0;
         if (fd) {
-          fclose(fd);
+          err = fclose(fd);
+          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
         }
       } else {
         cnt = 0;
@@ -253,6 +256,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
   PetscTruth         flg,iflg;
   FILE               *fd;
   static PetscMPIInt Petsc_WD_keyval = MPI_KEYVAL_INVALID;
+  int                err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
@@ -295,17 +299,17 @@ PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm comm,PetscTr
     for (i=0; i<size-1; i++) {
       if (rank == i) {
         fd = fopen(filename,"w");
-        if (!fd) {
-          SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
-        }
-        fclose(fd);
+        if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Unable to open test file %s",filename);
+        err = fclose(fd);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
       }
       ierr = MPI_Barrier(comm);CHKERRQ(ierr);
       if (rank >= i) {
         fd = fopen(filename,"r");
         if (fd) cnt = 1; else cnt = 0;
         if (fd) {
-          fclose(fd);
+          err = fclose(fd);
+          if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
         }
       } else {
         cnt = 0;

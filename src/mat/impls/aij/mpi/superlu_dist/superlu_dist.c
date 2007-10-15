@@ -18,8 +18,7 @@ EXTERN_C_BEGIN
 #endif
 EXTERN_C_END 
 
-typedef enum { GLOBAL,DISTRIBUTED
-} SuperLU_MatInputMode;
+typedef enum {GLOBAL,DISTRIBUTED} SuperLU_MatInputMode;
 
 typedef struct {
   int_t                   nprow,npcol,*row,*col;
@@ -126,7 +125,7 @@ PetscErrorCode MatDestroy_SuperLU_DIST(Mat A)
     ierr = MPI_Comm_free(&(lu->comm_superlu));CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatConvert_SuperLU_DIST_AIJ(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
@@ -153,7 +152,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
   VecScatter       scat;
   
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size > 1) {  
     if (lu->MatInputMode == GLOBAL) { /* global mat input, convert b to x_seq */
       ierr = VecCreateSeq(PETSC_COMM_SELF,N,&x_seq);CHKERRQ(ierr);
@@ -173,8 +172,7 @@ PetscErrorCode MatSolve_SuperLU_DIST(Mat A,Vec b_mpi,Vec x)
     ierr = VecGetArray(x,&bptr);CHKERRQ(ierr); 
   }
  
-  if (lu->options.Fact != FACTORED) 
-    SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
+  if (lu->options.Fact != FACTORED) SETERRQ(PETSC_ERR_ARG_WRONG,"SuperLU_DIST options.Fact mush equal FACTORED");
 
   PStatInit(&stat);        /* Initialize the statistics variables. */
   if (lu->MatInputMode == GLOBAL) { 
@@ -240,11 +238,11 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 #endif
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
-  ierr = MPI_Comm_rank(A->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)A)->comm,&rank);CHKERRQ(ierr);
   
   if (lu->options.PrintStat) { /* collect time for mat conversion */
-    ierr = MPI_Barrier(A->comm);CHKERRQ(ierr);
+    ierr = MPI_Barrier(((PetscObject)A)->comm);CHKERRQ(ierr);
     ierr = PetscGetTime(&time0);CHKERRQ(ierr);  
   }
 
@@ -395,18 +393,16 @@ PetscErrorCode MatLUFactorNumeric_SuperLU_DIST(Mat A,MatFactorInfo *info,Mat *F)
 
   if (lu->options.PrintStat) {
     if (size > 1){
-      ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,A->comm);
-      ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,A->comm);
-      ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,A->comm);
+      ierr = MPI_Reduce(&time0,&time_max,1,MPI_DOUBLE,MPI_MAX,0,((PetscObject)A)->comm);
+      ierr = MPI_Reduce(&time0,&time_min,1,MPI_DOUBLE,MPI_MIN,0,((PetscObject)A)->comm);
+      ierr = MPI_Reduce(&time0,&time,1,MPI_DOUBLE,MPI_SUM,0,((PetscObject)A)->comm);
       time = time/size; /* average time */
-      if (!rank)
-        ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n \
-                              %g / %g / %g\n",time_max,time_min,time);
+      if (!rank) {
+        ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time (max/min/avg): \n                              %g / %g / %g\n",time_max,time_min,time);CHKERRQ(ierr);
+      }
     } else {
-      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n \
-                              %g\n",time0);
+      ierr = PetscPrintf(PETSC_COMM_SELF, "        Mat conversion(PETSc->SuperLU_DIST) time: \n    %g\n",time0);CHKERRQ(ierr);
     }
-    
     PStatPrint(&lu->options, &stat, &lu->grid);  /* Print the statistics. */
   }
   PStatFree(&stat);  
@@ -437,9 +433,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,M,N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -463,8 +459,8 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
   */
   set_default_options_dist(&options);
 
-  ierr = MPI_Comm_dup(A->comm,&(lu->comm_superlu));CHKERRQ(ierr);
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_superlu));CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   /* Default num of process columns and rows */
   lu->npcol = (PetscMPIInt)(0.5 + sqrt((PetscReal)size)); 
   if (!lu->npcol) lu->npcol = 1;
@@ -474,7 +470,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU_DIST(Mat A,IS r,IS c,MatFactorInfo *i
     lu->npcol --;
   }    
   
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU_Dist Options","Mat");CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_r","Number rows in processor partition","None",lu->nprow,&lu->nprow,PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-mat_superlu_dist_c","Number columns in processor partition","None",lu->npcol,&lu->npcol,PETSC_NULL);CHKERRQ(ierr);
     if (size != lu->nprow * lu->npcol) 
@@ -690,7 +686,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_SuperLU_DIST(Mat A,MatType type
     ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_dist_mpiaij_C",
                                              "MatConvert_SuperLU_DIST_AIJ",MatConvert_SuperLU_DIST_AIJ);CHKERRQ(ierr);
   }
-  ierr = PetscInfo(0,"Using SuperLU_DIST for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using SuperLU_DIST for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU_DIST);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -757,7 +753,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SuperLU_DIST(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {

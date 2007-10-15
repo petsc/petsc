@@ -144,7 +144,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SuperLU(Mat A,MatType type,M
                                            "MatConvert_SeqAIJ_SuperLU",MatConvert_SeqAIJ_SuperLU);CHKERRQ(ierr);
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)B,"MatConvert_superlu_seqaij_C",
                                            "MatConvert_SuperLU_SeqAIJ",MatConvert_SuperLU_SeqAIJ);CHKERRQ(ierr);
-  ierr = PetscInfo(0,"Using SuperLU for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using SuperLU for SeqAIJ LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,MATSUPERLU);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -446,9 +446,9 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   const char   *rowperm[]={"NOROWPERM", "LargeDiag"}; /* MY_PERMC - not supported by the petsc interface yet */
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
 
   B->ops->lufactornumeric = MatLUFactorNumeric_SuperLU;
@@ -478,7 +478,7 @@ PetscErrorCode MatLUFactorSymbolic_SuperLU(Mat A,IS r,IS c,MatFactorInfo *info,M
   lu->options.PrintStat = NO;
   lu->lwork = 0;   /* allocate space internally by system malloc */
 
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"SuperLU Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_superlu_colperm","ColPerm","None",colperm,4,colperm[3],&indx,&flg);CHKERRQ(ierr);
   if (flg) {lu->options.ColPerm = (colperm_t)indx;}
   ierr = PetscOptionsEList("-mat_superlu_iterrefine","IterRefine","None",iterrefine,4,iterrefine[0],&indx,&flg);CHKERRQ(ierr);

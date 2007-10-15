@@ -39,7 +39,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateGlobalVector(DA da,Vec* g)
   PetscFunctionBegin; 
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(g,2);
-  ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);
+  ierr = VecCreateMPI(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,g);
   ierr = PetscObjectCompose((PetscObject)*g,"DA",(PetscObject)da);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMapping(*g,da->ltogmap);CHKERRQ(ierr);
   ierr = VecSetLocalToGlobalMappingBlock(*g,da->ltogmapb);CHKERRQ(ierr);
@@ -96,7 +96,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreateNaturalVector(DA da,Vec* g)
       ierr = VecDuplicate(da->natural,g);CHKERRQ(ierr);
     }
   } else { /* create the first version of this guy */
-    ierr = VecCreateMPI(da->comm,da->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
+    ierr = VecCreateMPI(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,g);CHKERRQ(ierr);
     ierr = VecSetBlockSize(*g, da->w);CHKERRQ(ierr);
     ierr = PetscObjectReference((PetscObject)*g);CHKERRQ(ierr);
     da->natural = *g;

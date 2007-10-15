@@ -2125,7 +2125,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
   asa->levels    = 0;
   asa->levellist = 0;
 
-  asa->comm = pc->comm;
+  asa->comm = ((PetscObject)pc)->comm;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

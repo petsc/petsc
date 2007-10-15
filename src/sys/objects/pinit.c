@@ -805,7 +805,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   if (flg1) {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
-    
+    int  err;
+
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
@@ -814,7 +815,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
-      fclose(fd);
+      err = fclose(fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       MPI_Comm local_comm;
 
@@ -833,11 +835,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
+      int  err;
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
-      fclose(fd);
+      err = fclose(fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }

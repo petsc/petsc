@@ -51,19 +51,22 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, c
   ierr = PetscStrallocpy(name, &hdf5->filename);CHKERRQ(ierr);
   /* Set up file access property list with parallel I/O access */
   plist_id = H5Pcreate(H5P_FILE_ACCESS);
-  H5Pset_fapl_mpio(plist_id, viewer->comm, info);
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
+  H5Pset_fapl_mpio(plist_id, ((PetscObject)viewer)->comm, info);
+#endif
+#endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
-  case FILE_MODE_READ:
-    hdf5->file_id = H5Fopen(name, H5F_ACC_RDONLY, plist_id);
-    break;
-  case FILE_MODE_WRITE:
-    hdf5->file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
-    break;
-  default:
-    SETERRQ(PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
+    case FILE_MODE_READ:
+      hdf5->file_id = H5Fopen(name, H5F_ACC_RDONLY, plist_id);
+      break;
+    case FILE_MODE_WRITE:
+      hdf5->file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, plist_id);
+      break;
+    default:
+      SETERRQ(PETSC_ERR_ORDER, "Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
   }
-  if (hdf5->file_id < 0) {SETERRQ1(PETSC_ERR_LIB, "H5Fcreate failed for %s", name);}
+  if (hdf5->file_id < 0) SETERRQ1(PETSC_ERR_LIB, "H5Fcreate failed for %s", name);
   viewer->format = PETSC_VIEWER_NOFORMAT;
   H5Pclose(plist_id);
   PetscFunctionReturn(0);
@@ -78,20 +81,20 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_HDF5(PetscViewer v)
   PetscViewer_HDF5 *hdf5;
   PetscErrorCode    ierr;
  
- PetscFunctionBegin;
- ierr = PetscNewLog(v, PetscViewer_HDF5, &hdf5);CHKERRQ(ierr);
- v->data         = (void *) hdf5;
- v->ops->destroy = PetscViewerDestroy_HDF5;
- v->ops->flush   = 0;
- v->iformat      = 0;
- hdf5->btype     = (PetscFileMode) -1; 
- hdf5->filename  = 0;
+  PetscFunctionBegin;
+  ierr = PetscNewLog(v, PetscViewer_HDF5, &hdf5);CHKERRQ(ierr);
+  v->data         = (void *) hdf5;
+  v->ops->destroy = PetscViewerDestroy_HDF5;
+  v->ops->flush   = 0;
+  v->iformat      = 0;
+  hdf5->btype     = (PetscFileMode) -1; 
+  hdf5->filename  = 0;
 
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetName_C","PetscViewerFileSetName_HDF5",
                                            PetscViewerFileSetName_HDF5);CHKERRQ(ierr);
- ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",
+  ierr = PetscObjectComposeFunctionDynamic((PetscObject)v,"PetscViewerFileSetMode_C","PetscViewerFileSetMode_HDF5",
                                            PetscViewerFileSetMode_HDF5);CHKERRQ(ierr);
- PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
 }
 EXTERN_C_END
 
@@ -112,7 +115,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerHDF5Open(MPI_Comm comm, const char nam
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerHDF5GetFileId" 
 /*@C
-  PetscViewerHDF5GetFileId - Retrieve the file id
+  PetscViewerHDF5GetFileId - Retrieve the file id, this file ID then can be used in direct HDF5 calls
 
   Not collective
 

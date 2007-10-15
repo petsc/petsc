@@ -58,7 +58,7 @@ PetscErrorCode MatGetInertia_MPISBAIJSpooles(Mat F,int *nneg,int *nzero,int *npo
   PetscFunctionBegin;
   FrontMtx_inertia(lu->frontmtx, &neg, &zero, &pos);
   sbuf[0] = neg; sbuf[1] = zero; sbuf[2] = pos;
-  ierr = MPI_Allreduce(sbuf,rbuf,3,MPI_INT,MPI_SUM,F->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(sbuf,rbuf,3,MPI_INT,MPI_SUM,((PetscObject)F)->comm);CHKERRQ(ierr);
   *nneg  = rbuf[0]; *nzero = rbuf[1]; *npos  = rbuf[2];
   PetscFunctionReturn(0);
 }
@@ -75,9 +75,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   PetscFunctionBegin;	
 
   /* Create the factorization matrix */  
-  ierr = MatCreate(A->comm,&B);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
   
   B->ops->choleskyfactornumeric = MatFactorNumeric_MPISpooles;
@@ -90,7 +90,7 @@ PetscErrorCode MatCholeskyFactorSymbolic_MPISBAIJSpooles(Mat A,IS r,MatFactorInf
   lu->options.useQR        = PETSC_FALSE;
   lu->options.symflag      = SPOOLES_SYMMETRIC;  /* default */
 
-  ierr = MPI_Comm_dup(A->comm,&(lu->comm_spooles));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_spooles));CHKERRQ(ierr);
   *F = B;
   PetscFunctionReturn(0); 
 }

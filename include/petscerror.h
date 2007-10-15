@@ -279,7 +279,7 @@ extern PetscErrorCode PetscExceptions[PETSC_EXCEPTIONS_MAX];
 extern PetscInt       PetscExceptionsCount;
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPush(PetscErrorCode);
-EXTERN void PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscExceptionPop(PetscErrorCode);
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorSetCatchable(PetscErrorCode,PetscTruth);
 EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
@@ -292,7 +292,7 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
      PetscTruth PetscExceptionCaught(PetscErrorCode xierr,PetscErrorCode zierr);
 
   Input Parameters:
-  + xierr - error code returned from PetscExceptionTry1() 
+  + xierr - error code returned from PetscExceptionTry1() or other PETSc routine
   - zierr - error code you want it to be
 
   Level: advanced
@@ -300,9 +300,9 @@ EXTERN PetscTruth PETSC_DLLEXPORT PetscErrorIsCatchable(PetscErrorCode);
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
 
-    Use PetscExceptionValue() to see if the current error code is one that has been "tried"
+    Use PetscExceptionValue() to see if an error code is being "tried"
 
-  Concepts: exceptions, exception hanlding
+  Concepts: exceptions, exception handling
 
 .seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
           CHKERRQ(), PetscExceptionTry1(), PetscExceptionValue()
@@ -359,9 +359,11 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
    Not Collective
 
    Synopsis:
-     PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
+     PetscErrorCode PetscExceptionTry1(PetscErrorCode routine(....),PetscErrorCode);
 
   Level: advanced
+
+   No Fortran Equivalent (see PetscExceptionPush() for Fortran)
 
    Notes:
     PETSc must not be configured using the option --with-errorchecking=0 for this to work
@@ -376,7 +378,54 @@ PETSC_STATIC_INLINE PetscTruth PetscExceptionValue(PetscErrorCode zierr) {
           CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop()
 M*/
 extern PetscErrorCode PetscExceptionTmp;
-#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTmp)
+#define PetscExceptionTry1(a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : (PetscExceptionTmp = a, (PetscExceptionPop(b) || PetscExceptionTmp))
+
+/*
+   Used by PetscExceptionTrySync(). Returns zierr on ALL processes in comm iff xierr is zierr on at least one process and zero on all others.
+*/
+PETSC_STATIC_INLINE PetscErrorCode PetscExceptionTrySync_Private(MPI_Comm comm,PetscErrorCode xierr,PetscErrorCode zierr) 
+{
+  PetscReal      in[2],out[2];
+  PetscErrorCode ierr;
+
+  if (xierr != zierr) return xierr;
+
+  in[0] = xierr;
+  in[1] = 0.0;   /* dummy value */
+
+  ierr = MPI_Allreduce(in,out,2,MPIU_REAL,0,comm); if (ierr) {;}
+  return xierr;
+}          
+
+/*MC
+   PetscExceptionTrySyncNorm - Runs the routine, causing a particular error code to be treated as an exception,
+         rather than an error. That is if that error code is treated the program returns to this level,
+         but does not call the error handlers
+
+     Collective on Comm
+
+   Synopsis:
+     PetscExceptionTrySyncNorm(MPI_Comm comm,PetscErrorCode routine(....),PetscErrorCode);
+
+  Level: advanced
+
+   Notes: This synchronizes the error code across all processes in the communicator IF the code matches PetscErrorCode. The next
+     call with an MPI_Reduce()/MPI_Allreduce() MUST be VecNorm() [We can added VecDot() and maybe others as needed].
+
+    PETSc must not be configured using the option --with-errorchecking=0 for this to work
+
+  Note: In general, the outer most try on an exception is the one that will be caught (that is trys down in 
+        PETSc code will not usually handle an exception that was issued above). See SNESSolve() for an example
+        of how the local try is ignored if a higher (in the stack) one is also in effect.
+
+  Concepts: exceptions, exception hanlding
+
+.seealso: PetscTraceBackErrorHandler(), PetscPushErrorHandler(), PetscError(), SETERRQ(), CHKMEMQ, SETERRQ1(), SETERRQ2(), SETERRQ3(), 
+          CHKERRQ(), PetscExceptionCaught(), PetscExceptionPush(), PetscExceptionPop(), PetscExceptionTry1()
+M*/
+extern PetscErrorCode PetscExceptionTmp;
+#define PetscExceptionTrySyncNorm(comm,a,b) (PetscExceptionTmp = PetscExceptionPush(b)) ? PetscExceptionTmp : \
+                                        (PetscExceptionTmp = a , PetscExceptionPop(b),PetscExceptionTrySyncNorm_Private(comm,PetscExceptionTmp,b))
 
 #else
 
@@ -404,14 +453,16 @@ extern PetscErrorCode PetscExceptionTmp;
 #define ___  
 #endif 
 
-#define PetscExceptionPush(a)       0
-#define PetscExceptionPop(a)
-#define PetscErrorSetCatchable(a,b) 0
-#define PetscErrorIsCatchable(a)    PETSC_FALSE
+#define PetscExceptionPush(a)                0
+#define PetscExceptionPop(a)                 0
+#define PetscErrorSetCatchable(a,b)          0
+#define PetscErrorIsCatchable(a)             PETSC_FALSE
 
-#define PetscExceptionCaught(a,b)   PETSC_FALSE
-#define PetscExceptionValue(a)      PETSC_FALSE
-#define PetscExceptionTry1(a,b)     a
+#define PetscExceptionCaught(a,b)            PETSC_FALSE
+#define PetscExceptionValue(a)               PETSC_FALSE
+#define PetscExceptionTry1(a,b)              a
+#define PetscExceptionTrySyncNorm(comm,a,b)  a
+
 #endif
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscErrorPrintfInitialize(void);

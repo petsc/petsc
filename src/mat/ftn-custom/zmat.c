@@ -1,5 +1,5 @@
 
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscmat.h"
 
 

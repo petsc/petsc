@@ -89,7 +89,7 @@ PetscErrorCode SectionRealView(SectionReal section, PetscViewer viewer)
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
   PetscValidType(section, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(section->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(section, 1, viewer, 2);
@@ -294,7 +294,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionRealDestroy(SectionReal section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONREAL_COOKIE, 1);
-  if (--section->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)section)->refct > 0) PetscFunctionReturn(0);
   section->s = PETSC_NULL;
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -898,7 +898,7 @@ PetscErrorCode SectionIntView(SectionInt section, PetscViewer viewer)
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
   PetscValidType(section, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(section->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)section)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(section, 1, viewer, 2);
@@ -1067,7 +1067,7 @@ PetscErrorCode PETSCDM_DLLEXPORT SectionIntDestroy(SectionInt section)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(section, SECTIONINT_COOKIE, 1);
-  if (--section->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)section)->refct > 0) PetscFunctionReturn(0);
   section->s = PETSC_NULL;
   ierr = PetscHeaderDestroy(section);CHKERRQ(ierr);
   PetscFunctionReturn(0);

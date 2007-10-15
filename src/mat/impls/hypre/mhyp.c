@@ -70,7 +70,7 @@ PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
   rend   = A->rmap.rend;
   cstart = A->cmap.rstart;
   cend   = A->cmap.rend;
-  ierr = HYPRE_IJMatrixCreate(A->comm,rstart,rend-1,cstart,cend-1,ij);CHKERRQ(ierr);
+  ierr = HYPRE_IJMatrixCreate(((PetscObject)A)->comm,rstart,rend-1,cstart,cend-1,ij);CHKERRQ(ierr);
   ierr = HYPRE_IJMatrixSetObjectType(*ij,HYPRE_PARCSR);CHKERRQ(ierr);
   {
     PetscTruth  same;

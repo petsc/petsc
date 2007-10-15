@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscksp.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -25,7 +25,7 @@ void PETSC_STDCALL kspgettype_(KSP *ksp,CHAR name PETSC_MIXED_LEN(len),PetscErro
 #else
   *ierr = PetscStrncpy(name,tname,len);
 #endif
-  FIXRETURNCHAR(name,len);
+  FIXRETURNCHAR(PETSC_TRUE,name,len);
 
 }
 

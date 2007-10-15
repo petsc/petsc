@@ -76,7 +76,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Once(Mat C,PetscInt imax,IS is[
   MPI_Status     *s_status,*recv_status;
 
   PetscFunctionBegin;
-  comm   = C->comm;
+  comm   = ((PetscObject)C)->comm;
   size   = c->size;
   rank   = c->rank;
   Mbs    = c->Mbs;
@@ -551,7 +551,7 @@ static PetscErrorCode MatIncreaseOverlap_MPIBAIJ_Receive(Mat C,PetscInt nrqr,Pet
     isz1[i]     = ct2; /* size of each message */
   }
   ierr = PetscBTDestroy(xtable);CHKERRQ(ierr);
-  ierr = PetscInfo3(0,"Allocated %D bytes, required %D, no of mallocs = %D\n",mem_estimate,ct3,no_malloc);CHKERRQ(ierr);
+  ierr = PetscInfo3(C,"Allocated %D bytes, required %D, no of mallocs = %D\n",mem_estimate,ct3,no_malloc);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }  
 
@@ -585,7 +585,7 @@ PetscErrorCode MatGetSubMatrices_MPIBAIJ(Mat C,PetscInt ismax,const IS isrow[],c
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
   
   /* Make sure every processor loops through the nstages */
-  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,C->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,((PetscObject)C)->comm);CHKERRQ(ierr);
   for (i=0,pos=0; i<nstages; i++) {
     if (pos+nmax <= ismax) max_no = nmax;
     else if (pos == ismax) max_no = 0;
@@ -659,8 +659,8 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
 #endif
 
   PetscFunctionBegin;
-  comm   = C->comm;
-  tag0   = C->tag;
+  comm   = ((PetscObject)C)->comm;
+  tag0   = ((PetscObject)C)->tag;
   size   = c->size;
   rank   = c->rank;
   
@@ -1178,7 +1178,7 @@ static PetscErrorCode MatGetSubMatrices_MPIBAIJ_local(Mat C,PetscInt ismax,const
     for (i=0; i<ismax; i++) {
       ierr = MatCreate(PETSC_COMM_SELF,submats+i);CHKERRQ(ierr);
       ierr = MatSetSizes(submats[i],nrow[i]*bs,ncol[i]*bs,nrow[i]*bs,ncol[i]*bs);CHKERRQ(ierr);
-      ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSeqBAIJSetPreallocation(submats[i],C->rmap.bs,0,lens[i]);CHKERRQ(ierr);
       ierr = MatSeqSBAIJSetPreallocation(submats[i],C->rmap.bs,0,lens[i]);CHKERRQ(ierr);
     }

@@ -237,7 +237,7 @@ PetscErrorCode MatDestroy_AIJMUMPS(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size==1) {
     ierr = MatConvert_MUMPS_Base(A,MATSEQAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
@@ -254,7 +254,7 @@ PetscErrorCode MatDestroy_SBAIJMUMPS(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);
   if (size==1) {
     ierr = MatConvert_MUMPS_Base(A,MATSEQSBAIJ,MAT_REUSE_MATRIX,&A);CHKERRQ(ierr);
   } else {
@@ -270,7 +270,6 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x) {
   PetscScalar    *array;
   Vec            x_seq;
   IS             is_iden,is_petsc;
-  VecScatter     scat_rhs=lu->scat_rhs; 
   PetscErrorCode ierr;
   PetscInt       i;
 
@@ -279,8 +278,8 @@ PetscErrorCode MatSolve_MUMPS(Mat A,Vec b,Vec x) {
   x_seq = lu->b_seq;
   if (lu->size > 1){
     /* MUMPS only supports centralized rhs. Scatter b into a seqential rhs vector */
-    ierr = VecScatterBegin(scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
-    ierr = VecScatterEnd(scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterBegin(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
+    ierr = VecScatterEnd(lu->scat_rhs,b,x_seq,INSERT_VALUES,SCATTER_FORWARD);CHKERRQ(ierr);
     if (!lu->myid) {ierr = VecGetArray(x_seq,&array);CHKERRQ(ierr);}
   } else {  /* size == 1 */
     ierr = VecCopy(b,x);CHKERRQ(ierr);
@@ -367,7 +366,7 @@ PetscErrorCode MatGetInertia_SBAIJMUMPS(Mat F,int *nneg,int *nzero,int *npos)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(F->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)F)->comm,&size);CHKERRQ(ierr);
   /* MUMPS 4.3.1 calls ScaLAPACK when ICNTL(13)=0 (default), which does not offer the possibility to compute the inertia of a dense matrix. Set ICNTL(13)=1 to skip ScaLAPACK */
   if (size > 1 && lu->id.ICNTL(13) != 1){
     SETERRQ1(PETSC_ERR_ARG_WRONG,"ICNTL(13)=%d. -mat_mumps_icntl_13 must be set as 1 for correct global matrix inertia\n",lu->id.INFOG(13));
@@ -399,15 +398,15 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
     (*F)->ops->solve    = MatSolve_MUMPS;
 
     /* Initialize a MUMPS instance */
-    ierr = MPI_Comm_rank(A->comm, &lu->myid);
-    ierr = MPI_Comm_size(A->comm,&lu->size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)A)->comm, &lu->myid);
+    ierr = MPI_Comm_size(((PetscObject)A)->comm,&lu->size);CHKERRQ(ierr);
     lua->myid = lu->myid; lua->size = lu->size;
     lu->id.job = JOB_INIT; 
-    ierr = MPI_Comm_dup(A->comm,&(lu->comm_mumps));CHKERRQ(ierr);
+    ierr = MPI_Comm_dup(((PetscObject)A)->comm,&(lu->comm_mumps));CHKERRQ(ierr);
     ierr = MPICCommToFortranComm(lu->comm_mumps,&(lu->id.comm_fortran));CHKERRQ(ierr);
 
     /* Set mumps options */
-    ierr = PetscOptionsBegin(A->comm,A->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
+    ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"MUMPS Options","Mat");CHKERRQ(ierr);
     lu->id.par=1;  /* host participates factorizaton and solve */
     lu->id.sym=lu->sym; 
     if (lu->sym == 2){
@@ -537,7 +536,7 @@ PetscErrorCode MatFactorNumeric_MUMPS(Mat A,MatFactorInfo *info,Mat *F)
         ierr = VecCreateSeq(PETSC_COMM_SELF,0,&lu->b_seq);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF,0,0,1,&is_iden);CHKERRQ(ierr);
       }
-      ierr = VecCreate(A->comm,&b);CHKERRQ(ierr);
+      ierr = VecCreate(((PetscObject)A)->comm,&b);CHKERRQ(ierr);
       ierr = VecSetSizes(b,A->rmap.n,PETSC_DECIDE);CHKERRQ(ierr);
       ierr = VecSetFromOptions(b);CHKERRQ(ierr);
 
@@ -621,9 +620,9 @@ PetscErrorCode MatLUFactorSymbolic_AIJMUMPS(Mat A,IS r,IS c,MatFactorInfo *info,
 
   PetscFunctionBegin;
   /* Create the factorization matrix */
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPIAIJSetPreallocation(B,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -647,9 +646,9 @@ PetscErrorCode MatCholeskyFactorSymbolic_SBAIJMUMPS(Mat A,IS r,MatFactorInfo *in
 
   PetscFunctionBegin;
   /* Create the factorization matrix */ 
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,A->rmap.n,A->cmap.n,A->rmap.N,A->cmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation(B,1,0,PETSC_NULL);CHKERRQ(ierr);
   ierr = MatMPISBAIJSetPreallocation(B,1,0,PETSC_NULL,0,PETSC_NULL);CHKERRQ(ierr);
 
@@ -713,31 +712,31 @@ PetscErrorCode MatFactorInfo_MUMPS(Mat A,PetscViewer viewer) {
 
   /* infomation local to each processor */
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(1) (local estimated flops for the elimination after analysis): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %g \n",lu->myid,lu->id.RINFO(1));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(2) (local estimated flops for the assembly after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(2));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      RINFO(3) (local estimated flops for the elimination after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d]  %g \n",lu->myid,lu->id.RINFO(3));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
   /*
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(2) (info about error or warning ): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(2));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(2));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
   */
 
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(15) (estimated size of (in MB) MUMPS internal data for running numerical factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(15));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
 
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(16) (size of (in MB) MUMPS internal data used during numerical factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(16));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
 
   if (!lu->myid) {ierr = PetscPrintf(PETSC_COMM_SELF, "      INFO(23) (num of pivots eliminated on this processor after factorization): \n");CHKERRQ(ierr);}
-  ierr = PetscSynchronizedPrintf(A->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
-  ierr = PetscSynchronizedFlush(A->comm);
+  ierr = PetscSynchronizedPrintf(((PetscObject)A)->comm,"             [%d] %d \n",lu->myid,lu->id.INFO(23));CHKERRQ(ierr);
+  ierr = PetscSynchronizedFlush(((PetscObject)A)->comm);
 
   if (!lu->myid){ /* information from the host */
     ierr = PetscViewerASCIIPrintf(viewer,"  RINFOG(1) (global estimated flops for the elimination after analysis): %g \n",lu->id.RINFOG(1));CHKERRQ(ierr);
@@ -865,7 +864,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_AIJ_AIJMUMPS(Mat A,MatType newtype,
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   }
 
-  ierr = PetscInfo(0,"Using MUMPS for LU factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using MUMPS for LU factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -922,7 +921,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_AIJMUMPS(Mat A)
   PetscMPIInt    size;
   
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQAIJ);CHKERRQ(ierr);
   } else {
@@ -1033,7 +1032,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SBAIJ_SBAIJMUMPS(Mat A,MatType newt
                                              "MatConvert_MUMPS_Base",MatConvert_MUMPS_Base);CHKERRQ(ierr);
   }
 
-  ierr = PetscInfo(0,"Using MUMPS for Cholesky factorization and solves.\n");CHKERRQ(ierr);
+  ierr = PetscInfo(A,"Using MUMPS for Cholesky factorization and solves.\n");CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)B,newtype);CHKERRQ(ierr);
   *newmat = B;
   PetscFunctionReturn(0);
@@ -1102,7 +1101,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SBAIJMUMPS(Mat A)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(A->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)A)->comm,&size);CHKERRQ(ierr);CHKERRQ(ierr);
   if (size == 1) {
     ierr = MatSetType(A,MATSEQSBAIJ);CHKERRQ(ierr);
   } else {

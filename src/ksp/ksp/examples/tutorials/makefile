@@ -515,6 +515,12 @@ runex10_23:
 	   else echo "Possible problem with ex10_23, diffs above"; fi; \
 	   ${RM} -f ex10_23.tmp
 
+runex10_24:
+	-@${MPIEXEC} -np 2 ./ex10 -options_left no -openmp_merge_size 2 -pc_type openmp -openmp_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -openmp_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
+	   if (${DIFF} output/ex10_24.out ex10_24.tmp) then true; \
+	   else echo "Possible problem with ex10_24, diffs above"; fi; \
+	   ${RM} -f ex10_24.tmp
+
 #test mumps lu      
 runex10_mumps_lu_1:
 	-@${MPIEXEC} -np 1 ./ex10 -f0 ${DATAFILESPATH}/matrices/small -ksp_type preonly -pc_type lu -mat_type aijmumps -num_numfac 2 -num_rhs 2 > ex10_mumps_lu_1.tmp 2>&1; \
@@ -693,13 +699,13 @@ runex38:
 	   ${RM} -f ex38_1.tmp
 
 runex39:
-	-@${MPIEXEC} -np 1 ./ex39 -ksp_monitor_short  > ex39_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex39 -mat_no_inode -ksp_monitor_short  > ex39_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex39_1.out ex39_1.tmp) then true; \
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   ${RM} -f ex39_1.tmp
 
 runex40:
-	-@${MPIEXEC} -np 1 ./ex40 -ksp_monitor_short  > ex40_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex40 -mat_no_inode -ksp_monitor_short  > ex40_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex40_1.out ex40_1.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp
@@ -721,7 +727,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 ex10.rm
+                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE95      = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

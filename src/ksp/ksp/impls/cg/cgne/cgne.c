@@ -63,6 +63,7 @@ PetscErrorCode KSPSetUp_CGNE(KSP ksp)
 .     ksp - the Krylov space object that was set to use conjugate gradient, by, for 
             example, KSPCreate(MPI_Comm,KSP *ksp); KSPSetType(ksp,KSPCG);
 
+
     Probably virtually identical to the KSPSolve_CG, would be nice if we could reuse the code
 
 */
@@ -82,8 +83,8 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
-  ierr = PCHasApplyTranspose(ksp->pc,&transpose_pc);CHKERRQ(ierr);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
+  ierr = PCApplyTransposeExists(ksp->pc,&transpose_pc);CHKERRQ(ierr);
 
   cg            = (KSP_CG*)ksp->data;
   eigs          = ksp->calc_sings;
@@ -221,12 +222,16 @@ PetscErrorCode  KSPSolve_CGNE(KSP ksp)
    Level: beginner
 
    Notes: eigenvalue computation routines will return information about the
-   spectrum of A^tA, rather than A.
+          spectrum of A^tA, rather than A.
 
-          This object is subclassed off of KSPCG
+   This method requires that one be apply to apply the transpose of the preconditioner and operator
+   as well as the operator and preconditioner. If the transpose of the preconditioner is not available then
+   the preconditioner is used in its place so one ends up preconditioning A'A with B B. Seems odd?
+
+   This object is subclassed off of KSPCG
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
-           KSPCGSetType()
+           KSPCGSetType(), KSPBICG
 
 M*/
 

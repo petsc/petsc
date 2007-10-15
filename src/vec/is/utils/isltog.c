@@ -60,11 +60,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingView(ISLocalToGlobalMapp
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(mapping->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)mapping)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 
-  ierr = MPI_Comm_rank(mapping->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)mapping)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   if (iascii) {
     for (i=0; i<mapping->n; i++) {
@@ -243,7 +243,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMap
     for (i=0; i<n; i++) {
       ii[i] = inmap->indices[bs*i]/bs;
     }
-    ierr = ISLocalToGlobalMappingCreate(inmap->comm,n,ii,outmap);CHKERRQ(ierr);
+    ierr = ISLocalToGlobalMappingCreate(((PetscObject)inmap)->comm,n,ii,outmap);CHKERRQ(ierr);
     ierr = PetscFree(ii);CHKERRQ(ierr);
   } else {
     ierr    = PetscObjectReference((PetscObject)inmap);CHKERRQ(ierr);
@@ -272,7 +272,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingDestroy(ISLocalToGlobalM
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mapping,IS_LTOGM_COOKIE,1);
-  if (--mapping->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)mapping)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscFree(mapping->indices);CHKERRQ(ierr);
   ierr = PetscFree(mapping->globals);CHKERRQ(ierr);
   ierr = PetscHeaderDestroy(mapping);CHKERRQ(ierr);
@@ -525,7 +525,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
   PetscInt       first_procs,first_numprocs,*first_indices;
   MPI_Request    *recv_waits,*send_waits;
   MPI_Status     recv_status,*send_status,*recv_statuses;
-  MPI_Comm       comm = mapping->comm;
+  MPI_Comm       comm = ((PetscObject)mapping)->comm;
   PetscTruth     debug = PETSC_FALSE;
 
   PetscFunctionBegin;
@@ -586,11 +586,11 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalToGlobalM
     nprocs[2*proc]++;                     /* count of how many that processor globally owns of ours */
   }
   nsends = 0; for (i=0; i<size; i++) nsends += nprocs[2*i+1];
-  ierr = PetscInfo1(0,"Number of global owners for my local data %d\n",nsends);CHKERRQ(ierr);
+  ierr = PetscInfo1(mapping,"Number of global owners for my local data %d\n",nsends);CHKERRQ(ierr);
 
   /* inform other processors of number of messages and max length*/
   ierr = PetscMaxSum(comm,nprocs,&nmax,&nrecvs);CHKERRQ(ierr);
-  ierr = PetscInfo1(0,"Number of local owners for my global data %d\n",nrecvs);CHKERRQ(ierr);
+  ierr = PetscInfo1(mapping,"Number of local owners for my global data %d\n",nrecvs);CHKERRQ(ierr);
 
   /* post receives for owned rows */
   ierr = PetscMalloc((2*nrecvs+1)*(nmax+1)*sizeof(PetscInt),&recvs);CHKERRQ(ierr);

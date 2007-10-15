@@ -74,7 +74,7 @@ static PetscErrorCode PCFieldSplitSetDefaults(PC pc)
   PetscTruth        flg = PETSC_FALSE,*fields;
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetTruth(pc->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetTruth(((PetscObject)pc)->prefix,"-pc_fieldsplit_default",&flg,PETSC_NULL);CHKERRQ(ierr);
   if (!ilink || flg) { 
     ierr = PetscInfo(pc,"Using default splitting of fields\n");CHKERRQ(ierr);
     if (jac->bs <= 0) {
@@ -130,7 +130,7 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
     ierr   = PetscMalloc(nsplit*sizeof(PetscInt),&jac->csize);CHKERRQ(ierr);
     for (i=0; i<nsplit; i++) {
       if (jac->defaultsplit) {
-        ierr = ISCreateStride(pc->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
+        ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+i,nsplit,&jac->is[i]);CHKERRQ(ierr);
         jac->csize[i] = ccsize/nsplit;
       } else {
         if (ilink->nfields > 1) {
@@ -141,10 +141,10 @@ static PetscErrorCode PCSetUp_FieldSplit(PC pc)
               ii[nfields*j + k] = rstart + bs*j + fields[k];
             }
           }
-          ierr = ISCreateGeneral(pc->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
+          ierr = ISCreateGeneral(((PetscObject)pc)->comm,nslots*nfields,ii,&jac->is[i]);CHKERRQ(ierr);       
           ierr = PetscFree(ii);CHKERRQ(ierr);
         } else { 
-          ierr = ISCreateStride(pc->comm,nslots,ilink->fields[0],bs,&jac->is[i]);CHKERRQ(ierr);
+          ierr = ISCreateStride(((PetscObject)pc)->comm,nslots,rstart+ilink->fields[0],bs,&jac->is[i]);CHKERRQ(ierr);
         }
         jac->csize[i] = (ccsize/bs)*ilink->nfields;
         ierr = ISSorted(jac->is[i],&sorted);CHKERRQ(ierr);
@@ -438,11 +438,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFieldSplitSetFields_FieldSplit(PC pc,PetscIn
   ierr = PetscMemcpy(ilink->fields,fields,n*sizeof(PetscInt));CHKERRQ(ierr);
   ilink->nfields = n;
   ilink->next    = PETSC_NULL;
-  ierr           = KSPCreate(pc->comm,&ilink->ksp);CHKERRQ(ierr);
+  ierr           = KSPCreate(((PetscObject)pc)->comm,&ilink->ksp);CHKERRQ(ierr);
   ierr           = KSPSetType(ilink->ksp,KSPPREONLY);CHKERRQ(ierr);
 
-  if (pc->prefix) {
-    sprintf(prefix,"%sfieldsplit_%d_",pc->prefix,(int)jac->nsplits);
+  if (((PetscObject)pc)->prefix) {
+    sprintf(prefix,"%sfieldsplit_%d_",((PetscObject)pc)->prefix,(int)jac->nsplits);
   } else {
     sprintf(prefix,"fieldsplit_%d_",(int)jac->nsplits);
   }
@@ -615,7 +615,7 @@ EXTERN_C_END
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCFieldSplitSetType"
-/*@C
+/*@
    PCFieldSplitSetType - Sets the type of fieldsplit preconditioner.
    
    Collective on PC

@@ -1,4 +1,4 @@
-#include "zpetsc.h" 
+#include "private/zpetsc.h" 
 
 void *PETSCNULLPOINTERADDRESS = PETSC_NULL;
 
@@ -32,6 +32,7 @@ void   *PETSC_NULL_Fortran           = 0;
 void   *PETSC_NULL_SCALAR_Fortran    = 0;
 void   *PETSC_NULL_DOUBLE_Fortran    = 0;
 void   *PETSC_NULL_REAL_Fortran      = 0;
+void   *PETSC_NULL_TRUTH_Fortran     = 0;
 EXTERN_C_BEGIN
 void   (*PETSC_NULL_FUNCTION_Fortran)(void) = 0;
 EXTERN_C_END
@@ -159,7 +160,7 @@ PetscErrorCode PetscScalarAddressToFortran(PetscObject obj,PetscInt align,PetscS
                          ((PetscReal)tmp3)/(PetscReal)sizeof(PetscScalar),((PetscReal)tmp1)/(PetscReal)sizeof(PetscScalar));
       MPI_Abort(PETSC_COMM_WORLD,1);
     }
-    ierr = PetscInfo((void*)obj,"Efficiency warning, copying array in XXXGetArray() due\n\
+    ierr = PetscInfo(obj,"Efficiency warning, copying array in XXXGetArray() due\n\
     to alignment differences between C and Fortran\n");CHKERRQ(ierr);
   }
   *res = itmp2;

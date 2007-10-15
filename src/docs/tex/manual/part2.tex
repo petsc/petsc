@@ -2592,8 +2592,8 @@ such tuning can significantly enhance performance.
 % --------------------------------------------------------------------
 \label{sec_blocksolve}
 PETSc supports incomplete factorization preconditioners for several matrix
-types for the uniprocess case.  \sindex{ILU, parallel}
-\sindex{ICC, parallel} In addition, for the parallel case
+types for the uniprocess case.\sindex{ILU, parallel}\sindex{ICC, parallel}
+In addition, for the parallel case
 we provide an interface to the ILU and ICC preconditioners
 of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
 to employ the preconditioners within
@@ -2758,8 +2758,7 @@ These orderings can also be set through the options database by specifying
 one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type}
 \trl{nd}, \trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm},
 \trl{-pc_factor_ordering_type} \trl{qmd}.
-In addition, see 
-\break MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
+In addition, see MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
 
 The sparse LU factorization provided in PETSc does not perform pivoting for 
 numerical stability (since they are designed to preserve nonzero 
@@ -2769,7 +2768,7 @@ pivot when, in fact, the matrix is non-singular. The option
 will often help eliminate the zero pivot, by preprocessing the the 
 column ordering to remove small values from the diagonal. Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
-is $ 1.e-10.$ 
+is~$ 1.e-10.$ 
 
 
 In addition, Section~\ref{sec_symbolfactor} provides information on

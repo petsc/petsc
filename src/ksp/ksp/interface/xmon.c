@@ -171,7 +171,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPMonitorLGTrueResidualNorm(KSP ksp,PetscInt 
     ierr   = PetscViewerDrawGetDrawLG(viewer,0,&lg);CHKERRQ(ierr);
   }
 
-  ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
   if (!rank) { 
     if (!n) {ierr = PetscDrawLGReset(lg);CHKERRQ(ierr);}
     x[0] = x[1] = (PetscReal) n;

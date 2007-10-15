@@ -9,7 +9,7 @@
 typedef struct {
   KSP          ksp;
   PC           pc;                   /* actual preconditioner used on each processor */
-  Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of pc->comm */
+  Vec          xsub,ysub;            /* vectors of a subcommunicator to hold parallel vectors of ((PetscObject)pc)->comm */
   Vec          xdup,ydup;            /* parallel vector that congregates xsub or ysub facilitating vector scattering */
   Mat          pmats;                /* matrix and optional preconditioner matrix belong to a subcommunicator */
   VecScatter   scatterin,scatterout; /* scatter used to move all values to each processor group (subcommunicator) */
@@ -30,18 +30,18 @@ static PetscErrorCode PCView_Redundant(PC pc,PetscViewer viewer)
   PetscInt       color = red->psubcomm->color;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(pc->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)pc)->comm,&rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_ASCII,&iascii);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject)viewer,PETSC_VIEWER_STRING,&isstring);CHKERRQ(ierr);
   if (iascii) {
     ierr = PetscViewerASCIIPrintf(viewer,"  Redundant preconditioner: First (color=0) of %D PCs follows\n",red->nsubcomm);CHKERRQ(ierr);
-    ierr = PetscViewerGetSubcomm(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
+    ierr = PetscViewerGetSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
     if (!color) { /* only view first redundant pc */
       ierr = PetscViewerASCIIPushTab(viewer);CHKERRQ(ierr);
       ierr = KSPView(red->ksp,subviewer);CHKERRQ(ierr);
       ierr = PetscViewerASCIIPopTab(viewer);CHKERRQ(ierr);
     }
-    ierr = PetscViewerRestoreSubcomm(viewer,red->pc->comm,&subviewer);CHKERRQ(ierr);
+    ierr = PetscViewerRestoreSubcomm(viewer,((PetscObject)red->pc)->comm,&subviewer);CHKERRQ(ierr);
   } else if (isstring) { /* not test it yet! */
     ierr = PetscViewerStringSPrintf(viewer," Redundant solver preconditioner");CHKERRQ(ierr);
     ierr = PetscViewerGetSingleton(viewer,&sviewer);CHKERRQ(ierr);
@@ -66,7 +66,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
   PetscMPIInt    size;
   MatReuse       reuse = MAT_INITIAL_MATRIX;
   MatStructure   str = DIFFERENT_NONZERO_PATTERN;
-  MPI_Comm       comm = pc->comm,subcomm;
+  MPI_Comm       comm = ((PetscObject)pc)->comm,subcomm;
   Vec            vec;
   PetscMPIInt    subsize,subrank;
   const char     *prefix;
@@ -112,7 +112,7 @@ static PetscErrorCode PCSetUp_Redundant(PC pc)
     ierr = VecCreateMPIWithArray(subcomm,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->xsub);CHKERRQ(ierr);
 
     /* create xdup and ydup. ydup has empty local arrays because ysub's arrays will be place into it. 
-       Note: we use communicator dupcomm, not pc->comm! */      
+       Note: we use communicator dupcomm, not ((PetscObject)pc)->comm! */      
     ierr = VecCreateMPI(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,&red->xdup);CHKERRQ(ierr);
     ierr = VecCreateMPIWithArray(red->psubcomm->dupparent,mloc_sub,PETSC_DECIDE,PETSC_NULL,&red->ydup);CHKERRQ(ierr);
   
@@ -463,7 +463,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Redundant(PC pc)
   
   PetscFunctionBegin;
   ierr = PetscNewLog(pc,PC_Redundant,&red);CHKERRQ(ierr);
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   red->nsubcomm       = size;
   red->useparallelmat = PETSC_TRUE;
   pc->data            = (void*)red; 

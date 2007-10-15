@@ -115,45 +115,33 @@ cleanadic:
 #    #requiresprecision double (or single)
 #
 tree: ${ACTION}
-	-@if [ "${DIRS}" != "" -o -d "ftn-auto" -o -d "ftn-custom" -o -d "f90-custom" ]; then \
-	  for dir in ${DIRS} ftn-auto ftn-custom f90-custom foo ; do \
-            if [ "$$dir" = "fortran" -a "${FC_LINKER}foo" = "foo" ]; then \
-              continue;\
-            fi;\
+	-@for dir in ${DIRS} ftn-auto ftn-custom f90-custom; do \
             if [ -d $$dir ]; then \
-	      r=`egrep requirespackage $$dir/makefile`; \
+	      r=`grep -w requirespackage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-		HCONF=`grep PETSC_ ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h | cut -d" " -f2`; \
-                HPCONF=`echo ${PCONF} | sed s/-D//g`; \
-                f=0; \
-                for l in $${HPCONF} foo $${HCONF}; do \
-                  echo $$r | egrep "'$$l'" > /dev/null; \
-                  if [ "$$?" = 0 ]; then \
-	            f=1; \
-                    break; \
-                  fi; \
-                done ; \
-                if [ "$$f" = 0 ]; then \
-                  continue; \
-                fi; \
-              fi; \
-              r=`egrep requireslanguage $$dir/makefile`; \
-              if [ "$$?" = 0 ]; then \
-                echo $$r | egrep ${PETSC_LANGUAGE} > /dev/null; \
+		PKGFLG=`echo $$r | cut -d \' -f2`;\
+                grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
               fi; \
-              r=`egrep requiresscalar $$dir/makefile`; \
+              r=`grep -w requireslanguage $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-                echo $$r |  egrep ${PETSC_SCALAR} > /dev/null; \
+                echo $$r | grep -w ${PETSC_LANGUAGE} > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
               fi; \
-              r=`egrep requiresprecision $$dir/makefile`; \
+              r=`grep -w requiresscalar $$dir/makefile`; \
               if [ "$$?" = 0 ]; then \
-                echo $$r |  egrep ${PETSC_PRECISION} > /dev/null; \
+                echo $$r |  grep -w ${PETSC_SCALAR} > /dev/null; \
+                if [ "$$?" = 1 ]; then \
+                  continue; \
+                fi; \
+              fi; \
+              r=`grep -w requiresprecision $$dir/makefile`; \
+              if [ "$$?" = 0 ]; then \
+                echo $$r |  grep -w ${PETSC_PRECISION} > /dev/null; \
                 if [ "$$?" = 1 ]; then \
                   continue; \
                 fi; \
@@ -164,8 +152,7 @@ tree: ${ACTION}
             (cd $$dir ; \
             echo ${ACTION} in: `pwd`; \
             ${OMAKE} tree ACTION=${ACTION}  PETSC_ARCH=${PETSC_ARCH} LOC=${LOC} DATAFILESPATH=${DATAFILESPATH});\
-	  done ; \
-        fi
+	  done
 
 # Performs the specified action throughout the directory tree
 tree_basic: ${ACTION}

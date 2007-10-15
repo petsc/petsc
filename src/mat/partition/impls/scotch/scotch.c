@@ -46,13 +46,13 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     MatPartitioning_Scotch *scotch = (MatPartitioning_Scotch *) part->data;
     PetscTruth             flg;
 #ifdef PETSC_HAVE_UNISTD_H
-    int                    fd_stdout, fd_pipe[2], count;
+    int                    fd_stdout, fd_pipe[2], count,err;
 #endif
 
     PetscFunctionBegin;
 
     /* check if the matrix is sequential, use MatGetSubMatrices if necessary */
-    ierr = MPI_Comm_size(mat->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)mat)->comm, &size);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject) mat, MATMPIADJ, &flg);CHKERRQ(ierr);
     if (size > 1) {
         int M, N;
@@ -62,7 +62,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         if (flg) {
             SETERRQ(0, "Distributed matrix format MPIAdj is not supported for sequential partitioners");
         }
-        PetscPrintf(part->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
+        PetscPrintf(((PetscObject)part)->comm, "Converting distributed matrix to sequential: this could be a performance loss\n");CHKERRQ(ierr);
 
         ierr = MatGetSize(mat, &M, &N);CHKERRQ(ierr);
         ierr = ISCreateStride(PETSC_COMM_SELF, M, 0, 1, &isrow);CHKERRQ(ierr);
@@ -78,12 +78,13 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
     /* convert the the matrix to MPIADJ type if necessary */
     if (!flg) {
         ierr = MatConvert(matSeq, MATMPIADJ, MAT_INITIAL_MATRIX, &matMPI);CHKERRQ(ierr);
-    } else
+    } else {
         matMPI = matSeq;
+    }
 
     adj = (Mat_MPIAdj *) matMPI->data;  /* finaly adj contains adjacency graph */
 
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
 
     {
         /* definition of Scotch library arguments */
@@ -121,9 +122,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         ierr = SCOTCH_graphCheck(&grafptr);CHKERRQ(ierr);
 
         /* Construction of the strategy */
-        if (scotch->strategy[0] != 0)   /* strcmp(scotch->strategy,"") */
-            PetscStrcpy(strategy, scotch->strategy);
-        else {
+        if (scotch->strategy[0] != 0) {
+            ierr = PetscStrcpy(strategy, scotch->strategy);CHKERRQ(ierr);
+        } else {
             PetscStrcpy(strategy, "b{strat=");
 
             if (scotch->multilevel) {
@@ -163,7 +164,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             PetscStrcat(strategy, " x}");
         }
 
-        PetscPrintf(part->comm, "strategy=[%s]\n", strategy);
+        PetscPrintf(((PetscObject)part)->comm, "strategy=[%s]\n", strategy);
 
         ierr = SCOTCH_stratInit(&stratptr);CHKERRQ(ierr);
         ierr = SCOTCH_stratMap(&stratptr, strategy);CHKERRQ(ierr);
@@ -178,7 +179,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             SCOTCH_Num listnbr = 0;
             SCOTCH_Arch archptr;        /* file in scotch architecture format */
             SCOTCH_Strat archstrat;
-            int arch_total_size, *parttab_tmp;
+            int arch_total_size, *parttab_tmp,err;
             int cpt;
             char buf[256];
             FILE *file1, *file2;
@@ -186,8 +187,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
             /* generate the graph that represents the arch */
             file1 = fopen(scotch->arch, "r");
-            if (!file1)
-                SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open architecture file %s", scotch->arch);
+            if (!file1) SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open architecture file %s", scotch->arch);
 
             ierr = SCOTCH_graphInit(&grafarch);CHKERRQ(ierr);
             ierr = SCOTCH_graphLoad(&grafarch, file1, baseval, 3);CHKERRQ(ierr);
@@ -195,7 +195,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             ierr = SCOTCH_graphCheck(&grafarch);CHKERRQ(ierr);
             SCOTCH_graphSize(&grafarch, &arch_total_size, &cpt);
 
-            fclose(file1);
+            err = fclose(file1);
+            if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+
             printf("total size = %d\n", arch_total_size);
 
             /* generate the list of nodes currently working */
@@ -203,8 +205,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
             ierr = PetscStrlen(host_buf, &j);CHKERRQ(ierr);
 
             file2 = fopen(scotch->host_list, "r");
-            if (!file2)
-                SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open host list file %s", scotch->host_list);
+            if (!file2) SETERRQ1(PETSC_ERR_FILE_OPEN, "Scotch: unable to open host list file %s", scotch->host_list);
 
             i = -1;
             flg = PETSC_FALSE;
@@ -213,22 +214,22 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
                 fgets(buf, 256, file2);
                 PetscStrncmp(buf, host_buf, j, &flg);
             }
-            fclose(file2);
-            if (!flg) {
-                SETERRQ1(PETSC_ERR_LIB, "Scotch: unable to find '%s' in host list file", host_buf);
-            }
+            err = fclose(file2);
+            if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+            if (!flg) SETERRQ1(PETSC_ERR_LIB, "Scotch: unable to find '%s' in host list file", host_buf);
 
             listnbr = size;
             ierr = PetscMalloc(sizeof(SCOTCH_Num) * listnbr, &listtab);CHKERRQ(ierr);
 
-            ierr = MPI_Allgather(&i, 1, MPI_INT, listtab, 1, MPI_INT, part->comm);CHKERRQ(ierr);
+            ierr = MPI_Allgather(&i, 1, MPI_INT, listtab, 1, MPI_INT, ((PetscObject)part)->comm);CHKERRQ(ierr);
 
             printf("listnbr = %d, listtab = ", listnbr);
             for (i = 0; i < listnbr; i++)
                 printf("%d ", listtab[i]);
 
             printf("\n");
-            fflush(stdout);
+            err = fflush(stdout);
+            if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
 
             ierr = SCOTCH_stratInit(&archstrat);CHKERRQ(ierr);
             ierr = SCOTCH_stratBipart(&archstrat, "fx");CHKERRQ(ierr);
@@ -259,7 +260,9 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
         /* dump to mesg_log... */
 #ifdef PETSC_HAVE_UNISTD_H
-        fflush(stdout);
+        err = fflush(stdout);
+        if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on stdout");    
+
         count = read(fd_pipe[0], scotch->mesg_log, (SIZE_LOG - 1) * sizeof(char));
         if (count < 0)
             count = 0;
@@ -280,8 +283,8 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
 
     /* Creation of the index set */
 
-    ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
-    ierr = MPI_Comm_size(part->comm, &size);CHKERRQ(ierr);
+    ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)part)->comm, &size);CHKERRQ(ierr);
     nb_locals = mat->M / size;
     locals = parttab + rank * nb_locals;
     if (rank < mat->M % size) {
@@ -289,7 +292,7 @@ static PetscErrorCode MatPartitioningApply_Scotch(MatPartitioning part, IS * par
         locals += rank;
     } else
         locals += mat->M % size;
-    ierr = ISCreateGeneral(part->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
+    ierr = ISCreateGeneral(((PetscObject)part)->comm, nb_locals, locals, partitioning);CHKERRQ(ierr);
 
     /* destroying old objects */
     ierr = PetscFree(parttab);CHKERRQ(ierr);
@@ -314,14 +317,14 @@ PetscErrorCode MatPartitioningView_Scotch(MatPartitioning part, PetscViewer view
   PetscTruth             iascii;
   
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(part->comm, &rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
   ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
   if (iascii) {
     if (!rank && scotch->mesg_log) {
       ierr = PetscViewerASCIIPrintf(viewer, "%s\n", scotch->mesg_log);CHKERRQ(ierr);
     }
   } else {
-    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Scotch partitioner",((PetscObject) viewer)->type_name);
+    SETERRQ1(PETSC_ERR_SUP, "Viewer type %s not supported for this Scotch partitioner",((PetscObject)viewer)->type_name);
   }
   PetscFunctionReturn(0);
 }
@@ -632,10 +635,7 @@ PetscErrorCode MatPartitioningDestroy_Scotch(MatPartitioning part)
 }
 
 
-EXTERN_C_BEGIN
-#undef __FUNCT__
-#define __FUNCT__ "MatPartitioningCreate_Scotch"
-/*@C
+/*MC
    MAT_PARTITIONING_SCOTCH - Creates a partitioning context via the external package SCOTCH.
 
    Collective on MPI_Comm
@@ -661,7 +661,11 @@ EXTERN_C_BEGIN
 
 .seealso: MatPartitioningSetType(), MatPartitioningType
 
-@*/
+M*/
+
+EXTERN_C_BEGIN
+#undef __FUNCT__
+#define __FUNCT__ "MatPartitioningCreate_Scotch"
 PetscErrorCode PETSCMAT_DLLEXPORT MatPartitioningCreate_Scotch(MatPartitioning part)
 {
     PetscErrorCode ierr;

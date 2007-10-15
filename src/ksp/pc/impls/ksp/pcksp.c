@@ -267,7 +267,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_KSP(PC pc)
   pc->ops->applyrichardson    = 0;
 
   pc->data               = (void*)jac;
-  ierr                   = KSPCreate(pc->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr                   = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
 
   ierr = PCGetOptionsPrefix(pc,&prefix);CHKERRQ(ierr);
   ierr = KSPSetOptionsPrefix(jac->ksp,prefix);CHKERRQ(ierr);

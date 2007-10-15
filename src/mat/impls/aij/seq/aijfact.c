@@ -219,9 +219,9 @@ PetscErrorCode MatILUDTFactor_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo *info
 
   /*----- put together the new matrix -----*/
 
-  ierr = MatCreate(A->comm,fact);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   (*fact)->factor    = FACTOR_LU;
   (*fact)->assembled = PETSC_TRUE;
@@ -362,9 +362,9 @@ PetscErrorCode MatLUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo 
   ierr = PetscFree2(bi_ptr,im);CHKERRQ(ierr);
 
   /* put together the new matrix */
-  ierr = MatCreate(A->comm,B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,B);CHKERRQ(ierr);
   ierr = MatSetSizes(*B,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*B,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*B,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*B,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*B,isicol);CHKERRQ(ierr);
   b    = (Mat_SeqAIJ*)(*B)->data;
@@ -419,7 +419,7 @@ PetscErrorCode MatFactorDumpMatrix(Mat A)
     char        filename[PETSC_MAX_PATH_LEN];
 
     ierr = PetscSNPrintf(filename,PETSC_MAX_PATH_LEN,"matrix_factor_error.%d",PetscGlobalRank);CHKERRQ(ierr);
-    ierr = PetscViewerBinaryOpen(A->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerBinaryOpen(((PetscObject)A)->comm,filename,FILE_MODE_WRITE,&viewer);CHKERRQ(ierr);
     ierr = MatView(A,viewer);CHKERRQ(ierr);
     ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
   }
@@ -556,9 +556,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscLogFlops(C->cmap.n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (info->shiftnz) {
-      ierr = PetscInfo2(0,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } else if (info->shiftpd) {
-      ierr = PetscInfo4(0,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -704,9 +704,9 @@ PetscErrorCode MatLUFactorNumeric_SeqAIJ_InplaceWithPerm(Mat A,MatFactorInfo *in
   ierr = PetscLogFlops(A->cmap.n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (info->shiftnz) {
-      ierr = PetscInfo2(0,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"number of shift_nz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } else if (info->shiftpd) {
-      ierr = PetscInfo4(0,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
+      ierr = PetscInfo4(A,"number of shift_pd tries %D, shift_amount %G, diagonal shifted up by %e fraction top_value %e\n",sctx.nshift,sctx.shift_amount,info->shift_fraction,sctx.shift_top);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0);
@@ -1276,9 +1276,9 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
 #endif
 
   /* put together the new matrix */
-  ierr = MatCreate(A->comm,fact);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,fact);CHKERRQ(ierr);
   ierr = MatSetSizes(*fact,n,n,n,n);CHKERRQ(ierr);
-  ierr = MatSetType(*fact,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(*fact,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation_SeqAIJ(*fact,MAT_SKIP_ALLOCATION,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(*fact,isicol);CHKERRQ(ierr);
   b = (Mat_SeqAIJ*)(*fact)->data;
@@ -1334,6 +1334,7 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   PetscInt       newshift;
 
   PetscFunctionBegin;
+
   shiftnz   = info->shiftnz;
   shiftpd   = info->shiftpd;
   zeropivot = info->zeropivot; 
@@ -1407,7 +1408,13 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
       sctx.rs = rs;
       sctx.pv = dk;
       ierr = MatCholeskyCheckShift_inline(info,sctx,k,newshift);CHKERRQ(ierr); 
-      if (newshift == 1) break;
+
+      if (newshift == 1) {
+        if (!sctx.shift_amount) {
+          sctx.shift_amount = 1e-5;
+        }
+        break;
+      }
    
       /* copy data into U(k,:) */
       ba[bi[k]] = 1.0/dk; /* U(k,k) */
@@ -1432,9 +1439,9 @@ PetscErrorCode MatCholeskyFactorNumeric_SeqAIJ(Mat A,MatFactorInfo *info,Mat *B)
   ierr = PetscLogFlops(C->rmap.n);CHKERRQ(ierr);
   if (sctx.nshift){
     if (shiftnz) {
-      ierr = PetscInfo2(0,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"number of shiftnz tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     } else if (shiftpd) {
-      ierr = PetscInfo2(0,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
+      ierr = PetscInfo2(A,"number of shiftpd tries %D, shift_amount %G\n",sctx.nshift,sctx.shift_amount);CHKERRQ(ierr);
     }
   }
   PetscFunctionReturn(0); 

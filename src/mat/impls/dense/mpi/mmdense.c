@@ -19,13 +19,13 @@ PetscErrorCode MatSetUpMultiply_MPIDense(Mat mat)
   ierr = VecCreateSeq(PETSC_COMM_SELF,mat->cmap.N,&mdn->lvec);CHKERRQ(ierr);
 
   /* Create temporary index set for building scatter gather */
-  ierr = ISCreateStride(mat->comm,mat->cmap.N,0,1,&from);CHKERRQ(ierr);
+  ierr = ISCreateStride(((PetscObject)mat)->comm,mat->cmap.N,0,1,&from);CHKERRQ(ierr);
   ierr = ISCreateStride(PETSC_COMM_SELF,mat->cmap.N,0,1,&to);CHKERRQ(ierr);
 
   /* Create temporary global vector to generate scatter context */
   /* n    = mdn->cowners[mdn->rank+1] - mdn->cowners[mdn->rank]; */
 
-  ierr = VecCreateMPI(mat->comm,mdn->nvec,mat->cmap.N,&gvec);CHKERRQ(ierr);
+  ierr = VecCreateMPI(((PetscObject)mat)->comm,mdn->nvec,mat->cmap.N,&gvec);CHKERRQ(ierr);
 
   /* Generate the scatter context */
   ierr = VecScatterCreate(gvec,from,mdn->lvec,to,&mdn->Mvctx);CHKERRQ(ierr);
@@ -60,7 +60,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense(Mat C,PetscInt ismax,const IS isrow[],
   nstages_local = ismax/nmax + ((ismax % nmax)?1:0);
 
   /* Make sure every processor loops through the nstages */
-  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,C->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&nstages_local,&nstages,1,MPIU_INT,MPI_MAX,((PetscObject)C)->comm);CHKERRQ(ierr);
 
 
   for (i=0,pos=0; i<nstages; i++) {
@@ -95,8 +95,8 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
   PetscTruth     sorted;
 
   PetscFunctionBegin;
-  comm   = C->comm;
-  tag0   = C->tag;
+  comm   = ((PetscObject)C)->comm;
+  tag0   = ((PetscObject)C)->tag;
   size   = c->size;
   rank   = c->rank;
   m      = C->rmap.N;
@@ -313,7 +313,7 @@ PetscErrorCode MatGetSubMatrices_MPIDense_Local(Mat C,PetscInt ismax,const IS is
     for (i=0; i<ismax; i++) {
       ierr = MatCreate(PETSC_COMM_SELF,submats+i);CHKERRQ(ierr);
       ierr = MatSetSizes(submats[i],nrow[i],ncol[i],nrow[i],ncol[i]);CHKERRQ(ierr);
-      ierr = MatSetType(submats[i],A->type_name);CHKERRQ(ierr);
+      ierr = MatSetType(submats[i],((PetscObject)A)->type_name);CHKERRQ(ierr);
       ierr = MatSeqDenseSetPreallocation(submats[i],PETSC_NULL);CHKERRQ(ierr);
     }
   }

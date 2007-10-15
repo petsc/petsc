@@ -154,7 +154,6 @@ PetscErrorCode CkEigenSolutions(PetscInt cklvl,Mat A,PetscInt il,PetscInt iu,Pet
   case 2:  
     dot_max = 0.0;
     for (i = il; i<iu; i++){
-      //printf("ck %d-th\n",i);
       ierr = VecCopy(evec[i], vt1);
       for (j=il; j<iu; j++){ 
         ierr = VecDot(evec[j],vt1,&dot);

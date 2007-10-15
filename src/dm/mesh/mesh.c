@@ -317,7 +317,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshView(Mesh mesh, PetscViewer viewer)
   PetscValidHeaderSpecific(mesh, MESH_COOKIE, 1);
   PetscValidType(mesh, 1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(mesh->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)mesh)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer, PETSC_VIEWER_COOKIE, 2);
   PetscCheckSameComm(mesh, 1, viewer, 2);
@@ -553,7 +553,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshDestroy(Mesh mesh)
   PetscErrorCode     ierr;
 
   PetscFunctionBegin;
-  if (--mesh->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)mesh)->refct > 0) PetscFunctionReturn(0);
   if (mesh->globalScatter) {ierr = VecScatterDestroy(mesh->globalScatter);CHKERRQ(ierr);}
   mesh->m = PETSC_NULL;
   ierr = PetscHeaderDestroy(mesh);CHKERRQ(ierr);
@@ -596,7 +596,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshSetType(Mesh mesh, MeshType type)
   ierr = PetscTypeCompare((PetscObject)mesh,type,&match);CHKERRQ(ierr);
   if (match) PetscFunctionReturn(0);
 
-  ierr =  PetscFListFind(MeshList,mesh->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MeshList,((PetscObject)mesh)->comm,type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unable to find requested Mesh type %s",type);
   /* Destroy the previous private Mesh context */
   if (mesh->ops->destroy) { ierr = (*mesh->ops->destroy)(mesh);CHKERRQ(ierr); }
@@ -631,7 +631,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshGetType(Mesh mesh,MeshType *type)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mesh,MESH_COOKIE,1);
   PetscValidPointer(type,2);
-  *type = mesh->type_name;
+  *type = ((PetscObject)mesh)->type_name;
   PetscFunctionReturn(0);
 }
 
@@ -1334,6 +1334,51 @@ PetscErrorCode WritePCICERestart(Mesh mesh, PetscViewer viewer)
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   return ALE::PCICE::Viewer::writeRestart(m, viewer);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "MeshCreatePFLOTRAN"
+/*@C
+  MeshCreatePFLOTRAN - Create a Mesh from PFLOTRAN HDF5 files.
+
+  Not Collective
+
+  Input Parameters:
++ dim - The topological mesh dimension
+. hdf5Filename - The HDF5 file containing the vertices for each element and vertex coordinates
+. interpolate - The flag for construction of intermediate elements
+
+  Output Parameter:
+. mesh - The Mesh object
+
+  Level: beginner
+
+.keywords: mesh, PFLOTRAN
+.seealso: MeshCreate()
+@*/
+PetscErrorCode MeshCreatePFLOTRAN(MPI_Comm comm, const int dim, const char hdf5Filename[], PetscTruth interpolate, Mesh *mesh)
+{
+  ALE::Obj<ALE::Mesh> m;
+  PetscInt            debug = 0;
+  PetscTruth          flag;
+  PetscErrorCode      ierr;
+
+  PetscFunctionBegin;
+  ierr = MeshCreate(comm, mesh);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(PETSC_NULL, "-debug", &debug, &flag);CHKERRQ(ierr);
+  try {
+    m  = ALE::PFLOTRAN::Builder::readMesh(comm, dim, std::string(hdf5Filename), true, interpolate, debug);
+    if (debug) {m->view("Mesh");}
+  } catch(ALE::Exception e) {
+    SETERRQ(PETSC_ERR_FILE_OPEN, e.message());
+  }
+#if 0
+  if (bcFilename) {
+    ALE::PFLOTRAN::Builder::readBoundary(m, std::string(bcFilename));
+  }
+#endif
+  ierr = MeshSetMesh(*mesh, m);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  

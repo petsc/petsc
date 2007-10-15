@@ -104,7 +104,7 @@ PetscErrorCode TSPSolve_Sundials(realtype tn,N_Vector y,N_Vector fy,N_Vector r,N
 int TSFunction_Sundials(realtype t,N_Vector y,N_Vector ydot,void *ctx)
 {
   TS              ts = (TS) ctx;
-  MPI_Comm        comm = ts->comm;
+  MPI_Comm        comm = ((PetscObject)ts)->comm;
   TS_Sundials     *cvode = (TS_Sundials*)ts->data;
   Vec             yy = cvode->w1,yyd = cvode->w2;
   PetscScalar     *y_data,*ydot_data;
@@ -274,8 +274,8 @@ PetscErrorCode TSSetUp_Sundials_Nonlinear(TS ts)
     allocated with zero space arrays because the actual array space is provided 
     by Sundials and set using VecPlaceArray().
   */
-  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(ts->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w1);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)ts)->comm,locsize,PETSC_DECIDE,0,&cvode->w2);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w1);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->w2);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -787,7 +787,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
   ts->ops->setfromoptions  = TSSetFromOptions_Sundials_Nonlinear;
 
   ierr = PetscNewLog(ts,TS_Sundials,&cvode);CHKERRQ(ierr);
-  ierr = PCCreate(ts->comm,&cvode->pc);CHKERRQ(ierr);
+  ierr = PCCreate(((PetscObject)ts)->comm,&cvode->pc);CHKERRQ(ierr);
   ierr = PetscLogObjectParent(ts,cvode->pc);CHKERRQ(ierr);
   ts->data          = (void*)cvode;
   cvode->cvode_type = SUNDIALS_BDF;
@@ -797,7 +797,7 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate_Sundials(TS ts)
 
   cvode->exact_final_time = PETSC_FALSE;
 
-  ierr = MPI_Comm_dup(ts->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
+  ierr = MPI_Comm_dup(((PetscObject)ts)->comm,&(cvode->comm_sundials));CHKERRQ(ierr);
   /* set tolerance for Sundials */
   cvode->abstol = 1e-6;
   cvode->reltol = 1e-6;

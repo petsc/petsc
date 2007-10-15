@@ -264,7 +264,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatComputeExplicitOperator(Mat inmat,Mat *mat)
   PetscValidHeaderSpecific(inmat,MAT_COOKIE,1);
   PetscValidPointer(mat,2);
 
-  comm = inmat->comm;
+  comm = ((PetscObject)inmat)->comm;
   ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
 
   ierr = MatGetLocalSize(inmat,&m,0);CHKERRQ(ierr);
