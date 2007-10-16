@@ -117,6 +117,10 @@ dirk: dirk.o chkopts
 	-${CLINKER} -o dirk dirk.o ${PETSC_SNES_LIB}
 	${RM} -f dirk.o
 
+fetidp: fetidp_quadrature.h fetidp.o chkopts
+	-${CLINKER} -o fetidp fetidp.o ${PETSC_SNES_LIB}
+	${RM} -f fetidp.o
+
 #-----------------------------------------------------------------
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
