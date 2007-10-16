@@ -54,7 +54,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, c
 #if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   H5Pset_fapl_mpio(plist_id, ((PetscObject)viewer)->comm, info);
 #endif
-#endif
   /* Create or open the file collectively */
   switch (hdf5->btype) {
     case FILE_MODE_READ:
