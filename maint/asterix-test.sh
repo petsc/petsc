@@ -6,7 +6,9 @@ set -x
 make PETSC_ARCH=asterix all alltests DATAFILESPATH=/home/balay/datafiles 
 make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_NoComplex
 
-./config/asterix.py --with-clanguage=cxx --with-sieve=1 --download-boost=1 -PETSC_ARCH=asterix-cxx-sieve
+./config/configure.py  CC=gcc FC=gfortran CXX=g++ PETSC_ARCH=asterix-cxx-sieve --with-clanguage=cxx \
+--with-sieve=1 --download-mpich=1 --download-boost=1 --download-chaco=1 --download=jostle=1 \
+--download-plapack=1 --download-tetgen=1 --download-triangle=1 --download-hdf5=1
 make PETSC_ARCH=asterix-cxx-sieve all testexamples testfortran
 
 ./config/asterix-openmpi.py
@@ -23,7 +25,8 @@ make PETSC_ARCH=asterix-complex tree DATAFILESPATH=/home/balay/datafiles ACTION=
 
 ./config/asterix.py --download-prometheus=1 --download-parmetis=1 -PETSC_ARCH=asterix-prometheus \
 --with-dscpack=1 --with-dscpack-include=/home/balay/soft/linux-fc/DSCPACK1.0/DSC_LIB \
---with-dscpack-lib=/home/balay/soft/linux-fc/DSCPACK1.0/DSC_LIB/dsclibdbl.a
+--with-dscpack-lib=/home/balay/soft/linux-fc/DSCPACK1.0/DSC_LIB/dsclibdbl.a \
+--download-umfpack=1
 make PETSC_ARCH=asterix-prometheus all test
 make PETSC_ARCH=asterix-prometheus tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_PARMETIS
 
