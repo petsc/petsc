@@ -233,6 +233,7 @@ void PETSC_STDCALL petscinitialize_(CHAR filename PETSC_MIXED_LEN(len),PetscErro
 
   /* this must be initialized in a routine, not as a constant declaration*/
   PETSC_STDOUT = stdout;
+  PETSC_STDERR = stderr;
   
   *ierr = PetscOptionsCreate(); 
   if (*ierr) return;

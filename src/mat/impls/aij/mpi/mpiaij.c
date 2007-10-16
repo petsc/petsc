@@ -2878,8 +2878,33 @@ EXTERN_C_END
 
    Level: developer
 
-   Notes: this actually copies the values from i[], j[], and a[] to put them into PETSc's internal
-     storage format. Thus changing the values in a[] after this call will not effect the matrix values.
+   Notes:
+       The i, j, and a arrays ARE copied by this routine into the internal format used by PETSc;
+     thus you CANNOT change the matrix entries by changing the values of a[] after you have 
+     called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
+
+       The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
+
+       The format which is used for the sparse matrix input, is equivalent to a
+    row-major ordering.. i.e for the following matrix, the input data expected is
+    as shown:
+
+        1 0 0
+        2 0 3     P0
+       -------
+        4 5 6     P1
+
+     Process0 [P0]: rows_owned=[0,1]
+        i =  {0,1,3}  [size = nrow+1  = 2+1]
+        j =  {0,0,2}  [size = nz = 6]
+        v =  {1,2,3}  [size = nz = 6]
+
+     Process1 [P1]: rows_owned=[2]
+        i =  {0,3}    [size = nrow+1  = 1+1]
+        j =  {0,1,2}  [size = nz = 6]
+        v =  {4,5,6}  [size = nz = 6]
+
+
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
@@ -3063,7 +3088,26 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocation(Mat B,PetscInt d_nz,
      thus you CANNOT change the matrix entries by changing the values of a[] after you have 
      called this routine. Use MatCreateMPIAIJWithSplitArrays() to avoid needing to copy the arrays.
 
-       The i and j indices are 0 based
+       The i and j indices are 0 based, and i indices are indices corresponding to the local j array.
+
+       The format which is used for the sparse matrix input, is equivalent to a
+    row-major ordering.. i.e for the following matrix, the input data expected is
+    as shown:
+
+        1 0 0
+        2 0 3     P0
+       -------
+        4 5 6     P1
+
+     Process0 [P0]: rows_owned=[0,1]
+        i =  {0,1,3}  [size = nrow+1  = 2+1]
+        j =  {0,0,2}  [size = nz = 6]
+        v =  {1,2,3}  [size = nz = 6]
+
+     Process1 [P1]: rows_owned=[2]
+        i =  {0,3}    [size = nrow+1  = 1+1]
+        j =  {0,1,2}  [size = nz = 6]
+        v =  {4,5,6}  [size = nz = 6]
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
