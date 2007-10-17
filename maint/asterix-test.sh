@@ -7,7 +7,7 @@ make PETSC_ARCH=asterix all alltests DATAFILESPATH=/home/balay/datafiles
 make PETSC_ARCH=asterix tree DATAFILESPATH=/home/balay/datafiles ACTION=testexamples_C_NoComplex
 
 ./config/configure.py  CC=gcc FC=gfortran CXX=g++ PETSC_ARCH=asterix-cxx-sieve --with-clanguage=cxx \
---with-sieve=1 --download-mpich=1 --download-boost=1 --download-chaco=1 --download=jostle=1 \
+--with-sieve=1 --download-mpich=1 --download-boost=1 --download-chaco=1 \
 --download-plapack=1 --download-tetgen=1 --download-triangle=1 --download-hdf5=1
 make PETSC_ARCH=asterix-cxx-sieve all testexamples testfortran
 
