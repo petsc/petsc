@@ -424,7 +424,7 @@ PetscErrorCode MeshSpacingFunction(Mesh mesh) {
 }
 
 //MeshIDBoundary: create the "marker" label needed by many such things
-//Assume Interpolated. (pain in my butt otherwise)
+
 PetscErrorCode MeshIDBoundary(Mesh mesh) {
   ALE::Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
@@ -432,10 +432,9 @@ PetscErrorCode MeshIDBoundary(Mesh mesh) {
   ierr = MeshGetMesh(mesh, m);
   //int dim = m->getDimension();
   ALE::Obj<ALE::Mesh::label_type> boundary = m->createLabel("marker");
-  //to make it work for interpolated and noninterpolated meshes we will only work with the top and bottom
+
   int interplevels = m->height(*m->depthStratum(0)->begin());
-  if (interplevels == 1) { //noninterpolated case -- fix later as join is broken
-    //throw ALE::Exception("Cannot Properly ID the boundary for non-interpolated meshes (Join is broken)");
+  if (interplevels == 1) { //noninterpolated case
     ALE::Obj<ALE::Mesh::label_sequence> cells = m->heightStratum(0);
     ALE::Mesh::label_sequence::iterator c_iter = cells->begin();
     ALE::Mesh::label_sequence::iterator c_iter_end = cells->end();
@@ -516,6 +515,8 @@ PetscErrorCode MeshIDBoundary(Mesh mesh) {
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateHierarchyMesh"
 
+#if defined PETSC_HAVE_TETGEN || defined PETSC_HAVE_TRIANGLE
+
 ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, int curLevel) {
 
   int curmeshsize = 0;
@@ -534,9 +535,6 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
   const double * tmpcoords;
   int index = 0;
     //PetscPrintf(m->comm(), "Mesh Size: %d\n", curmeshsize);
-    //MESHING AND CONTINUITY CHECKING: MAKE SURE:
-    //1. ELIMINATE COMPLETELY CONSTRAINED ELEMENTS, BEING ONES ON WHICH ALL CORNERS ARE BOUNDARY PLACES.
-    //2. MAKE SURE THAT NO INTERNAL NODES ARE IN THE BOUNDARY.  IF AN INTERNAL NODE IS IN THE BOUNDARY, PUT THEM BACK TO LEVEL '0' AND REMESH.  REPEAT UNTIL SANE (THIS REALLY SHOULDN'T HAPPEN GIVEN OUR POINT ADDITION CRITERIA).
     //load the points and their names in this mesh into a list
     //triangulate/tetrahedralize
     //make into a new sieve.  place coordinates and names on the sieve.
@@ -569,7 +567,7 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
     //boundary_sieve->view();
     //PetscPrintf(m->comm(),"Copied the Boundary Mesh: %d vertices, %d edges\n", boundary_mesh->depthStratum(0)->size(), boundary_mesh->depthStratum(1)->size());
     //call triangle or tetgen: turns out the options we want on are the same
-    std::string triangleOptions = "zQep"; //(z)ero indexing, output (e)dges, Quiet
+    std::string triangleOptions = "zQp"; //(z)ero indexing, output (e)dges, Quiet
     double * finalcoords;
     int * connectivity;
     int * oldpositions;
@@ -605,16 +603,13 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
          boundary_sieve->removeBasePoint(bnd_segments[0]);
          boundary_sieve->removeCapPoint(*v_iter);
          boundary_sieve->addArrow(endpts[0], bnd_segments[1]);
-         boundary_sieve->stratify();
          //PetscPrintf(m->comm(), "taking %d -%d- %d -%d- %d to %d -%d- %d\n", endpts[0], bnd_segments[0], *v_iter, bnd_segments[1], endpts[1], endpts[0], bnd_segments[1], endpts[1]);
          //boundary_sieve->view();
        }
        v_iter++;
      }
      boundary_mesh->stratify();
-     ALE::Obj<ALE::Mesh::label_type> numbering = boundary_mesh->createLabel("numbering"); //hacked up until I can figure out what's wrong with the regular numbering.
-     //PetscPrintf(m->comm(),"Coarsened the Boundary Mesh to: %d vertices %d edges\n", boundary_mesh->depthStratum(0)->size(), boundary_mesh->depthStratum(1)->size());
-
+     ALE::Obj<ALE::Mesh::label_type> numbering = boundary_mesh->createLabel("numbering");
        //now, take the edges of this sieve and use them to construct a segmentlist.
        //ALE::Obj<ALE::Mesh::numbering_type> bnd_vertices_numbering  = boundary_mesh->getFactory()->getNumbering(boundary_mesh, 0);
        //ALE::Obj<ALE::Mesh::numbering_type> bnd_edges_numbering = boundary_mesh->getFactory()->getNumbering(boundary_mesh, 1);
@@ -705,8 +700,6 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
             clv_iter++;
         }
       }
-
-
       tetgenio * tetdata = new tetgenio[2];
       //push the points into the thing
       tetdata[0].pointlist = coords;
@@ -748,11 +741,22 @@ ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, 
     for(std::set<std::string>::const_iterator f_iter = discs->begin(); f_iter != discs->end(); ++f_iter) {
       newmesh->setDiscretization(*f_iter, m->getDiscretization(*f_iter));
     }
+    
     newmesh->markBoundaryCells("marker", 1, 2, true);
     newmesh->setupField(s);
     ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(newmesh, dim, finalcoords);
     return newmesh;
 }
+
+#else
+
+
+ALE::Obj<ALE::Mesh> MeshCreateHierarchyMesh(ALE::Obj<ALE::Mesh> m, int nLevels, int curLevel) {
+  throw ALE::Exception("reconfigure PETSc with --download-triangle and --download-tetgen to use this method.");
+  return m;
+}
+
+#endif
 
 #undef __FUNCT__
 #define __FUNCT__ "MeshCreateHierarchyLabel_Link"
