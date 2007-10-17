@@ -228,7 +228,7 @@ namespace ALE {
       *coordinates = coords;
       PetscPrintf(PETSC_COMM_WORLD,"%d vertices read.\n",numVerts);
 #else
-      SETERRQ(PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
+      SETERRABORT(comm,PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
 #endif
     };
     Obj<ALE::Mesh> Builder::readMesh(MPI_Comm comm, const int dim, 
