@@ -114,7 +114,7 @@ namespace ALE {
       PetscPrintf(PETSC_COMM_WORLD,"%d %s elements read.\n",numCells,
                   element_type);
 #else
-      SETERRQ(PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
+      SETERRABORT(comm,PETSC_ERR_SUP,"PETSc has not been compiled with hdf5 enabled.");
 #endif
     };
     void Builder::readCoordinates(MPI_Comm comm, const std::string& filename, 
