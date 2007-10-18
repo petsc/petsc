@@ -24,14 +24,12 @@ class Configure(PETSc.package.Package):
 
   def Install(self):
 
+    args = []
     self.framework.pushLanguage('C')
-    args = ['--prefix='+self.installDir, 'CC="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags()+'"']
+    args.append('--prefix='+self.installDir)
+    args.append('CC="'+self.framework.getCompiler()+'"')
+    args.append('CFLAGS="'+self.framework.getCompilerFlags()+'"')
     self.framework.popLanguage()
-    if hasattr(self.compilers, 'FC'):
-      self.framework.pushLanguage('FC')
-      args.append('F77="'+self.framework.getCompiler()+' '+self.framework.getCompilerFlags().replace('-Mfree','')+'"')
-      args.append('--enable-fortran')
-      self.framework.popLanguage()
     args = ' '.join(args)
     fd = file(os.path.join(self.packageDir,'hdf5'), 'w')
     fd.write(args)

@@ -308,6 +308,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
   PetscTruth     flag;
   PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring *);
   char           tname[PETSC_MAX_PATH_LEN];
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -325,9 +327,49 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
   }
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(MatColoringList,((PetscObject)mat)->comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr); 
+  ierr = PetscFListFind(MatColoringList,comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
-  ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
+  } else { /* for parallel matrix */
+    Mat             *mat_seq;
+    IS              isrow,iscol;
+    PetscInt        M,N;
+    ISColoring      iscoloring_seq;
+    ISColoringValue *colors_loc;
+    PetscInt        i,rstart,rend,N_loc,nc;
+    /* get a sequential matrix */
+    ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
+    ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);  
+    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
+    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&mat_seq);CHKERRQ(ierr);
+    ierr = ISDestroy(isrow);CHKERRQ(ierr);
+    ierr = ISDestroy(iscol);CHKERRQ(ierr);
+
+    /* create a sequential iscoloring on all processors */
+    ierr = (*r)(*mat_seq,type,&iscoloring_seq);CHKERRQ(ierr);
+    ierr = MatDestroy(*mat_seq);CHKERRQ(ierr);
+    ierr = PetscFree(mat_seq);CHKERRQ(ierr);   
+
+    /* convert iscoloring_seq to a parallel iscoloring */  
+    rstart = mat->rmap.rstart;
+    rend   = mat->rmap.rend;
+    N_loc  = rend - rstart; /* number of local nodes */
+
+    /* get local colors for each local node */
+    ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++){
+      colors_loc[i-rstart] = iscoloring_seq->colors[i];
+    }
+    /* create a parallel iscoloring */ 
+    nc=iscoloring_seq->n;
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
+    ierr = ISColoringDestroy(iscoloring_seq);CHKERRQ(ierr);
+    /* ierr = ISColoringView(iscoloring_mpi,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */  
+  }
   ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscInfo1(mat,"Number of colors %d\n",(*iscoloring)->n);CHKERRQ(ierr);

@@ -164,7 +164,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqFFTW(MPI_Comm comm,PetscInt ndim,c
   (*A)->ops->destroy       = MatDestroy_SeqFFTW;
 
   /* get runtime options */
-  ierr = PetscOptionsBegin((*A)((PetscObject))->comm,(*A)((PetscObject))->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)(*A))->comm,((PetscObject)(*A))->prefix,"FFTW Options","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEList("-mat_fftw_plannerflags","Planner Flags","None",p_flags,4,p_flags[0],&p_flag,&flg);CHKERRQ(ierr);
   if (flg) {fftw->p_flag = (unsigned)p_flag;}
   PetscOptionsEnd();
