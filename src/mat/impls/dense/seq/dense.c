@@ -668,8 +668,10 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
   /* row-oriented output */ 
   for (i=0; i<m; i++) {
     if (indexm[i] < 0) {v += n;continue;}
+    if (indexm[i] >= A->rmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested larger than number rows %D",indexm[i],A->rmap.n);
     for (j=0; j<n; j++) {
       if (indexn[i] < 0) {v++; continue;}
+      if (indexn[i] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column %D requested larger than number columns %D",indexn[i],A->cmap.n);
       *v++ = mat->v[indexn[j]*mat->lda + indexm[i]];
     }
   }
