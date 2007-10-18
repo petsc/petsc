@@ -15,7 +15,6 @@ namespace ALE {
       PetscViewer    viewer;
       PetscInt       numCells;
       PetscInt      *verts;
-      char           buf[2048];
       PetscInt       commRank;
       PetscErrorCode ierr;
 #if defined(PETSC_HAVE_HDF5)
@@ -121,10 +120,8 @@ namespace ALE {
                                   const int dim, int& numVertices, 
                                   double *coordinates[]) {
       PetscViewer    viewer;
-      FILE          *f;
       PetscInt       numVerts;
       PetscScalar   *coords, *coord;
-      char           buf[2048];
       PetscInt       c;
       PetscInt       commRank;
       PetscErrorCode ierr;
@@ -136,9 +133,7 @@ namespace ALE {
       hid_t          prop_id;
       hid_t          type_id;
       hid_t          attribute_id;
-      hid_t          string_id;
       H5T_class_t    class_type;
-      char           element_type[5];
 #endif
 
       ierr = MPI_Comm_rank(comm, &commRank);
