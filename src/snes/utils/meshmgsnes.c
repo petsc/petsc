@@ -11,6 +11,7 @@
 #ifdef PETSC_HAVE_SIEVE
 PetscErrorCode DMMGFormFunctionMesh(SNES snes, Vec X, Vec F, void *ptr);
 
+#if 0
 PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
   Mesh           mesh = (Mesh) dmmg->dm;
   Vec            nS   = nulls[0];
@@ -49,6 +50,7 @@ PetscErrorCode CreateNullSpace(DMMG dmmg, Vec *nulls) {
   ierr = SectionRealDestroy(nullSpace);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+#endif
 
 /* Nonlinear relaxation on all the equations with an initial guess in x */
 EXTERN_C_BEGIN

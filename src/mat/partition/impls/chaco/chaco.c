@@ -222,17 +222,15 @@ PetscErrorCode MatPartitioningView_Chaco(MatPartitioning part, PetscViewer viewe
     PetscTruth            iascii;
 
     PetscFunctionBegin;
-
     ierr = MPI_Comm_rank(((PetscObject)part)->comm, &rank);CHKERRQ(ierr);
     ierr = PetscTypeCompare((PetscObject) viewer, PETSC_VIEWER_ASCII, &iascii);CHKERRQ(ierr);
     if (iascii) {
-        if (!rank && chaco->mesg_log) {
-            ierr = PetscViewerASCIIPrintf(viewer, "%s\n", chaco->mesg_log);CHKERRQ(ierr);
-        }
+      if (!rank && chaco->mesg_log) {
+        ierr = PetscViewerASCIIPrintf(viewer, "%s\n", chaco->mesg_log);CHKERRQ(ierr);
+      }
     } else {
-        SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)((PetscObject))->type_name);
+      SETERRQ1(PETSC_ERR_SUP,"Viewer type %s not supported for this Chaco partitioner",((PetscObject) viewer)->type_name);
     }
-
     PetscFunctionReturn(0);
 }
 

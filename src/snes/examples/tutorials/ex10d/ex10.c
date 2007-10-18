@@ -15,11 +15,13 @@ is done, scatters are created between local (sequential)and global\n\
 (distributed) vectors. Finally, we set up the nonlinear solver context\n\
 in the usual way as a structured grid  (see\n\
 petsc/src/snes/examples/tutorials/ex5.c).\n\
+This example also illustrates the use of parallel matrix coloring.\n\
 The command line options include:\n\
   -vert <Nv>, where Nv is the global number of nodes\n\
   -elem <Ne>, where Ne is the global number of elements\n\
   -nl_par <lambda>, where lambda is the multiplier for the non linear term (u*u) term\n\
-  -lin_par <alpha>, where alpha is the multiplier for the linear term (u) \n";
+  -lin_par <alpha>, where alpha is the multiplier for the linear term (u)\n\
+  -fd_jacobian_coloring -mat_coloring_type lf\n";
 
 /*T
    Concepts: SNES^unstructured grid
@@ -116,6 +118,9 @@ int main(int argc,char **argv)
   PetscReal              tiny = 1.0e-10,zero = 0.0,one = 1.0,big = 1.0e+10;
   PetscInt               *tmp1,*tmp2;
 #endif
+  MatFDColoring          matfdcoloring = 0;
+  PetscTruth             fd_jacobian_coloring = PETSC_FALSE;
+
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Initialize program
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -394,14 +399,28 @@ int main(int argc,char **argv)
 
   ierr = SNESCreate(MPI_COMM_WORLD,&snes);CHKERRQ(ierr);
   ierr = SNESSetType(snes,type);CHKERRQ(ierr);
+  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     Set routines for function and Jacobian evaluation
      - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+  ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
 
-   ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
-   ierr = SNESSetFunction(snes,r,FormFunction,(void*)&user);CHKERRQ(ierr);
-   ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
+   ierr = PetscOptionsGetTruth(PETSC_NULL,"-fd_jacobian_coloring",&fd_jacobian_coloring,0);CHKERRQ(ierr);
+   if (!fd_jacobian_coloring){
+     ierr = SNESSetJacobian(snes,Jac,Jac,FormJacobian,(void*)&user);CHKERRQ(ierr);
+   } else { /* Use matfdcoloring */
+     ISColoring    iscoloring;
+     MatStructure  flag;
+     ierr = FormJacobian(snes,x,&Jac,&Jac,&flag,&user);CHKERRQ(ierr);
+     ierr = MatGetColoring(Jac,MATCOLORING_SL,&iscoloring);CHKERRQ(ierr);
+     ierr = MatFDColoringCreate(Jac,iscoloring,&matfdcoloring);CHKERRQ(ierr);
+     ierr = MatFDColoringSetFunction(matfdcoloring,(PetscErrorCode (*)(void))FormFunction,&user);CHKERRQ(ierr);
+     ierr = MatFDColoringSetFromOptions(matfdcoloring);CHKERRQ(ierr);
+     /* ierr = MatFDColoringView(matfdcoloring,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */
+     ierr = SNESSetJacobian(snes,Jac,Jac,SNESDefaultComputeJacobianColor,matfdcoloring);CHKERRQ(ierr); 
+     ierr = ISColoringDestroy(iscoloring);CHKERRQ(ierr);
+   }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Customize nonlinear solver; set runtime options
@@ -468,6 +487,9 @@ int main(int argc,char **argv)
   ierr = VecDestroy(user.localF);CHKERRQ(ierr);
   ierr = MatDestroy(Jac);CHKERRQ(ierr);  ierr = SNESDestroy(snes);CHKERRQ(ierr);
   /*ierr = PetscDrawDestroy(draw);CHKERRQ(ierr);*/
+  if (fd_jacobian_coloring){
+    ierr = MatFDColoringDestroy(matfdcoloring);CHKERRQ(ierr);
+  }
   ierr = PetscFinalize();CHKERRQ(ierr);
 
   return 0;
