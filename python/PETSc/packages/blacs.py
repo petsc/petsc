@@ -38,17 +38,8 @@ class Configure(PETSc.package.Package):
     g.write('DEBUGLVL  = -DBlacsDebugLvl=1\n')
     g.write('BLACSdir  = '+self.packageDir+'\n')
     g.write('BLACSLIB  = '+os.path.join(self.installDir,self.libdir,'libblacs.a')+'\n')
-    # look for the correct dir which has mpif.h [if not found error]
-    found = 0
-    for mpiincdir in self.mpi.include:
-      if os.path.isfile(os.path.join(mpiincdir,'mpif.h')):
-        g.write('MPIINCdir = '+mpiincdir+'\n')
-        found =1
-        break
-    if found == 0: raise RuntimeError('mpif.h could not be located in paths :' + str(self.mpi.include))
-
     g.write('MPILIB    = '+self.libraries.toString(self.mpi.lib)+'\n')
-    g.write('SYSINC    = -I$(MPIINCdir)\n')
+    g.write('SYSINC    = '+self.headers.toString(self.mpi.include)+'\n')
     g.write('BTLIBS    = $(BLACSLIB)  $(MPILIB) \n')
     if self.compilers.fortranManglingDoubleUnderscore:
       blah = 'f77IsF2C'

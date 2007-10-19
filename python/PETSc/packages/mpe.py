@@ -12,6 +12,7 @@ class Configure(PETSc.package.Package):
     self.functions = ['MPE_Log_event']
     self.includes  = ['mpe.h']
     self.liblist   = [['libmpe.a']]
+    self.complex   = 1
     return
 
   def setupDependencies(self, framework):

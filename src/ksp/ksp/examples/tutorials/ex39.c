@@ -22,18 +22,18 @@ int main(int Argc,char **Args)
   DA              da;
   PetscRandom     rctx;
   PetscMPIInt     comm_size;
-  Mat             H;
+  Mat             H,HtH;
   PetscInt        x, y, xs, ys, xm, ym;
   PetscReal       r1, r2;
   PetscScalar     uxy1, uxy2;
   MatStencil      sxy, sxy_m;
   PetscScalar     val, valconj;
-  Mat             HtH;
-  Vec             b, Htb;
-  Vec             xvec;
+  Vec             b, Htb,xvec;
   KSP             kspmg;
   PC              pcmg;
   PetscErrorCode  ierr;
+  PetscInt        ix[1] = {0};
+  PetscScalar     vals[1] = {1.0};
 
   PetscInitialize(&Argc,&Args,(char *)0,help);
   ierr = PetscOptionsGetInt(PETSC_NULL,"-size",&n,&flg);CHKERRQ(ierr);
@@ -171,8 +171,6 @@ int main(int Argc,char **Args)
   /* right hand side */
   ierr = DACreateGlobalVector(da, &b); CHKERRQ(ierr);
   ierr = VecSet(b,0.0); CHKERRQ(ierr);
-  PetscInt ix[1] = {0};
-  PetscScalar vals[1] = {1.0};
   ierr = VecSetValues(b, 1, ix, vals, INSERT_VALUES); CHKERRQ(ierr);
   ierr = VecAssemblyBegin(b); CHKERRQ(ierr);
   ierr = VecAssemblyEnd(b); CHKERRQ(ierr);
@@ -212,8 +210,10 @@ int main(int Argc,char **Args)
   ierr = VecDestroy(xvec);CHKERRQ(ierr);
 
   /*   seems to be destroyed by KSPDestroy */
-  /*   ierr = VecDestroy(b);CHKERRQ(ierr); */
-  /*   ierr = MatDestroy(cmat);CHKERRQ(ierr); */
+  ierr = VecDestroy(b);CHKERRQ(ierr);
+  ierr = VecDestroy(Htb);CHKERRQ(ierr);
+  ierr = MatDestroy(HtH);CHKERRQ(ierr);
+  ierr = MatDestroy(H);CHKERRQ(ierr);
 
   ierr = DADestroy(da);CHKERRQ(ierr);
   ierr = PetscRandomDestroy(rctx);CHKERRQ(ierr);

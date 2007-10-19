@@ -53,9 +53,9 @@ ex_coarsen: ex_coarsen.o   chkopts
 	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}
 	${RM} -f ex_coarsen.o
 
-ex_coarsen_2: ex_coarsen_2.o   chkopts
-	-${CLINKER} -o ex_coarsen_2 ex_coarsen_2.o  ${PETSC_DM_LIB}
-	${RM} -f ex_coarsen_2.o
+mesh_surgery: mesh_surgery.o   chkopts
+	-${CLINKER} -o mesh_surgery mesh_surgery.o  ${PETSC_DM_LIB}
+	${RM} -f mesh_surgery.o
 
 ex_coarsen_3: ex_coarsen_3.o   chkopts
 	-${CLINKER} -o ex_coarsen_3 ex_coarsen_3.o  ${PETSC_DM_LIB}
@@ -112,6 +112,14 @@ lagrit: CohesiveTopology.o lagrit.o chkopts
 rt: rt_quadrature.h rt.o chkopts
 	-${CLINKER} -o rt rt.o ${PETSC_SNES_LIB}
 	${RM} -f rt.o
+
+dirk: dirk.o chkopts
+	-${CLINKER} -o dirk dirk.o ${PETSC_SNES_LIB}
+	${RM} -f dirk.o
+
+fetidp: fetidp_quadrature.h fetidp.o chkopts
+	-${CLINKER} -o fetidp fetidp.o ${PETSC_SNES_LIB}
+	${RM} -f fetidp.o
 
 #-----------------------------------------------------------------
 runex1:

@@ -1,5 +1,4 @@
-//Use Hierarchy.h to implement the creation of an entire array of topologies for use in multigrid methods.
-//UPDATE:  Do Multigrid.
+//Use Hierarchy.hh to implement the creation of an entire array of topologies for use in multigrid methods.
 
 
 
@@ -7,6 +6,9 @@
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
 #include <petscdmmg.h>
+//TEST compile without triangle and tetgen
+//#undef PETSC_HAVE_TRIANGLE
+//#undef PETSC_HAVE_TETGEN
 #include "Generator.hh"
 #include "Hierarchy.hh"
 

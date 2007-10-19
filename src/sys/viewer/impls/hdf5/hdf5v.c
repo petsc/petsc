@@ -43,7 +43,9 @@ EXTERN_C_BEGIN
 PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF5(PetscViewer viewer, const char name[])
 {
   PetscViewer_HDF5 *hdf5 = (PetscViewer_HDF5 *) viewer->data;
+#if defined(PETSC_HAVE_H5PSET_FAPL_MPIO)
   MPI_Info          info = MPI_INFO_NULL;
+#endif
   hid_t             plist_id;
   PetscErrorCode    ierr;
 

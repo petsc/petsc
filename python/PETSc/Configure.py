@@ -274,6 +274,7 @@ class Configure(config.base.Configure):
     if not self.libraries.add('Gdi32.lib','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);'):
       self.libraries.add('gdi32','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);')
       
+    self.types.check('int32_t', 'int')
     if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
       self.addTypedef('int', 'uid_t')
       self.addTypedef('int', 'gid_t')

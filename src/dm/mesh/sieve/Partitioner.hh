@@ -146,7 +146,7 @@ namespace ALE {
 
               for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
                 if (*e_iter == *n_iter) continue;
-                if ((int) sieve->meet(*e_iter, *n_iter)->size() == faceVertices) {
+                if ((int) sieve->nMeet(*e_iter, *n_iter, 1)->size() == faceVertices) {
                   neighborCells[*e_iter].insert(*n_iter);
                 }
               }

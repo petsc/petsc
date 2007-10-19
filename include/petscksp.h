@@ -489,9 +489,11 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP,void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
