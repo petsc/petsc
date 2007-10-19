@@ -636,7 +636,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
-  if (ksp->cnvP){ierr = PetscFree(ksp->cnvP);CHKERRQ(ierr);}
+  ierr = KSPDefaultConvergedDestroy(ksp->cnvP);CHKERRQ(ierr)
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
