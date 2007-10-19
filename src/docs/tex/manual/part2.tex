@@ -4155,11 +4155,16 @@ One sets the total number of timesteps to run or the total time to run
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
-One sets up the timestep context with \findex{TSSetUp()}
+One performs the request number of time steps with\findex{TSSolve()}
+\begin{tabbing}
+  TSSolve(TS ts);
+\end{tabbing}
+The solve call implicitly sets up the timestep context;
+this can be done explicitly with \findex{TSSetUp()}
 \begin{tabbing}
  TSSetUp(TS ts);
 \end{tabbing}
-destroys it with \findex{TSDestroy()}
+One destroys the context with \findex{TSDestroy()}
 \begin{tabbing}
  TSDestroy(TS ts);
 \end{tabbing}
