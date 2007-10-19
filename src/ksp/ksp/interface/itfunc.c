@@ -636,7 +636,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
-  ierr = KSPDefaultConvergedDestroy(ksp->cnvP);CHKERRQ(ierr)
+  if (ksp->convergeddestroy) {
+    ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1478,7 +1480,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (
   if (ksp->convergeddestroy) {
     ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);
   }
-  ksp->converged        = converge;	
+  ksp->converged        = converge;
   ksp->convergeddestroy = destroy;
   ksp->cnvP             = (void*)cctx;
   PetscFunctionReturn(0);
