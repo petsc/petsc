@@ -4123,10 +4123,14 @@ One can set the solution method with the routine
  TSSetType(TS ts,TSType type);
 \end{tabbing}
 \findex{TSSetType()} Currently supported types are \trl{TS_EULER},
-\trl{TS_BEULER}, and \trl{TS_PSEUDO}
+\trl{TS_BEULER},  \trl{TS_PSEUDO}, \trl{TS_CRANK_NICHOLSON},
+\trl{TS_SUNDIALS} (only if the Sundials package is installed),
+and \trl{TS_RK}
 \findex{TS_EULER} \findex{TS_BEULER} \findex{TS_PSEUDO}
+\findex{TS_CRANK_NICHOLSON} \findex{TS_SUNDIALS} \findex{TS_RUNGE_KUTTA}
 or the command line option
-\trl{-ts_type euler, beuler, pseudo}. \findex{-ts_type} \sindex{Euler}
+\trl{-ts_type euler, beuler, pseudo, crank-nicholson, sundials, runge-kutta}.
+\findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
 
