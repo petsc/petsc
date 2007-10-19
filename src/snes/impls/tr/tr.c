@@ -2,22 +2,28 @@
  
 #include "src/snes/impls/tr/tr.h"                /*I   "petscsnes.h"   I*/
 
+typedef struct {
+  void *ctx;
+  SNES snes;
+} SNES_TR_KSPConverged_Ctx;
+
 /*
    This convergence test determines if the two norm of the 
    solution lies outside the trust region, if so it halts.
 */
 #undef __FUNCT__  
 #define __FUNCT__ "SNES_TR_KSPConverged_Private"
-PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *ctx)
+PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,KSPConvergedReason *reason,void *cctx)
 {
-  SNES                snes = (SNES) ctx;
-  SNES_TR             *neP = (SNES_TR*)snes->data;
-  Vec                 x;
-  PetscReal           nrm;
-  PetscErrorCode      ierr;
+  SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx *)cctx;
+  SNES                     snes = ctx->snes;
+  SNES_TR                  *neP = (SNES_TR*)snes->data;
+  Vec                      x;
+  PetscReal                nrm;
+  PetscErrorCode           ierr;
 
   PetscFunctionBegin;
-  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx);CHKERRQ(ierr);
+  ierr = KSPDefaultConverged(ksp,n,rnorm,reason,ctx->ctx);CHKERRQ(ierr);
   if (*reason) {
     ierr = PetscInfo2(snes,"default convergence test KSP iterations=%D, rnorm=%G\n",n,rnorm);CHKERRQ(ierr);
   }
@@ -28,6 +34,19 @@ PetscErrorCode SNES_TR_KSPConverged_Private(KSP ksp,PetscInt n,PetscReal rnorm,K
     ierr = PetscInfo2(snes,"Ending linear iteration early, delta=%G, length=%G\n",neP->delta,nrm);CHKERRQ(ierr);
     *reason = KSP_CONVERGED_STEP_LENGTH;
   }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "SNES_TR_KSPConverged_Destroy"
+PetscErrorCode SNES_TR_KSPConverged_Destroy(void *cctx)
+{
+  SNES_TR_KSPConverged_Ctx *ctx = (SNES_TR_KSPConverged_Ctx *)cctx;
+  PetscErrorCode           ierr;
+
+  PetscFunctionBegin;
+  ierr = KSPDefaultConvergedDestroy(ctx->ctx);CHKERRQ(ierr);
+  ierr = PetscFree(ctx);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -109,8 +128,12 @@ static PetscErrorCode SNESSolve_TR(SNES snes)
   /* Set the stopping criteria to use the More' trick. */
   ierr = PetscOptionsHasName(PETSC_NULL,"-snes_tr_ksp_regular_convergence_test",&conv);CHKERRQ(ierr);
   if (!conv) {
+    SNES_TR_KSPConverged_Ctx *ctx;
     ierr = SNESGetKSP(snes,&ksp);CHKERRQ(ierr);
-    ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,(void*)snes);CHKERRQ(ierr);
+    ierr = PetscNew(SNES_TR_KSPConverged_Ctx,&ctx);CHKERRQ(ierr);
+    ctx->snes = snes;
+    ierr = KSPDefaultConvergedCreate(&ctx->ctx);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,SNES_TR_KSPConverged_Private,ctx,SNES_TR_KSPConverged_Destroy);CHKERRQ(ierr);
     ierr = PetscInfo(snes,"Using Krylov convergence test SNES_TR_KSPConverged_Private\n");CHKERRQ(ierr);
   }
  

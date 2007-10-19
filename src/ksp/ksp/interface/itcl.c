@@ -211,6 +211,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
   PetscViewerASCIIMonitor monviewer;
   PetscTruth              flg,flag;
   PetscInt                i;
+  void                    *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
@@ -245,8 +246,11 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
       switch (indx) {
-      case 0: ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,PETSC_NULL);CHKERRQ(ierr); break;
-      case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL);CHKERRQ(ierr);    break;
+      case 0: 
+        ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
+        ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr); 
+        break;
+      case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);    break;
       }
     }
 

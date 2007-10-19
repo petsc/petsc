@@ -137,7 +137,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetNormType(KSP ksp,KSPNormType normtype)
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->normtype = normtype;
   if (normtype == KSP_NORM_NO) {
-    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
+    ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0,0);CHKERRQ(ierr);
     ierr = PetscInfo(ksp,"Warning: setting KSPNormType to skip computing the norm\n\
  KSP convergence test is implicitly set to KSPSkipConverged\n");CHKERRQ(ierr);
   }
@@ -409,6 +409,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
 {
   KSP            ksp;
   PetscErrorCode ierr;
+  void           *ctx;
 
   PetscFunctionBegin;
   PetscValidPointer(inksp,2);
@@ -438,7 +439,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->res_hist_reset      = PETSC_TRUE;
   ksp->numbermonitors      = 0;
 
-  ksp->converged           = KSPDefaultConverged;
+  ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
+  ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);
   ksp->ops->buildsolution  = KSPDefaultBuildSolution;
   ksp->ops->buildresidual  = KSPDefaultBuildResidual;
 
@@ -448,7 +450,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate(MPI_Comm comm,KSP *inksp)
   ksp->data            = 0;
   ksp->nwork           = 0;
   ksp->work            = 0;
-  ksp->cnvP            = 0;
   ksp->reason          = KSP_CONVERGED_ITERATING;
   ksp->setupcalled     = 0;
 
