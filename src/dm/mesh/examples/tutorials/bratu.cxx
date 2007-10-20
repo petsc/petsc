@@ -3,8 +3,12 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 
 #include <petscmesh.hh>
 #include <petscmesh_viewers.hh>
+#include <petscmesh_formats.hh>
 #include <petscdmmg.h>
 #include "Generator.hh"
+
+#include "GMVFileAscii.hh" // USES GMVFileAscii
+#include "GMVFileBinary.hh" // USES GMVFileBinary
 
 using ALE::Obj;
 typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
@@ -292,6 +296,18 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
 
 extern PetscErrorCode MeshIDBoundary(Mesh);
 
+void OrientCellsAscii(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
+  if (3 == meshDim && 4 == numCorners) {
+    for(int iCell = 0; iCell < numCells; ++iCell) {
+      const int i1 = iCell*numCorners+1;
+      const int i2 = iCell*numCorners+2;
+      const int tmp = (*cells)[i1];
+      (*cells)[i1] = (*cells)[i2];
+      (*cells)[i2] = tmp;
+    }
+  }
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
@@ -356,11 +372,33 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
     } else {
-      std::string baseFilename(options->baseFilename);
-      std::string coordFile = baseFilename+".nodes";
-      std::string adjFile   = baseFilename+".lcon";
+      //Obj<ALE::Mesh> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
+      Obj<ALE::Mesh>             m     = new ALE::Mesh(comm, options->dim, options->debug);
+      Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(comm, options->debug);
+      bool                 flipEndian = false;
+      int                  dim;
+      pylith::int_array    cells;
+      pylith::double_array coordinates;
+      pylith::int_array    materialIds;
+      int                  numCells = 0, numVertices = 0, numCorners = options->dim+1;
 
-      ierr = MeshCreatePCICE(comm, options->dim, coordFile.c_str(), adjFile.c_str(), options->interpolate, PETSC_NULL, &mesh);CHKERRQ(ierr);
+      if (!m->commRank()) {
+        if (pylith::meshio::GMVFile::isAscii(options->baseFilename)) {
+          pylith::meshio::GMVFileAscii filein(options->baseFilename);
+          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+          //OrientCellsAscii(&cells, numCells, numCorners, dim);
+        } else {
+          pylith::meshio::GMVFileBinary filein(options->baseFilename, flipEndian);
+          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+        } // if/else
+      }
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners);
+      m->setSieve(sieve);
+      m->stratify();
+      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
+
+      ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
       ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
     }
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -730,7 +768,9 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
         }
         // Nonlinear part
-        elemVec[f] -= basis[q*numBasisFuncs+f]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+        if (lambda != 0.0) {
+          elemVec[f] -= basis[q*numBasisFuncs+f]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+        }
       }
     }    
     // Add linear contribution
@@ -1269,7 +1309,9 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
           for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
           // Nonlinear part
-          elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+          if (lambda != 0.0) {
+            elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+          }
         }
       }
     }

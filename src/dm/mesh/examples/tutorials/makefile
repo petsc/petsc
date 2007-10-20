@@ -89,8 +89,8 @@ grade2: stokes_quadrature.h grade2.o chkopts
 	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
 	${RM} -f grade2.o
 
-bratu: bratu_quadrature.h bratu.o chkopts
-	-${CLINKER} -o bratu bratu.o ${PETSC_SNES_LIB}
+bratu: bratu_quadrature.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o chkopts
+	-${CLINKER} -o bratu  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
 electrostatic: electrostatic_quadrature.h electrostatic.o chkopts
