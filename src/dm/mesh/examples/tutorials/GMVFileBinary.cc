@@ -177,26 +177,24 @@ pylith::meshio::GMVFileBinary::_readCells(std::ifstream& fin,
   assert(0 != numCorners);
 
   fin.read((char*) numCells, sizeof(int));
-  if (_flipEndian)
-    BinaryIO::swapByteOrder((char*) numCells, 1, sizeof(int));
+  if (_flipEndian) BinaryIO::swapByteOrder((char*) numCells, 1, sizeof(int));
   std::string cellString = "";
   for (int iCell=0; iCell < *numCells; ++iCell) {
     const int stringLen = 8;
     char cellStringCur[stringLen+1];
     int numCornersCur = 0;
+
     fin.read((char*) cellStringCur, sizeof(char)*stringLen);
     cellStringCur[stringLen] = '\0';
     fin.read((char*) &numCornersCur, sizeof(int));
-    if (_flipEndian)
-      BinaryIO::swapByteOrder((char*) &numCornersCur, 1, sizeof(int));
+    if (_flipEndian) BinaryIO::swapByteOrder((char*) &numCornersCur, 1, sizeof(int));
     if (0 != *numCorners) {
       if (cellStringCur != cellString) {
-	std::ostringstream msg;
-	msg 
-	  << "Mutiple element types not supported. Found element types '"
-	  << cellString << "' and '" << cellStringCur << "' in GMV file '"
-	  << _filename << "'.";
-	throw std::runtime_error(msg.str());
+        std::ostringstream msg;
+        msg << "Mutiple element types not supported. Found element types '"
+            << cellString << "' and '" << cellStringCur << "' in GMV file '"
+            << _filename << "'.";
+        throw std::runtime_error(msg.str());
       } // if
       assert(*numCorners == numCornersCur);
     } else {
@@ -204,13 +202,9 @@ pylith::meshio::GMVFileBinary::_readCells(std::ifstream& fin,
       *numCorners = numCornersCur;
       cells->resize((*numCells) * (*numCorners));
     } // if/else
-    fin.read((char*) &(*cells)[iCell*numCornersCur], 
-	     sizeof(int)*numCornersCur);
+    fin.read((char*) &(*cells)[iCell*numCornersCur], sizeof(int)*numCornersCur);
   } // for
-  if (_flipEndian)
-    BinaryIO::swapByteOrder((char*) &(*cells)[0], 
-			    (*numCells)*(*numCorners), sizeof(int));
-
+  if (_flipEndian) BinaryIO::swapByteOrder((char*) &(*cells)[0], (*numCells)*(*numCorners), sizeof(int));
   *cells -= 1; // use zero base
 } // _readCells
 
