@@ -504,11 +504,15 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP ksp,PetscInt n,PetscRe
 {
   PetscErrorCode         ierr;
   KSPDefaultConvergedCtx *ctx = (KSPDefaultConvergedCtx*) dummy;
+  KSPNormType            normtype;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   PetscValidPointer(reason,4);
   *reason = KSP_CONVERGED_ITERATING;
+  
+  ierr = KSPGetNormType(ksp,&normtype);CHKERRQ(ierr);
+  if (normtype == KSP_NORM_NO) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Use KSPSkipConverged() with KSPNormType of KSP_NORM_NO");
 
   if (!ctx) SETERRQ(PETSC_ERR_ARG_NULL,"Convergence context must have been created with KSPDefaultConvergedCreate()");
   if (!n) {
