@@ -22,6 +22,7 @@ configure_options = [
   '--sizeof_char=1',
   '--with-memcmp-ok',
   '--sizeof_long=8',
+  '--sizeof_size_t=8',
   '--sizeof_MPI_Comm=4',
   '--sizeof_double=8',
   '--sizeof_int=4',

@@ -13,6 +13,7 @@ configure_options = [
   '--sizeof_short=2',
   '--sizeof_int=4',
   '--sizeof_long=4',
+  '--sizeof_size_t=4',
   '--sizeof_long_long=8',
   '--sizeof_float=4',
   '--sizeof_double=8',
