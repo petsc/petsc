@@ -7,10 +7,12 @@ configure_options = [
   '--LIBS=-lpathfstart -lpathfortran -lpathfstart',
   '--with-fortranlib-autodetect=0',
 
+  # -G0 is to avoid the following error at linktime:
+  # "relocation truncated to fit: R_MIPS_GPREL16"
   '--with-debugging=0',
-  'COPTFLAGS=-g -O2',
-  'FOPTFLAGS=-g -O2',
-  'CXXOPTFLAGS=-g -O2',
+  'COPTFLAGS=-g -O2 -G0',
+  'FOPTFLAGS=-g -O2 -G0',
+  'CXXOPTFLAGS=-g -O2 -G0',
 
   '--with-batch=1',
   '--with-mpi-shared=0',
@@ -49,8 +51,9 @@ configure_options = [
   #'--download-sundials=1',
   #'--download-hypre=1',
 
-  # not required
-  #'--download-f-blas-lapack=1',
+  # not required normally. Its used due to -G0 [all sources should be
+  # compiled with it]
+  '--download-f-blas-lapack=1',
   ]
 
 if __name__ == '__main__':
