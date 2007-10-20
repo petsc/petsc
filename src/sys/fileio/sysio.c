@@ -314,7 +314,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBinaryWrite(int fd,void *p,PetscInt n,PetscD
     pp += wsize;
   }
 
-#if !defined(PETSC_WORDS_BIGENDIAN) && !(PETSC_SIZEOF_INT == 8) && !defined(PETSC_USE_64BIT_INDICES)
+#if !defined(PETSC_WORDS_BIGENDIAN)
   if (!istemp) {
     if      (type == PETSC_SCALAR) {ierr = PetscByteSwapScalar((PetscScalar*)ptmp,n);CHKERRQ(ierr);}
     else if (type == PETSC_SHORT)  {ierr = PetscByteSwapShort((short*)ptmp,n);CHKERRQ(ierr);}

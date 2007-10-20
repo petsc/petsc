@@ -636,6 +636,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
+  if (ksp->convergeddestroy) {
+    ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1467,12 +1470,19 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,
+                                                        PetscErrorCode (*destroy)(void*))
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  ksp->converged = converge;	
-  ksp->cnvP      = (void*)cctx;
+  if (ksp->convergeddestroy) {
+    ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);
+  }
+  ksp->converged        = converge;
+  ksp->convergeddestroy = destroy;
+  ksp->cnvP             = (void*)cctx;
   PetscFunctionReturn(0);
 }
 
