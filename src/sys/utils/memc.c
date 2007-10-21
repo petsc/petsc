@@ -213,7 +213,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemzero(void *a,size_t n)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemcmp"
-/*@C
+/*@
    PetscMemcmp - Compares two byte streams in memory.
 
    Not Collective
@@ -247,7 +247,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemcmp(const void *str1,const void *str2,siz
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscMemmove"
-/*@C
+/*@
    PetscMemmove - Copies n bytes, beginning at location b, to the space
    beginning at location a. Copying  between regions that overlap will
    take place correctly.
