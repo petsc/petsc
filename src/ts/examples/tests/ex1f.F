@@ -44,6 +44,7 @@
       character*(5)    etype
       PetscInt         i1,i60
       PetscTruth flg
+      PetscSizeT five
 
       external Monitor,RHSFunctionHeat,RHSMatrixFree,Initial
       external RHSMatrixHeat,RHSJacobianHeat
@@ -230,8 +231,9 @@
 !   
 !         copy type to string of length 5 to ensure equality test        
 !         is done correctly
-!
-        call PetscStrncpy(etype,type,5,ierr)
+!     
+        five = 5
+        call PetscStrncpy(etype,type,five,ierr)
         if (etype .eq. TS_EULER) then
           if (abs(nrm_2/steps - 0.00257244) .gt. 1.e-4) then
             print*,'Error in Euler method: 2-norm ',nrm_2/steps,        &

@@ -1,5 +1,5 @@
-
 #requiresscalar real
+#requiresprecision double
 
 ALL: flow
 

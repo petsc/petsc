@@ -45,6 +45,12 @@
 #define PetscFortranInt integer8
 #endif
 !
+#if (PETSC_SIZEOF_SIZE_T == 8)
+#define PetscSizeT integer8
+#else
+#define PetscSizeT integer4
+#endif
+!
 #if defined(PETSC_HAVE_MPIUNI)
 #define MPI_Comm PetscFortranInt
 #define PetscMPIInt PetscFortranInt
