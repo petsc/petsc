@@ -25,6 +25,7 @@
     These are the SPAI include files
 */
 EXTERN_C_BEGIN
+#define MPI /* required for setting SPAI_Comm correctly in basics.h */
 #include "spai.h"
 #include "matrix.h"
 EXTERN_C_END
