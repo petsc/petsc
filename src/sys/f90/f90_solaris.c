@@ -6,7 +6,7 @@
 PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
 {
   PetscErrorCode ierr;
-  PetscInt size;
+  size_t size;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);
@@ -25,7 +25,7 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
 PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
 {
   PetscErrorCode ierr;
-  PetscInt size;
+  size_t size;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);
@@ -47,7 +47,7 @@ PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,P
 PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,F90Array3d *ptr)
 {
   PetscErrorCode ierr;
-  PetscInt size;
+  size_t size;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);
@@ -77,7 +77,7 @@ PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,P
 PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,PetscInt start4,PetscInt len4,F90Array4d *ptr)
 {
   PetscErrorCode ierr;
-  PetscInt size;
+  size_t size;
 
   PetscFunctionBegin;
   PetscValidPointer(array,1);

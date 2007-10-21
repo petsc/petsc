@@ -137,7 +137,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemcpy(void *a,const void *b,size_t n)
 PetscErrorCode PETSC_DLLEXPORT PetscBitMemcpy(void *a,PetscInt ai,const void *b,PetscInt bi,PetscInt bs,PetscDataType dtype)
 {
   char           *aa = (char *)a,*bb = (char *)b;
-  PetscInt       dsize;
+  size_t         dsize;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
