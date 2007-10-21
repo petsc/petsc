@@ -62,13 +62,19 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "buildDualCSR"
       // This creates a CSR representation of the adjacency matrix for cells
+      // - We allow an exception to contiguous numbering.
+      //   If the cell id > numElements, we assign a new number starting at
+      //     the top and going downward. I know these might not match up with
+      //     the iterator order, but we can fix it later.
       static void buildDualCSR(const Obj<bundle_type>& bundle, const int dim, int **offsets, int **adjacency) {
         ALE_LOG_EVENT_BEGIN;
         typedef typename ALE::New::Completion<bundle_type, point_type> completion;
         const Obj<sieve_type>&                           sieve        = bundle->getSieve();
         const Obj<typename bundle_type::label_sequence>& elements     = bundle->heightStratum(0);
         Obj<sieve_type>                                  overlapSieve = new sieve_type(bundle->comm(), bundle->debug());
+        std::map<point_type, point_type>                 newCells;
         int  numElements = elements->size();
+        int  newCell     = numElements;
         int *off         = new int[numElements+1];
         int  offset      = 0;
         int *adj;
@@ -147,7 +153,21 @@ namespace ALE {
               for(typename sieve_type::traits::supportSequence::iterator n_iter = neighbors->begin(); n_iter != nEnd; ++n_iter) {
                 if (*e_iter == *n_iter) continue;
                 if ((int) sieve->nMeet(*e_iter, *n_iter, 1)->size() == faceVertices) {
-                  neighborCells[*e_iter].insert(*n_iter);
+                  if ((*e_iter < numElements) && (*n_iter < numElements)) {
+                    neighborCells[*e_iter].insert(*n_iter);
+                  } else {
+                    point_type e = *e_iter, n = *n_iter;
+
+                    if (*e_iter >= numElements) {
+                      if (newCells.find(*e_iter) == newCells.end()) newCells[*e_iter] = --newCell;
+                      e = newCells[*e_iter];
+                    }
+                    if (*n_iter >= numElements) {
+                      if (newCells.find(*n_iter) == newCells.end()) newCells[*n_iter] = --newCell;
+                      n = newCells[*n_iter];
+                    }
+                    neighborCells[e].insert(n);
+                  }
                 }
               }
             }
@@ -171,6 +191,7 @@ namespace ALE {
           msg << "ERROR: Total number of neighbors " << offset << " does not match the offset array " << off[numElements];
           throw ALE::Exception(msg.str().c_str());
         }
+        //std::cout << "numElements: " << numElements << " newCell: " << newCell << std::endl;
         *offsets   = off;
         *adjacency = adj;
         ALE_LOG_EVENT_END;
