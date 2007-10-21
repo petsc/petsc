@@ -28,7 +28,8 @@ PetscErrorCode F90GetID(PetscDataType type,PetscInt *id)
 #define __FUNCT__ "F90Array1dCreate"
 PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,PetscInt len,F90Array1d *ptr)
 {
-  PetscInt size,size_int,id;
+  size_t size,size_int;
+  PetscInt id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -54,7 +55,8 @@ PetscErrorCode F90Array1dCreate(void *array,PetscDataType type,PetscInt start,Pe
 PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,F90Array2d *ptr)
 {
 
-  PetscInt size,size_int,id;
+  size_t size,size_int;
+  PetscInt id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -83,7 +85,8 @@ PetscErrorCode F90Array2dCreate(void *array,PetscDataType type,PetscInt start1,P
 PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,F90Array3d *ptr)
 {
 
-  PetscInt size,size_int,id;
+  size_t size,size_int;
+  PetscInt id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -115,7 +118,8 @@ PetscErrorCode F90Array3dCreate(void *array,PetscDataType type,PetscInt start1,P
 PetscErrorCode F90Array4dCreate(void *array,PetscDataType type,PetscInt start1,PetscInt len1,PetscInt start2,PetscInt len2,PetscInt start3,PetscInt len3,PetscInt start4,PetscInt len4,F90Array4d *ptr)
 {
 
-  PetscInt size,size_int,id;
+  size_t size,size_int;
+  PetscInt id;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

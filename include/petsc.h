@@ -1041,7 +1041,7 @@ extern const char *PetscDataTypes[];
 #define PETSC_FORTRANADDR PETSC_LONG
 
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeToMPIDataType(PetscDataType,MPI_Datatype*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType,PetscInt*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType,size_t*);
 
 /*
     Basic memory and string operations. These are usually simple wrappers

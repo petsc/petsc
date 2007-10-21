@@ -41,9 +41,9 @@
       PetscErrorCode ierr
       type(AppCtx), pointer :: ctx
       PetscViewer viewer
-      PetscInt sizeofctx,sizeofint
-      PetscInt sizeofscalar,sizeoftruth
-      PetscInt sizeofchar,sizeofreal
+      PetscSizeT sizeofctx,sizeofint
+      PetscSizeT sizeofscalar,sizeoftruth
+      PetscSizeT sizeofchar,sizeofreal
       
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
 

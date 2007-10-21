@@ -94,7 +94,7 @@ typedef enum {PETSC_INT_SIZE = sizeof(PetscInt),PETSC_DOUBLE_SIZE = sizeof(doubl
    
 .seealso: PetscDataType, PetscDataTypeToMPIDataType()
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,PetscInt *size)
+PetscErrorCode PETSC_DLLEXPORT PetscDataTypeGetSize(PetscDataType ptype,size_t *size)
 {
   PetscFunctionBegin;
   if ((int) ptype < 0) {

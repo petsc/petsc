@@ -16,7 +16,7 @@
       subroutine FORLINK()
 
       implicit none
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -72,7 +72,7 @@
 #define __FUNCT__ "INIT"
       subroutine INIT(nnodes, qvec, turbre, amut,nvnode, ivnode,irank)
       implicit none
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       PetscScalar  turbre(1),amut(1)
       integer ivnode(1),nnodes,nvnode,irank
       PetscScalar  title(20),beta,alpha
@@ -215,7 +215,7 @@
       subroutine READR1(ileast, irank)
 
       implicit none
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -288,7 +288,7 @@
      &                  irank)
 !
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       PetscScalar pinf
       PetscScalar gamma,gm1,gp1,gm1g,gp1g,ggm1
       PetscScalar p0,rho0,c0,u0,v0,w0,et0,h0,pt0
@@ -721,7 +721,7 @@
      &                  LocalTS,irank,nvertices)
 !
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       PetscScalar  title(20),beta,alpha
       PetscScalar  Re,dt,tot,res0,resc
       integer ntt,mseq,ivisc,irest,icyc,ihane,ntturb
@@ -1089,6 +1089,7 @@
        integer ncolor,ncount(1)
 #elif defined(HAVE_REDUNDANT_WORK)
        PetscScalar resd(4,nnodes)
+       PetscSizeT sizeofscalar
 #undef res
 #define res(a,b) resd(a,b)
 #else
@@ -1131,7 +1132,8 @@
        do i = 1,ncolor
              last_edge = first_edge + ncount(i) - 1
 #elif defined(HAVE_REDUNDANT_WORK)
-       call PetscMemzero(resd,8*4*nnodes,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+       call PetscMemzero(resd,sizeofscalar*4*nnodes,ierr)
        first_edge = 1
        last_edge = nedge
 #endif
@@ -1798,7 +1800,7 @@
       subroutine SUMGS(nnodes,nedge,evec,xyz,rxy,irank,nvertices)
 
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       integer nnodes,nedge,irank,nvertices
 #if defined(INTERLACING)
       PetscScalar xyz(3,nvertices)
@@ -1836,6 +1838,7 @@
       PetscScalar x1,y1,z1,x2,y2,z2,dx,dy,dz
       PetscScalar dist,weight,w2,w11,w22,w33
       PetscScalar r12r11,r13r11,r23r22,rmess
+      PetscSizeT sizeofscalar
 
 !
 ! Initialize all the rij to 0.0 
@@ -1849,7 +1852,8 @@
 !        r33(i) = 0.0
 !        r44(i) = 0.0
 !1000 continue
-      call PetscMemzero(rxy,8*7*nnodes,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+      call PetscMemzero(rxy,sizeofscalar*7*nnodes,ierr)
       
 !
 ! Now loop over the edges and accumulate the r 
@@ -2051,7 +2055,7 @@
      &                 rxy,irank,nvertices)
 !
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       integer nnodes,nedge,irank,nvertices
 !
 #if defined(INTERLACING)
@@ -2113,6 +2117,7 @@
      &        dq1,dq2,dq3,dq4,                                            &
      &        weight,w11,r12r11,r13r11,w22,r23r22,w33,rmess,              &
      &        coef1,coef2,termx,termy,termz
+      PetscSizeT sizeofscalar
 !     logging variables
 !     integer flag
 !     integer grad_event,node1_event,node2_event
@@ -2167,7 +2172,8 @@
 !       gradz(4,i) = 0.0
 !
 !1000  continue
-      call PetscMemzero(grad,12*8*nnodes,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+      call PetscMemzero(grad,sizeofscalar*12*nnodes,ierr)
 !
 ! If second order, loop over all the faces accumulate sums
 !
@@ -2377,7 +2383,7 @@
 #endif
 !
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
 !
       integer nnodes, ncell, nedge,                                         &
      &        nbface,ileast,ires,                                           &
@@ -2666,7 +2672,7 @@
 #define __FUNCT__ "GETIA"
       subroutine GETIA(nnodes,nedge,evec,ia,ideg,irank)
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       integer nnodes,nedge,irank
       integer ia(1),ideg(1)
 #if defined(INTERLACING)
@@ -2717,7 +2723,7 @@
 #define __FUNCT__ "GETJA"
       subroutine GETJA(nnodes,nedge,evec,ia,ja,iwork,irank)
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       integer nnodes,nedge,irank
       integer ia(1),ja(1),iwork(1)
 #if defined(INTERLACING)
@@ -2836,7 +2842,7 @@
 #define __FUNCT__ "SORTER"
       subroutine SORTER(istart,iend,ja,inode)
       implicit none      
-#include "include/finclude/petscdef.h"
+#include "include/finclude/petsc.h"
       integer istart,iend,inode
       integer ja(1)
 !

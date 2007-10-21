@@ -65,7 +65,7 @@ def badWebIndex(dirname,file):
 
 def processDir(tagfile,dirname,names):
   newls = []
-  gsfx = ['.py','.c','.F','.h','.tex','.cxx','.hh','makefile']
+  gsfx = ['.py','.c','.F','.F90','.h','.h90','.tex','.cxx','.hh','makefile']
   hsfx = ['.html']
   bsfx = ['.py.html','.c.html','.F.html','.h.html','.tex.html','.cxx.html','.hh.html','makefile.html']
   for l in names:

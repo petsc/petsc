@@ -154,7 +154,7 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
                     PetscErrorCode *ierr PETSC_END_LEN(len1) PETSC_END_LEN(len2) PETSC_END_LEN(len))
 {
   char *c1,*c2,*c3;
-  int  len3;
+  size_t len3;
   PetscTruth flag;
 
   FIXCHAR(pre,len1,c1);
@@ -177,7 +177,7 @@ void PETSC_STDCALL petscoptionsgetstring_(CHAR pre PETSC_MIXED_LEN(len1),CHAR na
 void PETSC_STDCALL petscgetprogramname_(CHAR name PETSC_MIXED_LEN(len_in),PetscErrorCode *ierr PETSC_END_LEN(len_in))
 {
   char *tmp;
-  int  len;
+  size_t len;
 #if defined(PETSC_USES_CPTOFCD)
   tmp = _fcdtocp(name);
   len = _fcdlen(name) - 1;

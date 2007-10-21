@@ -667,9 +667,9 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 
   /* Storage for the orthogonalized  submatrices of B and their sizes */
   ierr = PetscMalloc(sizeof(PetscInt)*mat_agg_loc_size, &cand_vec_length);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(Mat)*mat_agg_loc_size, &b_orth_arr);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar*)*mat_agg_loc_size, &b_orth_arr);CHKERRQ(ierr);
   /* Storage for the information about each aggregate */
-  ierr = PetscMalloc(sizeof(PetscInt)*mat_agg_loc_size, &agg_arr);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt*)*mat_agg_loc_size, &agg_arr);CHKERRQ(ierr);
   /* Storage for the number of candidate vectors that are orthonormal and used in each submatrix */
   ierr = PetscMalloc(sizeof(PetscInt)*mat_agg_loc_size, &new_loc_agg_dofs);CHKERRQ(ierr);
 
@@ -701,15 +701,15 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
   ierr = PetscFree(idxn_is_B_arr);CHKERRQ(ierr);
   
   /* storage for the values from each submatrix */
-  ierr = PetscMalloc(100*sizeof(PetscScalar)*max_cand_vec_length*cand_vecs_num, &b_submat);CHKERRQ(ierr);
-  ierr = PetscMalloc(100*sizeof(PetscScalar)*max_cand_vec_length*cand_vecs_num, &b_submat_tp);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*max_cand_vec_length*cand_vecs_num, &b_submat);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*max_cand_vec_length*cand_vecs_num, &b_submat_tp);CHKERRQ(ierr);
   ierr = PetscMalloc(sizeof(PetscInt)*max_cand_vec_length, &idxm);CHKERRQ(ierr);
   for (i=0; i<max_cand_vec_length; i++) { idxm[i] = i; }
   ierr = PetscMalloc(sizeof(PetscInt)*cand_vecs_num, &idxn);CHKERRQ(ierr);
   for (i=0; i<cand_vecs_num; i++) { idxn[i] = i; }
   /* work storage for QR algorithm */
-  ierr = PetscMalloc(100*sizeof(PetscScalar)*max_cand_vec_length, &tau);CHKERRQ(ierr);
-  ierr = PetscMalloc(100*sizeof(PetscScalar)*cand_vecs_num, &work);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*max_cand_vec_length, &tau);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar)*cand_vecs_num, &work);CHKERRQ(ierr);
 
   /* orthogonalize all submatrices and store them in b_orth_arr */
   for (a=0; a<mat_agg_loc_size; a++) {
