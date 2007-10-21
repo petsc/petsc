@@ -262,8 +262,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegisterDestroy(void)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring" 
 /*@C
-   MatGetColoring - Gets a coloring for a matrix to reduce the number of function evaluations
-   needed to compute a sparse Jacobian via differencing.
+   MatGetColoring - Gets a coloring for a matrix, from its sparsity structure,
+      to reduce the number of function evaluations needed to compute a sparse Jacobian via differencing.
 
    Collective on Mat
 
@@ -294,6 +294,9 @@ $    -mat_coloring_view
    available. 
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
+
+   For parallel matrices currently converts to sequential matrix and uses the sequential coloring
+   on that.
 
    The sequential colorings SL, LF, and ID are obtained via the Minpack software that was
    converted to C using f2c.
