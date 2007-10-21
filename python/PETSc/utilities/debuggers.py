@@ -40,31 +40,32 @@ class Configure(config.base.Configure):
       f.close()
       foundOption = 0
       if not foundOption:
+        pid = str(os.getpid())
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+os.getpid(), log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -p '+pid, log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+os.getpid()):
+              if re.match(r'Process '+pid):
                 self.addDefine('USE_P_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+os.getpid(), log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -a '+pid, log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+os.getpid()):
+              if re.match(r'Process '+pid):
                 self.addDefine('USE_A_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
         except RuntimeError: pass
       if not foundOption:
         try:
-          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+os.getpid(), log = self.framework.log)
+          (output, error, status) = config.base.Configure.executeShellCommand(self.dbx+' -c conftest -pid '+pid, log = self.framework.log)
           if not status:
             for line in output:
-              if re.match(r'Process '+os.getpid()):
+              if re.match(r'Process '+pid):
                 self.addDefine('USE_PID_FOR_DEBUGGER', 1)
                 foundOption = 1
                 break
