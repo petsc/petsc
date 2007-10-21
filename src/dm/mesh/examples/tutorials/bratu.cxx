@@ -296,7 +296,7 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
 
 extern PetscErrorCode MeshIDBoundary(Mesh);
 
-void OrientCellsBinary(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
+void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
   if (3 == meshDim && 4 == numCorners) {
     for(int iCell = 0; iCell < numCells; ++iCell) {
       const int i1 = iCell*numCorners+1;
@@ -386,13 +386,18 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
         if (pylith::meshio::GMVFile::isAscii(options->baseFilename)) {
           pylith::meshio::GMVFileAscii filein(options->baseFilename);
           filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+          if (options->interpolate) {
+            FlipCellOrientation(&cells, numCells, numCorners, dim);
+          }
         } else {
           pylith::meshio::GMVFileBinary filein(options->baseFilename, flipEndian);
           filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
-          OrientCellsBinary(&cells, numCells, numCorners, dim);
+          if (!options->interpolate) {
+            FlipCellOrientation(&cells, numCells, numCorners, dim);
+          }
         } // if/else
       }
-      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners);
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners, -1, m->getArrowSection("orientation"));
       m->setSieve(sieve);
       m->stratify();
       ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
