@@ -995,9 +995,12 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatReorderForNonzeroDiagonal(Mat,PetscR
 /*S 
    MatFactorInfo - Data passed into the matrix factorization routines
 
-   In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE
+   In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
+$     MatFactorInfo  info(MAT_FACTORINFO_SIZE)
 
    Notes: These are not usually directly used by users, instead use PC type of LU, ILU, CHOLESKY or ICC.
+
+      You can use MatFactorInfoInitialize() to set default values.
 
    Level: developer
 

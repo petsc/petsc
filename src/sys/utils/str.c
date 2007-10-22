@@ -307,7 +307,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrgrt(const char a[],const char b[],PetscTr
 .seealso: PetscStrcmp(), PetscStrncmp(), PetscStrgrt()
 
 @*/
-PetscErrorCode PETSC_DLLEXPORT PetscStrcasecmp(const char a[],const char b[],PetscTruth *t)
+PetscErrorCode PETSC_DLLEXPORT PetscStrcasecm(void *a,void *b,PetscTruth *t)
 {
   int c;
 
