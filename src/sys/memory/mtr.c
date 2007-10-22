@@ -456,7 +456,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
    Concepts: memory bleeding
    Concepts: bleeding memory
 
-.seealso:  PetscMallocGetCurrentSize(), PetscMallocDumpLog() 
+.seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog() 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 {
