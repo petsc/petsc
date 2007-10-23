@@ -120,14 +120,14 @@ EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingGetInfo(ISLocalTo
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingRestoreInfo(ISLocalToGlobalMapping,PetscInt*,PetscInt*[],PetscInt*[],PetscInt**[]);
 EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISLocalToGlobalMappingBlock(ISLocalToGlobalMapping,PetscInt,ISLocalToGlobalMapping*);
 
-#define ISLocalToGlobalMappingApply(mapping,N,in,out) 0;\
-{\
-  PetscInt _i,*_idx = (mapping)->indices,_Nmax = (mapping)->n;\
-  for (_i=0; _i<N; _i++) {\
-    if ((in)[_i] < 0) {(out)[_i] = (in)[_i]; continue;}\
-    if ((in)[_i] >= _Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",(in)[_i],_Nmax,_i);\
-    (out)[_i] = _idx[(in)[_i]];\
-  }\
+PETSC_STATIC_INLINE PetscErrorCode ISLocalToGlobalMappingApply(ISLocalToGlobalMapping mapping,PetscInt N,const PetscInt in[],PetscInt out[]){
+  PetscInt i,*idx = mapping->indices,Nmax = mapping->n;
+  for (i=0; i<N; i++) {
+    if (in[i] < 0) {out[i] = in[i]; continue;}
+    if (in[i] >= Nmax) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Local index %D too large %D (max) at %D",in[i],Nmax,i);
+    out[i] = idx[in[i]];
+  }
+  PetscFunctionReturn(0);
 }
 
 /* --------------------------------------------------------------------------*/
