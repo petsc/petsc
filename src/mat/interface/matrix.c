@@ -465,12 +465,20 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetOptionsPrefix(Mat A,const char *prefix[]
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSetUp(Mat A)
 {
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
+  if (!((PetscObject)A)->type_name) {
+    ierr = MPI_Comm_size(((PetscObject)A)->comm, &size);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = MatSetType(A, MATSEQAIJ);CHKERRQ(ierr);
+    } else {
+      ierr = MatSetType(A, MATMPIAIJ);CHKERRQ(ierr);
+    }
+  }
   ierr = MatSetUpPreallocation(A);CHKERRQ(ierr);
-  ierr = MatSetFromOptions(A);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -1558,11 +1558,19 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecGetOptionsPrefix(Vec v,const char *prefix[]
 @*/
 PetscErrorCode PETSCVEC_DLLEXPORT VecSetUp(Vec v)
 {
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,VEC_COOKIE,1);
-  ierr = VecSetFromOptions(v);CHKERRQ(ierr);
+  if (!((PetscObject)v)->type_name) {
+    ierr = MPI_Comm_size(((PetscObject)v)->comm, &size);CHKERRQ(ierr);
+    if (size == 1) {
+      ierr = VecSetType(v, VECSEQ);CHKERRQ(ierr);
+    } else {
+      ierr = VecSetType(v, VECMPI);CHKERRQ(ierr);
+    }
+  }
   PetscFunctionReturn(0);
 }
 
