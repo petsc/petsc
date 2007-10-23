@@ -314,15 +314,30 @@ PetscErrorCode PETSC_DLLEXPORT PetscStrcasecm(void *a,void *b,PetscTruth *t)
   PetscFunctionBegin;
   if (!a && !b) c = 0;
   else if (!a || !b) c = 1;
-#if defined(PETSC_HAVE_STRICMP)
+#if defined(PETSC_HAVE_STRCASECMP)
+  else c = strcasecmp(a,b);
+#elif defined(PETSC_HAVE_STRICMP)
   else c = stricmp(a,b);
 #else
-  else c = strcasecmp(a,b);
+  else {
+    char *aa,*bb;
+    PetscErrorCode ierr;
+    ierr = PetscStrallocpy(a,&aa);CHKERRQ(ierr);
+    ierr = PetscStrallocpy(b,&bb);CHKERRQ(ierr);
+    ierr = PetscStrtolower(aa);CHKERRQ(ierr);
+    ierr = PetscStrtolower(bb);CHKERRQ(ierr);
+    ierr = PetscStrcmp(aa,bb,t);CHKERRQ(ierr);
+    ierr = PetscStrfree(aa);CHKERRQ(ierr);
+    ierr = PetscStrfree(bb);CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
 #endif
   if (!c) *t = PETSC_TRUE;
   else    *t = PETSC_FALSE;
   PetscFunctionReturn(0);
 }
+
+
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscStrncmp"
