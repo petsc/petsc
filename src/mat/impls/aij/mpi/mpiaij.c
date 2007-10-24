@@ -2821,11 +2821,23 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMPIAIJSetPreallocationCSR_MPIAIJ(Mat B,cons
   ierr  = PetscMalloc((2*m+1)*sizeof(PetscInt),&d_nnz);CHKERRQ(ierr);
   o_nnz = d_nnz + m;
 
+#if defined(PETSC_USE_DEBUGGING)
+  for (i=0; i<m; i++) {
+    nnz     = Ii[i+1]- Ii[i];
+    JJ      = J + Ii[i];
+    if (nnz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
+    if (nnz && (JJ[0] < 0)) SETERRRQ1(PETSC_ERR_ARG_WRONGSTATE,"Row %D starts with negative column index",i,j);
+    if (nnz && (JJ[nnz-1] >= B->cmap.N) SETERRRQ3(PETSC_ERR_ARG_WRONGSTATE,"Row %D ends with too large a column index %D (max allowed %D)",i,JJ[nnz-1],B->cmap.N);
+    for (j=1; j<nnz; j++) {
+      if (JJ[i] <= JJ[i-1]) SETERRRQ(PETSC_ERR_ARG_WRONGSTATE,"Row %D has unsorted column index at %D location in column indices",i,j);
+    }
+  }
+#endif
+
   for (i=0; i<m; i++) {
     nnz     = Ii[i+1]- Ii[i];
     JJ      = J + Ii[i];
     nnz_max = PetscMax(nnz_max,nnz);
-    if (nnz < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Local row %D has a negative %D number of columns",i,nnz);
     for (j=0; j<nnz; j++) {
       if (*JJ >= cstart) break;
       JJ++;
@@ -2904,7 +2916,7 @@ EXTERN_C_END
         j =  {0,1,2}  [size = nz = 6]
         v =  {4,5,6}  [size = nz = 6]
 
-
+      The column indices for each row MUST be sorted.
 
 .keywords: matrix, aij, compressed row, sparse, parallel
 
