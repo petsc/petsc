@@ -313,44 +313,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyBegin(Mat,MatAssemblyType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssemblyEnd(Mat,MatAssemblyType);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatAssembled(Mat,PetscTruth*);
 
-extern PETSCMAT_DLLEXPORT PetscInt    MatSetValue_Row;
-extern PETSCMAT_DLLEXPORT PetscInt    MatSetValue_Column;
-extern PETSCMAT_DLLEXPORT PetscScalar MatSetValue_Value;
 
-/*MC
-   MatSetValue - Set a single entry into a matrix.
-
-   Synopsis:
-   PetscErrorCode MatSetValue(Mat m,PetscInt row,PetscInt col,PetscScalar value,InsertMode mode);
-
-   Not collective
-
-   Input Parameters:
-+  m - the matrix
-.  row - the row location of the entry
-.  col - the column location of the entry
-.  value - the value to insert
--  mode - either INSERT_VALUES or ADD_VALUES
-
-   Notes: 
-   For efficiency one should use MatSetValues() and set several or many
-   values simultaneously if possible.
-
-   Level: beginner
-
-.seealso: MatSetValues(), MatSetValueLocal()
-M*/
-#define MatSetValue(v,i,j,va,mode) \
-  ((MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va,0) || \
-   MatSetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
-
-#define MatGetValue(v,i,j,va) \
-  ((MatSetValue_Row = i,MatSetValue_Column = j,0) || \
-   MatGetValues(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&va))
-
-#define MatSetValueLocal(v,i,j,va,mode) \
-  ((MatSetValue_Row = i,MatSetValue_Column = j,MatSetValue_Value = va,0) || \
-   MatSetValuesLocal(v,1,&MatSetValue_Row,1,&MatSetValue_Column,&MatSetValue_Value,mode))
 
 /*E
     MatOption - Options that may be set for a matrix and its behavior or storage
@@ -393,6 +356,7 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatRestoreArray(Mat,PetscScalar *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetBlockSize(Mat,PetscInt *);
 PetscPolymorphicFunction(MatGetBlockSize,(Mat mat),(mat,&a),PetscInt,a)
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatSetBlockSize(Mat,PetscInt);
+
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMult(Mat,Vec,Vec);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMultAdd(Mat,Vec,Vec,Vec);
@@ -589,6 +553,32 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetVecs(Mat,Vec*,Vec*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
 
 /*MC
+   MatSetValue - Set a single entry into a matrix.
+
+   Not collective
+
+   Input Parameters:
++  m - the matrix
+.  row - the row location of the entry
+.  col - the column location of the entry
+.  value - the value to insert
+-  mode - either INSERT_VALUES or ADD_VALUES
+
+   Notes: 
+   For efficiency one should use MatSetValues() and set several or many
+   values simultaneously if possible.
+
+   Level: beginner
+
+.seealso: MatSetValues(), MatSetValueLocal()
+M*/
+PETSC_STATIC_INLINE PetscErrorCode MatSetValue(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValues(v,1,&i,1,&j,&va,mode);}
+
+PETSC_STATIC_INLINE PetscErrorCode MatGetValue(Mat v,PetscInt i,PetscInt j,PetscScalar *va) {return MatGetValues(v,1,&i,1,&j,va);}
+
+PETSC_STATIC_INLINE PetscErrorCode MatSetValueLocal(Mat v,PetscInt i,PetscInt j,PetscScalar va,InsertMode mode) {return MatSetValuesLocal(v,1,&i,1,&j,&va,mode);}
+
+/*MC
    MatPreallocateInitialize - Begins the block of code that will count the number of nonzeros per
        row in a matrix providing the data that one can use to correctly preallocate the matrix.
 
@@ -615,6 +605,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetRedundantMatrix(Mat,PetscInt,MPI_
    Do not malloc or free dnz and onz, that is handled internally by these routines
 
    Use MatPreallocateInitializeSymmetric() for symmetric matrices (MPISBAIJ matrices)
+
+   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
   Concepts: preallocation^Matrix
 
@@ -654,6 +646,8 @@ M*/
    See the chapter in the users manual on performance for more details
 
    Do not malloc or free dnz and onz, that is handled internally by these routines
+
+   This is a MACRO not a function because it has a leading { that is closed by PetscPreallocateFinalize().
 
   Concepts: preallocation^Matrix
 
@@ -776,6 +770,8 @@ M*/
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
+   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
@@ -816,6 +812,8 @@ M*/
 
    Do not malloc or free dnz and onz that is handled internally by these routines
 
+   This is a MACRO not a function because it uses variables declared in MatPreallocateInitialize().
+
   Concepts: preallocation^Matrix
 
 .seealso: MatPreallocateFinalize(), MatPreallocateSet(), MatPreallocateSymmetricSet(), MatPreallocateInitialize(),
@@ -849,6 +847,8 @@ M*/
    See the chapter in the users manual on performance for more details
 
    Do not malloc or free dnz and onz that is handled internally by these routines
+
+   This is a MACRO not a function because it closes the { started in MatPreallocateInitialize().
 
   Concepts: preallocation^Matrix
 

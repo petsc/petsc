@@ -16,30 +16,32 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
 {
   PetscErrorCode ierr;
   PetscInt       i;
-  PetscInt       n_d,*ia_d,*ja_d,n_o,*ia_o,*ja_o;
+  PetscInt       n_d,*ia_d,n_o,*ia_o;
   PetscTruth     done_d=PETSC_FALSE,done_o=PETSC_FALSE;
   PetscInt       *nnz_d=PETSC_NULL,*nnz_o=PETSC_NULL;
   
   PetscFunctionBegin;
   if (A_d) { /* determine number of nonzero entries in local diagonal part */
-    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,&ja_d,&done_d);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,PETSC_NULL,&done_d);CHKERRQ(ierr);
+    CHKMEMQ;
     if (done_d) {
       ierr = PetscMalloc(n_d*sizeof(PetscInt),&nnz_d);CHKERRQ(ierr);
       for (i=0; i<n_d; i++) {
         nnz_d[i] = ia_d[i+1] - ia_d[i];
       }
     }
-    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,&ja_d,&done_d);CHKERRQ(ierr);
+    CHKMEMQ;
+    ierr = MatRestoreRowIJ(A_d,0,PETSC_FALSE,PETSC_FALSE,&n_d,&ia_d,PETSC_NULL,&done_d);CHKERRQ(ierr);
   }
   if (A_o) { /* determine number of nonzero entries in local off-diagonal part */
-    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,&ja_o,&done_o);CHKERRQ(ierr);
+    ierr = MatGetRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,PETSC_NULL,&done_o);CHKERRQ(ierr);
     if (done_o) {
       ierr = PetscMalloc(n_o*sizeof(PetscInt),&nnz_o);CHKERRQ(ierr);
       for (i=0; i<n_o; i++) {
         nnz_o[i] = ia_o[i+1] - ia_o[i];
       }
     }
-    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,&ja_o,&done_o);CHKERRQ(ierr);
+    ierr = MatRestoreRowIJ(A_o,0,PETSC_FALSE,PETSC_FALSE,&n_o,&ia_o,PETSC_NULL,&done_o);CHKERRQ(ierr);
   }
   if (done_d) {    /* set number of nonzeros in HYPRE IJ matrix */
     if (!done_o) { /* only diagonal part */
@@ -59,7 +61,7 @@ PetscErrorCode MatHYPRE_IJMatrixPreallocate(Mat A_d, Mat A_o,HYPRE_IJMatrix ij)
 PetscErrorCode MatHYPRE_IJMatrixCreate(Mat A,HYPRE_IJMatrix *ij)
 {
   PetscErrorCode ierr;
-  int rstart,rend,cstart,cend;
+  int            rstart,rend,cstart,cend;
   
   PetscFunctionBegin;
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);

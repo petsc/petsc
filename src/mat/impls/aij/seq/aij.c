@@ -61,11 +61,14 @@ PetscErrorCode MatGetRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric,Pet
     PetscInt nz = a->i[A->rmap.n]; 
     /* malloc space and  add 1 to i and j indices */
     ierr = PetscMalloc((A->rmap.n+1)*sizeof(PetscInt),ia);CHKERRQ(ierr);
-    ierr = PetscMalloc((nz+1)*sizeof(PetscInt),ja);CHKERRQ(ierr);
-    for (i=0; i<nz; i++) (*ja)[i] = a->j[i] + 1;
     for (i=0; i<A->rmap.n+1; i++) (*ia)[i] = a->i[i] + 1;
+    if (ja) {
+      ierr = PetscMalloc((nz+1)*sizeof(PetscInt),ja);CHKERRQ(ierr);
+      for (i=0; i<nz; i++) (*ja)[i] = a->j[i] + 1;
+    }
   } else {
-    *ia = a->i; *ja = a->j;
+    *ia = a->i; 
+    if (ja) *ja = a->j;
   }
   PetscFunctionReturn(0); 
 }
@@ -80,7 +83,7 @@ PetscErrorCode MatRestoreRowIJ_SeqAIJ(Mat A,PetscInt oshift,PetscTruth symmetric
   if (!ia) PetscFunctionReturn(0);
   if ((symmetric && !A->structurally_symmetric) || oshift == 1) {
     ierr = PetscFree(*ia);CHKERRQ(ierr);
-    ierr = PetscFree(*ja);CHKERRQ(ierr);
+    if (ja) {ierr = PetscFree(*ja);CHKERRQ(ierr);}
   }
   PetscFunctionReturn(0); 
 }
