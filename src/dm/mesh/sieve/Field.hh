@@ -843,6 +843,7 @@ namespace ALE {
     typedef typename atlas_type::chart_type        chart_type;
     typedef Value_                                 value_type;
     typedef value_type *                           values_type;
+    typedef std::pair<const int *, const int *>    customAtlas_type;
   protected:
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
@@ -852,6 +853,8 @@ namespace ALE {
     Obj<bc_type>    _bc;
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
+    // Optimization
+    std::vector<customAtlas_type> _customAtlas;
   public:
     GeneralSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       this->_atlas         = new atlas_type(comm, debug);
@@ -867,6 +870,10 @@ namespace ALE {
       if (this->_array && !this->_sharedStorage) {
         delete [] this->_array;
         this->_array = NULL;
+      }
+      for(std::vector<customAtlas_type>::iterator a_iter = this->_customAtlas.begin(); a_iter != this->_customAtlas.end(); ++a_iter) {
+        delete [] a_iter->first;
+        delete [] a_iter->second;
       }
     };
   public:
@@ -1687,6 +1694,16 @@ namespace ALE {
       field->replaceStorage(this->_array, true, this->getStorageSize());
       field->setAtlas(newAtlas);
       return field;
+    };
+  public: // Optimization
+    void getCustomAtlas(const int tag, const int *offsets[], const int *indices[]) {
+      *offsets = this->_customAtlas[tag].first;
+      *indices = this->_customAtlas[tag].second;
+    };
+    // This returns the tag assigned to the atlas
+    int setCustomAtlas(const int offsets[], const int indices[]) {
+      this->_customAtlas.push_back(customAtlas_type(offsets, indices));
+      return this->_customAtlas.size()-1;
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {

@@ -463,7 +463,7 @@ namespace ALE {
         typename sieve_type::coneSequence::iterator   end  = cone->end();
         const index_type& idx = section->getIndex(p);
 
-        this->_indexArray->push_back(idx);
+        this->_indexArray->push_back(oIndex_type(idx, 0));
         size += idx.prefix;
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
           const index_type& pIdx = section->getIndex(*p_iter);
@@ -753,6 +753,60 @@ namespace ALE {
           j += section->getFiberDimension(p_iter->first);
         }
       }
+    };
+  public: // Optimization
+    // Calculate a custom atlas for the given traversal
+    //   This returns the tag value assigned to the traversal
+    template<typename Section_, typename Sequence_>
+    int calculateCustomAtlas(const Obj<Section_>& section, const Obj<Sequence_>& points) {
+      const typename Sequence_::iterator begin   = points->begin();
+      const typename Sequence_::iterator end     = points->end();
+      const int                          num     = points->size();
+      int                               *offsets = new int[num+1];
+      int                               *indices;
+      int                                p;
+
+      p = 0;
+      offsets[p] = 0;
+      for(typename Sequence_::iterator p_iter = begin; p_iter != end; ++p_iter, ++p) {
+        offsets[p+1] = offsets[p] + this->sizeWithBC(section, *p_iter);
+      }
+      indices = new int[offsets[p]];
+      p = 0;
+      for(typename Sequence_::iterator p_iter = begin; p_iter != end; ++p_iter, ++p) {
+        const indices_type idx = this->getIndices(section, *p_iter);
+
+        for(int i = 0, k = offsets[p]; k < offsets[p+1]; ++i, ++k) indices[k] = idx.first[i];
+      }
+      return section->setCustomAtlas(offsets, indices);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p) {
+      const int *offsets, *indices;
+
+      section->getCustomAtlas(tag, &offsets, &indices);
+      const int size = offsets[p+1] - offsets[p];
+      return this->restrict(section, tag, p, section->getRawArray(size), offsets, indices);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int valuesSize) {
+      const typename Section_::value_type *array = section->restrict();
+      int *offsets, *indices;
+
+      section->getCustomAtlas(tag, &offsets, &indices);
+      const int size = offsets[p+1] - offsets[p];
+      if (valuesSize < size) throw ALE::Exception("Input array too small");
+      return this->restrict(section, tag, p, values, offsets, indices);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int offsets[], const int indices[]) {
+      const typename Section_::value_type *array = section->restrict();
+
+      const int size = offsets[p+1] - offsets[p];
+      for(int j = 0; j < size; ++j) {
+        values[j] = array[indices[j]];
+      }
+      return values;
     };
   public: // Allocation
     template<typename Section_>
