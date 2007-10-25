@@ -2197,6 +2197,17 @@ PetscErrorCode MatGetRowMin_MPIAIJ(Mat A, Vec v, PetscInt idx[])
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__  
+#define __FUNCT__ "MatGetSequentialNonzerostructure_MPIAIJ" 
+PetscErrorCode MatGetSequentialNonzerostructure_MPIAIJ(Mat mat,Mat *newmat[])
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = MatGetSubMatrix_MPIAIJ_All(mat,MAT_DO_NOT_GET_VALUES,MAT_INITIAL_MATRIX,newmat);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
 /* -------------------------------------------------------------------*/
 static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        MatGetRow_MPIAIJ,
@@ -2326,7 +2337,10 @@ static struct _MatOps MatOps_Values = {MatSetValues_MPIAIJ,
        0,
 /*110*/0,
        MatGetRedundantMatrix_MPIAIJ,
-       MatGetRowMin_MPIAIJ};
+       MatGetRowMin_MPIAIJ,
+       0,
+       0,
+/*115*/MatGetSequentialNonzerostructure_MPIAIJ};
 
 /* ----------------------------------------------------------------------------------------*/
 
