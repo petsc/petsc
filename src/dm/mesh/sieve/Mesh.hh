@@ -449,49 +449,71 @@ namespace ALE {
       }
     }
     template<typename Section_>
+    const indices_type getIndicesRaw(const Obj<Section_>& section, const point_type& p) {
+      int *indexArray = NULL;
+      int  size       = 0;
+
+      const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+      typename oConeArray::iterator begin   = closure->begin();
+      typename oConeArray::iterator end     = closure->end();
+
+      for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        size    += section->getFiberDimension(p_iter->first);
+      }
+      indexArray = this->getIndexArray(size);
+      int  k     = 0;
+      for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        section->getIndicesRaw(p_iter->first, section->getIndex(p_iter->first), indexArray, &k, p_iter->second);
+      }
+      return indices_type(indexArray, size);
+    };
+    template<typename Section_>
     const indices_type getIndices(const Obj<Section_>& section, const point_type& p, const int level = -1) {
-      this->_indexArray->clear();
-      int size = 0;
+      int *indexArray = NULL;
+      int  size       = 0;
 
       if (level == 0) {
-        const index_type& idx = section->getIndex(p);
+        size      += section->getFiberDimension(p);
+        indexArray = this->getIndexArray(size);
+        int  k     = 0;
 
-        this->_indexArray->push_back(oIndex_type(idx, 0));
-        size += std::abs(idx.prefix);
+        section->getIndices(p, indexArray, &k);
       } else if ((level == 1) || (this->height() == 1)) {
         const Obj<typename sieve_type::coneSequence>& cone = this->_sieve->cone(p);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
-        const index_type& idx = section->getIndex(p);
 
-        this->_indexArray->push_back(oIndex_type(idx, 0));
-        size += idx.prefix;
+        size      += section->getFiberDimension(p);
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
-          const index_type& pIdx = section->getIndex(*p_iter);
+          size    += section->getFiberDimension(*p_iter);
+        }
+        indexArray = this->getIndexArray(size);
+        int  k     = 0;
 
-          this->_indexArray->push_back(oIndex_type(pIdx, 0));
-          size += std::abs(pIdx.prefix);
+        section->getIndices(p, indexArray, &k);
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+          section->getIndices(*p_iter, indexArray, &k);
         }
       } else if (level == -1) {
         const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator begin   = closure->begin();
         typename oConeArray::iterator end     = closure->end();
 
-        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          const index_type& pIdx = section->getIndex(p_iter->first);
-
-          this->_indexArray->push_back(oIndex_type(pIdx, p_iter->second));
-          size += std::abs(pIdx.prefix);
+        for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          size    += section->getFiberDimension(p_iter->first);
+        }
+        indexArray = this->getIndexArray(size);
+        int  k     = 0;
+        for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          section->getIndices(p_iter->first, indexArray, &k, p_iter->second);
         }
       } else {
-        throw ALE::Exception("Bundle has not yet implemented nCone");
+        throw ALE::Exception("Bundle has not yet implemented getIndices() for an arbitrary level");
       }
       if (this->debug()) {
-        for(typename oIndexArray::iterator i_iter = this->_indexArray->begin(); i_iter != this->_indexArray->end(); ++i_iter) {
-          printf("[%d]index interval (%d, %d)\n", this->commRank(), i_iter->first.prefix, i_iter->first.index);
+        for(int i = 0; i < size; ++i) {
+          printf("[%d]index %d: %d\n", this->commRank(), i, indexArray[i]);
         }
       }
-      int *indexArray = this->getIndexArray(size);
-
-      this->expandIntervals(this->_indexArray, indexArray);
       return indices_type(indexArray, size);
     };
     template<typename Section_, typename Numbering>
@@ -759,43 +781,50 @@ namespace ALE {
     //   This returns the tag value assigned to the traversal
     template<typename Section_, typename Sequence_>
     int calculateCustomAtlas(const Obj<Section_>& section, const Obj<Sequence_>& points) {
-      const typename Sequence_::iterator begin   = points->begin();
-      const typename Sequence_::iterator end     = points->end();
-      const int                          num     = points->size();
-      int                               *offsets = new int[num+1];
-      int                               *indices;
+      const typename Sequence_::iterator begin    = points->begin();
+      const typename Sequence_::iterator end      = points->end();
+      const int                          num      = points->size();
+      int                               *rOffsets = new int[num+1];
+      int                               *rIndices;
+      int                               *uOffsets = new int[num+1];
+      int                               *uIndices;
       int                                p;
 
       p = 0;
-      offsets[p] = 0;
+      rOffsets[p] = 0;
+      uOffsets[p] = 0;
       for(typename Sequence_::iterator p_iter = begin; p_iter != end; ++p_iter, ++p) {
-        offsets[p+1] = offsets[p] + this->sizeWithBC(section, *p_iter);
+        rOffsets[p+1] = rOffsets[p] + this->sizeWithBC(section, *p_iter);
+        uOffsets[p+1] = rOffsets[p+1];
+        //uOffsets[p+1] = uOffsets[p] + this->size(section, *p_iter);
       }
-      indices = new int[offsets[p]];
+      rIndices = new int[rOffsets[p]];
+      uIndices = new int[uOffsets[p]];
       p = 0;
       for(typename Sequence_::iterator p_iter = begin; p_iter != end; ++p_iter, ++p) {
-        const indices_type idx = this->getIndices(section, *p_iter);
+        const indices_type rIdx = this->getIndicesRaw(section, *p_iter);
+        for(int i = 0, k = rOffsets[p]; k < rOffsets[p+1]; ++i, ++k) rIndices[k] = rIdx.first[i];
 
-        for(int i = 0, k = offsets[p]; k < offsets[p+1]; ++i, ++k) indices[k] = idx.first[i];
+        const indices_type uIdx = this->getIndices(section, *p_iter);
+        for(int i = 0, k = uOffsets[p]; k < uOffsets[p+1]; ++i, ++k) uIndices[k] = uIdx.first[i];
       }
-      return section->setCustomAtlas(offsets, indices);
+      return section->setCustomAtlas(rOffsets, rIndices, uOffsets, uIndices);
     };
     template<typename Section_>
     const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p) {
       const int *offsets, *indices;
 
-      section->getCustomAtlas(tag, &offsets, &indices);
+      section->getCustomRestrictAtlas(tag, &offsets, &indices);
       const int size = offsets[p+1] - offsets[p];
       return this->restrict(section, tag, p, section->getRawArray(size), offsets, indices);
     };
     template<typename Section_>
     const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int valuesSize) {
-      const typename Section_::value_type *array = section->restrict();
-      int *offsets, *indices;
+      const int *offsets, *indices;
 
-      section->getCustomAtlas(tag, &offsets, &indices);
+      section->getCustomRestrictAtlas(tag, &offsets, &indices);
       const int size = offsets[p+1] - offsets[p];
-      if (valuesSize < size) throw ALE::Exception("Input array too small");
+      if (valuesSize < size) {throw ALE::Exception("Input array too small");}
       return this->restrict(section, tag, p, values, offsets, indices);
     };
     template<typename Section_>
@@ -803,10 +832,22 @@ namespace ALE {
       const typename Section_::value_type *array = section->restrict();
 
       const int size = offsets[p+1] - offsets[p];
-      for(int j = 0; j < size; ++j) {
-        values[j] = array[indices[j]];
+      for(int j = 0, k = offsets[p]; j < size; ++j, ++k) {
+        values[j] = array[indices[k]];
       }
       return values;
+    };
+    template<typename Section_>
+    void updateAdd(const Obj<Section_>& section, const int tag, const int p, const typename Section_::value_type values[]) {
+      typename Section_::value_type *array = (typename Section_::value_type *) section->restrict();
+      const int *offsets, *indices;
+
+      section->getCustomUpdateAtlas(tag, &offsets, &indices);
+      const int size = offsets[p+1] - offsets[p];
+      for(int j = 0, k = offsets[p]; j < size; ++j, ++k) {
+        if (indices[k] < 0) continue;
+        array[indices[k]] += values[j];
+      }
     };
   public: // Allocation
     template<typename Section_>

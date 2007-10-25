@@ -854,7 +854,8 @@ namespace ALE {
     std::vector<Obj<atlas_type> > _spaces;
     std::vector<Obj<bc_type> >    _bcs;
     // Optimization
-    std::vector<customAtlas_type> _customAtlas;
+    std::vector<customAtlas_type> _customRestrictAtlas;
+    std::vector<customAtlas_type> _customUpdateAtlas;
   public:
     GeneralSection(MPI_Comm comm, const int debug = 0) : ParallelObject(comm, debug) {
       this->_atlas         = new atlas_type(comm, debug);
@@ -871,7 +872,11 @@ namespace ALE {
         delete [] this->_array;
         this->_array = NULL;
       }
-      for(std::vector<customAtlas_type>::iterator a_iter = this->_customAtlas.begin(); a_iter != this->_customAtlas.end(); ++a_iter) {
+      for(std::vector<customAtlas_type>::iterator a_iter = this->_customRestrictAtlas.begin(); a_iter != this->_customRestrictAtlas.end(); ++a_iter) {
+        delete [] a_iter->first;
+        delete [] a_iter->second;
+      }
+      for(std::vector<customAtlas_type>::iterator a_iter = this->_customUpdateAtlas.begin(); a_iter != this->_customUpdateAtlas.end(); ++a_iter) {
         delete [] a_iter->first;
         delete [] a_iter->second;
       }
@@ -1032,29 +1037,41 @@ namespace ALE {
     void getIndices(const point_type& p, const Obj<Order_>& order, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       this->getIndices(p, order->getIndex(p), indices, indx, orientation, freeOnly, skipConstraints);
     };
+    void getIndicesRaw(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation) {
+      if (orientation >= 0) {
+        const int& dim = this->getFiberDimension(p);
+        const int  end = start + dim;
+
+        for(int i = start; i < end; ++i) {
+          indices[(*indx)++] = i;
+        }
+      } else {
+        const int numSpaces = this->getNumSpaces();
+        int offset = start;
+
+        for(int space = 0; space < numSpaces; ++space) {
+          const int& dim = this->getFiberDimension(p, space);
+
+          for(int i = offset+dim-1; i >= offset; --i) {
+            indices[(*indx)++] = i;
+          }
+          offset += dim;
+        }
+        if (!numSpaces) {
+          const int& dim = this->getFiberDimension(p);
+
+          for(int i = offset+dim-1; i >= offset; --i) {
+            indices[(*indx)++] = i;
+          }
+          offset += dim;
+        }
+      }
+    }
     void getIndices(const point_type& p, const int start, PetscInt indices[], PetscInt *indx, const int orientation = 1, const bool freeOnly = false, const bool skipConstraints = false) {
       const int& cDim = this->getConstraintDimension(p);
 
       if (!cDim) {
-        if (orientation >= 0) {
-          const int& dim = this->getFiberDimension(p);
-          const int  end = start + dim;
-
-          for(int i = start; i < end; ++i) {
-            indices[(*indx)++] = i;
-          }
-        } else {
-          int offset = start;
-
-          for(int space = 0; space < this->getNumSpaces(); ++space) {
-            const int& dim = this->getFiberDimension(p, space);
-
-            for(int i = offset+dim-1; i >= offset; --i) {
-              indices[(*indx)++] = i;
-            }
-            offset += dim;
-          }
-        }
+        this->getIndicesRaw(p, start, indices, indx, orientation);
       } else {
         if (orientation >= 0) {
           const int&                          dim  = this->getFiberDimension(p);
@@ -1696,14 +1713,26 @@ namespace ALE {
       return field;
     };
   public: // Optimization
-    void getCustomAtlas(const int tag, const int *offsets[], const int *indices[]) {
-      *offsets = this->_customAtlas[tag].first;
-      *indices = this->_customAtlas[tag].second;
+    void getCustomRestrictAtlas(const int tag, const int *offsets[], const int *indices[]) {
+      *offsets = this->_customRestrictAtlas[tag].first;
+      *indices = this->_customRestrictAtlas[tag].second;
+    };
+    void getCustomUpdateAtlas(const int tag, const int *offsets[], const int *indices[]) {
+      *offsets = this->_customUpdateAtlas[tag].first;
+      *indices = this->_customUpdateAtlas[tag].second;
     };
     // This returns the tag assigned to the atlas
-    int setCustomAtlas(const int offsets[], const int indices[]) {
-      this->_customAtlas.push_back(customAtlas_type(offsets, indices));
-      return this->_customAtlas.size()-1;
+    int setCustomAtlas(const int restrictOffsets[], const int restrictIndices[], const int updateOffsets[], const int updateIndices[]) {
+      this->_customRestrictAtlas.push_back(customAtlas_type(restrictOffsets, restrictIndices));
+      this->_customUpdateAtlas.push_back(customAtlas_type(updateOffsets, updateIndices));
+      return this->_customUpdateAtlas.size()-1;
+    };
+    int copyCustomAtlas(const Obj<GeneralSection>& section, const int tag) {
+      const int *rOffsets, *rIndices, *uOffsets, *uIndices;
+
+      section->getCustomRestrictAtlas(tag, &rOffsets, &rIndices);
+      section->getCustomUpdateAtlas(tag, &uOffsets, &uIndices);
+      return this->setCustomAtlas(rOffsets, rIndices, uOffsets, uIndices);
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
