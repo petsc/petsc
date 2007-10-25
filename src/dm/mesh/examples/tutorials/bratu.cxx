@@ -730,14 +730,31 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = PetscMalloc2(numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
+#define FASTER 1
+#ifdef FASTER
+  Obj<ALE::Mesh::real_section_type> xSection;
+  Obj<ALE::Mesh::real_section_type> fSection;
+  int c = 0;
+
+  ierr = SectionRealGetSection(X, xSection);
+  ierr = SectionRealGetSection(section, fSection);
+  const int xTag = m->calculateCustomAtlas(xSection, cells);
+  const int fTag = fSection->copyCustomAtlas(xSection, xTag);
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter, ++c) {
+#else
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+#endif
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+#ifdef FASTER
+    const PetscScalar *x = m->restrict(xSection, xTag, c);
+#else
     PetscScalar *x;
 
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+#endif
     // Loop over quadrature points
     for(int q = 0; q < numQuadPoints; ++q) {
       for(int d = 0; d < dim; d++) {
@@ -784,7 +801,11 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
         elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
       }
     }
+#ifdef FASTER
+    m->updateAdd(fSection, fTag, c, elemVec);
+#else
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
+#endif
   }
   ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
