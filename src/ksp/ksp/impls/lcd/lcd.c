@@ -1,25 +1,4 @@
 #define PETSCKSP_DLL
-/*
-    This file implements the LCD (left conjugate direction) method in PETSc.
-    References: 
-   - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
-     direction methods for real positive definite system. BIT Numerical
-     Mathematics, 44(1):189-207,2004.
-   - Y. Dai and J.Y. Yuan. Study on semi-conjugate direction methods for
-     non-symmetric systems. International Journal for Numerical Methods in
-     Engineering, 60:1383-1399,2004.
-   - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
-     algorithm for solving linear systems of equations arising from implicit
-     SUPG formulation of compressible flows. International Journal for
-     Numerical Methods in Engineering, 60:1513-1534,2004 
-   - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
-     A. L. G. A. Coutinho, Performance of LCD iterative method in the finite
-     element and finite difference solution of convection-diffusion
-     equations,  Communications in Numerical Methods in Engineering, (Early
-     View).
-
-  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
-*/
 
 #include "src/ksp/ksp/impls/lcd/lcdctx.h"
 #undef __FUNCT__  
@@ -221,6 +200,41 @@ PetscErrorCode KSPSetFromOptions_LCD(KSP ksp)
   if (flg && lcd->haptol < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE,"Tolerance must be non-negative");
   PetscFunctionReturn(0);
 }
+
+/*MC
+     KSPLCD -  Implements the LCD (left conjugate direction) method in PETSc.
+
+   Options Database Keys:
++   -ksp_lcd_restart - number of vectors conjudate
+-   -ksp_lcd_haptol - tolerance for exact convergence (happing ending)
+
+   Level: beginner
+
+
+    References: 
+   - J.Y. Yuan, G.H.Golub, R.J. Plemmons, and W.A.G. Cecilio. Semiconjugate
+     direction methods for real positive definite system. BIT Numerical
+     Mathematics, 44(1):189-207,2004.
+   - Y. Dai and J.Y. Yuan. Study on semi-conjugate direction methods for
+     non-symmetric systems. International Journal for Numerical Methods in
+     Engineering, 60:1383-1399,2004.
+   - L. Catabriga, A.L.G.A. Coutinho, and L.P.Franca. Evaluating the LCD
+     algorithm for solving linear systems of equations arising from implicit
+     SUPG formulation of compressible flows. International Journal for
+     Numerical Methods in Engineering, 60:1513-1534,2004 
+   - L. Catabriga, A. M. P. Valli, B. Z. Melotti, L. M. Pessoa,
+     A. L. G. A. Coutinho, Performance of LCD iterative method in the finite
+     element and finite difference solution of convection-diffusion
+     equations,  Communications in Numerical Methods in Engineering, (Early
+     View).
+
+  Contributed by: Lucia Catabriga <luciac@ices.utexas.edu>
+
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
+           KSPCGSetType(), KSPLCDSetRestart(), KSPLCDSetHapTol()
+
+M*/
 
 EXTERN_C_BEGIN
 #undef __FUNCT__  

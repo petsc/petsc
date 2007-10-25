@@ -180,7 +180,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISInvertPermutation(IS is,PetscInt nlocal,IS *
   PetscFunctionBegin;
   PetscValidHeaderSpecific(is,IS_COOKIE,1);
   PetscValidPointer(isout,3);
-  if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,"not a permutation");
+  if (!is->isperm) SETERRQ(PETSC_ERR_ARG_WRONG,"Not a permutation, must call ISSetPermutation() on the IS first");
   ierr = (*is->ops->invertpermutation)(is,nlocal,isout);CHKERRQ(ierr);
   ierr = ISSetPermutation(*isout);CHKERRQ(ierr);
   PetscFunctionReturn(0);
