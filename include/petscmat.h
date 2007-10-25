@@ -101,6 +101,16 @@ extern PetscCookie PETSCMAT_DLLEXPORT MATMFFD_COOKIE;
 E*/
 typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 
+/*E
+    MatGetSubMatrixOption - Indicates if matrices obtained from a call to MatGetSubMatrices()
+     include the matrix values. Currently it is only used by MatGetSequentialNonzerostructure().
+
+    Level: beginner
+
+.seealso: MatGetSequentialNonzerostructure()
+E*/
+typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatGetSubMatrixOption;
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char[]);
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatCreate(MPI_Comm,Mat*);
@@ -498,6 +508,9 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat,IS,IS,PetscInt,MatReuse,Mat *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscInt,MatReuse,Mat *);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSequentialNonzeroStructure(Mat,Mat *[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySequentialNonzeroStructure(Mat *[]); 
+
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPISymbolic(MPI_Comm,Mat,PetscInt,PetscInt,Mat*);
