@@ -339,23 +339,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
     ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
   } else { /* for parallel matrix */
     Mat             *mat_seq;
-    IS              isrow,iscol;
-    PetscInt        M,N;
     ISColoring      iscoloring_seq;
     ISColoringValue *colors_loc;
     PetscInt        i,rstart,rend,N_loc,nc;
-    /* get a sequential matrix */
-    ierr = MatGetSize(mat,&M,&N);CHKERRQ(ierr);
-    ierr = ISCreateStride(PETSC_COMM_SELF,M,0,1,&isrow);CHKERRQ(ierr);  
-    ierr = ISCreateStride(PETSC_COMM_SELF,N,0,1,&iscol);CHKERRQ(ierr);
-    ierr = MatGetSubMatrices(mat,1,&isrow,&iscol,MAT_INITIAL_MATRIX,&mat_seq);CHKERRQ(ierr);
-    ierr = ISDestroy(isrow);CHKERRQ(ierr);
-    ierr = ISDestroy(iscol);CHKERRQ(ierr);
-
+      
     /* create a sequential iscoloring on all processors */
+    ierr = MatGetSequentialNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
     ierr = (*r)(*mat_seq,type,&iscoloring_seq);CHKERRQ(ierr);
-    ierr = MatDestroy(*mat_seq);CHKERRQ(ierr);
-    ierr = PetscFree(mat_seq);CHKERRQ(ierr);   
+    ierr = MatDestroySequentialNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
     /* convert iscoloring_seq to a parallel iscoloring */  
     rstart = mat->rmap.rstart;

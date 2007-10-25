@@ -556,7 +556,7 @@ EXTERN PetscErrorCode MatAssemblyEnd_SeqAIJ(Mat,MatAssemblyType);
 */
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetSubMatrix_MPIAIJ_All" 
-PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
+PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatGetSubMatrixOption flag,MatReuse scall,Mat *Bin[])
 {
   Mat            B;
   Mat_MPIAIJ     *a = (Mat_MPIAIJ *)A->data;
@@ -668,55 +668,58 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
   /*--------------------------------------------------------------------
        Copy my part of matrix numerical values into the values location 
   */
-  sendcount = ad->nz + bd->nz;
-  sendbuf   = b->a + b->i[rstarts[rank]];
-  a_sendbuf = ad->a;
-  b_sendbuf = bd->a;
-  b_sendj   = bd->j;
-  n         = A->rmap.rend - A->rmap.rstart;
-  cnt       = 0;
-  for (i=0; i<n; i++) {
+  if (flag == MAT_GET_VALUES){
+    sendcount = ad->nz + bd->nz;
+    sendbuf   = b->a + b->i[rstarts[rank]];
+    a_sendbuf = ad->a;
+    b_sendbuf = bd->a;
+    b_sendj   = bd->j;
+    n         = A->rmap.rend - A->rmap.rstart;
+    cnt       = 0;
+    for (i=0; i<n; i++) {
 
-    /* put in lower diagonal portion */
-    m = bd->i[i+1] - bd->i[i];
-    while (m > 0) {
-      /* is it above diagonal (in bd (compressed) numbering) */
-      if (garray[*b_sendj] > A->rmap.rstart + i) break;
-      sendbuf[cnt++] = *b_sendbuf++;
-      m--;
-      b_sendj++;
-    }
+      /* put in lower diagonal portion */
+      m = bd->i[i+1] - bd->i[i];
+      while (m > 0) {
+        /* is it above diagonal (in bd (compressed) numbering) */
+        if (garray[*b_sendj] > A->rmap.rstart + i) break;
+        sendbuf[cnt++] = *b_sendbuf++;
+        m--;
+        b_sendj++;
+      }
 
-    /* put in diagonal portion */
-    for (j=ad->i[i]; j<ad->i[i+1]; j++) {
-      sendbuf[cnt++] = *a_sendbuf++;
-    }
+      /* put in diagonal portion */
+      for (j=ad->i[i]; j<ad->i[i+1]; j++) {
+        sendbuf[cnt++] = *a_sendbuf++;
+      }
 
-    /* put in upper diagonal portion */
-    while (m-- > 0) {
-      sendbuf[cnt++] = *b_sendbuf++;
-      b_sendj++;
+      /* put in upper diagonal portion */
+      while (m-- > 0) {
+        sendbuf[cnt++] = *b_sendbuf++;
+        b_sendj++;
+      }
     }
-  }
-  if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
+    if (cnt != sendcount) SETERRQ2(PETSC_ERR_PLIB,"Corrupted PETSc matrix: nz given %D actual nz %D",sendcount,cnt);
    
-  /* ----------------------------------------------------------------- 
-     Gather all numerical values to all processors 
-  */
-  if (!recvcounts) {
-    ierr   = PetscMalloc(2*size*sizeof(PetscInt),&recvcounts);CHKERRQ(ierr);
-    displs = recvcounts + size;
-  }
-  for (i=0; i<size; i++) {
-    recvcounts[i] = b->i[rstarts[i+1]] - b->i[rstarts[i]];
-  }
-  displs[0]  = 0;
-  for (i=1; i<size; i++) {
-    displs[i] = displs[i-1] + recvcounts[i-1];
-  }
-  recvbuf   = b->a;
-  ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,((PetscObject)A)->comm);CHKERRQ(ierr);
+    /* ----------------------------------------------------------------- 
+       Gather all numerical values to all processors 
+    */
+    if (!recvcounts) {
+      ierr   = PetscMalloc(2*size*sizeof(PetscInt),&recvcounts);CHKERRQ(ierr);
+      displs = recvcounts + size;
+    }
+    for (i=0; i<size; i++) {
+      recvcounts[i] = b->i[rstarts[i+1]] - b->i[rstarts[i]];
+    }
+    displs[0]  = 0;
+    for (i=1; i<size; i++) {
+      displs[i] = displs[i-1] + recvcounts[i-1];
+    }
+    recvbuf   = b->a;
+    ierr = MPI_Allgatherv(sendbuf,sendcount,MPIU_SCALAR,recvbuf,recvcounts,displs,MPIU_SCALAR,((PetscObject)A)->comm);CHKERRQ(ierr); 
+  }  /* endof (flag == MAT_GET_VALUES) */
   ierr = PetscFree(recvcounts);CHKERRQ(ierr);
+
   if (A->symmetric){
     ierr = MatSetOption(B,MAT_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   } else if (A->hermitian) {
@@ -724,7 +727,6 @@ PetscErrorCode MatGetSubMatrix_MPIAIJ_All(Mat A,MatReuse scall,Mat *Bin[])
   } else if (A->structurally_symmetric) {
     ierr = MatSetOption(B,MAT_STRUCTURALLY_SYMMETRIC,PETSC_TRUE);CHKERRQ(ierr);
   }
-
   PetscFunctionReturn(0);
 }
 
@@ -752,7 +754,7 @@ PetscErrorCode MatGetSubMatrices_MPIAIJ(Mat C,PetscInt ismax,const IS isrow[],co
   }
   ierr = MPI_Allreduce(&wantallmatrix,&twantallmatrix,1,MPI_INT,MPI_MIN,((PetscObject)C)->comm);CHKERRQ(ierr);
   if (twantallmatrix) {
-    ierr = MatGetSubMatrix_MPIAIJ_All(C,scall,submat);CHKERRQ(ierr);
+    ierr = MatGetSubMatrix_MPIAIJ_All(C,MAT_GET_VALUES,scall,submat);CHKERRQ(ierr);
     PetscFunctionReturn(0);
   }
 
