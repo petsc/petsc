@@ -74,7 +74,45 @@ public :
     CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
     CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
     if (this->_debug) {
-      ierr = PetscPrintf(this->_sieve->comm(), "Average time per restrict: %gs\n", eventInfo.time/(numCells*this->_iters));
+      ierr = PetscPrintf(this->_sieve->comm(), " Average time per restrict: %gs\n", eventInfo.time/(numCells*this->_iters));
+    }
+    CPPUNIT_ASSERT((eventInfo.time <  maxTimePerRestrict * numCells * this->_iters));
+  };
+
+  /// Test restrict() with a precomputed atlas.
+  void testRestrictPrecomputed(const std::string testName, const double maxTimePerRestrict) {
+    const ALE::Obj<mesh_type::label_sequence>& cells = this->_mesh->heightStratum(0);
+    const int   numCells  = cells->size();
+    std::string stageName = this->getName()+" PrecompRestrict Test";
+    std::string eventName = testName+" PrecompRestrict";
+
+    const int tag = this->_mesh->calculateCustomAtlas(this->_section, cells);
+
+    ALE::LogStage  stage = ALE::LogStageRegister(stageName.c_str());
+    PetscEvent     restrictEvent;
+    PetscErrorCode ierr;
+
+    ierr = PetscLogEventRegister(&restrictEvent, eventName.c_str(), PETSC_OBJECT_COOKIE);
+    ALE::LogStagePush(stage);
+    ierr = PetscLogEventBegin(restrictEvent,0,0,0,0);
+    for(int r = 0; r < this->_iters; r++) {
+      for(int c = 0; c < numCells; ++c) {
+        const double *restrict = this->_mesh->restrict(this->_section, tag, c);
+      }
+    }
+    ierr = PetscLogEventEnd(restrictEvent,0,0,0,0);
+    ALE::LogStagePop(stage);
+    StageLog     stageLog;
+    EventPerfLog eventLog;
+
+    ierr = PetscLogGetStageLog(&stageLog);
+    ierr = StageLogGetEventPerfLog(stageLog, stage, &eventLog);
+    EventPerfInfo eventInfo = eventLog->eventInfo[restrictEvent];
+
+    CPPUNIT_ASSERT_EQUAL(eventInfo.count, 1);
+    CPPUNIT_ASSERT_EQUAL((int) eventInfo.flops, 0);
+    if (this->_debug) {
+      ierr = PetscPrintf(this->_sieve->comm(), " Average time per precomputed restrict: %gs\n", eventInfo.time/(numCells*this->_iters));
     }
     CPPUNIT_ASSERT((eventInfo.time <  maxTimePerRestrict * numCells * this->_iters));
   };
@@ -85,7 +123,9 @@ class TestSquareMeshSection : public TestGeneralMeshSection
   CPPUNIT_TEST_SUITE(TestSquareMeshSection);
 
   CPPUNIT_TEST(testLinearRestrict);
+  CPPUNIT_TEST(testLinearRestrictPrecomp);
   CPPUNIT_TEST(testCubicRestrict);
+  CPPUNIT_TEST(testCubicRestrictPrecomp);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -111,6 +151,11 @@ public:
     this->testRestrict("Linear", 2.0e-4);
   }
 
+  void testLinearRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("coordinates");
+    this->testRestrictPrecomputed("LinearPrecomp", 2.0e-4);
+  }
+
   void testCubicRestrict(void) {
     this->_section = this->_mesh->getRealSection("test");
     this->_section->setFiberDimension(this->_mesh->depthStratum(0), 1);
@@ -119,6 +164,15 @@ public:
     this->_mesh->allocate(this->_section);
     this->testRestrict("Cubic", 1.0e-3);
   }
+
+  void testCubicRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("test");
+    this->_section->setFiberDimension(this->_mesh->depthStratum(0), 1);
+    this->_section->setFiberDimension(this->_mesh->depthStratum(1), 2);
+    this->_section->setFiberDimension(this->_mesh->depthStratum(2), 1);
+    this->_mesh->allocate(this->_section);
+    this->testRestrictPrecomputed("CubicPrecomp", 1.0e-3);
+  }
 };
 
 class TestBigSquareMeshSection : public TestGeneralMeshSection
@@ -126,6 +180,7 @@ class TestBigSquareMeshSection : public TestGeneralMeshSection
   CPPUNIT_TEST_SUITE(TestBigSquareMeshSection);
 
   CPPUNIT_TEST(testNSRestrict);
+  CPPUNIT_TEST(testNSRestrictPrecomp);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -153,6 +208,14 @@ public:
     this->_mesh->allocate(this->_section);
     this->testRestrict("NS", 3.0e-4);
   }
+
+  void testNSRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("test");
+    this->_section->setFiberDimension(this->_mesh->depthStratum(0), 4);
+    this->_section->setFiberDimension(this->_mesh->depthStratum(1), 3);
+    this->_mesh->allocate(this->_section);
+    this->testRestrictPrecomputed("NSPrecomp", 3.0e-4);
+  }
 };
 
 class TestCubeMeshSection : public TestGeneralMeshSection
@@ -160,7 +223,9 @@ class TestCubeMeshSection : public TestGeneralMeshSection
   CPPUNIT_TEST_SUITE(TestCubeMeshSection);
 
   CPPUNIT_TEST(testLinearRestrict);
+  CPPUNIT_TEST(testLinearRestrictPrecomp);
   CPPUNIT_TEST(testCubicRestrict);
+  CPPUNIT_TEST(testCubicRestrictPrecomp);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -183,6 +248,11 @@ public:
     this->testRestrict("Linear", 5.0e-4);
   }
 
+  void testLinearRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("coordinates");
+    this->testRestrictPrecomputed("LinearPrecomp", 5.0e-4);
+  }
+
   void testCubicRestrict(void) {
     this->_section = this->_mesh->getRealSection("test");
     this->_section->setFiberDimension(this->_mesh->depthStratum(0), 1);
@@ -191,6 +261,15 @@ public:
     this->_mesh->allocate(this->_section);
     this->testRestrict("Cubic", 5.0e-4);
   }
+
+  void testCubicRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("test");
+    this->_section->setFiberDimension(this->_mesh->depthStratum(0), 1);
+    this->_section->setFiberDimension(this->_mesh->depthStratum(1), 2);
+    this->_section->setFiberDimension(this->_mesh->depthStratum(2), 1);
+    this->_mesh->allocate(this->_section);
+    this->testRestrictPrecomputed("CubicPrecomp", 5.0e-4);
+  }
 };
 
 class TestCubeMeshSectionNonInterp : public TestGeneralMeshSection
@@ -198,6 +277,7 @@ class TestCubeMeshSectionNonInterp : public TestGeneralMeshSection
   CPPUNIT_TEST_SUITE(TestCubeMeshSectionNonInterp);
 
   CPPUNIT_TEST(testLinearRestrict);
+  CPPUNIT_TEST(testLinearRestrictPrecomp);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -219,6 +299,11 @@ public:
     this->_section = this->_mesh->getRealSection("coordinates");
     this->testRestrict("Linear", 3.0e-5);
   }
+
+  void testLinearRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("coordinates");
+    this->testRestrictPrecomputed("LinearPrecomp", 3.0e-5);
+  }
 };
 
 class TestBigCubeMeshSection : public TestGeneralMeshSection
@@ -226,6 +311,7 @@ class TestBigCubeMeshSection : public TestGeneralMeshSection
   CPPUNIT_TEST_SUITE(TestBigCubeMeshSection);
 
   CPPUNIT_TEST(testNSRestrict);
+  CPPUNIT_TEST(testNSRestrictPrecomp);
 
   CPPUNIT_TEST_SUITE_END();
 public:
@@ -249,6 +335,14 @@ public:
     this->_section->setFiberDimension(this->_mesh->depthStratum(1), 3);
     this->_mesh->allocate(this->_section);
     this->testRestrict("NS", 8.0e-4);
+  }
+
+  void testNSRestrictPrecomp(void) {
+    this->_section = this->_mesh->getRealSection("test");
+    this->_section->setFiberDimension(this->_mesh->depthStratum(0), 4);
+    this->_section->setFiberDimension(this->_mesh->depthStratum(1), 3);
+    this->_mesh->allocate(this->_section);
+    this->testRestrictPrecomputed("NSPrecomp", 8.0e-4);
   }
 };
 
