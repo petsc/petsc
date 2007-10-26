@@ -14,7 +14,7 @@ PetscEvent  MAT_MultTransposeConstrained = 0, MAT_MultTransposeAdd = 0, MAT_Solv
 PetscEvent  MAT_SolveTransposeAdd = 0, MAT_Relax = 0, MAT_ForwardSolve = 0, MAT_BackwardSolve = 0, MAT_LUFactor = 0, MAT_LUFactorSymbolic = 0;
 PetscEvent  MAT_LUFactorNumeric = 0, MAT_CholeskyFactor = 0, MAT_CholeskyFactorSymbolic = 0, MAT_CholeskyFactorNumeric = 0, MAT_ILUFactor = 0;
 PetscEvent  MAT_ILUFactorSymbolic = 0, MAT_ICCFactorSymbolic = 0, MAT_Copy = 0, MAT_Convert = 0, MAT_Scale = 0, MAT_AssemblyBegin = 0;
-PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetRowIJ = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0, MAT_GetRedundantMatrix = 0, MAT_GetSequentialNonzeroStructure = 0;
+PetscEvent  MAT_AssemblyEnd = 0, MAT_SetValues = 0, MAT_GetValues = 0, MAT_GetRow = 0, MAT_GetRowIJ = 0, MAT_GetSubMatrices = 0, MAT_GetColoring = 0, MAT_GetOrdering = 0, MAT_GetRedundantMatrix = 0, MAT_GetSeqNonzeroStructure = 0;
 PetscEvent  MAT_IncreaseOverlap = 0, MAT_Partitioning = 0, MAT_ZeroEntries = 0, MAT_Load = 0, MAT_View = 0, MAT_AXPY = 0, MAT_FDColoringCreate = 0;
 PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0;
 PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
@@ -5191,9 +5191,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt n,Mat *mat[])
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatGetSequentialNonzeroStructure"
+#define __FUNCT__ "MatGetSeqNonzeroStructure"
 /*@C
-   MatGetSequentialNonzeroStructure - Extracts the sequential nonzero structure from a matrix. 
+   MatGetSeqNonzeroStructure - Extracts the sequential nonzero structure from a matrix. 
 
    Collective on Mat
 
@@ -5202,9 +5202,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt n,Mat *mat[])
 
    Output Parameter:
 .  matstruct - the sequential matrix with the nonzero structure of mat
-.seealso: MatDestroySequentialNonzeroStructure(), MatGetSubMatrices(), MatDestroyMatrices()
+.seealso: MatDestroySeqNonzeroStructure(), MatGetSubMatrices(), MatDestroyMatrices()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatGetSequentialNonzeroStructure(Mat mat,Mat *matstruct[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatGetSeqNonzeroStructure(Mat mat,Mat *matstruct[])
 {
   PetscErrorCode ierr;
 
@@ -5216,16 +5216,16 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSequentialNonzeroStructure(Mat mat,Mat *
   if (mat->factor) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Not for factored matrix");
   ierr = MatPreallocated(mat);CHKERRQ(ierr);
 
-  ierr = PetscLogEventBegin(MAT_GetSequentialNonzeroStructure,mat,0,0,0);CHKERRQ(ierr);
-  ierr = (*mat->ops->getsequentialnonzerostructure)(mat,matstruct);CHKERRQ(ierr);
-  ierr = PetscLogEventEnd(MAT_GetSequentialNonzeroStructure,mat,0,0,0);CHKERRQ(ierr);
+  ierr = PetscLogEventBegin(MAT_GetSeqNonzeroStructure,mat,0,0,0);CHKERRQ(ierr);
+  ierr = (*mat->ops->getseqnonzerostructure)(mat,matstruct);CHKERRQ(ierr);
+  ierr = PetscLogEventEnd(MAT_GetSeqNonzeroStructure,mat,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "MatDestroySequentialNonzeroStructure"
+#define __FUNCT__ "MatDestroySeqNonzeroStructure"
 /*@C
-   MatDestroySequentialNonzeroStructure - Destroys matrix obtained with MatGetSequentialNonzeroStructure().
+   MatDestroySeqNonzeroStructure - Destroys matrix obtained with MatGetSeqNonzeroStructure().
 
    Collective on Mat
 
@@ -5237,9 +5237,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetSequentialNonzeroStructure(Mat mat,Mat *
 
     Notes: Frees not only the matrices, but also the array that contains the matrices
 
-.seealso: MatGetSequentialNonzeroStructure()
+.seealso: MatGetSeqNonzeroStructure()
 @*/
-PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySequentialNonzeroStructure(Mat *mat[])
+PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySeqNonzeroStructure(Mat *mat[])
 {
   PetscErrorCode ierr;
 
