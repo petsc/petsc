@@ -28,12 +28,14 @@
   #include <fcntl.h>
 #endif
 #include <errno.h>
+#if !defined(PETSC_HAVE_SYS_SOCKET_H) /* handle windows/cygwin */
 #ifdef PETSC_HAVE_WINSOCK2_H
   #include <Winsock2.h>
 #endif
 #ifdef PETSC_HAVE_WS2TCPIP_H
   #include <Ws2tcpip.h>
 #endif
+#endif /* PETSC_HAVE_SYS_SOCKET_H */
 
 PetscErrorCode PETSC_DLLEXPORT PetscOpenSocket(char * hostname, int portnum, int *clientfd);
 PetscErrorCode PETSC_DLLEXPORT PetscFdRecv(int fd, void *buf, size_t len, int flags, unsigned int *size);
