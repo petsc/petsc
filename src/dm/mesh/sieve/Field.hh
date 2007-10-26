@@ -843,7 +843,8 @@ namespace ALE {
     typedef typename atlas_type::chart_type        chart_type;
     typedef Value_                                 value_type;
     typedef value_type *                           values_type;
-    typedef std::pair<const int *, const int *>    customAtlas_type;
+    typedef std::pair<const int *, const int *>    customAtlasInd_type;
+    typedef std::pair<customAtlasInd_type, bool>   customAtlas_type;
   protected:
     Obj<atlas_type> _atlas;
     Obj<atlas_type> _atlasNew;
@@ -873,12 +874,16 @@ namespace ALE {
         this->_array = NULL;
       }
       for(std::vector<customAtlas_type>::iterator a_iter = this->_customRestrictAtlas.begin(); a_iter != this->_customRestrictAtlas.end(); ++a_iter) {
-        delete [] a_iter->first;
-        delete [] a_iter->second;
+        if (a_iter->second) {
+          delete [] a_iter->first.first;
+          delete [] a_iter->first.second;
+        }
       }
       for(std::vector<customAtlas_type>::iterator a_iter = this->_customUpdateAtlas.begin(); a_iter != this->_customUpdateAtlas.end(); ++a_iter) {
-        delete [] a_iter->first;
-        delete [] a_iter->second;
+        if (a_iter->second) {
+          delete [] a_iter->first.first;
+          delete [] a_iter->first.second;
+        }
       }
     };
   public:
@@ -1714,17 +1719,17 @@ namespace ALE {
     };
   public: // Optimization
     void getCustomRestrictAtlas(const int tag, const int *offsets[], const int *indices[]) {
-      *offsets = this->_customRestrictAtlas[tag].first;
-      *indices = this->_customRestrictAtlas[tag].second;
+      *offsets = this->_customRestrictAtlas[tag].first.first;
+      *indices = this->_customRestrictAtlas[tag].first.second;
     };
     void getCustomUpdateAtlas(const int tag, const int *offsets[], const int *indices[]) {
-      *offsets = this->_customUpdateAtlas[tag].first;
-      *indices = this->_customUpdateAtlas[tag].second;
+      *offsets = this->_customUpdateAtlas[tag].first.first;
+      *indices = this->_customUpdateAtlas[tag].first.second;
     };
     // This returns the tag assigned to the atlas
-    int setCustomAtlas(const int restrictOffsets[], const int restrictIndices[], const int updateOffsets[], const int updateIndices[]) {
-      this->_customRestrictAtlas.push_back(customAtlas_type(restrictOffsets, restrictIndices));
-      this->_customUpdateAtlas.push_back(customAtlas_type(updateOffsets, updateIndices));
+    int setCustomAtlas(const int restrictOffsets[], const int restrictIndices[], const int updateOffsets[], const int updateIndices[], bool autoFree = true) {
+      this->_customRestrictAtlas.push_back(customAtlas_type(customAtlasInd_type(restrictOffsets, restrictIndices), autoFree));
+      this->_customUpdateAtlas.push_back(customAtlas_type(customAtlasInd_type(updateOffsets, updateIndices), autoFree));
       return this->_customUpdateAtlas.size()-1;
     };
     int copyCustomAtlas(const Obj<GeneralSection>& section, const int tag) {
@@ -1732,7 +1737,7 @@ namespace ALE {
 
       section->getCustomRestrictAtlas(tag, &rOffsets, &rIndices);
       section->getCustomUpdateAtlas(tag, &uOffsets, &uIndices);
-      return this->setCustomAtlas(rOffsets, rIndices, uOffsets, uIndices);
+      return this->setCustomAtlas(rOffsets, rIndices, uOffsets, uIndices, false);
     };
   public:
     void view(const std::string& name, MPI_Comm comm = MPI_COMM_NULL) const {
