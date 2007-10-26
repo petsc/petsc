@@ -344,9 +344,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
     PetscInt        i,rstart,rend,N_loc,nc;
       
     /* create a sequential iscoloring on all processors */
-    ierr = MatGetSequentialNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
+    ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
     ierr = (*r)(*mat_seq,type,&iscoloring_seq);CHKERRQ(ierr);
-    ierr = MatDestroySequentialNonzeroStructure(&mat_seq);CHKERRQ(ierr);
+    ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
 
     /* convert iscoloring_seq to a parallel iscoloring */  
     rstart = mat->rmap.rstart;

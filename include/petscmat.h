@@ -103,11 +103,11 @@ typedef enum {MAT_INITIAL_MATRIX,MAT_REUSE_MATRIX} MatReuse;
 
 /*E
     MatGetSubMatrixOption - Indicates if matrices obtained from a call to MatGetSubMatrices()
-     include the matrix values. Currently it is only used by MatGetSequentialNonzerostructure().
+     include the matrix values. Currently it is only used by MatGetSeqNonzerostructure().
 
     Level: beginner
 
-.seealso: MatGetSequentialNonzerostructure()
+.seealso: MatGetSeqNonzerostructure()
 E*/
 typedef enum {MAT_DO_NOT_GET_VALUES,MAT_GET_VALUES} MatGetSubMatrixOption;
 
@@ -508,8 +508,8 @@ EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrices(Mat,PetscInt,const IS
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroyMatrices(PetscInt,Mat *[]);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrix(Mat,IS,IS,PetscInt,MatReuse,Mat *);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSubMatrixRaw(Mat,PetscInt,const PetscInt[],PetscInt,const PetscInt[],PetscInt,MatReuse,Mat *);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSequentialNonzeroStructure(Mat,Mat *[]);
-EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySequentialNonzeroStructure(Mat *[]); 
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatGetSeqNonzeroStructure(Mat,Mat *[]);
+EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatDestroySeqNonzeroStructure(Mat *[]); 
 
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge(MPI_Comm,Mat,PetscInt,MatReuse,Mat*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatMerge_SeqsToMPI(MPI_Comm,Mat,PetscInt,PetscInt,MatReuse,Mat*);
@@ -1427,7 +1427,8 @@ typedef enum { MATOP_SET_VALUES=0,
                MATOP_GET_ROW_UTRIANGULAR=108,
                MATOP_RESTORE_ROW_UTRIANGULAR=109,
                MATOP_MATSOLVE=110,
-               MATOP_GET_REDUNDANTMATRIX=111
+               MATOP_GET_REDUNDANTMATRIX=111,
+               MATOP_MATGETSEQNONZEROSTRUCTURE=115
              } MatOperation;
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatHasOperation(Mat,MatOperation,PetscTruth*);
 EXTERN PetscErrorCode PETSCMAT_DLLEXPORT MatShellSetOperation(Mat,MatOperation,void(*)(void));
