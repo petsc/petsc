@@ -20,6 +20,9 @@ PetscEvent  MAT_FDColoringApply = 0,MAT_Transpose = 0,MAT_FDColoringFunction = 0
 PetscEvent  MAT_MatMult = 0, MAT_MatMultSymbolic = 0, MAT_MatMultNumeric = 0;
 PetscEvent  MAT_PtAP = 0, MAT_PtAPSymbolic = 0, MAT_PtAPNumeric = 0;
 PetscEvent  MAT_MatMultTranspose = 0, MAT_MatMultTransposeSymbolic = 0, MAT_MatMultTransposeNumeric = 0;
+PetscEvent  MAT_Getsymtranspose = 0, MAT_Getsymtransreduced = 0, MAT_Transpose_SeqAIJ = 0, MAT_GetBrowsOfAcols = 0;
+PetscEvent  MAT_GetBrowsOfAocols = 0, MAT_Getlocalmat = 0, MAT_Getlocalmatcondensed = 0, MAT_Seqstompi = 0, MAT_Seqstompinum = 0, MAT_Seqstompisym = 0;
+PetscEvent  MAT_Applypapt = 0, MAT_Applypapt_numeric = 0, MAT_Applypapt_symbolic = 0, MAT_GetSequentialNonzeroStructure = 0;
 
 /* nasty global values for MatSetValue() */
 PetscInt    PETSCMAT_DLLEXPORT MatSetValue_Row = 0;
