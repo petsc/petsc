@@ -45,8 +45,8 @@ PetscErrorCode KSPSetUp_LCD(KSP ksp)
   /* get work vectors needed by LCD */
   ierr = KSPDefaultGetWork(ksp,2);CHKERRQ(ierr);
  
-  ierr = VecDuplicateVecs(ksp->vec_rhs,restart+1,&lcd->P); CHKERRQ(ierr);
-  ierr = VecDuplicateVecs(ksp->vec_rhs, restart + 1, &lcd->Q); CHKERRQ(ierr); 
+  ierr = VecDuplicateVecs(ksp->work[0],restart+1,&lcd->P); CHKERRQ(ierr);
+  ierr = VecDuplicateVecs(ksp->work[0], restart + 1, &lcd->Q); CHKERRQ(ierr); 
   ierr = PetscLogObjectMemory(ksp,2*(restart+2)*sizeof(Vec));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
