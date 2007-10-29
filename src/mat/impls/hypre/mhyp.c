@@ -172,8 +172,8 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_SeqAIJ(Mat A,HYPRE_IJMatrix ij)
 
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
   ierr = HYPRE_IJMatrixInitialize(ij);CHKERRQ(ierr);
-  par_matrix = hypre_IJMatrixObject(ij);
-  aux_matrix = hypre_IJMatrixTranslator(ij);
+  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
+  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hdiag = hypre_ParCSRMatrixDiag(par_matrix);
   hoffd = hypre_ParCSRMatrixOffd(par_matrix);
 
@@ -216,8 +216,8 @@ PetscErrorCode MatHYPRE_IJMatrixFastCopy_MPIAIJ(Mat A,HYPRE_IJMatrix ij)
   ierr = PetscLogEventBegin(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
 
   ierr = HYPRE_IJMatrixInitialize(ij);CHKERRQ(ierr);
-  par_matrix = hypre_IJMatrixObject(ij);
-  aux_matrix = hypre_IJMatrixTranslator(ij);
+  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(ij);
+  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(ij);
   hdiag = hypre_ParCSRMatrixDiag(par_matrix);
   hoffd = hypre_ParCSRMatrixOffd(par_matrix);
 
@@ -273,7 +273,7 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   PetscValidHeaderSpecific(A,MAT_COOKIE,1);
   PetscValidType(A,1);
   PetscValidPointer(ij,2);
- ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
+  ierr = PetscTypeCompare((PetscObject)A,MATMPIAIJ,&flg);CHKERRQ(ierr);
   if (!flg) SETERRQ(PETSC_ERR_SUP,"Can only use with PETSc MPIAIJ matrices");
   ierr = MatPreallocated(A);CHKERRQ(ierr);
 
@@ -286,13 +286,12 @@ PetscErrorCode MatHYPRE_IJMatrixLink(Mat A,HYPRE_IJMatrix *ij)
   ierr = HYPRE_IJMatrixSetObjectType(*ij,HYPRE_PARCSR);CHKERRQ(ierr);
  
   ierr = HYPRE_IJMatrixInitialize(*ij);CHKERRQ(ierr);
-  par_matrix = hypre_IJMatrixObject(*ij);
-  aux_matrix = hypre_IJMatrixTranslator(*ij);
+  par_matrix = (hypre_ParCSRMatrix*)hypre_IJMatrixObject(*ij);
+  aux_matrix = (hypre_AuxParCSRMatrix*)hypre_IJMatrixTranslator(*ij);
 
   hypre_AuxParCSRMatrixNeedAux(aux_matrix) = 0;
 
   /* this is the Hack part where we monkey directly with the hypre datastructures */
-
 
   ierr = HYPRE_IJMatrixAssemble(*ij);CHKERRQ(ierr);
   ierr = PetscLogEventEnd(MAT_Convert,A,0,0,0);CHKERRQ(ierr);
