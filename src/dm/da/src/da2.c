@@ -60,6 +60,28 @@ PetscErrorCode PETSCDM_DLLEXPORT DARestoreElements(DA da,PetscInt *n,const Petsc
 
 #undef __FUNCT__  
 #define __FUNCT__ "DAGetOwnershipRange"
+/*@C
+      DAGetOwnershipRange - Gets the ranges of indices in the x, y and z direction that are owned by each process
+
+    Not Collective
+
+   Input Parameter:
+.     da - the DA object
+
+   Output Parameter:
++     lx - ownership along x direction (optional)
+.     ly - ownership along y direction (optional)
+-     lz - ownership along z direction (optional)
+
+   Level: intermediate
+
+    Note: these correspond to the optional final arguments passed to DACreate(), DACreate2d(), DACreate3d()
+
+    In Fortran one must pass in arrays lx, ly, and lz that are long enough to hold the values; the sixth, seventh and
+    eighth arguments from DAGetInfo()
+
+.seealso: DAGetCorners(), DAGetGhostCorners(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
+@*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetOwnershipRange(DA da,PetscInt **lx,PetscInt **ly,PetscInt **lz)
 {
   PetscFunctionBegin;
@@ -254,7 +276,7 @@ PetscErrorCode DAGetElements_2d_P1(DA da,PetscInt *n,const PetscInt *e[])
 
 .seealso: DADestroy(), DAView(), DACreate1d(), DACreate3d(), DAGlobalToLocalBegin(), DAGetRefinementFactor(),
           DAGlobalToLocalEnd(), DALocalToGlobal(), DALocalToLocalBegin(), DALocalToLocalEnd(), DASetRefinementFactor(),
-          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView()
+          DAGetInfo(), DACreateGlobalVector(), DACreateLocalVector(), DACreateNaturalVector(), DALoad(), DAView(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DAStencilType stencil_type,
@@ -822,7 +844,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DACreate2d(MPI_Comm comm,DAPeriodicType wrap,DA
 
 .keywords:  distributed array, refine
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 {
@@ -897,7 +919,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DARefine(DA da,MPI_Comm comm,DA *daref)
 
 .keywords:  distributed array, coarsen
 
-.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy()
+.seealso: DACreate1d(), DACreate2d(), DACreate3d(), DADestroy(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DACoarsen(DA da, MPI_Comm comm,DA *daref)
 {

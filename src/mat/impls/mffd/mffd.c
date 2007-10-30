@@ -40,7 +40,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
   /* Register Constructors */
   ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&MATMFFD_Mult, "MatMult MF",          MATMFFD_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegisterma(&MATMFFD_Mult, "MatMult MF",          MATMFFD_COOKIE);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
