@@ -8,7 +8,7 @@
 /* Logging support */
 PetscCookie PC_COOKIE = 0;
 PetscEvent  PC_SetUp = 0, PC_SetUpOnBlocks = 0, PC_Apply = 0, PC_ApplyCoarse = 0, PC_ApplyMultiple = 0, PC_ApplySymmetricLeft = 0;
-PetscEvent  PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0, PC_ApplyOnBlocks;
+PetscEvent  PC_ApplySymmetricRight = 0, PC_ModifySubMatrices = 0, PC_ApplyOnBlocks, PC_ApplyTransposeOnBlocks;
 
 #undef __FUNCT__  
 #define __FUNCT__ "PCGetDefaultType_Private"

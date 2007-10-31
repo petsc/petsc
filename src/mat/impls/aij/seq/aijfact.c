@@ -1153,7 +1153,7 @@ PetscErrorCode MatILUFactorSymbolic_SeqAIJ(Mat A,IS isrow,IS iscol,MatFactorInfo
     (*fact)->info.fill_ratio_given  = info->fill;
     (*fact)->info.fill_ratio_needed = 1.0;
     b               = (Mat_SeqAIJ*)(*fact)->data;
-    ierr = MatMissingDiagonal(*fact,&missing,&d);CHKERRQ(ierr);
+    ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
     if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
     b->row              = isrow;
     b->col              = iscol;

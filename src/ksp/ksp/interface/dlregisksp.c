@@ -40,7 +40,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCInitializePackage(const char path[]) {
   /* Register Events */
   ierr = PetscLogEventRegister(&PC_SetUp,                   "PCSetUp",          PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_SetUpOnBlocks,           "PCSetUpOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
-  ierr = PetscLogEventRegister(&PC_ApplyUpOnBlocks,         "PCApplyOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&PC_ApplyOnBlocks,           "PCApplyOnBlocks",  PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_Apply,                   "PCApply",          PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_ApplyCoarse,             "PCApplyCoarse",    PC_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&PC_ApplyMultiple,           "PCApplyMultiple",  PC_COOKIE);CHKERRQ(ierr);
