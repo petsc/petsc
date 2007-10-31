@@ -92,8 +92,23 @@ subset: subset.o chkopts
 	-${CLINKER} -o subset subset.o ${PETSC_DM_LIB}
 	${RM} -f subset.o
 #-----------------------------------------------------------------
+BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
+component0: component0.o chkopts
+	-${CLINKER} -o component0 component0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f component0.o
+
+ppcomponent0: chkopts
+	-${CXCPP} component0.cxx
+
+runcomponent0:
+	-@${MPIEXEC} -np ${NP} ./component0 ${EXTRA_ARGS}
+
+debugcomponent0:
+	-@${MPIEXEC} -np ${NP} ./component0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
 xsifter00: xsifter00.o chkopts
-	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB} 
 	${RM} -f xsifter00.o
 NP = 1
 runxsifter00:
@@ -103,7 +118,7 @@ debugxsifter00:
 
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
-	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter0.o
 NP = 1
 runxsifter0:
@@ -113,7 +128,7 @@ debugxsifter0:
 
 #-----------------------------------------------------------------
 xsifter1: xsifter1.o chkopts
-	-${CLINKER} -o xsifter1 xsifter1.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter1 xsifter1.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter1.o
 NP = 1
 runxsifter1:
@@ -126,7 +141,7 @@ valgrindxsifter1:
 
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
-	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter2.o
 NP = 1
 runxsifter2:

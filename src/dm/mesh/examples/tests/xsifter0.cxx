@@ -3,29 +3,10 @@ static char help[] = "Sifter Basic Ordering Tests.\n\n";
 #include <petsc.h>
 #include "xsifterTest.hh"
 
-typedef ALE::Test::XSifter::arrow_type       arrow_type;
-typedef arrow_type::source_type              source_type;
-typedef arrow_type::target_type              target_type;
-typedef arrow_type::color_type               color_type;
-
-typedef ALE::Test::XSifter::xsifter_type     xsifter_type;
-
-typedef xsifter_type::rec_type               rec_type;
-typedef xsifter_type::predicate_type         predicate_type;
 
 
-#undef __FUNCT__
-#define __FUNCT__ "BasicTest"
-PetscErrorCode BasicTest(const ALE::Obj<xsifter_type>& xsifter, ALE::Test::XSifter::Options options, const char* xsifterName = NULL)
-{
+typedef ALE::Test::XSifterTester::xsifter_type     xsifter_type;
 
-  PetscFunctionBegin;
-  ALE::LogStage stage = ALE::LogStageRegister("Basic Test");
-  ALE::LogStagePush(stage);
-  xsifter->view(std::cout, xsifterName);
-  ALE::LogStagePop(stage);
-  PetscFunctionReturn(0);
-}
 
 
 #undef __FUNCT__
@@ -37,12 +18,11 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
   {
-    ALE::Test::XSifter::Options        options;
-    ALE::Obj<xsifter_type> xsifterFork = ALE::Test::XSifter::createForkXSifter(PETSC_COMM_SELF, options);
-    ierr = BasicTest(xsifterFork, options, "Fork"); CHKERRQ(ierr);
-    ALE::Obj<xsifter_type> xsifterHat = ALE::Test::XSifter::createHatXSifter(PETSC_COMM_SELF, options);
-    ierr = BasicTest(xsifterHat, options, "Hat"); CHKERRQ(ierr);
-
+    ALE::Component::ArgDB argDB(ALE::Test::XSifterTester().argDB, argc, argv);
+    ALE::Obj<xsifter_type> xsifterFork = ALE::Test::XSifterTester::createForkXSifter(PETSC_COMM_SELF, argDB);
+    ierr = ALE::Test::XSifterTester::BasicTest(xsifterFork, argDB, "Fork"); CHKERRQ(ierr);
+    ALE::Obj<xsifter_type> xsifterHat = ALE::Test::XSifterTester::createHatXSifter(PETSC_COMM_SELF, argDB);
+    ierr = ALE::Test::XSifterTester::BasicTest(xsifterHat, argDB, "Hat"); CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

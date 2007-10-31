@@ -418,7 +418,7 @@ namespace ALE {
     
     // "exposure" methods: expose the underlying object or object pointer
     operator X*() {return objPtr;};
-    X& operator*() {assertNull(false); return *objPtr;};
+    X& operator*() const {assertNull(false); return *objPtr;};
     operator X()  {assertNull(false); return *objPtr;};
     template<class Y> Obj& copy(const Obj<Y>& obj); // this operator will copy the underlying objects: USE WITH CAUTION
     

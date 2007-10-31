@@ -58,37 +58,47 @@ namespace ALE {
     int      commRank() {return this->_commRank;};
   };// class XParallelObject
   
+  //
+  // Key extractors
+  //
   // 
   // The following member function return a const result.
   // It is best used through the macro ALE_CONST_MEM_FUN which takes only three arguments: 
-  //  Class, ReturnType, MemberFunctionPtr (see below).
-  template<class Class,typename Type, typename const_Type, const_Type (Class::*PtrToMemberFunction)()const>
+  //  Class, ResultType, MemberFunctionPtr (see below).
+  // OutputType (the actual return type) is different from the ResultType for somewhat obscure reasons.
+  // Once I (have time to) understand the issue better, the usage pattern may get simplified.
+  template<class InputType_, typename ResultType_, typename OutputType_, OutputType_ (InputType_::*PtrToMemberFunction)()const>
   struct const_const_mem_fun
   {
-    typedef typename ::boost::remove_reference<Type>::type result_type;
-    //typedef Type                                    result_type;
-    template<typename ChainedPtr>
-    const_Type operator()(const ChainedPtr& x)const
+    typedef InputType_                                            input_type;
+    typedef typename ::boost::remove_reference<ResultType_>::type result_type;
+    typedef OutputType_                                           output_type;
+    //
+    // Main interface
+    //
+    template<typename ChainedPtrTarget>
+    output_type operator()(const ChainedPtrTarget*& x)const
     {
-      return operator()(*x);
+      return operator()((*x));
     }
     
-    const_Type operator()(const Class& x)const
+    output_type operator()(const input_type& x)const
     {
       return (x.*PtrToMemberFunction)();
     }
     
-    const_Type operator()(const ::boost::reference_wrapper<const Class>& x)const
+    output_type operator()(const ::boost::reference_wrapper<const input_type>& x)const
     { 
       return operator()(x.get());
     }
     
-    const_Type operator()(const ::boost::reference_wrapper<Class>& x,int=0)const
+    output_type operator()(const ::boost::reference_wrapper<input_type>& x,int=0)const
     { 
       return operator()(x.get());
     }
   };// struct const_const_mem_fun
-#define ALE_CONST_MEM_FUN(CLASS, TYPE, FUN) ::ALE::const_const_mem_fun<CLASS, TYPE, const TYPE, FUN>
+#define ALE_CONST_MEM_FUN(CLASS, RESULT_TYPE, FUN) ::ALE::const_const_mem_fun<CLASS, RESULT_TYPE, const RESULT_TYPE, FUN>
+
   
   namespace XSifterDef {
     static int debug   = 0;
@@ -106,6 +116,8 @@ namespace ALE {
     //
     // RecKeyOrder compares records by comparing keys of type Key_ extracted from arrows using a KeyExtractor_.
     // In addition, a record can be compared to a single Key_ or another CompatibleKey_.
+    #undef  __CLASS__
+    #define __CLASS__ "RecKeyOrder"
     template<typename Rec_, typename KeyExtractor_, typename KeyOrder_ = std::less<typename KeyExtractor_::result_type> >
     struct RecKeyOrder {
       typedef Rec_                                     rec_type;
@@ -122,38 +134,74 @@ namespace ALE {
         return this->_key_order(this->_kex(rec1), this->_kex(rec2));
       };
       //
-      bool operator()(const key_type& key1, const key_type& key2) const {
-        return this->_key_order(key1, key2);
-      };
-
-//       template <typename CompatibleKey_>
-//       bool operator()(const rec_type& rec, const ALE::singleton<CompatibleKey_> keySingleton) const {
-//         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
-//         // and must be unwrapped before the ordering operator is applied.
-//         return this->_key_order(this->_kex(rec), keySingleton.first);
+//       bool operator()(const key_type& key1, const key_type& key2) const {
+//         return this->_key_order(key1, key2);
 //       };
-//       template <typename CompatibleKey_>
-//       bool operator()(const ALE::singleton<CompatibleKey_> keySingleton, const rec_type& rec) const {
-//         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
-//         // and must be unwrapped before the ordering operator is applied
-//         return this->_key_order(keySingleton.first, this->_kex(rec));
-//       };
-//       template <typename CompatibleKey_>
-//       bool operator()(const ALE::singleton<CompatibleKey_> keySingleton1, const ALE::singleton<CompatibleKey_> keySingleton2) const {
-//         // In order to disamiguate calls such as this from (rec&,rec&) calls, compatible keys are passed in wrapped as singletons, 
-//         // and must be unwrapped before the ordering operator is applied
-//         return this->_key_order(keySingleton1.first, keySingleton2.first);
-//       };
-
-      // Do we really need to wrap keys as Singletons?
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
       template <typename CompatibleKey_>
       bool operator()(const rec_type& rec, const CompatibleKey_ key) const {
-        return this->_key_order(this->_kex(rec), key);
+        static bool res;
+        res = this->_key_order(this->_kex(rec), key);
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << rec << " < " << key << "\n";
+          }
+          else {
+            std::cout << rec << " >= " << key << "\n";
+          }
+        };
+#endif
+        return res;
       };
       //
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
+      template <typename CompatibleKey_>
+      bool operator()(const CompatibleKey_ key, const rec_type rec) const {
+        static bool res;
+        res = this->_key_order(key,this->_kex(rec));
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << key << " < " << rec << "\n";
+          }
+          else {
+            std::cout << key << " >= " << rec << "\n";
+          }
+        };
+#endif
+        return res;
+      };
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
       template <typename CompatibleKey_>
       bool operator()(const CompatibleKey_ key, const rec_type& rec) const {
-        return this->_key_order(key, this->_kex(rec));
+        static bool res;
+        res = this->_key_order(key, this->_kex(rec));
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << rec << " < " << key << "\n";
+          }
+          else {
+            std::cout << rec << " >= " << key << "\n";
+          }
+        };
+#endif
+        return res;
       };
     };// RecKeyOrder
 
@@ -164,6 +212,8 @@ namespace ALE {
     // These are then specialized (with Rec = Arrow) to SupportCompare & ConeCompare, using the order operators supplied by the user:
     // SupportOrder = (SourceOrder, SupportXXXOrder), 
     // ConeOrder    = (TargetOrder, ConeXXXOrder), etc
+    #undef  __CLASS__
+    #define __CLASS__ "RecKeyXXXOrder"
     template <typename Rec_, typename KeyExtractor_, typename KeyOrder_, typename XXXOrder_>
     struct RecKeyXXXOrder {
       typedef Rec_                                                             rec_type;
@@ -184,928 +234,199 @@ namespace ALE {
       inline const pre_compare_type& preCompare() const {return *this;};
       inline const pos_compare_type& posCompare() const {return this->_compare_xxx;};
       //
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
       inline bool operator()(const rec_type& rec1, const rec_type& rec2) const { 
-        if(this->_compare_keys(this->_kex(rec1), this->_kex(rec2))) 
-          return true;
-        if(this->_compare_keys(this->_kex(rec2), this->_kex(rec1))) 
-          return false;
-        if(this->_compare_xxx(rec1,rec2))
-          return true;
-        return false;           
+        static bool res;
+        if(this->_compare_keys(this->_kex(rec1), this->_kex(rec2))) {
+          res = true;
+        }
+        else if(this->_compare_keys(this->_kex(rec2), this->_kex(rec1))) {
+          res = false;
+        }
+        else if(this->_compare_xxx(rec1,rec2)){
+          res = true;
+        }
+        else {
+          res = false;           
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << rec1 << " < " << rec2 << "\n";
+          }
+          else {
+            std::cout << rec2 << " >= " << rec1 << "\n";
+          }
+        };
+#endif        
+        return res;
       };
-      // In order to disambiguate calls such as (key, rec) with key_type==rec_type, from (rec,rec) calls, 
-      // we provide a call interface where compatible keys are passed in wrapped as singletons, 
-      // and must be unwrapped before the ordering operator is applied.  (When is this actually encountered?)
-      // Unwrapped keys are allowed as well (see below).
-//       template <typename CompatibleKey_>
-//       inline bool operator()(const ALE::singleton<CompatibleKey_>& keySingleton, const rec_type& rec1) const {
-//         return this->_compare_keys(keySingleton.first, this->_kex(rec1));
-//       };
-//       template <typename CompatibleKey_>
-//       inline bool operator()(const rec_type& rec1, const ALE::singleton<CompatibleKey_>& keySingleton) const {
-//         return this->_compare_keys(this->_kex(rec1), keySingleton.first);
-//       };
-//       template <typename CompatibleKey_>
-//       inline bool operator()(const ALE::singleton<CompatibleKey_>& keySingleton1, const ALE::singleton<CompatibleKey_>& keySingleton2) const {
-//         return this->_compare_keys(keySingleton1.first, keySingleton2.first);
-//       };
-//       //
-//       template <typename CompatibleKey_, typename CompatibleXXX_>
-//       inline bool operator()(const ALE::pair<CompatibleKey_, CompatibleXXX_>& pair, const rec_type& rec) const {
-//         // We want (key,xxx) to be no greater than any (key, xxx, ...)
-//         return this->_compare_keys(pair.first, _kex(rec)) ||
-//           (!this->_compare_keys(_kex(rec), pair.first) && this->_compare_xxx(ALE::singleton<CompatibleXXX_>(pair.second), rec));
-//         // Note that CompatibleXXX_ -- the second element of the pair -- must be wrapped up as a singleton before being passed for comparison against rec
-//         // to compare_xxx.  This is necessary for compare_xxx to disamiguate comparison of recs to elements of differents types.  In particular, 
-//         // this is necessary if compare_xxx is of the RecKeyXXXOrder type. Specialization doesn't work, or I don't know how to make it work in this context.
-//       };
-//       template <typename CompatibleKey_, typename CompatibleXXX_>
-//       inline bool operator()(const rec_type& rec, const ALE::pair<CompatibleKey_, CompatibleXXX_>& pair) const {
-//         // We want (key,xxx) to be no greater than any (key, xxx, ...)
-//         return _compare_keys(_kex(rec), pair.first) ||
-//           (!this->_compare_keys(pair.first, _kex(rec)) && this->_compare_xxx(rec,ALE::singleton<CompatibleXXX_>(pair.second)));
-//         // Note that CompatibleXXX_ -- the second element of the pair -- must be wrapped up as a singleton before being passed for comparison against rec
-//         // to compare_xxx.  This is necessary for compare_xxx to disamiguate comparison of recs to elements of differents types.  In particular, 
-//         // this is necessary if compare_xxx is of the RecKeyXXXOrder type. Specialization doesn't work, or I don't know how to make it work in this context.
-//       };
       //
-      // Calls with unwrapped keys are defined here.
+      // Comparisons with individual keys; XXX-part is ignored
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
       template <typename CompatibleKey_>
       inline bool operator()(const rec_type& rec, const CompatibleKey_ key) const {
-        return this->_compare_keys(this->_kex(rec), key);
+        static bool res;
+        res = this->_compare_keys(this->_kex(rec), key);
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << rec << " < " << key << "\n";
+          }
+          else {
+            std::cout << rec << " >= " << key << "\n";
+          }
+        };
+#endif    
+        return res;
       };
       //
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
       template <typename CompatibleKey_>
       inline bool operator()(const CompatibleKey_ key, const rec_type& rec) const {
-        return this->_compare_keys(key, this->_kex(rec));
+        static bool res;
+        res = this->_compare_keys(key, this->_kex(rec));
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << key << " < " << rec << "\n";
+          }
+          else {
+            std::cout << key << " >= " << rec << "\n";
+          }
+        };
+#endif    
+        return res;
       };
+      //
+      // Comparisons with key pairs; XXX-part is compared against the second key of the pair
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
+      template <typename CompatibleKey_, typename CompatibleSubKey_>
+      inline bool operator()(const rec_type& rec, const ::ALE::pair<CompatibleKey_, CompatibleSubKey_>& keypair) const {
+        static bool res;
+        if(this->_compare_keys(this->_kex(rec), keypair.first)) {
+          res = true;
+        }
+        else if(this->_compare_keys(keypair.first, this->_kex(rec))) {
+          res = false;
+        }
+        else if(this->_compare_xxx(rec,keypair.second)){
+          res = true;
+        }
+        else {
+          res = false;           
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << rec << " < " << keypair << "\n";
+          }
+          else {
+            std::cout << keypair << " >= " << rec << "\n";
+          }
+        };
+#endif        
+        return res;
+      };
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "operator()"
+      #undef  __ALE_XDEBUG__ 
+      #define __ALE_XDEBUG__ 4
+      template <typename CompatibleKey_, typename CompatibleSubKey_>
+      inline bool operator()(const ::ALE::pair<CompatibleKey_, CompatibleSubKey_>& keypair, const rec_type& rec) const {
+        static bool res;
+        if(this->_compare_keys(keypair.first, this->_kex(rec))) {
+          res = true;
+        }
+        else if(this->_compare_keys(this->_kex(rec), keypair.first)) {
+          res = false;
+        }
+        else if(this->_compare_xxx(keypair.second, rec)){
+          res = true;
+        }
+        else {
+          res = false;           
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(res) {
+            std::cout << keypair << " >= " << rec << "\n";
+          }
+          else {
+            std::cout << rec << " < " << keypair << "\n";
+          }
+        };
+#endif        
+        return res;
+      };
+      //
     };// class RecKeyXXXOrder
 
 
+    // Bounder.
+    // Here we define auxiliary classes that can be derived from comparion operators.
+    // These convert a compare into a bounder (lower or upper).
     //
-    // PredicateTraits encapsulates Predicate types encoding object subsets with a given Predicate value or within a value range.
-    template<typename Predicate_> 
-    struct PredicateTraits {};
-    // Traits of different predicate types are defined via specialization of PredicateTraits.
-    // We require that the predicate type act like an int (signed or unsigned).
-    //
-    template<>
-    struct PredicateTraits<int> {
-      typedef      int  predicate_type;
-      typedef      int  printable_type;
-      static const predicate_type default_value;
-      static const predicate_type zero;
-      static printable_type printable(const predicate_type& p) {return (printable_type)p;};
-    };
-    const PredicateTraits<int>::predicate_type PredicateTraits<int>::default_value = 0;
-    const PredicateTraits<int>::predicate_type PredicateTraits<int>::zero          = 0;
-    //
-    template<>
-    struct PredicateTraits<unsigned int> {
-      typedef      unsigned int  predicate_type;
-      typedef      unsigned int  printable_type;
-      static const predicate_type default_value;
-      static const predicate_type zero;
-      static printable_type printable(const predicate_type& p) {return (printable_type)p;};
-    };
-    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::default_value = 0;
-    const PredicateTraits<unsigned int>::predicate_type PredicateTraits<unsigned int>::zero          = 0;
-    //
-    template<>
-    struct PredicateTraits<short> {
-      typedef      short  predicate_type;
-      typedef      short  printable_type;
-      static const predicate_type default_value;
-      static const predicate_type zero;
-      static printable_type printable(const predicate_type& p) {return (printable_type)p;};
-    };
-    const PredicateTraits<short>::predicate_type PredicateTraits<short>::default_value = 0;
-    const PredicateTraits<short>::predicate_type PredicateTraits<short>::zero          = 0;
-
-    //
-    template<>
-    struct PredicateTraits<char> {
-      typedef char  predicate_type;
-      typedef short printable_type;
-      static const predicate_type default_value;
-      static const predicate_type zero;
-      static printable_type printable(const predicate_type& p) {return (printable_type)p;};
-    };
-    const PredicateTraits<char>::predicate_type PredicateTraits<char>::default_value = '\0';
-    const PredicateTraits<char>::predicate_type PredicateTraits<char>::zero          = '\0';
-
-
-    //
-    // IndexFilterAdapter wraps a multi_index container index of type Index_ and makes it behave like a filter.
-    // This class can (almost) be taken as the interface of the concept Index. 
-    //
-    #undef  __CLASS__
-    #define __CLASS__ "IndexFilterAdapter"
-    template <typename Index_>
-    class IndexFilterAdapter {
+    template <typename Compare_, typename Bound_>
+    class LowerBounder {
     public:
-      typedef Index_                                           index_type;
-      // also need: key_type, key_traits in a general Filter
-      //typedef typename index_type::iterator                  iterator;
-      typedef typename index_type::const_iterator              iterator;
-      typedef typename index_type::key_type                    key_type;
-      typedef typename index_type::key_from_value              key_extractor_type;
-      typedef typename index_type::key_compare                 key_compare_type;
-      //
-      struct cookie_type {
-        iterator _segmentBegin;
-        iterator _segmentEnd;
-      public:
-        //
-        cookie_type(){};
-        explicit cookie_type(const iterator& b, const iterator& e) : 
-          _segmentEnd(b), _segmentEnd(e) {};
-        cookie_type(const cookie_type& cookie) : 
-          _segmentBegin(cookie._segmentBegin), _segmentEnd(cookie._segmentEnd){};
-        //
-        inline void operator()(const iterator& b, const iterator& e){this->_segmentBegin = b; this->_segmentEnd = e;};
-        //
-        inline const iterator&  segmentBegin() const {return this->_segmentBegin;};
-        inline const iterator&  segmentEnd()   const {return this->_segmentEnd;};
-        //
-        template <typename Stream_>
-        friend Stream_& operator<<(Stream_& os, const cookie_type& cookie) {
-          return os << "[" << (*(cookie.segmentBegin())) << ", " << (*(cookie.segmentEnd())) << "]";
-        };
-      };// struct cookie
-      //      
+      typedef Compare_    compare_type;
+      typedef Bound_      bound_type;
     protected:
-      index_type* _index;
+      compare_type _compare;
+      bound_type   _bound;
     public:
-      //
-      // Basic interface
-      //
-      //IndexFilterAdapter(){};
-      IndexFilterAdapter(index_type* index) : _index(index){};
-      ~IndexFilterAdapter(){};
-      //
-      // Extended interface
-      //
-      // individual key queries
-      inline static key_type  key(const iterator& iter) { static key_extractor_type kex; return kex(*iter);};
-      static        bool      compare(const key_type& k1, const key_type& k2) {
-        static key_compare_type comp;
-        return comp(k1,k2);
-      };
-      inline static        bool      compare(const iterator& i1, const iterator& i2) {
-        return compare(key(i1),key(i2));
-      };
-    public:
-      //
-      // Search interface
-      //
-      //
-      // We can search on a given Key_ key.
+      // Basic
+      LowerBounder(){};
+      LowerBounder(const bound_type& bound) : _bound(bound) {};
+      inline void reset(const bound_type& bound) {this->_bound = bound;};
+      // Extended
+      inline const compare_type& compare(){return this->_compare;};
+      inline const bound_type&   bound(){return this->_bound;};
+      // Main
       template <typename Key_>
-      inline iterator relative_lower_bound(const Key_& key, const cookie_type& range) const {
-        return this->_index->lower_bound(key);
-      };
-      //
-      template <typename Key_>
-      inline iterator relative_upper_bound(const Key_& key, const cookie_type& range) const {
-        return this->_index->upper_bound(key);
-      };
-      template <typename Key_>
-      inline iterator weak_relative_upper_bound(const Key_& key, const cookie_type& range) const {
-        return this->_index->weak_upper_bound(key);
-      };
-      //
-      // We can search on a given PosKey_ key within the subsegment delineated by PreKey_ low/high bounds.
-      template <typename PreKey_, typename PosKey_>
-      inline iterator relative_lower_bound(const PosKey_& key, const PreKey_& low, const PreKey_ high, const cookie_type& range) const {
-        return this->_index->relative_lower_bound(low, high, key);
-      };
-      //
-      template <typename PreKey_, typename PosKey_>
-      inline iterator relative_upper_bound(const PosKey_& key, const PreKey_& low, const PreKey_ high, const cookie_type& range) const {
-        return this->_index->relative_upper_bound(low, high, key);
-      };
-      //
-      template <typename PreKey_, typename PosKey_>
-      inline iterator weak_relative_upper_bound(const PosKey_& key, const PreKey_& low, const PreKey_ high, const cookie_type& range) const {
-        return this->_index->weak_relative_upper_bound(low, high, key);
-      };
-    public:
-      //
-      // Main interface
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "firstSegment"
-      #undef  __ALE_XDEBUG__ 
-      #define __ALE_XDEBUG__ 5
-      void firstSegment(cookie_type& range) const {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-        };
-#endif
-
-        range._segmentBegin = this->_index->begin();
-        range._segmentEnd  = this->_index->end();
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "range: " << range << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "nextSegment"
-      #undef  __ALE_XDEBUG__ 
-      #define __ALE_XDEBUG__ 5
-      void nextSegment(cookie_type& range) const {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": range: " << range << std::endl;
-        };
-#endif
-
-        range._segmentEnd = this->_index->end();
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << "range: " << range << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };
-      //
-      void next(iterator& iter, cookie_type& range) const {
-        iter = this->nextSegment(iter, range);
-      };
-      //
-      void end(iterator& iter, cookie_type& range) const {
-        iter = this->veryEnd(); range(iter, iter);
-      };
-      //
-      iterator veryEnd()       const { return this->_index->end();  };
-      //
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const IndexFilterAdapter& f) {
-        os << "[*index_begin, *index_end] = [" << *(f._index->begin()) << ", " << *(f._index->end()) << "]";
-        return os;
-      };
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const Obj<IndexFilterAdapter>& f) {
-        return (os << f.object());
-      };
-    };// class IndexFilterAdapter
-
+      inline bool operator()(const Key_& key){return !this->compare()(key, this->bound());};
+    };// class LowerBounder
     //
-    // RangeFilter defines a subset of an OuterFilter_ based on the high and low value of a key.
-    // The type and ordering of the key are defined by KeyExtractor_ and KeyCompare_ respectively.
-    // Nested filter types are in one-to-one correspondence with lexicographical nests of their KeyCompare_s.
-    // Namely, the outermost Filter_ (containing a nest of other filters) can compare nested pairs of keys 
-    // (ko,(kj,...,(ki))) from the outermost 'ko', to the innermost 'ki'.
-    // 
-    #undef  __CLASS__
-    #define __CLASS__ "RangeFilter"
-    template <typename OuterFilter_, typename KeyExtractor_, typename KeyCompare_, bool Strided = false>
-    class RangeFilter : public OuterFilter_ {
+    template <typename Compare_, typename Bound_>
+    class UpperBounder {
     public:
-      typedef OuterFilter_                                     outer_filter_type;
-      typedef outer_filter_type                                outer_type;
-      typedef KeyExtractor_                                    key_extractor_type;
-      typedef KeyCompare_                                      key_compare_type;
-      typedef typename key_extractor_type::result_type         key_type; 
-      typedef PredicateTraits<key_type>                        key_traits;
-      typedef typename outer_type::iterator                    iterator;
-      typedef typename outer_type::cookie_type                 outer_cookie_type;
-      //
-      // The cookie_type stores the range delimiters; 
-      // it derives from the outer_cookie_type, hence contains the outer segment delimiters.
-      //
-      struct cookie_type: public outer_cookie_type {
-        // we store the iterators delineating the segment
-        iterator _segmentBegin, _segmentEnd;
-        // Basic
-        cookie_type(){};
-        cookie_type(const cookie_type& cookie) : 
-          _segmentBegin(cookie._segmentBegin), _segmentEnd(cookie._segmentEnd) {};
-        explicit cookie_type(const iterator& segmentBegin, const iterator& segmentEnd) : 
-          outer_cookie_type(segmentBegin, segmentEnd), _segmentBegin(segmentBegin), _segmentEnd(segmentEnd) {};
-        inline void operator()(const iterator& b, const iterator& e){this->_segmentBegin = b; this->_segmentEnd = e;};
-        // Extended
-        inline const iterator&        outerBegin()   const {return this->outer_cookie_type::segmentBegin();};
-        inline const iterator&        outerEnd()     const {return this->outer_cookie_type::segmentEnd();};
-        inline const iterator&        segmentBegin() const {return this->_segmentBegin;};
-        inline const iterator&        segmentEnd()   const {return this->_segmentEnd;};
-        //        inline const key_type&        subsegmentEnd() const {return this->_subsegmentEnd;};
-        // Aux
-        inline void syncOuter() {this->_segmentEnd = this->outerEnd(); this->_segmentBegin = this->outerBegin();};
-        template <typename Stream_>
-        friend Stream_& operator<<(Stream_& os, const cookie_type& cookie) {
-          return os << "[" << *cookie.segmentBegin() << ", " << *cookie.segmentEnd() << "]";
-        };
-      };// struct cookie_type
-      //      
+      typedef Compare_    compare_type;
+      typedef Bound_      bound_type;
     protected:
-      bool                                  _have_low, _have_high;
-      key_type                              _low, _high;
+      compare_type _compare;
+      bound_type   _bound;
     public:
-      //
-      // Basic interface
-      //
-      //RangeFilter(){};
-      RangeFilter(const outer_filter_type& outer_filter) : 
-       outer_filter_type(outer_filter), _have_low(false), _have_high(false) {};
-      RangeFilter(const outer_filter_type& outer_filter, const key_type& low, const key_type& high) : 
-       outer_filter_type(outer_filter), _have_low(true), _have_high(true), _low(low), _high(high)  {};
-      RangeFilter(const RangeFilter& f) : 
-        outer_filter_type(f), _have_low(f._have_low), _have_high(f._have_high), _low(f._low), _high(f._high) {};
-      virtual ~RangeFilter(){};
-      //
-      // Extended interface
-      //
-      // range manipulation and queries
-      inline void setLow(const key_type& low)   {this->_low  = low;  this->_have_low  = true;};
-      inline void setHigh(const key_type& high) {this->_high = high; this->_have_high = true;};
-      inline void setLowAndHigh(const key_type& low, const key_type& high) {this->setLow(low); this->setHigh(high);};
-      //
-      inline key_type         low()       const {return this->_low;};
-      inline key_type         high()      const {return this->_high;};
-      inline bool             haveLow()   const {return this->_have_low;};
-      inline bool             haveHigh()  const {return this->_have_high;};
-      //
-      // individual key queries
-      inline static key_type  key(const iterator& iter) { static key_extractor_type kex; return kex(*iter);};
-      static        bool      compare(const key_type& k1, const key_type& k2) {
-        static key_compare_type comp;
-        return comp(k1,k2);
-      };
-      inline static        bool      compare(const iterator& i1, const iterator& i2) {
-        return compare(key(i1),key(i2));
-      };
-    public:
-      //
-      // Search Interface
-      //
-      //
-//       // Key combinators are needed for lexicographical searches.
-//       // The intent here is that a key_type prekey can be combined with a given poskey_type poskey (defined by PosKeyExtractor_)
-//       // to make a combo_key_type  that can used by OuterFilter_ as its own poskey_type.  
-//       template <typename PosKeyExtractor_>
-//       struct combo_key_extractor_type {
-//         typedef PosKeyExtractor_                           poskey_extractor_type;
-//         typedef typename poskey_extractor_type::value_type poskey_type;
-//         typedef ALE::pair<key_type, poskey_type>           combo_key_type;
-//         //
-//       protected:
-//         combo_key_type        _combo_key;  
-//         poskey_extractor_type _posex;
-//         key_extractor_type    _ex;
-//       public:
-//         combo_key_extractor_type(){};
-//         //
-//         inline const combo_key_type& operator()(const iterator& iter) { 
-//           return _combo_key(_ex(iter), _posex(iter));
-//         };
-//         inline const combo_key_type& operator()(const iterator& iter, const poskey_type& poskey) {
-//           return _combo_key(_ex(iter), poskey);
-//         };
-//       };// struct combo_key_extractor_type
-      //
-      // We can search on a given Key_ key within the segment delineated in the 'range'.
-      //
+      // Basic
+      UpperBounder(){};
+      UpperBounder(const bound_type& bound) : _bound(bound) {};
+      inline void reset(const bound_type& bound) {this->_bound = bound;};
+      // Extended
+      const compare_type& compare(){return this->_compare;};
+      const bound_type&   bound(){return this->_bound;};
+      // Main
       template <typename Key_>
-      inline iterator relative_lower_bound(const Key_& key, const cookie_type& range) const {
-        return this->outer_type::relative_lower_bound(key, this->key(range.segmentBegin()), this->key(range.segmentEnd()), range);
-      };
-      //
-      template <typename Key_>
-      inline iterator relative_upper_bound(const Key_& key, const cookie_type& range) const {
-        return this->outer_type::relative_upper_bound(key, this->key(range.segmentBegin()), this->key(range.segmentEnd()), range);
-      };
-      template <typename Key_>
-      inline iterator weak_relative_upper_bound(const Key_& key, const cookie_type& range) const {
-        return this->outer_type::weak_relative_upper_bound(key, this->key(range.segmentBegin()), this->key(range.segmentEnd()), range);
-      };
-      //
-      // We can search on a given PosKey_ poskey within a subsegment of the 'range'; 
-      // the subsegment is bounded by the prekey PreKey_ bounds.
-      // Both PreKey_ and PosKey_ refer to their relative order in the portion of the key following key_type;
-      // thus, both are 'pos' relative to key_type.
-      //
-      template <typename PreKey_, typename PosKey_>
-      inline iterator relative_lower_bound(const PosKey_ poskey, const PreKey_ prelow, const PreKey_& prehigh, const cookie_type& range) const {
-        // The poskeys prelow, prehigh are combined with the key_type keys of range.segmentBegin()/segmentEnd() 
-        // into ALE::pairs.  These together, with the poskey and the range will be handed off to the OuterFilter 
-        // to execute the analogous search (as interpreted by OuterFilter_).
-        ALE::pair<key_type, PosKey_> 
-          low(this->key(range.segmentBegin()),prelow), high(this->key(range.segmentEnd()),prehigh);
-        return this->outer_type::relative_lower_bound(poskey, low, high, range);
-      };
-      //
-      template <typename PreKey_, typename PosKey_>
-      inline iterator relative_upper_bound(const PosKey_ poskey, const PreKey_ prelow, const PreKey_& prehigh, const cookie_type& range) const {
-        // The poskeys prelow, prehigh are combined with the key_type keys of range.segmentBegin()/segmentEnd() 
-        // into ALE::pairs.  These together, with the poskey and the range will be handed off to the OuterFilter 
-        // to execute the analogous search (as interpreted by OuterFilter_).
-        ALE::pair<key_type, PosKey_> 
-          low(this->key(range.segmentBegin()),prelow), high(this->key(range.segmentEnd()),prehigh);
-        return this->outer_type::relative_upper_bound(poskey, low, high, range);
-      };
-      //
-      template <typename PreKey_, typename PosKey_>
-      inline iterator weak_relative_upper_bound(const PosKey_ poskey, const PreKey_ prelow, const PreKey_& prehigh, const cookie_type& range) const {
-        // The poskeys prelow, prehigh are combined with the key_type keys of range.segmentBegin()/segmentEnd() 
-        // into ALE::pairs.  These together, with the poskey and the range will be handed off to the OuterFilter 
-        // to execute the analogous search (as interpreted by OuterFilter_).
-        ALE::pair<key_type, PosKey_> 
-          low(this->key(range.segmentBegin()),prelow), high(this->key(range.segmentEnd()),prehigh);
-        return this->outer_type::weak_relative_upper_bound(poskey, low, high, range);
-      };
-    public:
-      //
-      // Main interface
-      //
-      // Each RangeFilter is assumed to contain *at most one* segment of records, within each outer segment.
-      // Each segment is broken up into subsegments defined as the records with the same RangeFilter key_type key;
-      // recall that a key_type key is in general only a prefix of the total key; records within a subsegment 
-      // differ in the postfix only.
-      // Subsegment boundaries are ignored unless the RangeFilter is Strided, in which case only the first
-      // elements of each subsegment are traversed.  There is no point in storing the subsegment boundaries
-      // in the cookie, since there is no opportunity for reuse (e.g., segmentEnd boundary is checked every time
-      // an iterator is incremented by a non-Strided RangeFilter; no such thing is done by a Strided RangeFilter).
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "first"
-      #undef  __ALE_XDEBUG__ 
-      #define __ALE_XDEBUG__ 5
-      // Returns the first segment allowed by this filter.
-      void first(iterator& iter, cookie_type& range) const {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-        };
-#endif
-        this->outer_type::firstSegment(range);
-        this->firstSegment(range);
-        iter = range.segmentBegin();
-        //
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "range: " << range << std::endl; 
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };//first()
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "firstSegment"
-      #undef  __ALE_XDEBUG__ 
-      #define __ALE_XDEBUG__ 5
-      // Returns the first segment allowed by this filter.
-      void firstSegment(cookie_type& range) const {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-        };
-#endif
-        // Recursively compute the first segment of the OuterFilter(s).
-        this->outer_filter_type::firstSegment(range);
-        // Start with an empty segment at the beginning of the outer segment
-        range._segmentBegin = range.outerBegin();
-        range._segmentEnd   = range.outerBegin();
-        // While the segment is empty,  but the index has not been exhausted, we search for a non-empty segment
-        while((range._segmentBegin == range._segmentEnd) && (range._segmentEnd != this->veryEnd())) {
-#ifdef ALE_USE_DEBUGGING
-          if(ALE_XDEBUG) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": looking for a segment" << std::endl;
-          };
-#endif
-          if(range._segmentBegin == range.outerEnd()) {
-            // if this outer segment contains no segment (remember, at most one such segment exists)
-            // move on to the next outer segment.
-#ifdef ALE_USE_DEBUGGING
-            if(ALE_XDEBUG) {
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": no segment in the current outer segment; moving onto a new outer segment" << std::endl;
-            };
-#endif
-            this->outer_type::nextSegment(range);
-            if(range.outerBegin() == this->veryEnd()){
-              range._segmentBegin = range.outerBegin();
-              range._segmentEnd   = range.outerEnd();
-            };
-          }
-          // from here until the end of the while loop the outer segment can be assumed to be non-empty
-          if(this->haveLow()) {
-            range._segmentBegin = this->outer_type::relative_lower_bound(this->low(), range);
-          }
-          else {
-            range._segmentBegin = range.outerBegin();
-          }
-          if(this->haveHigh()) {
-            range._segmentEnd = this->outer_type::relative_upper_bound(this->high(), range);
-          }
-          else {
-            range._segmentEnd = range.outerEnd();
-          }
-        }//while
-        //
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "range: " << range << std::endl; 
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };//firstSegment()
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "nextSegment"
-      #undef  __ALE_XDEBUG__
-      #define __ALE_XDEBUG__ 5
-      void nextSegment(cookie_type& range) {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "range: " << range << std::endl;
-        };
-#endif
-        // recall, one segment per outer segment; 
-        // therefore we must move onto the next outer segment first
-        this->outer_type::nextSegment(range);
-        this->firstSegment(range);
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":  range: " << range << std::endl; 
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };// nextSegment()
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "next"
-      #undef  __ALE_XDEBUG__
-      #define __ALE_XDEBUG__ 5
-      void next(iterator& iter, cookie_type& range) {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "*iter: " << *iter << ", range: " << range << std::endl;
-        };
-#endif
-        if(!Strided) {
-        // If filter is not strided, we iterate through each segment until the end of the outer segment is reached
-#ifdef ALE_USE_DEBUGGING
-          if(ALE_XDEBUG) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "non-strided filter" << std::endl;
-          }
-#endif
-          if(iter != range.segmentEnd()) {
-            ++iter;
-          }
-          else {
-            this->nextSegment(range);
-            iter = range.segmentBegin();
-          }
-        }// !Strided
-        else {// if(Strided)
-          // If the filter is strided, we skip the remainder of the current subsegment and find the next;
-          // effectively, we iterate over subsegments.
-#ifdef ALE_USE_DEBUGGING
-          if(ALE_XDEBUG) {
-            std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "strided filter" << std::endl;
-          }
-#endif
-          // RangeFilter may have  multiple subsegments per segment: one subsegment per key value;
-          // However, there is only one segment, delineated by 'low' and 'high', per outer segment.
-          // Thus, the next subsegment starts at the upper bound of the current iter's key, relative
-          // to the [low,high] segment.
-          //
-          if(iter != range.segmentEnd()) {// not at segment end
-#ifdef ALE_USE_DEBUGGING
-            if(ALE_XDEBUG) {
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "not at segment end" << std::endl;
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "looking for weak_relative_upper_bound of " << this->key(iter) << std::endl;
-            }
-#endif
-            iter = this->weak_relative_upper_bound(this->key(iter), range);
-            if(iter != range.segmentEnd()){
-              ++iter; // FIX: should replace with iter->next() to take advantage of intercone linked lists
-#ifdef ALE_USE_DEBUGGING
-              if(ALE_XDEBUG) {
-                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "found a weak upper bound within the current segment, *iter =  " << *iter << std::endl;
-                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "converted to the upper bound, *iter =  " << *iter << std::endl;
-              }
-#endif
-            }
-            else {
-              this->nextSegment(range);
-              iter = range.segmentBegin();
-#ifdef ALE_USE_DEBUGGING
-              if(ALE_XDEBUG) {
-                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "no weak upper bound within the current segment" << std::endl;
-                std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "moved to the next segment, *iter = " << *iter << std::endl;
-              }
-#endif
-            }
-          }// not at segment end
-          else {// at segment end
-            this->nextSegment(range);
-            iter = range.segmentBegin();
-#ifdef ALE_USE_DEBUGGING
-            if(ALE_XDEBUG) {
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "at segment end" << std::endl;
-              std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "moved to the next segment, *iter =  " << *iter << std::endl;
-            }
-#endif
-          }
-        }// Strided
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*iter: " << *iter;
-          std::cout << ", range: " << range << std::endl; 
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };// next()
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "end"
-      #undef  __ALE_XDEBUG__
-      #define __ALE_XDEBUG__ 5
-      void end(iterator& iter, cookie_type& range) {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << *this << std::endl;
-        };
-#endif
-        this->outer_filter_type::end(iter, range);
-        range(range.outerBegin(), range.outerEnd());
-        iter = range._segmentBegin;
+      bool operator()(const Key_& key){return !this->compare()(this->bound(),key);};
+    };// class UpperBounder
 
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "*iter: " << *iter;
-          std::cout << ", range: " << range << std::endl; 
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        };
-#endif
-      };// end()
-      //
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const RangeFilter& f) {
-        os << "[low, high] = [";
-        if(f.haveLow()){
-          os << ((typename key_traits::printable_type)(f.low())) << ",";
-        }
-        else {
-          os << "none, ";
-        }
-        if(f.haveHigh()) {
-          os << ((typename key_traits::printable_type)(f.high())); 
-        }
-        else {
-          os << "none";
-        }
-        os << "] ";
-        if(Strided) {
-          os << "strided";
-        }
-        else {
-          os << "non-strided";
-        }
-        return os;
-      };
-      template <typename Stream_>
-      friend Stream_& operator<<(Stream_& os, const Obj<RangeFilter>& f) {
-        return (os << f.object());
-      };
-    };// RangeFilter
-
-
-
-
-    //
-    // FilteredSequence definition
-    // 
-    //   Defines a sequence representing a subset of a sequence ordered lexicographically.
-    // The ordering is controlled by a nested sequence of filters with the topmost of  Filter_ type.
-    //   A sequence defines output iterators (input iterators in std terminology) for traversing a subsequence.
-    // Upon dereferencing values are extracted from each result record using a ValueExtractor_ object.
-    //   More precisely, the sequence can be viewed as oredered by (Key_, RemainderKey_) pairs, where the RemainderKey_
-    // type is not explicitly known to FilteredSequence.  The Filters only restrict the allowable values of Key_, 
-    // while all RemainderKey_ values are allowed. 
-    // 
-    #undef  __CLASS__
-    #define __CLASS__ "FilteredSequence"
-    template <typename Filter_, typename ValueExtractor_>
-    struct FilteredSequence : XObject {
-      typedef Filter_                                          filter_type;
-      typedef typename filter_type::cookie_type                cookie_type;
-      //
-      typedef ValueExtractor_                                  value_extractor_type;
-      typedef typename value_extractor_type::result_type       value_type;
-      typedef typename filter_type::iterator                   itor_type;
-      //
-      class iterator {
-      public:
-        // Parent sequence type
-        typedef FilteredSequence                               sequence_type;
-        // Standard iterator typedefs
-        typedef std::input_iterator_tag                        iterator_category;
-        typedef int                                            difference_type;
-        typedef value_type*                                    pointer;
-        typedef value_type&                                    reference;
-        /* value_type defined in the containing FilteredIndexSequence */
-      protected:
-        // Parent sequence
-        sequence_type  *_sequence;
-        // Underlying iterator & segment filter cookies
-        itor_type       _itor;
-        cookie_type     _cookie;
-        //
-        // Value extractors
-        value_extractor_type     _ex;
-      public:
-        iterator() : _sequence(NULL) {};
-        iterator(sequence_type *sequence, const itor_type& itor, const cookie_type& cookie) : _sequence(sequence), _itor(itor), _cookie(cookie) {};
-        iterator(const iterator& iter):_sequence(iter._sequence), _itor(iter._itor), _cookie(iter._cookie) {};
-        virtual ~iterator() {};
-        virtual bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;}; // comparison ignores cookies; only increment uses cookies
-        virtual bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;}; // comparison ignores cookies; only increment uses cookies
-        //
-        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
-        virtual const value_type  operator*() const {return _ex(*(this->_itor));};
-        //
-        virtual iterator   operator++() { // comparison ignores cookies; only increment uses cookies
-          this->_sequence->next(this->_itor, this->_cookie);
-          return *this;
-        };
-        virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
-      };// class iterator
-    protected:
-      //
-      Obj<filter_type>       _filter;
-    public:
-      //
-      // Basic interface
-      //
-      FilteredSequence() : XObject() {};
-      FilteredSequence(const Obj<filter_type>& filter) : XObject(), _filter(filter){};
-      FilteredSequence(const FilteredSequence& seq) : XObject(seq), _filter(seq._filter) {};
-      virtual ~FilteredSequence() {};
-      // 
-      void copy(const FilteredSequence& seq, FilteredSequence cseq) {
-        cseq._filter = seq._filter;
-      };
-      FilteredSequence& operator=(const FilteredSequence& seq) {
-        copy(seq,*this); return *this;
-      };
-      //
-      // Extended interface
-      //
-      virtual bool         
-      empty() {return (this->begin() == this->end());};
-      //
-      Obj<filter_type> filter(){return ((this->_filter));};
-      void reset(const Obj<filter_type>& filter) {this->_filter = filter;};
-      //
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "begin"
-      #undef  __ALE_XDEBUG__ 
-      #define __ALE_XDEBUG__ 6
-      iterator begin() {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << this->filter() << std::endl;
-        }
-#endif
-        static itor_type itor;
-        static cookie_type cookie;
-        this->filter()->first(itor, cookie);
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor: " << *itor;
-          std::cout << ", cookie: " << cookie; 
-          std::cout << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        }
-#endif
-        return iterator(this, cookie.segmentBegin(), cookie);
-      }; // begin()
-      //
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "next"
-      #undef  __ALE_XDEBUG__
-      #define __ALE_XDEBUG__ 6
-      void next(itor_type& itor, cookie_type& cookie) {
-        itor_type end = cookie.segmentEnd();
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>> " << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << this->filter() << std::endl;
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "starting with *itor " << *itor; 
-          std::cout << ", cookie: " << cookie; 
-          std::cout << std::endl;
-        }
-#endif
-        this->filter()->next(itor, cookie);
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "new *itor " << *itor; 
-          std::cout << ", cookie: " << cookie; 
-          std::cout << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<< " << std::endl;
-        }
-#endif
-      };// next()
-      //
-      //
-      #undef  __FUNCT__
-      #define __FUNCT__ "end"
-      #undef  __ALE_XDEBUG__
-      #define __ALE_XDEBUG__ 6
-      iterator end() {
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
-          std::cout << "filter: " << this->filter() << std::endl;
-        }
-#endif
-        static itor_type itor;
-        static cookie_type cookie;
-        this->filter()->end(itor, cookie);
-#ifdef ALE_USE_DEBUGGING
-        if(ALE_XDEBUG) {
-          //
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ": " << "*itor: " << *itor; 
-          std::cout << ", cookie: " << cookie;
-          std::cout << std::endl;
-          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << std::endl;
-        }
-#endif
-        return iterator(this, itor, cookie); 
-      };// end()
-      //
-      template<typename ostream_type>
-      void view(ostream_type& os, const char* label = NULL){
-        if(label != NULL) {
-          os << "Viewing " << label << " sequence:" << std::endl;
-        } 
-        os << "[";
-        for(iterator i = this->begin(); i != this->end(); i++) {
-          os << " "<< *i;
-        }
-        os << " ]" << std::endl;
-      };
-    };// class FilteredSequence    
-
-
-    // Definitions of typical XSifter usage of records, orderings, etc.
-    template<typename Arrow_, 
-             typename SourceOrder_ = std::less<typename Arrow_::source_type>,
-             typename ColorOrder_  = std::less<typename Arrow_::color_type> >
-    struct SourceColorOrder : 
-      public RecKeyXXXOrder<Arrow_, 
-                            ALE_CONST_MEM_FUN(Arrow_, typename Arrow_::source_type&, &Arrow_::source), 
-                            SourceOrder_, 
-                            RecKeyOrder<Arrow_, 
-                                        ALE_CONST_MEM_FUN(Arrow_, typename Arrow_::color_type&, &Arrow_::color), 
-                                        ColorOrder_>
-      >
-    {};
-    
     // 
     // Arrow definition: a concrete arrow; other Arrow definitions are possible, since orders above are templated on it
     // To be an Arrow a struct must contain the relevant member functions: source, target, tail and head.
@@ -1121,6 +442,7 @@ namespace ALE {
       target_type _target;
       color_type  _color;
       //
+      const arrow_type&  arrow()  const {return *this;};
       const source_type& source() const {return this->_source;};
       const target_type& target() const {return this->_target;};
       const color_type&  color()  const {return this->_color;};
@@ -1138,7 +460,7 @@ namespace ALE {
       };
       // Printing
       friend std::ostream& operator<<(std::ostream& os, const Arrow& a) {
-        os << a._source << " --(" << a._color << ")--> " << a._target;
+        os << "<" << a._source << "--(" << a._color << ")-->" << a._target << ">";
         return os;
       }
       // Modifying
@@ -1164,148 +486,566 @@ namespace ALE {
       };
     };// struct Arrow
 
-    // Arrow + Predicate = ArrowRec (used in the multi-index container underlying the XSifter)
-    template <typename Arrow_, typename Predicate_>
-    struct ArrowRec : public Arrow_ {
-    public:
-      //
-      // Re-export typedefs
-      //
-      typedef Arrow_                                  arrow_type;
-      typedef typename arrow_type::source_type        source_type;
-      typedef typename arrow_type::target_type        target_type;
-      //
-      typedef Predicate_                              predicate_type;
-      typedef PredicateTraits<predicate_type>         predicate_traits;
-    protected:
-      // Predicate stored alongside the arrow data
-      predicate_type _predicate;
-      // Slice pointer
-      // HACK: ArrowRec should really reside at a lower level
-      void * _slice_ptr;
-      predicate_type _slice_marker;
-    public:
-      // Basic interface
-      ArrowRec(const arrow_type& a) : arrow_type(a), _predicate(predicate_traits::zero), _slice_ptr(NULL), _slice_marker(predicate_traits::zero) {};
-      ArrowRec(const arrow_type& a, const predicate_type& p) : arrow_type(a), _predicate(p), _slice_ptr(NULL), _slice_marker(predicate_traits::zero){};
-      // Extended interface
-      const predicate_type&    predicate() const {return this->_predicate;};
-      const source_type&       source()    const {return this->arrow_type::source();};
-      const target_type&       target()    const {return this->arrow_type::target();};
-      const arrow_type&        arrow()     const {return *this;};
-      //
-      // HACK: this should be implemented at the lower level of a multi_index container
-      const predicate_type slice_marker() const {return this->_slice_marker;};
-      const void*          slice_ptr()    const {return this->_slice_ptr;};
-      // Printing
-      friend std::ostream& operator<<(std::ostream& os, const ArrowRec& r) {
-        os << "<" << predicate_traits::printable(r._predicate) << ">" << "[" << (arrow_type)r << "]";
-        return os;
-      }
-      // Modifier objects
-      struct PredicateChanger {
-        PredicateChanger(const predicate_type& newPredicate) : _newPredicate(newPredicate) {};
-        void operator()(ArrowRec& r) { r._predicate = this->_newPredicate;}
-      private:
-        const predicate_type _newPredicate;
-      };
-      //
-      struct SliceChanger {
-        SliceChanger(const predicate_type& new_slice_marker, const void *& new_slice_ptr) : _new_slice_marker(new_slice_marker), _new_slice_ptr(new_slice_ptr) {};
-        void setSlice(const predicate_type& new_slice_marker, const void *& new_slice_ptr){
-          this->_new_slice_marker = new_slice_marker;
-          this->_new_slice_pointer = new_slice_ptr;
-        }
-        void operator()(ArrowRec& r) {r._slice_marker = this->_new_slice_marker; r._slice_ptr = this->_new_slice_ptr;};
-      private:
-        void *_new_slice_ptr;
-        predicate_type _new_slice_marker;
-      };// struct SliceChanger
-    };// struct ArrowRec
 
     //
     // Arrow Sequence type
     //
-    template <typename XSifter_, typename Filter_, typename ValueExtractor_>
-    class ArrowSequence : 
-      public XSifterDef::FilteredSequence<Filter_, ValueExtractor_> {
-      // ArrowSequence extends FilteredSequence with extra iterator methods.
+    #undef  __CLASS__
+    #define __CLASS__ "ArrowSequence"
+    template <typename XSifter_, typename Index_, typename KeyExtractor_, typename ValueExtractor_>
+    class ArrowSequence {
     public:
-      typedef XSifter_                                                                            xsifter_type;
-      typedef XSifterDef::FilteredSequence<Filter_, ValueExtractor_>                              super;
-      typedef Filter_                                                                             filter_type;
+      typedef ArrowSequence                              arrow_sequence_type;
+      typedef XSifter_                                   xsifter_type;
+      typedef Index_                                     index_type;
+      typedef KeyExtractor_                              key_extractor_type;
+      typedef ValueExtractor_                            value_extractor_type;
       //
-      typedef typename xsifter_type::rec_type                                                     rec_type;
-      typedef typename xsifter_type::arrow_type                                                   arrow_type;
-      typedef typename arrow_type::source_type                                                    source_type;
-      typedef typename arrow_type::target_type                                                    target_type;
+      typedef typename key_extractor_type::result_type   key_type;
+      typedef typename value_extractor_type::result_type value_type;
       //
-      // Need to extend the inherited iterators to be able to extract arrow components in addition to what comes out of ValueExtractor_
-      class iterator : public super::iterator {
+      typedef typename xsifter_type::rec_type            rec_type;
+      typedef typename xsifter_type::arrow_type          arrow_type;
+      typedef typename arrow_type::source_type           source_type;
+      typedef typename arrow_type::target_type           target_type;
+      //
+      typedef typename index_type::key_compare           index_compare_type;
+      typedef typename index_type::iterator              itor_type;
+      typedef typename index_type::const_iterator        const_itor_type;
+      //
+      // cookie_type
+      //
+      struct cookie_type {
+        itor_type        segment_end;
+        cookie_type(){};
+        // Printing
+        friend std::ostream& operator<<(std::ostream& os, const cookie_type& cookie) {
+          os << "[...," << *(cookie.segment_end) << "]";
+          return os;
+        }
+
+      };
+      //
+      // iterator_type
+      //
+      friend class iterator;
+      class iterator {
       public:
-        iterator() : super::iterator() {};
-        iterator(const typename super::iterator& super_iter) : super::iterator(super_iter) {};
-        virtual const source_type& source() const {return this->_itor->source();};
-        virtual const target_type& target() const {return this->_itor->target();};
-        virtual const arrow_type&  arrow()  const {return *(this->_itor);};
-        virtual const rec_type&    rec()    const {return *(this->_itor);};
-      };
+        // Parent sequence type
+        friend class ArrowSequence;
+        typedef ArrowSequence                                  sequence_type;
+        typedef typename sequence_type::itor_type              itor_type;
+        typedef typename sequence_type::cookie_type            cookie_type;
+        // Value types
+        typedef typename sequence_type::value_extractor_type   value_extractor_type;
+        typedef typename value_extractor_type::result_type     value_type;
+        // Standard iterator typedefs
+        typedef std::input_iterator_tag                        iterator_category;
+        typedef int                                            difference_type;
+        typedef value_type*                                    pointer;
+        typedef value_type&                                    reference;
+      protected:
+        // Parent sequence
+        sequence_type  *_sequence;
+        // Underlying iterator
+        itor_type       _itor;
+        cookie_type _cookie;
+        //cookie_type& cookie() {return _cookie;};
+      public:
+        iterator() : _sequence(NULL) {};
+        iterator(sequence_type* sequence, const itor_type& itor, const cookie_type& cookie) : 
+          _sequence(sequence), _itor(itor), _cookie(cookie) {};
+        iterator(const iterator& iter) : _sequence(iter._sequence), _itor(iter._itor), _cookie(iter._cookie) {};
+        ~iterator() {};
+        //
+        itor_type& itor(){return this->_itor;};
+        //
+        inline const source_type& source() const {return this->_itor->source();};
+        inline const target_type& target() const {return this->_itor->target();};
+        inline const arrow_type&  arrow()  const {return *(this->_itor);};
+        inline const rec_type&    rec()    const {return *(this->_itor);};
+        //
+        inline bool              operator==(const iterator& iter) const {return this->_itor == iter._itor;}; 
+        inline bool              operator!=(const iterator& iter) const {return this->_itor != iter._itor;}; 
+        //
+        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
+        inline const value_type  operator*() const {return this->_sequence->value(this->_itor);};
+        //
+        #undef  __FUNCT__
+        #define __FUNCT__ "iterator::operator++"
+        #undef  __ALE_XDEBUG__
+        #define __ALE_XDEBUG__ 6
+        inline iterator   operator++() { // comparison ignores cookies; only increment uses cookies
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*itor: " << *(this->_itor) << ", cookie: " << (this->_cookie);
+          std::cout << std::endl;
+        }
+#endif
+          this->_sequence->next(this->_itor, this->_cookie);
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << "itor: " << *(this->_itor) << ", cookie: " << (this->_cookie) << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << std::endl;
+        }
+#endif
+          return *this;
+        };
+        inline iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
+      };// class iterator
     protected:
-      xsifter_type *_xsifter;
+      xsifter_type*        _xsifter;
+      index_type*          _index;
+      bool                 _keyless;
+      key_type             _key;
+      key_extractor_type   _kex;
+      value_extractor_type _vex;
     public:
       //
-      // Basic ArrowSequence interface
+      // Basic interface
       //
-      ArrowSequence() : super(), _xsifter(NULL) {};
-      ArrowSequence(const ArrowSequence& seq) : super(seq), _xsifter(seq._xsifter) {};
-      ArrowSequence(xsifter_type *xsifter, const filter_type& filter) : super(filter), _xsifter(xsifter) {};
+      ArrowSequence() : _xsifter(NULL), _index(NULL), _keyless(true) {};
+      ArrowSequence(const ArrowSequence& seq) {if(seq._keyless) {reset(seq._xsifter, seq._index);} else {reset(seq._xsifter, seq._index, seq._key);};};
+      ArrowSequence(xsifter_type *xsifter, index_type *index) {reset(xsifter, index);};
+      ArrowSequence(xsifter_type *xsifter, index_type *index, const key_type& key){reset(xsifter, index, key);};
       virtual ~ArrowSequence() {};
+      //
       void copy(const ArrowSequence& seq, ArrowSequence& cseq) {
-        super::copy(seq,cseq);
-        cseq._xsifter = seq._xsifter;
+        cseq._xsifter = seq._xsifter; cseq._index = seq._index; cseq._keyless = seq._keyless; cseq._key = seq._key;
       };
-      void reset(xsifter_type* xsifter, const filter_type& filter) {
-        this->super::reset(filter);
-        this->_xsifter = xsifter;
+      void reset(xsifter_type *xsifter, index_type* index) {
+        this->_xsifter = xsifter; this->_index = index; this->_keyless = true;
       };
-      ArrowSequence& operator=(const ArrowSequence& seq) {
+      void reset(xsifter_type *xsifter, index_type* index, const key_type& key) {
+        this->_xsifter = xsifter; this->_index = index; this->_key = key; this->_keyless = false;
+      };
+      ArrowSequence& operator=(const arrow_sequence_type& seq) {
         copy(seq,*this); return *this;
       };
+      const value_type value(const itor_type itor) {return _vex(*itor);};
       //
-      // Extended ArrowSequence interface
+      // Extended interface
       //
+      const xsifter_type&       xsifter()                    const {return *this->_xsifter;};
+      const index_type&         index()                      const {return *this->_index;};
+      const bool&               keyless()                    const {return this->_keyless;};
+      const key_type&           key()                        const {return this->_key;};
+      const value_type&         value(const itor_type& itor) const {this->_vex(*itor);};
+      //
+      // Main interface
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "begin"
+      #undef  __ALE_XDEBUG__
+      #define __ALE_XDEBUG__ 6
       virtual iterator begin() {
-        return this->super::begin();
-      };
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(this->keyless()) {
+            std::cout << "keyless";
+          }
+          else {
+            std::cout << "key: " << this->key();
+          }
+          std::cout << std::endl;
+        }
+#endif
+        static itor_type itor;
+        cookie_type cookie;
+        if(!this->keyless()) {
+          itor = this->index().lower_bound(this->key());
+        }
+        else {
+          static std::pair<const_itor_type, const_itor_type> range;
+          static LowerBounder<index_compare_type, key_type> lower;
+          static UpperBounder<index_compare_type, key_type> upper;
+          if(this->index().begin() != this->index().end()){
+            lower.reset(this->_kex(*(this->index().begin())));
+            upper.reset(this->_kex(*(this->index().begin())));
+            range = this->index().range(lower, upper);
+            itor = range.first; cookie.segment_end = range.second;        
+          }
+          else {
+            itor = this->index().end(); cookie.segment_end = this->index().end();
+          }
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*itor: " << *itor << ", cookie: " << cookie << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << "\n";
+        }
+#endif
+        return iterator(this, itor, cookie);
+      };// begin()
+    protected:
       //
+      #undef  __FUNCT__
+      #define __FUNCT__ "next"
+      #undef  __ALE_XDEBUG__
+      #define __ALE_XDEBUG__ 6
+      virtual void next(itor_type& itor, cookie_type& cookie) {
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(this->keyless()) {
+            std::cout << "keyless";
+          }
+          else {
+            std::cout << "key: " << this->key();
+          }
+          std::cout << "\n";
+        }
+#endif
+        if(!this->keyless()) {
+          ++(itor); // FIX: use the record's 'next' method
+        }
+        else {
+          if(this->_index->begin() != this->_index->end()){
+            itor = cookie.segment_end;
+            cookie.segment_end = this->index().upper_bound(this->_kex(*itor));
+          }
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*itor: " << *itor << ", cookie: " << cookie << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << "\n";
+        }
+#endif
+      };// next()
+    public:
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "end"
+      #undef  __ALE_XDEBUG__
+      #define __ALE_XDEBUG__ 6
       virtual iterator end() {
-        return this->super::end();
-      };
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(this->keyless()) {
+            std::cout << "keyless";
+          }
+          else {
+            std::cout << "key: " << this->key();
+          }
+          std::cout << "\n";
+        }
+#endif
+        static itor_type itor;
+        cookie_type cookie;
+        if(!this->keyless()) {
+          itor = this->index().upper_bound(this->key());
+        }
+        else {
+          itor = this->index().end(); 
+          cookie.segment_end = itor;
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "*itor: " << *itor << ", cookie: " << cookie << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << "\n";
+        }
+#endif
+        return iterator(this, itor, cookie);
+      };// end()
       //
       template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL){
         if(label != NULL) {
-          os << "Viewing " << label << " sequence:" << std::endl;
+          os << "Viewing " << label << " sequence: ";
+          if(this->keyless()) {
+            os << "(keyless)";
+          }
+          else {
+            os << "(key = " << this->key()<<")";
+          }
+          os << "\n";
         } 
         os << "[";
         for(iterator i = this->begin(); i != this->end(); i++) {
           os << " (" << *i << ")";
         }
-        os << " ]" << std::endl;
+        os << " ]" << "\n";
       };
       void addArrow(const arrow_type& a) {
         this->_xsifter->addArrow(a);
       };
       //
     };// class ArrowSequence  
+
+
+    //
+    // Slicing
+    //
+    namespace Slicing {
+      //
+      // NoSlices exception is thrown where no new slice can be allocated
+      //
+      class NoSlices : public ::ALE::Exception {
+      };
+      
+      //
+      // A Slice Rec<n> encodes n levels of pointers and markers above the base Arrow_ type
+      // 
+      template <typename Arrow_, typename Marker_, int n>
+      struct Rec : public Rec<Arrow_,Marker_,n-1> {
+        typedef Arrow_                                  arrow_type;
+        typedef Marker_                                 marker_type;
+        typedef Rec<Arrow_,Marker_,n-1>                 pre_rec_type;
+      protected:
+        // Slice pointer
+        Rec         * _next;
+        // Marker stored alongside the arrow data
+        marker_type _marker;
+      public:
+        // Basic interface
+        Rec(const arrow_type& arr) : pre_rec_type(arr), _next(NULL), _marker(marker_type()) {};
+        Rec(const arrow_type& arr, const marker_type& m) : pre_rec_type(arr), _next(NULL), _marker(marker_type()){};
+        //
+        const marker_type    marker()  const {return this->_marker;};
+        const Rec*           next()    const {return this->_next;};
+        // Printing
+        friend std::ostream& operator<<(std::ostream& os, const Rec& r) {
+          os << "<" << r._marker << ">" << "[" << (pre_rec_type)r << "]";
+          return os;
+        }
+      };// struct Rec
+      //
+      // A Slice Rec<0> inherits from Arrow_ but doesn't extend it: the base case of the Rec<n> type hierarchy.
+      template <typename Arrow_, typename Marker_>
+      struct Rec<Arrow_, Marker_, 0> : public Arrow_ {
+        typedef Arrow_                                  arrow_type;
+        typedef Marker_                                 marker_type;
+        //
+        Rec(const Rec& rec) : arrow_type(rec){};
+      };
+
+      //
+      // Slicer<n> is capabale of allocating n slices, wrapped up in Rec_.
+      // Rec_ is assumed to inherit from Rec<n>, Marker_ is essentially anything and n > 0.
+      //
+      template <typename Rec_, typename Marker_, int n>
+      struct Slicer : public Slicer<Rec_, Marker_,n-1> {
+        //
+      public:
+        typedef Slicer<Rec_, Marker_,n-1>                 pre_slicer_type;
+        typedef typename pre_slicer_type::the_slice_type  the_slice_type;
+        typedef Rec_                                      the_rec_type;
+        typedef Marker_                                   marker_type;
+        typedef Rec<the_rec_type::arrow_type, Marker_,n>  rec_type;
+        //
+        // Slice extends the canonical the_slicer_type; 
+        // Slice is essentially a Sequence, in particular, it defines an iterator
+        //
+        // CONTINUE: changing over to the new Rec<n>/the_rec_type paradigm
+        struct Slice : public the_slice_type {
+          typedef Slicer                                  slicer_type;
+          typedef typename slicer_type::rec_type          rec_type;
+          typedef Rec_                                    the_rec_type;
+          typedef typename Marker_                        marker_type;
+          typedef typename the_slice_type::iterator       iterator;
+        protected:
+          slicer_type& _slicer;
+          rec_type* _head;
+          rec_type* _tail;
+        public:
+          // 
+          // Basic interface
+          //
+          Slice(slicer_type& slicer) : _slicer(slicer), _head(NULL), _tail(NULL){};
+          ~Slice() { this->_slicer.give_back(*this);};
+          //
+          // Main interface
+          //
+          virtual iterator begin(){ return iterator(this->_head);}; 
+          virtual iterator end(){ return iterator(NULL);}; 
+          virtual void add(the_rec_type& therec, marker_type marker) {
+            rec_type& rec = therec; // cast to rec_type
+            // add &rec at the tail of the slice linked list
+            // we assume that rec is not transient;
+            // set the current slice tail to point to rec 
+            //   CAUTION: hoping for no cycles; can check itor's slice_marker, but will hurt performance
+            //   However, the caller should really be checking that rec is not in the slice yet; otherwise the 'set' semantics are violated.
+            // Also, this in principle violates multi_index record update rules, 
+            //   since we are directly manipulating the record, but that's okay, since 
+            //   slice data that we are updating is not used in the container ordering.
+            rec._next = NULL;
+            rec._marker = marker;
+            this->_tail->next = &rec;
+            this->_tail = &rec;
+          };
+          virtual marker_type marker(const the_rec_type& therec) {
+            rec_type& rec = therec; // cast to rec_type 
+            return rec._marker;
+          };
+          virtual void next(iterator& iter) {
+            rec_type& rec = iter.rec(); // cast to rec_type
+            iter.reset(*rec._next);
+          };
+          virtual void clean() {
+            iterator iter = this->begin(); 
+            iterator end = this->end();
+            for(;iter != end;) {
+              iterator tmp = iter; // cast to rec_type
+              ++iter;
+              rec_type& rec = iter.rec();
+              rec._marker = marker_type();
+              rec._next   = NULL;
+            }
+          };//clean()
+        };// struct Slice
+        typedef Slice slice_type;
+      public:
+        //
+        // Basic interface
+        //
+        Slicer() : _slice(Slice(*this)), _taken(false) {};
+        ~Slicer(){};
+        //
+        // Main
+        //
+        inline slice_type& take() {
+          if(!this->_taken) {
+            this->_taken = true;
+            return *(this->_slice);
+          }
+          else {
+            return this->pre_slicer_type::take();
+          }
+        };// take()
+        //
+        inline void give_back(slice_type& slice) {// this cannot be virtual, since slice must be returned to the correct slicer
+          slice.clean();
+        };// give_back()
+      protected:
+        slice_type _slice;
+        bool _taken;
+      };// struct Slicer<n>
+      
+      
+      //
+      // Slicer<0> allocates no Slices, throws a NoSlices exception,
+      // when a slice is being 'taken' or 'returned'.
+      // However, it defines the base calsses for the Slice and iterator
+      // hierarchy that are used by more sophisticated Slicers.
+      // Slicer/Slice is a hierarchical construction that dispatches further
+      // along the hierarchy, if a slice cannot be allocated locally.
+      // Still, we need to return a common iterator class, which is defined
+      // in Slicer<0>.  Slicer<0> also terminates the forwarding hierarchy.
+      //
+      template <typename Rec_, typename Marker_>
+      struct Slicer<Rec_, Marker_, 0> {
+        typedef Rec_                          rec_type;
+        typedef Marker_                       marker_type;
+        typedef typename rec_type::arrow_type arrow_type;
+        typedef Slicer                        proto_slicer_type;
+        //
+        struct Slice {
+          typedef Slice slice_type;
+          typedef Rec_  rec_type;
+          //
+          // iterator dispatches to Slice for the fundamental 'next' operation.
+          // That method is virtual in Slice and is overloaded by Slice's descendants.
+          //
+          class iterator {
+          public:
+            // Standard iterator typedefs
+            typedef arrow_type                                     value_type;
+            typedef std::input_iterator_tag                        iterator_category;
+            typedef int                                            difference_type;
+            typedef value_type*                                    pointer;
+            typedef value_type&                                    reference;
+          protected:
+            slice_type  *_slice;
+            rec_type    *_ptr;
+          public:
+            iterator() :_slice(NULL), _ptr(NULL) {};
+            iterator(slice_type *slice, rec_type* ptr) : _slice(slice), _ptr(ptr) {};
+            iterator(const iterator& iter)             : _slice(iter._slice), _ptr(iter._ptr) {};
+          public:
+            rec_type& rec(){return *(this->_ptr);};
+            void      reset(rec_type& rec) {this->_ptr = &rec;};
+          public:
+            iterator   operator=(const  iterator& iter) const {this->_ptr = iter._ptr; return *this;};
+            bool       operator==(const iterator& iter) const {return this->_ptr == iter._ptr;};
+            bool       operator!=(const iterator& iter) const {return this->_ptr != iter._ptr;};
+            iterator   operator++() {
+              // We don't want to make the increment operator virtual, since this entails
+              // carrying of a vtable point around with each iterator object.
+              // instead, we shift the indirection (of a vtable lookup) to the Slice object.
+              this->_slice->next(*this);
+              return *this;
+            };
+            iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
+            //
+            arrow_type&       arrow() {return *(this->_ptr);};
+            const arrow_type& operator*() const {return this->arrow();};
+          };// iterator
+          //
+          // Basic
+          //
+          Slice(){};
+          virtual ~Slice(){};
+          //
+          // Main
+          // 
+          virtual iterator    begin()=0; 
+          virtual iterator    end(); 
+          virtual void        next(iterator& iter);
+          //
+          virtual void        add(rec_type& rec);
+          virtual marker_type marker(rec_type& rec);
+          virtual void        clean();
+        };// Slice
+        //
+        typedef Slice slice_type;
+        // Canonical Slice type, a pointer to which is returned by all Slicers
+        typedef Slice    the_slice_type;
+      public:
+        //
+        // Basic
+        //
+        Slicer(){};
+        virtual ~Slicer(){};
+        //
+        // Main
+        //
+        Slice& take() {NoSlices e; /* e << "Slicer<0> has no slices"; */ throw e; return Slice();};
+        void   give_back(Slice& slice) {NoSlices e; /* e << "ProtoSlicer has no slices"; */ throw e;};
+      };// class Slicer<0>
+    }//namespace Slicing
+
+    // Definitions of typical XSifter usage of records, orderings, etc.
+    template<typename Arrow_, 
+             typename SourceOrder_ = std::less<typename Arrow_::source_type>,
+             typename ColorOrder_  = std::less<typename Arrow_::color_type> >
+    struct SourceColorOrder : 
+      public RecKeyXXXOrder<Arrow_, 
+                            ALE_CONST_MEM_FUN(Arrow_, typename Arrow_::source_type&, &Arrow_::source), 
+                            SourceOrder_, 
+                            RecKeyOrder<Arrow_, 
+                                        ALE_CONST_MEM_FUN(Arrow_, typename Arrow_::color_type&, &Arrow_::color), 
+                                        ColorOrder_>
+      >
+    {};
+
   }; // namespace XSifterDef
   
   //
   // XSifter definition
   //
   template<typename Arrow_, 
-           typename TailOrder_   = XSifterDef::SourceColorOrder<Arrow_>, 
-           typename Predicate_ = unsigned int>
+           typename TailOrder_  = XSifterDef::SourceColorOrder<Arrow_>,
+           int SliceDepth = 1>
   struct XSifter : XObject { // struct XSifter
     //
     typedef XSifter xsifter_type;
@@ -1316,18 +1056,31 @@ namespace ALE {
     typedef Arrow_                                                 arrow_type;
     typedef typename arrow_type::source_type                       source_type;
     typedef typename arrow_type::target_type                       target_type;
+    // Right now we assume that arrows have color;  this allows for splitting cones on color.
+    // It is not necessary in general, but it will require two different XSfiter types: with and without color.
+    // This is because an XSifter with color has a wider interface: retrieve the subcone with a given color.
+    typedef typename arrow_type::color_type                        color_type;
     //
-    typedef Predicate_                                             predicate_type;
-    typedef ALE::XSifterDef::PredicateTraits<predicate_type>       predicate_traits;
+    // Slicing
     //
-    typedef ALE::XSifterDef::ArrowRec<arrow_type, predicate_type>  rec_type;
+    typedef ::ALE::XSifterDef::Slicer<arrow_type, int, SliceDepth> slicer_type;
+    typedef typename slicer_type::the_slice_type                   slice_type;
+    typedef typename slicer_type::rec_type                         rec_type;
+    //struct rec_type : public arrow_type{};
     // 
     // Key extractors
     //
-    typedef ::ALE::const_const_mem_fun<rec_type, source_type&, const source_type&, &rec_type::source>    source_extractor_type;
-    typedef ALE_CONST_MEM_FUN(rec_type, target_type&,    &rec_type::target)    target_extractor_type;
-    typedef ALE_CONST_MEM_FUN(rec_type, predicate_type&, &rec_type::predicate) predicate_extractor_type;
-    typedef ALE_CONST_MEM_FUN(rec_type, arrow_type&,     &rec_type::arrow)     arrow_extractor_type;
+    // Despite the fact that extractors will operate on rec_type objects, they must be defined as operating on arrow_type objects.
+    // This will work because rec_type is assumed to inherit from arrow_type.
+    // If rec_type with the methods inherited from arrow_type were used to define extractors, there would be a conversion problem:
+    // an arrow_type member function (even as inherited by rec_type) cannot be converted to (the identical) rec_type member function.
+    // Just try this, if you want to see what happens:
+    //           typedef ALE_CONST_MEM_FUN(rec_type, source_type&,    &rec_type::source)  source_extractor_type;
+    //
+    typedef ALE_CONST_MEM_FUN(arrow_type, source_type&,    &arrow_type::source)  source_extractor_type;
+    typedef ALE_CONST_MEM_FUN(arrow_type, target_type&,    &arrow_type::target)    target_extractor_type;
+    typedef ALE_CONST_MEM_FUN(arrow_type, color_type&,     &arrow_type::color)     color_extractor_type;
+    typedef ALE_CONST_MEM_FUN(arrow_type, arrow_type&,     &arrow_type::arrow)     arrow_extractor_type;
 
     //
     // Comparison operators
@@ -1335,13 +1088,11 @@ namespace ALE {
     typedef std::less<typename rec_type::target_type> target_order_type;
     typedef TailOrder_                                tail_order_type;
     //
-    // Rec 'Cone' order type: first order by target then using a custom arrow_cone order
-    //struct cone_order_type : public 
+    // Rec 'Cone' order type: first order by target then using a custom tail_order
     typedef 
     XSifterDef::RecKeyXXXOrder<rec_type, 
-                               ALE_CONST_MEM_FUN(rec_type, target_type&, &rec_type::target), target_order_type,
-                               XSifterDef::RecKeyOrder<rec_type,
-                                                       ALE_CONST_MEM_FUN(rec_type, arrow_type&, &rec_type::arrow), tail_order_type> >
+                               target_extractor_type, target_order_type,
+                               XSifterDef::RecKeyOrder<rec_type, arrow_extractor_type, tail_order_type> >
     cone_order_type;
     //
     // Index tags
@@ -1364,41 +1115,29 @@ namespace ALE {
     //
     typedef typename ::boost::multi_index::index<rec_set_type, ConeTag>::type cone_index_type;
     //
-    // Filter types
-    //
-    typedef ALE::XSifterDef::IndexFilterAdapter<cone_index_type>                                                 cone_index_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_filter_type, target_extractor_type, target_order_type>       cone_filter_type;
-    typedef ALE::XSifterDef::RangeFilter<cone_index_filter_type, target_extractor_type, target_order_type, true> base_filter_type; // Strided = true
-    //
     // Sequence types
     //
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, base_filter_type,  target_extractor_type>      BaseSequence;
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_filter_type,  source_extractor_type>      ConeSequence;
+    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, target_extractor_type>   BaseSequence;
+    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, source_extractor_type>   ConeSequence;
+    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, arrow_extractor_type,  source_extractor_type>   ColorConeSequence;
     //
     //
     // Basic interface
     //
     //
-    XSifter(const MPI_Comm comm, int debug = 0) : // FIXIT: Should really inherit from XParallelObject
-      XObject(debug), _rec_set(), _cone_index(::boost::multi_index::get<ConeTag>(this->_rec_set)),
-      _cone_index_filter(&_cone_index)
-    {
-      //this->_cone_index_filter = cone_index_filter_type(this->_cone_index);
-    };
+    XSifter(const MPI_Comm comm, int debug = 0) : // FIX: Should really inherit from XParallelObject
+      XObject(debug), _rec_set(), 
+      _cone_index(::boost::multi_index::get<ConeTag>(this->_rec_set))
+    {};
     //
     // Extended interface
     //
-    void addArrow(const arrow_type& a, const predicate_type& p) {
-      this->_rec_set.insert(rec_type(a,p));
-    };
     void addArrow(const arrow_type& a) {
       this->_rec_set.insert(rec_type(a));
     };
     //
-    void cone(const target_type& t, ConeSequence& seq) {
-      //OPTIMIZE: filter object creation
-      Obj<cone_filter_type> cone_filter(cone_filter_type(this->_cone_index_filter,t,t));
-      seq.reset(this, cone_filter);
+    void cone(const target_type& t, ConeSequence& cseq) {
+      cseq.reset(this, &_cone_index, t);
     };
     ConeSequence& cone(const target_type& t) {
       static ConeSequence cseq;
@@ -1406,29 +1145,42 @@ namespace ALE {
       return cseq;
     };
     //
+    void cone(const target_type& t, const color_type& c, ColorConeSequence& ccseq) {
+      static ALE::pair<target_type, color_type> comb_key;
+      comb_key.first = t; comb_key.second = c;
+      ccseq.reset(this, &_cone_index, comb_key);
+    };
+    //
+    ColorConeSequence& cone(const target_type& t, const color_type& c) {
+      static ColorConeSequence ccseq;
+      this->cone(t,c,ccseq);
+      return ccseq;
+    };
+    //
     void base(BaseSequence& seq) {
-      static Obj<base_filter_type> base_filter(base_filter_type(this->_cone_index_filter));
-      seq.reset(this, base_filter);
+      seq.reset(this, &_cone_index);
     };
     BaseSequence& base() {
       static BaseSequence bseq;
       this->base(bseq);
       return bseq;
     };
+    // 
+    slice_type& slice(){ return this->_slicer.take();};
     //
     template<typename ostream_type>
     void view(ostream_type& os, const char* label = NULL){
       if(label != NULL) {
-        os << "Viewing " << label << " XSifter (debug: " << this->debug() << "): " << std::endl;
+        os << "Viewing " << label << " XSifter (debug: " << this->debug() << "): " << "\n";
       } 
       else {
-        os << "Viewing a XSifter (debug: " << this->debug() << "): " << std::endl;
+        os << "Viewing a XSifter (debug: " << this->debug() << "): " << "\n";
       } 
       os << "Cone index: (";
         for(typename cone_index_type::iterator itor = this->_cone_index.begin(); itor != this->_cone_index.end(); ++itor) {
           os << *itor << " ";
         }
-      os << ")" << std::endl;
+      os << ")" << "\n";
     };
     //
     // Direct access (a kind of hack)
@@ -1437,84 +1189,12 @@ namespace ALE {
     typedef typename cone_index_type::iterator iterator;
     iterator begin() const {return this->_cone_index.begin();};
     iterator end() const {return this->_cone_index.end();};
-    //
-    // Slice class
-    //
-    struct Slice {
-    //
-    public:
-      typedef XSifter xsifter_type;
-      //
-      // Encapsulated types: re-export types and/or bind parameterized types
-      //
-      typedef typename xsifter_type::rec_type   rec_type;
-      // 
-      class iterator {
-      protected:
-        typename xsifter_type::iterator _itor;
-      protected:
-        iterator() {};
-        iterator(const xsifter_type::iterator itor) : _itor(itor) {};
-      public:
-        virtual iterator   operator=(const iterator& iter)  const {this->_itor = iter._itor; return *this;};
-        virtual bool       operator==(const iterator& iter) const {return this->_itor == iter._itor;};
-        virtual bool       operator!=(const iterator& iter) const {return this->_itor != iter._itor;};
-        virtual iterator   operator++() {
-          this->_itor = (xsifter_type::iterator)(this->_itor->rec().slice_ptr());
-          return *this;
-        };
-        virtual iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
-        //
-        virtual const source_type& source() const {return this->_itor->_source;};
-        virtual const target_type& target() const {return this->_itor->_target;};
-        virtual const arrow_type&  arrow()  const {return *(this->_itor);};
-        //
-      };
-    protected:
-      xsifter_type   _xsifter;
-      predicate_type _slice_marker;
-      void* _slice_head;
-      void* _slice_tail;
-      bool _clean_on_destruction;
-    public:
-      // 
-      // Basic interface
-      //
-      Slice(xsifter_type *xsifter, const predicate_type& marker = predicate_traits::zero(), const bool& clean = false) : 
-        _slice_marker(marker), _slice_head(NULL), _slice_tail(NULL), _clean_on_destruction(clean) {};
-      ~Slice() {
-        if(this->_clean_on_destruction) {
-          iterator tmp;
-          iterator sitor = this->begin(); 
-          iterator send  = this->end();
-          for(;sitor != send();) {
-            tmp = ++sitor;
-            // CONTINUE: modify (*itor)'s _slice_marker and _next_in_slice pointer.
-            sitor = tmp;
-          }
-        }// if(this->_clean_on_destruction)
-      };// ~Slice()
-      iterator begin(){ return iterator((typename xsifter_type::iterator)this->_slice_head);}; 
-      iterator end(){ return iterator((typename xsifter_type::iterator)((xsifter_type::iterator)(this->_slice_tail)->rec().slice_ptr()));}; 
-      void add(const xsifter_type::iterator& itor) {
-        // add *itor at the tail of the slice linked list
-        static typename xsifter_type::rec_type::SliceChanger  tailSlicer(this->_slice_marker, NULL), nextSlicer;
-        nextSlicer.setSlice(this->_slice_marker, (void*)itor);
-        // set the current slice tail to point to itor 
-        //   CAUTION: hoping for no cycles; can check itor's slice_marker, but will hurt performance
-        //   However, the caller should really be checking that itor is not in the slice yet; otherwise the 'set' semantics are violated.
-        this->_xsifter.update((typename xsifter_type::iterator)(this->_slice_tail), nextSlicer);
-        // mark itor with the slice_marker and set it -- the new tail -- to point to NULL
-        this->_xsifter.update(itor, tailSlicer);
-      };
-      //
-    };// Slice
-    
+
   public:
   // set of arrow records
     rec_set_type     _rec_set;
     cone_index_type& _cone_index;
-    cone_index_filter_type _cone_index_filter;
+    slicer_type      _slicer;
   public:
     //
   }; // class XSifter

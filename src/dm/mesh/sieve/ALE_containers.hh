@@ -178,34 +178,52 @@ namespace ALE {
   class set : public std::set<Element_, typename Element_::less_than,  ALE_ALLOCATOR<Element_> > {
   public:
     // Encapsulated types
-    typedef std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> > base_type;
-    typedef typename base_type::iterator                                               iterator;
+    typedef std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> > super;
+    typedef typename super::iterator                                                   iterator;
+    typedef Element_                                                                   element_type;
+    typedef element_type                                                               value_type;
+    //
     // Basic interface
-    set()        : std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> >(){};
-    set(Point p) : std::set<Element_, typename Element_::less_than, ALE_ALLOCATOR<Element_> >(){insert(p);};
+    //
+    set()        : super(){};
+    // FIX: this is a little weird that there is a specific constructor with Point
+    set(Point p) : super(){insert(p);};
+    //
+    set(const element_type& e) : super() {insert(e);}
+    //
+    template<typename ElementSequence_>
+    set(const ElementSequence_& eseq) : super(eseq.begin(), eseq.end()){};
+    // 
+    // Standard interface
+    // 
     // Redirection: 
-    // FIX: it is a little weird that methods aren't inheritec, 
+    // FIX: it is a little weird that 'insert' methods aren't inherited
     //      but perhaps can be fixed by calling insert<Element_> (i.e., insert<Point> etc)?
-
-    std::pair<iterator, bool> 
-    insert(const Element_& e) { return base_type::insert(e); };
-
+        std::pair<iterator, bool> 
+    inline insert(const Element_& e) { return super::insert(e); };
+    //
     iterator 
-    insert(iterator position, const Element_& e) {return base_type::insert(position,e);};
-
+    inline insert(iterator position, const Element_& e) {return super::insert(position,e);};
+    //
     template <class InputIterator>
     void 
-    insert(InputIterator b, InputIterator e) { return base_type::insert(b,e);};
-
-    
-    // Extensions to std::set interface
-    bool contains(const Element_& e) {return (this->find(e) != this->end());};
-    void join(Obj<set> s) {
+    inline insert(InputIterator b, InputIterator e) { return super::insert(b,e);};
+    // 
+    // Extended interface
+    //
+    inline iterator last() {
+      return this->rbegin();
+    };// last()
+    //    
+    inline bool contains(const Element_& e) {return (this->find(e) != this->end());};
+    //
+    inline void join(Obj<set> s) {
       for(iterator s_itor = s->begin(); s_itor != s->end(); s_itor++) {
         this->insert(*s_itor);
       }
     };
-    void meet(Obj<set> s) {// this should be called 'intersect' (the verb)
+    //
+    inline void meet(Obj<set> s) {// this should be called 'intersect' (the verb)
       set removal;
       for(iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
         Element_ e = *self_itor;
@@ -218,7 +236,8 @@ namespace ALE {
         this->erase(ee);
       }
     };
-    void subtract(Obj<set> s) {
+    //
+    inline void subtract(Obj<set> s) {
       set removal;
       for(iterator self_itor = this->begin(); self_itor != this->end(); self_itor++) {
         Element_ e = *self_itor;
@@ -231,7 +250,6 @@ namespace ALE {
         this->erase(ee);
       }
     };
-
     //
     template <typename ostream_type>
     void view(ostream_type& os, const char *name = NULL) {
