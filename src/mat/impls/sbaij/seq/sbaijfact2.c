@@ -2149,8 +2149,8 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   Mat_SeqSBAIJ       *b;
   Mat                B;
   PetscErrorCode     ierr;
-  PetscTruth         perm_identity,free_ij = PETSC_TRUE;
-  PetscInt           bs=A->rmap.bs,am=a->mbs;
+  PetscTruth         perm_identity,free_ij = PETSC_TRUE,missing;
+  PetscInt           bs=A->rmap.bs,am=a->mbs,d;
   PetscInt           reallocs=0,*rip,i,*ai,*aj,*ui;
   PetscInt           jmin,jmax,nzk,k,j,*jl,prow,*il,nextprow;
   PetscInt           nlnk,*lnk,*lnk_lvl=PETSC_NULL,ncols,*cols,*cols_lvl,*uj,**uj_ptr,**uj_lvl_ptr;
@@ -2161,6 +2161,9 @@ PetscErrorCode MatICCFactorSymbolic_SeqSBAIJ(Mat A,IS perm,MatFactorInfo *info,M
   PetscScalar        *ua;
 
   PetscFunctionBegin;
+  ierr = MatMissingDiagonal(A,&missing,&d);CHKERRQ(ierr);
+  if (missing) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal entry %D",d);
+
   /*  
    This code originally uses Modified Sparse Row (MSR) storage
    (see page 85, "Iterative Methods ..." by Saad) for the output matrix B - bad choice!

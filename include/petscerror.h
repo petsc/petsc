@@ -97,8 +97,9 @@ PETSC_EXTERN_CXX_BEGIN
 
     See SETERRQ1(), SETERRQ2(), SETERRQ3() for versions that take arguments
 
+    In Fortran MPI_Abort() is always called
 
-   Experienced users can set the error handler with PetscPushErrorHandler().
+    Experienced users can set the error handler with PetscPushErrorHandler().
 
    Concepts: error^setting condition
 
@@ -223,8 +224,12 @@ M*/
     Although typical usage resembles "void CHKERRQ(PetscErrorCode)" as described above, for certain uses it is
     highly inappropriate to use it in this manner as it invokes return(PetscErrorCode). In particular,
     it cannot be used in functions which return(void) or any other datatype.  In these types of functions,
-    a more appropriate construct for using PETSc Error Handling would be
-         if (n) {PetscError(....); return(YourReturnType);}
+    you can use CHKERRV() which returns without an error code (bad idea since the error is ignored or
+         if (n) {PetscError(....); return(YourReturnType);} 
+    where you may pass back a PETSC_NULL to indicate an error. You can also call CHKERRABORT(comm,n) to have
+    MPI_Abort() returned immediately.
+
+    In Fortran MPI_Abort() is always called
 
    Concepts: error^setting condition
 
