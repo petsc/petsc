@@ -206,25 +206,27 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
 {
   PetscErrorCode          ierr;
   PetscInt                indx;
+  const char             *convtests[] = {"default","skip"};
   char                    type[256], monfilename[PETSC_MAX_PATH_LEN];
   PetscViewerASCIIMonitor monviewer;
   PetscTruth              flg,flag;
   PetscInt                i;
+  void                    *ctx;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ierr = PCSetFromOptions(ksp->pc);CHKERRQ(ierr);
 
   if (!KSPRegisterAllCalled) {ierr = KSPRegisterAll(PETSC_NULL);CHKERRQ(ierr);}
-  ierr = PetscOptionsBegin(ksp->comm,ksp->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);
-    ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(ksp->type_name?ksp->type_name:KSPGMRES),type,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)ksp)->comm,((PetscObject)ksp)->prefix,"Krylov Method (KSP) Options","KSP");CHKERRQ(ierr);
+    ierr = PetscOptionsList("-ksp_type","Krylov method","KSPSetType",KSPList,(char*)(((PetscObject)ksp)->type_name?((PetscObject)ksp)->type_name:KSPGMRES),type,256,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetType(ksp,type);CHKERRQ(ierr);
     }
     /*
       Set the type if it was never set.
     */
-    if (!ksp->type_name) {
+    if (!((PetscObject)ksp)->type_name) {
       ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
     }
 
@@ -241,13 +243,20 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsTruth("-ksp_knoll","Use preconditioner applied to b for initial guess","KSPSetInitialGuessKnoll",ksp->guess_knoll,
                                   &ksp->guess_knoll,PETSC_NULL);CHKERRQ(ierr);
 
-    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,4,"preconditioned",&indx,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsEList("-ksp_convergence_test","Convergence test","KSPSetConvergenceTest",convtests,2,"default",&indx,&flg);CHKERRQ(ierr);
     if (flg) {
-      if (indx == (PetscInt)KSP_NORM_NO) {
-        ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,0);CHKERRQ(ierr);
+      switch (indx) {
+      case 0: 
+        ierr = KSPDefaultConvergedCreate(&ctx);CHKERRQ(ierr);
+        ierr = KSPSetConvergenceTest(ksp,KSPDefaultConverged,ctx,KSPDefaultConvergedDestroy);CHKERRQ(ierr); 
+        break;
+      case 1: ierr = KSPSetConvergenceTest(ksp,KSPSkipConverged,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);    break;
       }
-      ierr = KSPSetNormType(ksp,(KSPNormType)indx);CHKERRQ(ierr);  
     }
+
+    ierr = PetscOptionsEList("-ksp_norm_type","KSP Norm type","KSPSetNormType",KSPNormTypes,4,"preconditioned",&indx,&flg);CHKERRQ(ierr);
+    if (flg) { ierr = KSPSetNormType(ksp,(KSPNormType)indx);CHKERRQ(ierr); }
+
     ierr = PetscOptionsInt("-ksp_check_norm_iteration","First iteration to compute residual norm","KSPSetCheckNormIteration",ksp->chknorm,&ksp->chknorm,PETSC_NULL);CHKERRQ(ierr);
 
     ierr = PetscOptionsName("-ksp_diagonal_scale","Diagonal scale matrix before building preconditioner","KSPSetDiagonalScale",&flg);CHKERRQ(ierr);
@@ -264,7 +273,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     if (flg) {
       MatNullSpace nsp;
 
-      ierr = MatNullSpaceCreate(ksp->comm,PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
+      ierr = MatNullSpaceCreate(((PetscObject)ksp)->comm,PETSC_TRUE,0,0,&nsp);CHKERRQ(ierr);
       ierr = KSPSetNullSpace(ksp,nsp);CHKERRQ(ierr);
       ierr = MatNullSpaceDestroy(nsp);CHKERRQ(ierr);
     }
@@ -295,7 +304,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorDefault,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
@@ -310,7 +319,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor_true_residual","Monitor preconditioned residual norm","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorTrueResidualNorm,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
@@ -319,7 +328,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     ierr = PetscOptionsString("-ksp_monitor_singular_value","Monitor singular values","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
       ierr = KSPSetComputeSingularValues(ksp,PETSC_TRUE);CHKERRQ(ierr);
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorSingularValue,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*
@@ -327,7 +336,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetFromOptions(KSP ksp)
     */
     ierr = PetscOptionsString("-ksp_monitor_short","Monitor preconditioned residual norm with fewer digits","KSPMonitorSet","stdout",monfilename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscViewerASCIIMonitorCreate(ksp->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIMonitorCreate(((PetscObject)ksp)->comm,monfilename,0,&monviewer);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPMonitorDefaultShort,monviewer,(PetscErrorCode (*)(void*))PetscViewerASCIIMonitorDestroy);CHKERRQ(ierr);
     }
     /*

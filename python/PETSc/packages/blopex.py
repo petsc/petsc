@@ -40,14 +40,14 @@ class Configure(PETSc.package.Package):
     g.write('RANLIB      = '+self.setCompilers.RANLIB+'\n')
     g.close()
 
-    if self.installNeeded('Makefile.Inc'):
+    if self.installNeeded('Makefile.inc'):
       try:
         self.logPrintBox('Compiling blopex; this may take several minutes')
         output  = config.base.Configure.executeShellCommand('cd '+self.packageDir+';BLOPEX_INSTALL_DIR='+self.installDir+';export BLOPEX_INSTALL_DIR; make clean; make; mv -f lib/* '+os.path.join(self.installDir,self.libdir)+'; cp -fp multivector/temp_multivector.h include/.; mv -f include/* '+os.path.join(self.installDir,self.includedir)+'', timeout=2500, log = self.framework.log)[0]
       except RuntimeError, e:
         raise RuntimeError('Error running make on BLOPEX: '+str(e))
       self.checkInstall(output,'Makefile.inc')
-    return installDir
+    return self.installDir
 
 if __name__ == '__main__':
   import config.framework

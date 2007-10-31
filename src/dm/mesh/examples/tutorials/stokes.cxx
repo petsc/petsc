@@ -12,12 +12,14 @@ static char help[] = "This example solves the Stokes problem.\n\n";
 using ALE::Obj;
 typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
 typedef enum {NEUMANN, DIRICHLET} BCType;
+typedef enum {SOLN_SIMPLE, SOLN_RIDGE} SolutionType;
 typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
 typedef union {SectionReal section; Vec vec;} ExactSolType;
 
 typedef struct {
   PetscInt      debug;                                        // The debugging level
   RunType       run;                                          // The run type
+  SolutionType  solnType;                                     // The type of exact solution
   PetscInt      dim;                                          // The topological mesh dimension
   PetscTruth    generateMesh;                                 // Generate the unstructure mesh
   PetscTruth    interpolate;                                  // Generate intermediate mesh elements
@@ -25,7 +27,6 @@ typedef struct {
   char          baseFilename[2048];                           // The base filename for mesh files
   double      (*funcs[4])(const double []);                   // The function to project
   BCType        bcType;                                       // The type of boundary conditions
-  void        (*exactFunc)(const double [], double []);       // The exact solution function
   ExactSolType  exactSol;                                     // The discrete exact solution
   AssemblyType  operatorAssembly;                             // The type of operator assembly 
 } Options;
@@ -52,12 +53,6 @@ double quadratic_2d_p(const double x[]) {
   return x[0] + x[1] - 1.0;
 }
 
-void quadratic_2d(const double x[], double f[]) {
-  f[0] = x[0]*x[0] - 2.0*x[0]*x[1];
-  f[1] = x[1]*x[1] - 2.0*x[0]*x[1];
-  f[2] = x[0] + x[1] - 1.0;
-}
-
 double quadratic_3d_u(const double x[]) {
   return x[0]*x[0] - x[0]*x[1] - x[0]*x[2];
 }
@@ -74,27 +69,28 @@ double quadratic_3d_p(const double x[]) {
   return x[0] + x[1] + x[2] - 1.5;
 }
 
-void quadratic_3d(const double x[], double f[]) {
-  f[0] = x[0]*x[0] - x[0]*x[1] - x[0]*x[2];
-  f[1] = x[1]*x[1] - x[0]*x[1] - x[1]*x[2];
-  f[2] = x[2]*x[2] - x[0]*x[2] - x[1]*x[2];
-  f[3] = x[0] + x[1] + x[2] - 1.5;
+double ridge(const double x[]) {
+  const double lambda = 0.1;
+
+  return erf((x[0] - 0.5)/lambda);
 }
 
 #undef __FUNCT__
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
-  const char    *runTypes[3] = {"full", "test", "mesh"};
-  const char    *bcTypes[2]  = {"neumann", "dirichlet"};
-  const char    *asTypes[4]  = {"full", "stored", "calculated"};
+  const char    *runTypes[3]  = {"full", "test", "mesh"};
+  const char    *solnTypes[2] = {"simple", "ridge"};
+  const char    *bcTypes[2]   = {"neumann", "dirichlet"};
+  const char    *asTypes[4]   = {"full", "stored", "calculated"};
   ostringstream  filename;
-  PetscInt       run, bc, as;
+  PetscInt       run, soln, bc, as;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   options->debug            = 0;
   options->run              = RUN_FULL;
+  options->solnType         = SOLN_SIMPLE;
   options->dim              = 2;
   options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
@@ -107,6 +103,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     run = options->run;
     ierr = PetscOptionsEList("-run", "The run type", "stokes.cxx", runTypes, 3, runTypes[options->run], &run, PETSC_NULL);CHKERRQ(ierr);
     options->run = (RunType) run;
+    ierr = PetscOptionsEList("-solution", "The solution type", "stokes.cxx", solnTypes, 2, solnTypes[options->solnType], &soln, PETSC_NULL);CHKERRQ(ierr);
+    options->solnType = (SolutionType) soln;
     ierr = PetscOptionsInt("-dim", "The topological mesh dimension", "stokes.cxx", options->dim, &options->dim, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "stokes.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "stokes.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
@@ -877,10 +875,15 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   PetscFunctionBegin;
   if (options->dim == 2) {
     if (options->bcType == DIRICHLET) {
-      options->funcs[0]  = zero;
-      options->funcs[1]  = constant;
-      options->funcs[2]  = constant;
-      options->exactFunc = quadratic_2d;
+      if (options->solnType == SOLN_SIMPLE) {
+        options->funcs[0]  = zero;
+        options->funcs[1]  = constant;
+        options->funcs[2]  = constant;
+      } else if (options->solnType == SOLN_RIDGE) {
+        options->funcs[0]  = zero;
+        options->funcs[1]  = constant;
+        options->funcs[2]  = constant;
+      }
     } else {
       SETERRQ(PETSC_ERR_SUP, "No support for Neumann conditions");
     }
@@ -890,7 +893,6 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       options->funcs[1]  = constant;
       options->funcs[2]  = constant;
       options->funcs[3]  = constant;
-      options->exactFunc = quadratic_3d;
     } else {
       SETERRQ(PETSC_ERR_SUP, "No support for Neumann conditions");
     }

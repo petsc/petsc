@@ -448,6 +448,13 @@ namespace ALE {
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
 
+        if (!interpolate) {
+          for(int c = 0; c < numCells; ++c) {
+            int tmp = cells[c*4+0];
+            cells[c*4+0] = cells[c*4+1];
+            cells[c*4+1] = tmp;
+          }
+        }
         ALE::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, mesh->getArrowSection("orientation"));
         mesh->setSieve(newSieve);
         mesh->stratify();
@@ -599,6 +606,13 @@ namespace ALE {
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
 
+        if (!interpolate) {
+          for(int c = 0; c < numCells; ++c) {
+            int tmp = newCells[c*4+0];
+            newCells[c*4+0] = newCells[c*4+1];
+            newCells[c*4+1] = tmp;
+          }
+        }
         ALE::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, newCells, numVertices, interpolate, numCorners, -1, refMesh->getArrowSection("orientation"));
         refMesh->setSieve(newSieve);
         refMesh->stratify();

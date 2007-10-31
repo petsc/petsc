@@ -226,21 +226,21 @@ PetscErrorCode PetscOptionsEnd_Private(void)
         case OPTION_HEAD:
           break;
         case OPTION_INT: 
-          sprintf(value,"%d",*(PetscInt*)PetscOptionsObject.next->data);
+          sprintf(value,"%d",(int) *(PetscInt*)PetscOptionsObject.next->data);
           break;
         case OPTION_REAL:
-          sprintf(value,"%g",*(PetscReal*)PetscOptionsObject.next->data);
+          sprintf(value,"%g",(double) *(PetscReal*)PetscOptionsObject.next->data);
           break;
         case OPTION_REAL_ARRAY:
-          sprintf(value,"%g",((PetscReal*)PetscOptionsObject.next->data)[0]);
+          sprintf(value,"%g",(double)((PetscReal*)PetscOptionsObject.next->data)[0]);
           for (j=1; j<PetscOptionsObject.next->arraylength; j++) {
-            sprintf(tmp,"%g",((PetscReal*)PetscOptionsObject.next->data)[j]);
+            sprintf(tmp,"%g",(double)((PetscReal*)PetscOptionsObject.next->data)[j]);
             ierr = PetscStrcat(value,",");CHKERRQ(ierr);
             ierr = PetscStrcat(value,tmp);CHKERRQ(ierr);
           }
           break;
         case OPTION_LOGICAL:
-          sprintf(value,"%d",*(PetscInt*)PetscOptionsObject.next->data);
+          sprintf(value,"%d",(int)*(PetscInt*)PetscOptionsObject.next->data);
           break;
         case OPTION_LIST:
           ierr = PetscStrcpy(value,*(char**)PetscOptionsObject.next->data);CHKERRQ(ierr);
@@ -302,6 +302,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text
 {
   PetscErrorCode ierr;
   PetscInt       ntext = 0;
+  PetscInt       tval;
+  PetscTruth     tflg;
 
   PetscFunctionBegin;
   while (list[ntext++]) {
@@ -309,7 +311,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscOptionsEnum(const char opt[],const char text
   }
   if (ntext < 3) SETERRQ(PETSC_ERR_ARG_WRONG,"List argument must have at least two entries: typename and type prefix");
   ntext -= 3;
-  ierr = PetscOptionsEList(opt,text,man,list,ntext,list[defaultv],(PetscInt*)value,set);CHKERRQ(ierr);
+  ierr = PetscOptionsEList(opt,text,man,list,ntext,list[defaultv],&tval,&tflg);CHKERRQ(ierr);
+  /* with PETSC_USE_64BIT_INDICES sizeof(PetscInt) != sizeof(PetscEnum) */
+  if (tflg) *value = (PetscEnum)tval;
+  if (set)  *set   = tflg;
   PetscFunctionReturn(0);
 }
 

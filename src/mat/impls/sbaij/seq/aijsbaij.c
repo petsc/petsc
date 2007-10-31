@@ -40,7 +40,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqAIJ(Mat A, MatType newt
     /* printf(" rowlengths[%d]: %d\n",i, rowlengths[i]); */
   }
   
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqAIJSetPreallocation(B,0,rowlengths);CHKERRQ(ierr);
@@ -131,7 +131,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqAIJ_SeqSBAIJ(Mat A, MatType newt
   for (i=0; i<m; i++) {
     rowlengths[i] = ai[i+1] - a->diag[i];
   }
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,1,0,rowlengths);CHKERRQ(ierr);
@@ -196,7 +196,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqSBAIJ_SeqBAIJ(Mat A, MatType new
     browlengths[i] += nz;   /* no. of upper triangular blocks */
   }
   
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqBAIJSetPreallocation(B,bs,0,browlengths);CHKERRQ(ierr);
@@ -269,19 +269,21 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatConvert_SeqBAIJ_SeqSBAIJ(Mat A, MatType new
   Mat_SeqSBAIJ   *b;
   PetscErrorCode ierr;
   PetscInt       *ai=a->i,*aj,m=A->rmap.N,n=A->cmap.n,i,j,k,*bi,*bj,*browlengths;
-  PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=m/bs;
+  PetscInt       bs=A->rmap.bs,bs2=bs*bs,mbs=m/bs,dd;
   PetscScalar    *av,*bv;
+  PetscTruth     flg;
 
   PetscFunctionBegin;
   if (n != m) SETERRQ(PETSC_ERR_ARG_WRONG,"Matrix must be square");
-  ierr = MatMissingDiagonal_SeqBAIJ(A);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
+  ierr = MatMissingDiagonal_SeqBAIJ(A,&flg,&dd);CHKERRQ(ierr); /* check for missing diagonals, then mark diag */
+  if (flg) SETERRQ1(PETSC_ERR_ARG_WRONGSTATE,"Matrix is missing diagonal %D",dd);
   
   ierr = PetscMalloc(mbs*sizeof(PetscInt),&browlengths);CHKERRQ(ierr);
   for (i=0; i<mbs; i++) {
     browlengths[i] = ai[i+1] - a->diag[i];
   }
 
-  ierr = MatCreate(A->comm,&B);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&B);CHKERRQ(ierr);
   ierr = MatSetSizes(B,m,n,m,n);CHKERRQ(ierr);
   ierr = MatSetType(B,newtype);CHKERRQ(ierr);
   ierr = MatSeqSBAIJSetPreallocation_SeqSBAIJ(B,bs,0,browlengths);CHKERRQ(ierr);

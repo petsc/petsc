@@ -118,6 +118,10 @@ ex18: ex18.o  chkopts
 	-${CLINKER} -o ex18 ex18.o  ${PETSC_VEC_LIB}
 	${RM} -f ex18.o
 
+ex19: ex19.o  chkopts
+	-${CLINKER} -o ex19 ex19.o  ${PETSC_VEC_LIB}
+	${RM} -f ex19.o
+
 #-------------------------------------------------------------------------------------------
 #   This section is used for testing examples and can be ignored 
 #-------------------------------------------------------------------------------------------

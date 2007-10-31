@@ -14,6 +14,12 @@
 # PETSC_HAVE_NETINET_IN_H
 # PETSC_HAVE_NETDB_H
 #
+###### On Cray XT4 the following additional flags need removal ########
+#
+# PETSC_USE_SOCKET_VIEWER
+# PETSC_HAVE_GETPWUID
+
+#
 # And add the following
 #
 # PETSC_HAVE_LSEEK
@@ -29,6 +35,7 @@ configure_options = [
   '--sizeof_short=2',
   '--sizeof_int=4',
   '--sizeof_long=8',
+  '--sizeof_size_t=8',
   '--sizeof_long_long=8',
   '--sizeof_float=4',
   '--sizeof_double=8',

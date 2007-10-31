@@ -28,11 +28,11 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     SETERRQ(PETSC_ERR_ARG_WRONG,"Cannot test with alternative preconditioner");
   }
 
-  ierr = PetscPrintf(snes->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
-  ierr = PetscPrintf(snes->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)snes)->comm,"Testing hand-coded Jacobian, if the ratio is\n");CHKERRQ(ierr);
+  ierr = PetscPrintf(((PetscObject)snes)->comm,"O(1.e-8), the hand-coded Jacobian is probably correct.\n");CHKERRQ(ierr);
   if (!neP->complete_print) {
-    ierr = PetscPrintf(snes->comm,"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"Run with -snes_test_display to show difference\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"of hand-coded and finite difference Jacobian.\n");CHKERRQ(ierr);
   }
 
   for (i=0; i<3; i++) {
@@ -46,7 +46,7 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
-      ierr = PetscPrintf(snes->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Finite difference Jacobian\n");CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(B,viewer);CHKERRQ(ierr);
@@ -58,12 +58,13 @@ PetscErrorCode SNESSolve_Test(SNES snes)
     if (neP->complete_print) {
       MPI_Comm    comm;
       PetscViewer viewer;
-      ierr = PetscPrintf(snes->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)snes)->comm,"Hand-coded Jacobian\n");CHKERRQ(ierr);
       ierr = PetscObjectGetComm((PetscObject)B,&comm);CHKERRQ(ierr);
       ierr = PetscViewerASCIIGetStdout(comm,&viewer);CHKERRQ(ierr);
       ierr = MatView(A,viewer);CHKERRQ(ierr);
     }
-    ierr = PetscPrintf(snes->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
+    if (!gnorm) gnorm = 1; /* just in case */
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"Norm of matrix ratio %G difference %G\n",nrm/gnorm,nrm);CHKERRQ(ierr);
   }
   ierr = MatDestroy(B);CHKERRQ(ierr);
   /*
@@ -122,7 +123,6 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESCreate_Test(SNES  snes)
   snes->ops->solve	     = SNESSolve_Test;
   snes->ops->destroy	     = SNESDestroy_Test;
   snes->ops->setfromoptions  = SNESSetFromOptions_Test;
-  snes->ops->converged	     = 0;
   snes->ops->view            = 0;
 
   ierr			= PetscNewLog(snes,SNES_Test,&neP);CHKERRQ(ierr);

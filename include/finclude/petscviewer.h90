@@ -2,7 +2,7 @@
 !
 !  Additional Viewer include file for use of PETSc with Fortran 90/HPF
 !
-
+#if !defined (PETSC_AVOID_DECLARATIONS)
 
       Interface PetscViewerBinaryWrite
         Subroutine PetscViewerBinaryWriteInt(v,a,cnt,tmp,ierr)
@@ -56,7 +56,7 @@
 
       End Interface
 
-
+#endif
 !
 !     End of Viewer Fortran 90 include file for the PETSc package
 !

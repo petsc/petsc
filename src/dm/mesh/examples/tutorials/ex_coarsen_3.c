@@ -1,5 +1,4 @@
-//Use Hierarchy.h to implement the creation of an entire array of topologies for use in multigrid methods.
-//UPDATE:  Do Multigrid.
+//Use Hierarchy.hh to implement the creation of an entire array of topologies for use in multigrid methods.
 
 
 
@@ -7,6 +6,9 @@
 #include <petscmesh_viewers.hh>
 #include <petscmesh_formats.hh>
 #include <petscdmmg.h>
+//TEST compile without triangle and tetgen
+//#undef PETSC_HAVE_TRIANGLE
+//#undef PETSC_HAVE_TETGEN
 #include "Generator.hh"
 #include "Hierarchy.hh"
 
@@ -22,6 +24,7 @@ typedef struct {
   PetscReal  coarseFactor;       // The maximum coarsening factor
   PetscReal  zScale;             // The relative spread of levels for visualization
   PetscTruth outputVTK;          // Output the mesh in VTK
+  PetscReal  curvatureCutoff;     // the cutoff for the curvature
 } Options;
 
 #undef __FUNCT__
@@ -39,6 +42,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->coarseFactor = 2.;
   options->zScale       = 1.0;
   options->outputVTK    = PETSC_TRUE;
+  options->curvatureCutoff = 1.5;
 
     ierr = PetscOptionsInt("-dim", "The mesh dimension", "ex_coarsen_3.c", options->dim, &options->dim, PETSC_NULL);    
     ierr = PetscOptionsBegin(comm, "", "Options for mesh coarsening", "DMMG");CHKERRQ(ierr);
@@ -46,7 +50,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-use_zero_base", "Use zero-based indexing", "ex_coarsen_3.c", options->useZeroBase, &options->useZeroBase, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsString("-base_file", "The base filename for mesh files", "ex_coarsen_3.c", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsInt("-levels", "The number of coarse levels", "ex_coarsen_3.c", options->levels, &options->levels, PETSC_NULL);    
-    ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);    
+    ierr = PetscOptionsReal("-coarsen", "The maximum coarsening factor", "ex_coarsen_3.c", options->coarseFactor, &options->coarseFactor, PETSC_NULL);   
+    ierr = PetscOptionsReal("-curvature", "The automatic inclusion threshhold for the curvature", "ex_coarsen_3.c", options->curvatureCutoff, &options->curvatureCutoff, PETSC_NULL); 
     ierr = PetscOptionsReal("-z_scale", "The relative spread of levels for visualization", "ex_coarsen_3.c", options->zScale, &options->zScale, PETSC_NULL);    
     ierr = PetscOptionsTruth("-output_vtk", "Output the mesh in VTK", "ex_coarsen_3.c", options->outputVTK, &options->outputVTK, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
@@ -124,10 +129,16 @@ int main(int argc, char *argv[])
       ierr = MeshCreate(comm, &mesh_set[i]);CHKERRQ(ierr);
     };
     ierr = CreateMesh(comm, mesh, &options);CHKERRQ(ierr);
+    
     MeshSetMesh(mesh_set[0], mesh);
-    ierr = MeshSpacingFunction(mesh_set[0]);
     ierr = MeshIDBoundary(mesh_set[0]);
-    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1]);
+    mesh->markBoundaryCells("marker");
+    ierr = PetscPrintf(mesh->comm(), "%d boundary vertices, %d boundary cells\n", mesh->getLabelStratum("marker", 1)->size(), mesh->getLabelStratum("marker", 2)->size());
+    ierr = MeshSpacingFunction(mesh_set[0]);
+    //ierr = MeshIDBoundary(mesh_set[0]);
+//    mesh->createLabel("marker");
+//    mesh->markBoundaryCells("marker", 1, 2, false);
+    MeshCreateHierarchyLabel_Link(mesh_set[0], options.coarseFactor, options.levels, &mesh_set[1],NULL,options.curvatureCutoff );
     //ierr = MeshCoarsenMesh(m, pow(options.coarseFactor, 2), &n);
     //ierr = MeshGetMesh(n, mesh);
     //ierr = MeshLocateInMesh(m, n);

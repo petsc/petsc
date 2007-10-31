@@ -13,7 +13,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMDestroy"
-/*@C
+/*@
     DMDestroy - Destroys a vector packer or DA.
 
     Collective on DM
@@ -31,7 +31,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMDestroy(DM dm)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = (*dm->bops->destroy)((PetscObject)dm);CHKERRQ(ierr);
+  ierr = (*((PetscObject)dm)->bops->destroy)((PetscObject)dm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -56,15 +56,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DMView(DM dm,PetscViewer v)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  if (dm->bops->view) {
-    ierr = (*dm->bops->view)((PetscObject)dm,v);CHKERRQ(ierr);
+  if (((PetscObject)dm)->bops->view) {
+    ierr = (*((PetscObject)dm)->bops->view)((PetscObject)dm,v);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateGlobalVector"
-/*@C
+/*@
     DMCreateGlobalVector - Creates a global vector from a DA or DMComposite object
 
     Collective on DM
@@ -91,7 +91,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCreateGlobalVector(DM dm,Vec *vec)
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMCreateLocalVector"
-/*@C
+/*@
     DMCreateLocalVector - Creates a local vector from a DA or DMComposite object
 
     Collective on DM
@@ -147,7 +147,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetInterpolation(DM dm1,DM dm2,Mat *mat,Vec *
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetInjection"
-/*@C
+/*@
     DMGetInjection - Gets injection matrix between two DA or DMComposite objects
 
     Collective on DM
@@ -204,7 +204,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMGetColoring(DM dm,ISColoringType ctype,ISColo
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetMatrix"
-/*@C
+/*@
     DMGetMatrix - Gets empty Jacobian for a DA or DMComposite
 
     Collective on DM
@@ -390,7 +390,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsen(DM dm, MPI_Comm comm, DM *dmc)
 .seealso DMCoarsenHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,int nlevels,DM **dmf)
+PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,PetscInt nlevels,DM **dmf)
 {
   PetscErrorCode ierr;
 
@@ -418,7 +418,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMRefineHierarchy(DM dm,int nlevels,DM **dmf)
 .seealso DMRefineHierarchy(), DMDestroy(), DMView(), DMCreateGlobalVector(), DMGetInterpolation()
 
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, int nlevels, DM **dmc)
+PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, PetscInt nlevels, DM **dmc)
 {
   PetscErrorCode ierr;
 
@@ -429,7 +429,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, int nlevels, DM **dmc
 
 #undef __FUNCT__  
 #define __FUNCT__ "DMGetAggregates"
-/*@C
+/*@
    DMGetAggregates - Gets the aggregates that map between 
    grids associated with two DMs.
 
@@ -448,7 +448,8 @@ PetscErrorCode PETSCDM_DLLEXPORT DMCoarsenHierarchy(DM dm, int nlevels, DM **dmc
 
 .seealso: DMRefine(), DMGetInjection(), DMGetInterpolation()
 @*/
-PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates(DM dmc, DM dmf, Mat *rest) {
+PetscErrorCode PETSCDM_DLLEXPORT DMGetAggregates(DM dmc, DM dmf, Mat *rest) 
+{
   PetscErrorCode ierr;
 
   PetscFunctionBegin;

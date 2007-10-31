@@ -4,7 +4,7 @@
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPInitialResidual"
-/*@C
+/*@
    KSPInitialResidual - Computes the residual. Either b - A*C*x with right
      preconditioning or C*b - C*A*x with left preconditioning; that later
      residual is often called the "preconditioned residual".

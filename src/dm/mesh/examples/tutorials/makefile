@@ -53,9 +53,9 @@ ex_coarsen: ex_coarsen.o   chkopts
 	-${CLINKER} -o ex_coarsen ex_coarsen.o  ${PETSC_DM_LIB}
 	${RM} -f ex_coarsen.o
 
-ex_coarsen_2: ex_coarsen_2.o   chkopts
-	-${CLINKER} -o ex_coarsen_2 ex_coarsen_2.o  ${PETSC_DM_LIB}
-	${RM} -f ex_coarsen_2.o
+mesh_surgery: mesh_surgery.o   chkopts
+	-${CLINKER} -o mesh_surgery mesh_surgery.o  ${PETSC_DM_LIB}
+	${RM} -f mesh_surgery.o
 
 ex_coarsen_3: ex_coarsen_3.o   chkopts
 	-${CLINKER} -o ex_coarsen_3 ex_coarsen_3.o  ${PETSC_DM_LIB}
@@ -73,12 +73,24 @@ stokes: stokes_quadrature.h stokes.o chkopts
 	-${CLINKER} -o stokes stokes.o ${PETSC_SNES_LIB}
 	${RM} -f stokes.o
 
+stokesPeriodic: stokesPeriodic_quadrature.h stokesPeriodic.o chkopts
+	-${CLINKER} -o stokesPeriodic stokesPeriodic.o ${PETSC_SNES_LIB}
+	${RM} -f stokesPeriodic.o
+
+stokesVector: stokesVector_quadrature.h stokesVector.o chkopts
+	-${CLINKER} -o stokesVector stokesVector.o ${PETSC_SNES_LIB}
+	${RM} -f stokesVector.o
+
+navierStokes: navierStokes_quadrature.h navierStokes.o chkopts
+	-${CLINKER} -o navierStokes navierStokes.o ${PETSC_SNES_LIB}
+	${RM} -f navierStokes.o
+
 grade2: stokes_quadrature.h grade2.o chkopts
 	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
 	${RM} -f grade2.o
 
-bratu: bratu_quadrature.h bratu.o chkopts
-	-${CLINKER} -o bratu bratu.o ${PETSC_SNES_LIB}
+bratu: bratu_quadrature.h GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o chkopts
+	-${CLINKER} -o bratu  GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o bratu.o ${PETSC_SNES_LIB}
 	${RM} -f bratu.o
 
 electrostatic: electrostatic_quadrature.h electrostatic.o chkopts
@@ -92,6 +104,22 @@ subduction: subduction_quadrature.h subduction.o chkopts
 dolfin: dolfin.o chkopts
 	-${CLINKER} -o dolfin dolfin.o ${PETSC_DM_LIB}
 	${RM} -f dolfin.o
+
+lagrit: CohesiveTopology.o lagrit.o chkopts
+	-${CLINKER} -o lagrit CohesiveTopology.o lagrit.o ${PETSC_DM_LIB}
+	${RM} -f lagrit.o
+
+rt: rt_quadrature.h rt.o chkopts
+	-${CLINKER} -o rt rt.o ${PETSC_SNES_LIB}
+	${RM} -f rt.o
+
+dirk: dirk.o chkopts
+	-${CLINKER} -o dirk dirk.o ${PETSC_SNES_LIB}
+	${RM} -f dirk.o
+
+fetidp: fetidp_quadrature.h fetidp.o chkopts
+	-${CLINKER} -o fetidp fetidp.o ${PETSC_SNES_LIB}
+	${RM} -f fetidp.o
 
 #-----------------------------------------------------------------
 runex1:

@@ -37,16 +37,16 @@ class QuadratureGenerator(script.Script):
   def getArray(self, name, values, comment = None, typeName = 'double'):
     from Cxx import Array
     from Cxx import Initializer
-    import Numeric
+    import numpy
 
-    values = Numeric.array(values)
+    values = numpy.array(values)
     arrayInit = Initializer()
-    arrayInit.children = map(self.Cxx.getDouble, Numeric.ravel(values))
+    arrayInit.children = map(self.Cxx.getDouble, numpy.ravel(values))
     arrayInit.list = True
     arrayDecl = Array()
     arrayDecl.children = [name]
     arrayDecl.type = self.Cxx.typeMap[typeName]
-    arrayDecl.size = self.Cxx.getInteger(Numeric.size(values))
+    arrayDecl.size = self.Cxx.getInteger(numpy.size(values))
     arrayDecl.static = True
     arrayDecl.initializer = arrayInit
     return self.Cxx.getDecl(arrayDecl, comment)
@@ -116,7 +116,7 @@ class QuadratureGenerator(script.Script):
         perm.extend(ids[0][v])
     else:
       perm = None
-    print element.Udual.pts
+    if hasattr(element.Udual, 'pts'): print element.Udual.pts
     print element.Udual.entity_ids
     print 'Perm:',perm
     return perm
@@ -126,31 +126,34 @@ class QuadratureGenerator(script.Script):
        - FIAT uses a reference element of (-1,-1):(1,-1):(-1,1)'''
     from Cxx import Define
     import FIAT.shapes
-    import Numeric
+    import numpy
 
     self.logPrint('Generating basis structures for element '+str(element.__class__), debugSection = 'codegen')
     points = quadrature.get_points()
-    basis = element.function_space()
-    dim = FIAT.shapes.dimension(basis.base.shape)
-    ext = '_'+str(num)
-    numFunctions = Define()
-    numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
-    numFunctions.replacementText = str(len(basis))
-    basisName = name+'Basis'+ext
-    basisDerName = name+'BasisDerivatives'+ext
-    perm = self.getBasisFuncOrder(element)
-    basisTab = Numeric.transpose(basis.tabulate(points))
-    basisDerTab = Numeric.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
-    if not perm is None:
-      basisTabOld    = Numeric.array(basisTab)
-      basisDerTabOld = Numeric.array(basisDerTab)
-      for q in range(len(points)):
-        for i,pi in enumerate(perm):
-          basisTab[q][i]    = basisTabOld[q][pi]
-          basisDerTab[q][i] = basisDerTabOld[q][pi]
-    return [numFunctions,
-            self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
-            self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')]
+    code = []
+    for i in range(element.function_space().tensor_shape()[0]):
+      basis = element.function_space().select_vector_component(i)
+      dim = FIAT.shapes.dimension(basis.base.shape)
+      ext = '_'+str(num+i)
+      numFunctions = Define()
+      numFunctions.identifier = 'NUM_BASIS_FUNCTIONS'+ext
+      numFunctions.replacementText = str(len(basis))
+      basisName = name+'Basis'+ext
+      basisDerName = name+'BasisDerivatives'+ext
+      perm = self.getBasisFuncOrder(element)
+      basisTab = numpy.transpose(basis.tabulate(points))
+      basisDerTab = numpy.transpose([basis.deriv_all(d).tabulate(points) for d in range(dim)])
+      if not perm is None:
+        basisTabOld    = numpy.array(basisTab)
+        basisDerTabOld = numpy.array(basisDerTab)
+        for q in range(len(points)):
+          for i,pi in enumerate(perm):
+            basisTab[q][i]    = basisTabOld[q][pi]
+            basisDerTab[q][i] = basisDerTabOld[q][pi]
+      code.extend([numFunctions,
+                   self.getArray(self.Cxx.getVar(basisName), basisTab, 'Nodal basis function evaluations\n    - basis function is fastest varying, then point'),
+                   self.getArray(self.Cxx.getVar(basisDerName), basisDerTab, 'Nodal basis function derivative evaluations,\n    - derivative direction fastest varying, then basis function, then point')])
+    return code
 
   def getQuadratureBlock(self, num):
     from Cxx import CompoundStatement
@@ -193,7 +196,62 @@ class QuadratureGenerator(script.Script):
                                 [], stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
-  def getIntegratorSetup(self, n, element):
+  def mapToRealSpace(self, dim, decls, stmts, refVar = None, realVar = None):
+    '''Maps coordinates in the reference element to real space'''
+    if refVar  is None: refVar  = self.Cxx.getVar('refCoords')
+    if realVar is None: realVar = self.Cxx.getVar('coords')
+    if not decls is None:
+      decls.append(self.Cxx.getArray(refVar,  self.Cxx.getType('double'), dim))
+      decls.append(self.Cxx.getArray(realVar, self.Cxx.getType('double'), dim))
+    basisLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('e', 'int'), 0, dim)
+    basisLoop.children[0].children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(self.Cxx.getArrayRef(realVar, 'd'), self.Cxx.getMultiplication(self.Cxx.getArrayRef('J', self.Cxx.getAddition(self.Cxx.getMultiplication('d', dim), 'e')), self.Cxx.getGroup(self.Cxx.getAddition(self.Cxx.getArrayRef(refVar, 'e'), 1.0))))))
+    testLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('d', 'int'), 0, dim)
+    testLoop.children[0].children.extend([self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(realVar, 'd'), self.Cxx.getArrayRef('v0', 'd'))), basisLoop])
+    stmts.append(testLoop)
+    return
+
+  def cellToFaceTransform(self, shape, cmpd, coordVar, quadVar, face):
+    import FIAT.shapes
+    from math import sqrt
+    from Cxx import Break
+    if shape == FIAT.shapes.TRIANGLE:
+      if face == 0:
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 0), self.Cxx.getArrayRef(quadVar, 'q')), caseLabel = face)
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 1), -1.0)), Break()])
+      elif face == 1:
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 0), self.Cxx.getMultiplication(sqrt(2)/2.0, self.Cxx.getArrayRef(quadVar, 'q'))), caseLabel = face)
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 1), self.Cxx.getMultiplication(sqrt(2)/2.0, self.Cxx.getArrayRef(quadVar, 'q')))), Break()])
+      elif face == 2:
+        cStmt = self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 0), -1.0), caseLabel = face)
+        cmpd.children.extend([cStmt, self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef(coordVar, 1), self.Cxx.getArrayRef(quadVar, 'q'))), Break()])
+    return
+
+  def getIntegratorPoints(self, n, element):
+    from FIAT import shapes
+    from Cxx import Define
+    import numpy
+
+    ids  = element.Udual.entity_ids
+    pts  = element.Udual.pts
+    perm = self.getBasisFuncOrder(element)
+    ext  = '_'+str(n)
+    dim  = shapes.dimension(element.function_space().base.shape)
+    if dim == 1:
+      num = len(ids[1][0]) + len(ids[0][0])*2
+    elif dim == 2:
+      num = len(ids[2][0]) + len(ids[1][0])*3 + len(ids[0][0])*3
+    elif dim == 3:
+      num = len(ids[3][0]) + len(ids[2][0])*4 + len(ids[1][0])*6 + len(ids[0][0])*4
+    numPoints = Define()
+    numPoints.identifier = 'NUM_DUAL_POINTS'+ext
+    numPoints.replacementText = str(num)
+    dualPoints = numpy.zeros((num, dim))
+    for i in range(num):
+      for d in range(dim):
+        dualPoints[i][d] = pts[perm[i]][d]
+    return [numPoints, self.getArray(self.Cxx.getVar('dualPoints'+ext), dualPoints, 'Dual points\n   - (x1,y1,x2,y2,...)')]
+
+  def getIntegratorSetup_PointEvaluation(self, n, element):
     import FIAT.shapes
     from Cxx import Break, CompoundStatement, Function, Pointer, Switch
     dim  = FIAT.shapes.dimension(element.function_space().base.shape)
@@ -204,9 +262,8 @@ class QuadratureGenerator(script.Script):
     funcName = 'IntegrateDualBasis_gen_'+str(n)
     idxVar  = self.Cxx.getVar('dualIndex')
     refVar  = self.Cxx.getVar('refCoords')
+    realVar = self.Cxx.getVar('coords')
     decls = []
-    decls.append(self.Cxx.getArray(refVar,   self.Cxx.getType('double'), dim))
-    decls.append(self.Cxx.getArray('coords', self.Cxx.getType('double'), dim))
     stmts = []
     switch  = Switch()
     switch.branch = idxVar
@@ -233,12 +290,8 @@ class QuadratureGenerator(script.Script):
     cmpd.children.extend([cStmt, self.Cxx.getThrow(self.Cxx.getFunctionCall('ALE::Exception', [self.Cxx.getString('Bad dual index')]))])
     switch.children = [cmpd]
     stmts.append(switch)
-    basisLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('e', 'int'), 0, dim)
-    basisLoop.children[0].children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(self.Cxx.getArrayRef('coords', 'd'), self.Cxx.getMultiplication(self.Cxx.getArrayRef('J', self.Cxx.getAddition(self.Cxx.getMultiplication('d', dim), 'e')), self.Cxx.getGroup(self.Cxx.getAddition(self.Cxx.getArrayRef(refVar, 'e'), 1.0))))))
-    testLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('d', 'int'), 0, dim)
-    testLoop.children[0].children.extend([self.Cxx.getExpStmt(self.Cxx.getAssignment(self.Cxx.getArrayRef('coords', 'd'), self.Cxx.getArrayRef('v0', 'd'))), basisLoop])
-    stmts.append(testLoop)
-    stmts.append(self.Cxx.getReturn(self.Cxx.getFunctionCall(self.Cxx.getGroup(self.Cxx.getIndirection('func')), ['coords'])))
+    self.mapToRealSpace(dim, decls, stmts, refVar, realVar)
+    stmts.append(self.Cxx.getReturn(self.Cxx.getFunctionCall(self.Cxx.getGroup(self.Cxx.getIndirection('func')), [realVar])))
     bcFunc = self.Cxx.getFunctionPointer('func', self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])
     func = self.Cxx.getFunction(funcName, self.Cxx.getType('double'),
                                 [self.Cxx.getParameter('v0', self.Cxx.getType('double', 1, isConst = 1)),
@@ -248,9 +301,62 @@ class QuadratureGenerator(script.Script):
                                 decls, stmts)
     return self.Cxx.getFunctionHeader(funcName)+[func]
 
+  def getIntegratorSetup_IntegralMoment(self, n, element):
+    import FIAT.shapes
+    from Cxx import Break, CompoundStatement, Function, Pointer, Switch
+    code   = []
+    idxVar = self.Cxx.getVar('dualIndex')
+    refVar = self.Cxx.getVar('refCoords')
+    realVar = self.Cxx.getVar('coords')
+    valVar = self.Cxx.getVar('value')
+    bcFunc = self.Cxx.getFunctionPointer('func', self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))])
+    shape  = element.function_space().base.shape
+    dim    = FIAT.shapes.dimension(shape)
+    ids    = element.Udual.entity_ids
+    for i in range(element.function_space().tensor_shape()[0]):
+      funcName = 'IntegrateDualBasis_gen_'+str(n+i)
+      decls = []
+      decls.append(self.Cxx.getDeclaration(valVar, self.Cxx.getType('double')))
+      stmts = []
+      quadLoop = self.Cxx.getSimpleLoop(self.Cxx.getDeclarator('q', 'int'), 0, 'NUM_QUADRATURE_POINTS_'+str(n+i)+'_face')
+      cmpd = quadLoop.children[0]
+      switch  = Switch()
+      switch.branch = idxVar
+      scmpd = CompoundStatement()
+      cmpd.declarations.append(self.Cxx.getDeclaration('faceIndex', self.Cxx.getType('const int'), self.Cxx.getModulo(idxVar, len(element.function_space())/3)))
+      if dim == 2:
+        for f in range(len(ids[2][0]), len(ids[2][0]) + len(ids[1][0])*3):
+          self.cellToFaceTransform(shape, scmpd, refVar, self.Cxx.getVar('points_'+str(n+i)+'_face'), f)
+        #for i in range(len(ids[0][0]*3) + len(ids[1][0])*3, len(ids[0][0])*3 + len(ids[1][0])*3 + len(ids[2][0])):
+      cStmt = self.Cxx.getExpStmt(self.Cxx.getFunctionCall('printf', [self.Cxx.getString('dualIndex: %d\\n'), 'dualIndex']))
+      cStmt.caseLabel = self.Cxx.getValue('default')
+      scmpd.children.extend([cStmt, self.Cxx.getThrow(self.Cxx.getFunctionCall('ALE::Exception', [self.Cxx.getString('Bad dual index')]))])
+      switch.children = [scmpd]
+      cmpd.children.append(switch)
+      self.mapToRealSpace(dim, cmpd.declarations, cmpd.children, refVar, realVar)
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getAdditionAssignment(valVar, self.Cxx.getMultiplication(self.Cxx.getFunctionCall(self.Cxx.getGroup(self.Cxx.getIndirection('func')), [realVar]), self.Cxx.getMultiplication(self.Cxx.getArrayRef('basis_'+str(n+i)+'_face', self.Cxx.getAddition(self.Cxx.getMultiplication('q', 'NUM_BASIS_FUNCTIONS_'+str(n+i)+'_face'), 'faceIndex')), self.Cxx.getArrayRef('weights_'+str(n+i)+'_face', 'q'))))))
+      stmts.append(quadLoop)
+      stmts.append(self.Cxx.getReturn(valVar))
+      func = self.Cxx.getFunction(funcName, self.Cxx.getType('double'),
+                                  [self.Cxx.getParameter('v0', self.Cxx.getType('double', 1, isConst = 1)),
+                                   self.Cxx.getParameter('J',  self.Cxx.getType('double', 1, isConst = 1)),
+                                   self.Cxx.getParameter(idxVar, self.Cxx.getType('int', isConst = 1)),
+                                   self.Cxx.getParameter(None, bcFunc)],
+                                  decls, stmts)
+      code.extend(self.Cxx.getFunctionHeader(funcName)+[func])
+    return code
+
+  def getIntegratorSetup(self, n, element):
+    if hasattr(element.Udual, 'pts'):
+      return self.getIntegratorSetup_PointEvaluation(n, element)
+    elif element.Udual.get_functional_set():
+      return self.getIntegratorSetup_IntegralMoment(n, element)
+    raise RuntimeError('Could not generate dual basis evaluation code')
+
   def getSectionSetup(self, n, element):
     from Cxx import CompoundStatement
-    funcName  = 'CreateProblem_gen_'+str(n)
+    code      = []
+    rank      = element.function_space().tensor_shape()[0]
     meshVar   = self.Cxx.getVar('mesh')
     numBCVar  = self.Cxx.getVar('numBC')
     markerVar = self.Cxx.getVar('markers')
@@ -260,55 +366,58 @@ class QuadratureGenerator(script.Script):
     decls.append(self.Cxx.getDeclaration(meshVar, self.Cxx.getType('Mesh'), self.Cxx.castToType('dm', self.Cxx.getType('Mesh'))))
     decls.append(self.Cxx.getDeclaration('m', self.Cxx.getType('ALE::Obj<ALE::Mesh>'), isForward=1))
     decls.append(self.Cxx.getDeclaration('ierr', self.Cxx.getType('PetscErrorCode')))
-    stmts = []
-    stmts.append(self.Cxx.getExpStmt(self.Cxx.getVar('PetscFunctionBegin')))
-    stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshGetMesh', [meshVar, 'm'])))
-    cmpd = CompoundStatement()
-    cmpd.declarations = [self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::Discretization>&', isConst=1),
-                                                 self.Cxx.getFunctionCall('new ALE::Discretization',
-                                                                          [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
-                                                                           self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
-    for d, ids in element.Udual.entity_ids.items():
-      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setNumDof'), [d, len(ids[0])])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadratureSize'), ['NUM_QUADRATURE_POINTS_'+str(n)])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadraturePoints'), ['points_'+str(n)])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadratureWeights'), ['weights_'+str(n)])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBasisSize'), ['NUM_BASIS_FUNCTIONS_'+str(n)])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBasis'), ['Basis_'+str(n)])))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBasisDerivatives'), ['BasisDerivatives_'+str(n)])))
-    bcCmpd = CompoundStatement()
-    bcCmpd.declarations = [self.Cxx.getDeclaration('b', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
-                                                   self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
-                                                                                                           self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))])),
-                           self.Cxx.getDeclaration('name', self.Cxx.getType('ostringstream'), isForward = 1)]
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setMarker'), [self.Cxx.getArrayRef(markerVar, 'i')])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getArrayRef(bcVar, 'i')])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n)])))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getLeftShift('name', 'i')))
-    bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBoundaryCondition'), [self.Cxx.getFunctionCall(self.Cxx.getStructRef('name', 'str', 0)), 'b'])))
-    cmpd.children.append(self.Cxx.getSimpleLoop('i', 0, numBCVar, isPrefix = 1, body = [bcCmpd]))
-    exactCmpd = CompoundStatement()
-    exactCmpd.declarations = [self.Cxx.getDeclaration('e', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
-                                                      self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
-                                                                                                              self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
-    exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('e', 'setLabelName'), [self.Cxx.getString('marker')])))
-    exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('e', 'setFunction'), [exactVar])))
-    exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('e', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n)])))
-    exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setExactSolution'), ['e'])))
-    cmpd.children.append(self.Cxx.getIf(exactVar, [exactCmpd]))
-    cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setDiscretization'), ['name', 'd'])))
-    stmts.append(cmpd)
-    stmts.append(self.Cxx.getReturn(isPetsc = 1))
-    func = self.Cxx.getFunction(funcName, self.Cxx.getType('PetscErrorCode'),
-                                [self.Cxx.getParameter('dm', self.Cxx.getType('DM')),
-                                 self.Cxx.getParameter('name', self.Cxx.getType('char pointer', isConst = 1)),
-                                 self.Cxx.getParameter('numBC', self.Cxx.getType('int', isConst = 1)),
-                                 self.Cxx.getParameter('markers', self.Cxx.getType('int pointer', isConst = 1)),
-                                 self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))], numPointers = 2)),
-                                 self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(exactVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))]))],
-                                decls, stmts)
-    return self.Cxx.getFunctionHeader(funcName)+[func]
+    for i in range(rank):
+      funcName  = 'CreateProblem_gen_'+str(n+i)
+      stmts = []
+      stmts.append(self.Cxx.getExpStmt(self.Cxx.getVar('PetscFunctionBegin')))
+      stmts.extend(self.Cxx.getPetscCheck(self.Cxx.getFunctionCall('MeshGetMesh', [meshVar, 'm'])))
+      cmpd = CompoundStatement()
+      cmpd.declarations = [self.Cxx.getDeclaration('d', self.Cxx.getType('ALE::Obj<ALE::Discretization>&', isConst=1),
+                                                   self.Cxx.getFunctionCall('new ALE::Discretization',
+                                                                            [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
+                                                                             self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
+      for d, ids in element.Udual.entity_ids.items():
+        cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setNumDof'), [d, len(ids[0])])))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadratureSize'), ['NUM_QUADRATURE_POINTS_'+str(n+i)])))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadraturePoints'), ['points_'+str(n+i)])))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setQuadratureWeights'), ['weights_'+str(n+i)])))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBasisSize'), ['NUM_BASIS_FUNCTIONS_'+str(n+i)])))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBasis'), ['Basis_'+str(n+i)])))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBasisDerivatives'), ['BasisDerivatives_'+str(n+i)])))
+      bcCmpd = CompoundStatement()
+      bcCmpd.declarations = [self.Cxx.getDeclaration('b', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
+                                                     self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
+                                                                                                             self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))])),
+                             self.Cxx.getDeclaration('name', self.Cxx.getType('ostringstream'), isForward = 1)]
+      bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setLabelName'), [self.Cxx.getString('marker')])))
+      bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setMarker'), [self.Cxx.getArrayRef(markerVar, 'i')])))
+      bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setFunction'), [self.Cxx.getArrayRef(bcVar, 'i')])))
+      bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('b', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n+i)])))
+      bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getLeftShift('name', 'i')))
+      bcCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setBoundaryCondition'), [self.Cxx.getFunctionCall(self.Cxx.getStructRef('name', 'str', 0)), 'b'])))
+      cmpd.children.append(self.Cxx.getSimpleLoop('i', 0, numBCVar, isPrefix = 1, body = [bcCmpd]))
+      exactCmpd = CompoundStatement()
+      exactCmpd.declarations = [self.Cxx.getDeclaration('e', self.Cxx.getType('ALE::Obj<ALE::BoundaryCondition>&', isConst=1),
+                                                        self.Cxx.getFunctionCall('new ALE::BoundaryCondition', [self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'comm')),
+                                                                                                                self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'debug'))]))]
+      exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('e', 'setLabelName'), [self.Cxx.getString('marker')])))
+      exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('e', 'setFunction'), [exactVar])))
+      exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('e', 'setDualIntegrator'), ['IntegrateDualBasis_gen_'+str(n+i)])))
+      exactCmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('d', 'setExactSolution'), ['e'])))
+      cmpd.children.append(self.Cxx.getIf(exactVar, [exactCmpd]))
+      cmpd.children.append(self.Cxx.getExpStmt(self.Cxx.getFunctionCall(self.Cxx.getStructRef('m', 'setDiscretization'), ['name', 'd'])))
+      stmts.append(cmpd)
+      stmts.append(self.Cxx.getReturn(isPetsc = 1))
+      func = self.Cxx.getFunction(funcName, self.Cxx.getType('PetscErrorCode'),
+                                  [self.Cxx.getParameter('dm', self.Cxx.getType('DM')),
+                                   self.Cxx.getParameter('name', self.Cxx.getType('char pointer', isConst = 1)),
+                                   self.Cxx.getParameter('numBC', self.Cxx.getType('int', isConst = 1)),
+                                   self.Cxx.getParameter('markers', self.Cxx.getType('int pointer', isConst = 1)),
+                                   self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(bcVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))], numPointers = 2)),
+                                   self.Cxx.getParameter(None, self.Cxx.getFunctionPointer(exactVar, self.Cxx.getType('double'), [self.Cxx.getParameter('coords', self.Cxx.getType('double', 1, isConst = 1))]))],
+                                  decls, stmts)
+      code.extend(self.Cxx.getFunctionHeader(funcName)+[func])
+    return code
 
   def getRealCoordinates(self, dimVar, v0Var, JVar, coordsVar):
     '''Calculates the real coordinates of each quadrature point from reference coordinates'''
@@ -487,7 +596,8 @@ class QuadratureGenerator(script.Script):
     self.logPrint('Generating element module', debugSection = 'codegen')
     try:
       defns = []
-      for n, element in enumerate(elements):
+      n     = 0
+      for element in elements:
         #name      = element.family+str(element.n)
         name       = ''
         shape      = element.shape
@@ -498,8 +608,10 @@ class QuadratureGenerator(script.Script):
           quadrature = self.createQuadrature(shape, self.quadDegree)
         defns.extend(self.getQuadratureStructs(quadrature.degree, quadrature, n))
         defns.extend(self.getBasisStructs(name, element, quadrature, n))
+        defns.extend(self.getIntegratorPoints(n, element))
         defns.extend(self.getIntegratorSetup(n, element))
         defns.extend(self.getSectionSetup(n, element))
+        n += element.function_space().tensor_shape()[0]
       #defns.extend(self.getQuadratureSetup())
       #defns.extend(self.getElementIntegrals())
     except CompilerException, e:
@@ -511,7 +623,7 @@ class QuadratureGenerator(script.Script):
     from GenericCompiler import CodePurpose
     import CxxVisitor
 
-    # May need to move setupPETScLogging() here because PETSc clients are currently interfering with Numeric
+    # May need to move setupPETScLogging() here because PETSc clients are currently interfering with numpy
     source = {'Cxx': [self.getQuadratureFile(filename, defns)]}
     outputs = {'Cxx': CxxVisitor.Output()}
     self.logPrint('Writing element source', debugSection = 'codegen')

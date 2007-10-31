@@ -241,8 +241,8 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMax(Vec v,PetscInt start,PetscInt *id
 
     ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
     in[0] = max;
-    in[1] = rstart+id;
-    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,v->comm);CHKERRQ(ierr);
+    in[1] = rstart+id+start;
+    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMax_Local_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
@@ -338,7 +338,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecStrideMin(Vec v,PetscInt start,PetscInt *id
     ierr  = VecGetOwnershipRange(v,&rstart,PETSC_NULL);CHKERRQ(ierr);
     in[0] = min;
     in[1] = rstart+id;
-    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,v->comm);CHKERRQ(ierr);
+    ierr  = MPI_Allreduce(in,out,2,MPIU_REAL,VecMin_Local_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
     *nrm  = out[0];
     *idex = (PetscInt)out[1];
   }
@@ -1117,6 +1117,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   PetscValidHeaderSpecific(s, VEC_COOKIE,1);
   PetscValidHeaderSpecific(t, VEC_COOKIE,2);
 
+  ierr = PetscLogEventBarrierBegin(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
   ierr = VecGetLocalSize(s, &n);CHKERRQ(ierr);
   ierr = VecGetArray(s, &sx);CHKERRQ(ierr);
   ierr = VecGetArray(t, &tx);CHKERRQ(ierr);
@@ -1127,13 +1128,14 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecDotNorm2(Vec s,Vec t,PetscScalar *dp, Petsc
   }
   work[0] = dpx;
   work[1] = nmx;
-  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,PetscSum_Op,s->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&work,&sum,2,MPIU_SCALAR,PetscSum_Op,((PetscObject)s)->comm);CHKERRQ(ierr);
   *dp  = sum[0];
   *nm  = sum[1];
   
   ierr = VecRestoreArray(t, &tx);CHKERRQ(ierr);
   ierr = VecRestoreArray(s, &sx);CHKERRQ(ierr);
   ierr = PetscLogFlops(4*n);CHKERRQ(ierr);  
+  ierr = PetscLogEventBarrierEnd(VEC_DotNormBarrier,s,t,0,0,((PetscObject)s)->comm);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -1170,7 +1172,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecSum(Vec v,PetscScalar *sum)
   for (i=0; i<n; i++) {
     lsum += x[i];
   }
-  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,v->comm);CHKERRQ(ierr);
+  ierr = MPI_Allreduce(&lsum,sum,1,MPIU_SCALAR,PetscSum_Op,((PetscObject)v)->comm);CHKERRQ(ierr);
   ierr = VecRestoreArray(v,&x);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -1347,7 +1349,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecEqual(Vec vec1,Vec vec2,PetscTruth *flg)
       } 
     } 
     /* combine results from all processors */ 
-    ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,vec1->comm);CHKERRQ(ierr); 
+    ierr = MPI_Allreduce(&flg1,flg,1,MPI_INT,MPI_MIN,((PetscObject)vec1)->comm);CHKERRQ(ierr); 
   } 
   PetscFunctionReturn(0); 
 }

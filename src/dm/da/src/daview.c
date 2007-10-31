@@ -28,7 +28,7 @@ PetscErrorCode DAView_Matlab(DA da,PetscViewer viewer)
   const char     *fnames[] = {"dimension","m","n","p","dof","stencil_width","periodicity","stencil_type"};
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_rank(da->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)da)->comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     ierr = DAGetInfo(da,&dim,&m,&n,&p,0,0,0,&dof,&swidth,&periodic,&stencil);CHKERRQ(ierr);
     mx = mxCreateStructMatrix(1,1,8,(const char **)fnames);
@@ -177,7 +177,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 .keywords: distributed array, view, visualize
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
-          DAGetGhostCorners()
+          DAGetGhostCorners(), DAGetOwnershipRange(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {
@@ -191,7 +191,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   if (!viewer) {
-    ierr = PetscViewerASCIIGetStdout(da->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)da)->comm,&viewer);CHKERRQ(ierr);
   }
   PetscValidHeaderSpecific(viewer,PETSC_VIEWER_COOKIE,2);
 

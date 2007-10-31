@@ -449,49 +449,71 @@ namespace ALE {
       }
     }
     template<typename Section_>
+    const indices_type getIndicesRaw(const Obj<Section_>& section, const point_type& p) {
+      int *indexArray = NULL;
+      int  size       = 0;
+
+      const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+      typename oConeArray::iterator begin   = closure->begin();
+      typename oConeArray::iterator end     = closure->end();
+
+      for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        size    += section->getFiberDimension(p_iter->first);
+      }
+      indexArray = this->getIndexArray(size);
+      int  k     = 0;
+      for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+        section->getIndicesRaw(p_iter->first, section->getIndex(p_iter->first), indexArray, &k, p_iter->second);
+      }
+      return indices_type(indexArray, size);
+    };
+    template<typename Section_>
     const indices_type getIndices(const Obj<Section_>& section, const point_type& p, const int level = -1) {
-      this->_indexArray->clear();
-      int size = 0;
+      int *indexArray = NULL;
+      int  size       = 0;
 
       if (level == 0) {
-        const index_type& idx = section->getIndex(p);
+        size      += section->getFiberDimension(p);
+        indexArray = this->getIndexArray(size);
+        int  k     = 0;
 
-        this->_indexArray->push_back(oIndex_type(idx, 0));
-        size += std::abs(idx.prefix);
+        section->getIndices(p, indexArray, &k);
       } else if ((level == 1) || (this->height() == 1)) {
         const Obj<typename sieve_type::coneSequence>& cone = this->_sieve->cone(p);
         typename sieve_type::coneSequence::iterator   end  = cone->end();
-        const index_type& idx = section->getIndex(p);
 
-        this->_indexArray->push_back(idx);
-        size += idx.prefix;
+        size      += section->getFiberDimension(p);
         for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
-          const index_type& pIdx = section->getIndex(*p_iter);
+          size    += section->getFiberDimension(*p_iter);
+        }
+        indexArray = this->getIndexArray(size);
+        int  k     = 0;
 
-          this->_indexArray->push_back(oIndex_type(pIdx, 0));
-          size += std::abs(pIdx.prefix);
+        section->getIndices(p, indexArray, &k);
+        for(typename sieve_type::coneSequence::iterator p_iter = cone->begin(); p_iter != end; ++p_iter) {
+          section->getIndices(*p_iter, indexArray, &k);
         }
       } else if (level == -1) {
         const Obj<oConeArray>         closure = sieve_alg_type::orientedClosure(this, this->getArrowSection("orientation"), p);
+        typename oConeArray::iterator begin   = closure->begin();
         typename oConeArray::iterator end     = closure->end();
 
-        for(typename oConeArray::iterator p_iter = closure->begin(); p_iter != end; ++p_iter) {
-          const index_type& pIdx = section->getIndex(p_iter->first);
-
-          this->_indexArray->push_back(oIndex_type(pIdx, p_iter->second));
-          size += std::abs(pIdx.prefix);
+        for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          size    += section->getFiberDimension(p_iter->first);
+        }
+        indexArray = this->getIndexArray(size);
+        int  k     = 0;
+        for(typename oConeArray::iterator p_iter = begin; p_iter != end; ++p_iter) {
+          section->getIndices(p_iter->first, indexArray, &k, p_iter->second);
         }
       } else {
-        throw ALE::Exception("Bundle has not yet implemented nCone");
+        throw ALE::Exception("Bundle has not yet implemented getIndices() for an arbitrary level");
       }
       if (this->debug()) {
-        for(typename oIndexArray::iterator i_iter = this->_indexArray->begin(); i_iter != this->_indexArray->end(); ++i_iter) {
-          printf("[%d]index interval (%d, %d)\n", this->commRank(), i_iter->first.prefix, i_iter->first.index);
+        for(int i = 0; i < size; ++i) {
+          printf("[%d]index %d: %d\n", this->commRank(), i, indexArray[i]);
         }
       }
-      int *indexArray = this->getIndexArray(size);
-
-      this->expandIntervals(this->_indexArray, indexArray);
       return indices_type(indexArray, size);
     };
     template<typename Section_, typename Numbering>
@@ -754,6 +776,79 @@ namespace ALE {
         }
       }
     };
+  public: // Optimization
+    // Calculate a custom atlas for the given traversal
+    //   This returns the tag value assigned to the traversal
+    template<typename Section_, typename Sequence_>
+    int calculateCustomAtlas(const Obj<Section_>& section, const Obj<Sequence_>& points) {
+      const typename Sequence_::iterator begin    = points->begin();
+      const typename Sequence_::iterator end      = points->end();
+      const int                          num      = points->size();
+      int                               *rOffsets = new int[num+1];
+      int                               *rIndices;
+      int                               *uOffsets = new int[num+1];
+      int                               *uIndices;
+      int                                p;
+
+      p = 0;
+      rOffsets[p] = 0;
+      uOffsets[p] = 0;
+      for(typename Sequence_::iterator p_iter = begin; p_iter != end; ++p_iter, ++p) {
+        rOffsets[p+1] = rOffsets[p] + this->sizeWithBC(section, *p_iter);
+        uOffsets[p+1] = rOffsets[p+1];
+        //uOffsets[p+1] = uOffsets[p] + this->size(section, *p_iter);
+      }
+      rIndices = new int[rOffsets[p]];
+      uIndices = new int[uOffsets[p]];
+      p = 0;
+      for(typename Sequence_::iterator p_iter = begin; p_iter != end; ++p_iter, ++p) {
+        const indices_type rIdx = this->getIndicesRaw(section, *p_iter);
+        for(int i = 0, k = rOffsets[p]; k < rOffsets[p+1]; ++i, ++k) rIndices[k] = rIdx.first[i];
+
+        const indices_type uIdx = this->getIndices(section, *p_iter);
+        for(int i = 0, k = uOffsets[p]; k < uOffsets[p+1]; ++i, ++k) uIndices[k] = uIdx.first[i];
+      }
+      return section->setCustomAtlas(rOffsets, rIndices, uOffsets, uIndices);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p) {
+      const int *offsets, *indices;
+
+      section->getCustomRestrictAtlas(tag, &offsets, &indices);
+      const int size = offsets[p+1] - offsets[p];
+      return this->restrict(section, tag, p, section->getRawArray(size), offsets, indices);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int valuesSize) {
+      const int *offsets, *indices;
+
+      section->getCustomRestrictAtlas(tag, &offsets, &indices);
+      const int size = offsets[p+1] - offsets[p];
+      if (valuesSize < size) {throw ALE::Exception("Input array too small");}
+      return this->restrict(section, tag, p, values, offsets, indices);
+    };
+    template<typename Section_>
+    const typename Section_::value_type *restrict(const Obj<Section_>& section, const int tag, const int p, typename Section_::value_type  *values, const int offsets[], const int indices[]) {
+      const typename Section_::value_type *array = section->restrict();
+
+      const int size = offsets[p+1] - offsets[p];
+      for(int j = 0, k = offsets[p]; j < size; ++j, ++k) {
+        values[j] = array[indices[k]];
+      }
+      return values;
+    };
+    template<typename Section_>
+    void updateAdd(const Obj<Section_>& section, const int tag, const int p, const typename Section_::value_type values[]) {
+      typename Section_::value_type *array = (typename Section_::value_type *) section->restrict();
+      const int *offsets, *indices;
+
+      section->getCustomUpdateAtlas(tag, &offsets, &indices);
+      const int size = offsets[p+1] - offsets[p];
+      for(int j = 0, k = offsets[p]; j < size; ++j, ++k) {
+        if (indices[k] < 0) continue;
+        array[indices[k]] += values[j];
+      }
+    };
   public: // Allocation
     template<typename Section_>
     void allocate(const Obj<Section_>& section, const Obj<send_overlap_type>& sendOverlap = NULL) {
@@ -975,11 +1070,11 @@ namespace ALE {
       }
     };
   public:
+    const bool hasBoundaryCondition() {return (this->_boundaryConditions.find("default") != this->_boundaryConditions.end());};
     const Obj<BoundaryCondition>& getBoundaryCondition() {return this->getBoundaryCondition("default");};
     void setBoundaryCondition(const Obj<BoundaryCondition>& boundaryCondition) {this->setBoundaryCondition("default", boundaryCondition);};
     const Obj<BoundaryCondition>& getBoundaryCondition(const std::string& name) {return this->_boundaryConditions[name];};
     void setBoundaryCondition(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
-    void setDiscretization(const std::string& name, const Obj<BoundaryCondition>& boundaryCondition) {this->_boundaryConditions[name] = boundaryCondition;};
     Obj<std::set<std::string> > getBoundaryConditions() const {
       Obj<std::set<std::string> > names = std::set<std::string>();
 
@@ -1058,6 +1153,7 @@ namespace ALE {
   protected:
     int                  _dim;
     discretizations_type _discretizations;
+    std::map<int,double> _periodicity;
   public:
     Mesh(MPI_Comm comm, int dim, int debug = 0) : base_type(comm, debug), _dim(dim) {
       ///this->_factory = NumberingFactory::singleton(debug);
@@ -1077,11 +1173,13 @@ namespace ALE {
       }
       return names;
     };
+    bool getPeriodicity(const int d) {return this->_periodicity[d];};
+    void setPeriodicity(const int d, const double length) {this->_periodicity[d] = length;};
   public: // Mesh geometry
     void computeTriangleGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
-      const double    *coords = this->restrict(coordinates, e);
-      const int        dim    = 2;
-      double           invDet;
+      const double *coords = this->restrict(coordinates, e);
+      const int     dim    = 2;
+      double        invDet;
 
       if (v0) {
         for(int d = 0; d < dim; d++) {
@@ -1095,7 +1193,24 @@ namespace ALE {
           }
         }
         detJ = J[0]*J[3] - J[1]*J[2];
-        PetscLogFlops(8 + 3);
+        if (detJ < 0.0) {
+          const double  xLength = this->_periodicity[0];
+
+          if (xLength != 0.0) {
+            double v0x = coords[0*dim+0];
+
+            if (v0x == 0.0) {
+              v0x = v0[0] = xLength;
+            }
+            for(int f = 0; f < dim; f++) {
+              const double px = coords[(f+1)*dim+0] == 0.0 ? xLength : coords[(f+1)*dim+0];
+
+              J[0*dim+f] = 0.5*(px - v0x);
+            }
+          }
+          detJ = J[0]*J[3] - J[1]*J[2];
+        }
+        PetscLogFlopsNoCheck(8 + 3);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1103,7 +1218,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlops(5);
+        PetscLogFlopsNoCheck(5);
       }
     };
     void computeQuadrilateralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -1129,7 +1244,7 @@ namespace ALE {
         J[2] = y_1 + (y_3 - y_1 - y_2)*point[1];
         J[3] = y_1 + (y_3 - y_1 - y_2)*point[0];
         detJ = J[0]*J[3] - J[1]*J[2];
-        PetscLogFlops(6 + 16 + 3);
+        PetscLogFlopsNoCheck(6 + 16 + 3);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1137,7 +1252,7 @@ namespace ALE {
         invJ[1] = -invDet*J[1];
         invJ[2] = -invDet*J[2];
         invJ[3] =  invDet*J[0];
-        PetscLogFlops(5);
+        PetscLogFlopsNoCheck(5);
       }
     };
     void computeTetrahedronGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -1160,7 +1275,7 @@ namespace ALE {
         detJ = -(J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                  J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                  J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlops(18 + 12);
+        PetscLogFlopsNoCheck(18 + 12);
       }
       if (invJ) {
         invDet  = -1.0/detJ;
@@ -1173,7 +1288,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlops(37);
+        PetscLogFlopsNoCheck(37);
       }
     };
     void computeHexahedralGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double point[], double v0[], double J[], double invJ[], double& detJ) {
@@ -1224,7 +1339,7 @@ namespace ALE {
         detJ = (J[0*3+0]*(J[1*3+1]*J[2*3+2] - J[1*3+2]*J[2*3+1]) +
                 J[0*3+1]*(J[1*3+2]*J[2*3+0] - J[1*3+0]*J[2*3+2]) +
                 J[0*3+2]*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]));
-        PetscLogFlops(39 + 81 + 12);
+        PetscLogFlopsNoCheck(39 + 81 + 12);
       }
       if (invJ) {
         invDet  = 1.0/detJ;
@@ -1237,7 +1352,7 @@ namespace ALE {
         invJ[2*3+0] = invDet*(J[1*3+0]*J[2*3+1] - J[1*3+1]*J[2*3+0]);
         invJ[2*3+1] = invDet*(J[0*3+1]*J[2*3+0] - J[0*3+0]*J[2*3+1]);
         invJ[2*3+2] = invDet*(J[0*3+0]*J[1*3+1] - J[0*3+1]*J[1*3+0]);
-        PetscLogFlops(37);
+        PetscLogFlopsNoCheck(37);
       }
     };
     void computeElementGeometry(const Obj<real_section_type>& coordinates, const point_type& e, double v0[], double J[], double invJ[], double& detJ) {
@@ -1245,6 +1360,169 @@ namespace ALE {
         computeTriangleGeometry(coordinates, e, v0, J, invJ, detJ);
       } else if (this->_dim == 3) {
         computeTetrahedronGeometry(coordinates, e, v0, J, invJ, detJ);
+      } else {
+        throw ALE::Exception("Unsupport dimension for element geometry computation");
+      }
+    };
+    void computeLineFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
+      const arrow_section_type::point_type arrow(cell, face);
+      const bool reversed = (this->getArrowSection("orientation")->restrictPoint(arrow)[0] == -2);
+      const int  dim      = this->getDimension();
+      double     norm     = 0.0;
+      double    *vec      = tangent;
+
+      if (f == 0) {
+        vec[0] = 0.0;        vec[1] = -1.0;
+      } else if (f == 1) {
+        vec[0] = 0.70710678; vec[1] = 0.70710678;
+      } else if (f == 2) {
+        vec[0] = -1.0;       vec[1] = 0.0;
+      }
+      for(int d = 0; d < dim; ++d) {
+        normal[d] = 0.0;
+        for(int e = 0; e < dim; ++e) normal[d] += cellInvJ[e*dim+d]*vec[e];
+        if (reversed) normal[d] = -normal[d];
+        norm += normal[d]*normal[d];
+      }
+      norm = std::sqrt(norm);
+      for(int d = 0; d < dim; ++d) {
+        normal[d] /= norm;
+      }
+      tangent[0] =  normal[1];
+      tangent[1] = -normal[0];
+      if (this->debug()) {
+        std::cout << "Cell: " << cell << " Face: " << face << "("<<f<<")" << std::endl;
+        for(int d = 0; d < dim; ++d) {
+          std::cout << "Normal["<<d<<"]: " << normal[d] << " Tangent["<<d<<"]: " << tangent[d] << std::endl;
+        }
+      }
+      // Now get 1D Jacobian info
+      //   Should be a way to get this directly
+      const double *coords = this->restrict(this->getRealSection("coordinates"), face);
+      detJ    = std::sqrt(PetscSqr(coords[1*2+0] - coords[0*2+0]) + PetscSqr(coords[1*2+1] - coords[0*2+1]))/2.0;
+      invJ[0] = 1.0/detJ;
+    };
+    void computeTriangleFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
+      const arrow_section_type::point_type arrow(cell, face);
+      const bool reversed = this->getArrowSection("orientation")->restrictPoint(arrow)[0] < 0;
+      const int  dim      = this->getDimension();
+      const int  faceDim  = dim-1;
+      double     norm     = 0.0;
+      double    *vec      = tangent;
+
+      if (f == 0) {
+        vec[0] = 0.0;        vec[1] = 0.0;        vec[2] = -1.0;
+      } else if (f == 1) {
+        vec[0] = 0.0;        vec[1] = -1.0;       vec[2] = 0.0;
+      } else if (f == 2) {
+        vec[0] = 0.57735027; vec[1] = 0.57735027; vec[2] = 0.57735027;
+      } else if (f == 3) {
+        vec[0] = -1.0;       vec[1] = 0.0;        vec[2] = 0.0;
+      }
+      for(int d = 0; d < dim; ++d) {
+        normal[d] = 0.0;
+        for(int e = 0; e < dim; ++e) normal[d] += cellInvJ[e*dim+d]*vec[e];
+        if (reversed) normal[d] = -normal[d];
+        norm += normal[d]*normal[d];
+      }
+      norm = std::sqrt(norm);
+      for(int d = 0; d < dim; ++d) {
+        normal[d] /= norm;
+      }
+      // Get tangents
+      tangent[0] = normal[1] - normal[2];
+      tangent[1] = normal[2] - normal[0];
+      tangent[2] = normal[0] - normal[1];
+      norm = 0.0;
+      for(int d = 0; d < dim; ++d) {
+        norm += tangent[d]*tangent[d];
+      }
+      norm = std::sqrt(norm);
+      for(int d = 0; d < dim; ++d) {
+        tangent[d] /= norm;
+      }
+      tangent[3] = normal[1]*tangent[2] - normal[2]*tangent[1];
+      tangent[4] = normal[2]*tangent[0] - normal[0]*tangent[2];
+      tangent[5] = normal[0]*tangent[1] - normal[1]*tangent[0];
+      if (this->debug()) {
+        std::cout << "Cell: " << cell << " Face: " << face << "("<<f<<")" << std::endl;
+        for(int d = 0; d < dim; ++d) {
+          std::cout << "Normal["<<d<<"]: " << normal[d] << " TangentA["<<d<<"]: " << tangent[d] << " TangentB["<<d<<"]: " << tangent[dim+d] << std::endl;
+        }
+      }
+      // Now get 2D Jacobian info
+      //   Should be a way to get this directly
+      const double *coords = this->restrict(this->getRealSection("coordinates"), face);
+      // Rotate so that normal in z
+      double invR[9], R[9];
+      double detR, invDetR;
+      for(int d = 0; d < dim; d++) {
+        invR[d*dim+0] = tangent[d];
+        invR[d*dim+1] = tangent[dim+d];
+        invR[d*dim+2] = normal[d];
+      }
+      invDetR = (invR[0*3+0]*(invR[1*3+1]*invR[2*3+2] - invR[1*3+2]*invR[2*3+1]) +
+                 invR[0*3+1]*(invR[1*3+2]*invR[2*3+0] - invR[1*3+0]*invR[2*3+2]) +
+                 invR[0*3+2]*(invR[1*3+0]*invR[2*3+1] - invR[1*3+1]*invR[2*3+0]));
+      detR  = 1.0/invDetR;
+      R[0*3+0] = detR*(invR[1*3+1]*invR[2*3+2] - invR[1*3+2]*invR[2*3+1]);
+      R[0*3+1] = detR*(invR[0*3+2]*invR[2*3+1] - invR[0*3+1]*invR[2*3+2]);
+      R[0*3+2] = detR*(invR[0*3+1]*invR[1*3+2] - invR[0*3+2]*invR[1*3+1]);
+      R[1*3+0] = detR*(invR[1*3+2]*invR[2*3+0] - invR[1*3+0]*invR[2*3+2]);
+      R[1*3+1] = detR*(invR[0*3+0]*invR[2*3+2] - invR[0*3+2]*invR[2*3+0]);
+      R[1*3+2] = detR*(invR[0*3+2]*invR[1*3+0] - invR[0*3+0]*invR[1*3+2]);
+      R[2*3+0] = detR*(invR[1*3+0]*invR[2*3+1] - invR[1*3+1]*invR[2*3+0]);
+      R[2*3+1] = detR*(invR[0*3+1]*invR[2*3+0] - invR[0*3+0]*invR[2*3+1]);
+      R[2*3+2] = detR*(invR[0*3+0]*invR[1*3+1] - invR[0*3+1]*invR[1*3+0]);
+      for(int d = 0; d < dim; d++) {
+        for(int e = 0; e < dim; e++) {
+          invR[d*dim+e] = 0.0;
+          for(int g = 0; g < dim; g++) {
+            invR[d*dim+e] += R[e*dim+g]*coords[d*dim+g];
+          }
+        }
+      }
+      for(int d = dim-1; d >= 0; --d) {
+        invR[d*dim+2] -= invR[0*dim+2];
+        if (this->debug() && (d == dim-1)) {
+          double ref[9];
+          for(int q = 0; q < dim; q++) {
+            for(int e = 0; e < dim; e++) {
+              ref[q*dim+e] = 0.0;
+              for(int g = 0; g < dim; g++) {
+                ref[q*dim+e] += cellInvJ[e*dim+g]*coords[q*dim+g];
+              }
+            }
+          }
+          std::cout << "f: " << f << std::endl;
+          std::cout << this->printMatrix(std::string("coords"), dim, dim, coords) << std::endl;
+          std::cout << this->printMatrix(std::string("ref coords"), dim, dim, ref) << std::endl;
+          std::cout << this->printMatrix(std::string("R"), dim, dim, R) << std::endl;
+          std::cout << this->printMatrix(std::string("invR"), dim, dim, invR) << std::endl;
+        }
+        if (fabs(invR[d*dim+2]) > 1.0e-8) {
+          throw ALE::Exception("Invalid rotation");
+        }
+      }
+      double J[4];
+      for(int d = 0; d < faceDim; d++) {
+        for(int e = 0; e < faceDim; e++) {
+          J[d*faceDim+e] = 0.5*(invR[(e+1)*dim+d] - invR[0*dim+d]);
+        }
+      }
+      detJ = fabs(J[0]*J[3] - J[1]*J[2]);
+      // Probably need something here if detJ < 0
+      const double invDet = 1.0/detJ;
+      invJ[0] =  invDet*J[3];
+      invJ[1] = -invDet*J[1];
+      invJ[2] = -invDet*J[2];
+      invJ[3] =  invDet*J[0];
+    };
+    void computeFaceGeometry(const point_type& cell, const point_type& face, const int f, const double cellInvJ[], double invJ[], double& detJ, double normal[], double tangent[]) {
+      if (this->_dim == 2) {
+        computeLineFaceGeometry(cell, face, f, cellInvJ, invJ, detJ, normal, tangent);
+      } else if (this->_dim == 3) {
+        computeTriangleFaceGeometry(cell, face, f, cellInvJ, invJ, detJ, normal, tangent);
       } else {
         throw ALE::Exception("Unsupport dimension for element geometry computation");
       }
@@ -1314,16 +1592,40 @@ namespace ALE {
       }
     };
   public: // Discretization
-    void markBoundaryCells(const std::string& name, const int marker = 1, const int newMarker = 2) {
+    void markBoundaryCells(const std::string& name, const int marker = 1, const int newMarker = 2, const bool onlyVertices = false) {
       const Obj<label_type>&     label    = this->getLabel(name);
       const Obj<label_sequence>& boundary = this->getLabelStratum(name, marker);
       const Obj<sieve_type>&     sieve    = this->getSieve();
 
-      for(label_sequence::iterator e_iter = boundary->begin(); e_iter != boundary->end(); ++e_iter) {
-        if (this->height(*e_iter) == 1) {
-          const point_type cell = *sieve->support(*e_iter)->begin();
+      if (!onlyVertices) {
+        const label_sequence::iterator end = boundary->end();
 
-          this->setValue(label, cell, newMarker);
+        for(label_sequence::iterator e_iter = boundary->begin(); e_iter != end; ++e_iter) {
+          if (this->height(*e_iter) == 1) {
+            const point_type cell = *sieve->support(*e_iter)->begin();
+
+            this->setValue(label, cell, newMarker);
+          }
+        }
+      } else {
+        const label_sequence::iterator end   = boundary->end();
+        const int                      depth = this->depth();
+
+        for(label_sequence::iterator v_iter = boundary->begin(); v_iter != end; ++v_iter) {
+          const Obj<supportArray>      support = sieve->nSupport(*v_iter, depth);
+          const supportArray::iterator sEnd    = support->end();
+
+          for(supportArray::iterator c_iter = support->begin(); c_iter != sEnd; ++c_iter) {
+            const Obj<sieve_type::traits::coneSequence>&     cone = sieve->cone(*c_iter);
+            const sieve_type::traits::coneSequence::iterator cEnd = cone->end();
+
+            for(sieve_type::traits::coneSequence::iterator e_iter = cone->begin(); e_iter != cEnd; ++e_iter) {
+              if (sieve->support(*e_iter)->size() == 1) {
+                this->setValue(label, *c_iter, newMarker);
+                break;
+              }
+            }
+          }
         }
       }
     };
@@ -1557,13 +1859,13 @@ namespace ALE {
         }
       }
     };
-    void setupField(const Obj<real_section_type>& s, const int cellMarker = 2) {
+    void setupField(const Obj<real_section_type>& s, const int cellMarker = 2, const bool noUpdate = false) {
       const Obj<names_type>& discs  = this->getDiscretizations();
       const int              debug  = s->debug();
       names_type             bcLabels;
       int                    maxDof;
 
-      maxDof = setFiberDimensions(s, discs, bcLabels);
+      maxDof = this->setFiberDimensions(s, discs, bcLabels);
       this->calculateIndices();
       this->calculateIndicesExcluded(s, discs);
       this->allocate(s);
@@ -1616,7 +1918,7 @@ namespace ALE {
                     if (debug) {std::cout << "      field " << *f_iter << " marker " << value << std::endl;}
                     for(int d = 0; d < fDim; ++d, ++v[f]) {
                       dofs[++i] = off+d;
-                      values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
+                      if (!noUpdate) values[indices[v[f]]] = (*bc->getDualIntegrator())(v0, J, v[f], bc->getFunction());
                       if (debug) {std::cout << "      setting values["<<indices[v[f]]<<"] = " << values[indices[v[f]]] << std::endl;}
                     }
                     // Allow only one condition per point
@@ -1674,7 +1976,9 @@ namespace ALE {
               }
             }
           }
-          this->updateAll(s, *c_iter, values);
+          if (!noUpdate) {
+            this->updateAll(s, *c_iter, values);
+          }
         }
         delete [] dofs;
         delete [] values;
@@ -1892,9 +2196,9 @@ namespace ALE {
 
           sieve->addArrow(vertices[vertexA], edge, order++);
           sieve->addArrow(vertices[vertexB], edge, order++);
-          mesh->setValue(markers, edge, 1);
-          mesh->setValue(markers, vertices[vertexA], 1);
-          mesh->setValue(markers, vertices[vertexB], 1);
+          mesh->setValue(markers, edge, 2);
+          mesh->setValue(markers, vertices[vertexA], 2);
+          mesh->setValue(markers, vertices[vertexB], 2);
         }
       }
       mesh->stratify();
@@ -2279,11 +2583,11 @@ namespace ALE {
             sieve->addArrow(vertices[vertexB], face, order++);
             if (vertexB != vertexC) sieve->addArrow(vertices[vertexC], face, order++);
             if (vertexA != vertexD) sieve->addArrow(vertices[vertexD], face, order++);
-            mesh->setValue(markers, face, 1);
-            mesh->setValue(markers, vertices[vertexA], 1);
-            mesh->setValue(markers, vertices[vertexB], 1);
-            if (vertexB != vertexC) mesh->setValue(markers, vertices[vertexC], 1);
-            if (vertexA != vertexD) mesh->setValue(markers, vertices[vertexD], 1);
+            mesh->setValue(markers, face, 2);
+            mesh->setValue(markers, vertices[vertexA], 2);
+            mesh->setValue(markers, vertices[vertexB], 2);
+            if (vertexB != vertexC) mesh->setValue(markers, vertices[vertexC], 2);
+            if (vertexA != vertexD) mesh->setValue(markers, vertices[vertexD], 2);
           }
         }
       }

@@ -1158,6 +1158,7 @@ c
       real cl_loc,cd_loc,cx_loc,cy_loc,cz_loc,cmx_loc,cmy_loc,cmz_loc
       real cl_glo,cd_glo,cx_glo,cy_glo,cz_glo,cmx_glo,cmy_glo,cmz_glo
       real coef_loc(8), coef_glo(8)
+      PetscSizeT sizeofscalar
 c 
 #if defined(INTERLACING)
       real qvec(5,nvertices)
@@ -1188,7 +1189,8 @@ c
       cmx_loc = 0.0
       cmy_loc = 0.0
       cmz_loc = 0.0
-      call PetscMemzero(coef_glo,8*8,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+      call PetscMemzero(coef_glo,sizeofscalar*8,ierr)
  
 c
 c     if(ntt.eq.ncyc) then
@@ -3046,6 +3048,7 @@ c
 #define r44(x) rxy(x,7)
 #define eptr(i,j) evec(i,j)
 #endif
+      PetscSizeT sizeofscalar
 !
 !
 !    Initialize all the rij to 0.0 
@@ -3059,7 +3062,8 @@ c
 !        r33(i) = 0.0
 !        r44(i) = 0.0
 !1000 continue
-      call PetscMemzero(rxy,8*7*nnodes,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+      call PetscMemzero(rxy,sizeofscalar*7*nnodes,ierr)
 !
 ! Now loop over the edges and accumulate the r's 
 !
@@ -3311,6 +3315,7 @@ c
 #define r44(x) rxy(x,7)
 #define eptr(i,j) evec(i,j)
 #endif
+      PetscSizeT sizeofscalar
 
 c     if (flag .eq. -1) then
 c        call PLogEventRegister(grad_event,grad_label,'blue:',ierr)
@@ -3356,7 +3361,8 @@ c       grady(4,i) = 0.0
 c       gradz(4,i) = 0.0
 c
 c1000  continue
-      call PetscMemzero(grad,15*8*nnodes,ierr)
+      call PetscDataTypeGetSize(PETSC_SCALAR,sizeofscalar,ierr)
+      call PetscMemzero(grad,sizeofscalar*15*nnodes,ierr)
 c
 c Convert the energy to total enthalpy or pressure
 c

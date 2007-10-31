@@ -1,0 +1,3 @@
+ LAPACKsyev: compute all 36 eigensolutions...
+    max|(x_j^T*x_i) - delta_ji|: 9.99201e-16
+    max_resi:                    2.07188e-15

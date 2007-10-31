@@ -219,8 +219,8 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
 
   ierr = DAGetNatural_Private(da,&Nlocal,&to);CHKERRQ(ierr);
   if (Nlocal != m) SETERRQ2(PETSC_ERR_PLIB,"Internal error: Nlocal %D local vector size %D",Nlocal,m);
-  ierr = ISCreateStride(da->comm,m,start,1,&from);CHKERRQ(ierr);
-  ierr = VecCreateMPIWithArray(da->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
+  ierr = ISCreateStride(((PetscObject)da)->comm,m,start,1,&from);CHKERRQ(ierr);
+  ierr = VecCreateMPIWithArray(((PetscObject)da)->comm,da->Nlocal,PETSC_DETERMINE,0,&global);
   ierr = VecSetBlockSize(global,da->w);CHKERRQ(ierr);
   ierr = VecScatterCreate(global,from,da->natural,to,&da->gton);CHKERRQ(ierr);
   ierr = VecDestroy(global);CHKERRQ(ierr);
@@ -253,6 +253,8 @@ PetscErrorCode DAGlobalToNatural_Create(DA da)
    obtained from DACreateGlobalVector() and DACreateNaturalVector(), BUT they
    must have the same parallel data layout; they could, for example, be 
    obtained with VecDuplicate() from the DA originating vectors.
+
+   You must call DACreateNaturalVector() before using this routine
 
 .keywords: distributed array, global to local, begin
 

@@ -116,7 +116,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   cg            = (KSP_CG*)ksp->data;
   eigs          = ksp->calc_sings;
@@ -143,14 +143,15 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
   } else { 
     ierr = VecCopy(B,R);CHKERRQ(ierr);                         /*     r <- b (x is 0) */
   }
-  ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
-  ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);        /*  beta <- z'*r       */
 
   if (ksp->normtype == KSP_NORM_PRECONDITIONED) {
+    ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
     ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- z'*z = e'*A'*B'*B*A'*e'     */
   } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
     ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);                /*    dp <- r'*r = e'*A'*A*e            */
   } else if (ksp->normtype == KSP_NORM_NATURAL) {
+    ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
+    ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);        /*  beta <- z'*r       */
     dp = sqrt(PetscAbsScalar(beta));                           /*    dp <- r'*z = r'*B*r = e'*A'*B*A*e */
   } else dp = 0.0;
   KSPLogResidualHistory(ksp,dp);
@@ -159,6 +160,13 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
 
   ierr = (*ksp->converged)(ksp,0,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);      /* test for convergence */
   if (ksp->reason) PetscFunctionReturn(0);
+
+  if (ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)){
+    ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */
+  }
+  if (ksp->normtype != KSP_NORM_NATURAL){
+    ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);        /*  beta <- z'*r       */
+  }
 
   i = 0;
   do {
@@ -202,13 +210,14 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      }
      ierr = VecAXPY(X,a,P);CHKERRQ(ierr);          /*     x <- x + ap     */
      ierr = VecAXPY(R,-a,Z);CHKERRQ(ierr);                      /*     r <- r - az     */
-     ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
-     ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);      /*  beta <- r'*z       */
      if (ksp->normtype == KSP_NORM_PRECONDITIONED && ksp->chknorm < i+2) {
+       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
        ierr = VecNorm(Z,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- z'*z       */
      } else if (ksp->normtype == KSP_NORM_UNPRECONDITIONED && ksp->chknorm < i+2) {
        ierr = VecNorm(R,NORM_2,&dp);CHKERRQ(ierr);              /*    dp <- r'*r       */
      } else if (ksp->normtype == KSP_NORM_NATURAL) {
+       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);               /*     z <- Br         */
+       ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);      /*  beta <- r'*z       */
        dp = sqrt(PetscAbsScalar(beta));
      } else {
        dp = 0.0;
@@ -218,6 +227,14 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
      KSPMonitor(ksp,i+1,dp);
      ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
      if (ksp->reason) break;
+
+     if ((ksp->normtype != KSP_NORM_PRECONDITIONED && (ksp->normtype != KSP_NORM_NATURAL)) || (ksp->chknorm >= i+2)){
+       ierr = KSP_PCApply(ksp,R,Z);CHKERRQ(ierr);                   /*     z <- Br         */ 
+     }
+     if ((ksp->normtype != KSP_NORM_NATURAL) || (ksp->chknorm >= i+2)){
+       ierr = VecXDot(Z,R,&beta);CHKERRQ(ierr);CHKFPQ(beta);        /*  beta <- z'*r       */
+     }
+
      i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) {

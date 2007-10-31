@@ -36,7 +36,7 @@ PetscErrorCode  KSPSolve_BiCG(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   X       = ksp->vec_sol;
   B       = ksp->vec_rhs;
@@ -157,7 +157,10 @@ PetscErrorCode KSPDestroy_BiCG(KSP ksp)
 
    Level: beginner
 
-.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS
+   Note: this method requires that one be apply to apply the transpose of the preconditioner and operator
+         as well as the operator and preconditioner.
+
+.seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP, KSPBCGS, KSPCGNE
 
 M*/
 EXTERN_C_BEGIN

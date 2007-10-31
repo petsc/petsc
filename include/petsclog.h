@@ -153,9 +153,21 @@ struct _n_StageLog {
  */
 
 #if defined(PETSC_USE_COMPLEX)
-#define PetscLogFlops(n) (_TotalFlops += (4*n),0)
+#define PetscLogFlopsNoCheck(n) (_TotalFlops += (4*n),0)
+#define PetscLogFlops(n) 0; \
+  {\
+    PetscLogDouble _tmp_flops = (n);   \
+    if (_tmp_flops < 0)  { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"PetscLogFlops: flop-count given is negative: %5.2f", _tmp_flops); } \
+    _TotalFlops += 4*_tmp_flops; \
+  }
 #else
-#define PetscLogFlops(n) (_TotalFlops += (n),0)
+#define PetscLogFlopsNoCheck(n) (_TotalFlops += (n),0)
+#define PetscLogFlops(n) 0; \
+  {\
+    PetscLogDouble _tmp_flops = (n);   \
+    if (_tmp_flops < 0)  { SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"PetscLogFlops: flop-count given is negative: %5.2f", _tmp_flops); } \
+    _TotalFlops += _tmp_flops; \
+  }
 #endif
 
 #if defined (PETSC_HAVE_MPE)
@@ -348,6 +360,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT StageLogGetEventPerfLog(StageLog, int, Eve
 #else  /* ---Logging is turned off --------------------------------------------*/
 
 #define PetscLogFlops(n) 0
+#define PetscLogFlopsNoCheck(n)
 
 /*
      With logging turned off, then MPE has to be turned off

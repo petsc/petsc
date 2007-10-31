@@ -24,7 +24,7 @@
 static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
 {
   PetscErrorCode ierr;
-  PetscInt i,vl,last,tmp;
+  PetscInt       i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -65,7 +65,7 @@ static PetscErrorCode PetscSortInt_Private(PetscInt *v,PetscInt right)
 PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 {
   PetscErrorCode ierr;
-  PetscInt j,k,tmp,ik;
+  PetscInt       j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {
@@ -97,7 +97,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscSortInt(PetscInt n,PetscInt i[])
 static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,PetscInt right)
 {
   PetscErrorCode ierr;
-  PetscInt i,vl,last,tmp;
+  PetscInt       i,vl,last,tmp;
 
   PetscFunctionBegin;
   if (right <= 1) {
@@ -140,7 +140,7 @@ static PetscErrorCode PetscSortIntWithArray_Private(PetscInt *v,PetscInt *V,Pets
 PetscErrorCode PETSC_DLLEXPORT PetscSortIntWithArray(PetscInt n,PetscInt i[],PetscInt Ii[])
 {
   PetscErrorCode ierr;
-  PetscInt j,k,tmp,ik;
+  PetscInt       j,k,tmp,ik;
 
   PetscFunctionBegin;
   if (n<8) {

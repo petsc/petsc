@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscmat.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -20,7 +20,7 @@ void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscI
 {
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
   if (*ierr) return;
-  *ierr = PetscMalloc(4*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
+  *ierr = PetscMalloc(5*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
 }
 
 static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
@@ -51,6 +51,13 @@ static PetscErrorCode ourmulttransposeadd(Mat mat,Vec x,Vec y,Vec z)
   return ierr;
 }
 
+static PetscErrorCode ourgetdiagonal(Mat mat,Vec x)
+{
+  PetscErrorCode ierr = 0;
+  (*(PetscErrorCode (PETSC_STDCALL *)(Mat*,Vec*,PetscErrorCode*))(((PetscObject)mat)->fortran_func_pointers[4]))(&mat,&x,&ierr);
+  return ierr;
+}
+
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
   if (*op == MATOP_MULT) {
@@ -65,6 +72,9 @@ void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCod
   } else if (*op == MATOP_MULT_TRANSPOSE_ADD) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmulttransposeadd);
     ((PetscObject)*mat)->fortran_func_pointers[3] = (PetscVoidFunction)f;
+  } else if (*op == MATOP_GET_DIAGONAL) {
+    *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourgetdiagonal);
+    ((PetscObject)*mat)->fortran_func_pointers[4] = (PetscVoidFunction)f;
   } else {
     PetscError(__LINE__,"MatShellSetOperation_Fortran",__FILE__,__SDIR__,1,0,
                "Cannot set that matrix operation");

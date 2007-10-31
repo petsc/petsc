@@ -241,7 +241,7 @@ PetscErrorCode KSPSolve_GMRES(KSP ksp)
     ierr     = GMREScycle(&its,ksp);CHKERRQ(ierr);
     itcount += its;  
     if (itcount >= ksp->max_it) {
-      ksp->reason = KSP_DIVERGED_ITS;
+      if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */
@@ -590,7 +590,7 @@ PetscErrorCode KSPSetFromOptions_GMRES(KSP ksp)
     ierr = PetscOptionsName("-ksp_gmres_krylov_monitor","Plot the Krylov directions","KSPMonitorSet",&flg);CHKERRQ(ierr);
     if (flg) {
       PetscViewers viewers;
-      ierr = PetscViewersCreate(ksp->comm,&viewers);CHKERRQ(ierr);
+      ierr = PetscViewersCreate(((PetscObject)ksp)->comm,&viewers);CHKERRQ(ierr);
       ierr = KSPMonitorSet(ksp,KSPGMRESMonitorKrylov,viewers,(PetscErrorCode (*)(void*))PetscViewersDestroy);CHKERRQ(ierr);
     }
   ierr = PetscOptionsTail();CHKERRQ(ierr);
@@ -739,7 +739,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetRestart(KSP ksp, PetscInt restart)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod(ksp,KSPGMRESSetRestart_C,(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
+  ierr = PetscTryMethod(ksp,"KSPGMRESSetRestart_C",(KSP,PetscInt),(ksp,restart));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -772,7 +772,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGMRESSetHapTol(KSP ksp,PetscReal tol)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPGMRESSetHapTol_C,(KSP,PetscReal),((ksp),(tol)));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPGMRESSetHapTol_C",(KSP,PetscReal),((ksp),(tol)));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 

@@ -236,11 +236,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
   mfctx->compute_err      = PETSC_FALSE;
   mfctx->compute_err_freq = 0;
   mfctx->compute_err_iter = -1;
-  ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsGetReal(snes->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(snes->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
-  ierr = PetscOptionsGetInt(snes->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_mf_err",&mfctx->error_rel,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_mf_umin",&mfctx->umin,PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_jorge",&mfctx->jorge);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)snes)->prefix,"-snes_mf_compute_err",&mfctx->compute_err);CHKERRQ(ierr);
+  ierr = PetscOptionsGetInt(((PetscObject)snes)->prefix,"-snes_mf_freq_err",&mfctx->compute_err_freq,&flg);CHKERRQ(ierr);
   if (flg) {
     if (mfctx->compute_err_freq < 0) mfctx->compute_err_freq = 0;
     mfctx->compute_err = PETSC_TRUE; 
@@ -252,15 +252,15 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultMatrixFreeCreate2(SNES snes,Vec x,
 
   ierr = PetscOptionsHasName(PETSC_NULL,"-help",&flg);CHKERRQ(ierr);
   ierr = PetscStrcpy(p,"-");CHKERRQ(ierr);
-  if (snes->prefix) PetscStrcat(p,snes->prefix);
+  if (((PetscObject)snes)->prefix) PetscStrcat(p,((PetscObject)snes)->prefix);
   if (flg) {
-    ierr = PetscPrintf(snes->comm," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %G)\n",p,mfctx->error_rel);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_umin <umin>: see users manual (default %G)\n",p,mfctx->umin);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);CHKERRQ(ierr);
-    ierr = PetscPrintf(snes->comm,"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm," Matrix-free Options (via SNES):\n");CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_err <err>: set sqrt of relative error in function (default %G)\n",p,mfctx->error_rel);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_umin <umin>: see users manual (default %G)\n",p,mfctx->umin);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_jorge: use Jorge More's method\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_compute_err: compute sqrt or relative error in function\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_freq_err <freq>: frequency to recompute this (default only once)\n",p);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)snes)->comm,"   %ssnes_mf_noise_file <file>: set file for printing noise info\n",p);CHKERRQ(ierr);
   }
   ierr = VecDuplicate(x,&mfctx->w);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject)x,&comm);CHKERRQ(ierr);

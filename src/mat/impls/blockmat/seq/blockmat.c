@@ -632,7 +632,7 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,PetscInt csize,M
   PetscErrorCode ierr;
   PetscInt       i,k,first,step,lensi,nrows,ncols;
   PetscInt       *j_new,*i_new,*aj = a->j,*ai = a->i,ii,*ailen = a->ilen;
-  PetscScalar    *a_new,value;
+  PetscScalar    *a_new;
   Mat            C,*aa = a->a;
   PetscTruth     stride,equal;
 
@@ -655,7 +655,7 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,PetscInt csize,M
     if (n_rows != nrows || n_cols != ncols) SETERRQ(PETSC_ERR_ARG_SIZ,"Reused submatrix wrong size");
     ierr = MatZeroEntries(C);CHKERRQ(ierr);
   } else {  
-    ierr = MatCreate(A->comm,&C);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&C);CHKERRQ(ierr);
     ierr = MatSetSizes(C,nrows,ncols,PETSC_DETERMINE,PETSC_DETERMINE);CHKERRQ(ierr);
     if (A->symmetric) {
       ierr = MatSetType(C,MATSEQSBAIJ);CHKERRQ(ierr);
@@ -677,8 +677,7 @@ PetscErrorCode MatGetSubMatrix_BlockMat(Mat A,IS isrow,IS iscol,PetscInt csize,M
     lensi = ailen[i];
     for (k=0; k<lensi; k++) {
       *j_new++ = *aj++;
-      ierr     = MatGetValue(*aa++,first,first,value);CHKERRQ(ierr);
-      *a_new++ = value;
+      ierr     = MatGetValue(*aa++,first,first,a_new++);CHKERRQ(ierr);
     }
     i_new[i+1]  = i_new[i] + lensi;
     c->ilen[i]  = lensi;
@@ -932,8 +931,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation_BlockMat(Mat A,Pet
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->right);CHKERRQ(ierr);
   ierr = VecCreateSeqWithArray(PETSC_COMM_SELF,bs,PETSC_NULL,&bmat->middle);CHKERRQ(ierr);
   ierr = VecCreateSeq(PETSC_COMM_SELF,bs,&bmat->left);CHKERRQ(ierr);
-  
-  ierr = PetscMalloc2(A->rmap.n,PetscInt,&bmat->imax,A->rmap.n,PetscInt,&bmat->ilen);CHKERRQ(ierr);
+
+  if (!bmat->imax) {
+    ierr = PetscMalloc2(A->rmap.n,PetscInt,&bmat->imax,A->rmap.n,PetscInt,&bmat->ilen);CHKERRQ(ierr);
+    ierr = PetscLogObjectMemory(A,2*A->rmap.n*sizeof(PetscInt));CHKERRQ(ierr);
+  }
   if (nnz) {
     nz = 0;
     for (i=0; i<A->rmap.n/A->rmap.bs; i++) {
@@ -948,7 +950,9 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatBlockMatSetPreallocation_BlockMat(Mat A,Pet
   for (i=0; i<bmat->mbs; i++) { bmat->ilen[i] = 0;}
 
   /* allocate the matrix space */
+  ierr = MatSeqXAIJFreeAIJ(A,(PetscScalar**)&bmat->a,&bmat->j,&bmat->i);CHKERRQ(ierr);
   ierr = PetscMalloc3(nz,Mat,&bmat->a,nz,PetscInt,&bmat->j,A->rmap.n+1,PetscInt,&bmat->i);CHKERRQ(ierr);
+  ierr = PetscLogObjectMemory(A,(A->rmap.n+1)*sizeof(PetscInt)+nz*(sizeof(PetscScalar)+sizeof(PetscInt)));CHKERRQ(ierr);
   bmat->i[0] = 0;
   for (i=1; i<bmat->mbs+1; i++) {
     bmat->i[i] = bmat->i[i-1] + bmat->imax[i-1];
@@ -997,7 +1001,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_BlockMat(Mat A)
   A->preallocated  = PETSC_FALSE;
   ierr = PetscObjectChangeTypeName((PetscObject)A,MATBLOCKMAT);CHKERRQ(ierr);
 
-  ierr = PetscOptionsBegin(A->comm,A->prefix,"Matrix Option","Mat");CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)A)->comm,((PetscObject)A)->prefix,"Matrix Option","Mat");CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)A,"MatBlockMatSetPreallocation_C",

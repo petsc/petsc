@@ -108,7 +108,7 @@ int main(int argc,char **args)
   ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
   ierr = PCSetType(pc,PCLU);CHKERRQ(ierr);
   ierr = KSPSetUp(ksp);CHKERRQ(ierr);
-  ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
+  ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
   ierr = MatMatSolve(F,B,X);CHKERRQ(ierr);
   ierr = MatDestroy(B);CHKERRQ(ierr);
 

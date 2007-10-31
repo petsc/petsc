@@ -33,6 +33,7 @@ E*/
 #define KSPCHEBYCHEV  "chebychev"
 #define KSPCG         "cg"
 #define   KSPCGNE       "cgne"
+#define   KSPNASH       "nash"
 #define   KSPSTCG       "stcg"
 #define   KSPGLTR       "gltr"
 #define KSPGMRES      "gmres"
@@ -420,8 +421,9 @@ M*/
 M*/
 
 /*MC
-     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of the
-           preconditioner is applied.
+     KSP_CONVERGED_ITS - Used by the KSPPREONLY solver after the single iteration of 
+           the preconditioner is applied. Also used when the KSPSkipConverged() convergence 
+           test rutine is set in KSP.
 
 
    Level: beginner
@@ -487,9 +489,11 @@ M*/
 
 M*/
 
-EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP,PetscErrorCode (*)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *,PetscErrorCode (*)(void*));
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPGetConvergenceContext(KSP,void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedDestroy(void *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedCreate(void **);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUIRNorm(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPDefaultConvergedSetUMIRNorm(KSP);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSkipConverged(KSP,PetscInt,PetscReal,KSPConvergedReason*,void *);
@@ -508,6 +512,10 @@ typedef enum {KSP_CG_SYMMETRIC=0,KSP_CG_HERMITIAN=1} KSPCGType;
 extern const char *KSPCGTypes[];
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPCGSetType(KSP,KSPCGType);
+
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHSetRadius(KSP,PetscReal);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetNormD(KSP,PetscReal *);
+EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPNASHGetObjFcn(KSP,PetscReal *);
 
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP,PetscReal);
 EXTERN PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetNormD(KSP,PetscReal *);

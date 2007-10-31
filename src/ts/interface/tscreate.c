@@ -2,6 +2,7 @@
 
 #include "include/private/tsimpl.h"      /*I "petscts.h"  I*/
 
+#if 0
 #undef __FUNCT__  
 #define __FUNCT__ "TSPublish_Petsc"
 static PetscErrorCode TSPublish_Petsc(PetscObject obj)
@@ -9,6 +10,7 @@ static PetscErrorCode TSPublish_Petsc(PetscObject obj)
   PetscFunctionBegin;
   PetscFunctionReturn(0);
 }
+#endif
 
 #undef  __FUNCT__
 #define __FUNCT__ "TSCreate"
@@ -42,8 +44,6 @@ PetscErrorCode PETSCTS_DLLEXPORT TSCreate(MPI_Comm comm, TS *ts) {
 
   ierr = PetscHeaderCreate(t, _p_TS, struct _TSOps, TS_COOKIE, -1, "TS", comm, TSDestroy, TSView);CHKERRQ(ierr);
   ierr = PetscMemzero(t->ops, sizeof(struct _TSOps));CHKERRQ(ierr);
-  t->bops->publish    = TSPublish_Petsc;
-  t->type_name        = PETSC_NULL;
 
   t->ops->prestep       = TSDefaultPreStep;
   t->ops->update        = TSDefaultUpdate;

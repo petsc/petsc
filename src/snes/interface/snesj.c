@@ -54,7 +54,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
   const char     *list[2] = {"ds","wp"};
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetReal(snes->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
+  ierr = PetscOptionsGetReal(((PetscObject)snes)->prefix,"-snes_test_err",&epsilon,0);CHKERRQ(ierr);
   eval_fct = SNESComputeFunction;
 
   ierr = PetscObjectGetComm((PetscObject)x1,&comm);CHKERRQ(ierr);
@@ -63,9 +63,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDefaultComputeJacobian(SNES snes,Vec x1,M
     ierr = MatZeroEntries(*B);CHKERRQ(ierr);
   }
   if (!snes->nvwork) {
-    ierr = VecDuplicateVecs(x1,3,&snes->vwork);CHKERRQ(ierr);
     snes->nvwork = 3;
-    ierr = PetscLogObjectParents(snes,3,snes->vwork);CHKERRQ(ierr);
+    ierr = VecDuplicateVecs(x1,snes->nvwork,&snes->vwork);CHKERRQ(ierr);
+    ierr = PetscLogObjectParents(snes,snes->nvwork,snes->vwork);CHKERRQ(ierr);
   }
   j1a = snes->vwork[0]; j2a = snes->vwork[1]; x2 = snes->vwork[2];
 

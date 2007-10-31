@@ -23,7 +23,7 @@ PetscErrorCode MatGetInfo_SeqBDiag(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_unneeded       = (double)(a->maxnz - a->nz);
   info->assemblies        = (double)A->num_ass;
   info->mallocs           = (double)a->reallocs;
-  info->memory            = A->mem;
+  info->memory            = ((PetscObject)A)->mem;
   info->fill_ratio_given  = 0; /* supports ILU(0) only */
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -341,9 +341,9 @@ PetscErrorCode MatTranspose_SeqBDiag(Mat A,Mat *matout)
   for (i=0; i<nd; i++) {
     diagnew[i] = -diag[nd-i-1]; /* assume sorted in descending order */
   }
-  ierr = MatCreate(A->comm,&tmat);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&tmat);CHKERRQ(ierr);
   ierr = MatSetSizes(tmat,A->cmap.n,A->rmap.N,A->cmap.n,A->rmap.N);CHKERRQ(ierr);
-  ierr = MatSetType(tmat,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqBDiagSetPreallocation(tmat,nd,bs,diagnew,PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscFree(diagnew);CHKERRQ(ierr);
   anew = (Mat_SeqBDiag*)tmat->data;
@@ -429,7 +429,7 @@ PetscErrorCode MatView_SeqBDiag_Binary(Mat A,PetscViewer viewer)
     ierr = MatGetRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     col_lens[4+i] = nz;
     ierr = PetscMemcpy(&cval[ict],col,nz*sizeof(PetscInt));CHKERRQ(ierr);
-    ierr = PetscMemcpy(&anonz[ict],anonz,nz*sizeof(PetscScalar));CHKERRQ(ierr);
+    ierr = PetscMemcpy(&anonz[ict],val,nz*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = MatRestoreRow_SeqBDiag(A,i,&nz,&col,&val);CHKERRQ(ierr);
     ict += nz;
   }
@@ -493,7 +493,7 @@ PetscErrorCode MatView_SeqBDiag_ASCII(Mat A,PetscViewer viewer)
           ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e  %18.16ei \n",
              i+1,col[j]+1,PetscRealPart(val[j]),PetscImaginaryPart(val[j]));CHKERRQ(ierr);
 #else
-          ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16ei \n",i+1,col[j]+1,val[j]);CHKERRQ(ierr);
+          ierr = PetscViewerASCIIPrintf(viewer,"%D %D  %18.16e \n",i+1,col[j]+1,val[j]);CHKERRQ(ierr);
 #endif
         }
       }

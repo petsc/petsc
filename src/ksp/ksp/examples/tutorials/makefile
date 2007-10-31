@@ -4,7 +4,7 @@ FFLAGS	         =
 CPPFLAGS         = 
 FPPFLAGS         =
 LOCDIR           = src/ksp/ksp/examples/tutorials/
-EXAMPLESC        = sleep.c ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
+EXAMPLESC        = ex1.c ex2.c ex3.c ex4.c ex5.c ex7.c ex8.c ex9.c ex10.c ex11.c \
                    ex12.c ex13.c ex15.c ex16.c ex22.c ex23.c ex25.c ex27.c ex28.c ex29.c ex32.c ex33.c ex34.c ex35.c ex37.c ex38.c \
                    ex39.c ex40.c
 EXAMPLESF        = ex1f.F ex2f.F ex6f.F ex11f.F ex13f90.F ex14f.F ex15f.F ex21f.F ex22f.F
@@ -14,10 +14,6 @@ NP               = 1
 DISPLAY          = :0.0
 
 include ${PETSC_DIR}/conf/base
-
-sleep: sleep.o  chkopts
-	-${CLINKER} -o sleep sleep.o  ${PETSC_KSP_LIB}
-	${RM} sleep.o
 
 ex1: ex1.o  chkopts
 	-${CLINKER} -o ex1 ex1.o  ${PETSC_KSP_LIB}
@@ -393,7 +389,7 @@ runex10_7:
 	-@${RM} -f ex10_7.tmp
 runex10_8:
 	-@${MPIEXEC} -np 1 ./ex10 -ksp_diagonal_scale -pc_type eisenstat -ksp_monitor_short -ksp_diagonal_scale_fix \
-	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -options_left no > ex10_8.tmp 2>&1; \
+	   -f0 ${DATAFILESPATH}/matrices/medium -ksp_gmres_cgs_refinement_type refine_always -options_left no -mat_no_inode > ex10_8.tmp 2>&1; \
 	   if (${DIFF} output/ex10_8.out ex10_8.tmp) then true; \
 	   else echo "Possible problem with ex10_8, diffs above"; fi; \
 	   ${RM} -f ex10_8.tmp
@@ -518,6 +514,12 @@ runex10_23:
 	   if (${DIFF} output/ex10_23.out ex10_23.tmp) then true; \
 	   else echo "Possible problem with ex10_23, diffs above"; fi; \
 	   ${RM} -f ex10_23.tmp
+
+runex10_24:
+	-@${MPIEXEC} -np 2 ./ex10 -options_left no -openmp_merge_size 2 -pc_type openmp -openmp_pc_type sor -f0 ${DATAFILESPATH}/matrices/medium -openmp_ksp_monitor_short -initialguess -ksp_type gmres -ksp_monitor_short -ksp_view > ex10_24.tmp 2>&1;\
+	   if (${DIFF} output/ex10_24.out ex10_24.tmp) then true; \
+	   else echo "Possible problem with ex10_24, diffs above"; fi; \
+	   ${RM} -f ex10_24.tmp
 
 #test mumps lu      
 runex10_mumps_lu_1:
@@ -697,13 +699,13 @@ runex38:
 	   ${RM} -f ex38_1.tmp
 
 runex39:
-	-@${MPIEXEC} -np 1 ./ex39 -ksp_monitor_short  > ex39_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex39 -mat_no_inode -ksp_monitor_short  > ex39_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex39_1.out ex39_1.tmp) then true; \
 	   else echo "Possible problem with ex39_1, diffs above"; fi; \
 	   ${RM} -f ex39_1.tmp
 
 runex40:
-	-@${MPIEXEC} -np 1 ./ex40 -ksp_monitor_short  > ex40_1.tmp 2>&1;	  \
+	-@${MPIEXEC} -np 1 ./ex40 -mat_no_inode -ksp_monitor_short  > ex40_1.tmp 2>&1;	  \
 	   if (${DIFF} output/ex40_1.out ex40_1.tmp) then true; \
 	   else echo "Possible problem with ex40_1, diffs above"; fi; \
 	   ${RM} -f ex40_1.tmp
@@ -725,7 +727,7 @@ TESTEXAMPLES_C_X11_MPIUNI      = ex1.PETSc runex1 runex1_2 runex1_3 ex1.rm ex2.P
                                  ex23.PETSc runex23 ex23.rm
 TESTEXAMPLES_C_COMPLEX	       = ex10.PETSc runex10 ex10.rm ex11.PETSc runex11 ex11.rm ex39.PETSc runex39 ex39.rm ex40.PETSc runex40 ex40.rm
 TESTEXAMPLES_C_NOCOMPLEX       = ex10.PETSc runex10_2 runex10_3 runex10_4 runex10_5 runex10_6 runex10_7 runex10_8 \
-                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 ex10.rm
+                                 runex10_9 runex10_10 runex10_19 runex10_20 runex10_22 runex10_23 runex10_24 ex10.rm
 TESTEXAMPLES_BLOCKSOLVE95      = ex5.PETSc runex5_3 runex5_4 ex5.rm
 # even though ex10.c is a C example to run with -mat_type lusol requires a Fortran compiler, hence
 # we list it with the fortran examples

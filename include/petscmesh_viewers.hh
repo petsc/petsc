@@ -50,7 +50,11 @@ class VTKViewer {
     if (dim == 3) {
       ierr = PetscViewerASCIIPrintf(viewer, "VECTORS %s double\n", name.c_str());CHKERRQ(ierr);
     } else {
-      ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), dim);CHKERRQ(ierr);
+      if (name == "") {
+        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS Unknown double %d\n", dim);CHKERRQ(ierr);
+      } else {
+        ierr = PetscViewerASCIIPrintf(viewer, "SCALARS %s double %d\n", name.c_str(), dim);CHKERRQ(ierr);
+      }
       ierr = PetscViewerASCIIPrintf(viewer, "LOOKUP_TABLE default\n");CHKERRQ(ierr);
     }
     ierr = writeSection(field, fiberDim, numbering, viewer, enforceDim);CHKERRQ(ierr);
@@ -71,6 +75,7 @@ class VTKViewer {
     if (verify) enforceDim = 3;
     if (field->commRank() == 0) {
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (!numbering->hasPoint(*p_iter)) continue;
         const value_type *array = field->restrictPoint(*p_iter);
         const int&        dim   = field->getFiberDimension(*p_iter);
 
@@ -131,6 +136,7 @@ class VTKViewer {
 
       ierr = PetscMalloc(size * sizeof(value_type), &localValues);CHKERRQ(ierr);
       for(typename Section::chart_type::const_iterator p_iter = chart.begin(); p_iter != chart.end(); ++p_iter) {
+        if (!numbering->hasPoint(*p_iter)) continue;
         if (numbering->isLocal(*p_iter)) {
           const value_type *array = field->restrictPoint(*p_iter);
           const int&        dim   = field->getFiberDimension(*p_iter);

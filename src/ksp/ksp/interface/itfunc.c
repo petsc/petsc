@@ -186,7 +186,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   /* reset the convergence flag from the previous solves */
   ksp->reason = KSP_CONVERGED_ITERATING;
 
-  if (!ksp->type_name){
+  if (!((PetscObject)ksp)->type_name){
     ierr = KSPSetType(ksp,KSPGMRES);CHKERRQ(ierr);
   }
 
@@ -234,7 +234,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetUp(KSP ksp)
   ierr = PCSetUp(ksp->pc);CHKERRQ(ierr);
   if (ksp->nullsp) {
     PetscTruth test;
-    ierr = PetscOptionsHasName(ksp->prefix,"-ksp_test_null_space",&test);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_test_null_space",&test);CHKERRQ(ierr);
     if (test) {
       Mat mat;
       ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
@@ -318,24 +318,24 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   ksp->vec_rhs = b;
   ksp->vec_sol = x;
 
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_binary",&flg);CHKERRQ(ierr); 
   if (flg) {
     Mat mat;
     ierr = PCGetOperators(ksp->pc,&mat,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
-    ierr = MatView(mat,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
-    ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatView(mat,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
+    ierr = VecView(ksp->vec_rhs,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
   }
   ierr = PetscLogEventBegin(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
   /* reset the residual history list if requested */
   if (ksp->res_hist_reset) ksp->res_hist_len = 0;
 
-  ierr = PetscOptionsGetString(ksp->prefix,"-ksp_view",view,10,&flg); CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",view,10,&flg); CHKERRQ(ierr);
   if (flg) {
     ierr = PetscStrcmp(view,"before",&viewed); CHKERRQ(ierr);
     if (viewed){
       PetscViewer viewer;
-      ierr = PetscViewerASCIIGetStdout(ksp->comm,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
       ierr = KSPView(ksp,viewer);CHKERRQ(ierr);
     }
   }
@@ -381,9 +381,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   }
   if (ksp->printreason) {
     if (ksp->reason > 0) {
-      ierr = PetscPrintf(ksp->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve converged due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     } else {
-      ierr = PetscPrintf(ksp->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Linear solve did not converge due to %s iterations %D\n",KSPConvergedReasons[ksp->reason],ksp->its);CHKERRQ(ierr);
     }
   }
   ierr = PCPostSolve(ksp->pc,ksp);CHKERRQ(ierr);
@@ -405,10 +405,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
   }
   ierr = PetscLogEventEnd(KSP_Solve,ksp,ksp->vec_rhs,ksp->vec_sol,0);CHKERRQ(ierr);
 
-  ierr = MPI_Comm_rank(ksp->comm,&rank);CHKERRQ(ierr);
+  ierr = MPI_Comm_rank(((PetscObject)ksp)->comm,&rank);CHKERRQ(ierr);
 
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues",&flag1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt   nits,n,i,neig;
     PetscReal *r,*c;
@@ -417,16 +417,16 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     n = nits+2;
 
     if (!n) {
-      ierr = PetscPrintf(ksp->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Zero iterations in solver, cannot approximate any eigenvalues\n");CHKERRQ(ierr);
     } else {
       ierr = PetscMalloc(2*n*sizeof(PetscReal),&r);CHKERRQ(ierr);
       c = r + n;
       ierr = KSPComputeEigenvalues(ksp,n,r,c,&neig);CHKERRQ(ierr);
       if (flag1) {
-        ierr = PetscPrintf(ksp->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
+        ierr = PetscPrintf(((PetscObject)ksp)->comm,"Iteratively computed eigenvalues\n");CHKERRQ(ierr);
         for (i=0; i<neig; i++) {
-          if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
-          else             {ierr = PetscPrintf(ksp->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+          if (c[i] >= 0.0) {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
+          else             {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
         }
       }
       if (flag2 && !rank) {
@@ -447,8 +447,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     }
   }
 
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_compute_eigenvalues_explicitly",&flag1);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_plot_eigenvalues_explicitly",&flag2);CHKERRQ(ierr);
   if (flag1 || flag2) {
     PetscInt  n,i;
     PetscReal *r,*c;
@@ -457,10 +457,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     c = r + n;
     ierr = KSPComputeEigenvaluesExplicitly(ksp,n,r,c);CHKERRQ(ierr); 
     if (flag1) {
-      ierr = PetscPrintf(ksp->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
+      ierr = PetscPrintf(((PetscObject)ksp)->comm,"Explicitly computed eigenvalues\n");CHKERRQ(ierr);
       for (i=0; i<n; i++) {
-        if (c[i] >= 0.0) {ierr = PetscPrintf(ksp->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
-        else             {ierr = PetscPrintf(ksp->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
+        if (c[i] >= 0.0) {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G + %Gi\n",r[i],c[i]);CHKERRQ(ierr);}
+        else             {ierr = PetscPrintf(((PetscObject)ksp)->comm,"%G - %Gi\n",r[i],-c[i]);CHKERRQ(ierr);}
       }
     }
     if (flag2 && !rank) {
@@ -480,50 +480,50 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = PetscFree(r);CHKERRQ(ierr);
   }
 
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_operator",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat         A,B;
     PetscViewer viewer;
 
     ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = PetscViewerASCIIGetStdout(ksp->comm,&viewer);CHKERRQ(ierr);
+    ierr = PetscViewerASCIIGetStdout(((PetscObject)ksp)->comm,&viewer);CHKERRQ(ierr);
     ierr = PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);CHKERRQ(ierr);
     ierr = MatView(B,viewer);CHKERRQ(ierr);
     ierr = PetscViewerPopFormat(viewer);CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_operator_binary",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_operator_binary",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat A,B;
     ierr = PCGetOperators(ksp->pc,&A,PETSC_NULL,PETSC_NULL);CHKERRQ(ierr);
     ierr = MatComputeExplicitOperator(A,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_preconditioned_operator_binary",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioned_operator_binary",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = KSPComputeExplicitOperator(ksp,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_view_preconditioner_binary",&flag2);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_view_preconditioner_binary",&flag2);CHKERRQ(ierr);
   if (flag2) {
     Mat B;
     ierr = PCComputeExplicitOperator(ksp->pc,&B);CHKERRQ(ierr);
-    ierr = MatView(B,PETSC_VIEWER_BINARY_(ksp->comm));CHKERRQ(ierr);
+    ierr = MatView(B,PETSC_VIEWER_BINARY_(((PetscObject)ksp)->comm));CHKERRQ(ierr);
     ierr = MatDestroy(B);CHKERRQ(ierr);
   }
   if (!viewed) {
-    ierr = PetscOptionsGetString(ksp->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
+    ierr = PetscOptionsGetString(((PetscObject)ksp)->prefix,"-ksp_view",filename,PETSC_MAX_PATH_LEN,&flg);CHKERRQ(ierr);
     if (flg && !PetscPreLoadingOn) {
-      ierr = PetscViewerASCIIOpen(ksp->comm,filename,&viewer);CHKERRQ(ierr);
+      ierr = PetscViewerASCIIOpen(((PetscObject)ksp)->comm,filename,&viewer);CHKERRQ(ierr);
       ierr = KSPView(ksp,viewer);CHKERRQ(ierr); 
       ierr = PetscViewerDestroy(viewer);CHKERRQ(ierr);
     }
   }
-  ierr = PetscOptionsHasName(ksp->prefix,"-ksp_final_residual",&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(((PetscObject)ksp)->prefix,"-ksp_final_residual",&flg);CHKERRQ(ierr);
   if (flg) {
     Mat         A;
     Vec         t;
@@ -535,7 +535,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSolve(KSP ksp,Vec b,Vec x)
     ierr = VecWAXPY(t,-1.0,t,ksp->vec_rhs);CHKERRQ(ierr);
     ierr = VecNorm(t,NORM_2,&norm);CHKERRQ(ierr);
     ierr = VecDestroy(t);CHKERRQ(ierr);
-    ierr = PetscPrintf(ksp->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
+    ierr = PetscPrintf(((PetscObject)ksp)->comm,"KSP final norm of residual %G\n",norm);CHKERRQ(ierr);
   }
   if (inXisinB) {
     ierr = VecCopy(x,b);CHKERRQ(ierr);
@@ -620,7 +620,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  if (--ksp->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)ksp)->refct > 0) PetscFunctionReturn(0);
 
   /* if memory was published with AMS then destroy it */
   ierr = PetscObjectDepublish(ksp);CHKERRQ(ierr);
@@ -636,6 +636,9 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPDestroy(KSP ksp)
   if (ksp->diagonal) {ierr = VecDestroy(ksp->diagonal);CHKERRQ(ierr);}
   if (ksp->truediagonal) {ierr = VecDestroy(ksp->truediagonal);CHKERRQ(ierr);}
   if (ksp->nullsp) {ierr = MatNullSpaceDestroy(ksp->nullsp);CHKERRQ(ierr);}
+  if (ksp->convergeddestroy) {
+    ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);
+  }
   ierr = PetscHeaderDestroy(ksp);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
@@ -829,6 +832,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetTolerances(KSP ksp,PetscReal rtol,PetscR
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->guess_zero   = (PetscTruth)!(int)flg;
   PetscFunctionReturn(0);
 }
@@ -856,6 +860,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessNonzero(KSP ksp,PetscTruth f
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(flag,2);
   if (ksp->guess_zero) *flag = PETSC_FALSE;
   else                 *flag = PETSC_TRUE;
   PetscFunctionReturn(0);
@@ -882,6 +888,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessNonzero(KSP ksp,PetscTruth *
 PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
   ksp->guess_knoll   = flg;
   PetscFunctionReturn(0);
 }
@@ -909,6 +916,8 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetInitialGuessKnoll(KSP ksp,PetscTruth flg
 PetscErrorCode PETSCKSP_DLLEXPORT KSPGetInitialGuessKnoll(KSP ksp,PetscTruth *flag)
 {
   PetscFunctionBegin;
+  PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
+  PetscValidPointer(flag,2);
   *flag = ksp->guess_knoll;
   PetscFunctionReturn(0);
 }
@@ -1461,12 +1470,19 @@ $     converge (KSP ksp, int it, PetscReal rnorm, KSPConvergedReason *reason,voi
 
 .seealso: KSPDefaultConverged(), KSPGetConvergenceContext()
 @*/
-PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx)
+PetscErrorCode PETSCKSP_DLLEXPORT KSPSetConvergenceTest(KSP ksp,PetscErrorCode (*converge)(KSP,PetscInt,PetscReal,KSPConvergedReason*,void*),void *cctx,
+                                                        PetscErrorCode (*destroy)(void*))
 {
+  PetscErrorCode ierr;
+
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp,KSP_COOKIE,1);
-  ksp->converged = converge;	
-  ksp->cnvP      = (void*)cctx;
+  if (ksp->convergeddestroy) {
+    ierr = (*ksp->convergeddestroy)(ksp->cnvP);CHKERRQ(ierr);
+  }
+  ksp->converged        = converge;
+  ksp->convergeddestroy = destroy;
+  ksp->cnvP             = (void*)cctx;
   PetscFunctionReturn(0);
 }
 
@@ -1642,7 +1658,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSetDiagonalScale(KSP ksp,PetscTruth scale)
 
 #undef __FUNCT__  
 #define __FUNCT__ "KSPGetDiagonalScale"
-/*@C
+/*@
    KSPGetDiagonalScale - Checks if KSP solver scales the matrix and
                           right hand side
 

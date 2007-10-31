@@ -2,6 +2,8 @@
 !
 !  Additional Mesh include file for use of PETSc with Fortran 90/HPF
 !
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
       Interface 
         Subroutine MeshGetCoordinatesF90(m,array,ierr)
           PetscReal, pointer :: array(:,:)
@@ -20,7 +22,7 @@
 
       Interface 
         Subroutine MeshGetElementsF90(m,array,ierr)
-          integer, pointer :: array(:,:)
+          PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
           Mesh m
         End Subroutine
@@ -28,7 +30,7 @@
 
       Interface 
         Subroutine MeshRestoreElementsF90(m,array,ierr)
-          integer, pointer :: array(:,:)
+          PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
           Mesh m
         End Subroutine
@@ -55,7 +57,7 @@
       Interface 
         Subroutine BCSectionGetArrayF90(m,name,array,ierr)
           CHARACTER*80 name
-          integer, pointer :: array(:,:)
+          PetscInt, pointer :: array(:,:)
           PetscErrorCode ierr
           Mesh m
         End Subroutine
@@ -64,7 +66,7 @@
       Interface 
         Subroutine BCSectionGetArray1DF90(m,name,array,ierr)
           CHARACTER*80 name
-          integer, pointer :: array(:)
+          PetscInt, pointer :: array(:)
           PetscErrorCode ierr
           Mesh m
         End Subroutine
@@ -86,3 +88,5 @@
           Mesh m
         End Subroutine
       End Interface
+
+#endif

@@ -152,6 +152,9 @@ struct _MatOps {
   PetscErrorCode (*getredundantmatrix)(Mat,PetscInt,MPI_Comm,PetscInt,MatReuse,Mat*);
   PetscErrorCode (*getrowmin)(Mat,Vec,PetscInt[]);
   PetscErrorCode (*getcolumnvector)(Mat,Vec,PetscInt);
+  PetscErrorCode (*missingdiagonal)(Mat,PetscTruth*,PetscInt*);
+  /*115*/
+  PetscErrorCode (*getseqnonzerostructure)(Mat,Mat *[]);
 };
 /*
     If you add MatOps entries above also add them to the MATOP enum
@@ -224,7 +227,7 @@ EXTERN PetscErrorCode MatStashValuesRow_Private(MatStash*,PetscInt,PetscInt,cons
 EXTERN PetscErrorCode MatStashValuesCol_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt);
 EXTERN PetscErrorCode MatStashValuesRowBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt,PetscInt,PetscInt);
 EXTERN PetscErrorCode MatStashValuesColBlocked_Private(MatStash*,PetscInt,PetscInt,const PetscInt[],const MatScalar[],PetscInt,PetscInt,PetscInt);
-EXTERN PetscErrorCode MatStashScatterBegin_Private(MatStash*,PetscInt*);
+EXTERN PetscErrorCode MatStashScatterBegin_Private(Mat,MatStash*,PetscInt*);
 EXTERN PetscErrorCode MatStashScatterGetMesg_Private(MatStash*,PetscMPIInt*,PetscInt**,PetscInt**,MatScalar**,PetscInt*);
 
 #define FACTOR_LU       1
@@ -977,9 +980,12 @@ extern PetscEvent  MAT_ILUFactorSymbolic, MAT_ICCFactorSymbolic, MAT_Copy, MAT_C
 extern PetscEvent  MAT_AssemblyEnd, MAT_SetValues, MAT_GetValues, MAT_GetRow, MAT_GetRowIJ, MAT_GetSubMatrices, MAT_GetColoring, MAT_GetOrdering, MAT_GetRedundantMatrix;
 extern PetscEvent  MAT_IncreaseOverlap, MAT_Partitioning, MAT_ZeroEntries, MAT_Load, MAT_View, MAT_AXPY, MAT_FDColoringCreate;
 extern PetscEvent  MAT_FDColoringApply, MAT_Transpose, MAT_FDColoringFunction;
-extern PetscEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric;
-extern PetscEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric;
+extern PetscEvent  MAT_MatMult, MAT_MatMultSymbolic, MAT_MatMultNumeric,MAT_Getlocalmatcondensed,MAT_GetBrowsOfAcols,MAT_GetBrowsOfAocols;
+extern PetscEvent  MAT_PtAP, MAT_PtAPSymbolic, MAT_PtAPNumeric,MAT_Seqstompinum,MAT_Seqstompisym,MAT_Seqstompi,MAT_Getlocalmat;
+
 extern PetscEvent  MAT_MatMultTranspose, MAT_MatMultTransposeSymbolic, MAT_MatMultTransposeNumeric;
+extern PetscEvent  MAT_Applypapt, MAT_Applypapt_symbolic, MAT_Applypapt_numeric;
+extern PetscEvent  MAT_Getsymtranspose, MAT_Transpose_SeqAIJ, MAT_Getsymtransreduced,MAT_GetSequentialNonzeroStructure;
 
 extern PetscEvent  MATMFFD_Mult;
 

@@ -17,8 +17,10 @@
 !    
 !     Flags
 !
-      PetscEnum   PETSC_TRUE,PETSC_FALSE
-      PetscEnum   PETSC_YES,PETSC_NO
+      PetscEnum PETSC_TRUE
+      PetscEnum PETSC_FALSE
+      PetscEnum PETSC_YES
+      PetscEnum PETSC_NO
       parameter (PETSC_TRUE = 1,PETSC_FALSE = 0)
       parameter (PETSC_YES=1, PETSC_NO=0)
 
@@ -31,7 +33,8 @@
       PetscFortranDouble PETSC_DEFAULT_DOUBLE_PRECISION
       parameter (PETSC_DEFAULT_DOUBLE_PRECISION=-2.0d0)
 
-      PetscEnum   PETSC_FP_TRAP_OFF,PETSC_FP_TRAP_ON
+      PetscEnum PETSC_FP_TRAP_OFF
+      PetscEnum PETSC_FP_TRAP_ON
       parameter (PETSC_FP_TRAP_OFF = 0,PETSC_FP_TRAP_ON = 1) 
 
 
@@ -54,7 +57,7 @@
 
 !
 !     The numbers used below should match those in 
-!     src/fortran/custom/zpetsc.h
+!     include/private/zpetsc.h
 !
       parameter (PETSC_VIEWER_DRAW_WORLD   = -4) 
       parameter (PETSC_VIEWER_DRAW_SELF    = -5)
@@ -71,10 +74,17 @@
 !
 !     PETSc DataTypes
 !
-      PetscEnum PETSC_INT,PETSC_DOUBLE,PETSC_COMPLEX
-      PetscEnum PETSC_LONG,PETSC_SHORT,PETSC_FLOAT
-      PetscEnum PETSC_CHAR,PETSC_LOGICAL,PETSC_ENUM
-      PetscEnum PETSC_TRUTH,PETSC_LONG_DOUBLE
+      PetscEnum PETSC_INT
+      PetscEnum PETSC_DOUBLE
+      PetscEnum PETSC_COMPLEX
+      PetscEnum PETSC_LONG
+      PetscEnum PETSC_SHORT
+      PetscEnum PETSC_FLOAT
+      PetscEnum PETSC_CHAR
+      PetscEnum PETSC_LOGICAL
+      PetscEnum PETSC_ENUM
+      PetscEnum PETSC_TRUTH
+      PetscEnum PETSC_LONG_DOUBLE
 
 #if defined(PETSC_USE_SINGLE)
 #define PETSC_REAL PETSC_FLOAT
@@ -133,7 +143,8 @@
 !
 !     PETSc world communicator
 !
-      MPI_Comm PETSC_COMM_WORLD,PETSC_COMM_SELF
+      MPI_Comm PETSC_COMM_WORLD
+      MPI_Comm PETSC_COMM_SELF
 !
 !     Fortran Null
 !
@@ -148,6 +159,7 @@
       external PETSC_NULL_FUNCTION
       PetscScalar   PETSC_NULL_SCALAR
       PetscReal     PETSC_NULL_REAL
+      PetscTruth    PETSC_NULL_TRUTH
 !
 !     Common Block to store some of the PETSc constants.
 !     which can be set - only at runtime.
@@ -162,7 +174,8 @@
       common /petscfortran5/ PETSC_NULL_DOUBLE
       common /petscfortran6/ PETSC_NULL_REAL
       common /petscfortran7/ PETSC_COMM_WORLD,PETSC_COMM_SELF
-      common /petscfortran8/ PETSC_NULL_OBJECT
+      common /petscfortran8/ PETSC_NULL_TRUTH
+      common /petscfortran9/ PETSC_NULL_OBJECT
 !
 !     Possible arguments to PetscPushErrorHandler()
 !

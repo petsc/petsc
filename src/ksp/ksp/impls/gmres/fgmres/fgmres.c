@@ -339,7 +339,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
   if (ksp->normtype != KSP_NORM_UNPRECONDITIONED) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Can only use FGMRES with unpreconditioned residual (it is coded with right preconditioning)");
 
   ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
@@ -362,7 +362,7 @@ PetscErrorCode KSPSolve_FGMRES(KSP ksp)
     ierr     = FGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
   }
   /* mark lack of convergence */
-  if (ksp->its >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
+  if (ksp->its >= ksp->max_it && !ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
 
   PetscFunctionReturn(0);
 }

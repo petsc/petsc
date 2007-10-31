@@ -109,6 +109,25 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatInitializePackage(const char path[])
   ierr = PetscLogEventRegister(&MAT_MatMultTransposeSymbolic, "MatMatMultTrnSym" ,MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_MatMultTransposeNumeric,  "MatMatMultTrnNum", MAT_COOKIE);CHKERRQ(ierr);
   ierr = PetscLogEventRegister(&MAT_GetRedundantMatrix,       "MAT_GetRedundantMatrix",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_GetSequentialNonzeroStructure, "MAT_GetSequentialNonzeroStructure",MAT_COOKIE);CHKERRQ(ierr);
+
+  /* these may be specific to MPIAIJ matrices */
+  ierr = PetscLogEventRegister(&MAT_Seqstompinum,             "MatMerge_SeqsToMPINumeric",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Seqstompisym,             "MatMerge_SeqsToMPISymbolic",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Seqstompi,                "MatMerge_SeqsToMPI",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Getlocalmat,              "MatGetLocalMat",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_Getlocalmatcondensed,     "MatGetLocalMatCondensed",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_GetBrowsOfAcols,          "MatGetBrowsOfAcols",MAT_COOKIE);
+  ierr = PetscLogEventRegister(&MAT_GetBrowsOfAocols,         "MatGetBrAoCol",MAT_COOKIE);
+
+  ierr = PetscLogEventRegister(&MAT_Applypapt_symbolic,       "MatApplyPAPt_Symbolic",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Applypapt_numeric,        "MatApplyPAPt_Numeric",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Applypapt,                "MatApplyPAPt",MAT_COOKIE);CHKERRQ(ierr);
+
+  ierr = PetscLogEventRegister(&MAT_Getsymtranspose,          "MatGetSymbolicTranspose",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Getsymtransreduced,       "MatGetSymbolicTransposeReduced",MAT_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegister(&MAT_Transpose_SeqAIJ,         "MatTranspose_SeqAIJ_FAST",MAT_COOKIE);CHKERRQ(ierr);
+
   /* Turn off high traffic events by default */
   ierr = PetscLogEventSetActiveAll(MAT_SetValues, PETSC_FALSE);CHKERRQ(ierr);
   /* Process info exclusions */

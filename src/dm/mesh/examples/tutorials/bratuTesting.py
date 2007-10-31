@@ -50,10 +50,11 @@ class BratuTest(script.Script):
     help.addArgument('BratuTest', '-num_refine=<int>', nargs.ArgInt(None, 1, 'Number of refinements', min = 0))
     help.addArgument('BratuTest', '-bc_type=<dirichlet or neumann>', nargs.Arg(None, 'dirichlet', 'PETSc boundary condition type'))
     help.addArgument('BratuTest', '-pc_type=<typename>', nargs.Arg(None, 'supportgraph', 'PETSc PC type'))
+    help.addArgument('BratuTest', '-events=[event1,event2,...]', nargs.Arg(None, ['PCSetUp'], 'Events to monitor'))
     return
 
   def setupOptions(self):
-    self.defaultOptions = ['-structured 0', '-ksp_rtol 1.0e-9', '-ksp_monitor', '-ksp_view']
+    self.defaultOptions = ['-structured 0', '-ksp_rtol 1.0e-9', '-ksp_monitor', '-ksp_view', '-log_summary']
     self.defaultOptions.append('-pc_type '+self.argDB['pc_type'])
     self.defaultOptions.append('-bc_type '+self.argDB['bc_type'])
     return
@@ -70,6 +71,7 @@ class BratuTest(script.Script):
   def processOutput(self, out):
     import re
 
+    events  = re.compile(r'(?P<event>\w+)\s+(?P<count>\d+) \d\.\d (?P<time>\d\.\d+e[+-]\d\d) \d\.\d (?P<flops>\d\.\d+e[+-]\d\d) \d\.\d \d\.\d+e[+-]\d\d \d\.\d+e[+-]\d\d \d\.\d+e[+-]\d\d\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+\d+\s+(?P<mflops>\d+)')
     kspMon  = re.compile(r'\s*(?P<it>\d+) KSP Residual norm \d\.\d+e[+-]\d\d')
     matSize = re.compile(r'\s+type=\w+, rows=(?P<rows>\d+), cols=(?P=rows)')
     iters   = 0
@@ -78,13 +80,19 @@ class BratuTest(script.Script):
         if not line.split(':')[1] == ' CONVERGED_FNORM_RELATIVE':
           sys.exit('ERROR: Invalid termination: '+str(line.split(':')[1]))
       else:
-        matchKsp = kspMon.match(line)
-        if matchKsp:
-          iters = max(int(matchKsp.group('it')), iters)
+        matchEvent = events.match(line)
+        if matchEvent:
+          print matchEvent.group('event'), matchEvent.group('count'), matchEvent.group('time'), matchEvent.group('mflops')
+          if matchEvent.group('event') in self.argDB['events']:
+            print '  MONITORED'
         else:
-          matchMat = matSize.match(line)
-          if matchMat:
-            rows = int(matchMat.group('rows'))
+          matchKsp = kspMon.match(line)
+          if matchKsp:
+            iters = max(int(matchKsp.group('it')), iters)
+          else:
+            matchMat = matSize.match(line)
+            if matchMat:
+              rows = int(matchMat.group('rows'))
     return (rows, iters)
 
   def testLS(self):

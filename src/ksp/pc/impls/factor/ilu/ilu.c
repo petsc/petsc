@@ -605,8 +605,8 @@ static PetscErrorCode PCApplyTranspose_ILU(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGetFactoredMatrix_ILU"
-static PetscErrorCode PCGetFactoredMatrix_ILU(PC pc,Mat *mat)
+#define __FUNCT__ "PCFactorGetMatrix_ILU"
+static PetscErrorCode PCFactorGetMatrix_ILU(PC pc,Mat *mat)
 {
   PC_ILU *ilu = (PC_ILU*)pc->data;
 
@@ -691,7 +691,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ILU(PC pc)
   pc->ops->applytranspose      = PCApplyTranspose_ILU;
   pc->ops->setup               = PCSetUp_ILU;
   pc->ops->setfromoptions      = PCSetFromOptions_ILU;
-  pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ILU;
+  pc->ops->getfactoredmatrix   = PCFactorGetMatrix_ILU;
   pc->ops->view                = PCView_ILU;
   pc->ops->applyrichardson     = 0;
 

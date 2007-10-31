@@ -179,8 +179,8 @@ static PetscErrorCode PCApplySymmetricRight_ICC(PC pc,Vec x,Vec y)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGetFactoredMatrix_ICC"
-static PetscErrorCode PCGetFactoredMatrix_ICC(PC pc,Mat *mat)
+#define __FUNCT__ "PCFactorGetMatrix_ICC"
+static PetscErrorCode PCFactorGetMatrix_ICC(PC pc,Mat *mat)
 {
   PC_ICC *icc = (PC_ICC*)pc->data;
 
@@ -330,7 +330,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ICC(PC pc)
   pc->ops->destroy	       = PCDestroy_ICC;
   pc->ops->setfromoptions      = PCSetFromOptions_ICC;
   pc->ops->view                = PCView_ICC;
-  pc->ops->getfactoredmatrix   = PCGetFactoredMatrix_ICC;
+  pc->ops->getfactoredmatrix   = PCFactorGetMatrix_ICC;
   pc->ops->applysymmetricleft  = PCApplySymmetricLeft_ICC;
   pc->ops->applysymmetricright = PCApplySymmetricRight_ICC;
 

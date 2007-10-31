@@ -206,7 +206,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDADestroy(ADDA adda)
   PetscValidHeaderSpecific(adda,ADDA_COOKIE,1);
 
   /* check reference count */
-  if(--adda->refct > 0) PetscFunctionReturn(0);
+  if(--((PetscObject)adda)->refct > 0) PetscFunctionReturn(0);
 
   /* destroy the allocated data */
   ierr = PetscFree(adda->nodes); CHKERRQ(ierr);
@@ -322,7 +322,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrix(ADDA adda, MatType mtype, Mat *ma
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(adda, ADDA_COOKIE, 1);
-  ierr = MatCreate(adda->comm, mat); CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)adda)->comm, mat); CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, adda->lsize, adda->lsize, PETSC_DECIDE, PETSC_DECIDE); CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -356,7 +356,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDAGetMatrixNS(ADDA addar, ADDA addac, MatType
   PetscValidHeaderSpecific(addar, ADDA_COOKIE, 1);
   PetscValidHeaderSpecific(addac, ADDA_COOKIE, 2);
   PetscCheckSameComm(addar, 1, addac, 2);
-  ierr = MatCreate(addar->comm, mat); CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)addar)->comm, mat); CHKERRQ(ierr);
   ierr = MatSetSizes(*mat, addar->lsize, addac->lsize, PETSC_DECIDE, PETSC_DECIDE); CHKERRQ(ierr);
   ierr = MatSetType(*mat, mtype); CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -451,7 +451,7 @@ PetscErrorCode PETSCDM_DLLEXPORT ADDACoarsen(ADDA adda, MPI_Comm comm,ADDA *adda
   dofc = (adda->dof % adda->dofrefine) ? adda->dof / adda->dofrefine + 1 : adda->dof / adda->dofrefine;
   ierr = PetscMalloc(adda->dim*sizeof(PetscInt), &procsc); CHKERRQ(ierr);
   ierr = PetscMemcpy(procsc, adda->procs, adda->dim*sizeof(PetscInt)); CHKERRQ(ierr);
-  ierr = ADDACreate(adda->comm, adda->dim, nodesc, procsc, dofc, adda->periodic, addac); CHKERRQ(ierr);
+  ierr = ADDACreate(((PetscObject)adda)->comm, adda->dim, nodesc, procsc, dofc, adda->periodic, addac); CHKERRQ(ierr);
   /* copy refinement factors */
   ierr = ADDASetRefinement(*addac, adda->refine, adda->dofrefine); CHKERRQ(ierr);
   PetscFunctionReturn(0);

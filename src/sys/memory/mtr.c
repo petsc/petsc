@@ -456,7 +456,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocGetMaximumUsage(PetscLogDouble *space)
    Concepts: memory bleeding
    Concepts: bleeding memory
 
-.seealso:  PetscMallocGetCurrentSize(), PetscMallocDumpLog() 
+.seealso:  PetscMallocGetCurrentUsage(), PetscMallocDumpLog() 
 @*/
 PetscErrorCode PETSC_DLLEXPORT PetscMallocDump(FILE *fp)
 {
@@ -530,7 +530,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
 {
   PetscInt       i,j,n,dummy,*perm;
   size_t         *shortlength;
-  int            *shortcount;
+  int            *shortcount,err;
   PetscMPIInt    rank,size,tag = 1212 /* very bad programming */;
   PetscTruth     match;
   const char     **shortfunction;
@@ -544,7 +544,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   /*
        Try to get the data printed in order by processor. This will only sometimes work 
   */  
-  fflush(fp);
+  err = fflush(fp);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
+
   ierr = MPI_Barrier(MPI_COMM_WORLD);CHKERRQ(ierr);
   if (rank) {
     ierr = MPI_Recv(&dummy,1,MPIU_INT,rank-1,tag,MPI_COMM_WORLD,&status);CHKERRQ(ierr);
@@ -593,7 +595,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMallocDumpLog(FILE *fp)
   free(shortlength);
   free(shortcount);
   free((char **)shortfunction);
-  fflush(fp);
+  err = fflush(fp);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fflush() failed on file");    
   if (rank != size-1) {
     ierr = MPI_Send(&dummy,1,MPIU_INT,rank+1,tag,MPI_COMM_WORLD);CHKERRQ(ierr);
   }

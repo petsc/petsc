@@ -5,6 +5,8 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 #include <petscmesh_viewers.hh>
 #include <petscdmmg.h>
 
+#include <Selection.hh>
+
 using ALE::Obj;
 typedef enum {RUN_FULL, RUN_MESH} RunType;
 typedef enum {NEUMANN, DIRICHLET} BCType;
@@ -30,13 +32,17 @@ typedef struct {
   double        lambda;                      // The parameter controlling nonlinearity
   // Boundary
   Mesh          bdMesh;
-  // Geometry data
+  // Cell geometry data
   double       *v0;                          // The coordinates of the first vertex in a cell
   double       *J;                           // The linear transform from the reference cell to a cell (Jacobian)
   double       *invJ;                        // The inverse of J
   double        detJ;                        // The determinant of J
   double       *coords;                      // The coordinates of a quadrature point
+  // Face geometry data
+  double       *fInvJ;                       // The inverse of J
+  double        fDetJ;                       // The determinant of J
   double       *normal;                      // The normal to the active face
+  double       *tangent;                     // The tangent to the active face
   // Physical Data
   double        waterEpsilon;                // The dielectric constant for the water
   double        particleEpsilon;             // The dielectric constant for the water
@@ -44,7 +50,10 @@ typedef struct {
 
 #include "electrostatic_quadrature.h"
 
-PetscScalar lambda = 0.0;
+PetscScalar lambda  = 0.0;
+PetscScalar radius  = 0.0;
+PetscScalar epsilon = 0.0;
+PetscScalar E_0     = 1.0;
 
 PetscScalar zero(const double x[]) {
   return 0.0;
@@ -52,6 +61,18 @@ PetscScalar zero(const double x[]) {
 
 PetscScalar constant(const double x[]) {
   return -4.0;
+}
+
+// This only works for E_0 = 1 and e_w = 1
+PetscScalar constantField_2d(const double x[]) {
+  const double r = sqrt((x[0] - 0.5)*(x[0] - 0.5) + (x[1] - 0.5)*(x[1] - 0.5));
+
+  if (r >= radius) {
+    const double ratio = radius/r;
+
+    return -(x[0] - 0.5) + ((epsilon - 1.0)/(epsilon + 2.0))*ratio*ratio*ratio*(x[0] - 0.5);
+  }
+  return (-3.0/(epsilon + 2.0))*(x[0] - 0.5);
 }
 
 PetscScalar nonlinear_2d(const double x[]) {
@@ -68,6 +89,18 @@ PetscScalar quadratic_2d(const double x[]) {
 
 PetscScalar cubic_2d(const double x[]) {
   return x[0]*x[0]*x[0] - 1.5*x[0]*x[0] + x[1]*x[1]*x[1] - 1.5*x[1]*x[1] + 0.5;
+}
+
+// This only works for E_0 = 1 and e_w = 1
+PetscScalar constantField_3d(const double x[]) {
+  const double r = sqrt((x[0] - 0.5)*(x[0] - 0.5) + (x[1] - 0.5)*(x[1] - 0.5) + (x[2] - 0.5)*(x[2] - 0.5));
+
+  if (r >= radius) {
+    const double ratio = radius/r;
+
+    return -(x[0] - 0.5) + ((epsilon - 1.0)/(epsilon + 2.0))*ratio*ratio*ratio*(x[0] - 0.5);
+  }
+  return (-3.0/(epsilon + 2.0))*(x[0] - 0.5);
 }
 
 PetscScalar nonlinear_3d(const double x[]) {
@@ -128,6 +161,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "bratu.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "bratu.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-particle_radius", "The radius of the charged particle", "bratu.cxx", options->particleRadius, &options->particleRadius, PETSC_NULL);CHKERRQ(ierr);
+    radius = options->particleRadius;
     ierr = PetscOptionsInt("-particle_edges", "The number of edges around charged particle", "bratu.cxx", options->particleEdges, &options->particleEdges, PETSC_NULL);CHKERRQ(ierr);
     filename << "data/bratu_" << options->dim <<"d";
     ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
@@ -142,6 +176,8 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
     lambda = options->lambda;
     ierr = PetscOptionsReal("-water_epsilon", "The dielectric constant of water", "bratu.cxx", options->waterEpsilon, &options->waterEpsilon, PETSC_NULL);CHKERRQ(ierr);
     ierr = PetscOptionsReal("-particle_epsilon", "The dielectric constant of the charged particle", "bratu.cxx", options->particleEpsilon, &options->particleEpsilon, PETSC_NULL);CHKERRQ(ierr);
+    epsilon = options->particleEpsilon;
+    ierr = PetscOptionsReal("-background_field", "The background field", "bratu.cxx", E_0, &E_0, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -168,6 +204,9 @@ PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition)
   PetscFunctionReturn(0);
 }
 
+
+PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options);
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateParticle"
 PetscErrorCode CreateParticle(Mesh mesh, SectionInt *particle)
@@ -176,6 +215,7 @@ PetscErrorCode CreateParticle(Mesh mesh, SectionInt *particle)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetCellSectionInt(mesh, 1, particle);CHKERRQ(ierr);
   const Obj<ALE::Mesh::label_sequence>&     cells = m->heightStratum(0);
@@ -326,7 +366,7 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       m->view("Mesh");
     }
-    ierr = PetscMalloc5(dim,double,&options->coords,dim,double,&options->v0,dim*dim,double,&options->J,dim*dim,double,&options->invJ,dim,double,&options->normal);CHKERRQ(ierr);
+    ierr = PetscMalloc7(dim,double,&options->coords,dim,double,&options->v0,dim*dim,double,&options->J,dim*dim,double,&options->invJ,(dim-1)*(dim-1),double,&options->fInvJ,dim,double,&options->normal,dim*(dim-1),double,&options->tangent);CHKERRQ(ierr);
     *dm = (DM) mesh;
   }
   PetscFunctionReturn(0);
@@ -344,7 +384,7 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
   } else {
     ierr = MeshDestroy(options->bdMesh);CHKERRQ(ierr);
     ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
-    ierr = PetscFree5(options->coords, options->v0, options->J, options->invJ, options->normal);CHKERRQ(ierr);
+    ierr = PetscFree7(options->coords, options->v0, options->J, options->invJ, options->fInvJ, options->normal, options->tangent);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -532,6 +572,48 @@ PetscErrorCode Rhs_Structured_3d_FD(DALocalInfo *info, PetscScalar **x[], PetscS
   PetscFunctionReturn(0); 
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "computeFaceGeometry"
+PetscErrorCode computeFaceGeometry(const Obj<ALE::Mesh>& mesh, const ALE::Mesh::point_type cell, const ALE::Mesh::point_type face, const int f, const Obj<ALE::Mesh::arrow_section_type>& orientation, double invJ[], double& detJ, double normal[], double tangent[]) {
+  const ALE::Mesh::arrow_section_type::point_type arrow(cell, face);
+  const bool   reversed = (orientation->restrictPoint(arrow)[0] == -2);
+  const int    dim      = mesh->getDimension();
+  PetscScalar  norm     = 0.0;
+  double      *vec      = tangent;
+
+  PetscFunctionBegin;
+  if (f == 0) {
+    vec[0] = 0.0;        vec[1] = -1.0;
+  } else if (f == 1) {
+    vec[0] = 0.70710678; vec[1] = 0.70710678;
+  } else if (f == 2) {
+    vec[0] = -1.0;       vec[1] = 0.0;
+  }
+  for(int d = 0; d < dim; ++d) {
+    normal[d] = 0.0;
+    for(int e = 0; e < dim; ++e) normal[d] += invJ[e*dim+d]*vec[e];
+    if (reversed) normal[d] = -normal[d];
+    norm += normal[d]*normal[d];
+  }
+  norm = std::sqrt(norm);
+  for(int d = 0; d < dim; ++d) {
+    normal[d] /= norm;
+  }
+  // 2D only right now
+  tangent[0] =  normal[1];
+  tangent[1] = -normal[0];
+  if (mesh->debug()) {
+    std::cout << "Cell: " << cell << " Face: " << face << "("<<f<<")" << std::endl;
+    for(int d = 0; d < dim; ++d) {
+      std::cout << "Normal["<<d<<"]: " << normal[d] << " Tangent["<<d<<"]: " << tangent[d] << std::endl;
+    }
+  }
+  // Now get 1D Jacobian info
+  invJ[0] = invJ[0]*invJ[3] - invJ[1]*invJ[2];
+  detJ = 1.0/invJ[0];
+  PetscFunctionReturn(0);
+}
+
 PetscErrorCode cellResidual(const Obj<ALE::Discretization>& disc, PetscScalar x[], PetscScalar t_der[], PetscScalar b_der[], PetscScalar elemVec[], PetscScalar elemMat[], double epsilon, Options *options) {
   const int      dim    = options->dim;
   double        *v0     = options->v0;
@@ -600,47 +682,89 @@ PetscErrorCode cellResidual(const Obj<ALE::Discretization>& disc, PetscScalar x[
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode faceResidual(const Obj<ALE::Mesh::label_type>& particleBd, const Obj<ALE::Discretization>& disc, PetscScalar x[], PetscScalar b_der[], PetscScalar elemVec[], PetscScalar elemMat[], double epsilonJump, Options *options) {
-  const int      dim    = options->dim;
-  double        *invJ   = options->invJ;
-  double         detJ   = options->detJ;
-  double        *normal = options->normal;
+PetscErrorCode faceResidual(const Obj<ALE::Discretization>& cellDisc, const Obj<ALE::Discretization>& disc, const PetscScalar x[], const PetscScalar cellBasisDer[], PetscScalar b_der[], PetscScalar elemVec[], PetscScalar elemMat[], double epsilon, Options *options) {
+  const int      dim     = options->dim;
+  double        *invJ    = options->invJ;
+  double         detJ    = options->fDetJ;
+  double        *normal  = options->normal;
+  double        *tangent = options->tangent;
   const int      numQuadPoints = disc->getQuadratureSize();
   const double  *quadWeights   = disc->getQuadratureWeights();
+  const int      numCellBasisFuncs = cellDisc->getBasisSize();
   const int      numBasisFuncs = disc->getBasisSize();
   const double  *basis         = disc->getBasis();
-  const double  *basisDer      = disc->getBasisDerivatives();
+  //const double  *basisDer      = disc->getBasisDerivatives();
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
+  if (options->debug) {
+    std::cout << ALE::Mesh::printMatrix(std::string("  Cell x"), numCellBasisFuncs, 1, x);
+    std::cout << ALE::Mesh::printMatrix(std::string("  Cell invJ"), dim, dim, invJ);
+    std::cout << "  Face detJ: " << detJ << std::endl;
+  }
   ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
-  ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
+  ierr = PetscMemzero(elemMat, numBasisFuncs*numCellBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
   // Loop over quadrature points
   for(int q = 0; q < numQuadPoints; ++q) {
     // Loop over trial functions
     for(int f = 0; f < numBasisFuncs; ++f) {
       // Linear part
       // Loop over basis functions
-      for(int g = 0; g < numBasisFuncs; ++g) {
+      for(int g = 0; g < numCellBasisFuncs; ++g) {
         // Linear part
         for(int d = 0; d < dim; ++d) {
           b_der[d] = 0.0;
-          for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*basisDer[(q*numBasisFuncs+g)*dim+e];
+          for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*cellBasisDer[(q*numCellBasisFuncs+g)*dim+e];
         }
-        PetscScalar product = 0.0;
-        for(int d = 0; d < dim; ++d) product += normal[d]*b_der[d];
-        elemMat[f*numBasisFuncs+g] += basis[q*numBasisFuncs+f]*epsilonJump*product*quadWeights[q]*detJ;
+        PetscScalar productN = 0.0, productT = 0.0;
+        for(int d = 0; d < dim; ++d) {
+          productN += normal[d]*b_der[d];
+          for(int e = 0; e < dim-1; ++e) {
+            productT += tangent[e*dim+d]*b_der[d];
+          }
+        }
+        elemMat[f*numCellBasisFuncs+g] += basis[q*numBasisFuncs+f]*(epsilon*productN + productT)*quadWeights[q]*detJ;
       }
     }
   }    
+  if (options->debug) {
+    std::cout << ALE::Mesh::printMatrix(std::string("  Face elemMat"), numBasisFuncs, numCellBasisFuncs, elemMat);
+  }
   // Add linear contribution
   for(int f = 0; f < numBasisFuncs; ++f) {
-    for(int g = 0; g < numBasisFuncs; ++g) {
-      elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
+    for(int g = 0; g < numCellBasisFuncs; ++g) {
+      elemVec[f] += elemMat[f*numCellBasisFuncs+g]*x[g];
     }
   }
   PetscFunctionReturn(0);
 }
+
+static PetscScalar cellBasisDer2D[36] = {
+    -0.5, -0.5, 0.5, 0.0, 0.0, 0.5,
+    -0.5, -0.5, 0.5, 0.0, 0.0, 0.5,
+    -0.5, -0.5, 0.5, 0.0, 0.0, 0.5,
+    -0.5, -0.5, 0.5, 0.0, 0.0, 0.5,
+    -0.5, -0.5, 0.5, 0.0, 0.0, 0.5,
+    -0.5, -0.5, 0.5, 0.0, 0.0, 0.5
+  };
+static PetscScalar cellBasisDer3D[192] = {
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5,
+    -0.5, -0.5, -0.5, 0.5, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, 0.0, 0.5
+  };
 
 #undef __FUNCT__
 #define __FUNCT__ "Rhs_Unstructured"
@@ -649,22 +773,31 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   Options       *options = (Options *) ctx;
   Obj<ALE::Mesh> m;
   Obj<ALE::Mesh> bdM;
+  PetscScalar   *cellBasisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
   ierr = MeshGetMesh(options->bdMesh, bdM);CHKERRQ(ierr);
   const Obj<ALE::Mesh::sieve_type>&         sieve         = m->getSieve();
-  const Obj<ALE::Mesh::arrow_section_type>& orientation   = m->getArrowSection("orientation");
   const Obj<ALE::Discretization>&           disc          = m->getDiscretization("u");
   const Obj<ALE::Discretization>&           bdDisc        = bdM->getDiscretization("u");
   const int                                 numBasisFuncs = disc->getBasisSize();
   const Obj<ALE::Mesh::real_section_type>&  coordinates   = m->getRealSection("coordinates");
   const int                                 dim           = m->getDimension();
+  const int                                 debug         = options->debug;
+  const int                                 offset        = bdDisc->getQuadratureSize()*disc->getBasisSize()*dim;
   PetscScalar *t_der, *b_der, *elemVec, *elemMat;
 
+  if (dim == 2) {
+    cellBasisDer = cellBasisDer2D;
+  } else if (dim == 3) {
+    cellBasisDer = cellBasisDer3D;
+  }
   ierr = SectionRealZero(section);CHKERRQ(ierr);
   ierr = PetscMalloc4(dim,PetscScalar,&t_der,dim,PetscScalar,&b_der,numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+  // Must create the label on coarser meshes if it is missing
+  if (!m->hasLabel("particle")) {ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
   // Loop over water cells
   const Obj<ALE::Mesh::label_sequence>&     waterCells = m->getLabelStratum("particle", 1);
   const ALE::Mesh::label_sequence::iterator wBegin     = waterCells->begin();
@@ -678,7 +811,13 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
     ierr = cellResidual(disc, x, t_der, b_der, elemVec, elemMat, options->waterEpsilon, options);CHKERRQ(ierr);
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
+    if (debug) {
+      ostringstream title;
+      title << "Water cell " << *c_iter << " elemVec";
+      std::cout << m->printMatrix(title.str(), numBasisFuncs, 1, elemVec);
+    }
   }
+  if (debug) {ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   // Loop over particle cells
   const Obj<ALE::Mesh::label_sequence>&     particleCells = m->getLabelStratum("particle", 2);
   const ALE::Mesh::label_sequence::iterator pBegin        = particleCells->begin();
@@ -692,15 +831,20 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
     ierr = cellResidual(disc, x, t_der, b_der, elemVec, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
+    if (debug) {
+      ostringstream title;
+      title << "Particle cell " << *c_iter << " elemVec";
+      std::cout << m->printMatrix(title.str(), numBasisFuncs, 1, elemVec);
+    }
   }
-  // Loop over particle boundary
-  const Obj<ALE::Mesh::label_type>&         particleBd      = m->getLabel("particleBd");
-  const Obj<ALE::Mesh::label_sequence>&     particleBdCells = m->getLabelStratum("particleBd", 2);
-  const ALE::Mesh::label_sequence::iterator pBdBegin        = particleBdCells->begin();
-  const ALE::Mesh::label_sequence::iterator pBdEnd          = particleBdCells->end();
-  const double                              jump            = options->particleEpsilon - options->waterEpsilon;
+  if (debug) {ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  // Loop over water boundary
+  const Obj<ALE::Mesh::label_type>&         particleBd   = m->getLabel("particleBd");
+  const Obj<ALE::Mesh::label_sequence>&     waterBdCells = m->getLabelStratum("particleBd", 3);
+  const ALE::Mesh::label_sequence::iterator wBdBegin     = waterBdCells->begin();
+  const ALE::Mesh::label_sequence::iterator wBdEnd       = waterBdCells->end();
 
-  for(ALE::Mesh::label_sequence::iterator c_iter = pBdBegin; c_iter != pBdEnd; ++c_iter) {
+  for(ALE::Mesh::label_sequence::iterator c_iter = wBdBegin; c_iter != wBdEnd; ++c_iter) {
     const Obj<ALE::Mesh::sieve_type::traits::coneSequence>&     cone   = sieve->cone(*c_iter);
     const ALE::Mesh::sieve_type::traits::coneSequence::iterator cBegin = cone->begin();
     const ALE::Mesh::sieve_type::traits::coneSequence::iterator cEnd   = cone->end();
@@ -710,38 +854,53 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
     if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
     for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
       if (m->getValue(particleBd, *f_iter)) {
-        const ALE::Mesh::arrow_section_type::point_type arrow(*c_iter, *f_iter);
-        const bool   reversed = (orientation->restrictPoint(arrow)[0] == -1);
-        PetscScalar  norm = 0.0;
         PetscScalar *x;
 
-        if (f == 0) {
-          t_der[0] = 0.0;        t_der[1] = -1.0;
-        } else if (f == 1) {
-          t_der[0] = 0.70710678; t_der[1] = 0.70710678;
-        } else if (f == 2) {
-          t_der[0] = -1.0;       t_der[1] = 0.0;
-        }
-        for(int d = 0; d < dim; ++d) {
-          options->normal[d] = 0.0;
-          for(int e = 0; e < dim; ++e) options->normal[d] += options->invJ[e*dim+d]*t_der[e];
-          if (reversed) options->normal[d] = -options->normal[d];
-          //options->normal[d] *= std::sqrt(options->detJ);
-          norm += options->normal[d]*options->normal[d];
-        }
-        for(int d = 0; d < dim; ++d) {
-          options->normal[d] /= std::sqrt(norm);
-        }        
-        if (reversed) {
-          options->normal[0] = -options->normal[0];
-          options->normal[1] = -options->normal[1];
-        }
-        ierr = SectionRealRestrict(X, *f_iter, &x);CHKERRQ(ierr);
-        ierr = faceResidual(particleBd, bdDisc, x, b_der, elemVec, elemMat, jump, options);CHKERRQ(ierr);
+        m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
+        ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+        ierr = faceResidual(disc, bdDisc, x, &cellBasisDer[f*offset], b_der, elemVec, elemMat, options->waterEpsilon, options);CHKERRQ(ierr);
         ierr = SectionRealUpdateAdd(section, *f_iter, elemVec);CHKERRQ(ierr);
+        if (debug) {
+          ostringstream title;
+          title << "Water face " << *f_iter << " elemVec";
+          std::cout << m->printMatrix(title.str(), bdDisc->getBasisSize(), 1, elemVec);
+        }
       }
     }
   }
+  if (debug) {ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  // Loop over particle boundary
+  const Obj<ALE::Mesh::label_sequence>&     particleBdCells = m->getLabelStratum("particleBd", 2);
+  const ALE::Mesh::label_sequence::iterator pBdBegin        = particleBdCells->begin();
+  const ALE::Mesh::label_sequence::iterator pBdEnd          = particleBdCells->end();
+
+  for(ALE::Mesh::label_sequence::iterator c_iter = pBdBegin; c_iter != pBdEnd; ++c_iter) {
+    const Obj<ALE::Mesh::sieve_type::traits::coneSequence>&     cone   = sieve->cone(*c_iter);
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cBegin = cone->begin();
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cEnd   = cone->end();
+    int                                                         f      = 0;
+    PetscScalar *x;
+
+    m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
+    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
+      if (m->getValue(particleBd, *f_iter)) {
+        m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
+        ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+        for(int e = 1; e < dim-1; ++e) {
+          for(int d = 0; d < dim; ++d) options->tangent[e*dim+d] *= -1.0;
+        }
+        ierr = faceResidual(disc, bdDisc, x, &cellBasisDer[f*offset], b_der, elemVec, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
+        ierr = SectionRealUpdateAdd(section, *f_iter, elemVec);CHKERRQ(ierr);
+        if (debug) {
+          ostringstream title;
+          title << "Particle face " << *f_iter << " elemVec";
+          std::cout << m->printMatrix(title.str(), bdDisc->getBasisSize(), 1, elemVec);
+        }
+      }
+    }
+  }
+  if (debug) {ierr = SectionRealView(section, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
   // Cleanup
   ierr = PetscFree4(t_der,b_der,elemVec,elemMat);CHKERRQ(ierr);
   // Exchange neighbors
@@ -1186,6 +1345,47 @@ PetscErrorCode cellJacobian(const Obj<ALE::Discretization>& disc, PetscScalar x[
   PetscFunctionReturn(0);
 }
 
+PetscErrorCode faceJacobian(const Obj<ALE::Discretization>& cellDisc, const Obj<ALE::Discretization>& disc, const PetscScalar cellBasisDer[], PetscScalar b_der[], PetscScalar elemMat[], double epsilon, Options *options) {
+  const int      dim     = options->dim;
+  double        *invJ    = options->invJ;
+  double         detJ    = options->fDetJ;
+  double        *normal  = options->normal;
+  double        *tangent = options->tangent;
+  const int      numQuadPoints = disc->getQuadratureSize();
+  const double  *quadWeights   = disc->getQuadratureWeights();
+  const int      numCellBasisFuncs = cellDisc->getBasisSize();
+  const int      numBasisFuncs = disc->getBasisSize();
+  const double  *basis         = disc->getBasis();
+  //const double  *basisDer      = disc->getBasisDerivatives();
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscMemzero(elemMat, numBasisFuncs*numCellBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
+  // Loop over quadrature points
+  for(int q = 0; q < numQuadPoints; ++q) {
+    // Loop over trial functions
+    for(int f = 0; f < numBasisFuncs; ++f) {
+      // Loop over basis functions
+      for(int g = 0; g < numCellBasisFuncs; ++g) {
+        // Linear part
+        for(int d = 0; d < dim; ++d) {
+          b_der[d] = 0.0;
+          for(int e = 0; e < dim; ++e) b_der[d] += invJ[e*dim+d]*cellBasisDer[(q*numCellBasisFuncs+g)*dim+e];
+        }
+        PetscScalar productN = 0.0, productT = 0.0;
+        for(int d = 0; d < dim; ++d) {
+          productN += normal[d]*b_der[d];
+          for(int e = 0; e < dim-1; ++e) {
+            productT += tangent[e*dim+d]*b_der[d];
+          }
+        }
+        elemMat[f*numCellBasisFuncs+g] += basis[q*numBasisFuncs+f]*(epsilon*productN + productT)*quadWeights[q]*detJ;
+      }
+    }
+  }    
+  PetscFunctionReturn(0);
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "Jac_Unstructured"
 PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
@@ -1193,21 +1393,33 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
   Options       *options = (Options *) ctx;
   Obj<ALE::Mesh::real_section_type> s;
   Obj<ALE::Mesh> m;
+  Obj<ALE::Mesh> bdM;
+  PetscScalar   *cellBasisDer;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(options->bdMesh, bdM);CHKERRQ(ierr);
   ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
-  const Obj<ALE::Discretization>&          disc          = m->getDiscretization("u");
-  const int                                numBasisFuncs = disc->getBasisSize();
-  const Obj<ALE::Mesh::real_section_type>& coordinates   = m->getRealSection("coordinates");
-  const Obj<ALE::Mesh::order_type>&        order         = m->getFactory()->getGlobalOrder(m, "default", s);
-  const int                                dim           = m->getDimension();
+  const Obj<ALE::Mesh::sieve_type>&         sieve         = m->getSieve();
+  const Obj<ALE::Discretization>&           disc          = m->getDiscretization("u");
+  const Obj<ALE::Discretization>&           bdDisc        = bdM->getDiscretization("u");
+  const int                                 numBasisFuncs = disc->getBasisSize();
+  const Obj<ALE::Mesh::real_section_type>&  coordinates   = m->getRealSection("coordinates");
+  const Obj<ALE::Mesh::order_type>&         order         = m->getFactory()->getGlobalOrder(m, "default", s);
+  const int                                 dim           = m->getDimension();
+  const int                                 offset        = bdDisc->getQuadratureSize()*disc->getBasisSize()*dim;
   PetscScalar *t_der, *b_der, *elemMat;
 
+  if (dim == 2) {
+    cellBasisDer = cellBasisDer2D;
+  } else if (dim == 3) {
+    cellBasisDer = cellBasisDer3D;
+  }
   ierr = MatZeroEntries(A);CHKERRQ(ierr);
   ierr = PetscMalloc3(dim,PetscScalar,&t_der,dim,PetscScalar,&b_der,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
+  // Must create the label on coarser meshes if it is missing
+  if (!m->hasLabel("particle")) {ierr = CreateParticleLabel(mesh, options);CHKERRQ(ierr);}
   // Loop over water cells
   const Obj<ALE::Mesh::label_sequence>&     waterCells = m->getLabelStratum("particle", 1);
   const ALE::Mesh::label_sequence::iterator wBegin     = waterCells->begin();
@@ -1236,7 +1448,55 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
     ierr = cellJacobian(disc, x, t_der, b_der, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
     ierr = updateOperator(A, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
   }
+  // Loop over water boundary
+  const Obj<ALE::Mesh::label_type>&         particleBd   = m->getLabel("particleBd");
+  const Obj<ALE::Mesh::label_sequence>&     waterBdCells = m->getLabelStratum("particleBd", 3);
+  const ALE::Mesh::label_sequence::iterator wBdBegin     = waterBdCells->begin();
+  const ALE::Mesh::label_sequence::iterator wBdEnd       = waterBdCells->end();
+
+  for(ALE::Mesh::label_sequence::iterator c_iter = wBdBegin; c_iter != wBdEnd; ++c_iter) {
+    const Obj<ALE::Mesh::sieve_type::traits::coneSequence>&     cone   = sieve->cone(*c_iter);
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cBegin = cone->begin();
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cEnd   = cone->end();
+    int                                                         f      = 0;
+
+    m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
+    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
+      if (m->getValue(particleBd, *f_iter)) {
+        m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
+        ierr = faceJacobian(disc, bdDisc, &cellBasisDer[f*offset], b_der, elemMat, options->waterEpsilon, options);CHKERRQ(ierr);
+        ierr = updateOperatorGeneral(A, m, s, order, *f_iter, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  // Loop over particle boundary
+  const Obj<ALE::Mesh::label_sequence>&     particleBdCells = m->getLabelStratum("particleBd", 2);
+  const ALE::Mesh::label_sequence::iterator pBdBegin        = particleBdCells->begin();
+  const ALE::Mesh::label_sequence::iterator pBdEnd          = particleBdCells->end();
+
+  for(ALE::Mesh::label_sequence::iterator c_iter = pBdBegin; c_iter != pBdEnd; ++c_iter) {
+    const Obj<ALE::Mesh::sieve_type::traits::coneSequence>&     cone   = sieve->cone(*c_iter);
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cBegin = cone->begin();
+    const ALE::Mesh::sieve_type::traits::coneSequence::iterator cEnd   = cone->end();
+    int                                                         f      = 0;
+
+    m->computeElementGeometry(coordinates, *c_iter, options->v0, options->J, options->invJ, options->detJ);
+    if (options->detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for face %d", options->detJ, *c_iter);
+    for(ALE::Mesh::sieve_type::traits::coneSequence::iterator f_iter = cBegin; f_iter != cEnd; ++f_iter, ++f) {
+      if (m->getValue(particleBd, *f_iter)) {
+        m->computeFaceGeometry(*c_iter, *f_iter, f, options->invJ, options->fInvJ, options->fDetJ, options->normal, options->tangent);
+        for(int e = 1; e < dim-1; ++e) {
+          for(int d = 0; d < dim; ++d) options->tangent[e*dim+d] *= -1.0;
+        }
+        ierr = faceJacobian(disc, bdDisc, &cellBasisDer[f*offset], b_der, elemMat, options->particleEpsilon, options);CHKERRQ(ierr);
+        ierr = updateOperatorGeneral(A, m, s, order, *f_iter, m, s, order, *c_iter, elemMat, ADD_VALUES);CHKERRQ(ierr);
+      }
+    }
+  }
+  // Cleanup
   ierr = PetscFree3(t_der,b_der,elemMat);CHKERRQ(ierr);
+  // Exchange neighbors
   ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1260,6 +1520,9 @@ PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options)
   const int corners  = m->getSieve()->nCone(*cells->begin(), m->depth())->size();
   double   *centroid = new double[dim];
 
+  // WARNING: This assumes I have a round particle and can mislabel elements if they are
+  //          too refined compared to the particle surface. I should either put in a check
+  //          or do the correct check with triangles.
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != end; ++c_iter) {
     double *coords;
     double  sqRadius = 0.0;
@@ -1281,6 +1544,10 @@ PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options)
   }
   delete [] centroid;
   ierr = SectionRealDestroy(coordinates);CHKERRQ(ierr);
+  // Label:
+  //   particles faces:   1
+  //   particle bd cells: 2
+  //   water bd cells:    3
   const Obj<ALE::Mesh::sieve_type>&         sieve           = m->getSieve();
   const Obj<ALE::Mesh::label_type>&         particleBdLabel = m->createLabel("particleBd");
   const Obj<ALE::Mesh::label_sequence>&     faces           = m->heightStratum(1);
@@ -1299,13 +1566,15 @@ PetscErrorCode CreateParticleLabel(Mesh mesh, Options *options)
         m->setValue(particleBdLabel, *f_iter, 1);
         if (valA == 2) {
           m->setValue(particleBdLabel, cellA, 2);
+          m->setValue(particleBdLabel, cellB, 3);
         } else {
+          m->setValue(particleBdLabel, cellA, 3);
           m->setValue(particleBdLabel, cellB, 2);
         }
       }
     }
   }
-  particleBdLabel->view("particleBdLabel");
+  if (options->debug) {particleBdLabel->view("particleBdLabel");}
   PetscFunctionReturn(0);
 }
 
@@ -1319,9 +1588,9 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       if (options->lambda > 0.0) {
         options->func    = nonlinear_2d;
       } else {
-        options->func    = constant;
+        options->func    = zero;
       }
-      options->exactFunc = quadratic_2d;
+      options->exactFunc = constantField_2d;
     } else {
       options->func      = linear_2d;
       options->exactFunc = cubic_2d;
@@ -1331,9 +1600,9 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       if (options->lambda > 0.0) {
         options->func    = nonlinear_3d;
       } else {
-        options->func    = constant;
+        options->func    = zero;
       }
-      options->exactFunc = quadratic_3d;
+      options->exactFunc = constantField_3d;
     } else {
       options->func      = linear_3d;
       options->exactFunc = cubic_3d;
@@ -1364,7 +1633,29 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
       SETERRQ1(PETSC_ERR_SUP, "Dimension not supported: %d", options->dim);
     }
     ierr = CreateParticleLabel(mesh, options); CHKERRQ(ierr);
-    const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
+    radius  = options->particleRadius;
+    epsilon = options->particleEpsilon;
+#if 0
+    {
+      const Obj<ALE::Mesh::int_section_type>&   groupField = new ALE::Mesh::int_section_type(m->comm(), m->debug());
+      const Obj<ALE::Mesh::label_sequence>&     faces      = m->getLabelStratum("particleBd", 1);
+      const ALE::Mesh::label_sequence::iterator fEnd       = faces->end();
+      Obj<ALE::Mesh>                            bdMesh     = PETSC_NULL;
+
+      for(ALE::Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != fEnd; ++f_iter) {
+        const Obj<ALE::Mesh::sieve_type::traits::coneSequence>& cone = m->getSieve()->cone(*f_iter);
+
+        for(ALE::Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
+          groupField->setFiberDimension(*v_iter, 1);
+        }
+      }
+      groupField->allocatePoint();
+      if (options->debug) {groupField->view("Boundary vertices");}
+      ALE::MySelection::create(m, bdMesh, groupField);
+      m->view("Cohesive Mesh");
+    }
+#endif
+    const Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
     s->setDebug(options->debug);
     m->setupField(s);
     if (options->debug) {s->view("Default field");}
@@ -1528,6 +1819,50 @@ PetscErrorCode CheckResidual(DM dm, ExactSolType sol, Options *options)
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "CheckJacobian"
+PetscErrorCode CheckJacobian(DM dm, ExactSolType sol, Options *options)
+{
+  MPI_Comm       comm;
+  const char    *name;
+  PetscScalar    norm;
+  PetscTruth     flag;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscOptionsHasName(PETSC_NULL, "-mat_view", &flag);CHKERRQ(ierr);
+  Mesh        mesh = (Mesh) dm;
+  Mat         J;
+  SectionReal Y, L, M;
+  Vec         x, y;
+
+  ierr = SectionRealDuplicate(sol.section, &Y);CHKERRQ(ierr);
+  ierr = MeshCreateMatrix(mesh, sol.section, MATAIJ, &J);CHKERRQ(ierr);
+  ierr = PetscObjectSetName((PetscObject) J, "Jacobian");CHKERRQ(ierr);
+  ierr = Jac_Unstructured(mesh, sol.section, J, options);CHKERRQ(ierr);
+  if (flag) {ierr = MatView(J, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  ierr = MeshCreateGlobalVector(mesh, &x);CHKERRQ(ierr);
+  ierr = VecDuplicate(x, &y);CHKERRQ(ierr);
+  ierr = SectionRealToVec(sol.section, mesh, SCATTER_FORWARD, x);CHKERRQ(ierr);
+  ierr = MatMult(J, x, y);CHKERRQ(ierr);
+  ierr = SectionRealToVec(Y, mesh, SCATTER_REVERSE, y);CHKERRQ(ierr);
+  ierr = VecDestroy(x);CHKERRQ(ierr);
+  ierr = VecDestroy(y);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(sol.section, &L);CHKERRQ(ierr);
+  ierr = SectionRealDuplicate(sol.section, &M);CHKERRQ(ierr);
+  ierr = Rhs_Unstructured(mesh, M, L, options);CHKERRQ(ierr);
+  ierr = SectionRealAXPY(Y, mesh, 1.0, L);CHKERRQ(ierr);
+  ierr = SectionRealNorm(Y, mesh, NORM_2, &norm);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(Y);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(L);CHKERRQ(ierr);
+  ierr = SectionRealDestroy(M);CHKERRQ(ierr);
+  ierr = MatDestroy(J);CHKERRQ(ierr);
+  ierr = PetscObjectGetName((PetscObject) sol.section, &name);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) sol.section, &comm);CHKERRQ(ierr);
+  PetscPrintf(comm, "Error for linear residual for trial solution %s: %g\n", name, norm);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "CreateSolver"
 PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
 {
@@ -1654,6 +1989,7 @@ int main(int argc, char *argv[])
       ierr = CreateExactSolution(dm, &options);CHKERRQ(ierr);
       ierr = CheckError(dm, options.exactSol, &options);CHKERRQ(ierr);
       ierr = CheckResidual(dm, options.exactSol, &options);CHKERRQ(ierr);
+      ierr = CheckJacobian(dm, options.exactSol, &options);CHKERRQ(ierr);
       ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
       ierr = Solve(dmmg, &options);CHKERRQ(ierr);
       ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);

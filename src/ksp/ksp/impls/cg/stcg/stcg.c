@@ -3,6 +3,14 @@
 #include "include/private/kspimpl.h"             /*I "petscksp.h" I*/
 #include "src/ksp/ksp/impls/cg/stcg/stcg.h"
 
+#define STCG_PRECONDITIONED_DIRECTION   0
+#define STCG_UNPRECONDITIONED_DIRECTION 1
+#define STCG_DIRECTION_TYPES            2
+
+static const char *DType_Table[64] = {
+  "preconditioned", "unpreconditioned"
+};
+
 #undef __FUNCT__
 #define __FUNCT__ "KSPSTCGSetRadius"
 /*@
@@ -27,7 +35,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGSetRadius(KSP ksp, PetscReal radius)
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(ksp, KSP_COOKIE, 1);
-  if (radius < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Tolerance must be positive");
+  if (radius < 0.0) SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Radius negative");
   ierr = PetscObjectQueryFunction((PetscObject)ksp, "KSPSTCGSetRadius_C", (void (**)(void))&f); CHKERRQ(ierr);
   if (f) {
     ierr = (*f)(ksp, radius); CHKERRQ(ierr);
@@ -101,13 +109,13 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn(KSP ksp, PetscReal *o_fcn)
 
    subject to the trust region constraint
 
-            || s ||_M <= delta,
+            || s || <= delta,
 
    where
 
      delta is the trust region radius,
-     g is the gradient vector, and
-     H is the Hessian matrix,
+     g is the gradient vector,
+     H is the Hessian approximation, and
      M is the positive definite preconditioner matrix.
 
    KSPConvergedReason may be
@@ -126,14 +134,16 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   KSP_STCG *cg = (KSP_STCG *)ksp->data;
 
   PetscErrorCode ierr;
-  MatStructure  pflag;
+  MatStructure pflag;
   Mat Qmat, Mmat;
   Vec r, z, p, d;
   PC  pc;
+
   PetscReal norm_r, norm_d, norm_dp1, norm_p, dMp;
   PetscReal alpha, beta, kappa, rz, rzm1;
   PetscReal rr, r2, step;
-  PetscInt  i, max_cg_its;
+
+  PetscInt max_cg_its;
 
   PetscTruth diagonalscale;
 
@@ -144,7 +154,9 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   /***************************************************************************/
 
   ierr = PCDiagonalScale(ksp->pc, &diagonalscale); CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ksp->type_name);
+  if (diagonalscale) {
+    SETERRQ1(PETSC_ERR_SUP, "Krylov method %s does not support diagonal scaling", ((PetscObject)ksp)->type_name);
+  }
 
   if (cg->radius < 0.0) {
     SETERRQ(PETSC_ERR_ARG_OUTOFRANGE, "Input error: radius < 0");
@@ -163,75 +175,81 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
   ierr = PCGetOperators(pc, &Qmat, &Mmat, &pflag); CHKERRQ(ierr);
 
-  max_cg_its = ksp->max_it;
+  ierr = VecGetSize(d, &max_cg_its); CHKERRQ(ierr);
+  max_cg_its = PetscMin(max_cg_its, ksp->max_it);
   ksp->its = 0;
 
   /***************************************************************************/
-  /* Initialize objective function value                                     */
+  /* Initialize objective function and direction.                            */
   /***************************************************************************/
 
   cg->o_fcn = 0.0;
 
-  /***************************************************************************/
-  /* Begin the conjugate gradient method.                                    */
-  /***************************************************************************/
-
   ierr = VecSet(d, 0.0); CHKERRQ(ierr);			/* d = 0             */
-  ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad         */
-  ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);		/* z = inv(M) r      */
   cg->norm_d = 0.0;
 
   /***************************************************************************/
-  /* Check the preconditioners for numerical problems and for positive       */
+  /* Begin the conjugate gradient method.  Check the right-hand side for     */
+  /* numerical problems.  The check for not-a-number and infinite values     */
+  /* need be performed only once.                                            */
+  /***************************************************************************/
+
+  ierr = VecCopy(ksp->vec_rhs, r); CHKERRQ(ierr);	/* r = -grad         */
+  ierr = VecDot(r, r, &rr); CHKERRQ(ierr);		/* rr = r^T r        */
+  if (rr - rr != 0.0) {
+    /*************************************************************************/
+    /* The right-hand side contains not-a-number or an infinite value.       */
+    /* The gradient step does not work; return a zero value for the step.    */
+    /*************************************************************************/
+
+    ksp->reason = KSP_DIVERGED_NAN;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad right-hand side: rr=%g\n", rr); CHKERRQ(ierr);
+    PetscFunctionReturn(0);
+  }
+
+  /***************************************************************************/
+  /* Check the preconditioner for numerical problems and for positive        */
   /* definiteness.  The check for not-a-number and infinite values need be   */
   /* performed only once.                                                    */
   /***************************************************************************/
 
+  ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);		/* z = inv(M) r      */
   ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T inv(M) r */
   if (rz - rz != 0.0) {
     /*************************************************************************/
-    /* The preconditioner produced not-a-number or an infinite value.  This  */
-    /* can appear either due to r having numerical problems or M having      */
-    /* numerical problems.  Differentiate between the two and then use the   */
-    /* gradient direction.                                                   */
+    /* The preconditioner contains not-a-number or an infinite value.        */
+    /* Return the gradient direction intersected with the trust region.      */
     /*************************************************************************/
 
     ksp->reason = KSP_DIVERGED_NAN;
-    ierr = VecDot(r, r, &rr); CHKERRQ(ierr);		/* rr = r^T r        */
-    if (rr - rr != 0.0) {
-      /***********************************************************************/
-      /* The right-hand side contains not-a-number or an infinite value.     */
-      /* The gradient step does not work; return a zero value for the step.  */
-      /***********************************************************************/
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad right-hand side: rr=%g\n", rr); CHKERRQ(ierr);
-    }
-    else {
-      /***********************************************************************/
-      /* The preconditioner contains not-a-number or an infinite value.      */
-      /***********************************************************************/
-
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
-
-      if (cg->radius) {
-        alpha = sqrt(r2 / rr);
-        ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r   */
-        cg->norm_d = cg->radius;
-  
-	/*********************************************************************/
-	/* Compute objective function.                                       */
-	/*********************************************************************/
-
-        ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
-        ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
-        ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
-        cg->o_fcn = -cg->o_fcn;
+    if (cg->radius) {
+      if (r2 >= rr) {
+        alpha = 1.0;
+        cg->norm_d = sqrt(rr);
       }
+      else {
+        alpha = sqrt(r2 / rr);
+        cg->norm_d = cg->radius;
+      }
+
+      ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r   */
+
+      /***********************************************************************/
+      /* Compute objective function.                                         */
+      /***********************************************************************/
+
+      ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
+      ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
+      ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+      cg->o_fcn = -cg->o_fcn;
+      ++ksp->its;
     }
     PetscFunctionReturn(0);
   }
 
-  if (rz <= 0.0) {
+  if (rz < 0.0) {
     /*************************************************************************/
     /* The preconditioner is indefinite.  Because this is the first          */
     /* and we do not have a direction yet, we use the gradient step.  Note   */
@@ -243,10 +261,16 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: indefinite preconditioner: rz=%g\n", rz); CHKERRQ(ierr);
 
     if (cg->radius) {
-      ierr = VecDot(r, r, &rr); CHKERRQ(ierr);		/* rr = r^T r        */
-      alpha = sqrt(r2 / rr);
+      if (r2 >= rr) {
+        alpha = 1.0;
+        cg->norm_d = sqrt(rr);
+      }
+      else {
+        alpha = sqrt(r2 / rr);
+        cg->norm_d = cg->radius;
+      }
+
       ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r   */
-      cg->norm_d = cg->radius;
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -256,13 +280,16 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
       ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
+      ++ksp->its;
     }
     PetscFunctionReturn(0);
   }
 
   /***************************************************************************/
-  /* As far as we know, the preconditioner is positive semidefinite.  Compute*/
-  /* the residual and check for convergence.                                 */
+  /* As far as we know, the preconditioner is positive semidefinite.         */
+  /* Compute and log the residual.  Check convergence because this           */
+  /* initializes things, but do not terminate until at least one conjugate   */
+  /* gradient iteration has been performed.                                  */
   /***************************************************************************/
 
   switch(ksp->normtype) {
@@ -271,11 +298,11 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     break;
 
   case KSP_NORM_UNPRECONDITIONED:
-    ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);	/* norm_r = |r|      */
+    norm_r = sqrt(rr);					/* norm_r = |r|      */
     break;
 
   case KSP_NORM_NATURAL:
-    norm_r = sqrt(rz);       				/* norm_r = |r|_M    */
+    norm_r = sqrt(rz);					/* norm_r = |r|_M    */
     break;
 
   default:
@@ -284,21 +311,23 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   }
 
   KSPLogResidualHistory(ksp, norm_r);
-  KSPMonitor(ksp, 0, norm_r);
+  KSPMonitor(ksp, ksp->its, norm_r);
   ksp->rnorm = norm_r;
 
-  ierr = (*ksp->converged)(ksp, 0, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
-  if (ksp->reason) {
-    PetscFunctionReturn(0);
-  }
+  ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
 
   /***************************************************************************/
-  /* We have not converged.  Compute the first direction and check the       */
-  /* matrix for numerical problems.                                          */
+  /* Compute the first direction and update the iteration.                   */
   /***************************************************************************/
 
   ierr = VecCopy(z, p); CHKERRQ(ierr);			/* p = z             */
   ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p         */
+  ++ksp->its;
+
+  /***************************************************************************/
+  /* Check the matrix for numerical problems.                                */
+  /***************************************************************************/
+
   ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T Q p   */
   if (kappa - kappa != 0.0) {
     /*************************************************************************/
@@ -311,10 +340,16 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     ierr = PetscInfo1(ksp, "KSPSolve_STCG: bad matrix: kappa=%g\n", kappa); CHKERRQ(ierr);
 
     if (cg->radius) {
-      ierr = VecDot(r, r, &rr); CHKERRQ(ierr);		/* rr = r^T r        */
-      alpha = sqrt(r2 / rr);
+      if (r2 >= rr) {
+        alpha = 1.0;
+        cg->norm_d = sqrt(rr);
+      }
+      else {
+        alpha = sqrt(r2 / rr);
+        cg->norm_d = cg->radius;
+      }
+
       ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r   */
-      cg->norm_d = cg->radius;
 
       /***********************************************************************/
       /* Compute objective function.                                         */
@@ -324,6 +359,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
       ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
       cg->o_fcn = -cg->o_fcn;
+      ++ksp->its;
     }
     PetscFunctionReturn(0);
   }
@@ -345,40 +381,78 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
   }
 
   /***************************************************************************/
-  /* Run the conjugate gradient method until either the problem is solved,   */
-  /* we encounter the boundary of the trust region, or the conjugate gradient*/
-  /* method breaks down.                                                     */
+  /* Check for negative curvature.                                           */
   /***************************************************************************/
 
-  for (i = 0; i <= max_cg_its; ++i) {
+  if (kappa <= 0.0) {
+    /*************************************************************************/
+    /* In this case, the matrix is indefinite and we have encountered a      */
+    /* direction of negative curvature.  Because negative curvature occurs   */
+    /* during the first step, we must follow a direction.                    */
+    /*************************************************************************/
+
+    ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
+    ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
+
+    if (cg->radius && norm_p > 0.0) {
+      /***********************************************************************/
+      /* Follow direction of negative curvature to the boundary of the       */
+      /* trust region.                                                       */
+      /***********************************************************************/
+
+      step = sqrt(r2 / norm_p);
+      cg->norm_d = cg->radius;
+
+      ierr = VecAXPY(d, step, p); CHKERRQ(ierr);	/* d = d + step p    */
+
+      /***********************************************************************/
+      /* Update objective function.                                          */
+      /***********************************************************************/
+
+      cg->o_fcn += step * (0.5 * step * kappa - rz);
+    }
+    else if (cg->radius) {
+      /***********************************************************************/
+      /* The norm of the preconditioned direction is zero; use the gradient  */
+      /* step.                                                               */
+      /***********************************************************************/
+
+      if (r2 >= rr) {
+        alpha = 1.0;
+        cg->norm_d = sqrt(rr);
+      }
+      else {
+        alpha = sqrt(r2 / rr);
+        cg->norm_d = cg->radius;
+      }
+
+      ierr = VecAXPY(d, alpha, r); CHKERRQ(ierr);	/* d = d + alpha r   */
+
+      /***********************************************************************/
+      /* Compute objective function.                                         */
+      /***********************************************************************/
+
+      ierr = KSP_MatMult(ksp, Qmat, d, z); CHKERRQ(ierr)
+      ierr = VecAYPX(z, -0.5, ksp->vec_rhs); CHKERRQ(ierr);
+      ierr = VecDot(d, z, &cg->o_fcn); CHKERRQ(ierr);
+      cg->o_fcn = -cg->o_fcn;
+      ++ksp->its;
+    }
+    PetscFunctionReturn(0);
+  }
+
+  /***************************************************************************/
+  /* Run the conjugate gradient method until either the problem is solved,   */
+  /* we encounter the boundary of the trust region, or the conjugate         */
+  /* gradient method breaks down.                                            */
+  /***************************************************************************/
+
+  while(1) {
     /*************************************************************************/
     /* Know that kappa is nonzero, because we have not broken down, so we    */
     /* can compute the steplength.                                           */
     /*************************************************************************/
 
-    if (kappa <= 0.0) {
-      /***********************************************************************/
-      /* In this case, the matrix is indefinite and we have encountered      */
-      /* a direction of negative curvature.  Follow the direction to the     */
-      /* boundary of the trust region.                                       */
-      /***********************************************************************/
-
-      ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
-      ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
-
-      if (cg->radius) {
-        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
-        ierr = VecAXPY(d, step, p); CHKERRQ(ierr);	/* d = d + step p    */
-        cg->norm_d = cg->radius;
-
-	/*********************************************************************/
-        /* Update objective function.                                        */
-	/*********************************************************************/
-
-        cg->o_fcn += step * (0.5 * step * kappa - rz);
-      }
-      break;
-    }
     alpha = rz / kappa;
 
     /*************************************************************************/
@@ -390,32 +464,43 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     if (cg->radius && norm_dp1 >= r2) {
       /***********************************************************************/
       /* In this case, the matrix is positive definite as far as we know.    */
-      /* However, the direction does beyond the trust region.  Follow the    */
-      /* direction to the boundary of the trust region.                      */
+      /* However, the full step goes beyond the trust region.                */
       /***********************************************************************/
 
       ksp->reason = KSP_CONVERGED_CG_CONSTRAINED;
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: constrained step: radius=%g\n", cg->radius); CHKERRQ(ierr);
 
-      step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
-      ierr = VecAXPY(d, step, p); CHKERRQ(ierr);	/* d = d + step p    */
-      cg->norm_d = cg->radius;
+      if (norm_p > 0.0) {
+	/*********************************************************************/
+	/* Follow the direction to the boundary of the trust region.         */
+	/*********************************************************************/
 
-      /***********************************************************************/
-      /* Update objective function.                                          */
-      /***********************************************************************/
+        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        cg->norm_d = cg->radius;
 
-      cg->o_fcn += step * (0.5 * step * kappa - rz);
+        ierr = VecAXPY(d, step, p); CHKERRQ(ierr);	/* d = d + step p    */
+
+        /*********************************************************************/
+        /* Update objective function.                                        */
+        /*********************************************************************/
+
+        cg->o_fcn += step * (0.5 * step * kappa - rz);
+      }
+      else {
+        /*********************************************************************/
+        /* The norm of the direction is zero; there is nothing to follow.    */
+        /*********************************************************************/
+      }
       break;
     }
 
     /*************************************************************************/
-    /* Now we can update the direction, residual, and objective value.       */
+    /* Now we can update the direction and residual.                         */
     /*************************************************************************/
 
     ierr = VecAXPY(d, alpha, p); CHKERRQ(ierr);		/* d = d + alpha p   */
     ierr = VecAXPY(r, -alpha, z);			/* r = r - alpha Q p */
-    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);
+    ierr = KSP_PCApply(ksp, r, z); CHKERRQ(ierr);	/* z = inv(M) r      */
 
     switch(cg->dtype) {
     case STCG_PRECONDITIONED_DIRECTION:
@@ -428,6 +513,10 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
     cg->norm_d = sqrt(norm_d);
 
+    /*************************************************************************/
+    /* Update objective function.                                            */
+    /*************************************************************************/
+
     cg->o_fcn -= 0.5 * alpha * rz;
 
     /*************************************************************************/
@@ -436,7 +525,7 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     rzm1 = rz;
     ierr = VecDot(r, z, &rz); CHKERRQ(ierr);		/* rz = r^T z        */
-    if (rz <= 0.0) {
+    if (rz < 0.0) {
       /***********************************************************************/
       /* The preconditioner is indefinite.                                   */
       /***********************************************************************/
@@ -453,15 +542,15 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
 
     switch(ksp->normtype) {
     case KSP_NORM_PRECONDITIONED:
-      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |z| */
+      ierr = VecNorm(z, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |z|      */
       break;
 
     case KSP_NORM_UNPRECONDITIONED:
-      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |r| */
+      ierr = VecNorm(r, NORM_2, &norm_r); CHKERRQ(ierr);/* norm_r = |r|      */
       break;
 
     case KSP_NORM_NATURAL:
-      norm_r = sqrt(rz);				/* norm_r = |r|_B */
+      norm_r = sqrt(rz);				/* norm_r = |r|_M    */
       break;
 
     default:
@@ -470,18 +559,21 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
 
     KSPLogResidualHistory(ksp, norm_r);
-    KSPMonitor(ksp, 0, norm_r);
+    KSPMonitor(ksp, ksp->its, norm_r);
     ksp->rnorm = norm_r;
   
-    ierr = (*ksp->converged)(ksp, i+1, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
-    if (ksp->reason) {                 /* convergence */
-      ierr = PetscInfo2(ksp,"KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n",norm_r,cg->radius); CHKERRQ(ierr);
+    ierr = (*ksp->converged)(ksp, ksp->its, norm_r, &ksp->reason, ksp->cnvP); CHKERRQ(ierr);
+    if (ksp->reason) {
+      /***********************************************************************/
+      /* The method has converged.                                           */
+      /***********************************************************************/
+
+      ierr = PetscInfo2(ksp, "KSPSolve_STCG: truncated step: rnorm=%g, radius=%g\n", norm_r, cg->radius); CHKERRQ(ierr);
       break;
     }
 
     /*************************************************************************/
-    /* We have not converged yet.  Check for breakdown, then update p and    */
-    /* the norms.                                                            */
+    /* We have not converged yet.  Check for breakdown.                      */
     /*************************************************************************/
 
     beta = rz / rzm1;
@@ -494,6 +586,20 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
       ierr = PetscInfo1(ksp, "KSPSolve_STCG: breakdown: beta=%g\n", beta); CHKERRQ(ierr);
       break;
     }
+
+    /*************************************************************************/
+    /* Check iteration limit.                                                */
+    /*************************************************************************/
+
+    if (ksp->its >= max_cg_its) {
+      ksp->reason = KSP_DIVERGED_ITS;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: iterlim: its=%d\n", ksp->its); CHKERRQ(ierr);
+      break;
+    }
+
+    /*************************************************************************/
+    /* Update p and the norms.                                               */
+    /*************************************************************************/
 
     ierr = VecAYPX(p, beta, z); CHKERRQ(ierr);          /* p = z + beta p    */
 
@@ -510,22 +616,52 @@ PetscErrorCode KSPSolve_STCG(KSP ksp)
     }
 
     /*************************************************************************/
-    /* Compute the new direction                                             */
+    /* Compute the new direction and update the iteration.                   */
     /*************************************************************************/
 
     ierr = KSP_MatMult(ksp, Qmat, p, z); CHKERRQ(ierr);	/* z = Q * p         */
     ierr = VecDot(p, z, &kappa); CHKERRQ(ierr);		/* kappa = p^T Q p   */
-
-    /*************************************************************************/
-    /* Update the iteration.                                                 */
-    /*************************************************************************/
-
     ++ksp->its;
+
+    /*************************************************************************/
+    /* Check for negative curvature.                                         */
+    /*************************************************************************/
+
+    if (kappa <= 0.0) {
+      /***********************************************************************/
+      /* In this case, the matrix is indefinite and we have encountered      */
+      /* a direction of negative curvature.  Follow the direction to the     */
+      /* boundary of the trust region.                                       */
+      /***********************************************************************/
+
+      ksp->reason = KSP_CONVERGED_CG_NEG_CURVE;
+      ierr = PetscInfo1(ksp, "KSPSolve_STCG: negative curvature: kappa=%g\n", kappa); CHKERRQ(ierr);
+
+      if (cg->radius && norm_p > 0.0) {
+	/*********************************************************************/
+	/* Follow direction of negative curvature to boundary.               */
+	/*********************************************************************/
+
+        step = (sqrt(dMp*dMp+norm_p*(r2-norm_d))-dMp)/norm_p;
+        cg->norm_d = cg->radius;
+
+        ierr = VecAXPY(d, step, p); CHKERRQ(ierr);	/* d = d + step p    */
+
+	/*********************************************************************/
+	/* Update objective function.                                        */
+	/*********************************************************************/
+
+        cg->o_fcn += step * (0.5 * step * kappa - rz);
+      }
+      else if (cg->radius) {
+	/*********************************************************************/
+	/* The norm of the direction is zero; there is nothing to follow.    */
+	/*********************************************************************/
+      }
+      break;
+    }
   }
 
-  if (!ksp->reason) {
-    ksp->reason = KSP_DIVERGED_ITS;
-  }
   PetscFunctionReturn(0);
 #endif
 }
@@ -616,10 +752,6 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPSTCGGetObjFcn_STCG(KSP ksp, PetscReal *o_fc
 }
 EXTERN_C_END
 
-static const char *DType_Table[64] = {
-  "preconditioned", "unpreconditioned"
-};
-
 #undef __FUNCT__
 #define __FUNCT__ "KSPSetFromOptions_STCG"
 PetscErrorCode KSPSetFromOptions_STCG(KSP ksp)
@@ -665,7 +797,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPCreate_STCG(KSP ksp)
 
   ierr = PetscNewLog(ksp,KSP_STCG, &cg); CHKERRQ(ierr);
 
-  cg->radius = PETSC_MAX;
+  cg->radius = 0.0;
   cg->dtype = STCG_UNPRECONDITIONED_DIRECTION;
 
   ksp->data = (void *) cg;

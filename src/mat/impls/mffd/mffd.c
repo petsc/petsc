@@ -40,7 +40,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT MatMFFDInitializePackage(const char path[])
   /* Register Constructors */
   ierr = MatMFFDRegisterAll(path);CHKERRQ(ierr);
   /* Register Events */
-  ierr = PetscLogEventRegister(&MATMFFD_Mult, "MatMult MF",          MATMFFD_COOKIE);CHKERRQ(ierr);
+  ierr = PetscLogEventRegisterma(&MATMFFD_Mult, "MatMult MF",          MATMFFD_COOKIE);CHKERRQ(ierr);
 
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
@@ -103,7 +103,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetType(Mat mat,MatMFFDType ftype)
     ierr = (*ctx->ops->destroy)(ctx);CHKERRQ(ierr);
   }
 
-  ierr =  PetscFListFind(MatMFFDPetscFList,ctx->comm,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr =  PetscFListFind(MatMFFDPetscFList,((PetscObject)ctx)->comm,ftype,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) SETERRQ1(PETSC_ERR_ARG_UNKNOWN_TYPE,"Unknown MatMFFD type %s given",ftype);
   ierr = (*r)(ctx);CHKERRQ(ierr);
   ierr = PetscObjectChangeTypeName((PetscObject)ctx,ftype);CHKERRQ(ierr);
@@ -221,10 +221,10 @@ PetscErrorCode MatView_MFFD(Mat J,PetscViewer viewer)
   if (iascii) {
      ierr = PetscViewerASCIIPrintf(viewer,"  matrix-free approximation:\n");CHKERRQ(ierr);
      ierr = PetscViewerASCIIPrintf(viewer,"    err=%G (relative error in function evaluation)\n",ctx->error_rel);CHKERRQ(ierr);
-     if (!ctx->type_name) {
+     if (!((PetscObject)ctx)->type_name) {
        ierr = PetscViewerASCIIPrintf(viewer,"    The compute h routine has not yet been set\n");CHKERRQ(ierr);
      } else {
-       ierr = PetscViewerASCIIPrintf(viewer,"    Using %s compute h routine\n",ctx->type_name);CHKERRQ(ierr);
+       ierr = PetscViewerASCIIPrintf(viewer,"    Using %s compute h routine\n",((PetscObject)ctx)->type_name);CHKERRQ(ierr);
      }
      if (ctx->ops->view) {
        ierr = (*ctx->ops->view)(ctx,viewer);CHKERRQ(ierr);
@@ -487,8 +487,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatMFFDSetFromOptions(Mat mat)
   char           ftype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsBegin(mfctx->comm,mfctx->prefix,"Set matrix free computation parameters","MatMFFD");CHKERRQ(ierr);
-  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDPetscFList,mfctx->type_name,ftype,256,&flg);CHKERRQ(ierr);
+  ierr = PetscOptionsBegin(((PetscObject)mfctx)->comm,((PetscObject)mfctx)->prefix,"Set matrix free computation parameters","MatMFFD");CHKERRQ(ierr);
+  ierr = PetscOptionsList("-mat_mffd_type","Matrix free type","MatMFFDSetType",MatMFFDPetscFList,((PetscObject)mfctx)->type_name,ftype,256,&flg);CHKERRQ(ierr);
   if (flg) {
     ierr = MatMFFDSetType(mat,ftype);CHKERRQ(ierr);
   }
@@ -527,7 +527,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   ierr = MatMFFDInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
-  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_COOKIE,0,"MatMFFD",A->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
+  ierr = PetscHeaderCreate(mfctx,_p_MatMFFD,struct _MFOps,MATMFFD_COOKIE,0,"MatMFFD",((PetscObject)A)->comm,MatDestroy_MFFD,MatView_MFFD);CHKERRQ(ierr);
   mfctx->sp              = 0;
   mfctx->error_rel       = PETSC_SQRT_MACHINE_EPSILON;
   mfctx->recomputeperiod = 1;
@@ -536,7 +536,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_MFFD(Mat A)
   mfctx->historyh        = PETSC_NULL;
   mfctx->ncurrenth       = 0;
   mfctx->maxcurrenth     = 0;
-  mfctx->type_name       = 0;
+  ((PetscObject)mfctx)->type_name       = 0;
 
   mfctx->vshift          = 0.0;
   mfctx->vscale          = 1.0;

@@ -2592,8 +2592,8 @@ such tuning can significantly enhance performance.
 % --------------------------------------------------------------------
 \label{sec_blocksolve}
 PETSc supports incomplete factorization preconditioners for several matrix
-types for the uniprocess case.  \sindex{ILU, parallel}
-\sindex{ICC, parallel} In addition, for the parallel case
+types for the uniprocess case.\sindex{ILU, parallel}\sindex{ICC, parallel}
+In addition, for the parallel case
 we provide an interface to the ILU and ICC preconditioners
 of BlockSolve95 \cite{bs-user-ref}.   PETSc enables users
 to employ the preconditioners within
@@ -2758,8 +2758,7 @@ These orderings can also be set through the options database by specifying
 one of the following:  \trl{-pc_factor_ordering_type} \trl{natural}, \trl{-pc_factor_ordering_type}
 \trl{nd}, \trl{-pc_factor_ordering_type} \trl{1wd}, \trl{-pc_factor_ordering_type} \trl{rcm},
 \trl{-pc_factor_ordering_type} \trl{qmd}.
-In addition, see 
-\break MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
+In addition, see MatGetOrdering(), discussed in Section~\ref{sec_matfactor}.
 
 The sparse LU factorization provided in PETSc does not perform pivoting for 
 numerical stability (since they are designed to preserve nonzero 
@@ -2769,7 +2768,7 @@ pivot when, in fact, the matrix is non-singular. The option
 will often help eliminate the zero pivot, by preprocessing the the 
 column ordering to remove small values from the diagonal. Here, \trl{tol}
 is an optional tolerance to decide if a value is nonzero; by default it
-is $ 1.e-10.$ 
+is~$ 1.e-10.$ 
 
 
 In addition, Section~\ref{sec_symbolfactor} provides information on
@@ -3495,8 +3494,8 @@ Test Jacobian   & SNESTEST        & test  & \\
 \hline
 \end{tabular}
 \end{center}
-\label{tab_snesdefaults}
 \caption{PETSc Nonlinear Solvers}
+\label{tab_snesdefaults}
 \end{table}
 
 \subsection{Line Search Techniques} \sindex{line search}
@@ -3764,7 +3763,7 @@ option \trl{-snes_mf_operator}. \findex{-snes_mf_operator}
 
 See also
 \begin{tabbing}
-  MatCreateMF(Vec x, Mat *mat);
+  MatCreateMFFD(Vec x, Mat *mat);
 \end{tabbing}
 for users who need a matrix-free matrix but are not using SNES.
 
@@ -4124,10 +4123,14 @@ One can set the solution method with the routine
  TSSetType(TS ts,TSType type);
 \end{tabbing}
 \findex{TSSetType()} Currently supported types are \trl{TS_EULER},
-\trl{TS_BEULER}, and \trl{TS_PSEUDO}
+\trl{TS_BEULER},  \trl{TS_PSEUDO}, \trl{TS_CRANK_NICHOLSON},
+\trl{TS_SUNDIALS} (only if the Sundials package is installed),
+and \trl{TS_RK}
 \findex{TS_EULER} \findex{TS_BEULER} \findex{TS_PSEUDO}
+\findex{TS_CRANK_NICHOLSON} \findex{TS_SUNDIALS} \findex{TS_RUNGE_KUTTA}
 or the command line option
-\trl{-ts_type euler, beuler, pseudo}. \findex{-ts_type} \sindex{Euler}
+\trl{-ts_type euler, beuler, pseudo, crank-nicholson, sundials, runge-kutta}.
+\findex{-ts_type} \sindex{Euler}
 \sindex{backward Euler}
 
 
@@ -4152,11 +4155,16 @@ One sets the total number of timesteps to run or the total time to run
 \begin{tabbing}
  TSSetDuration(TS ts,int maxsteps,double maxtime);
 \end{tabbing}
-One sets up the timestep context with \findex{TSSetUp()}
+One performs the request number of time steps with\findex{TSSolve()}
+\begin{tabbing}
+  TSSolve(TS ts);
+\end{tabbing}
+The solve call implicitly sets up the timestep context;
+this can be done explicitly with \findex{TSSetUp()}
 \begin{tabbing}
  TSSetUp(TS ts);
 \end{tabbing}
-destroys it with \findex{TSDestroy()}
+One destroys the context with \findex{TSDestroy()}
 \begin{tabbing}
  TSDestroy(TS ts);
 \end{tabbing}

@@ -45,7 +45,7 @@ int main(int argc,char **args)
   Vec            x,b,u;          /* approx solution, RHS, exact solution */
   PetscViewer    fd;               /* viewer */
   char           file[3][PETSC_MAX_PATH_LEN];     /* input file name */
-  PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE;
+  PetscTruth     table,flg,flgB=PETSC_FALSE,trans=PETSC_FALSE,partition=PETSC_FALSE,initialguess = PETSC_FALSE;
   PetscErrorCode ierr;
   PetscInt       its,num_numfac,m,n,M;
   PetscReal      norm;
@@ -59,6 +59,7 @@ int main(int argc,char **args)
   ierr = PetscOptionsHasName(PETSC_NULL,"-table",&table);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-trans",&trans);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL,"-partition",&partition);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL,"-initialguess",&initialguess);CHKERRQ(ierr);
 
   /* 
      Determine files from which we read the two linear systems
@@ -278,6 +279,7 @@ int main(int argc,char **args)
        Create linear solver; set operators; set runtime options.
     */
     ierr = KSPCreate(PETSC_COMM_WORLD,&ksp);CHKERRQ(ierr);
+    ierr = KSPSetInitialGuessNonzero(ksp,initialguess);CHKERRQ(ierr);
     num_numfac = 1;
     ierr = PetscOptionsGetInt(PETSC_NULL,"-num_numfac",&num_numfac,PETSC_NULL);CHKERRQ(ierr);
     while ( num_numfac-- ){
@@ -309,7 +311,7 @@ int main(int argc,char **args)
         Mat       F;
       
         ierr = KSPGetPC(ksp,&pc);CHKERRQ(ierr);
-        ierr = PCGetFactoredMatrix(pc,&F);CHKERRQ(ierr);
+        ierr = PCFactorGetMatrix(pc,&F);CHKERRQ(ierr);
         ierr = MatGetInertia(F,&nneg,&nzero,&npos);CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_SELF," MatInertia: nneg: %D, nzero: %D, npos: %D\n",nneg,nzero,npos);
       }

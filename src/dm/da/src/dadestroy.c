@@ -39,14 +39,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DADestroy(DA da)
     if (da->globalin[i]) {cnt++;}
   }
 
-  if (--da->refct - cnt > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)da)->refct - cnt > 0) PetscFunctionReturn(0);
   /*
          Need this test because the da references the vectors that 
      reference the da, so destroying the da calls destroy on the 
      vectors that cause another destroy on the da
   */
-  if (da->refct < 0) PetscFunctionReturn(0);
-  da->refct = 0;
+  if (((PetscObject)da)->refct < 0) PetscFunctionReturn(0);
+  ((PetscObject)da)->refct = 0;
 
   for (i=0; i<DA_MAX_WORK_VECTORS; i++) {
     if (da->localout[i]) SETERRQ(PETSC_ERR_ARG_WRONGSTATE,"Destroying a DA that has a local vector obtained with DAGetLocalVector()");

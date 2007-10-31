@@ -83,7 +83,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
 #elif defined(PETSC_USE_PROC_FOR_SIZE) && defined(PETSC_HAVE_GETPAGESIZE)
   FILE                   *file;
   char                   proc[PETSC_MAX_PATH_LEN];
-  int                    mm,rss;
+  int                    mm,rss,err;
 #elif defined(PETSC_HAVE_TASK_INFO)
   /*  task_basic_info_data_t ti;
       unsigned int           count; */
@@ -122,7 +122,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscMemoryGetCurrentUsage(PetscLogDouble *mem)
   }
   fscanf(file,"%d %d",&mm,&rss);
   *mem = ((PetscLogDouble)rss) * ((PetscLogDouble)getpagesize());
-  fclose(file);
+  err = fclose(file);
+  if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
 
 #elif defined(PETSC_HAVE_TASK_INFO)
   *mem = 0;

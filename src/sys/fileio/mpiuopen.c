@@ -95,10 +95,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscFClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  int            err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
-  if (!rank && fd != PETSC_STDOUT && fd != PETSC_STDERR) fclose(fd);
+  if (!rank && fd != PETSC_STDOUT && fd != PETSC_STDERR) {
+    err = fclose(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
+  }
   PetscFunctionReturn(0);
 }
 
@@ -127,13 +131,15 @@ PetscErrorCode PETSC_DLLEXPORT PetscPClose(MPI_Comm comm,FILE *fd)
 {
   PetscErrorCode ierr;
   PetscMPIInt    rank;
+  int            err;
 
   PetscFunctionBegin;
   ierr = MPI_Comm_rank(comm,&rank);CHKERRQ(ierr);
   if (!rank) {
     char buf[1024];
     while (fgets(buf,1024,fd)) {;} /* wait till it prints everything */
-    pclose(fd);
+    err = pclose(fd);
+    if (err) SETERRQ(PETSC_ERR_SYS,"pclose() failed on process");    
   }
   PetscFunctionReturn(0);
 }

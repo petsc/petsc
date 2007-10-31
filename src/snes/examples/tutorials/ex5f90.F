@@ -43,9 +43,10 @@
 #include "include/finclude/petscda.h"
 #undef PETSC_AVOID_DECLARATIONS
         DA      da
-        integer xs,xe,xm,gxs,gxe,gxm
-        integer ys,ye,ym,gys,gye,gym
-        integer mx,my,rank
+        PetscInt xs,xe,xm,gxs,gxe,gxm
+        PetscInt ys,ye,ym,gys,gye,gym
+        PetscInt mx,my
+        PetscMPIInt rank
         double precision lambda
       end type userctx
       contains
@@ -88,7 +89,7 @@
 !  Input/output variables:
       SNES           snes
       Vec            X,F
-      integer        ierr
+      PetscErrorCode ierr
       type (userctx) user
 
 !  Declarations for use with local arrays:
@@ -171,7 +172,10 @@
       SNES                   snes
       Vec                    x,r
       Mat                    J
-      integer                its,matrix_free,flg,ierr
+      PetscErrorCode ierr
+      PetscInt its
+      PetscTruth flg,matrix_free
+      PetscInt ione,nfour
       double precision       lambda_max,lambda_min
       type (userctx)         user
 
@@ -192,6 +196,8 @@
       lambda_max  = 6.81
       lambda_min  = 0.0
       user%lambda = 6.0
+      ione = 1
+      nfour = -4
       call PetscOptionsGetReal(PETSC_NULL_CHARACTER,'-par',             &
      &     user%lambda,flg,ierr)
       if (user%lambda .ge. lambda_max .or. user%lambda .le. lambda_min) &
@@ -216,7 +222,7 @@
 ! This really needs only the star-type stencil, but we use the box
 ! stencil temporarily.
       call DACreate2d(PETSC_COMM_WORLD,DA_NONPERIODIC,DA_STENCIL_BOX,   &
-     &     -4,-4,PETSC_DECIDE,PETSC_DECIDE,1,1,                         &
+     &     nfour,nfour,PETSC_DECIDE,PETSC_DECIDE,ione,ione,             &
      &     PETSC_NULL_INTEGER,PETSC_NULL_INTEGER,user%da,ierr)
       call DAGetInfo(user%da,PETSC_NULL_INTEGER,user%mx,user%my,        &
      &               PETSC_NULL_INTEGER,                                &
@@ -365,7 +371,7 @@
 !  Input/output variables:
       type (userctx)         user
       Vec      X
-      integer  ierr
+      PetscErrorCode ierr
       
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
@@ -432,10 +438,10 @@
       type (userctx)         user
       PetscScalar  x(user%gxs:user%gxe,                                         &
      &              user%gys:user%gye)
-      integer ierr
+      PetscErrorCode ierr
 
 !  Local variables:
-      integer  i,j
+      PetscInt  i,j
       PetscScalar   temp1,temp,hx,hy
       PetscScalar   one
 
@@ -489,12 +495,12 @@
      &              user%gys:user%gye)
       PetscScalar  f(user%xs:user%xe,                                           &
      &              user%ys:user%ye)
-      integer  ierr
+      PetscErrorCode ierr
 
 !  Local variables:
       PetscScalar   two,one,hx,hy,hxdhy,hydhx,sc
       PetscScalar   u,uxx,uyy
-      integer  i,j
+      PetscInt  i,j
 
       one    = 1.0
       two    = 2.0
@@ -592,7 +598,7 @@
       Mat          jac,jac_prec
       MatStructure flag
       type(userctx) user
-      integer      ierr
+      PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
       PetscScalar,pointer :: lx_v(:)
@@ -647,8 +653,8 @@
 !  Tell the matrix we will never add a new nonzero location to the
 !  matrix. If we do it will generate an error.
 
-       call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,      &
-      &                  ierr)
+      call MatSetOption(jac,MAT_NEW_NONZERO_LOCATION_ERR,PETSC_TRUE,      &
+     &                  ierr)
 
       return
       end
@@ -711,15 +717,17 @@
       PetscScalar  x(user%gxs:user%gxe,                                         &
      &              user%gys:user%gye)
       Mat      jac,jac_prec
-      integer  ierr
+      PetscErrorCode ierr
 
 !  Local variables:
-      integer  row,col(5),i,j
+      PetscInt row,col(5),i,j
+      PetscInt ione,ifive
       PetscScalar   two,one,hx,hy,hxdhy
       PetscScalar   hydhx,sc,v(5)
 
 !  Set parameters
-
+      ione   = 1
+      ifive  = 5
       one    = 1.0
       two    = 2.0
       hx     = one/dble(user%mx-1)
@@ -749,7 +757,7 @@
      &             .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,1,row,1,col,v,                &
+               call MatSetValuesLocal(jac,ione,row,ione,col,v,          &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
@@ -764,7 +772,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               call MatSetValuesLocal(jac,1,row,5,col,v,                &
+               call MatSetValuesLocal(jac,ione,row,ifive,col,v,         &
      &                                INSERT_VALUES,ierr)
             endif
  10      continue

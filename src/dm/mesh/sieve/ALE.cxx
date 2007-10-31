@@ -100,7 +100,7 @@ namespace ALE {
   #undef  __FUNCT__
   #define __FUNCT__ "LogStageRegister"
   LogStage LogStageRegister(const char *name){
-    int stage;
+    int stage = 0;
     std::string stage_name(name);
     if(_log_stage.find(stage_name) == _log_stage.end()) {    
       // stage by that name not yet registered, so we register it and store its registration number.

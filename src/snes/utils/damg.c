@@ -50,7 +50,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGCreate(MPI_Comm comm,PetscInt nlevels,voi
   char           mtype[256];
 
   PetscFunctionBegin;
-  ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
+  if (nlevels < 0) {
+    nlevels = -nlevels;
+  } else {
+    ierr = PetscOptionsGetInt(0,"-dmmg_nlevels",&nlevels,PETSC_IGNORE);CHKERRQ(ierr);
+  }
   ierr = PetscOptionsHasName(0,"-dmmg_galerkin",&galerkin);CHKERRQ(ierr);
 
   ierr = PetscMalloc(nlevels*sizeof(DMMG),&p);CHKERRQ(ierr);
@@ -204,7 +208,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGDestroy(DMMG *dmmg)
     if (dmmg[i]->w)       {ierr = VecDestroy(dmmg[i]->w);CHKERRQ(ierr);}
     if (dmmg[i]->work2)   {ierr = VecDestroy(dmmg[i]->work2);CHKERRQ(ierr);}
     if (dmmg[i]->lwork1)  {ierr = VecDestroy(dmmg[i]->lwork1);CHKERRQ(ierr);}
-    if (dmmg[i]->B && dmmg[i]->B != dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
+    if (dmmg[i]->B)         {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr);}
     if (dmmg[i]->J)         {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr);}
     if (dmmg[i]->Rscale)    {ierr = VecDestroy(dmmg[i]->Rscale);CHKERRQ(ierr);}
     if (dmmg[i]->fdcoloring){ierr = MatFDColoringDestroy(dmmg[i]->fdcoloring);CHKERRQ(ierr);}
@@ -282,6 +286,11 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetDM(DMMG *dmmg, DM dm)
 /*       } */
       SETERRQ(PETSC_ERR_SUP, "Sequential coarsening not yet implemented");
     }
+  }
+  /* Cleanup old structures (should use some private Destroy() instead) */
+  for(i = 0; i < nlevels; ++i) {
+    if (dmmg[i]->B) {ierr = MatDestroy(dmmg[i]->B);CHKERRQ(ierr); dmmg[i]->B = PETSC_NULL;}
+    if (dmmg[i]->J) {ierr = MatDestroy(dmmg[i]->J);CHKERRQ(ierr); dmmg[i]->J = PETSC_NULL;}
   }
   ierr = DMMGSetUp(dmmg);CHKERRQ(ierr); 
   PetscFunctionReturn(0);
@@ -544,6 +553,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     ierr = DMGetMatrix(dmmg[nlevels-1]->dm,dmmg[nlevels-1]->mtype,&dmmg[nlevels-1]->B);CHKERRQ(ierr);
     if (!dmmg[nlevels-1]->J) {
       dmmg[nlevels-1]->J = dmmg[nlevels-1]->B;
+      ierr = PetscObjectReference((PetscObject) dmmg[nlevels-1]->J);CHKERRQ(ierr);
     }
     if (func) {
       ierr = (*func)(dmmg[nlevels-1],dmmg[nlevels-1]->J,dmmg[nlevels-1]->B);CHKERRQ(ierr);
@@ -553,6 +563,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
         ierr = MatPtAP(dmmg[i+1]->B,dmmg[i+1]->R,MAT_INITIAL_MATRIX,1.0,&dmmg[i]->B);CHKERRQ(ierr);
         if (!dmmg[i]->J) {
           dmmg[i]->J = dmmg[i]->B;
+          ierr = PetscObjectReference((PetscObject) dmmg[i]->J);CHKERRQ(ierr);
         }
       }
     }
@@ -567,6 +578,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
       } 
       if (!dmmg[i]->J) {
         dmmg[i]->J = dmmg[i]->B;
+        ierr = PetscObjectReference((PetscObject) dmmg[i]->J);CHKERRQ(ierr);
       }
 
       ierr = KSPCreate(dmmg[i]->comm,&dmmg[i]->ksp);CHKERRQ(ierr);
@@ -582,7 +594,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
   for (i=0; i<nlevels; i++) {
     if (!dmmg[i]->galerkin) {
       if (func) {
-	ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
+        ierr = (*func)(dmmg[i],dmmg[i]->J,dmmg[i]->B);CHKERRQ(ierr);
       }
     }
   }
@@ -597,8 +609,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT DMMGSetKSP(DMMG *dmmg,PetscErrorCode (*rhs)(D
     ierr = PetscTypeCompare((PetscObject)pc,PCMG,&ismg);CHKERRQ(ierr);
     if (ismg) {
       for (i=0; i<=level; i++) {
-	ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
-	ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
+        ierr = PCMGGetSmoother(pc,i,&lksp);CHKERRQ(ierr); 
+        ierr = KSPSetOperators(lksp,dmmg[i]->J,dmmg[i]->B,SAME_NONZERO_PATTERN);CHKERRQ(ierr);
       }
     }
   }

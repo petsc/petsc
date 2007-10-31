@@ -422,7 +422,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFListFind(PetscFList fl,MPI_Comm comm,const 
         ierr = PetscFree(function);CHKERRQ(ierr);
         PetscFunctionReturn(0);
       } else {
-        PetscErrorPrintf("Unable to find function. Search path:\n");
+        (*PetscErrorPrintf)("Unable to find function. Search path:\n");
         ierr = PetscDLLibraryPrintPath();CHKERRQ(ierr);
         SETERRQ1(PETSC_ERR_PLIB,"Unable to find function:%s: either it is mis-spelled or dynamic library is not in path",entry->rname);
       }

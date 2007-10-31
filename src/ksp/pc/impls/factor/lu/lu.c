@@ -212,8 +212,8 @@ static PetscErrorCode PCView_LU(PC pc,PetscViewer viewer)
 }
 
 #undef __FUNCT__  
-#define __FUNCT__ "PCGetFactoredMatrix_LU"
-static PetscErrorCode PCGetFactoredMatrix_LU(PC pc,Mat *mat)
+#define __FUNCT__ "PCFactorGetMatrix_LU"
+static PetscErrorCode PCFactorGetMatrix_LU(PC pc,Mat *mat)
 {
   PC_LU *dir = (PC_LU*)pc->data;
 
@@ -643,7 +643,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetPivotInBlocks(PC pc,PetscTruth pivo
           KSPSetType(ksp,KSPPREONLY) for the Krylov method
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
-           PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCGetFactoredMatrix(),
+           PCILU, PCCHOLESKY, PCICC, PCFactorSetReuseOrdering(), PCFactorSetReuseFill(), PCFactorGetMatrix(),
            PCFactorSetFill(), PCFactorSetUseInPlace(), PCFactorSetMatOrderingType(), PCFactorSetPivoting(),
            PCFactorSetPivotingInBlocks(),PCFactorSetShiftNonzero(),PCFactorSetShiftPd(), PCFactorReorderForNonzeroDiagonal()
 M*/
@@ -674,7 +674,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   dir->info.shift_fraction = 0.0;
   dir->col                 = 0;
   dir->row                 = 0;
-  ierr = MPI_Comm_size(pc->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)pc)->comm,&size);CHKERRQ(ierr);
   if (size == 1) {
     ierr = PetscStrallocpy(MATORDERING_ND,&dir->ordering);CHKERRQ(ierr);
   } else {
@@ -691,7 +691,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_LU(PC pc)
   pc->ops->setfromoptions    = PCSetFromOptions_LU;
   pc->ops->view              = PCView_LU;
   pc->ops->applyrichardson   = 0;
-  pc->ops->getfactoredmatrix = PCGetFactoredMatrix_LU;
+  pc->ops->getfactoredmatrix = PCFactorGetMatrix_LU;
 
   ierr = PetscObjectComposeFunctionDynamic((PetscObject)pc,"PCFactorSetZeroPivot_C","PCFactorSetZeroPivot_LU",
                     PCFactorSetZeroPivot_LU);CHKERRQ(ierr);

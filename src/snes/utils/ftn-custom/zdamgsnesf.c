@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscsnes.h"
 #include "petscdmmg.h"
 

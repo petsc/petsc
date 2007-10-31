@@ -89,7 +89,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
   PetscErrorCode ierr;
   PetscInt       k,kp1,km1,maxit,ktmp,i;
   PetscScalar    alpha,omegaprod,mu,omega,Gamma,c[3],scale;
-  PetscReal      rnorm;
+  PetscReal      rnorm = 0.0;
   Vec            x,b,p[3],r;
   KSP_Chebychev  *chebychevP = (KSP_Chebychev*)ksp->data;
   Mat            Amat,Pmat;
@@ -98,7 +98,7 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
 
   PetscFunctionBegin;
   ierr    = PCDiagonalScale(ksp->pc,&diagonalscale);CHKERRQ(ierr);
-  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",ksp->type_name);
+  if (diagonalscale) SETERRQ1(PETSC_ERR_SUP,"Krylov method %s does not support diagonal scaling",((PetscObject)ksp)->type_name);
 
   ksp->its = 0;
   ierr     = PCGetOperators(ksp->pc,&Amat,&Pmat,&pflag);CHKERRQ(ierr);
@@ -171,21 +171,31 @@ PetscErrorCode KSPSolve_Chebychev(KSP ksp)
     k    = kp1;
     kp1  = ktmp;
   }
-  if (!ksp->reason && ksp->normtype != KSP_NORM_NO) {
-    ksp->reason = KSP_DIVERGED_ITS;
-    ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
-    ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
-    if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);}
-    else {
-      ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
-      ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
+  if (!ksp->reason) {
+    if (ksp->normtype != KSP_NORM_NO) {
+      ierr = KSP_MatMult(ksp,Amat,p[k],r);CHKERRQ(ierr);       /*  r = b - Ap[k]    */
+      ierr = VecAYPX(r,-1.0,b);CHKERRQ(ierr);
+      if (ksp->normtype == KSP_NORM_UNPRECONDITIONED) {
+	ierr = VecNorm(r,NORM_2,&rnorm);CHKERRQ(ierr);
+      } else {
+	ierr = KSP_PCApply(ksp,r,p[kp1]);CHKERRQ(ierr); /* p[kp1] = B^{-1}z */
+	ierr = VecNorm(p[kp1],NORM_2,&rnorm);CHKERRQ(ierr);
+      }
+      ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
+      ksp->rnorm = rnorm;
+      ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
+      ksp->vec_sol = p[k]; 
+      KSPLogResidualHistory(ksp,rnorm);
+      KSPMonitor(ksp,i,rnorm);
     }
-    ierr = PetscObjectTakeAccess(ksp);CHKERRQ(ierr);
-    ksp->rnorm                              = rnorm;
-    ierr = PetscObjectGrantAccess(ksp);CHKERRQ(ierr);
-    ksp->vec_sol = p[k]; 
-    KSPLogResidualHistory(ksp,rnorm);
-    KSPMonitor(ksp,i,rnorm);
+    if (ksp->its >= ksp->max_it) {
+      if (ksp->normtype != KSP_NORM_NO) {
+	ierr = (*ksp->converged)(ksp,i,rnorm,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
+	if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
+      } else { 
+	ksp->reason = KSP_CONVERGED_ITS;
+      }
+    }
   }
 
   /* make sure solution is in vector x */

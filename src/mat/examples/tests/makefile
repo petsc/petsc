@@ -15,7 +15,7 @@ EXAMPLESC	 = ex1.c ex2.c ex3.c ex4.c ex5.c ex6.c ex7.c ex8.c ex9.c\
                    ex75.c ex76.c ex80.c ex81.c ex77.c ex78.c ex86.c ex87.c \
                    ex91.c ex92.c ex93.c ex94.c ex95.c ex96.c ex98.c ex99.c ex100.c \
                    ex101.c ex102.c ex103.c ex104.c ex106.c ex107.c ex108.c ex109.c ex110.c\
-                   ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c
+                   ex111.c ex112.c ex113.c ex114.c ex115.c ex116.c ex117.c ex118.c ex119.c ex120.c
 EXAMPLESF	 = ex36f.F ex16f90.F ex58f.F ex63f.F ex67f.F ex79f.F ex85f.F ex105f.F
 
 include ${PETSC_DIR}/conf/base
@@ -449,6 +449,10 @@ ex118: ex118.o chkopts
 ex119: ex119.o chkopts
 	-${CLINKER} -o ex119 ex119.o ${PETSC_MAT_LIB}
 	${RM} ex119.o
+
+ex120: ex120.o chkopts
+	-${CLINKER} -o ex120 ex120.o ${PETSC_MAT_LIB}
+	${RM} ex120.o
 #-----------------------------------------------------------------------------
 NPROCS    = 1 3
 MATSHAPES = A B
@@ -821,18 +825,6 @@ runex56:
 	   else echo "Possible problem with ex56_1, diffs above"; fi; \
 	   ${RM} -f ex56_1.tmp
 
-runex56_2:
-	-@${MPIEXEC} -np 1  ./ex56  -column_oriented > ex56_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex56_2.out ex56_2.tmp) then true; \
-	   else echo "Possible problem with ex56_2, diffs above"; fi; \
-	   ${RM} -f ex56_2.tmp
-
-runex56_3:
-	-@${MPIEXEC} -np 3  ./ex56 -column_oriented > ex56_3.tmp 2>&1;   \
-	   if (${DIFF} output/ex56_3.out ex56_3.tmp) then true; \
-	   else echo "Possible problem with ex56_3, diffs above"; fi; \
-	   ${RM} -f ex56_3.tmp
-
 runex56_4:
 	-@${MPIEXEC} -np 3  ./ex56 -ass_extern > ex56_4.tmp 2>&1;   \
 	   if (${DIFF} output/ex56_4.out ex56_4.tmp) then true; \
@@ -1099,6 +1091,17 @@ runex114:
 	   else echo "Possible problem with ex114_1, diffs above"; fi; \
 	   ${RM} -f ex114_1.tmp 
 
+runex120:
+	-@${MPIEXEC} -np 1 ./ex120 > ex120_1.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_1.out ex120_1.tmp) then true; \
+	   else echo "Possible problem with ex120_1, diffs above"; fi; \
+	   ${RM} -f ex120_1.tmp 
+runex120_2:
+	-@${MPIEXEC} -np 1 ./ex120 -test_zheevx > ex120_2.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_2.out ex120_2.tmp) then true; \
+	   else echo "Possible problem with ex120_2, diffs above"; fi; \
+	   ${RM} -f ex120_2.tmp 
+
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \
                                  runex10 ex10.rm ex11.PETSc runex11 runex11_2 runex11_3 runex11_4 ex11.rm ex14.PETSc \
@@ -1117,7 +1120,7 @@ TESTEXAMPLES_C_X11	       = ex2.PETSc runex2 ex2.rm ex4.PETSc runex4 runex4_2 ex
                                  runex31 runex31_2 ex31.rm ex33.PETSc ex33.rm ex34.PETSc ex34.rm ex35.PETSc runex35 \
                                  ex35.rm ex37.PETSc runex37 ex37.rm ex38.PETSc ex38.rm ex43.PETSc ex43.rm ex48.PETSc \
                                  runex48 ex48.rm ex49.PETSc ex49.rm ex51.PETSc runex51 ex51.rm ex52.PETSc ex52.rm \
-                                 ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_2  runex56_3  runex56_4 runex56_5 \
+                                 ex54.PETSc runex54 ex54.rm ex56.PETSc runex56 runex56_4 runex56_5 \
                                  ex56.rm ex74.PETSc runex74 ex74.rm ex75.PETSc runex75 ex75.rm ex76.PETSc runex76 \
                                  runex76_3 ex76.rm ex77.PETSc  ex77.rm ex94.PETSc ex94.rm ex78.PETSc \
                                  ex78.rm ex96.PETSc runex96 ex96.rm ex95.PETSc runex95  ex95.rm 

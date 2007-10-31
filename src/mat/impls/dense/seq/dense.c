@@ -46,7 +46,7 @@ PetscErrorCode MatGetInfo_SeqDense(Mat A,MatInfoType flag,MatInfo *info)
   info->nz_unneeded       = (double)0;
   info->assemblies        = (double)A->num_ass;
   info->mallocs           = 0;
-  info->memory            = A->mem;
+  info->memory            = ((PetscObject)A)->mem;
   info->fill_ratio_given  = 0;
   info->fill_ratio_needed = 0;
   info->factor_mallocs    = 0;
@@ -138,9 +138,9 @@ PetscErrorCode MatDuplicate_SeqDense(Mat A,MatDuplicateOption cpvalues,Mat *newm
   Mat            newi;
 
   PetscFunctionBegin;
-  ierr = MatCreate(A->comm,&newi);CHKERRQ(ierr);
+  ierr = MatCreate(((PetscObject)A)->comm,&newi);CHKERRQ(ierr);
   ierr = MatSetSizes(newi,A->rmap.n,A->cmap.n,A->rmap.n,A->cmap.n);CHKERRQ(ierr);
-  ierr = MatSetType(newi,A->type_name);CHKERRQ(ierr);
+  ierr = MatSetType(newi,((PetscObject)A)->type_name);CHKERRQ(ierr);
   ierr = MatSeqDenseSetPreallocation(newi,PETSC_NULL);CHKERRQ(ierr);
   if (cpvalues == MAT_COPY_VALUES) {
     l = (Mat_SeqDense*)newi->data;
@@ -668,8 +668,10 @@ PetscErrorCode MatGetValues_SeqDense(Mat A,PetscInt m,const PetscInt indexm[],Pe
   /* row-oriented output */ 
   for (i=0; i<m; i++) {
     if (indexm[i] < 0) {v += n;continue;}
+    if (indexm[i] >= A->rmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Row %D requested larger than number rows %D",indexm[i],A->rmap.n);
     for (j=0; j<n; j++) {
-      if (indexn[i] < 0) {v++; continue;}
+      if (indexn[j] < 0) {v++; continue;}
+      if (indexn[j] >= A->cmap.n) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Column %D requested larger than number columns %D",indexn[j],A->cmap.n);
       *v++ = mat->v[indexn[j]*mat->lda + indexm[i]];
     }
   }
@@ -873,9 +875,9 @@ static PetscErrorCode MatView_SeqDense_Binary(Mat A,PetscViewer viewer)
     /* write out matrix, by rows */
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&vals);CHKERRQ(ierr);
     v    = a->v;
-    for (i=0; i<m; i++) {
-      for (j=0; j<n; j++) {
-        vals[i + j*m] = *v++;
+    for (j=0; j<n; j++) {
+      for (i=0; i<m; i++) {
+        vals[j + i*n] = *v++;
       }
     }
     ierr = PetscBinaryWrite(fd,vals,n*m,PETSC_SCALAR,PETSC_FALSE);CHKERRQ(ierr);
@@ -1086,9 +1088,9 @@ PetscErrorCode MatTranspose_SeqDense(Mat A,Mat *matout)
     Mat_SeqDense *tmatd;
     PetscScalar  *v2;
 
-    ierr  = MatCreate(A->comm,&tmat);CHKERRQ(ierr);
+    ierr  = MatCreate(((PetscObject)A)->comm,&tmat);CHKERRQ(ierr);
     ierr  = MatSetSizes(tmat,A->cmap.n,A->rmap.n,A->cmap.n,A->rmap.n);CHKERRQ(ierr);
-    ierr  = MatSetType(tmat,A->type_name);CHKERRQ(ierr);
+    ierr  = MatSetType(tmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr  = MatSeqDenseSetPreallocation(tmat,PETSC_NULL);CHKERRQ(ierr);
     tmatd = (Mat_SeqDense*)tmat->data;
     v = mat->v; v2 = tmatd->v;
@@ -1260,6 +1262,7 @@ PetscErrorCode MatSetOption_SeqDense(Mat A,MatOption op,PetscTruth flg)
     break;
   case MAT_NEW_NONZERO_LOCATIONS:
   case MAT_NEW_NONZERO_LOCATION_ERR:
+  case MAT_NEW_NONZERO_ALLOCATION_ERR:
   case MAT_NEW_DIAGONALS:
   case MAT_IGNORE_OFF_PROC_ENTRIES:
   case MAT_USE_HASH_TABLE:
@@ -1364,9 +1367,9 @@ static PetscErrorCode MatGetSubMatrix_SeqDense(Mat A,IS isrow,IS iscol,PetscInt 
     newmat = *B;
   } else {
     /* Create and fill new matrix */
-    ierr = MatCreate(A->comm,&newmat);CHKERRQ(ierr);
+    ierr = MatCreate(((PetscObject)A)->comm,&newmat);CHKERRQ(ierr);
     ierr = MatSetSizes(newmat,nrows,ncols,nrows,ncols);CHKERRQ(ierr);
-    ierr = MatSetType(newmat,A->type_name);CHKERRQ(ierr);
+    ierr = MatSetType(newmat,((PetscObject)A)->type_name);CHKERRQ(ierr);
     ierr = MatSeqDenseSetPreallocation(newmat,PETSC_NULL);CHKERRQ(ierr);
   }
 
@@ -1881,12 +1884,14 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatSeqDenseSetPreallocation_SeqDense(Mat B,Pet
   PetscFunctionBegin;
   B->preallocated = PETSC_TRUE;
   b               = (Mat_SeqDense*)B->data;
-  if (!data) {
-    ierr          = PetscMalloc((b->lda*b->Nmax+1)*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
-    ierr          = PetscMemzero(b->v,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
-    b->user_alloc = PETSC_FALSE;
+  if (!data) { /* petsc-allocated storage */
+    if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
+    ierr = PetscMalloc((b->lda*b->Nmax+1)*sizeof(PetscScalar),&b->v);CHKERRQ(ierr);
+    ierr = PetscMemzero(b->v,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscLogObjectMemory(B,b->lda*b->Nmax*sizeof(PetscScalar));CHKERRQ(ierr);
+    b->user_alloc = PETSC_FALSE;
   } else { /* user-allocated storage */
+    if (!b->user_alloc) { ierr = PetscFree(b->v);CHKERRQ(ierr); }
     b->v          = data;
     b->user_alloc = PETSC_TRUE;
   }
@@ -1948,7 +1953,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreate_SeqDense(Mat B)
   PetscMPIInt    size;
 
   PetscFunctionBegin;
-  ierr = MPI_Comm_size(B->comm,&size);CHKERRQ(ierr);
+  ierr = MPI_Comm_size(((PetscObject)B)->comm,&size);CHKERRQ(ierr);
   if (size > 1) SETERRQ(PETSC_ERR_ARG_WRONG,"Comm must be of size 1");
 
   B->rmap.bs = B->cmap.bs = 1;

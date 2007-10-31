@@ -68,7 +68,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerFileSetName_HDF4(PetscViewer viewer,co
    SETERRQ(PETSC_ERR_ORDER,"Must call PetscViewerFileSetMode() before PetscViewerFileSetName()");
  }
 
- ierr = MPI_Comm_rank(viewer->comm,&rank);CE;
+ ierr = MPI_Comm_rank(((PetscObject)viewer)->comm,&rank);CE;
  ierr = PetscStrallocpy(name,&vhdf4->filename);CE;
  if (!rank) {
    vhdf4->sd_id = SDstart(name, acc);

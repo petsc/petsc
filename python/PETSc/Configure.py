@@ -73,7 +73,7 @@ class Configure(config.base.Configure):
     functions = ['access', '_access', 'clock', 'drand48', 'getcwd', '_getcwd', 'getdomainname', 'gethostname', 'getpwuid',
                  'gettimeofday', 'getwd', 'memalign', 'memmove', 'mkstemp', 'popen', 'PXFGETARG', 'rand', 'getpagesize',
                  'readlink', 'realpath',  'sigaction', 'signal', 'sigset', 'sleep', '_sleep', 'socket', 'times', 'gethostbyname',
-                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','bzero','dlerror',
+                 'uname','snprintf','_snprintf','_fullpath','lseek','_lseek','time','fork','stricmp','strcasecmp','bzero','dlerror',
                  '_intel_fast_memcpy','_intel_fast_memset']
     libraries1 = [(['socket', 'nsl'], 'socket'), (['fpe'], 'handle_sigfpes')]
     self.headers.headers.extend(headersC)
@@ -274,6 +274,7 @@ class Configure(config.base.Configure):
     if not self.libraries.add('Gdi32.lib','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);'):
       self.libraries.add('gdi32','CreateCompatibleDC',prototype='#include <Windows.h>',call='CreateCompatibleDC(0);')
       
+    self.types.check('int32_t', 'int')
     if not self.checkCompile('#include <sys/types.h>\n','uid_t u;\n'):
       self.addTypedef('int', 'uid_t')
       self.addTypedef('int', 'gid_t')

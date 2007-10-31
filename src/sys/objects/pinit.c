@@ -5,11 +5,6 @@
 
 #include "petsc.h"        /*I  "petsc.h"   I*/
 #include "petscsys.h"
-#include "zope.h"
-
-int PETSC_SOCKFD = 0;
-int PETSC_LISTENFD = 0;
-int PETSC_LISTEN_CHECK = 0;
 
 #if defined(PETSC_USE_LOG)
 EXTERN PetscErrorCode PetscLogBegin_Private(void);
@@ -468,7 +463,8 @@ $       call PetscInitialize(file,ierr)
 PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char file[],const char help[])
 {
   PetscErrorCode ierr;
-  PetscMPIInt    flag, size,nodesize;
+  PetscMPIInt    flag, size;
+  PetscInt       nodesize;
   PetscTruth     flg;
   char           hostname[256];
 
@@ -525,9 +521,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
     PetscScalar ic(0.0,1.0);
     PETSC_i = ic; 
 #else
-    PetscScalar ic;
-    ic = 1.I;
-    PETSC_i = ic;
+    PETSC_i = I;
 #endif
   }
 
@@ -589,14 +583,14 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitialize(int *argc,char ***args,const char
   ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_spawn_size",&nodesize,&flg);CHKERRQ(ierr);
   if (flg) {
 #if defined(PETSC_HAVE_MPI_COMM_SPAWN)
-    ierr = PetscOpenMPSpawn(nodesize);CHKERRQ(ierr); 
+    ierr = PetscOpenMPSpawn((PetscMPIInt) nodesize);CHKERRQ(ierr); 
 #else
     SETERRQ(PETSC_ERR_SUP,"PETSc built without MPI 2 (MPI_Comm_spawn) support, use -openmp_merge_size instead");
 #endif
   } else {
     ierr = PetscOptionsGetInt(PETSC_NULL,"-openmp_merge_size",&nodesize,&flg);CHKERRQ(ierr);
     if (flg) {
-      ierr = PetscOpenMPMerge(nodesize);CHKERRQ(ierr); 
+      ierr = PetscOpenMPMerge((PetscMPIInt) nodesize);CHKERRQ(ierr); 
     }
   }
 
@@ -650,6 +644,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   PetscMPIInt    rank;
   int            nopt;
   PetscTruth     flg1,flg2,flg3;
+  extern FILE   *PETSC_ZOPEFD;
   
   PetscFunctionBegin;
 
@@ -810,7 +805,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
   if (flg1) {
     char fname[PETSC_MAX_PATH_LEN];
     FILE *fd;
-    
+    int  err;
+
     fname[0] = 0;
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_dump",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
@@ -819,7 +815,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDump(fd);CHKERRQ(ierr);
-      fclose(fd);
+      err = fclose(fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       MPI_Comm local_comm;
 
@@ -838,11 +835,13 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = PetscOptionsGetString(PETSC_NULL,"-malloc_log",fname,250,&flg1);CHKERRQ(ierr);
     if (flg1 && fname[0]) {
       char sname[PETSC_MAX_PATH_LEN];
+      int  err;
 
       sprintf(sname,"%s_%d",fname,rank);
       fd   = fopen(sname,"w"); if (!fd) SETERRQ1(PETSC_ERR_FILE_OPEN,"Cannot open log file: %s",sname);
       ierr = PetscMallocDumpLog(fd);CHKERRQ(ierr); 
-      fclose(fd);
+      err = fclose(fd);
+      if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     } else {
       ierr = PetscMallocDumpLog(stdout);CHKERRQ(ierr); 
     }
@@ -868,11 +867,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscFinalize(void)
     ierr = MPI_Finalize();CHKERRQ(ierr);
   }
 
-  if(PETSC_LISTEN_CHECK){
-    PETSC_LISTEN_CHECK = 0;
-    extern FILE * PETSC_STDOUT;
-    fprintf(PETSC_STDOUT, "<<<end>>>");
-    close(PETSC_LISTENFD);}
+  if(PETSC_ZOPEFD != NULL){ 
+    if (PETSC_ZOPEFD != PETSC_STDOUT) fprintf(PETSC_ZOPEFD, "<<<end>>>");
+    else fprintf(PETSC_STDOUT, "<<<end>>>");}
 
 /*
 

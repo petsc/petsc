@@ -214,7 +214,7 @@ static struct _MatOps MatOps_Values = {0,
        0};
 
 /*MC
-   MATSCATTER - MATSCATTER = "scatter" - A matrix type to be used to define your own matrix type -- perhaps matrix free.
+   MATSCATTER - MATSCATTER = "scatter" - A matrix type that simply applies a VecScatterBegin/End()
 
   Level: advanced
 

@@ -337,7 +337,8 @@ PetscErrorCode PCDestroyLevel_ASA(PC_ASA_level *asa_lev)
 */
 #undef __FUNCT__  
 #define __FUNCT__ "PCComputeSpectralRadius_ASA"
-PetscErrorCode PCComputeSpectralRadius_ASA(PC_ASA_level *asa_lev) {
+PetscErrorCode PCComputeSpectralRadius_ASA(PC_ASA_level *asa_lev) 
+{
   PetscErrorCode ierr;
   PetscReal      norm_1, norm_inf;
 
@@ -666,9 +667,9 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 
   /* Storage for the orthogonalized  submatrices of B and their sizes */
   ierr = PetscMalloc(sizeof(PetscInt)*mat_agg_loc_size, &cand_vec_length);CHKERRQ(ierr);
-  ierr = PetscMalloc(sizeof(Mat)*mat_agg_loc_size, &b_orth_arr);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscScalar*)*mat_agg_loc_size, &b_orth_arr);CHKERRQ(ierr);
   /* Storage for the information about each aggregate */
-  ierr = PetscMalloc(sizeof(PetscInt)*mat_agg_loc_size, &agg_arr);CHKERRQ(ierr);
+  ierr = PetscMalloc(sizeof(PetscInt*)*mat_agg_loc_size, &agg_arr);CHKERRQ(ierr);
   /* Storage for the number of candidate vectors that are orthonormal and used in each submatrix */
   ierr = PetscMalloc(sizeof(PetscInt)*mat_agg_loc_size, &new_loc_agg_dofs);CHKERRQ(ierr);
 
@@ -755,6 +756,7 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
 	 /* #endif */
        }
 
+       CHKMEMQ;
        /* orthogonalize b_submat_tp using the QR algorithm from LAPACK */
        LAPACKgeqrf_(cand_vec_length+a, new_loc_agg_dofs+a, b_submat_tp, cand_vec_length+a, tau, work, new_loc_agg_dofs+a, &info);
        if (info) SETERRQ(PETSC_ERR_LIB, "LAPACKgeqrf_ LAPACK routine failed");
@@ -849,9 +851,9 @@ PetscErrorCode PCCreateTransferOp_ASA(PC_ASA_level *asa_lev, PetscTruth construc
       for (j=0; j<new_loc_agg_dofs[a]; j++) {
 	col = mat_loc_col_start + loc_agg_dofs_sum + j;
 	val = b_orth_arr[a][i*new_loc_agg_dofs[a] + j];
-	ierr = MatSetValues(asa_lev->P, 1, &row, 1, &col, &val, INSERT_VALUES);
+	ierr = MatSetValues(asa_lev->P, 1, &row, 1, &col, &val, INSERT_VALUES);CHKERRQ(ierr);
 	val = PetscConj(val);
-	ierr = MatSetValues(asa_lev->Pt, 1, &col, 1, &row, &val, INSERT_VALUES);
+	ierr = MatSetValues(asa_lev->Pt, 1, &col, 1, &row, &val, INSERT_VALUES);CHKERRQ(ierr);
       }
     }
 
@@ -1101,6 +1103,7 @@ PetscErrorCode PCInitializationStage_ASA(PC_ASA *asa, Vec x)
 
   /* Set DM */
   asa_lev->dm = asa->dm;
+  ierr = PetscObjectReference((PetscObject)asa->dm);CHKERRQ(ierr);
 
   ierr = PetscPrintf(asa_lev->comm, "Initialization stage\n");CHKERRQ(ierr);
 
@@ -2125,7 +2128,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_ASA(PC pc)
   asa->levels    = 0;
   asa->levellist = 0;
 
-  asa->comm = pc->comm;
+  asa->comm = ((PetscObject)pc)->comm;
   PetscFunctionReturn(0);
 }
 EXTERN_C_END

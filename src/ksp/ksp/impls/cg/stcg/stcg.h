@@ -1,13 +1,18 @@
-/*
-    Context for using preconditioned CG to minimize a quadratic function
- */
+/*****************************************************************************/
+/* Context for using preconditioned conjugate gradient method to minimized a */
+/* quadratic function subject to a trust region constraint.  If the matrix   */
+/* is indefinite, a direction of negative curvature may be encountered.  If  */
+/* a direction of negative curvature is found, then we follow it to the      */
+/* boundary of the trust region.                                             */
+/*                                                                           */
+/* This method is described in:                                              */
+/*   T. Steihaug, "The Conjugate Gradient Method and Trust Regions in Large  */
+/*     Scale Optimization", SIAM Journal on Numerical Analysis, 20,          */
+/*     pages 626-637, 1983.                                                  */
+/*****************************************************************************/
 
 #ifndef __STCG
 #define __STCG
-
-#define STCG_PRECONDITIONED_DIRECTION 	0
-#define STCG_UNPRECONDITIONED_DIRECTION 1
-#define STCG_DIRECTION_TYPES 		2
 
 typedef struct {
   PetscReal radius;

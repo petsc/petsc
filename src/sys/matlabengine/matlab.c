@@ -82,7 +82,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscMatlabEngineDestroy(PetscMatlabEngine v)
   PetscErrorCode ierr;
   PetscFunctionBegin;
   PetscValidHeaderSpecific(v,MATLABENGINE_COOKIE,1);
-  if (--v->refct > 0) PetscFunctionReturn(0);
+  if (--((PetscObject)v)->refct > 0) PetscFunctionReturn(0);
   ierr = PetscHeaderDestroy(v);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

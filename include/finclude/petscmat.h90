@@ -3,6 +3,8 @@
 !  Additional Mat include file for use of PETSc with Fortran 90/HPF
 !
 
+#if !defined (PETSC_AVOID_DECLARATIONS)
+
       Interface 
         Subroutine MatGetArrayF90(v,array,ierr)
           PetscScalar, pointer :: array(:,:)
@@ -20,6 +22,7 @@
         End Subroutine
       End Interface
 
+#endif
 !
 !     End of Mat Fortran 90 include file for the PETSc package
 !

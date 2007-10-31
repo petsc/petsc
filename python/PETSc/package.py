@@ -197,34 +197,46 @@ class Package(config.base.Configure):
         yield('Download '+self.PACKAGE, d, l, os.path.join(d, self.includedir))
       raise RuntimeError('Downloaded '+self.package+' could not be used. Please check install in '+d+'\n')
 
-    if 'with-'+self.package+'-dir' in self.framework.argDB:     
-      dir = self.framework.argDB['with-'+self.package+'-dir']
-      for l in self.generateLibList(os.path.join(dir, self.libdir)):
-        yield('User specified root directory '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
       if 'with-'+self.package+'-include' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-include if you set --with-'+self.package+'-dir')
       if 'with-'+self.package+'-lib' in self.framework.argDB:
         raise RuntimeError('Do not set --with-'+self.package+'-lib if you set --with-'+self.package+'-dir')
-      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
 
     if 'with-'+self.package+'-include-dir' in self.framework.argDB:
         raise RuntimeError('Use --with-'+self.package+'-include; not --with-'+self.package+'-include-dir') 
 
-    if 'with-'+self.package+'-include' in self.framework.argDB and 'with-'+self.package+'-lib' in self.framework.argDB:
-      # hope that package root is one level above include directory
-      dir = os.path.dirname(self.framework.argDB['with-'+self.package+'-include'])
-      libs = self.framework.argDB['with-'+self.package+'-lib']
-      if not isinstance(libs, list): libs = [libs]
-      libs = [os.path.abspath(l) for l in libs]
-      yield('User specified '+self.PACKAGE+' libraries', dir,libs, os.path.abspath(self.framework.argDB['with-'+self.package+'-include']))
-      raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
-        '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work') 
-
     if 'with-'+self.package+'-include' in self.framework.argDB and not 'with-'+self.package+'-lib' in self.framework.argDB:
       raise RuntimeError('If you provide --with-'+self.package+'-include you must also supply with-'+self.package+'-lib\n')
                          
-    if 'with-'+self.package+'-lib' in self.framework.argDB and not 'with-'+self.package+'-include' in self.framework.argDB:
+    if 'with-'+self.package+'-lib' in self.framework.argDB and not 'with-'+self.package+'-include' in self.framework.argDB and self.includes:
       raise RuntimeError('If you provide --with-'+self.package+'-lib you must also supply with-'+self.package+'-include\n')
+
+    if 'with-'+self.package+'-dir' in self.framework.argDB:
+      dir = self.framework.argDB['with-'+self.package+'-dir']
+      for l in self.generateLibList(os.path.join(dir, self.libdir)):
+        yield('User specified root directory '+self.PACKAGE, dir,l, os.path.join(dir,self.includedir))
+      raise RuntimeError('--with-'+self.package+'-dir='+self.framework.argDB['with-'+self.package+'-dir']+' did not work')
+
+    if 'with-'+self.package+'-lib' in self.framework.argDB:
+      # hope that package root is one level above lib directory
+      if 'with-'+self.package+'-include' in self.framework.argDB:
+        package_include = self.framework.argDB['with-'+self.package+'-include']
+        dir = os.path.dirname(package_include)
+        inc_path = os.path.abspath(package_include)
+      else:
+        dir             = None
+        inc_path        = ''
+
+      libs = self.framework.argDB['with-'+self.package+'-lib']
+      if not isinstance(libs, list): libs = [libs]
+      libs = [os.path.abspath(l) for l in libs]
+      yield('User specified '+self.PACKAGE+' libraries', dir,libs, inc_path)
+      if 'with-'+self.package+'-include' in self.framework.argDB:
+        raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' and \n'+\
+                           '--with-'+self.package+'-include='+str(self.framework.argDB['with-'+self.package+'-include'])+' did not work')
+      else:
+        raise RuntimeError('--with-'+self.package+'-lib='+str(self.framework.argDB['with-'+self.package+'-lib'])+' did not work')
 
     for d in self.getSearchDirectories():
       for l in self.generateLibList(os.path.join(d, self.libdir)):
@@ -251,7 +263,6 @@ class Package(config.base.Configure):
 
     retriever = install.retrieval.Retriever(self.sourceControl, argDB = self.framework.argDB)
     retriever.setup()
-    failureMessage = []
     self.framework.log.write('Downloading '+self.name+'\n')
     for url in self.download:
       try:
@@ -259,9 +270,8 @@ class Package(config.base.Configure):
         self.framework.actions.addArgument(self.PACKAGE, 'Download', 'Downloaded '+self.name+' into '+self.getDir(0))
         return
       except RuntimeError, e:
-        failureMessage.append('  Failed to download '+url+'\n'+str(e))
-    failureMessage = 'Unable to download '+self.package+' from locations '+str(self.download)+'\n'+'\n'.join(failureMessage)
-    raise RuntimeError(failureMessage)
+        pass
+    raise RuntimeError(e)
 
   # Check is the dir matches something in the excludename list
   def matchExcludeDir(self,dir):

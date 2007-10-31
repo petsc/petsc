@@ -262,8 +262,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatColoringRegisterDestroy(void)
 #undef __FUNCT__  
 #define __FUNCT__ "MatGetColoring" 
 /*@C
-   MatGetColoring - Gets a coloring for a matrix to reduce the number of function evaluations
-   needed to compute a sparse Jacobian via differencing.
+   MatGetColoring - Gets a coloring for a matrix, from its sparsity structure,
+      to reduce the number of function evaluations needed to compute a sparse Jacobian via differencing.
 
    Collective on Mat
 
@@ -295,6 +295,9 @@ $    -mat_coloring_view
 
    The user can define additional colorings; see MatColoringRegisterDynamic().
 
+   For parallel matrices currently converts to sequential matrix and uses the sequential coloring
+   on that.
+
    The sequential colorings SL, LF, and ID are obtained via the Minpack software that was
    converted to C using f2c.
 
@@ -308,6 +311,8 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
   PetscTruth     flag;
   PetscErrorCode ierr,(*r)(Mat,MatColoringType,ISColoring *);
   char           tname[PETSC_MAX_PATH_LEN];
+  MPI_Comm       comm;
+  PetscMPIInt    size;
 
   PetscFunctionBegin;
   PetscValidHeaderSpecific(mat,MAT_COOKIE,1);
@@ -319,15 +324,46 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatGetColoring(Mat mat,MatColoringType type,IS
   }
   
   /* look for type on command line */
-  ierr = PetscOptionsGetString(mat->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
+  ierr = PetscOptionsGetString(((PetscObject)mat)->prefix,"-mat_coloring_type",tname,256,&flag);CHKERRQ(ierr);
   if (flag) {
     type = tname;
   }
 
   ierr = PetscLogEventBegin(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
-  ierr =  PetscFListFind(MatColoringList,mat->comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject)mat,&comm);CHKERRQ(ierr); 
+  ierr = PetscFListFind(MatColoringList,comm, type,(void (**)(void)) &r);CHKERRQ(ierr);
   if (!r) {SETERRQ1(PETSC_ERR_ARG_OUTOFRANGE,"Unknown or unregistered type: %s",type);}
-  ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
+
+  ierr = MPI_Comm_size(comm,&size);CHKERRQ(ierr);
+  if (size == 1){
+    ierr = (*r)(mat,type,iscoloring);CHKERRQ(ierr);
+  } else { /* for parallel matrix */
+    Mat             *mat_seq;
+    ISColoring      iscoloring_seq;
+    ISColoringValue *colors_loc;
+    PetscInt        i,rstart,rend,N_loc,nc;
+      
+    /* create a sequential iscoloring on all processors */
+    ierr = MatGetSeqNonzeroStructure(mat,&mat_seq);CHKERRQ(ierr);
+    ierr = (*r)(*mat_seq,type,&iscoloring_seq);CHKERRQ(ierr);
+    ierr = MatDestroySeqNonzeroStructure(&mat_seq);CHKERRQ(ierr);
+
+    /* convert iscoloring_seq to a parallel iscoloring */  
+    rstart = mat->rmap.rstart;
+    rend   = mat->rmap.rend;
+    N_loc  = rend - rstart; /* number of local nodes */
+
+    /* get local colors for each local node */
+    ierr = PetscMalloc((N_loc+1)*sizeof(ISColoringValue),&colors_loc);CHKERRQ(ierr);
+    for (i=rstart; i<rend; i++){
+      colors_loc[i-rstart] = iscoloring_seq->colors[i];
+    }
+    /* create a parallel iscoloring */ 
+    nc=iscoloring_seq->n;
+    ierr = ISColoringCreate(comm,nc,N_loc,colors_loc,iscoloring);CHKERRQ(ierr); 
+    ierr = ISColoringDestroy(iscoloring_seq);CHKERRQ(ierr);
+    /* ierr = ISColoringView(iscoloring_mpi,PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr); */  
+  }
   ierr = PetscLogEventEnd(MAT_GetColoring,mat,0,0,0);CHKERRQ(ierr);
 
   ierr = PetscInfo1(mat,"Number of colors %d\n",(*iscoloring)->n);CHKERRQ(ierr);

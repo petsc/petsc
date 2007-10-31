@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscsys.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -22,7 +22,8 @@ void PETSC_STDCALL petsclogeventend_(PetscEvent *e,PetscErrorCode *ierr){
 }
 
 void PETSC_STDCALL petsclogflops_(int *f,PetscErrorCode *ierr) {
-  *ierr = PetscLogFlops(*f);
+  PetscLogFlopsNoCheck(*f);
+  *ierr = 0;
 }
 
 

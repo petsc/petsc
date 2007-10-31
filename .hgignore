@@ -1,6 +1,7 @@
 syntax: glob
 asterix*/*
 linux*/*
+c_test
 RDict.db
 RDict.log
 TAGS*
@@ -46,4 +47,8 @@ docs/manconcepts
 docs/manual.pdf
 docs/troubleshooting.html
 src/docs/tex/manual/manual1.tex
-
+src/dm/mesh/examples/tutorials/*_quadrature.h
+src/dm/mesh/examples/tutorials/*.vtk
+src/dm/mesh/examples/tutorials/build.log
+src/dm/mesh/examples/tutorials/build.log.bkp
+src/dm/mesh/examples/tutorials/default.log

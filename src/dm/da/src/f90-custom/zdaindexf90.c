@@ -9,9 +9,9 @@
 #endif
 
 EXTERN_C_BEGIN
-void PETSC_STDCALL dagetglobalindicesf90_(DA *da,int *n,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
+void PETSC_STDCALL dagetglobalindicesf90_(DA *da,PetscInt *n,F90Array1d *indices,int *ierr PETSC_F90_2PTR_PROTO(ptrd))
 {
-  int *idx;
+  PetscInt *idx;
   *ierr = DAGetGlobalIndices(*da,n,&idx); if (*ierr) return;
   *ierr = F90Array1dCreate(idx,PETSC_INT,1,*n,indices PETSC_F90_2PTR_PARAM(ptrd));
 }

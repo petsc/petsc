@@ -1,4 +1,4 @@
-#include "zpetsc.h"
+#include "private/zpetsc.h"
 #include "petscsys.h"
 
 #if defined(PETSC_HAVE_FORTRAN_CAPS)
@@ -10,14 +10,17 @@
 EXTERN_C_BEGIN
 void PETSC_STDCALL petscgetarchtype_(CHAR str PETSC_MIXED_LEN(len),PetscErrorCode *ierr PETSC_END_LEN(len))
 {
+  char *tstr;
+  size_t tlen;
 #if defined(PETSC_USES_CPTOFCD)
-  char *tstr = _fcdtocp(str); 
-  int  len1 = _fcdlen(str);
-  *ierr = PetscGetArchType(tstr,len1);
+  tstr = _fcdtocp(str); 
+  tlen = _fcdlen(str);
 #else
-  *ierr = PetscGetArchType(str,len);
+  tstr = str;
+  tlen = len; /* int to size_t */
 #endif
-  FIXRETURNCHAR(str,len);
+  *ierr = PetscGetArchType(tstr,tlen);
+  FIXRETURNCHAR(PETSC_TRUE,str,len);
 
 }
 

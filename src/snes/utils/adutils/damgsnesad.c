@@ -92,10 +92,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESDAComputeJacobianWithAdic(SNES snes,Vec X
 /*
           This is pre-beta FAS code. It's design should not be taken seriously!
 
-              R is the usual multigrid restriction (e.g. the tranpose of peicewise linear interpolation)
+              R is the usual multigrid restriction (e.g. the tranpose of piecewise linear interpolation)
               Q is either a scaled injection or the usual R
 */
-#undef __FUNCT__  
+#undef __FUNCT__
 #define __FUNCT__ "DMMGSolveFAS"
 PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 {
@@ -116,13 +116,13 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
   ierr = KSPGetPC(dmmg[level]->ksp,&pc);CHKERRQ(ierr);
   mg   = ((PC_MG**)pc->data);
 
-  for (i=0; i<100; i++) {
+  for(i = 0; i < 100; i++) {
 
-    for (j=level; j>0; j--) {
+    for(j = level; j > 0; j--) {
 
-      /* Relax residual_fine - F(x_fine) = 0 */
-      for (k=0; k<dmmg[j]->presmooth; k++) {
-	ierr = NLFRelax_DAAD(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+      /* Relax residual_fine --> F(x_fine) = 0 */
+      for(k = 0; k < dmmg[j]->presmooth; k++) {
+        ierr = NLFRelax_DAAD(dmmg[j]->nlf, SOR_SYMMETRIC_SWEEP, 1, dmmg[j]->x);CHKERRQ(ierr);
       }
 
       /* R*(residual_fine - F(x_fine)) */
@@ -133,19 +133,19 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
         /* norm( residual_fine - f(x_fine) ) */
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         if (j == level) {
-	  if (norm < dmmg[level]->abstol) goto theend; 
+          if (norm < dmmg[level]->abstol) goto theend; 
           if (i == 0) {
             dmmg[level]->rrtol = norm*dmmg[level]->rtol;
           } else {
             if (norm < dmmg[level]->rrtol) goto theend;
-	  }
+          }
+        }
+        if (dmmg[j]->monitorall) {
+          for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
+          ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
         }
       }
 
-      if (dmmg[j]->monitorall) {
-        for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
-        ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
-      }
       ierr = MatRestrict(mg[j]->restrct,dmmg[j]->w,dmmg[j-1]->r);CHKERRQ(ierr); 
       
       /* F(Q*x_fine) */
@@ -178,8 +178,8 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 
       if (dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */
-	ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
-	ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
+        ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+        ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
         ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
@@ -187,13 +187,13 @@ PetscErrorCode DMMGSolveFAS(DMMG *dmmg,PetscInt level)
 
       /* Relax residual_fine - F(x_fine)  = 0 */
       for (k=0; k<dmmg[j]->postsmooth; k++) {
-	ierr = NLFRelax_DAAD(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+        ierr = NLFRelax_DAAD(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
       }
 
       if (dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */
-	ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
-	ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
+        ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+        ierr = VecAXPY(dmmg[j]->w,-1.0,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
         ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %G\n",norm);CHKERRQ(ierr);
@@ -379,10 +379,10 @@ PetscErrorCode DMMGSolveFAS4(DMMG *dmmg,PetscInt level)
   for (i=0; i<100; i++) {
 
     for (j=level; j>0; j--) {
-  ierr = PetscPrintf(PETSC_COMM_WORLD,"I am here");CHKERRQ(ierr);
+      ierr = PetscPrintf(PETSC_COMM_WORLD,"I am here");CHKERRQ(ierr);
       /* Relax residual_fine - F(x_fine) = 0 */
       for (k=0; k<dmmg[j]->presmooth; k++) {
-	ierr = NLFRelax_DAAD4(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+        ierr = NLFRelax_DAAD4(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
       }
 
       /* R*(residual_fine - F(x_fine)) */
@@ -393,12 +393,12 @@ PetscErrorCode DMMGSolveFAS4(DMMG *dmmg,PetscInt level)
         /* norm( residual_fine - f(x_fine) ) */
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         if (j == level) {
-	  if (norm < dmmg[level]->abstol) goto theend; 
+          if (norm < dmmg[level]->abstol) goto theend; 
           if (i == 0) {
             dmmg[level]->rrtol = norm*dmmg[level]->rtol;
           } else {
             if (norm < dmmg[level]->rrtol) goto theend;
-	  }
+          }
         }
       }  ierr = PetscPrintf(PETSC_COMM_WORLD,"I am here");CHKERRQ(ierr);
 
@@ -438,8 +438,8 @@ PetscErrorCode DMMGSolveFAS4(DMMG *dmmg,PetscInt level)
 
       if (dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */
-	ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
-	ierr = VecAXPY(dmmg[j]->w,mone,dmmg[j]->r);CHKERRQ(ierr);
+        ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+        ierr = VecAXPY(dmmg[j]->w,mone,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
         ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
@@ -447,13 +447,13 @@ PetscErrorCode DMMGSolveFAS4(DMMG *dmmg,PetscInt level)
 
       /* Relax residual_fine - F(x_fine)  = 0 */
       for (k=0; k<dmmg[j]->postsmooth; k++) {
-	ierr = NLFRelax_DAAD4(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
+        ierr = NLFRelax_DAAD4(dmmg[j]->nlf,SOR_SYMMETRIC_SWEEP,1,dmmg[j]->x);CHKERRQ(ierr);
       }
 
       if (dmmg[j]->monitorall) {
         /* norm( F(x_fine) - residual_fine ) */
-	ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
-	ierr = VecAXPY(dmmg[j]->w,mone,dmmg[j]->r);CHKERRQ(ierr);
+        ierr = DMMGFormFunction(0,dmmg[j]->x,dmmg[j]->w,dmmg[j]);CHKERRQ(ierr);
+        ierr = VecAXPY(dmmg[j]->w,mone,dmmg[j]->r);CHKERRQ(ierr);
         ierr = VecNorm(dmmg[j]->w,NORM_2,&norm);CHKERRQ(ierr);
         for (k=0; k<level-j+1; k++) {ierr = PetscPrintf(dmmg[j]->comm,"  ");CHKERRQ(ierr);}
         ierr = PetscPrintf(dmmg[j]->comm,"FAS function norm %g\n",norm);CHKERRQ(ierr);
@@ -1247,14 +1247,11 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
 
   PetscFunctionBegin;
 
-
- if (!snes->solve) SETERRQ(PETSC_ERR_ORDER,"SNESSetType() or SNESSetFromOptions() must be called before SNESSolve()");
-
   ierr = VecDuplicate(dmmg[level]->x,&Sk);CHKERRQ(ierr);
-  snes->vec_sol = snes->vec_sol_always = dmmg[level]->x;
-  if (!snes->setupcalled) {
-    ierr = SNESSetUp(snes);CHKERRQ(ierr);
-  }
+  ierr = PetscObjectReference((PetscObject)dmmg[level]->x);CHKERRQ(ierr);
+  if (snes->vec_sol) { ierr = VecDestroy(snes->vec_sol);CHKERRQ(ierr); }
+  snes->vec_sol = dmmg[level]->x;
+  if (!snes->setupcalled) { ierr = SNESSetUp(snes);CHKERRQ(ierr); }
   if (snes->conv_hist_reset) snes->conv_hist_len = 0;
   ierr = PetscLogEventBegin(SNES_Solve,snes,0,0,0);CHKERRQ(ierr);
   snes->nfuncs = 0; snes->linear_its = 0; snes->numFailures = 0;
@@ -1295,7 +1292,7 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   // dmmg[level]->rrtol= snes->ttol;
 
   // set this to store the old grad 
-  Gradold=snes->vec_sol_update_always;
+  Gradold=snes->vec_sol_update;
   
   // compute the search direction Y
   // I need to put Q(x)=x-FAS(x) here
@@ -1429,8 +1426,6 @@ PetscErrorCode DMMGSolveFAS_NCG(DMMG *dmmg, PetscInt level)
   if (F != snes->vec_func) {
     ierr = VecCopy(F,snes->vec_func);CHKERRQ(ierr);
   }
-  snes->vec_sol_always  = snes->vec_sol;
-  snes->vec_func_always = snes->vec_func;
   if (i == maxits) {
     ierr = PetscInfo1(snes,"SNESSolve_LS: Maximum number of iterations has been reached: %D\n",maxits);CHKERRQ(ierr);
     snes->reason = SNES_DIVERGED_MAX_IT;

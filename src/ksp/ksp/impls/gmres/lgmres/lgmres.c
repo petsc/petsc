@@ -16,7 +16,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetAugDim(KSP ksp, PetscInt dim)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPLGMRESSetAugDim_C,(KSP,PetscInt),(ksp,dim));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPLGMRESSetAugDim_C",(KSP,PetscInt),(ksp,dim));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -27,7 +27,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT KSPLGMRESSetConstant(KSP ksp)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscTryMethod((ksp),KSPLGMRESSetConstant_C,(KSP),(ksp));CHKERRQ(ierr);
+  ierr = PetscTryMethod((ksp),"KSPLGMRESSetConstant_C",(KSP),(ksp));CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -436,7 +436,7 @@ PetscErrorCode KSPSolve_LGMRES(KSP ksp)
     ierr     = LGMREScycle(&cycle_its,ksp);CHKERRQ(ierr);
     itcount += cycle_its;  
     if (itcount >= ksp->max_it) {
-      ksp->reason = KSP_DIVERGED_ITS;
+      if (!ksp->reason) ksp->reason = KSP_DIVERGED_ITS;
       break;
     }
     ksp->guess_zero = PETSC_FALSE; /* every future call to KSPInitialResidual() will have nonzero guess */

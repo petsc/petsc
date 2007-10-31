@@ -80,7 +80,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinates(DA da,Vec *c)
   PetscFunctionBegin;
   PetscValidHeaderSpecific(da,DA_COOKIE,1);
   PetscValidPointer(c,2);
-  ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);
+  if (da->coordinates) {ierr = PetscObjectReference((PetscObject) da->coordinates);CHKERRQ(ierr);}
   *c = da->coordinates;
   PetscFunctionReturn(0);
 }
@@ -113,15 +113,15 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
 
   PetscFunctionBegin;
   if (!da->da_coordinates) {
-    ierr = MPI_Comm_size(da->comm,&size);CHKERRQ(ierr);
+    ierr = MPI_Comm_size(((PetscObject)da)->comm,&size);CHKERRQ(ierr);
     if (da->dim == 1) {
       PetscInt            s,m,*lc,l;
       DAPeriodicType pt;
       ierr = DAGetInfo(da,0,&m,0,0,0,0,0,0,&s,&pt,0);CHKERRQ(ierr);
       ierr = DAGetCorners(da,0,0,0,&l,0,0);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
-      ierr = DACreate1d(da->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
+      ierr = DACreate1d(((PetscObject)da)->comm,pt,m,1,s,lc,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
     } else if (da->dim == 2) {
       PetscInt            i,s,m,*lc,*ld,l,k,n,M,N;
@@ -131,13 +131,13 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       ierr = PetscMalloc(size*sizeof(PetscInt),&lc);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
       /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = DACreate2d(da->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate2d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,M,N,2,s,lc,ld,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
       ierr = PetscFree(ld);CHKERRQ(ierr);
     } else if (da->dim == 3) {
@@ -149,17 +149,17 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetCoordinateDA(DA da,DA *cda)
       ierr = PetscMalloc(size*sizeof(PetscInt),&ld);CHKERRQ(ierr);
       ierr = PetscMalloc(size*sizeof(PetscInt),&le);CHKERRQ(ierr);
       /* only first M values in lc matter */
-      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&l,1,MPIU_INT,lc,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       /* every Mth value in ld matters */
-      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&k,1,MPIU_INT,ld,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       for ( i=0; i<N; i++) {
         ld[i] = ld[M*i];
       }
-      ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,da->comm);CHKERRQ(ierr);
+      ierr = MPI_Allgather(&q,1,MPIU_INT,le,1,MPIU_INT,((PetscObject)da)->comm);CHKERRQ(ierr);
       for ( i=0; i<P; i++) {
         le[i] = le[M*N*i];
       }
-      ierr = DACreate3d(da->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
+      ierr = DACreate3d(((PetscObject)da)->comm,pt,DA_STENCIL_BOX,m,n,p,M,N,P,3,s,lc,ld,le,&da->da_coordinates);CHKERRQ(ierr);
       ierr = PetscFree(lc);CHKERRQ(ierr);
       ierr = PetscFree(ld);CHKERRQ(ierr);
       ierr = PetscFree(le);CHKERRQ(ierr);
@@ -315,7 +315,7 @@ PetscErrorCode PETSCDM_DLLEXPORT DAGetFieldName(DA da,PetscInt nf,char **name)
 
 .keywords: distributed array, get, corners, nodes, local indices
 
-.seealso: DAGetGhostCorners()
+.seealso: DAGetGhostCorners(), DAGetOwnershipRange()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
 {

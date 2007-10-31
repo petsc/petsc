@@ -275,7 +275,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCCreate_Galerkin(PC pc)
   pc->ops->view               = PCView_Galerkin;
   pc->ops->applyrichardson    = 0;
 
-  ierr = KSPCreate(pc->comm,&jac->ksp);CHKERRQ(ierr);
+  ierr = KSPCreate(((PetscObject)pc)->comm,&jac->ksp);CHKERRQ(ierr);
 
   pc->data               = (void*)jac;
 

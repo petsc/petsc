@@ -622,7 +622,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscBagLoad(PetscViewer view,PetscBag *bag)
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscBagCreate"
-/*@C
+/*@
     PetscBagCreate - Create a bag of values
 
   Collective on MPI_Comm

@@ -125,6 +125,16 @@ runex2:
 	   if (${DIFF} output/ex2_1.out ex2_1.tmp) then true; \
 	   else echo "Possible problem with ex2_1, diffs above"; fi; \
 	   ${RM} -f ex2_1.tmp
+runex2_2:
+	-@${MPIEXEC} -np 3 ./ex2 -wrap nonperiodic -local_print > ex2_2.tmp 2>&1;	  \
+	   if (${DIFF} output/ex2_2.out ex2_2.tmp) then true; \
+	   else echo "Possible problem with ex2_2, diffs above"; fi; \
+	   ${RM} -f ex2_2.tmp
+runex2_3:
+	-@${MPIEXEC} -np 3 ./ex2 -wrap xyzghosted -local_print > ex2_3.tmp 2>&1;	  \
+	   if (${DIFF} output/ex2_3.out ex2_3.tmp) then true; \
+	   else echo "Possible problem with ex2_3, diffs above"; fi; \
+	   ${RM} -f ex2_3.tmp
 runex3:
 	-@${MPIEXEC} -np 3 ./ex3 -time 50
 runex4:

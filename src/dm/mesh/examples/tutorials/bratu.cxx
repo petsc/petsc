@@ -3,8 +3,12 @@ static char help[] = "This example solves the Bratu problem.\n\n";
 
 #include <petscmesh.hh>
 #include <petscmesh_viewers.hh>
+#include <petscmesh_formats.hh>
 #include <petscdmmg.h>
 #include "Generator.hh"
+
+#include "GMVFileAscii.hh" // USES GMVFileAscii
+#include "GMVFileBinary.hh" // USES GMVFileBinary
 
 using ALE::Obj;
 typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
@@ -292,6 +296,18 @@ PetscErrorCode PETSCDM_DLLEXPORT MeshRefineSingularity(Mesh mesh, MPI_Comm comm,
 
 extern PetscErrorCode MeshIDBoundary(Mesh);
 
+void FlipCellOrientation(pylith::int_array * const cells, const int numCells, const int numCorners, const int meshDim) {
+  if (3 == meshDim && 4 == numCorners) {
+    for(int iCell = 0; iCell < numCells; ++iCell) {
+      const int i1 = iCell*numCorners+1;
+      const int i2 = iCell*numCorners+2;
+      const int tmp = (*cells)[i1];
+      (*cells)[i1] = (*cells)[i2];
+      (*cells)[i2] = tmp;
+    }
+  }
+}
+
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
@@ -356,11 +372,38 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
       ierr = MeshDestroy(boundary);CHKERRQ(ierr);
     } else {
-      std::string baseFilename(options->baseFilename);
-      std::string coordFile = baseFilename+".nodes";
-      std::string adjFile   = baseFilename+".lcon";
+      //Obj<ALE::Mesh> m = ALE::LaGriT::Builder::readMesh(PETSC_COMM_WORLD, 3, options->baseFilename, options->interpolate, options->debug);'
+      Obj<ALE::Mesh>             m     = new ALE::Mesh(comm, options->dim, options->debug);
+      Obj<ALE::Mesh::sieve_type> sieve = new ALE::Mesh::sieve_type(comm, options->debug);
+      bool                 flipEndian = false;
+      int                  dim;
+      pylith::int_array    cells;
+      pylith::double_array coordinates;
+      pylith::int_array    materialIds;
+      int                  numCells = 0, numVertices = 0, numCorners = 0;
 
-      ierr = MeshCreatePCICE(comm, options->dim, coordFile.c_str(), adjFile.c_str(), options->interpolate, PETSC_NULL, &mesh);CHKERRQ(ierr);
+      if (!m->commRank()) {
+        if (pylith::meshio::GMVFile::isAscii(options->baseFilename)) {
+          pylith::meshio::GMVFileAscii filein(options->baseFilename);
+          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+          if (options->interpolate) {
+            FlipCellOrientation(&cells, numCells, numCorners, dim);
+          }
+        } else {
+          pylith::meshio::GMVFileBinary filein(options->baseFilename, flipEndian);
+          filein.read(&coordinates, &cells, &materialIds, &dim, &dim, &numVertices, &numCells, &numCorners);
+          if (!options->interpolate) {
+            FlipCellOrientation(&cells, numCells, numCorners, dim);
+          }
+        } // if/else
+      }
+      ALE::SieveBuilder<ALE::Mesh>::buildTopology(sieve, dim, numCells, const_cast<int*>(&cells[0]), numVertices, options->interpolate, numCorners, -1, m->getArrowSection("orientation"));
+      m->setSieve(sieve);
+      m->stratify();
+      ALE::SieveBuilder<ALE::Mesh>::buildCoordinates(m, dim, const_cast<double*>(&coordinates[0]));
+
+      ierr = MeshCreate(comm, &mesh);CHKERRQ(ierr);
+      ierr = MeshSetMesh(mesh, m);CHKERRQ(ierr);
       ierr = MeshIDBoundary(mesh);CHKERRQ(ierr);
     }
     ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
@@ -398,6 +441,8 @@ PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
       ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
       m->view("Mesh");
     }
+    ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_simple", &view);CHKERRQ(ierr);
+    if (view) {ierr = MeshView(mesh, PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
     *dm = (DM) mesh;
   }
   PetscFunctionReturn(0);
@@ -685,14 +730,31 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
   ierr = PetscMalloc2(numBasisFuncs,PetscScalar,&elemVec,numBasisFuncs*numBasisFuncs,PetscScalar,&elemMat);CHKERRQ(ierr);
   ierr = PetscMalloc6(dim,double,&t_der,dim,double,&b_der,dim,double,&coords,dim,double,&v0,dim*dim,double,&J,dim*dim,double,&invJ);CHKERRQ(ierr);
   // Loop over cells
+#define FASTER 1
+#ifdef FASTER
+  Obj<ALE::Mesh::real_section_type> xSection;
+  Obj<ALE::Mesh::real_section_type> fSection;
+  int c = 0;
+
+  ierr = SectionRealGetSection(X, xSection);
+  ierr = SectionRealGetSection(section, fSection);
+  const int xTag = m->calculateCustomAtlas(xSection, cells);
+  const int fTag = fSection->copyCustomAtlas(xSection, xTag);
+  for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter, ++c) {
+#else
   for(ALE::Mesh::label_sequence::iterator c_iter = cells->begin(); c_iter != cells->end(); ++c_iter) {
+#endif
     ierr = PetscMemzero(elemVec, numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     ierr = PetscMemzero(elemMat, numBasisFuncs*numBasisFuncs * sizeof(PetscScalar));CHKERRQ(ierr);
     m->computeElementGeometry(coordinates, *c_iter, v0, J, invJ, detJ);
     if (detJ < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE, "Invalid determinant %g for element %d", detJ, *c_iter);
+#ifdef FASTER
+    const PetscScalar *x = m->restrict(xSection, xTag, c);
+#else
     PetscScalar *x;
 
     ierr = SectionRealRestrict(X, *c_iter, &x);CHKERRQ(ierr);
+#endif
     // Loop over quadrature points
     for(int q = 0; q < numQuadPoints; ++q) {
       for(int d = 0; d < dim; d++) {
@@ -728,7 +790,9 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
         }
         // Nonlinear part
-        elemVec[f] -= basis[q*numBasisFuncs+f]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+        if (lambda != 0.0) {
+          elemVec[f] -= basis[q*numBasisFuncs+f]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+        }
       }
     }    
     // Add linear contribution
@@ -737,12 +801,24 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
         elemVec[f] += elemMat[f*numBasisFuncs+g]*x[g];
       }
     }
+#ifdef FASTER
+    m->updateAdd(fSection, fTag, c, elemVec);
+#else
     ierr = SectionRealUpdateAdd(section, *c_iter, elemVec);CHKERRQ(ierr);
+#endif
   }
   ierr = PetscFree2(elemVec,elemMat);CHKERRQ(ierr);
   ierr = PetscFree6(t_der,b_der,coords,v0,J,invJ);CHKERRQ(ierr);
   // Exchange neighbors
   ierr = SectionRealComplete(section);CHKERRQ(ierr);
+  // Subtract the constant
+  if (m->hasRealSection("constant")) {
+    const Obj<ALE::Mesh::real_section_type>& constant = m->getRealSection("constant");
+    Obj<ALE::Mesh::real_section_type>        s;
+
+    ierr = SectionRealGetSection(section, s);CHKERRQ(ierr);
+    s->axpy(-1.0, constant);
+  }
   PetscFunctionReturn(0);
 }
 
@@ -1259,7 +1335,9 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
           for(int d = 0; d < dim; ++d) product += t_der[d]*b_der[d];
           elemMat[f*numBasisFuncs+g] += product*quadWeights[q]*detJ;
           // Nonlinear part
-          elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+          if (lambda != 0.0) {
+            elemMat[f*numBasisFuncs+g] -= basis[q*numBasisFuncs+f]*basis[q*numBasisFuncs+g]*lambda*PetscExpScalar(fieldVal)*quadWeights[q]*detJ;
+          }
         }
       }
     }
@@ -1613,7 +1691,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
   ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
   ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
   ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Number of nonlinear iterations = %D\n", its);CHKERRQ(ierr);
   ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
   ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
   if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
@@ -1623,7 +1701,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
     ExactSolType sol;
 
     sol.vec = DMMGGetx(dmmg);
-    ierr = CheckError(DMMGGetDM(dmmg), sol, options);CHKERRQ(ierr);
+    if (DMMGGetLevels(dmmg) == 1) {ierr = CheckError(DMMGGetDM(dmmg), sol, options);CHKERRQ(ierr);}
   } else {
     Mesh        mesh = (Mesh) DMMGGetDM(dmmg);
     SectionReal solution;
@@ -1649,7 +1727,7 @@ PetscErrorCode Solve(DMMG *dmmg, Options *options)
       ierr = PetscViewerSetType(viewer, PETSC_VIEWER_ASCII);CHKERRQ(ierr);
       ierr = PetscViewerSetFormat(viewer, PETSC_VIEWER_ASCII_VTK);CHKERRQ(ierr);
       ierr = PetscViewerFileSetName(viewer, "mesh_hierarchy.vtk");CHKERRQ(ierr);
-      double offset[3] = {0.7, 0.0, 0.0};
+      double offset[3] = {0.7, 0.0, 0.25};
       ierr = PetscOptionsReal("-hierarchy_vtk", PETSC_NULL, "bratu.cxx", *offset, offset, PETSC_NULL);CHKERRQ(ierr);
       ierr = VTKViewer::writeHeader(viewer);CHKERRQ(ierr);
       ierr = VTKViewer::writeHierarchyVertices(dmmg, viewer, offset);CHKERRQ(ierr);

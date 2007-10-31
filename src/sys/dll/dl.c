@@ -651,9 +651,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibr
   char           *func,*funcname,libname[PETSC_MAX_PATH_LEN],*lib;
   FILE           *fp;
   PetscToken     *token1,*token2;
+  int            err;
 
   PetscFunctionBegin;
-
   /* is dirname a directory? */
   ierr = PetscTestDirectory(dirname,'r',&dir);CHKERRQ(ierr);
   if (!dir) PetscFunctionReturn(0);
@@ -694,7 +694,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryCCAAppend(MPI_Comm comm,PetscDLLibr
         ierr = PetscTokenDestroy(token2);CHKERRQ(ierr);
       }
     }
-    fclose(fp);
+    err = fclose(fp);
+    if (err) SETERRQ(PETSC_ERR_SYS,"fclose() failed on file");    
     ierr = PetscTokenFind(token1,&libname1);CHKERRQ(ierr);
   }
   ierr = PetscTokenDestroy(token1);CHKERRQ(ierr);
