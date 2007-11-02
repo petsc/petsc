@@ -41,8 +41,32 @@ static char help[] = "This example uses a Grade 2 Fluid model on a journal beari
  *				  ----\     u = 0   /----
  *				       -------------
  *                                         (0,-1)
+ *
+ *
+ *
+ *  To solve the system there are three basic steps. 
+ *
+ *  STEP 1:
+ *  --------------------------------------------------------------------
+ *    Solve the Stokes like equations, with z either 0 or set by previous iteration:
+ *  
+ *                   -\mu\Delta u + z\times u + \nabla p = f
+ *                                        \nabla \cdot u = 0
+ *
+ *  STEP 2:
+ *  --------------------------------------------------------------------
+ *    Solve the transport equation:
+ *
+ *  \mu z + \alpha u\cdot\nabla z - \alpha z \cdot \nabla u = \mu \nabla \times u
+ *   
+ *    
+ *  STEP 3:
+ *  --------------------------------------------------------------------
+ *    Check the stopping criteria:
+ *
+ *     z\cdot\nabla\cdot u < tolerance
+ *
  */
-
 
 // ---------------------------------------------------------------------------------------------------------------------
 //  Includes and Namespace
@@ -56,11 +80,6 @@ using ALE::Obj;
 
 // ---------------------------------------------------------------------------------------------------------------------
 // Top level data definitions
-typedef enum {RUN_FULL, RUN_TEST, RUN_MESH} RunType;
-typedef enum {NEUMANN, DIRICHLET} BCType;
-typedef enum {ASSEMBLY_FULL, ASSEMBLY_STORED, ASSEMBLY_CALCULATED} AssemblyType;
-typedef union {SectionReal section; Vec vec;} ExactSolType;
-
 typedef struct {
   PetscInt      debug;                                        // The debugging level
   PetscTruth    generateMesh;                                 // Generate the unstructure mesh
@@ -68,9 +87,9 @@ typedef struct {
   PetscReal     refinementLimit;                              // The largest allowable cell volume
   char          baseFilename[2048];                           // The base filename for mesh files
   double        (*funcs[4])(const double []);                 // The function to project
-  AssemblyType  operatorAssembly;                             // The type of operator assembly
+  PetscReal     r,rho;                                        // IP parameters
+  PetscReal     mu,alpha;                                     // Transport parameters
 } Options;
-
 
 double zero(const double x[]) {
   return 0.0;
@@ -82,9 +101,272 @@ double constant(const double x[]) {
 
 #include "grade2_quadrature.h"
 
+// ---------------------------------------------------------------------------------------------------------------------
+// Function Prototypes
+
+PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options);
+PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition);
+PetscErrorCode ViewMesh(Mesh mesh, const char filename[]);
+PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]);
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options);
+PetscErrorCode DestroyMesh(DM dm, Options *options);
+PetscErrorCode CreateProblem(DM dm, Options *options);
+
+PetscErrorCode SolveStokes(DM dm, Options *options);
+PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
+PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx);
+PetscErrorCode IterateStokes(DM dm, Options *options);
+PetscErrorCode CheckStokesConvergence(DM dm, PetscTruth *iterate, Options *options);
+
+PetscErrorCode SolveTransport(DM dm, Options *options);
+PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
+PetscErrorCode Transport_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx);
+PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options);
+
+PetscErrorCode WriteSolution(DM dm, Options *options);
 
 // ---------------------------------------------------------------------------------------------------------------------
-// Function definitions
+// Main Procedure
+
+/* ______________________________________________________________________ */
+// Main
+/*!
+  \param[in] argc Size of command line array
+  \param[in] **argv command line array
+
+  Processes command line options.
+
+  \returns
+    PetscErrorCode
+*/
+/* ______________________________________________________________________ */
+#undef __FUNCT__
+
+#undef __FUNCT__
+#define __FUNCT__ "main"
+int main(int argc, char *argv[])
+{
+  MPI_Comm       comm;
+  Options        options;
+  DM             dm;
+  PetscErrorCode ierr;
+  PetscTruth     iterate = PETSC_TRUE;
+  PetscInt       iter=0,max_iter=2;
+
+  PetscFunctionBegin;
+  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
+  comm = PETSC_COMM_WORLD;
+  ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
+  try {
+
+    ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
+    ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
+
+
+    while (iterate and max_iter >= ++iter){
+      ierr = SolveStokes(dm, &options);CHKERRQ(ierr);
+      ierr = SolveTransport(dm, &options);CHKERRQ(ierr);
+      ierr = CheckStoppingCriteria(dm, &iterate, &options);CHKERRQ(ierr);
+    }
+    ierr = WriteSolution(dm, &options);CHKERRQ(ierr);
+    ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
+  } catch(ALE::Exception e) {
+    std::cerr << e << std::endl;
+  }
+  ierr = PetscFinalize();CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Function Definitions
+
+/* 
+ *  compute:
+ *       -\mu\Delta u + z\times u + \nabla p = f
+ *                            \nabla \cdot u = 0
+ *
+ *  Using Iterated Penalty Method, becomes:
+ * 
+ *  while \nabla \cdot u > tol
+ *       a(u^n,v)+r(\nabla\cdot u^n, \nabla\cdot v)+(\nabla\cdot v, \nabla\cdot w^n) = F(v)
+ *       w^{n+1} = w^n + rho * u^n
+ *
+ */
+#undef __FUNCT__
+#define __FUNCT__ "SolveStokes"
+PetscErrorCode SolveStokes(DM dm, Options *options)
+{
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+  DMMG *dmmg;
+  PetscTruth iterate=PETSC_TRUE;
+  PetscInt iter=0,max_iter=3;
+
+  PetscFunctionBegin;
+
+  while(iterate and max_iter >= ++iter){
+
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMMGCreate(comm, 1, options, &dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg, dm);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg, Stokes_Rhs_Unstructured, Stokes_Jac_Unstructured, 0, 0);CHKERRQ(ierr);
+  //   if (options->bcType == NEUMANN) {
+  //     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
+  //     ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
+  //   }
+ 
+  //Mesh                mesh = (Mesh) DMMGGetDM(dmmg);
+  SNES                snes;
+  PetscInt            its;
+  PetscTruth          flag;
+  SNESConvergedReason reason;
+
+  //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  snes = DMMGGetSNES(dmmg);
+  ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+  ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
+  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+  
+  ierr = IterateStokes(dm, options);CHKERRQ(ierr);
+  ierr = CheckStokesConvergence(dm, &iterate, options);CHKERRQ(ierr);
+  
+  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+  }
+  PetscFunctionReturn(0);
+}
+
+
+/* 
+ * compute w^{n+1} = w^{n} + rho u^{n}
+ */
+#undef __FUNCT__
+#define __FUNCT__ "IterateStokes"
+PetscErrorCode IterateStokes(DM dm, Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+
+  PetscFunctionReturn(0);
+}
+
+/* 
+ * check div(u) < tol
+ */
+#undef __FUNCT__
+#define __FUNCT__ "CheckStokesConvergence"
+PetscErrorCode CheckStokesConvergence(DM dm, PetscTruth *iterate, Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Do nothing so far */
+
+  PetscFunctionReturn(0);
+}
+
+
+/* 
+ *  compute z from:
+ *  \mu z + \alpha u\cdot\nabla z - \alpha z \cdot \nabla u = \mu \nabla \times u
+ */
+#undef __FUNCT__
+#define __FUNCT__ "SolveTransport"
+PetscErrorCode SolveTransport(DM dm, Options *options)
+{
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+  DMMG *dmmg;
+
+  PetscFunctionBegin;
+
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMMGCreate(comm, 1, options, &dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetDM(dmmg, dm);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(dmmg, Transport_Rhs_Unstructured, Transport_Jac_Unstructured, 0, 0);CHKERRQ(ierr);
+  //   if (options->bcType == NEUMANN) {
+  //     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
+  //     ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
+  //   }
+ 
+  //  Mesh                mesh = (Mesh) DMMGGetDM(dmmg);
+  SNES                snes;
+  PetscInt            its;
+  PetscTruth          flag;
+  SNESConvergedReason reason;
+
+  //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
+  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+  snes = DMMGGetSNES(dmmg);
+  ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+  ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
+  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+  ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
+  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
+
+  PetscFunctionReturn(0);
+}
+
+/*
+ *    Check the stopping criteria:
+ *
+ *     z\cdot\nabla\cdot u < tolerance
+ */ 
+#undef __FUNCT__
+#define __FUNCT__ "CheckStoppingCriteria"
+PetscErrorCode CheckStoppingCriteria(DM dm, PetscTruth *iterate, Options *options)
+{
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  /* Do nothing so far */
+
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
+#define __FUNCT__ "WriteSolution"
+PetscErrorCode WriteSolution(DM dm, Options *options)
+{
+  PetscErrorCode ierr;
+  PetscTruth flag;
+  Mesh mesh = (Mesh) dm;
+  SectionReal solution;
+  Obj<ALE::Mesh::real_section_type> sol;
+
+  PetscFunctionBegin;
+  
+  ierr = MeshGetSectionReal(mesh, "default", &solution);CHKERRQ(ierr);
+  ierr = SectionRealGetSection(solution, sol);CHKERRQ(ierr);
+  //ierr = SectionRealToVec(solution, mesh, SCATTER_REVERSE, DMMGGetx(dmmg));CHKERRQ(ierr);
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
+  if (flag) {ierr = ViewSection(mesh, solution, "sol.vtk");CHKERRQ(ierr);}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+  if (flag) {sol->view("Solution");}
+  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_fibrated", &flag);CHKERRQ(ierr);
+  if (flag) {
+    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(1);
+    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(2);
+
+    velocityX->view("X-Velocity Solution");
+    velocityY->view("Y-Velocity Solution");
+  }
+  ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+  PetscFunctionReturn(0);
+}
+
 
 /* ______________________________________________________________________ */
 // ProcessOptions
@@ -102,9 +384,7 @@ double constant(const double x[]) {
 #define __FUNCT__ "ProcessOptions"
 PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
 {
-  const char    *asTypes[4]  = {"full", "stored", "calculated"};
   ostringstream  filename;
-  PetscInt       as;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
@@ -112,19 +392,25 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
   options->generateMesh     = PETSC_TRUE;
   options->interpolate      = PETSC_TRUE;
   options->refinementLimit  = 0.001;
-  options->operatorAssembly = ASSEMBLY_FULL;
+  options->r                = 1e+3;
+  options->rho              = -1e+3;
+  options->mu               = 1;
+  options->alpha            = 1;
+
 
   ierr = PetscOptionsBegin(comm, "", "Grade 2 journal bearing Options", "DMMG");CHKERRQ(ierr);
   ierr = PetscOptionsInt("-debug", "The debugging level", "grade2.cxx", options->debug, &options->debug, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-generate", "Generate the unstructured mesh", "grade2.cxx", options->generateMesh, &options->generateMesh, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsTruth("-interpolate", "Generate intermediate mesh elements", "grade2.cxx", options->interpolate, &options->interpolate, PETSC_NULL);CHKERRQ(ierr);
   ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "grade2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-r", "The IP parameter r", "grade2.cxx", options->r, &options->r, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-rho", "The IP parameter rho", "grade2.cxx", options->rho, &options->rho, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-mu", "The transport parameter mu", "grade2.cxx", options->mu, &options->mu, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-alpha", "The transport parameter alpha", "grade2.cxx", options->alpha, &options->alpha, PETSC_NULL);CHKERRQ(ierr);
+  ierr = PetscOptionsReal("-refinement_limit", "The largest allowable cell volume", "grade2.cxx", options->refinementLimit, &options->refinementLimit, PETSC_NULL);CHKERRQ(ierr);
   filename << "data/journal_bearing";
   ierr = PetscStrcpy(options->baseFilename, filename.str().c_str());CHKERRQ(ierr);
   ierr = PetscOptionsString("-base_filename", "The base filename for mesh files", "grade2.cxx", options->baseFilename, options->baseFilename, 2048, PETSC_NULL);CHKERRQ(ierr);
-  as = options->operatorAssembly;
-  ierr = PetscOptionsEList("-assembly_type","Type of operator assembly","grade2.cxx",asTypes,3,asTypes[options->operatorAssembly],&as,PETSC_NULL);CHKERRQ(ierr);
-  options->operatorAssembly = (AssemblyType) as;
   ierr = PetscOptionsEnd();
 
   PetscFunctionReturn(0);
@@ -359,11 +645,14 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
 
-  ierr = CreateProblem_gen_2(dm, "p", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   velFuncs[0] = constant;
-  ierr = CreateProblem_gen_3(dm, "u", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_3(dm, "u0", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
   velFuncs[0] = zero;
-  ierr = CreateProblem_gen_3(dm, "v", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_3(dm, "u1", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_3(dm, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_3(dm, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_3(dm, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_3(dm, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
@@ -376,7 +665,7 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 
 
 /* ______________________________________________________________________ */
-// Rhs_Unstructured
+// Stoke_Rhs_Unstructured
 /*!
   \param[out] mesh
   \param[out]  X
@@ -389,8 +678,8 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
 */
 /* ______________________________________________________________________ */
 #undef __FUNCT__
-#define __FUNCT__ "Rhs_Unstructured"
-PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
+#define __FUNCT__ "Stokes_Rhs_Unstructured"
+PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
 {
   Options       *options = (Options *) ctx;
   double      (**funcs)(const double *) = options->funcs;
@@ -457,7 +746,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
           //if (*f_iter == "pressure") {
           if (field == 0) {
             // Divergence of u
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
+            const Obj<ALE::Discretization>& u         = m->getDiscretization("u0");
             const int                       numUFuncs = u->getBasisSize();
             const double                   *uBasisDer = u->getBasisDerivatives();
             const int                      *uIndices  = u->getIndices();
@@ -469,7 +758,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
               elemMat[f*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
             }
             // Divergence of v
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
+            const Obj<ALE::Discretization>& v         = m->getDiscretization("u1");
             const int                       numVFuncs = v->getBasisSize();
             const double                   *vBasisDer = v->getBasisDerivatives();
             const int                      *vIndices  = v->getIndices();
@@ -553,7 +842,7 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
 
 
 /* ______________________________________________________________________ */
-// Jac_Unstructured
+// StokeJac_Unstructured
 /*!
   \param[out] mesh The Mesh Object
   \param[out] section The section to solve the problem on
@@ -566,8 +855,8 @@ PetscErrorCode Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, v
 */
 /* ______________________________________________________________________ */
 #undef __FUNCT__
-#define __FUNCT__ "Jac_Unstructured"
-PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
+#define __FUNCT__ "Stokes_Jac_Unstructured"
+PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
   Options       *options = (Options *) ctx;
   Obj<ALE::Mesh::real_section_type> s;
@@ -618,7 +907,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
           //if (*f_iter == "pressure") {
           if (field == 0) {
             // Divergence of u
-            const Obj<ALE::Discretization>& u         = m->getDiscretization("u");
+            const Obj<ALE::Discretization>& u         = m->getDiscretization("u0");
             const int                       numUFuncs = u->getBasisSize();
             const double                   *uBasisDer = u->getBasisDerivatives();
             const int                      *uIndices  = u->getIndices();
@@ -630,7 +919,7 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
               elemMat[indices[f]*totBasisFuncs+uIndices[g]] += basis[q*numBasisFuncs+f]*uDiv*quadWeights[q]*detJ;
             }
             // Divergence of v
-            const Obj<ALE::Discretization>& v         = m->getDiscretization("v");
+            const Obj<ALE::Discretization>& v         = m->getDiscretization("u1");
             const int                       numVFuncs = v->getBasisSize();
             const double                   *vBasisDer = v->getBasisDerivatives();
             const int                      *vIndices  = v->getIndices();
@@ -683,192 +972,34 @@ PetscErrorCode Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx
   PetscFunctionReturn(0);
 }
 
-/* ______________________________________________________________________ */
-// CreateProblem
-/*!
-  \param[out] dm  The DM object
-  \param[out] **dmmg  The DMMG object
-  \param[in] options The options table
 
-  Sets up the solver for the problem.
-
-  \returns
-    PetscErrorCode
-*/
-/* ______________________________________________________________________ */
 #undef __FUNCT__
-#define __FUNCT__ "CreateSolver"
-PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
+#define __FUNCT__ "Transport_Rhs_Unstructured"
+PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx)
 {
-  MPI_Comm       comm;
+  Options       *options = (Options *) ctx;
+  double      (**funcs)(const double *) = options->funcs;
+  Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMMGCreate(comm, 1, options, dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(*dmmg, dm);CHKERRQ(ierr);
-  if (options->operatorAssembly == ASSEMBLY_FULL) {
-    ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured, 0, 0);CHKERRQ(ierr);
-//   } else if (options->operatorAssembly == ASSEMBLY_CALCULATED) {
-//     ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
-//     ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Calculated, 0, 0);CHKERRQ(ierr);
-//   } else if (options->operatorAssembly == ASSEMBLY_STORED) {
-//     ierr = DMMGSetMatType(*dmmg, MATSHELL);CHKERRQ(ierr);
-//     ierr = DMMGSetSNESLocal(*dmmg, Rhs_Unstructured, Jac_Unstructured_Stored, 0, 0);CHKERRQ(ierr);
-  } else {
-    SETERRQ1(PETSC_ERR_ARG_WRONG, "Assembly type not supported: %d", options->operatorAssembly);
-  }
-//   if (options->bcType == NEUMANN) {
-//     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
-//     ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
-//   }
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+
   PetscFunctionReturn(0);
 }
 
-
-/* ______________________________________________________________________ */
-// Solve
-/*!
-  \param[out] **dmmg  The DMMG object
-  \param[in] options The options table
-
-
-  \returns
-    PetscErrorCode
-*/
-/* ______________________________________________________________________ */
 #undef __FUNCT__
-#define __FUNCT__ "Solve"
-PetscErrorCode Solve(DMMG *dmmg, Options *options)
+#define __FUNCT__ "Transport_Jac_Unstructured"
+PetscErrorCode Transport_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx)
 {
-  /*
-   *  To solve the system there are three basic steps. 
-   *
-   *  STEP 1:
-   *  --------------------------------------------------------------------
-   *    Solve the Stokes like equations, with z either 0 or set by previous iteration:
-   *  
-   *                   -\mu\Delta u + z\times u + \nabla p = f
-   *                                        \nabla \cdot u = 0
-   *
-   *  STEP 2:
-   *  --------------------------------------------------------------------
-   *    Solve the transport equation:
-   *
-   *  \mu z + \alpha u\cdot\nabla z - \alpha z \cdot \nabla u = \mu \nabla \times u
-   *   
-   *    
-   *  STEP 3:
-   *  --------------------------------------------------------------------
-   *    Check the stopping criteria:
-   *
-   *     z\cdot\nabla\cdot u < tolerance
-   *
-   */
-
-
-
-  Mesh                mesh = (Mesh) DMMGGetDM(dmmg);
-  SNES                snes;
-  MPI_Comm            comm;
-  PetscInt            its;
-  PetscTruth          flag;
-  SNESConvergedReason reason;
-  PetscErrorCode      ierr;
-
-  PetscFunctionBegin;
-  //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
-
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  snes = DMMGGetSNES(dmmg);
-  ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-  ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
-  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
-  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-  SectionReal solution;
-  Obj<ALE::Mesh::real_section_type> sol;
-  //  double      error;
-
-  ierr = MeshGetSectionReal(mesh, "default", &solution);CHKERRQ(ierr);
-  ierr = SectionRealGetSection(solution, sol);CHKERRQ(ierr);
-  ierr = SectionRealToVec(solution, mesh, SCATTER_REVERSE, DMMGGetx(dmmg));CHKERRQ(ierr);
-  //  ierr = CalculateError(mesh, solution, &error, options);CHKERRQ(ierr);
-  //  ierr = PetscPrintf(sol->comm(), "Total error: %g\n", error);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_vtk", &flag);CHKERRQ(ierr);
-  if (flag) {ierr = ViewSection(mesh, solution, "sol.vtk");CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
-  if (flag) {sol->view("Solution");}
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_fibrated", &flag);CHKERRQ(ierr);
-  if (flag) {
-    Obj<ALE::Mesh::real_section_type> pressure  = sol->getFibration(0);
-    Obj<ALE::Mesh::real_section_type> velocityX = sol->getFibration(1);
-    Obj<ALE::Mesh::real_section_type> velocityY = sol->getFibration(2);
-
-    pressure->view("Pressure Solution");
-    velocityX->view("X-Velocity Solution");
-    velocityY->view("Y-Velocity Solution");
-  }
-  ierr = SectionRealDestroy(solution);CHKERRQ(ierr);
-  PetscFunctionReturn(0);
-}
-
-
-// ---------------------------------------------------------------------------------------------------------------------
-// Main definition
-
-
-/* ______________________________________________________________________ */
-// Main
-/*!
-  \param[in] argc Size of command line array
-  \param[in] **argv command line array
-
-  Processes command line options.
-
-  \returns
-    PetscErrorCode
-*/
-/* ______________________________________________________________________ */
-#undef __FUNCT__
-
-#undef __FUNCT__
-#define __FUNCT__ "main"
-int main(int argc, char *argv[])
-{
-  MPI_Comm       comm;
-  Options        options;
-  DM             dm;
+  Options       *options = (Options *) ctx;
+  Obj<ALE::Mesh::real_section_type> s;
+  Obj<ALE::Mesh> m;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = PetscInitialize(&argc, &argv, (char *) 0, help);CHKERRQ(ierr);
-  comm = PETSC_COMM_WORLD;
-  ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
-  try {
-    ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
-    ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
-//     if (options.run == RUN_FULL) {
-    DMMG *dmmg;
+  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
 
-//       ierr = CreateExactSolution(dm, &options);CHKERRQ(ierr);
-//       ierr = CheckError(dm, options.exactSol, &options);CHKERRQ(ierr);
-//       ierr = CheckResidual(dm, options.exactSol, &options);CHKERRQ(ierr);
-//       ierr = CheckJacobian(dm, options.exactSol, &options);CHKERRQ(ierr);
-    ierr = CreateSolver(dm, &dmmg, &options);CHKERRQ(ierr);
-    ierr = Solve(dmmg, &options);CHKERRQ(ierr);
-    ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
-//       ierr = DestroyExactSolution(options.exactSol, &options);CHKERRQ(ierr);
-//     }
-    ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
-  } catch(ALE::Exception e) {
-    std::cerr << e << std::endl;
-  }
-  ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 // ---------------------------------------------------------------------------------------------------------------------
