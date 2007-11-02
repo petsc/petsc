@@ -1,4 +1,4 @@
-static char help[] = "Test LAPACK routine ZHEEV. \n\
+static char help[] = "Test LAPACK routine ZHEEV, ZHEEVX, ZHEGV and ZHEGVX. \n\
 ZHEEV computes all eigenvalues and, optionally, eigenvectors of a complex Hermitian matrix A. \n\n";
 
 #include "petscmat.h"
@@ -10,12 +10,12 @@ extern PetscErrorCode CkEigenSolutions(PetscInt,Mat,PetscInt,PetscInt,PetscReal*
 #define __FUNCT__ "main"
 PetscInt main(PetscInt argc,char **args)
 {
-  Mat            A,A_dense;    
+  Mat            A,A_dense,B;    
   Vec            *evecs;
-  PetscTruth     flg,TestZHEEV=PETSC_TRUE; 
+  PetscTruth     flg,TestZHEEV=PETSC_TRUE,TestZHEEVX=PETSC_FALSE,TestZHEGV=PETSC_FALSE,TestZHEGVX=PETSC_FALSE; 
   PetscErrorCode ierr;
   PetscTruth     isSymmetric;
-  PetscScalar    sigma,*arrayA,*evecs_array,*work;
+  PetscScalar    sigma,*arrayA,*arrayB,*evecs_array=PETSC_NULL,*work;
   PetscReal      *evals,*rwork;
   PetscMPIInt    size;
   PetscInt       m,i,j,nevs,il,iu,cklvl=2; 
@@ -27,7 +27,7 @@ PetscInt main(PetscInt argc,char **args)
   PetscScalar    v,none = -1.0,sigma2,pfive = 0.5,*xa;
   PetscRandom    rctx;
   PetscReal      h2,sigma1 = 100.0;
-  PetscInt       dim,Ii,J,Istart,Iend,n = 6,its,use_random;
+  PetscInt       dim,Ii,J,Istart,Iend,n = 6,its,use_random,one=1;
   
   PetscInitialize(&argc,&args,(char *)0,help);
 #if !defined(PETSC_USE_COMPLEX)
@@ -38,7 +38,18 @@ PetscInt main(PetscInt argc,char **args)
 
   ierr = PetscOptionsHasName(PETSC_NULL, "-test_zheevx", &flg);CHKERRQ(ierr);
   if (flg){
-    TestZHEEV = PETSC_FALSE; 
+    TestZHEEV  = PETSC_FALSE;
+    TestZHEEVX = PETSC_TRUE; 
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL, "-test_zhegv", &flg);CHKERRQ(ierr);
+  if (flg){
+    TestZHEEV  = PETSC_FALSE;
+    TestZHEGV= PETSC_TRUE; 
+  }
+  ierr = PetscOptionsHasName(PETSC_NULL, "-test_zhegvx", &flg);CHKERRQ(ierr);
+  if (flg){
+    TestZHEEV  = PETSC_FALSE;
+    TestZHEGVX = PETSC_TRUE; 
   }
 
   ierr = PetscOptionsGetReal(PETSC_NULL,"-sigma1",&sigma1,PETSC_NULL);CHKERRQ(ierr);
@@ -103,6 +114,15 @@ PetscInt main(PetscInt argc,char **args)
     ierr = MatConvert(A,MATSEQDENSE,MAT_INITIAL_MATRIX,&A_dense);CHKERRQ(ierr); 
   }
 
+  ierr = MatCreate(PETSC_COMM_SELF,&B);CHKERRQ(ierr);
+  ierr = MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,dim,dim);CHKERRQ(ierr);
+  ierr = MatSetType(B,MATSEQDENSE);CHKERRQ(ierr);
+  ierr = MatSetFromOptions(B);CHKERRQ(ierr);
+  v    = 1.0;
+  for (Ii=0; Ii<dim; Ii++) {
+    ierr = MatSetValues(B,1,&Ii,1,&Ii,&v,ADD_VALUES);CHKERRQ(ierr);
+  }
+
   /* Solve standard eigenvalue problem: A*x = lambda*x */
   /*===================================================*/
   lwork = 2*n;
@@ -115,10 +135,12 @@ PetscInt main(PetscInt argc,char **args)
     printf(" LAPACKsyev: compute all %d eigensolutions...\n",m);
     ierr = PetscMalloc((3*n-2)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
     LAPACKsyev_("V","U",&bn,arrayA,&bn,evals,work,&lwork,rwork,&lierr); 
+    ierr = PetscFree(rwork);CHKERRQ(ierr);
     evecs_array = arrayA;
     nevs = m;
     il=1; iu=m; 
-  } else { /* test zheevx()  */
+  } 
+  if (TestZHEEVX){
     il = 1; iu=(PetscBLASInt)(0.2*m); /* request 1 to 20%m evalues */
     printf(" LAPACKsyevx: compute %d to %d-th eigensolutions...\n",il,iu);
     ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);
@@ -131,6 +153,32 @@ PetscInt main(PetscInt argc,char **args)
     LAPACKsyevx_("V","I","U",&bn,arrayA,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);  
     ierr = PetscFree(iwork);CHKERRQ(ierr);
     ierr = PetscFree(ifail);CHKERRQ(ierr);
+    ierr = PetscFree(rwork);CHKERRQ(ierr);
+  }
+  if (TestZHEGV){
+    printf(" LAPACKsygv: compute all %d eigensolutions...\n",m);
+    ierr = PetscMalloc((3*n+1)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
+    ierr = MatGetArray(B,&arrayB);CHKERRQ(ierr);
+    LAPACKsygv_(&one,"V","U",&bn,arrayA,&bn,arrayB,&bn,evals,work,&lwork,rwork,&lierr); 
+    evecs_array = arrayA;
+    nevs = m;
+    il=1; iu=m;
+    ierr = MatRestoreArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = PetscFree(rwork);CHKERRQ(ierr);
+  }
+  if (TestZHEGVX){
+    il = 1; iu=(PetscBLASInt)(0.2*m); /* request 1 to 20%m evalues */
+    printf(" LAPACKsygv: compute %d to %d-th eigensolutions...\n",il,iu);
+    ierr = PetscMalloc((m*n+1)*sizeof(PetscScalar),&evecs_array);CHKERRQ(ierr);    
+    ierr = PetscMalloc((6*n+1)*sizeof(PetscBLASInt),&iwork);CHKERRQ(ierr);     
+    ifail = iwork + 5*n;
+    ierr = PetscMalloc((7*n+1)*sizeof(PetscReal),&rwork);CHKERRQ(ierr);
+    ierr = MatGetArray(B,&arrayB);CHKERRQ(ierr);
+    vl = 0.0; vu = 8.0;
+    LAPACKsygvx_(&one,"V","I","U",&bn,arrayA,&bn,arrayB,&bn,&vl,&vu,&il,&iu,&abstol,&nevs,evals,evecs_array,&n,work,&lwork,rwork,iwork,ifail,&lierr);
+    ierr = MatRestoreArray(B,&arrayB);CHKERRQ(ierr);
+    ierr = PetscFree(iwork);CHKERRQ(ierr);
+    ierr = PetscFree(rwork);CHKERRQ(ierr);
   }
   ierr = MatRestoreArray(A_dense,&arrayA);CHKERRQ(ierr);
   if (nevs <= 0 ) SETERRQ1(PETSC_ERR_CONV_FAILED, "nev=%d, no eigensolution has found", nevs);
@@ -157,12 +205,14 @@ PetscInt main(PetscInt argc,char **args)
   ierr = PetscFree(evecs);CHKERRQ(ierr);
     
   /* Free work space. */
-  if (!TestZHEEV){ierr = PetscFree(evecs_array);CHKERRQ(ierr);}  
+  if (TestZHEEVX || TestZHEGVX){
+    ierr = PetscFree(evecs_array);CHKERRQ(ierr);
+  }  
   ierr = PetscFree(evals);CHKERRQ(ierr);
   ierr = PetscFree(work);CHKERRQ(ierr);
-  ierr = PetscFree(rwork);CHKERRQ(ierr);
   ierr = MatDestroy(A_dense);CHKERRQ(ierr); 
   ierr = MatDestroy(A);CHKERRQ(ierr);
+  ierr = MatDestroy(B);CHKERRQ(ierr);
   ierr = PetscFinalize();CHKERRQ(ierr);
   return 0;
 }

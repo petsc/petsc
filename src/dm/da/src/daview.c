@@ -177,7 +177,7 @@ PetscErrorCode DAView_Binary(DA da,PetscViewer viewer)
 .keywords: distributed array, view, visualize
 
 .seealso: PetscViewerASCIIOpen(), PetscViewerDrawOpen(), DAGetInfo(), DAGetCorners(),
-          DAGetGhostCorners()
+          DAGetGhostCorners(), DAGetOwnershipRange(), DACreate(), DACreate1d(), DACreate2d(), DACreate3d()
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAView(DA da,PetscViewer viewer)
 {

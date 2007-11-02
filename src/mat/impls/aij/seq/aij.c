@@ -1153,17 +1153,6 @@ PetscErrorCode MatRelax_SeqAIJ(Mat A,Vec bb,PetscReal omega,MatSORType flag,Pets
     PetscFunctionReturn(0);
   }
 
-
-    /* Let  A = L + U + D; where L is lower trianglar,
-    U is upper triangular, E is diagonal; This routine applies
-
-            (L + E)^{-1} A (U + E)^{-1}
-
-    to a vector efficiently using Eisenstat's trick. This is for
-    the case of SSOR preconditioner, so E is D/omega where omega
-    is the relaxation factor.
-    */
-
   if (flag == SOR_APPLY_LOWER) {
     SETERRQ(PETSC_ERR_SUP,"SOR_APPLY_LOWER is not implemented");
   } else if (flag & SOR_EISENSTAT) {

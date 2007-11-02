@@ -1097,10 +1097,20 @@ runex120:
 	   else echo "Possible problem with ex120_1, diffs above"; fi; \
 	   ${RM} -f ex120_1.tmp 
 runex120_2:
-	-@${MPIEXEC} -np 1 ./ex120 -test_zheevx > ex120_2.tmp 2>&1;   \
-	   if (${DIFF} output/ex120_2.out ex120_2.tmp) then true; \
+	-@${MPIEXEC} -np 1 ./ex120 -test_zheevx > ex120.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_2.out ex120.tmp) then true; \
 	   else echo "Possible problem with ex120_2, diffs above"; fi; \
-	   ${RM} -f ex120_2.tmp 
+	   ${RM} -f ex120.tmp 
+runex120_3:
+	-@${MPIEXEC} -np 1 ./ex120 -test_zhegv > ex120.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_3.out ex120.tmp) then true; \
+	   else echo "Possible problem with ex120_3, diffs above"; fi; \
+	   ${RM} -f ex120.tmp
+runex120_4:
+	-@${MPIEXEC} -np 1 ./ex120 -test_zhegvx > ex120.tmp 2>&1;   \
+	   if (${DIFF} output/ex120_4.out ex120.tmp) then true; \
+	   else echo "Possible problem with ex120_4, diffs above"; fi; \
+	   ${RM} -f ex120.tmp
 
 TESTEXAMPLES_C		       = ex1.PETSc runex1 ex1.rm ex3.PETSc runex3 ex3.rm ex5.PETSc runex5 runex5_2 ex5.rm \
                                  ex6.PETSc runex6 ex6.rm ex8.PETSc runex8 ex8.rm ex9.PETSc runex9 ex9.rm ex10.PETSc \

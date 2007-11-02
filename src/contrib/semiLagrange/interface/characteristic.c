@@ -396,7 +396,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
       if (Qi.proc && verbose) {
-        printf("[%d]Remote point (%d) at n+1/2 to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, c->queueSize+1, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
+        printf("[%d]Remote point (%d) at n+1/2 to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)c->queueSize+1, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
       }
       ierr = CharacteristicAddPoint(c, &Qi); CHKERRQ(ierr);
     }
@@ -483,7 +483,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
     ierr = DAMapCoordsToPeriodicDomain(da,&(Qi.x),&(Qi.y));CHKERRQ(ierr);
 
     if (Qi.proc && verbose) {
-      printf("[%d]Remote point (%d) at n to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, n, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
+      printf("[%d]Remote point (%d) at n to neighbor %d: (i:%d, j:%d) (x:%g, y:%g)\n", rank, (int)n, Qi.proc, Qi.i, Qi.j, Qi.x, Qi.y);
     }
     c->queue[n] = Qi;
   }
@@ -535,7 +535,7 @@ PetscErrorCode CharacteristicSolve(Characteristic c, PetscReal dt, Vec solution)
       PetscScalar im = interpIndices[0]; PetscScalar jm = interpIndices[1];
 
       if (( im < (PetscScalar) is - 1.) || (im > (PetscScalar) ie) || (jm < (PetscScalar)  js - 1.) || (jm > (PetscScalar) je)) {
-        printf("[%d]Bounds: I (%d, %d) J (%d, %d)\n", rank, is, ie, js, je);
+        printf("[%d]Bounds: I (%d, %d) J (%d, %d)\n", rank, (int)is, (int)ie, (int)js, (int)je);
         SETERRQ2(PETSC_ERR_LIB, "Nonlocal point: (%g,%g)", im, jm);
       }
     }

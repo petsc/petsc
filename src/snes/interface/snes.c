@@ -440,6 +440,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetFunctionNorm(SNES snes,PetscReal *fnor
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
+
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
+          SNESSetMaxNonlinearStepFailures(), SNESGetMaxNonlinearStepFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES snes,PetscInt* nfails)
 {
@@ -465,6 +468,9 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNonlinearStepFailures(SNES snes,PetscI
    Level: intermediate
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
+
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
+          SNESGetMaxNonlinearStepFailures(), SNESGetNonlinearStepFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES snes, PetscInt maxFails)
 {
@@ -491,6 +497,10 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxNonlinearStepFailures(SNES snes, Pe
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
+
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures(),
+          SNESSetMaxNonlinearStepFailures(), SNESGetNonlinearStepFailures()
+ 
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES snes, PetscInt *maxFails)
 {
@@ -518,6 +528,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxNonlinearStepFailures(SNES snes, Pe
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
+
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(), SNESGetLinearSolveFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES snes, PetscInt *nfuncs)
 {
@@ -548,6 +560,8 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetNumberFunctionEvals(SNES snes, PetscIn
    Level: intermediate
 
 .keywords: SNES, nonlinear, get, number, unsuccessful, steps
+
+.seealso: SNESGetMaxLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES snes,PetscInt* nfails)
 {
@@ -576,7 +590,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveFailures(SNES snes,PetscInt
 
 .keywords: SNES, nonlinear, set, maximum, unsuccessful, steps
 
-.seealso: SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
+.seealso: SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures(), SNESGetLinearSolveIterations()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES snes, PetscInt maxFails)
 {
@@ -606,7 +620,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESSetMaxLinearSolveFailures(SNES snes, Pets
 
 .keywords: SNES, nonlinear, get, maximum, unsuccessful, steps
 
-.seealso: SNESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
+.seealso: SNESGetLinearSolveFailures(), SNESGetLinearSolverIterations(), SNESSetMaxLinearSolveFailures(),
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, PetscInt *maxFails)
 {
@@ -638,7 +652,7 @@ PetscErrorCode PETSCSNES_DLLEXPORT SNESGetMaxLinearSolveFailures(SNES snes, Pets
 
 .keywords: SNES, nonlinear, get, number, linear, iterations
 
-.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm()
+.seealso:  SNESGetIterationNumber(), SNESGetFunctionNorm()S, NESGetLinearSolveFailures(), SNESGetMaxLinearSolveFailures()
 @*/
 PetscErrorCode PETSCSNES_DLLEXPORT SNESGetLinearSolveIterations(SNES snes,PetscInt* lits)
 {

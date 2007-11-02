@@ -34,7 +34,7 @@
 
 .keywords: distributed array, get, ghost, corners, nodes, local indices
 
-.seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d()
+.seealso: DAGetCorners(), DACreate1d(), DACreate2d(), DACreate3d(), DAGetOwnershipRange()
 
 @*/
 PetscErrorCode PETSCDM_DLLEXPORT DAGetGhostCorners(DA da,PetscInt *x,PetscInt *y,PetscInt *z,PetscInt *m,PetscInt *n,PetscInt *p)
