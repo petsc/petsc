@@ -4,7 +4,7 @@ static char help[] = "Sifter Base Tests.\n\n";
 #include "xsifterTest.hh"
 
 
-typedef ALE::Test::XSifterTester::xsifter_type     xsifter_type;
+typedef ALE::Test::XSifterTester::default_xsifter_type     xsifter_type;
 
 
 #undef __FUNCT__
@@ -18,12 +18,12 @@ int main(int argc, char *argv[])
   {
     ALE::Component::ArgDB argDB(ALE::Test::XSifterTester().argDB, argc, argv);
     ALE::Obj<xsifter_type> xsifterFork = ALE::Test::XSifterTester::createForkXSifter(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSifterTester::BaseRangeTest(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSifterTester::BaseRangeTest<xsifter_type>(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
     ALE::Obj<xsifter_type> xsifterHat = ALE::Test::XSifterTester::createHatXSifter(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSifterTester::BaseRangeTest(xsifterHat, argDB, "Hat XSifter"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSifterTester::BaseRangeTest<xsifter_type>(xsifterHat, argDB, "Hat XSifter"); CHKERRQ(ierr);
     //
-    ierr = ALE::Test::XSifterTester::BaseTest(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
-    ierr = ALE::Test::XSifterTester::BaseTest(xsifterHat, argDB, "Hat XSifter"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSifterTester::BaseTest<xsifter_type>(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSifterTester::BaseTest<xsifter_type>(xsifterHat, argDB, "Hat XSifter"); CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

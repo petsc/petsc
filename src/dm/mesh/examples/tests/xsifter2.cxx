@@ -4,7 +4,7 @@ static char help[] = "Sifter Cone and Support Tests.\n\n";
 #include "xsifterTest.hh"
 
 
-typedef ALE::Test::XSifterTester::xsifter_type     xsifter_type;
+typedef ALE::Test::XSifterTester::default_xsifter_type     xsifter_type;
 
 
 
@@ -19,9 +19,9 @@ int main(int argc, char *argv[])
   {
     ALE::Component::ArgDB argDB(ALE::Test::XSifterTester().argDB, argc, argv);
     ALE::Obj<xsifter_type> xsifterFork = ALE::Test::XSifterTester::createForkXSifter(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSifterTester::ConeTest(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSifterTester::ConeTest<xsifter_type>(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
     ALE::Obj<xsifter_type> xsifterHat = ALE::Test::XSifterTester::createHatXSifter(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSifterTester::ConeTest(xsifterHat, argDB, "Hat XSifter"); CHKERRQ(ierr);
+    ierr = ALE::Test::XSifterTester::ConeTest<xsifter_type>(xsifterHat, argDB, "Hat XSifter"); CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

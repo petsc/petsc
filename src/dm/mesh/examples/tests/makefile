@@ -157,6 +157,19 @@ valgrindxsifter2:
 
 
 #-----------------------------------------------------------------
+xsifter3: xsifter3.o chkopts
+	-${CLINKER} -o xsifter3 xsifter3.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsifter3.o
+NP = 1
+runxsifter3:
+	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS}
+debugxsifter3:
+	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsifter3:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsifter3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
+
+#-----------------------------------------------------------------
 runex00:
 	-@${MPIEXEC} -np ${NP} ./ex00 -log_summary ${EXTRA_ARGS}
 
