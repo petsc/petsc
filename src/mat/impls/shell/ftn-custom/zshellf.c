@@ -19,8 +19,7 @@ EXTERN_C_BEGIN
 void PETSC_STDCALL matcreateshell_(MPI_Comm *comm,PetscInt *m,PetscInt *n,PetscInt *M,PetscInt *N,void **ctx,Mat *mat,PetscErrorCode *ierr)
 {
   *ierr = MatCreateShell((MPI_Comm)PetscToPointerComm(*comm),*m,*n,*M,*N,*ctx,mat);
-  if (*ierr) return;
-  *ierr = PetscMalloc(5*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
+
 }
 
 static PetscErrorCode ourmult(Mat mat,Vec x,Vec y)
@@ -60,6 +59,10 @@ static PetscErrorCode ourgetdiagonal(Mat mat,Vec x)
 
 void PETSC_STDCALL matshellsetoperation_(Mat *mat,MatOperation *op,PetscErrorCode (PETSC_STDCALL *f)(Mat*,Vec*,Vec*,PetscErrorCode*),PetscErrorCode *ierr)
 {
+  if (!((PetscObject)*mat)->fortran_func_pointers) {
+    *ierr = PetscMalloc(5*sizeof(void*),&((PetscObject)*mat)->fortran_func_pointers);
+    if (*ierr) return;
+  }
   if (*op == MATOP_MULT) {
     *ierr = MatShellSetOperation(*mat,*op,(PetscVoidFunction)ourmult);
     ((PetscObject)*mat)->fortran_func_pointers[0] = (PetscVoidFunction)f;
