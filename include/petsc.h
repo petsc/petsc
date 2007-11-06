@@ -1281,6 +1281,8 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroy(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroyAll(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscObjectName(PetscObject);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscTypeCompare(PetscObject,const char[],PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*)(void));
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalizeAll(void);
 
 /*
     Defines PETSc error handling.
