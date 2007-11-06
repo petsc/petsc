@@ -158,10 +158,8 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
-
     ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
     ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
-
 
     while (iterate and max_iter >= ++iter){
       ierr = SolveStokes(dm, &options);CHKERRQ(ierr);
@@ -646,13 +644,13 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
 
   velFuncs[0] = constant;
-  ierr = CreateProblem_gen_3(dm, "u0", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "u0", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
   velFuncs[0] = zero;
-  ierr = CreateProblem_gen_3(dm, "u1", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_3(dm, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_3(dm, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_3(dm, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_3(dm, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "u1", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
 
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
