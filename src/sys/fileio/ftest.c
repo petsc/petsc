@@ -184,7 +184,7 @@ PetscErrorCode PETSC_DLLEXPORT PetscTestDirectory(const char fname[],char mode,P
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscLs"
-PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char *found,size_t tlen,PetscTruth *flg)
+PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm comm,const char libname[],char found[],size_t tlen,PetscTruth *flg)
 {
   PetscErrorCode ierr;
   size_t         len;
