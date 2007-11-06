@@ -535,6 +535,10 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetUseInPlace(PC pc)
 
     Notes: nested dissection is used by default
 
+    For Cholesky and ICC and the SBAIJ format reorderings are not available,
+    since only the upper triangular part of the matrix is stored. You can use the
+    SeqAIJ format in this case to get reorderings.
+
 @*/
 PetscErrorCode PETSCKSP_DLLEXPORT PCFactorSetMatOrderingType(PC pc,MatOrderingType ordering)
 {

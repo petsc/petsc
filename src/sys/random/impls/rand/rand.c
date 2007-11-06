@@ -73,6 +73,17 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   0
 };
 
+/*MC
+   PETSCRAND - access to the basic Unix random number generator
+
+   Options Database Keys:
+. -random_type <rand,rand48,sprng> 
+
+  Level: beginner
+
+.seealso: RandomCreate(), RandomSetType(), PETSCRAND48, PETSCSPRNG
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate_Rand" 

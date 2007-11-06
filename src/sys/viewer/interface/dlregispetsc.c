@@ -53,10 +53,6 @@ PetscErrorCode PETSC_DLLEXPORT PetscInitializePackage(const char path[])
       ierr = PetscLogEventDeactivateClass(0);CHKERRQ(ierr);
     }
   }
-  /* Setup auxiliary packages */
-#if defined(PETSC_HAVE_MATHEMATICA)
-  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
-#endif
   PetscFunctionReturn(0);
 }
 
@@ -83,6 +79,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscDLLibraryRegister_petsc(const char path[])
   ierr = PetscInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscDrawInitializePackage(path);CHKERRQ(ierr);
   ierr = PetscViewerInitializePackage(path);CHKERRQ(ierr);
+#if defined(PETSC_HAVE_MATHEMATICA)
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
   ierr = PetscRandomInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }

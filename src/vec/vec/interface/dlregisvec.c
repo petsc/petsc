@@ -3,6 +3,57 @@
 #include "petscvec.h"
 #include "petscpf.h"
 
+#undef __FUNCT__  
+#define __FUNCT__ "ISInitializePackage"
+/*@C
+      ISInitializePackage - This function initializes everything in the IS package. It is called
+  from PetscDLLibraryRegister() when using dynamic libraries, and on the first call to ISCreateXXXX()
+  when using static libraries.
+
+  Input Parameter:
+. path - The dynamic library path, or PETSC_NULL
+
+  Level: developer
+
+.keywords: Vec, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char path[]) 
+{
+  static PetscTruth initialized = PETSC_FALSE;
+  char              logList[256];
+  char              *className;
+  PetscTruth        opt;
+  PetscErrorCode    ierr;
+
+  PetscFunctionBegin;
+  if (initialized) PetscFunctionReturn(0);
+  initialized = PETSC_TRUE;
+  /* Register Classes */
+  ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
+  ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,    "IS L to G Mapping");CHKERRQ(ierr);
+
+  /* Process info exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscInfoDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  /* Process summary exclusions */
+  ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
+  if (opt) {
+    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
+    if (className) {
+      ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
+      ierr = PetscLogEventDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
+    }
+  }
+  PetscFunctionReturn(0);
+}
+
 extern MPI_Op PetscSplitReduction_Op;
 extern MPI_Op VecMax_Local_Op;
 extern MPI_Op VecMin_Local_Op;
@@ -44,8 +95,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   /* Register Classes */
-  ierr = PetscLogClassRegister(&IS_COOKIE,          "Index Set");CHKERRQ(ierr);
-  ierr = PetscLogClassRegister(&IS_LTOGM_COOKIE,    "IS L to G Mapping");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_COOKIE,         "Vec");CHKERRQ(ierr);
   ierr = PetscLogClassRegister(&VEC_SCATTER_COOKIE, "Vec Scatter");CHKERRQ(ierr);
   /* Register Constructors */
@@ -96,11 +145,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   /* Process info exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-info_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscInfoDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-      ierr = PetscInfoDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscInfoDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
@@ -109,11 +153,6 @@ PetscErrorCode PETSCVEC_DLLEXPORT VecInitializePackage(const char path[])
   /* Process summary exclusions */
   ierr = PetscOptionsGetString(PETSC_NULL, "-log_summary_exclude", logList, 256, &opt);CHKERRQ(ierr);
   if (opt) {
-    ierr = PetscStrstr(logList, "is", &className);CHKERRQ(ierr);
-    if (className) {
-      ierr = PetscLogEventDeactivateClass(IS_COOKIE);CHKERRQ(ierr);
-      ierr = PetscLogEventDeactivateClass(IS_LTOGM_COOKIE);CHKERRQ(ierr);
-    }
     ierr = PetscStrstr(logList, "vec", &className);CHKERRQ(ierr);
     if (className) {
       ierr = PetscLogEventDeactivateClass(VEC_COOKIE);CHKERRQ(ierr);
@@ -166,6 +205,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT PetscDLLibraryRegister_petscvec(const char pat
   /*
       If we got here then PETSc was properly loaded
   */
+  ierr = ISInitializePackage(path);CHKERRQ(ierr);
   ierr = VecInitializePackage(path);CHKERRQ(ierr);
   ierr = PFInitializePackage(path);CHKERRQ(ierr);
   PetscFunctionReturn(0);

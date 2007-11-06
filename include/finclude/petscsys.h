@@ -16,9 +16,9 @@
 !
 !     Random numbers
 !
-#define PETSCRAND 'petscrand'
-#define PETSCRAND48 'petscrand48'
-#define SPRNG 'sprng'          
+#define PETSCRAND 'rand'
+#define PETSCRAND48 'rand48'
+#define PETSCSPRNG 'sprng'          
 !
 !
 !

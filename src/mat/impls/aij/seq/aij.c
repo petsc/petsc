@@ -2803,6 +2803,11 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
    allocation.  For large problems you MUST preallocate memory or you 
    will get TERRIBLE performance, see the users' manual chapter on matrices.
 
+   You can call MatGetInfo() to get information on how effective the preallocation was;
+   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+   You can also run with the option -info and look for messages with the string 
+   malloc in them to see if additional memory allocation was needed.
+
    Developers: Use nz of MAT_SKIP_ALLOCATION to not allocate any space for the matrix
    entries or columns indices
 
@@ -2820,7 +2825,7 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJ(MPI_Comm comm,PetscInt m,Petsc
 
    Level: intermediate
 
-.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays()
+.seealso: MatCreate(), MatCreateMPIAIJ(), MatSetValues(), MatSeqAIJSetColumnIndices(), MatCreateSeqAIJWithArrays(), MatGetInfo()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatSeqAIJSetPreallocation(Mat B,PetscInt nz,const PetscInt nnz[])

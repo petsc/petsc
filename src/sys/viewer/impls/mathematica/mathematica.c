@@ -176,6 +176,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Mathematica(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
 
   ierr = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
   v->data         = (void*) vmath;

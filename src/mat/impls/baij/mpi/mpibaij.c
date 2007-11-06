@@ -2450,6 +2450,11 @@ EXTERN_C_END
    or you will get TERRIBLE performance; see the users' manual chapter on
    matrices.
 
+   You can call MatGetInfo() to get information on how effective the preallocation was;
+   for example the fields mallocs,nz_allocated,nz_used,nz_unneeded;
+   You can also run with the option -info and look for messages with the string 
+   malloc in them to see if additional memory allocation was needed.
+
    Level: intermediate
 
 .keywords: matrix, block, aij, compressed row, sparse, parallel

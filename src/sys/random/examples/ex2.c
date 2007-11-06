@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     time(&start);
     ierr = PetscRandomCreate(PETSC_COMM_WORLD,&ran);CHKERRQ(ierr);
 #if defined(PETSC_HAVE_SPRNG)
-    ierr = PetscRandomSetType(ran,SPRNG);CHKERRQ(ierr);
+    ierr = PetscRandomSetType(ran,PETSCSPRNG);CHKERRQ(ierr);
 #elif defined(PETSC_HAVE_RAND)
     ierr = PetscRandomSetType(ran,PETSCRAND);CHKERRQ(ierr);
 #endif
