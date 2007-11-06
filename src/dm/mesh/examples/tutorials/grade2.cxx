@@ -111,12 +111,13 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
 PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options);
 PetscErrorCode DestroyMesh(DM dm, Options *options);
 PetscErrorCode CreateProblem(DM dm, Options *options);
+PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options);
 
-PetscErrorCode SolveStokes(DM dm, Options *options);
+PetscErrorCode SolveStokes(DMMG *dmmg, Options *options);
 PetscErrorCode Stokes_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
 PetscErrorCode Stokes_Jac_Unstructured(Mesh mesh, SectionReal section, Mat A, void *ctx);
-PetscErrorCode IterateStokes(DM dm, Options *options);
-PetscErrorCode CheckStokesConvergence(DM dm, PetscTruth *iterate, Options *options);
+PetscErrorCode IterateStokes(DMMG *dmmg, Options *options);
+PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options);
 
 PetscErrorCode SolveTransport(DM dm, Options *options);
 PetscErrorCode Transport_Rhs_Unstructured(Mesh mesh, SectionReal X, SectionReal section, void *ctx);
@@ -158,15 +159,19 @@ int main(int argc, char *argv[])
   comm = PETSC_COMM_WORLD;
   ierr = ProcessOptions(comm, &options);CHKERRQ(ierr);
   try {
+    DMMG *stokes;
+
     ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
     ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
+    ierr = CreateSolver(dm, &stokes, &options);CHKERRQ(ierr)
 
     while (iterate and max_iter >= ++iter){
-      ierr = SolveStokes(dm, &options);CHKERRQ(ierr);
+      ierr = SolveStokes(stokes, &options);CHKERRQ(ierr);
       ierr = SolveTransport(dm, &options);CHKERRQ(ierr);
       ierr = CheckStoppingCriteria(dm, &iterate, &options);CHKERRQ(ierr);
     }
     ierr = WriteSolution(dm, &options);CHKERRQ(ierr);
+    ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
     ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cerr << e << std::endl;
@@ -192,50 +197,37 @@ int main(int argc, char *argv[])
  */
 #undef __FUNCT__
 #define __FUNCT__ "SolveStokes"
-PetscErrorCode SolveStokes(DM dm, Options *options)
+PetscErrorCode SolveStokes(DMMG *dmmg, Options *options)
 {
+  Mesh           mesh     = (Mesh) DMMGGetDM(dmmg);
+  PetscTruth     iterate  = PETSC_TRUE;
+  PetscInt       iter     = 0;
+  PetscInt       max_iter = 3;
   MPI_Comm       comm;
   PetscErrorCode ierr;
-  DMMG *dmmg;
-  PetscTruth iterate=PETSC_TRUE;
-  PetscInt iter=0,max_iter=3;
 
   PetscFunctionBegin;
-
+  ierr = PetscObjectGetComm((PetscObject) mesh, &comm);CHKERRQ(ierr);
   while(iterate and max_iter >= ++iter){
+    SNES                snes;
+    SNESConvergedReason reason;
+    PetscInt            its;
+    PetscTruth          flag;
 
-  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
-  ierr = DMMGCreate(comm, 1, options, &dmmg);CHKERRQ(ierr);
-  ierr = DMMGSetDM(dmmg, dm);CHKERRQ(ierr);
-  ierr = DMMGSetSNESLocal(dmmg, Stokes_Rhs_Unstructured, Stokes_Jac_Unstructured, 0, 0);CHKERRQ(ierr);
-  //   if (options->bcType == NEUMANN) {
-  //     // With Neumann conditions, we tell DMMG that constants are in the null space of the operator
-  //     ierr = DMMGSetNullSpace(*dmmg, PETSC_TRUE, 0, PETSC_NULL);CHKERRQ(ierr);
-  //   }
- 
-  //Mesh                mesh = (Mesh) DMMGGetDM(dmmg);
-  SNES                snes;
-  PetscInt            its;
-  PetscTruth          flag;
-  SNESConvergedReason reason;
+    //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
+    ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
+    snes = DMMGGetSNES(dmmg);
+    ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
+    ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
+    ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
+    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
+    if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
+    ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
+    if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
 
-  //ierr = SectionRealToVec(options->exactSol.section, mesh, SCATTER_FORWARD, DMMGGetx(dmmg));CHKERRQ(ierr);
-  ierr = DMMGSolve(dmmg);CHKERRQ(ierr);
-  snes = DMMGGetSNES(dmmg);
-  ierr = SNESGetIterationNumber(snes, &its);CHKERRQ(ierr);
-  ierr = SNESGetConvergedReason(snes, &reason);CHKERRQ(ierr);
-  ierr = PetscObjectGetComm((PetscObject) snes, &comm);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Number of Newton iterations = %D\n", its);CHKERRQ(ierr);
-  ierr = PetscPrintf(comm, "Reason for solver termination: %s\n", SNESConvergedReasons[reason]);CHKERRQ(ierr);
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view", &flag);CHKERRQ(ierr);
-  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_STDOUT_WORLD);CHKERRQ(ierr);}
-  ierr = PetscOptionsHasName(PETSC_NULL, "-vec_view_draw", &flag);CHKERRQ(ierr);
-  if (flag) {ierr = VecView(DMMGGetx(dmmg), PETSC_VIEWER_DRAW_WORLD);CHKERRQ(ierr);}
-  
-  ierr = IterateStokes(dm, options);CHKERRQ(ierr);
-  ierr = CheckStokesConvergence(dm, &iterate, options);CHKERRQ(ierr);
-  
-  ierr = DMMGDestroy(dmmg);CHKERRQ(ierr);
+    ierr = IterateStokes(dmmg, options);CHKERRQ(ierr);
+    ierr = CheckStokesConvergence(dmmg, &iterate, options);CHKERRQ(ierr);
   }
   PetscFunctionReturn(0);
 }
@@ -246,12 +238,12 @@ PetscErrorCode SolveStokes(DM dm, Options *options)
  */
 #undef __FUNCT__
 #define __FUNCT__ "IterateStokes"
-PetscErrorCode IterateStokes(DM dm, Options *options)
+PetscErrorCode IterateStokes(DMMG *dmmg, Options *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-
+  /* Do nothing so far */
   PetscFunctionReturn(0);
 }
 
@@ -260,13 +252,12 @@ PetscErrorCode IterateStokes(DM dm, Options *options)
  */
 #undef __FUNCT__
 #define __FUNCT__ "CheckStokesConvergence"
-PetscErrorCode CheckStokesConvergence(DM dm, PetscTruth *iterate, Options *options)
+PetscErrorCode CheckStokesConvergence(DMMG *dmmg, PetscTruth *iterate, Options *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
   /* Do nothing so far */
-
   PetscFunctionReturn(0);
 }
 
@@ -632,34 +623,42 @@ PetscErrorCode CreateProblem(DM dm, Options *options)
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  options->funcs[0]  = zero;
-  options->funcs[1]  = constant;
-  options->funcs[2]  = constant;
-  
   Mesh mesh = (Mesh) dm;
   Obj<ALE::Mesh> m;
   int            velMarkers[1] = {1};
   double       (*velFuncs[1])(const double *coords);
 
   ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
-
+  // Create the Stokes problem (assumes 2D)
   velFuncs[0] = constant;
-  ierr = CreateProblem_gen_1(dm, "u0", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "u0", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
   velFuncs[0] = zero;
-  ierr = CreateProblem_gen_1(dm, "u1", 1, velMarkers, velFuncs, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(dm, "u1", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(dm, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   ierr = CreateProblem_gen_1(dm, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-
+  // Create the default Stokes section
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
   m->calculateIndices();
   m->setupField(s, 2);
-  if (options->debug) {s->view("Default field");}
+  if (options->debug) {s->view("Default Stokes field");}
   PetscFunctionReturn(0);
 }
 
+#undef __FUNCT__
+#define __FUNCT__ "CreateSolver"
+PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options)
+{
+  MPI_Comm       comm;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  ierr = PetscObjectGetComm((PetscObject) dm, &comm);CHKERRQ(ierr);
+  ierr = DMMGCreate(comm, 1, options, dmmg);CHKERRQ(ierr);
+  ierr = DMMGSetDM(*dmmg, dm);CHKERRQ(ierr);
+  ierr = DMMGSetSNESLocal(*dmmg, Stokes_Rhs_Unstructured, Stokes_Jac_Unstructured, 0, 0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
 
 
 /* ______________________________________________________________________ */
