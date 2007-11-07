@@ -123,7 +123,9 @@ namespace ALE {
       //
       ArgDB& parse(int argc, char **argv) {
         ::boost::program_options::basic_command_line_parser<char> parser(argc, argv);
+#if BOOST_VERSION >= 103300   // works beginning from Boost V1.33.0
         parser.allow_unregistered().options(*(this->_descs));
+#endif
         ::boost::program_options::store(parser.run(), *this);
         return *this;
       };
