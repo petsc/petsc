@@ -34,6 +34,7 @@ class Configure(config.base.Configure):
     if hasattr(self, 'gdb'):
       self.addDefine('USE_GDB_DEBUGGER', 1)
     elif hasattr(self, 'dbx'):
+      if self.framework.argDB['with-batch']: return
       self.addDefine('USE_DBX_DEBUGGER', 1)
       f = file('conftest', 'w')
       f.write('quit\n')
