@@ -75,11 +75,17 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   0
 };
 
-/*
-   For now we have set up using the DRAND48() generater. We need to deal 
-   with other variants of random number generators. We should also add
-   a routine to enable restarts [seed48()] 
-*/
+/*MC
+   PETSCRAND48 - access to the basic Unix drand48() random number generator
+
+   Options Database Keys:
+. -random_type <rand,rand48,sprng> 
+
+  Level: beginner
+
+.seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCSPRNG
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate_Rand48" 

@@ -262,7 +262,7 @@ PetscErrorCode PETSCVEC_DLLEXPORT ISCreateBlock(MPI_Comm comm,PetscInt bs,PetscI
   if (n) {PetscValidIntPointer(idx,4);}
   *is = PETSC_NULL;
 #ifndef PETSC_USE_DYNAMIC_LIBRARIES
-  ierr = VecInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+  ierr = ISInitializePackage(PETSC_NULL);CHKERRQ(ierr);
 #endif
 
   ierr = PetscHeaderCreate(Nindex,_p_IS,struct _ISOps,IS_COOKIE,IS_BLOCK,"IS",comm,ISDestroy,ISView);CHKERRQ(ierr);

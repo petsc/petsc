@@ -497,6 +497,8 @@ EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalBegin(DM,Vec,InsertMode,
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMGlobalToLocalEnd(DM,Vec,InsertMode,Vec);
 EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMLocalToGlobal(DM,Vec,InsertMode,Vec);
 
+EXTERN PetscErrorCode PETSCDM_DLLEXPORT  DMFinalizePackage(void);
+
 typedef struct NLF_DAAD* NLF;
 
 #include <petscbag.h>

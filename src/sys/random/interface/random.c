@@ -411,7 +411,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomViewFromOptions(PetscRandom rnd, char 
 
    Concepts: random numbers^creating
 
-.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomGetValueImaginary(), PetscRandomSetInterval(), PetscRandomDestroy(), VecSetRandom()
+.seealso: PetscRandomSetType(), PetscRandomGetValue(), PetscRandomGetValueReal(), PetscRandomGetValueImaginary(), PetscRandomSetInterval(), 
+          PetscRandomDestroy(), VecSetRandom(), PetscRandomType
 @*/
 
 PetscErrorCode PETSC_DLLEXPORT PetscRandomCreate(MPI_Comm comm,PetscRandom *r)
@@ -582,8 +583,8 @@ PetscErrorCode PETSC_DLLEXPORT PetscRandomGetValueReal(PetscRandom r,PetscReal *
 .  val - the value
 
    Options Database Keys:
-+    -random_type petscrand48
-.    -random_type petscrand
++    -random_type rand48
+.    -random_type rand
 -    -random_type sprng, uses SPRNG package
 
    Level: intermediate

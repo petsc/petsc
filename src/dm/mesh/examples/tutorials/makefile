@@ -9,7 +9,7 @@ EXAMPLESF       = ex12f90.F90 mex12f90.F90
 MANSEC          = DA
 NP              = 1
 DISPLAY         = :0.0
-EXTRA_ARGS      =
+EXTRA_ARGS      = -mesh_view_vtk -vec_view_vtk -mat_type umfpack -pc_type lu
 
 include ${PETSC_DIR}/conf/base
 
@@ -85,7 +85,11 @@ navierStokes: navierStokes_quadrature.h navierStokes.o chkopts
 	-${CLINKER} -o navierStokes navierStokes.o ${PETSC_SNES_LIB}
 	${RM} -f navierStokes.o
 
-grade2: stokes_quadrature.h grade2.o chkopts
+grade2test: stokes_quadrature.h grade2test.o chkopts
+	-${CLINKER} -o grade2test grade2test.o ${PETSC_SNES_LIB}
+	${RM} -f grade2test.o
+
+grade2: grade2_quadrature.h grade2.o chkopts
 	-${CLINKER} -o grade2 grade2.o ${PETSC_SNES_LIB}
 	${RM} -f grade2.o
 
@@ -121,7 +125,23 @@ fetidp: fetidp_quadrature.h fetidp.o chkopts
 	-${CLINKER} -o fetidp fetidp.o ${PETSC_SNES_LIB}
 	${RM} -f fetidp.o
 
+refinement: GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o chkopts
+	-${CLINKER} -o refinement GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o ${PETSC_SNES_LIB}
+	${RM} -f refinement.o
+
 #-----------------------------------------------------------------
+runstokes:
+	-@${MPIEXEC} -np ${NP} ./stokes ${EXTRA_ARGS}
+
+rungrade2test:
+	${MPIEXEC} -np ${NP} ./grade2test ${EXTRA_ARGS}
+
+rungrade2:
+	-@${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS}
+
+debuggrade2:
+	-@${MPIEXEC} -np ${NP} ./grade2 ${EXTRA_ARGS} -start_in_debugger -display ${DISPLAY}
+
 runex1:
 	-@${MPIEXEC} -np ${NP} ./ex1 -dim 1 -use_zero_base 1 -base_file data/ex1_1d ${EXTRA_ARGS}
 

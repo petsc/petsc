@@ -357,6 +357,171 @@ namespace ALE {
         delete [] serialMaxVolumes;
         return refMesh;
       };
+      static Obj<Mesh> refineMeshLocal(const Obj<Mesh>& mesh, const double maxVolumes[], const bool interpolate = false) {
+        const int                    dim     = mesh->getDimension();
+        const Obj<Mesh>              refMesh = new Mesh(mesh->comm(), dim, mesh->debug());
+        const Obj<Mesh::sieve_type>& sieve   = mesh->getSieve();
+        struct triangulateio in;
+        struct triangulateio out;
+        PetscErrorCode       ierr;
+
+        Generator::initInput(&in);
+        Generator::initOutput(&out);
+        const Obj<Mesh::label_sequence>&    vertices    = mesh->depthStratum(0);
+        const Obj<Mesh::label_type>&        markers     = mesh->getLabel("marker");
+        const Obj<Mesh::real_section_type>& coordinates = mesh->getRealSection("coordinates");
+        const Obj<Mesh::numbering_type>&    vNumbering  = mesh->getFactory()->getLocalNumbering(mesh, 0);
+
+        in.numberofpoints = vertices->size();
+        if (in.numberofpoints > 0) {
+          ierr = PetscMalloc(in.numberofpoints * dim * sizeof(double), &in.pointlist);
+          ierr = PetscMalloc(in.numberofpoints * sizeof(int), &in.pointmarkerlist);
+          for(Mesh::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+            const Mesh::real_section_type::value_type *array = coordinates->restrictPoint(*v_iter);
+            const int                                  idx   = vNumbering->getIndex(*v_iter);
+
+            for(int d = 0; d < dim; d++) {
+              in.pointlist[idx*dim + d] = array[d];
+            }
+            in.pointmarkerlist[idx] = mesh->getValue(markers, *v_iter);
+          }
+        }
+        const Obj<Mesh::label_sequence>& faces      = mesh->heightStratum(0);
+        const Obj<Mesh::numbering_type>& fNumbering = mesh->getFactory()->getLocalNumbering(mesh, mesh->depth());
+
+        in.numberofcorners   = 3;
+        in.numberoftriangles = faces->size();
+        in.trianglearealist  = (double *) maxVolumes;
+        if (in.numberoftriangles > 0) {
+          ierr = PetscMalloc(in.numberoftriangles*in.numberofcorners * sizeof(int), &in.trianglelist);
+          if (mesh->depth() == 1) {
+            for(Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+              const Obj<Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*f_iter);
+              const int                                          idx  = fNumbering->getIndex(*f_iter);
+              int                                                v    = 0;
+
+              for(Mesh::sieve_type::traits::coneSequence::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                in.trianglelist[idx*in.numberofcorners + v++] = vNumbering->getIndex(*c_iter);
+              }
+            }
+          } else if (mesh->depth() == 2) {
+            for(Mesh::label_sequence::iterator f_iter = faces->begin(); f_iter != faces->end(); ++f_iter) {
+              typedef ALE::SieveAlg<Mesh> sieve_alg_type;
+              const Obj<sieve_alg_type::coneArray>& cone = sieve_alg_type::nCone(mesh, *f_iter, 2);
+              const int                             idx  = fNumbering->getIndex(*f_iter);
+              int                                   v    = 0;
+
+              for(Mesh::sieve_type::coneArray::iterator c_iter = cone->begin(); c_iter != cone->end(); ++c_iter) {
+                in.trianglelist[idx*in.numberofcorners + v++] = vNumbering->getIndex(*c_iter);
+              }
+            }
+          } else {
+            throw ALE::Exception("Invalid sieve: Cannot gives sieves of arbitrary depth to Triangle");
+          }
+        }
+        if (mesh->depth() == 2) {
+          const Obj<Mesh::label_sequence>& edges = mesh->depthStratum(1);
+          for(Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+            if (mesh->getValue(markers, *e_iter)) {
+              in.numberofsegments++;
+            }
+          }
+          std::cout << "Number of segments: " << in.numberofsegments << std::endl;
+          if (in.numberofsegments > 0) {
+            int s = 0;
+
+            ierr = PetscMalloc(in.numberofsegments * 2 * sizeof(int), &in.segmentlist);
+            ierr = PetscMalloc(in.numberofsegments * sizeof(int), &in.segmentmarkerlist);
+            for(Mesh::label_sequence::iterator e_iter = edges->begin(); e_iter != edges->end(); ++e_iter) {
+              const int edgeMarker = mesh->getValue(markers, *e_iter);
+
+              if (edgeMarker) {
+                const Obj<Mesh::sieve_type::traits::coneSequence>& cone = sieve->cone(*e_iter);
+                int                                                p    = 0;
+
+                for(Mesh::sieve_type::traits::coneSequence::iterator v_iter = cone->begin(); v_iter != cone->end(); ++v_iter) {
+                  in.segmentlist[s*2 + (p++)] = vNumbering->getIndex(*v_iter);
+                }
+                in.segmentmarkerlist[s++] = edgeMarker;
+              }
+            } 
+          }
+        }
+
+        in.numberofholes = 0;
+        if (in.numberofholes > 0) {
+          ierr = PetscMalloc(in.numberofholes * dim * sizeof(int), &in.holelist);
+        }
+	std::string args("pqezQra");
+
+	triangulate((char *) args.c_str(), &in, &out, NULL);
+        if (in.pointlist)         {ierr = PetscFree(in.pointlist);}
+        if (in.pointmarkerlist)   {ierr = PetscFree(in.pointmarkerlist);}
+        if (in.segmentlist)       {ierr = PetscFree(in.segmentlist);}
+        if (in.segmentmarkerlist) {ierr = PetscFree(in.segmentmarkerlist);}
+        if (in.trianglelist)      {ierr = PetscFree(in.trianglelist);}
+        const Obj<Mesh::sieve_type> newSieve = new Mesh::sieve_type(mesh->comm(), mesh->debug());
+        int     numCorners  = 3;
+        int     numCells    = out.numberoftriangles;
+        int    *cells       = out.trianglelist;
+        int     numVertices = out.numberofpoints;
+        double *coords      = out.pointlist;
+
+        ALE::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, refMesh->getArrowSection("orientation"));
+        refMesh->setSieve(newSieve);
+        refMesh->stratify();
+        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coords);
+        const Obj<Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
+
+        if (refMesh->commRank() == 0) {
+          for(int v = 0; v < out.numberofpoints; v++) {
+            if (out.pointmarkerlist[v]) {
+              refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+            }
+          }
+          if (interpolate) {
+            for(int e = 0; e < out.numberofedges; e++) {
+              if (out.edgemarkerlist[e]) {
+                const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+                const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
+                const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
+
+                refMesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+              }
+            }
+          }
+        }
+
+        Generator::finiOutput(&out);
+        return refMesh;
+      };
+      static Obj<Mesh> refineMeshLocal(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+        const int numLocalFaces   = mesh->heightStratum(0)->size();
+        double   *localMaxVolumes = new double[numLocalFaces];
+
+        for(int f = 0; f < numLocalFaces; f++) {
+          localMaxVolumes[f] = maxVolume;
+        }
+        const Obj<Mesh> refMesh = refineMeshLocal(mesh, localMaxVolumes, interpolate);
+	const Obj<Mesh::sieve_type> refSieve = refMesh->getSieve();
+        delete [] localMaxVolumes;
+#if 0
+	typedef typename ALE::New::Completion<Mesh, typename Mesh::sieve_type::point_type> sieveCompletion;
+	// This is where we enforce consistency over the overlap
+	//   We need somehow to update the overlap to account for the new stuff
+	//   
+	//   1) Since we are refining only, the vertices are invariant
+	//   2) We need to make another label for the interprocess boundaries so
+	//      that Triangle will respect them
+	//   3) We then throw all that label into the new overlap
+	//
+	// Alternative: Figure out explicitly which segments were refined, and then
+	//   communicated the refinement over the old overlap. Use this info to locally
+	//   construct the new overlap and flip to get a decent mesh
+	sieveCompletion::scatterCones(refSieve, refSieve, reMesh->getDistSendOverlap(), refMesh->getDistRecvOverlap(), refMesh);
+#endif
+        return refMesh;
+      };
     };
   };
 #endif
@@ -739,6 +904,24 @@ namespace ALE {
       if (dim == 2) {
 #ifdef PETSC_HAVE_TRIANGLE
         return ALE::Triangle::Refiner::refineMesh(mesh, maxVolume, interpolate);
+#else
+        throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
+#endif
+      } else if (dim == 3) {
+#ifdef PETSC_HAVE_TETGEN
+        return ALE::TetGen::Refiner::refineMesh(mesh, maxVolume, interpolate);
+#else
+        throw ALE::Exception("Mesh refinement currently requires TetGen to be installed. Use --download-tetgen during configure.");
+#endif
+      }
+      return NULL;
+    };
+    static Obj<Mesh> refineMeshLocal(const Obj<Mesh>& mesh, const double maxVolume, const bool interpolate = false) {
+      int dim = mesh->getDimension();
+
+      if (dim == 2) {
+#ifdef PETSC_HAVE_TRIANGLE
+        return ALE::Triangle::Refiner::refineMeshLocal(mesh, maxVolume, interpolate);
 #else
         throw ALE::Exception("Mesh refinement currently requires Triangle to be installed. Use --download-triangle during configure.");
 #endif

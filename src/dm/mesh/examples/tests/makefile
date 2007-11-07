@@ -96,8 +96,23 @@ memoryTests: memoryTests.o chkopts
 	-${CLINKER} -o memoryTests memoryTests.o ${PETSC_DM_LIB}
 	${RM} -f memoryTests.o
 #-----------------------------------------------------------------
+BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
+component0: component0.o chkopts
+	-${CLINKER} -o component0 component0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f component0.o
+
+ppcomponent0: chkopts
+	-${CXCPP} component0.cxx
+
+runcomponent0:
+	-@${MPIEXEC} -np ${NP} ./component0 ${EXTRA_ARGS}
+
+debugcomponent0:
+	-@${MPIEXEC} -np ${NP} ./component0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+
+#-----------------------------------------------------------------
 xsifter00: xsifter00.o chkopts
-	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB} 
 	${RM} -f xsifter00.o
 NP = 1
 runxsifter00:
@@ -107,7 +122,7 @@ debugxsifter00:
 
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
-	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter0.o
 NP = 1
 runxsifter0:
@@ -117,7 +132,7 @@ debugxsifter0:
 
 #-----------------------------------------------------------------
 xsifter1: xsifter1.o chkopts
-	-${CLINKER} -o xsifter1 xsifter1.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter1 xsifter1.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter1.o
 NP = 1
 runxsifter1:
@@ -130,7 +145,7 @@ valgrindxsifter1:
 
 #-----------------------------------------------------------------
 xsifter2: xsifter2.o chkopts
-	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB}
+	-${CLINKER} -o xsifter2 xsifter2.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter2.o
 NP = 1
 runxsifter2:
@@ -139,6 +154,19 @@ debugxsifter2:
 	-@${MPIEXEC} -np ${NP} ./xsifter2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsifter2:
 	-@${MPIEXEC} -np ${NP} valgrind ./xsifter2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
+
+#-----------------------------------------------------------------
+xsifter3: xsifter3.o chkopts
+	-${CLINKER} -o xsifter3 xsifter3.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsifter3.o
+NP = 1
+runxsifter3:
+	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS}
+debugxsifter3:
+	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsifter3:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsifter3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------

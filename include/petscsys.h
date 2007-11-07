@@ -24,10 +24,22 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSortRealWithPermutation(PetscInt,cons
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSetDisplay(void);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetDisplay(char[],size_t);
 
+/*E
+    PetscRandomType - String with the name of a PETSc randomizer
+       with an optional dynamic library name, for example
+       http://www.mcs.anl.gov/petsc/lib.a:myrandcreate()
+
+   Level: beginner
+
+   Notes: to use the SPRNG you must have config/configure.py PETSc
+   with the option --download-sprng
+
+.seealso: PetscRandomSetType(), PetscRandom
+E*/
 #define PetscRandomType const char*
-#define PETSCRAND               "petscrand"
-#define PETSCRAND48             "petscrand48"
-#define SPRNG                   "sprng"          
+#define PETSCRAND               "rand"
+#define PETSCRAND48             "rand48"
+#define PETSCSPRNG              "sprng"          
 
 /* Logging support */
 extern PETSC_DLLEXPORT PetscCookie PETSC_RANDOM_COOKIE;
@@ -41,7 +53,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomInitializePackage(const char[])
 
   Concepts: random numbers
 
-.seealso:  PetscRandomCreate(), PetscRandomGetValue()
+.seealso:  PetscRandomCreate(), PetscRandomGetValue(), PetscRandomType
 S*/
 typedef struct _p_PetscRandom*   PetscRandom;
 
@@ -73,7 +85,7 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);
 - create_func - The creation routine itself
 
   Notes:
-  PetscRandomRegisterDynamic() may be called multiple times to add several user-defined vectors
+  PetscRandomRegisterDynamic() may be called multiple times to add several user-defined randome number generators
 
   If dynamic libraries are used, then the fourth input argument (routine_create) is ignored.
 
@@ -93,7 +105,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscRandomView(PetscRandom,PetscViewer);
 .ve
 
   Notes: $PETSC_ARCH occuring in pathname will be replaced with appropriate values.
-         If your function is not being put into a shared library then use PetscRandomRegister() instead
+
+         For an example of the code needed to interface your own random number generator see
+         src/sys/random/impls/rand/rand.c
         
   Level: advanced
 
@@ -133,9 +147,9 @@ EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryOpen(const char[],PetscFileMode
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscBinaryClose(int);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSharedTmp(MPI_Comm,PetscTruth *);
 EXTERN PetscErrorCode PETSC_DLLEXPORT PetscSharedWorkingDirectory(MPI_Comm,PetscTruth *);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm,char *,size_t);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char *,char *,size_t,PetscTruth*);
-EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm,const char[],char*,size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscGetTmp(MPI_Comm,char[],size_t);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscFileRetrieve(MPI_Comm,const char[],char[],size_t,PetscTruth*);
+EXTERN PetscErrorCode PETSC_DLLEXPORT PetscLs(MPI_Comm,const char[],char[],size_t,PetscTruth*);
 
 /*
    In binary files variables are stored using the following lengths,

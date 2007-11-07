@@ -98,14 +98,14 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetResidual(PC pc,PetscInt l,PetscErrorCod
 #define __FUNCT__ "PCMGSetInterpolation"
 /*@
    PCMGSetInterpolation - Sets the function to be used to calculate the 
-   interpolation on the lth level. 
+   interpolation from l-1 to the lth level
 
    Collective on PC and Mat
 
    Input Parameters:
 +  pc  - the multigrid context
 .  mat - the interpolation operator
--  l   - the level (0 is coarsest) to supply
+-  l   - the level (0 is coarsest) to supply [do not supply 0]
 
    Level: advanced
 
@@ -148,7 +148,7 @@ PetscErrorCode PETSCKSP_DLLEXPORT PCMGSetInterpolation(PC pc,PetscInt l,Mat mat)
    Input Parameters:
 +  pc - the multigrid context 
 .  mat - the restriction matrix
--  l - the level (0 is coarsest) to supply
+-  l - the level (0 is coarsest) to supply [Do not supply 0]
 
    Level: advanced
 

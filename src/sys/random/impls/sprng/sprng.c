@@ -80,6 +80,23 @@ static struct _PetscRandomOps PetscRandomOps_Values = {
   0
 };
 
+/*MC
+   PETSCSPRNG- access to the publically available random number generator sprng
+
+   Options Database Keys:
+. -random_type <rand,rand48,sprng> 
+
+  Level: beginner
+
+   PETSc must have been config/configure.py with the option --download-sprng to use
+   this random number generator.
+
+   This is NOT currently using a parallel random number generator. Sprng does have
+   an MPI version we should investigate.
+
+.seealso: RandomCreate(), RandomSetType(), PETSCRAND, PETSCRAND48
+M*/
+
 EXTERN_C_BEGIN
 #undef __FUNCT__  
 #define __FUNCT__ "PetscRandomCreate_Sprng" 

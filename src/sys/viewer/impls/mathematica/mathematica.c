@@ -18,6 +18,24 @@ PetscViewer  PETSC_VIEWER_MATHEMATICA_WORLD_PRIVATE = PETSC_NULL;
 static void *mathematicaEnv                   = PETSC_NULL;
 
 #undef __FUNCT__  
+#define __FUNCT__ "PetscViewerMathematicaDestroyPackage"
+/*@C
+  PetscViewerMathematicaDestroyPackage - This function destroys everything in the Petsc interface to Mathematica. It is
+  called from PetscFinalize().
+
+  Level: developer
+
+.keywords: Petsc, destroy, package, mathematica
+.seealso: PetscFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void) 
+{
+  PetscFunctionBegin;
+  if (mathematicaEnv) MLDeinitialize((MLEnvironment) mathematicaEnv);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "PetscViewerMathematicaInitializePackage"
 /*@C
   PetscViewerMathematicaInitializePackage - This function initializes everything in the Petsc interface to Mathematica. It is
@@ -40,26 +58,10 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaInitializePackage(const cha
   if (initialized) PetscFunctionReturn(0);
   initialized = PETSC_TRUE;
   mathematicaEnv = (void*) MLInitialize(0);
+  ierr = PetscRegisterFinalize(PetscViewerMathematicaFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
-#undef __FUNCT__  
-#define __FUNCT__ "PetscViewerMathematicaDestroyPackage"
-/*@C
-  PetscViewerMathematicaDestroyPackage - This function destroys everything in the Petsc interface to Mathematica. It is
-  called from PetscFinalize().
-
-  Level: developer
-
-.keywords: Petsc, destroy, package, mathematica
-.seealso: PetscFinalize()
-@*/
-PetscErrorCode PETSC_DLLEXPORT PetscViewerMathematicaFinalizePackage(void) 
-{
-  PetscFunctionBegin;
-  if (mathematicaEnv) MLDeinitialize((MLEnvironment) mathematicaEnv);
-  PetscFunctionReturn(0);
-}
 
 #undef __FUNCT__  
 #define __FUNCT__ "PetscViewerInitializeMathematicaWorld_Private"
@@ -176,6 +178,9 @@ PetscErrorCode PETSC_DLLEXPORT PetscViewerCreate_Mathematica(PetscViewer v)
   PetscErrorCode          ierr;
 
   PetscFunctionBegin;
+#ifndef PETSC_USE_DYNAMIC_LIBRARIES
+  ierr = PetscViewerMathematicaInitializePackage(PETSC_NULL);CHKERRQ(ierr);
+#endif
 
   ierr = PetscNewLog(v,PetscViewer_Mathematica, &vmath);CHKERRQ(ierr);
   v->data         = (void*) vmath;

@@ -283,3 +283,60 @@ PetscErrorCode PETSC_DLLEXPORT PetscObjectRegisterDestroyAll(void)
 }
 
 
+#define MAXREGFIN 256
+static int         PetscRegisterFinalize_Count = 0;
+static PetscErrorCode ((*PetscRegisterFinalize_Functions[MAXREGFIN])(void));
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetscRegisterFinalize"
+/*@C
+   PetscRegisterFinalize - Registers a function that is to be called in PetscFinalize()
+
+   Not Collective
+
+   Input Parameter:
+.  PetscErrorCode (*fun)(void) - 
+
+   Level: developer
+
+   Notes:
+      This is used by, for example, DMPackageInitialize() to have DMPackageFinalize() called 
+
+.seealso: PetscRegisterFinalizeAll()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalize(PetscErrorCode (*f)(void))
+{
+  PetscFunctionBegin;
+
+  if (PetscRegisterFinalize_Count < MAXREGFIN) {
+    PetscRegisterFinalize_Functions[PetscRegisterFinalize_Count++] = f;
+  } else {
+    SETERRQ1(PETSC_ERR_PLIB,"No more room in array, limit %d \n recompile src/sys/objects/destroy.c with larger value for MAXREGFIN\n",MAXREGFIN);
+    
+  }
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
+#define __FUNCT__ "PetsRegisterFinalizeAll"
+/*@C
+   PetscRegisterFinalizeAll - Runs all the finalize functions set with PetscRegisterFinalize()
+
+   Not Collective unless registered functions are collective
+
+   Level: developer
+
+.seealso: PetscRegisterFinalize()
+@*/
+PetscErrorCode PETSC_DLLEXPORT PetscRegisterFinalizeAll(void)
+{
+  PetscErrorCode ierr;
+  int i;
+
+  PetscFunctionBegin;
+  for (i=0; i<PetscRegisterFinalize_Count; i++) {
+    ierr = (*PetscRegisterFinalize_Functions[i])();CHKERRQ(ierr);
+  }
+  PetscRegisterFinalize_Count = 0;
+  PetscFunctionReturn(0);
+}
