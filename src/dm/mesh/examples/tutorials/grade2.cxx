@@ -108,9 +108,9 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options);
 PetscErrorCode CreatePartition(Mesh mesh, SectionInt *partition);
 PetscErrorCode ViewMesh(Mesh mesh, const char filename[]);
 PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]);
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options);
-PetscErrorCode DestroyMesh(DM dm, Options *options);
-PetscErrorCode CreateProblem(DM dm, Options *options);
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options *options);
+PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options);
+PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options);
 PetscErrorCode CreateSolver(DM dm, DMMG **dmmg, Options *options);
 
 PetscErrorCode SolveStokes(DMMG *dmmg, Options *options);
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 {
   MPI_Comm       comm;
   Options        options;
-  DM             dm;
+  DM             stokesDM, transportDM;
   PetscErrorCode ierr;
   PetscTruth     iterate = PETSC_TRUE;
   PetscInt       iter=0,max_iter=2;
@@ -161,18 +161,18 @@ int main(int argc, char *argv[])
   try {
     DMMG *stokes;
 
-    ierr = CreateMesh(comm, &dm, &options);CHKERRQ(ierr);
-    ierr = CreateProblem(dm, &options);CHKERRQ(ierr);
-    ierr = CreateSolver(dm, &stokes, &options);CHKERRQ(ierr)
+    ierr = CreateMesh(comm, &stokesDM, &transportDM, &options);CHKERRQ(ierr);
+    ierr = CreateProblem(stokesDM, transportDM, &options);CHKERRQ(ierr);
+    ierr = CreateSolver(stokesDM, &stokes, &options);CHKERRQ(ierr)
 
     while (iterate and max_iter >= ++iter){
       ierr = SolveStokes(stokes, &options);CHKERRQ(ierr);
-      ierr = SolveTransport(dm, &options);CHKERRQ(ierr);
-      ierr = CheckStoppingCriteria(dm, &iterate, &options);CHKERRQ(ierr);
+      ierr = SolveTransport(transportDM, &options);CHKERRQ(ierr);
+      ierr = CheckStoppingCriteria(stokesDM, &iterate, &options);CHKERRQ(ierr);
     }
-    ierr = WriteSolution(dm, &options);CHKERRQ(ierr);
+    ierr = WriteSolution(stokesDM, &options);CHKERRQ(ierr);
     ierr = DMMGDestroy(stokes);CHKERRQ(ierr);
-    ierr = DestroyMesh(dm, &options);CHKERRQ(ierr);
+    ierr = DestroyMesh(stokesDM, transportDM, &options);CHKERRQ(ierr);
   } catch(ALE::Exception e) {
     std::cerr << e << std::endl;
   }
@@ -504,7 +504,8 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
 // CreateMesh
 /*!
   \param[in] comm  The MPI communicator
-  \param[out] dm  The DM object
+  \param[out] stokesDM  The Stokes DM object
+  \param[out] transportDM  The Transport DM object
   \param[in] options The options table
 
   Creates the mesh and stores in the DM object.
@@ -515,91 +516,87 @@ PetscErrorCode ViewSection(Mesh mesh, SectionReal section, const char filename[]
 /* ______________________________________________________________________ */
 #undef __FUNCT__
 #define __FUNCT__ "CreateMesh"
-PetscErrorCode CreateMesh(MPI_Comm comm, DM *dm, Options *options)
+PetscErrorCode CreateMesh(MPI_Comm comm, DM *stokesDM, DM *transportDM, Options *options)
 {
+  Mesh           stokesMesh, transportMesh;
+  PetscTruth     view;
+  PetscMPIInt    size;
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  Mesh        mesh;
-  PetscTruth  view;
-  PetscMPIInt size;
-
   if (options->generateMesh) {
-    /*
-     *  Calls to generate the mesh using Triangle
-     */
-    Mesh boundary;
-
-    ierr = MeshCreate(comm, &boundary);CHKERRQ(ierr);
     double lower[2] = {0.0, 0.0};
     double upper[2] = {1.0, 1.0};
     int    edges[2] = {2, 2};
 
     Obj<ALE::Mesh> mB = ALE::MeshBuilder::createSquareBoundary(comm, lower, upper, edges, options->debug);
-    ierr = MeshSetMesh(boundary, mB);CHKERRQ(ierr);
-    
-    ierr = MeshGenerate(boundary, options->interpolate, &mesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(boundary);CHKERRQ(ierr);
+    Obj<ALE::Mesh> sM = ALE::Generator::generateMesh(mB, options->interpolate);
+    ierr = MeshCreate(sM->comm(), &stokesMesh);CHKERRQ(ierr);
+    ierr = MeshSetMesh(stokesMesh, sM);CHKERRQ(ierr);
   } else {
-    throw ALE::Exception("Mesh Reader currently broken");
-
-    /*
-     *  Read the Triangle mesh file and create a mesh based upon it.
-     */
-    std::string baseFilename(options->baseFilename);
-    std::string coordFile = baseFilename+".nodes";
-    std::string adjFile   = baseFilename+".lcon";
-
-    ierr = MeshCreatePCICE(comm, 2, coordFile.c_str(), adjFile.c_str(), options->interpolate, PETSC_NULL, &mesh);CHKERRQ(ierr);
+    throw ALE::Exception("Mesh Reader currently removed");
   }
-
   ierr = MPI_Comm_size(comm, &size);CHKERRQ(ierr);
   if (size > 1) {
     Mesh parallelMesh;
 
-    ierr = MeshDistribute(mesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-    mesh = parallelMesh;
+    ierr = MeshDistribute(stokesMesh, PETSC_NULL, &parallelMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(stokesMesh);CHKERRQ(ierr);
+    stokesMesh = parallelMesh;
   }
   if (options->refinementLimit > 0.0) {
     Mesh refinedMesh;
 
-    ierr = MeshRefine(mesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
-    ierr = MeshDestroy(mesh);CHKERRQ(ierr);
-    mesh = refinedMesh;
+    ierr = MeshRefine(stokesMesh, options->refinementLimit, options->interpolate, &refinedMesh);CHKERRQ(ierr);
+    ierr = MeshDestroy(stokesMesh);CHKERRQ(ierr);
+    stokesMesh = refinedMesh;
   }
+  Obj<ALE::Mesh> sM;
+  ierr = MeshGetMesh(stokesMesh, sM);CHKERRQ(ierr);
+  Obj<ALE::Mesh> tM = ALE::Mesh(comm, 2, sM->debug());
+  tM->setSieve(sM->getSieve());
+  tM->setLabel("height", sM->getLabel("height"));
+  tM->setLabel("depth", sM->getLabel("depth"));
+  tM->setLabel("marker", sM->getLabel("marker"));
+  tM->setRealSection("coordinates", sM->getRealSection("coordinates"));
+  ierr = MeshCreate(tM->comm(), &transportMesh);CHKERRQ(ierr);
+  ierr = MeshSetMesh(transportMesh, tM);CHKERRQ(ierr);
 
   /*
    *  Mark the boundary so that we can apply Dirichelet boundary conditions.
    */
   Obj<ALE::Mesh> m;
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  ierr = MeshGetMesh(stokesMesh, m);CHKERRQ(ierr);
+  m->markBoundaryCells("marker");
+  ierr = MeshGetMesh(transportMesh, m);CHKERRQ(ierr);
   m->markBoundaryCells("marker");
   
   /*
    *  Check to see if we want to view the mesh, and add appropriate calls if necessary
    */
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view_vtk", &view);CHKERRQ(ierr);
-  if (view) {ierr = ViewMesh(mesh, "grade2.vtk");CHKERRQ(ierr);}
+  if (view) {ierr = ViewMesh(stokesMesh, "grade2.vtk");CHKERRQ(ierr);}
   ierr = PetscOptionsHasName(PETSC_NULL, "-mesh_view", &view);CHKERRQ(ierr);
   if (view) {
     Obj<ALE::Mesh> m;
-    ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+    ierr = MeshGetMesh(stokesMesh, m);CHKERRQ(ierr);
     m->view("Mesh");
   }
-  *dm = (DM) mesh;
+  *stokesDM    = (DM) stokesMesh;
+  *transportDM = (DM) transportMesh;
   PetscFunctionReturn(0);
 }
 
 
 #undef __FUNCT__
 #define __FUNCT__ "DestroyMesh"
-PetscErrorCode DestroyMesh(DM dm, Options *options)
+PetscErrorCode DestroyMesh(DM stokesDM, DM transportDM, Options *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  ierr = MeshDestroy((Mesh) dm);CHKERRQ(ierr);
+  ierr = MeshDestroy((Mesh) stokesDM);CHKERRQ(ierr);
+  ierr = MeshDestroy((Mesh) transportDM);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
 
@@ -607,7 +604,8 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
 /* ______________________________________________________________________ */
 // CreateProblem
 /*!
-  \param[out] dm  The DM object
+  \param[out] stokesDM  The Stokes DM object
+  \param[out] transportDM  The Transport DM object
   \param[in] options The options table
 
   Sets up the problem to be solved in the DM object
@@ -618,30 +616,39 @@ PetscErrorCode DestroyMesh(DM dm, Options *options)
 /* ______________________________________________________________________ */
 #undef __FUNCT__
 #define __FUNCT__ "CreateProblem"
-PetscErrorCode CreateProblem(DM dm, Options *options)
+PetscErrorCode CreateProblem(DM stokesDM, DM transportDM, Options *options)
 {
   PetscErrorCode ierr;
 
   PetscFunctionBegin;
-  Mesh mesh = (Mesh) dm;
-  Obj<ALE::Mesh> m;
-  int            velMarkers[1] = {1};
-  double       (*velFuncs[1])(const double *coords);
-
-  ierr = MeshGetMesh(mesh, m);CHKERRQ(ierr);
+  int      velMarkers[1] = {1};
+  double (*velFuncs[1])(const double *coords);
   // Create the Stokes problem (assumes 2D)
   velFuncs[0] = constant;
-  ierr = CreateProblem_gen_1(dm, "u0", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(stokesDM, "u0", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
   velFuncs[0] = zero;
-  ierr = CreateProblem_gen_1(dm, "u1", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
-  ierr = CreateProblem_gen_1(dm, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(stokesDM, "u1", 1, velMarkers, velFuncs,   PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(stokesDM, "w0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(stokesDM, "w1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
   // Create the default Stokes section
+  Obj<ALE::Mesh> m;
+
+  ierr = MeshGetMesh((Mesh) stokesDM, m);CHKERRQ(ierr);
   const ALE::Obj<ALE::Mesh::real_section_type> s = m->getRealSection("default");
   s->setDebug(options->debug);
   m->calculateIndices();
   m->setupField(s, 2);
   if (options->debug) {s->view("Default Stokes field");}
+  // Create the Transport problem (assumes 2D)
+  ierr = CreateProblem_gen_1(transportDM, "z0", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  ierr = CreateProblem_gen_1(transportDM, "z1", 0, PETSC_NULL, PETSC_NULL, PETSC_NULL);CHKERRQ(ierr);
+  // Create the default Transport section
+  ierr = MeshGetMesh((Mesh) transportDM, m);CHKERRQ(ierr);
+  const ALE::Obj<ALE::Mesh::real_section_type> t = m->getRealSection("default");
+  t->setDebug(options->debug);
+  m->calculateIndices();
+  m->setupField(t, 2);
+  if (options->debug) {t->view("Default Transport field");}
   PetscFunctionReturn(0);
 }
 
