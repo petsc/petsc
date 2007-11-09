@@ -1,115 +1,11 @@
 #ifndef included_ALE_XSifter_hh
 #define included_ALE_XSifter_hh
 
-// BEGIN: these includes come from boost/multi_index/mem_fun.hpp
-#include <boost/config.hpp> /* keep it first to prevent nasty warns in MSVC */
-#include <boost/mpl/if.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-// END
+#include <X.hh>
 
-
-#include <boost/multi_index_container.hpp>
-#include <boost/multi_index/key_extractors.hpp>
-#include <boost/multi_index/ordered_index.hpp>
-#include <boost/multi_index/composite_key.hpp>
-
-#include <boost/lambda/lambda.hpp>
-using namespace ::boost::lambda;
-
-#include <iostream>
-
-
-#ifndef  included_ALE_hh
-#include <ALE.hh>
-#endif
-
-
-
-namespace ALE { 
-  //
-  class XObject {
-  protected:
-    int      _debug;
-  public:
-    XObject(const int debug = 0)    : _debug(debug) {};
-    XObject(const XObject& xobject) : _debug(xobject._debug) {};
-    //
-    int      debug(const int& debug = -1) {if(debug >= 0) {this->_debug = debug;} return this->_debug;};
-  };// class XObject
-
-  class XParallelObject : public XObject {
-  protected:
-    MPI_Comm _comm;
-    int      _commRank, _commSize;
-  protected:
-    void __setupComm(const MPI_Comm& comm) {
-      this->_comm = comm;
-      PetscErrorCode ierr;
-      ierr = MPI_Comm_size(this->_comm, &this->_commSize); CHKERROR(ierr, "Error in MPI_Comm_size");
-      ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
-    }
-  public:
-    XParallelObject(const MPI_Comm& comm, const int debug)   : XObject(debug) {this->__setupComm(comm);};
-    XParallelObject(const MPI_Comm& comm = PETSC_COMM_WORLD) : XObject()      {this->__setupComm(comm);};
-    XParallelObject(const XParallelObject& xpobject)         : XObject(xpobject), _comm(xpobject._comm) {};
-    //
-    MPI_Comm comm()     {return this->_comm;};
-    int      commSize() {return this->_commSize;};
-    int      commRank() {return this->_commRank;};
-  };// class XParallelObject
-  
-  //
-  // Key extractors
-  //
-  // 
-  // The following member function return a const result.
-  // It is best used through the macro ALE_CONST_MEM_FUN which takes only three arguments: 
-  //  Class, ResultType, MemberFunctionPtr (see below).
-  // OutputType (the actual return type) is different from the ResultType for somewhat obscure reasons.
-  // Once I (have time to) understand the issue better, the usage pattern may get simplified.
-  template<class InputType_, typename ResultType_, typename OutputType_, OutputType_ (InputType_::*PtrToMemberFunction)()const>
-  struct const_const_mem_fun
-  {
-    typedef InputType_                                            input_type;
-    typedef typename ::boost::remove_reference<ResultType_>::type result_type;
-    typedef OutputType_                                           output_type;
-    //
-    // Main interface
-    //
-    template<typename ChainedPtrTarget>
-    output_type operator()(const ChainedPtrTarget*& x)const
-    {
-      return operator()((*x));
-    }
-    
-    output_type operator()(const input_type& x)const
-    {
-      return (x.*PtrToMemberFunction)();
-    }
-    
-    output_type operator()(const ::boost::reference_wrapper<const input_type>& x)const
-    { 
-      return operator()(x.get());
-    }
-    
-    output_type operator()(const ::boost::reference_wrapper<input_type>& x,int=0)const
-    { 
-      return operator()(x.get());
-    }
-  };// struct const_const_mem_fun
-#define ALE_CONST_MEM_FUN(CLASS, RESULT_TYPE, FUN) ::ALE::const_const_mem_fun<CLASS, RESULT_TYPE, const RESULT_TYPE, FUN>
-
+namespace ALE {
   
   namespace XSifterDef {
-    static int debug   = 0;
-    static int codebug = 0;
-    // Debugging works from the top: setting ALE::XSifterDef::debug to n will 'uncover' the *last* (newest) n layers of debugging.
-    // Thus, the functions with the n heighest __ALE_DEBUG__ markers will produce debugging output.
-    // Co-debugging works from the bottom: setting ALE::XSifterDef::codebug to n will 'uncover' the *first* (oldest) n layers of debugging.
-    // Thus, the functions with the n lowest __ALE_DEBUG__ markers will produce debugging output.
-#define ALE_XDEBUG_HEIGHT 6
-#define ALE_XDEBUG_LEVEL(n)  ((ALE::XSifterDef::codebug >= n) || (n > ALE_XDEBUG_HEIGHT - ALE::XSifterDef::debug))
-#define ALE_XDEBUG           (ALE_XDEBUG_LEVEL(__ALE_XDEBUG__))
 
     //
     // Rec compares
@@ -523,7 +419,6 @@ namespace ALE {
           os << "[...," << *(cookie.segment_end) << "]";
           return os;
         }
-
       };
       //
       // iterator_type
@@ -702,14 +597,14 @@ namespace ALE {
           std::cout << "\n";
         }
 #endif
-        if(!this->keyless()) {
-          ++(itor); // FIX: use the record's 'next' method
-        }
-        else {
+        if(this->keyless()) {
           if(this->_index->begin() != this->_index->end()){
             itor = cookie.segment_end;
             cookie.segment_end = this->index().upper_bound(this->_kex(*itor));
           }
+        }
+        else {
+          ++(itor); // FIX: use the record's 'next' method
         }
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
@@ -784,13 +679,336 @@ namespace ALE {
 
 
     //
+    // Arrow-Link Sequence type
+    //
+    #undef  __CLASS__
+    #define __CLASS__ "ArrowLinkSequence"
+    template <typename XSifter_, typename Index_, typename KeyExtractor_, typename NextExtractor_, typename ValueExtractor_>
+    class ArrowLinkSequence {
+    public:
+      typedef ArrowLinkSequence                          arrow_link_sequence_type;
+      typedef XSifter_                                   xsifter_type;
+      typedef Index_                                     index_type;
+      typedef KeyExtractor_                              key_extractor_type;
+      typedef NextExtractor_                             next_extractor_type;
+      typedef ValueExtractor_                            value_extractor_type;
+      //
+      typedef typename key_extractor_type::result_type   key_type;
+      typedef typename value_extractor_type::result_type value_type;
+      //
+      typedef typename xsifter_type::rec_type            rec_type;
+      typedef typename xsifter_type::arrow_type          arrow_type;
+      typedef typename arrow_type::source_type           source_type;
+      typedef typename arrow_type::target_type           target_type;
+      //
+      typedef typename index_type::key_compare           index_compare_type;
+      typedef typename index_type::iterator              itor_type;
+      typedef typename index_type::const_iterator        const_itor_type;
+      //
+      // iterator_type
+      //
+      friend class iterator;
+      class iterator {
+      public:
+        // Parent sequence type
+        friend class ArrowLinkSequence;
+        typedef ArrowLinkSequence                              sequence_type;
+        typedef typename sequence_type::itor_type              itor_type;
+        typedef typename sequence_type::rec_type               rec_type;
+        // Value types
+        typedef typename sequence_type::value_extractor_type   value_extractor_type;
+        typedef typename value_extractor_type::result_type     value_type;
+        // Standard iterator typedefs
+        typedef std::input_iterator_tag                        iterator_category;
+        typedef int                                            difference_type;
+        typedef value_type*                                    pointer;
+        typedef value_type&                                    reference;
+      protected:
+        // Parent sequence
+        sequence_type  *_sequence;
+        // Underlying record
+        rec_type *_rec, *_seg; // seg == "segment_end"
+      public:
+        iterator() : _sequence(NULL) {};
+        iterator(sequence_type* sequence, rec_type* rec, rec_type* seg) : 
+          _sequence(sequence), _rec(rec), _seg(seg) {};
+        iterator(const iterator& iter) : 
+          _sequence(iter._sequence), _rec(iter._rec), _seg(iter._seg) {};
+        ~iterator() {};
+        //
+        inline const source_type& source() const {return this->_rec->source();};
+        inline const target_type& target() const {return this->_rec->target();};
+        inline const arrow_type&  arrow()  const {return *(this->_rec);};
+        inline const rec_type&    rec()    const {return *(this->_rec);};
+        //
+        inline bool              operator==(const iterator& iter) const {bool res; res = (this->_rec == iter._rec); return res;}; 
+        inline bool              operator!=(const iterator& iter) const {bool res; res = (this->_rec != iter._rec); return res;}; 
+        //
+        // FIX: operator*() should return a const reference, but it won't compile that way, because _ex() returns const value_type
+        inline const value_type  operator*() const {return this->_sequence->value(this->_rec);};
+        //
+        #undef  __FUNCT__
+        #define __FUNCT__ "iterator::operator++"
+        #undef  __ALE_XDEBUG__
+        #define __ALE_XDEBUG__ 6
+        inline iterator   operator++() { 
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "rec: ";
+          if(this->_rec!=NULL){std::cout << *(this->_rec);}else{std::cout << "NULL";};
+          std::cout << "seg: ";
+          if(this->_seg!=NULL){std::cout << *(this->_seg);}else{std::cout << "NULL";};
+          std::cout << std::endl;
+        }
+#endif
+          this->_sequence->next(this->_rec, this->_seg);
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << "rec: ";
+          if(this->_rec!=NULL){std::cout << *(this->_rec);}else{std::cout << "NULL";};
+          std::cout << "seg: ";
+          if(this->_seg!=NULL){std::cout << *(this->_seg);}else{std::cout << "NULL";};
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << std::endl;
+        }
+#endif
+          return *this;
+        };
+        inline iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
+      };// class iterator
+    protected:
+      xsifter_type*        _xsifter;
+      index_type*          _index;
+      bool                 _keyless;
+      key_type             _key;
+      key_extractor_type   _kex;
+      next_extractor_type  _nex;
+      value_extractor_type _vex;
+    public:
+      //
+      // Basic interface
+      //
+      ArrowLinkSequence() : _xsifter(NULL), _index(NULL), _keyless(true) {};
+      ArrowLinkSequence(const ArrowLinkSequence& seq) {if(seq._keyless) {reset(seq._xsifter, seq._index);} else {reset(seq._xsifter, seq._index, seq._key);};};
+      ArrowLinkSequence(xsifter_type *xsifter, index_type *index) {reset(xsifter, index);};
+      ArrowLinkSequence(xsifter_type *xsifter, index_type *index, const key_type& key){reset(xsifter, index, key);};
+      virtual ~ArrowLinkSequence() {};
+      //
+      void copy(const ArrowLinkSequence& seq, ArrowLinkSequence& cseq) {
+        cseq._xsifter = seq._xsifter; cseq._index = seq._index; cseq._keyless = seq._keyless; cseq._key = seq._key;
+      };
+      void reset(xsifter_type *xsifter, index_type* index) {
+        this->_xsifter = xsifter; this->_index = index; this->_keyless = true;
+      };
+      void reset(xsifter_type *xsifter, index_type* index, const key_type& key) {
+        this->_xsifter = xsifter; this->_index = index; this->_key = key; this->_keyless = false;
+      };
+      ArrowLinkSequence& operator=(const arrow_link_sequence_type& seq) {
+        copy(seq,*this); return *this;
+      };
+      const value_type value(rec_type const* _rec) {return _vex(*_rec);};
+      //
+      // Extended interface
+      //
+      const xsifter_type&       xsifter()                    const {return *this->_xsifter;};
+      const index_type&         index()                      const {return *this->_index;};
+      const bool&               keyless()                    const {return this->_keyless;};
+      const key_type&           key()                        const {return this->_key;};
+      const value_type&         value(const rec_type*& rec)  const {this->_vex(*rec);};
+    protected:
+      // aux
+      inline rec_type* itor_to_rec_ptr(const itor_type& itor) {
+        const rec_type& crec = *(itor);
+        return const_cast<rec_type*>(&crec);
+      };
+      //
+      inline rec_type* itor_to_rec_ptr_safe(const itor_type& itor) {
+        rec_type* _rec;
+        if(itor == this->_index->end()){
+          _rec = NULL;
+        }
+        else {
+          const rec_type& crec = *(itor);
+          _rec = const_cast<rec_type*>(&crec);
+        }
+        return _rec;
+      };
+
+    public:
+      //
+      // Main interface
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "begin"
+      #undef  __ALE_XDEBUG__
+      #define __ALE_XDEBUG__ 6
+      virtual iterator begin() {
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(this->keyless()) {
+            std::cout << "keyless";
+          }
+          else {
+            std::cout << "key: " << this->key();
+          }
+          std::cout << std::endl;
+        }
+#endif
+        static itor_type itor;
+        static rec_type *_rec, *_seg;
+        if(this->keyless()) {
+          static std::pair<const_itor_type, const_itor_type> range;
+          static LowerBounder<index_compare_type, key_type> lower;
+          static UpperBounder<index_compare_type, key_type> upper;
+          if(this->index().begin() != this->index().end()){
+            lower.reset(this->_kex(*(this->index().begin())));
+            upper.reset(this->_kex(*(this->index().begin())));
+            range = this->index().range(lower, upper);
+            _rec = itor_to_rec_ptr(range.first); 
+            _seg = itor_to_rec_ptr_safe(range.second);
+          }
+          else {
+            _rec = NULL; _seg = NULL;
+          }
+        }
+        else {
+          itor = this->index().lower_bound(this->key());
+          _rec = itor_to_rec_ptr_safe(itor);
+          _seg = NULL;
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "rec: ";
+          if(_rec!=NULL){std::cout << *(_rec);}else{std::cout << "NULL";};
+          std::cout << "seg: ";
+          if(_seg!=NULL){std::cout << *(_seg);}else{std::cout << "NULL";};
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << "\n";
+        }
+#endif
+        return iterator(this, _rec, _seg);
+      };// begin()
+    protected:
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "next"
+      #undef  __ALE_XDEBUG__
+      #define __ALE_XDEBUG__ 6
+      virtual void next(rec_type*& _rec, rec_type*& _seg) {
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(this->keyless()) {
+            std::cout << "keyless";
+          }
+          else {
+            std::cout << "key: " << this->key();
+          }
+          std::cout << "\n";
+        }
+#endif
+        if(this->keyless()) {
+          if(this->_index->begin() != this->_index->end()){
+            _rec = _seg;
+            if(_rec != NULL) {
+              itor_type itor = this->index().upper_bound(this->_kex(*_rec)); 
+              _seg = itor_to_rec_ptr_safe(itor);
+            }
+            // else _seg is already NULL
+          }
+        }
+        else {
+          _rec = this->_nex(*_rec);
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "rec: ";
+          if(_rec!=NULL){std::cout << *(_rec);}else{std::cout << "NULL";};
+          std::cout << "seg: ";
+          if(_seg!=NULL){std::cout << *(_seg);}else{std::cout << "NULL";};
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << "\n";
+        }
+#endif
+      };// next()
+    public:
+      //
+      #undef  __FUNCT__
+      #define __FUNCT__ "end"
+      #undef  __ALE_XDEBUG__
+      #define __ALE_XDEBUG__ 6
+      virtual iterator end() {
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << "\n";
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          if(this->keyless()) {
+            std::cout << "keyless";
+          }
+          else {
+            std::cout << "key: " << this->key();
+          }
+          std::cout << "\n";
+        }
+#endif
+        static rec_type *_rec, *_seg;
+        if(this->keyless()){
+          _rec = NULL; _seg = NULL;
+        }
+        else {
+          itor_type itor = this->index().upper_bound(this->key()); 
+          _rec = itor_to_rec_ptr_safe(itor);
+        }
+#ifdef ALE_USE_DEBUGGING
+        if(ALE_XDEBUG) {
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ": ";
+          std::cout << "rec: ";
+          if(_rec!=NULL){std::cout << *(_rec);}else{std::cout << "NULL";};
+          std::cout << "seg: ";
+          if(_seg!=NULL){std::cout << *(_seg);}else{std::cout << "NULL";};
+          std::cout << __CLASS__ << "::" << __FUNCT__ << ":<<<" << "\n";
+        }
+#endif
+        return iterator(this, _rec, _seg);
+      };// end()
+      //
+      template<typename ostream_type>
+      void view(ostream_type& os, const char* label = NULL){
+        if(label != NULL) {
+          os << "Viewing " << label << " sequence: ";
+          if(this->keyless()) {
+            os << "(keyless)";
+          }
+          else {
+            os << "(key = " << this->key()<<")";
+          }
+          os << "\n";
+        } 
+        os << "[";
+        for(iterator i = this->begin(); i != this->end(); i++) {
+          os << " (" << *i << ")";
+        }
+        os << " ]" << "\n";
+      };
+      void addArrow(const arrow_type& a) {
+        this->_xsifter->addArrow(a);
+      };
+      //
+    };// class ArrowLinkSequence  
+
+
+    //
     // Slicing
     //
     //
     // NoSlices exception is thrown where no new slice can be allocated
     //
-    struct NoSlices : public ::ALE::Exception {
-      NoSlices() : ALE::Exception("No slices left"){};
+    struct NoSlices : public ::ALE::XException {
+      NoSlices() : ALE::XException("No slices left"){};
     };
     namespace Slicing {  
       //
@@ -1162,6 +1380,14 @@ namespace ALE {
           rec_type& rec = const_cast<rec_type&>(crec);
           this->pointer()->add(rec,marker);
         };
+        template <typename RecSequence_>
+        void add(const RecSequence_ in, const marker_type& add_marker, const marker_type& in_marker = marker_type()) {
+          for(typename RecSequence_::iterator iter = in.begin(); iter!=in.end(); ++iter) {
+            if(this->marker(*iter) == in_marker) {
+              this->add(*iter, add_marker);
+            }
+          }
+        };// add(seq)
         marker_type marker(const rec_type& rec){return this->pointer()->marker(rec);};
         marker_type marker(const iterator& iter){return this->pointer()->marker(iter);};
         void        clean(){this->pointer()->clean();};
@@ -1172,14 +1398,14 @@ namespace ALE {
           if(label != NULL) {
             os << " " << label;
           } 
-          os << ":\n[";
+          os << ":\n[[ ";
           iterator sbegin = this->begin();
           iterator send = this->end();
           iterator iter;
           for(iter = sbegin; iter!=send; ++iter) {
-            os << *iter << "((" << this->marker(iter) << ")) ";
+            os << "<" << this->marker(iter) << ">[" << *iter << "] ";
           }
-          os << "]\n";
+          os << "]]\n";
         };//view()
       };//SliceSequence()
     }; // class Slicer
@@ -1223,6 +1449,7 @@ namespace ALE {
     // This is because an XSifter with color has a wider interface: retrieve the subcone with a given color.
     typedef typename arrow_type::color_type                        color_type;
 
+    
     // 
     // Key extractors
     //
@@ -1243,7 +1470,27 @@ namespace ALE {
     //
     typedef ::ALE::XSifterDef::Slicer<arrow_type, int, SliceDepth>       slicer_type;
     typedef typename slicer_type::slice_type                             slice_type;
+
+#ifdef ALE_XSIFTER_USE_ARROW_LINKS
+    // 
+    // Proto-rec contains a pointer to the next proto-rec for each index, 
+    // creating a linked list through each index.
+    //
+    struct proto_rec_type : slicer_type::rec_type {
+      typedef typename xsifter_type::arrow_type arrow_type;
+      typedef typename arrow_type::source_type  source_type;
+      typedef typename arrow_type::target_type  target_type;
+      typedef typename arrow_type::color_type   color_type;
+      proto_rec_type* cone_next;
+      //proto_rec_type* support_next;
+      proto_rec_type(const arrow_type& a) : slicer_type::rec_type(a){};
+    };
+    typedef ::boost::multi_index::member<proto_rec_type, proto_rec_type*, &proto_rec_type::cone_next>  cone_next_extractor_type;
+    typedef proto_rec_type                                               rec_type;
+#else
     typedef typename slicer_type::rec_type                               rec_type;
+#endif
+
     // Pre-defined SliceSequences
     typedef typename slicer_type::template SliceSequence<source_extractor_type>   SourceSlice;
     typedef typename slicer_type::template SliceSequence<target_extractor_type>   TargetSlice;
@@ -1266,6 +1513,7 @@ namespace ALE {
     // Index tags
     //
     struct                                   ConeTag{};
+    struct                                   SupportTag{};
     //
     // Rec set type
     //
@@ -1285,9 +1533,15 @@ namespace ALE {
     //
     // Sequence types
     //
+#ifdef ALE_XSIFTER_USE_ARROW_LINKS
+    typedef ALE::XSifterDef::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, target_extractor_type>   BaseSequence;
+    typedef ALE::XSifterDef::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, source_extractor_type>   ConeSequence;
+    typedef ALE::XSifterDef::ArrowLinkSequence<xsifter_type, cone_index_type, arrow_extractor_type,  cone_next_extractor_type, source_extractor_type>   ColorConeSequence;
+#else
     typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, target_extractor_type>   BaseSequence;
     typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, source_extractor_type>   ConeSequence;
     typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, arrow_extractor_type,  source_extractor_type>   ColorConeSequence;
+#endif
     //
     //
     // Basic interface
@@ -1301,8 +1555,45 @@ namespace ALE {
     // Extended interface
     //
     void addArrow(const arrow_type& a) {
-      this->_rec_set.insert(rec_type(a));
-    };
+      static std::pair<typename cone_index_type::iterator, bool> res;
+      rec_type r = rec_type(a);
+      res = this->_cone_index.insert(r);
+      if(res.second) {// successful insertion
+#ifdef ALE_XSIFTER_USE_ARROW_LINKS
+        typename cone_index_type::iterator iter = res.first;
+        // The following two-stage case seems to be necessary because *iter returns 
+        // a strange thing that cannot be const_cast directly;  
+        // this pattern repeats twice more below for next and prev iterators.
+        const rec_type& ci_rec = (*iter);
+        rec_type& i_rec = const_cast<rec_type&>(ci_rec);
+        if(iter != this->_cone_index.begin()) {// not the first arrow in index
+          typename cone_index_type::iterator prev = --iter;
+          const rec_type& cp_rec = (*prev);
+          rec_type& p_rec = const_cast<rec_type&>(cp_rec);
+          // insert i_rec between p_rec and its successor
+          i_rec.proto_rec_type::cone_next = p_rec.proto_rec_type::cone_next;
+          p_rec.proto_rec_type::cone_next = &i_rec;;
+         
+        }
+        else {
+          typename cone_index_type::iterator next = ++iter;
+          if(next != _cone_index.end()){
+            const rec_type& cn_rec = (*next);
+            rec_type& n_rec = const_cast<rec_type&>(cn_rec);
+            i_rec.proto_rec_type::cone_next = &n_rec;
+          }
+          else {
+            i_rec.cone_next = NULL;
+          }
+        }// first arrow in index
+#endif
+      }
+      else {
+        ALE::XException e;
+        e << "addArrow of " << a << " failed";
+        throw e;
+      }
+    };// addArrow()
     //
     void cone(const target_type& t, ConeSequence& cseq) {
       cseq.reset(this, &_cone_index, t);
@@ -1344,11 +1635,11 @@ namespace ALE {
       else {
         os << "Viewing a XSifter (debug: " << this->debug() << "): " << "\n";
       } 
-      os << "Cone index: (";
+      os << "Cone index: [[ ";
         for(typename cone_index_type::iterator itor = this->_cone_index.begin(); itor != this->_cone_index.end(); ++itor) {
           os << *itor << " ";
         }
-      os << ")" << "\n";
+      os << "]]" << "\n";
     };
     //
     // Direct access (a kind of hack)
