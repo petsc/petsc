@@ -125,6 +125,10 @@ fetidp: fetidp_quadrature.h fetidp.o chkopts
 	-${CLINKER} -o fetidp fetidp.o ${PETSC_SNES_LIB}
 	${RM} -f fetidp.o
 
+refinement: GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o chkopts
+	-${CLINKER} -o refinement GMVFile.o GMVFileAscii.o BinaryIO.o GMVFileBinary.o refinement.o ${PETSC_SNES_LIB}
+	${RM} -f refinement.o
+
 #-----------------------------------------------------------------
 runstokes:
 	-@${MPIEXEC} -np ${NP} ./stokes ${EXTRA_ARGS}

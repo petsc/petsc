@@ -518,8 +518,7 @@ PetscErrorCode MatDuplicate_Plapack(Mat A, MatDuplicateOption op, Mat *M)
   MATPLAPACK - MATPLAPACK = "plapack" - A matrix type providing direct solvers (LU, Cholesky, and QR) 
   for parallel dense matrices via the external package PLAPACK.
 
-  If PLAPACK is installed (see the manual for
-  instructions on how to declare the existence of external packages),
+  If PLAPACK is installed (run config/configure.py with the option --download-plapack)
   a matrix type can be constructed which invokes PLAPACK solvers.
   After calling MatCreate(...,A), simply call MatSetType(A,MATPLAPACK).
 

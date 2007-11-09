@@ -43,7 +43,15 @@ extern  MPI_Datatype PETSC_DLLEXPORT MPIU_2INT;
 #define PetscSinScalar(a)   std::sin(a)
 #define PetscCosScalar(a)   std::cos(a)
 
+#if defined(PETSC_USE_SINGLE)
+typedef std::complex<float> PetscScalar;
+#elif defined(PETSC_USE_LONG_DOUBLE)
+typedef std::complex<long double> PetscScalar;
+#elif defined(PETSC_USE_INT)
+typedef std::complex<int> PetscScalar;
+#else
 typedef std::complex<double> PetscScalar;
+#endif
 #else
 #include <complex.h>
 
@@ -62,7 +70,13 @@ typedef std::complex<double> PetscScalar;
 #define PetscSinScalar(a)   csin(a)
 #define PetscCosScalar(a)   ccos(a)
 
+#if defined(PETSC_USE_SINGLE)
+typedef float complex PetscScalar;
+#elif defined(PETSC_USE_LONG_DOUBLE)
+typedef long double complex PetscScalar;
+#else
 typedef double complex PetscScalar;
+#endif
 #endif
 
 extern  MPI_Datatype PETSC_DLLEXPORT MPIU_COMPLEX;

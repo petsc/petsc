@@ -9,6 +9,8 @@ PETSC_EXTERN_CXX_BEGIN
 
 extern PETSCVEC_DLLEXPORT PetscCookie IS_COOKIE;
 
+EXTERN PetscErrorCode PETSCVEC_DLLEXPORT ISInitializePackage(const char[]);
+
 /*S
      IS - Abstract PETSc object that indexing.
 

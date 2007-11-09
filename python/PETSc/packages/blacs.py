@@ -54,7 +54,7 @@ class Configure(PETSc.package.Package):
     g.write('BLACSDEFS = $(DEFS1) $(SENDIS) $(BUFF) $(TRANSCOMM) $(WHATMPI) $(SYSERRORS)\n')
     self.setCompilers.pushLanguage('FC')  
     g.write('F77       = '+self.setCompilers.getCompiler()+'\n')
-    g.write('F77FLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'\n')
+    g.write('F77FLAGS  = '+self.setCompilers.getCompilerFlags().replace('-Wall','').replace('-Wshadow','')+'$(SYSINC)\n')
     g.write('F77LOADER = '+self.setCompilers.getLinker()+'\n')      
     g.write('F77LOADFLAGS ='+self.setCompilers.getLinkerFlags()+'\n')
     self.setCompilers.popLanguage()     

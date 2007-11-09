@@ -8,6 +8,29 @@
 #endif
 
 #undef __FUNCT__  
+#define __FUNCT__ "DMFinalizePackage"
+/*@C
+  DMFinalizePackage - This function finalizes everything in the DM package. It is called
+  from PetscFinalize().
+
+  Level: developer
+
+.keywords: AO, DA, initialize, package
+.seealso: PetscInitialize()
+@*/
+PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage() {
+#ifdef PETSC_HAVE_SIEVE
+  PetscErrorCode ierr;
+#endif
+
+  PetscFunctionBegin;
+#ifdef PETSC_HAVE_SIEVE
+  ierr = MeshFinalize();CHKERRQ(ierr);
+#endif
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__  
 #define __FUNCT__ "DMInitializePackage"
 /*@C
   DMInitializePackage - This function initializes everything in the DM package. It is called
@@ -114,34 +137,14 @@ PetscErrorCode PETSCDM_DLLEXPORT DMInitializePackage(const char path[]) {
     }
 #endif
   }
+  ierr = PetscRegisterFinalize(DMFinalizePackage);CHKERRQ(ierr);
   PetscFunctionReturn(0);
 }
+
+
 
 #ifdef PETSC_USE_DYNAMIC_LIBRARIES
 EXTERN_C_BEGIN
-#undef __FUNCT__  
-#define __FUNCT__ "DMFinalizePackage"
-/*@C
-  DMFinalizePackage - This function finalizes everything in the DM package. It is called
-  from PetscFinalize().
-
-  Level: developer
-
-.keywords: AO, DA, initialize, package
-.seealso: PetscInitialize()
-@*/
-PetscErrorCode PETSCDM_DLLEXPORT DMFinalizePackage() {
-#ifdef PETSC_HAVE_SIEVE
-  PetscErrorCode ierr;
-#endif
-
-  PetscFunctionBegin;
-#ifdef PETSC_HAVE_SIEVE
-  ierr = MeshFinalize();CHKERRQ(ierr);
-#endif
-  PetscFunctionReturn(0);
-}
-
 #undef __FUNCT__  
 #define __FUNCT__ "PetscDLLibraryRegister_petscdm"
 /*
