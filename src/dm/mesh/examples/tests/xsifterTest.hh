@@ -18,7 +18,7 @@ namespace ALE {
         argDB("iterations", "The number of test repetitions", ALE::Component::Arg<int>().DEFAULT(1));
         argDB("marker", "The marker to apply to slice members", ALE::Component::Arg<int>().DEFAULT(0));
         argDB("silent", "Whether to generate output during test; useful for timing with iterations > 1", ALE::Component::Arg<bool>().DEFAULT(false));
-      };
+      };// XSifterTester()
       //
       #undef __FUNCT__
       #define __FUNCT__ "createForkXSifter"

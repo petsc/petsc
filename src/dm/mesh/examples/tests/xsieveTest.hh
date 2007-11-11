@@ -16,7 +16,7 @@ namespace ALE {
         argDB(xsifter_tester_type::argDB);
         argDB("treeDepth", "The depth of the tree XSieve", ALE::Component::Arg<int>().DEFAULT(3));
         argDB("treeFanout", "The fanout factor of the tree XSieve: number of children", ALE::Component::Arg<int>().DEFAULT(3));
-        argDB("t", "The target to compute closure over", ALE::Component::Arg<int>().DEFAULT(1));
+        argDB("pt", "The point to compute closure over", ALE::Component::Arg<int>().DEFAULT(1));
       };
       //
       #undef __FUNCT__
@@ -51,9 +51,9 @@ namespace ALE {
       //
       //
       #undef __FUNCT__
-      #define __FUNCT__ "ClosureTest"
+      #define __FUNCT__ "BoundaryTest"
       template <typename XSieve_>
-      static PetscErrorCode ClosureTest(const ALE::Obj<XSieve_>& xsieve, ALE::Component::ArgDB argDB, const char* xsieveName = NULL)
+      static PetscErrorCode BoundaryTest(const ALE::Obj<XSieve_>& xsieve, ALE::Component::ArgDB argDB, const char* xsieveName = NULL)
       {        
         typedef XSieve_                                    xsieve_type;
         typedef typename xsieve_type::arrow_type           arrow_type;
@@ -64,34 +64,63 @@ namespace ALE {
         PetscFunctionBegin;
 
         ALE::Obj<typename xsieve_type::BaseSequence> base;
-        typename arrow_type::target_type t = argDB["t"];
+        typename arrow_type::target_type pt = argDB["pt"];
         bool silent = argDB["silent"];
-        ALE::LogStage stage = ALE::LogStageRegister("Closure Test");
-        ALE::LogStagePush(stage);
-        string label;
-        if(!silent) {
-          if(xsieveName != NULL) {
-            label = string(xsieveName) + ": ";
-          }        
-          else {
-            label = string(": ");
+        int  testCount = argDB["iterations"];
+        for(int i = 0; i < testCount; ++i){
+          if(!silent){std::cout << "XSieve Boundary Test: iter: " << i << "\n";}
+          // Boundary Slice
+          {
+            ALE::LogStage stage = ALE::LogStageRegister("Boundary Slice Test");
+            ALE::LogStagePush(stage);
+            string label;
+            if(!silent) {
+              if(xsieveName != NULL) {
+                label = string(xsieveName) + ": ";
+              }        
+              else {
+                label = string(": ");
+              }
+            }
+            if(!silent) {
+              std::cout << label << "before taking boundary\n";
+              xsieve->view(std::cout);
+            }
+            typename xsieve_type::BoundarySlice bd = xsieve->boundarySlice(pt);
+            if(!silent) {
+              std::cout << "bd(" << pt << ")= ";
+              bd.view(std::cout);
+              std::cout << "\n";
+              std::cout << label << "after taking boundary\n";
+              xsieve->view(std::cout);
+            }
+            ALE::LogStagePop(stage);
           }
-        }
-        if(!silent) {
-          std::cout << label << "before closure\n";
-          xsieve->view(std::cout);
-        }
-        typename xsieve_type::ClosureSlice cl = xsieve->closureSlice(t);
-        if(!silent) {
-          std::cout << "cl(" << t << ")= ";
-          cl.view(std::cout);
-          std::cout << "\n";
-          std::cout << label << "after closure\n";
-          xsieve->view(std::cout);
-        }
-        ALE::LogStagePop(stage);
+          // Boundary Set
+          {
+            ALE::LogStage stage = ALE::LogStageRegister("Boundary Set Test");
+            ALE::LogStagePush(stage);
+            string label;
+            if(!silent) {
+              if(xsieveName != NULL) {
+                label = string(xsieveName) + ": ";
+              }        
+              else {
+                label = string(": ");
+              }
+            }
+            typename xsieve_type::BoundarySet bd = xsieve->boundarySet(pt);
+            if(!silent) {
+              std::cout << "bd(" << pt << ")= ";
+              bd.view(std::cout);
+              std::cout << "\n";
+            }
+            ALE::LogStagePop(stage);
+          }
+        }// for(..., i < testCount; ...)
+        //
         PetscFunctionReturn(0);
-      }// ClosureTest()
+      }// BoundaryTest()
     };// struct XSieveTester
   };//namespace Test
 };// namespace ALE
