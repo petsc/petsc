@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
     himaInfo       hinfo;
     PetscRandom    ran;
     PetscErrorCode ierr;
+    PetscTruth     flg;
 
     PetscInitialize(&argc,&argv,(char *)0,help);
     time(&start);
@@ -67,6 +68,13 @@ int main(int argc, char *argv[])
 
     ierr = MPI_Comm_size(PETSC_COMM_WORLD, &np);CHKERRQ(ierr);     /* number of nodes */
     ierr = MPI_Comm_rank(PETSC_COMM_WORLD, &myid);CHKERRQ(ierr);   /* my ranking */   
+
+    ierr = PetscOptionsHasName(PETSC_NULL, "-check_generators", &flg);CHKERRQ(ierr);
+    if (flg){
+      ierr = PetscRandomGetValue(ran,&r);
+      ierr = PetscSynchronizedPrintf(PETSC_COMM_WORLD,"[%d] rval: %g\n",myid,r);
+      ierr = PetscSynchronizedFlush(PETSC_COMM_WORLD);
+    }
     
     hinfo.n           = 31;
     hinfo.r           = 0.04;

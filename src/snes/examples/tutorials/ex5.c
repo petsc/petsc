@@ -201,7 +201,19 @@ int main(int argc,char **argv)
      to employ an initial guess of zero, the user should explicitly set
      this vector to zero by calling VecSet().
   */
-  ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+
+  {
+    PetscTruth test_appctx = PETSC_FALSE;
+    ierr = PetscOptionsGetTruth(PETSC_NULL,"-test_appctx",&test_appctx,0);CHKERRQ(ierr);
+    if (test_appctx) {
+      AppCtx *puser;
+      ierr = SNESSetApplicationContext(snes,&user);CHKERRQ(ierr);
+      ierr = SNESGetApplicationContext(snes,(void **)&puser);CHKERRQ(ierr);
+      ierr = FormInitialGuess(puser,x);CHKERRQ(ierr);
+    } else {
+      ierr = FormInitialGuess(&user,x);CHKERRQ(ierr);
+    }
+  }
 
   /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
      Solve nonlinear system
