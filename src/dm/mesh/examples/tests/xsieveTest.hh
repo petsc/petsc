@@ -16,7 +16,8 @@ namespace ALE {
         argDB(xsifter_tester_type::argDB);
         argDB("treeDepth", "The depth of the tree XSieve", ALE::Component::Arg<int>().DEFAULT(3));
         argDB("treeFanout", "The fanout factor of the tree XSieve: number of children", ALE::Component::Arg<int>().DEFAULT(3));
-        argDB("pt", "The point to compute closure over", ALE::Component::Arg<int>().DEFAULT(1));
+        argDB("pt", "The point to compute the boundary of", ALE::Component::Arg<int>().DEFAULT(1));
+        argDB("traversals", "The number of times to traverse the boundary", ALE::Component::Arg<int>().DEFAULT(1));
       };
       //
       #undef __FUNCT__
@@ -67,10 +68,12 @@ namespace ALE {
         typename arrow_type::target_type pt = argDB["pt"];
         bool silent = argDB["silent"];
         int  testCount = argDB["iterations"];
+        int  traversalCount = argDB["traversals"];
         for(int i = 0; i < testCount; ++i){
           if(!silent){std::cout << "XSieve Boundary Test: iter: " << i << "\n";}
           // Boundary Slice
           {
+            static ALE::NoOp<arrow_type> noop;
             ALE::LogStage stage = ALE::LogStageRegister("Boundary Slice Test");
             ALE::LogStagePush(stage);
             string label;
@@ -94,10 +97,14 @@ namespace ALE {
               std::cout << label << "after taking boundary\n";
               xsieve->view(std::cout);
             }
+            for(int i = 0; i < traversalCount;++i) {
+              bd.traverse(noop);
+            }
             ALE::LogStagePop(stage);
           }
           // Boundary Set
           {
+            static ALE::NoOp<typename arrow_type::source_type> noop;
             ALE::LogStage stage = ALE::LogStageRegister("Boundary Set Test");
             ALE::LogStagePush(stage);
             string label;
@@ -114,6 +121,9 @@ namespace ALE {
               std::cout << "bd(" << pt << ")= ";
               bd.view(std::cout);
               std::cout << "\n";
+            }
+            for(int i = 0; i < traversalCount;++i) {
+              bd.traverse(noop);
             }
             ALE::LogStagePop(stage);
           }

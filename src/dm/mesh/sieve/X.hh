@@ -123,6 +123,12 @@ namespace ALE {
     typedef typename std::template less<element_type> less_than;
   };
 
+  template <typename Argument_>
+  struct NoOp {
+    typedef Argument_ argument_type;
+    void operator()(const argument_type& arg) const{};
+  };// struct NoOp
+
   template <typename Element_, typename Traits_ = SetElementTraits<Element_> , typename Allocator_ = ALE_ALLOCATOR<Element_> >
   class Set : public std::set<Element_, typename Traits_::less_than, Allocator_ > {
   public:
@@ -201,6 +207,13 @@ namespace ALE {
       }
     };
     inline void subtract(const Obj<Set>& s) {this->subtract(s.object());};
+    //
+    template <typename Op_>
+    inline void traverse(const Op_& op) {
+      for(iterator iter = this->begin(); iter!= this->end(); ++iter) {
+        op(*iter);
+      }
+    };
     //
     template <typename ostream_type>
     friend ostream_type& operator<<(ostream_type& os, const Set& s) {

@@ -1159,7 +1159,7 @@ namespace ALE {
             }
             this->_head = NULL; this->_tail = NULL;
           };//clean()
-        };// struct Slice
+          };// struct Slice
         typedef Slice slice_type;
       public:
         //
@@ -1302,55 +1302,187 @@ namespace ALE {
         Obj<the_slice_type> take()                          {ALE::XSifterDef::NoSlices e; throw e; return Obj<the_slice_type>();};
         void                give_back(the_slice_type* slice){ALE::XSifterDef::NoSlices e; throw e;};
       };// class Slicing::Slicer<0>
+
+      //
+      //
+      template <typename PreRec_, typename Marker_, int MAX_SLICE_DEPTH>
+      struct nSlicer {
+        //
+        struct Rec : public PreRec_ {
+          typedef PreRec_ pre_rec_type;
+          typedef Marker_ marker_type;
+          //
+          Rec*        nexts[MAX_SLICE_DEPTH];
+          marker_type markers[MAX_SLICE_DEPTH];
+          Rec(){for(int i = 0; i<MAX_SLICE_DEPTH;++i) {nexts[i] = NULL; markers[i] = marker_type();}};
+          Rec(const pre_rec_type& rec) : pre_rec_type(rec) {for(int i = 0; i<MAX_SLICE_DEPTH;++i) {nexts[i] = NULL; markers[0] = marker_type();}};
+        };
+        // encapsulated types
+        typedef Rec                               rec_type;
+        typedef Marker_                           marker_type;
+        typedef typename rec_type::arrow_type     arrow_type;
+        //
+        struct Slice {
+          typedef nSlicer slicer_type;
+          typedef Slice   slice_type;
+          typedef Rec     rec_type;
+          //
+          class iterator {
+            // Standard iterator typedefs
+            typedef arrow_type                                     value_type;
+            typedef std::input_iterator_tag                        iterator_category;
+            typedef int                                            difference_type;
+            typedef value_type*                                    pointer;
+            typedef value_type&                                    reference;
+          protected:
+            slice_type  *_slice;
+            rec_type    *_rec;
+          public:
+            iterator() :_slice(NULL), _rec(NULL) {};
+            iterator(slice_type* _slice, rec_type* _rec)     : _slice(_slice), _rec(_rec){};
+            iterator(const iterator& iter)                   : _slice(iter._slice), _rec(iter._rec){};
+          public:
+            iterator   operator=(const  iterator& iter) {
+              this->_slice = iter._slice;
+              this->_rec   = iter._rec; 
+              return *this;
+            };
+            inline bool       operator==(const iterator& iter) const {return this->_slice == iter._slice && this->_rec == iter._rec;};
+            inline bool       operator!=(const iterator& iter) const {return this->_slice != iter._slice || this->_rec != iter._rec;};
+            inline iterator   operator++() {
+              this->_rec = this->_rec->nexts[this->_slice->rank()];
+              return *this;
+            };
+            inline iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
+            //
+            inline const arrow_type& arrow()     const {return *(this->_rec);}; // we assume Rec_ implements the Arrow concept.
+            inline const arrow_type& operator*() const {return this->arrow();};            
+            inline       marker_type marker()    const {return this->_slice->marker(*(this->_rec));};
+          };// iterator
+          //
+          // Basic
+          //
+          Slice(slicer_type* slicer, int rank) : _slicer(slicer), _head(NULL), _tail(NULL), _rank(rank) {};
+          virtual ~Slice() {this->_slicer->give_back(this);};
+          //
+          // Main interface
+          //
+          inline iterator begin(){ return iterator(this, this->_head);}; 
+          inline iterator end(){ return iterator(this, NULL);}; 
+          inline void add(rec_type& rec, marker_type marker) {
+            // Add &rec at the tail of the slice linked list; assume that rec is not transient.
+            // Direct manipulation of rec in principle violates multi_index record update rules, 
+            //   since we are directly manipulating the record, but that's okay, since 
+            //   slice data that we are updating is not used in the container ordering.
+            rec.nexts[this->_rank] = NULL;
+            rec.markers[this->_rank] = marker;
+            if(this->_tail != NULL) { // slice already has recs in it
+              this->_tail->nexts[this->_rank] = &rec;
+            }
+            else { // first rec in the slice
+              this->_head = &rec;
+            }
+            this->_tail = &rec;
+            
+          };
+          inline marker_type marker(const rec_type& rec) {
+            return rec.markers[this->_rank];
+          };
+          inline void clean() {
+            for(rec_type *_rec = this->_head; _rec != NULL; ) {
+              rec_type* tmp = _rec; 
+              _rec = _rec->nexts[this->_rank];
+              tmp->markers[this->_rank] = marker_type();
+              /*tmp.nexts[this->_rank] = NULL;*/ // FIX: this is, in principle, unnecessary, as long as the head and tail are wiped out
+            }
+            this->_head = NULL; this->_tail = NULL;
+          };//clean()
+          //      
+          template <typename Op_>
+          inline void traverse(const Op_& op) {
+            for(rec_type *_rec = this->_head; _rec != NULL; _rec = _rec->nexts[this->_rank]) {
+              op(*_rec);
+            }
+          };// traverse()
+          //
+          template <typename Op_>
+          inline void traverseAndClean(const Op_& op) {
+            for(rec_type *_rec = this->_head; _rec != NULL; ) {
+              rec_type* tmp = _rec;
+              _rec = _rec->nexts[this->_rank];
+              op(*tmp);
+              tmp->markers[this->rank] = marker_type();
+            }
+          };// traverseAndClean()
+          //
+          inline int rank() {return this->_rank;};
+        protected:
+          slicer_type* _slicer;
+          rec_type  *_head, *_tail;
+          int       _rank;
+        protected:
+          inline rec_type& rec(const iterator& iter) const {return *(iter._rec);};
+          inline void      reset_rec(iterator& iter, rec_type& rec) const {iter._rec = &rec;};
+        };// Slice
+        typedef Slice slice_type;
+      public:
+        //
+        // Basic
+        //
+        nSlicer(){};
+        virtual ~nSlicer(){};
+        //
+        // Main
+        //
+        // take() must return Obj<the_slice_type> rather than the_slice_type*,
+        // since the latter need not be automatically destroyed and cleaned.
+        // It would be unnatural (and possibly unallowed by the Obj interface)
+        // to return a the_slice_type* to be wrapped as Obj later.
+        inline Obj<slice_type> take() { 
+          for(int i = 0; i < MAX_SLICE_DEPTH; ++i) {
+            if(!this->_taken[i]) {
+              this->_taken[i] = true;
+              return Obj<slice_type>(new slice_type(this, i));
+            }
+          }
+          throw NoSlices();
+        };// take()
+        //
+        // give_back() cannot accept Obj<the_slice_type>, since it is intended
+        // to be called from the_slice_type's destructor, which has no Obj.
+        inline void give_back(slice_type* slice) {
+          slice->clean();
+          this->_taken[slice->rank()] = false;
+        };// give_back()
+      protected:
+        bool _taken[MAX_SLICE_DEPTH];
+      };// class Slicing::nSlicer
+      //
     }//namespace Slicing
 
     //
-    // Slicer: this class is used by XSifter to implement slicing.
-    // 
-    // If confused by the presence of another Slicer class -- Slicing::Slicer<Rec_,Marker_,n> -- read this.
-    // Otherwise, forget about Slicing::Slicer and proceed directly to use Slicer: Slicer<ArrowModel, Marker, n>.
     //
-    //   The problem with Slicing::Slicer<n> is that in principle it doesn't know the total depth of the hierarchy
-    // it lives in.  In particular, it expects a nebulous Rec_ that extends Rec<n> and implements Arrow, but may
-    // also extend Rec<n+1> etc.  The user must decide what the depth of the hierarchy is and produce 
-    // an appropriate Rec_. So direct usage of Slicing::Slicer might also be confusing.  
-    //   To aleviate this confusion, Slicer takes an Arrow model, a Marker and the total desired slicing depth n
-    // and produces a usable Slicer. We feel that having two Slicer classes may be less confusing, as the user 
-    // should (ideally) never have a need to use Slicing::Slicer directly.
-    //   Finally, having a separate Slicer class allows us to wrap some of the raw functionality
-    // of Slicing::Slicer, such as wrapping up Obj<the_slice_type> as a SliceSequence class with 
-    // the usual Sequence interface.  We also define templated iterators with custom dereference operators
-    // based on extractor template parameters; these could be useful in implementing different Slice-based
-    // sequences.  
     //
-    template<typename Arrow_, typename Marker_, int n>
-    class Slicer : public Slicing::Slicer< Slicing::Rec<Arrow_, Marker_, n>, Marker_, n> {
+    template<typename Arrow_, typename Marker_, int MAX_SLICE_DEPTH>
+    class Slicer : public Slicing::nSlicer<Arrow_, Marker_, MAX_SLICE_DEPTH> {
     public:
-      typedef Slicing::Slicer< Slicing::Rec<Arrow_, Marker_, n>, Marker_, n> super;
+      typedef Slicing::nSlicer<Arrow_, Marker_, MAX_SLICE_DEPTH> super;
       //
-      typedef typename super::the_slice_type            the_slice_type;
-      //
-      typedef typename super::the_rec_type              rec_type;
+      typedef typename super::rec_type                  rec_type;
+      typedef typename super::slice_type                slice_type;
       typedef Marker_                                   marker_type;
-      typedef Obj<the_slice_type>                       slice_type;
-      //
-      // Since slice_type is actually an Obj type, we wrap it in yet another type,
-      // SliceSequence, which forwards the calls to begin(), end() etc bypassing 
-      // the '->' intermediary and making slice_type look more like a sequence. 
-      // SliceSequence is also templated over an extractor type, which is used
-      // in an overloaded iterator.
       //
       template <typename Extractor_>
-      class SliceSequence : public slice_type {
+      class SliceSequence : public Obj<slice_type> {
       public:
-        typedef typename the_slice_type::the_rec_type rec_type;
+        typedef typename super::slice_type::rec_type  rec_type;
         typedef typename rec_type::marker_type        marker_type;
         typedef typename rec_type::arrow_type         arrow_type;
         //
-        class iterator : public the_slice_type::iterator {
+        class iterator : public super::slice_type::iterator {
         public:
           typedef Extractor_                                     extractor_type;
-          typedef typename the_slice_type::iterator              the_iterator;
+          typedef typename slice_type::iterator                  the_iterator;
           // Standard iterator typedefs
           typedef typename extractor_type::result_type           value_type;
           typedef std::input_iterator_tag                        iterator_category;
@@ -1366,11 +1498,11 @@ namespace ALE {
           };
         };// class iterator
       public:
-        SliceSequence(const slice_type& slice) : slice_type(slice) {};
+        SliceSequence(const Obj<slice_type>& slice) : Obj<slice_type>(slice) {};
         //
-        iterator    begin() {return this->pointer()->begin();};
-        iterator    end()   {return this->pointer()->end();};
-        void        add(const rec_type& crec, marker_type marker = marker_type()){
+        inline iterator    begin() const {return this->pointer()->begin();};
+        inline iterator    end()   const {return this->pointer()->end();};
+        inline void        add(const rec_type& crec, marker_type marker = marker_type()){
           // crec is typically obtained by referencing a multi_index index iterator,
           // hence it is likely to be 'const'.
           // It is okay to cast away this const, since we won't be modifying 
@@ -1380,17 +1512,27 @@ namespace ALE {
           rec_type& rec = const_cast<rec_type&>(crec);
           this->pointer()->add(rec,marker);
         };
-        template <typename RecSequence_>
-        void add(const RecSequence_ in, const marker_type& add_marker, const marker_type& in_marker = marker_type()) {
-          for(typename RecSequence_::iterator iter = in.begin(); iter!=in.end(); ++iter) {
-            if(this->marker(*iter) == in_marker) {
-              this->add(*iter, add_marker);
-            }
+        inline  marker_type marker(const rec_type& rec){return this->pointer()->marker(rec);};
+        inline void         clean(){this->pointer()->clean();};
+        //
+        template <typename Op_>
+        inline void traverse(const Op_& op) {this->pointer()->traverse(op);};
+        template <typename Op_>
+        inline void traverseAndClean(const Op_& op) {this->pointer()->traverseAndClean(op);};
+        //
+        template<typename ostream_type>
+        friend ostream_type& operator<<(ostream_type& os, const SliceSequence& slice){
+          // FIX: avoiding iterators might make it faster, although it hardly matters when viewing.
+          os << ":\n[[ ";
+          iterator sbegin = slice.begin();
+          iterator send = slice.end();
+          iterator iter;
+          for(iter = sbegin; iter!=send; ++iter) {
+            os << "<" << iter.marker() << ">[" << *iter << "] ";
           }
-        };// add(seq)
-        marker_type marker(const rec_type& rec){return this->pointer()->marker(rec);};
-        marker_type marker(const iterator& iter){return this->pointer()->marker(iter);};
-        void        clean(){this->pointer()->clean();};
+          os << "]]";
+          return os;
+        };//operator<<()
         //
         template<typename ostream_type>
         void view(ostream_type& os, const char* label = NULL){
@@ -1398,14 +1540,7 @@ namespace ALE {
           if(label != NULL) {
             os << " " << label;
           } 
-          os << ":\n[[ ";
-          iterator sbegin = this->begin();
-          iterator send = this->end();
-          iterator iter;
-          for(iter = sbegin; iter!=send; ++iter) {
-            os << "<" << this->marker(iter) << ">[" << *iter << "] ";
-          }
-          os << "]]\n";
+          os << (*this) << "\n";
         };//view()
       };//SliceSequence()
     }; // class Slicer
