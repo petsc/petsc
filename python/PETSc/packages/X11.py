@@ -94,7 +94,9 @@ acfindx:
     '''Checks for X windows, sets PETSC_HAVE_X11 if found, and defines X_CFLAGS, X_PRE_LIBS, X_LIBS, and X_EXTRA_LIBS'''
     # This needs to be rewritten to use generateGuesses()
     foundInclude = 0
-    includeDirs  = ['/usr/X11/include',
+    includeDirs  = ['/Developer/SDKs/MacOSX10.5.sdk/usr/X11/include',
+                    '/Developer/SDKs/MacOSX10.4u.sdk/usr/X11R6/include',
+                    '/usr/X11/include',
                    '/usr/X11R6/include',
                    '/usr/X11R5/include',
                    '/usr/X11R4/include',
@@ -168,7 +170,7 @@ acfindx:
       # Check guess
       for testLibrary, testFunction in testLibraries:
         if libraryDirGuess:
-          for ext in ['.a', '.so', '.sl', '.dll.a']:
+          for ext in ['.a', '.so', '.sl', '.dll.a','.dylib']:
             if os.path.isfile(os.path.join(libraryDirGuess, 'lib'+testLibrary+ext)):
               foundLibrary = 1
               libraryDir   = libraryDirGuess

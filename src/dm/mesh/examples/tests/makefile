@@ -111,16 +111,6 @@ debugcomponent0:
 	-@${MPIEXEC} -np ${NP} ./component0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
-xsifter00: xsifter00.o chkopts
-	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB} 
-	${RM} -f xsifter00.o
-NP = 1
-runxsifter00:
-	-@${MPIEXEC} -np ${NP} ./xsifter00 ${EXTRA_ARGS}
-debugxsifter00:
-	-@${MPIEXEC} -np ${NP} ./xsifter00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
-
-#-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter0.o
@@ -167,6 +157,31 @@ debugxsifter3:
 	-@${MPIEXEC} -np ${NP} ./xsifter3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
 valgrindxsifter3:
 	-@${MPIEXEC} -np ${NP} valgrind ./xsifter3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
+#-----------------------------------------------------------------
+xsieve0: xsieve0.o chkopts
+	-${CLINKER} -o xsieve0 xsieve0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsieve0.o
+NP = 1
+runxsieve0:
+	-@${MPIEXEC} -np ${NP} ./xsieve0 ${EXTRA_ARGS}
+debugxsieve0:
+	-@${MPIEXEC} -np ${NP} ./xsieve0 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsieve0:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsieve0 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
+
+#-----------------------------------------------------------------
+xsieve1: xsieve1.o chkopts
+	-${CLINKER} -o xsieve1 xsieve1.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsieve1.o
+NP = 1
+runxsieve1:
+	-@${MPIEXEC} -np ${NP} ./xsieve1 ${EXTRA_ARGS}
+debugxsieve1:
+	-@${MPIEXEC} -np ${NP} ./xsieve1 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsieve1:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsieve1 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
 
 #-----------------------------------------------------------------

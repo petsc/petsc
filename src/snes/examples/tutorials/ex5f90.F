@@ -178,6 +178,7 @@
       PetscInt ione,nfour
       double precision       lambda_max,lambda_min
       type (userctx)         user
+      type(userctx), pointer:: puser
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -303,9 +304,12 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
-
       call SNESSetFromOptions(snes,ierr)
 
+      call SNESSetApplicationContext(snes,user,ierr)
+      call SNESGetApplicationContext(snes,puser,ierr)
+!      write(*,*) puser%xs  - crash!
+     
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -597,7 +601,7 @@
       Vec          X
       Mat          jac,jac_prec
       MatStructure flag
-      type(userctx) user
+      type(userctx)  user
       PetscErrorCode ierr
 
 !  Declarations for use with local arrays:
