@@ -8,7 +8,7 @@ namespace ALE {
   namespace Test {
     struct XSieveTester : public ::ALE::Test::XSifterTester {
       typedef ALE::Test::XSifterTester                xsifter_tester_type;
-      typedef ALE::XSifterDef::Arrow<int,int,char>    default_arrow_type;
+      typedef ALE::XSifting::Arrow<int,int,char>    default_arrow_type;
       typedef ALE::XSieve<default_arrow_type>         default_xsieve_type;
       //
       ALE::Component::ArgDB argDB;
@@ -16,7 +16,8 @@ namespace ALE {
         argDB(xsifter_tester_type::argDB);
         argDB("treeDepth", "The depth of the tree XSieve", ALE::Component::Arg<int>().DEFAULT(3));
         argDB("treeFanout", "The fanout factor of the tree XSieve: number of children", ALE::Component::Arg<int>().DEFAULT(3));
-        argDB("pt", "The point to compute closure over", ALE::Component::Arg<int>().DEFAULT(1));
+        argDB("pt", "The point to compute the boundary of", ALE::Component::Arg<int>().DEFAULT(1));
+        argDB("traversals", "The number of times to traverse the boundary", ALE::Component::Arg<int>().DEFAULT(1));
       };
       //
       #undef __FUNCT__
@@ -26,7 +27,7 @@ namespace ALE {
         typedef xsieve_type::arrow_type           arrow_type;
         typedef std::set<arrow_type::target_type> RealBase;
         typedef std::set<arrow_type::source_type> RealCone;
-        ALE::Obj<xsieve_type>   tree = new xsieve_type(comm, argDB["debug"]);
+        ALE::Obj<xsieve_type>   tree = new xsieve_type(comm);
         int depth = argDB["treeDepth"], fanout = argDB["treeFanout"], tail = 0;
         _createSubtree(tree, depth, fanout, tail);
         return tree;
@@ -67,10 +68,13 @@ namespace ALE {
         typename arrow_type::target_type pt = argDB["pt"];
         bool silent = argDB["silent"];
         int  testCount = argDB["iterations"];
+        int  traversalCount = argDB["traversals"];
         for(int i = 0; i < testCount; ++i){
-          if(!silent){std::cout << "XSieve Boundary Test: iter: " << i << "\n";}
+          if(!silent){std::cout << "\nXSieve Boundary Test: iter: " << i << "\n";}
           // Boundary Slice
           {
+            if(!silent) {std::cout << "Slice version\n";}
+            static ALE::NoOp<arrow_type> noop;
             ALE::LogStage stage = ALE::LogStageRegister("Boundary Slice Test");
             ALE::LogStagePush(stage);
             string label;
@@ -83,21 +87,23 @@ namespace ALE {
               }
             }
             if(!silent) {
-              std::cout << label << "before taking boundary\n";
-              xsieve->view(std::cout);
+              std::cout << label << "before taking boundary:\n" << (*xsieve) << "\n";
             }
             typename xsieve_type::BoundarySlice bd = xsieve->boundarySlice(pt);
             if(!silent) {
-              std::cout << "bd(" << pt << ")= ";
-              bd.view(std::cout);
+              std::cout << "Slice bd(" << pt << ")= " << bd << "\n";
               std::cout << "\n";
-              std::cout << label << "after taking boundary\n";
-              xsieve->view(std::cout);
+              std::cout << label << "after taking boundary:\n" << (*xsieve) << "\n";
+            }
+            for(int i = 0; i < traversalCount;++i) {
+              bd.traverse(noop);
             }
             ALE::LogStagePop(stage);
           }
           // Boundary Set
           {
+            if(!silent){std::cout << "Set version\n";}
+            static ALE::NoOp<typename arrow_type::source_type> noop;
             ALE::LogStage stage = ALE::LogStageRegister("Boundary Set Test");
             ALE::LogStagePush(stage);
             string label;
@@ -111,9 +117,10 @@ namespace ALE {
             }
             typename xsieve_type::BoundarySet bd = xsieve->boundarySet(pt);
             if(!silent) {
-              std::cout << "bd(" << pt << ")= ";
-              bd.view(std::cout);
-              std::cout << "\n";
+              std::cout << "Set bd(" << pt << ")= " << bd << "\n";
+            }
+            for(int i = 0; i < traversalCount;++i) {
+              bd.traverse(noop);
             }
             ALE::LogStagePop(stage);
           }

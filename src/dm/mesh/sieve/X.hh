@@ -24,17 +24,11 @@ using namespace ::boost::lambda;
 namespace ALE { 
   //
   class XObject {
-  protected:
-    int      _debug;
-    int      _codebug;
   public:
-    XObject(const int debug = 0, const int codebug = 0)    : _debug(debug), _codebug(codebug){};
-    XObject(const XObject& xobject) : _debug(xobject._debug), _codebug(xobject._codebug) {};
-    //
-    inline int      debug(const int debug = -1)   {if(debug >= 0) {this->_debug = debug;} return this->_debug;};
-    inline int      codebug(const int codebug = -1) {if(codebug >= 0) {this->_codebug = codebug;} return this->_codebug;};
+    XObject() {};
+    XObject(const XObject& xobject) {};
   };// class XObject
-
+  //
   class XParallelObject : public XObject {
   protected:
     MPI_Comm _comm;
@@ -47,7 +41,6 @@ namespace ALE {
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
     }
   public:
-    XParallelObject(const MPI_Comm& comm, const int debug = 0, const int codebug = 0)   : XObject(debug, codebug) {this->__setupComm(comm);};
     XParallelObject(const MPI_Comm& comm = PETSC_COMM_WORLD) : XObject()      {this->__setupComm(comm);};
     XParallelObject(const XParallelObject& xpobject)         : XObject(xpobject), _comm(xpobject._comm) {};
     //
@@ -122,6 +115,12 @@ namespace ALE {
     typedef Element_ element_type;
     typedef typename std::template less<element_type> less_than;
   };
+
+  template <typename Argument_>
+  struct NoOp {
+    typedef Argument_ argument_type;
+    void operator()(const argument_type& arg) const{};
+  };// struct NoOp
 
   template <typename Element_, typename Traits_ = SetElementTraits<Element_> , typename Allocator_ = ALE_ALLOCATOR<Element_> >
   class Set : public std::set<Element_, typename Traits_::less_than, Allocator_ > {
@@ -201,6 +200,13 @@ namespace ALE {
       }
     };
     inline void subtract(const Obj<Set>& s) {this->subtract(s.object());};
+    //
+    template <typename Op_>
+    inline void traverse(const Op_& op) {
+      for(iterator iter = this->begin(); iter!= this->end(); ++iter) {
+        op(*iter);
+      }
+    };
     //
     template <typename ostream_type>
     friend ostream_type& operator<<(ostream_type& os, const Set& s) {
