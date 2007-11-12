@@ -3327,16 +3327,17 @@ PetscErrorCode MatEqual_SeqAIJ(Mat A,Mat B,PetscTruth* flg)
         4 5 6
 
         i =  {0,1,3,6}  [size = nrow+1  = 3+1]
-        j =  {0,0,2,0,1,2}  [size = nz = 6]
+        j =  {0,0,2,0,1,2}  [size = nz = 6]; values must be sorted for each row
         v =  {1,2,3,4,5,6}  [size = nz = 6]
 
+        
 .seealso: MatCreate(), MatCreateMPIAIJ(), MatCreateSeqAIJ(), MatCreateMPIAIJWithArrays(), MatMPIAIJSetPreallocationCSR()
 
 @*/
 PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscInt m,PetscInt n,PetscInt* i,PetscInt*j,PetscScalar *a,Mat *mat)
 {
   PetscErrorCode ierr;
-  PetscInt       ii;
+  PetscInt       ii,jj;
   Mat_SeqAIJ     *aij;
 
   PetscFunctionBegin;
@@ -3362,6 +3363,10 @@ PetscErrorCode PETSCMAT_DLLEXPORT MatCreateSeqAIJWithArrays(MPI_Comm comm,PetscI
     aij->ilen[ii] = aij->imax[ii] = i[ii+1] - i[ii];
 #if defined(PETSC_USE_DEBUG)
     if (i[ii+1] - i[ii] < 0) SETERRQ2(PETSC_ERR_ARG_OUTOFRANGE,"Negative row length in i (row indices) row = %d length = %d",ii,i[ii+1] - i[ii]);
+    for (jj=i[ii]+1; jj<i[ii+1]; jj++) {
+      if (j[jj] < j[jj-1]) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is not sorted",jj-i[ii],j[jj],ii);
+      if (j[jj] == j[jj]-1) SETERRQ3(PETSC_ERR_ARG_OUTOFRANGE,"Column entry number %D (actual colum %D) in row %D is identical to previous entry",jj-i[ii],j[jj],ii);
+    }
 #endif    
   }
 #if defined(PETSC_USE_DEBUG)
