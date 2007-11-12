@@ -111,16 +111,6 @@ debugcomponent0:
 	-@${MPIEXEC} -np ${NP} ./component0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
-xsifter00: xsifter00.o chkopts
-	-${CLINKER} -o xsifter00 xsifter00.o ${PETSC_DM_LIB} 
-	${RM} -f xsifter00.o
-NP = 1
-runxsifter00:
-	-@${MPIEXEC} -np ${NP} ./xsifter00 ${EXTRA_ARGS}
-debugxsifter00:
-	-@${MPIEXEC} -np ${NP} ./xsifter00 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
-
-#-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
 	-${CLINKER} -o xsifter0 xsifter0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
 	${RM} -f xsifter0.o

@@ -5,7 +5,7 @@
 
 namespace ALE {
   
-  namespace XSifterDef {
+  namespace XSifting {
 
     //
     // Rec compares
@@ -654,6 +654,16 @@ namespace ALE {
       };// end()
       //
       template<typename ostream_type>
+      friend ostream_type& operator<<(ostream_type& os, const ArrowSequence& seq){
+        os << "[[";
+        for(iterator i = seq.begin(); i != seq.end(); i++) {
+          os << " (" << *i << ")";
+        }
+        os << " ]]";
+        return os;
+      };// operator<<()
+      //
+      template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL){
         if(label != NULL) {
           os << "Viewing " << label << " sequence: ";
@@ -663,13 +673,9 @@ namespace ALE {
           else {
             os << "(key = " << this->key()<<")";
           }
-          os << "\n";
+          os << ": ";
         } 
-        os << "[";
-        for(iterator i = this->begin(); i != this->end(); i++) {
-          os << " (" << *i << ")";
-        }
-        os << " ]" << "\n";
+        os << (*this) << "\n";
       };
       void addArrow(const arrow_type& a) {
         this->_xsifter->addArrow(a);
@@ -795,27 +801,27 @@ namespace ALE {
       ArrowLinkSequence(xsifter_type *xsifter, index_type *index, const key_type& key){reset(xsifter, index, key);};
       virtual ~ArrowLinkSequence() {};
       //
-      void copy(const ArrowLinkSequence& seq, ArrowLinkSequence& cseq) {
+      inline void copy(const ArrowLinkSequence& seq, ArrowLinkSequence& cseq) {
         cseq._xsifter = seq._xsifter; cseq._index = seq._index; cseq._keyless = seq._keyless; cseq._key = seq._key;
       };
-      void reset(xsifter_type *xsifter, index_type* index) {
+      inline void reset(xsifter_type *xsifter, index_type* index) {
         this->_xsifter = xsifter; this->_index = index; this->_keyless = true;
       };
-      void reset(xsifter_type *xsifter, index_type* index, const key_type& key) {
+      inline void reset(xsifter_type *xsifter, index_type* index, const key_type& key) {
         this->_xsifter = xsifter; this->_index = index; this->_key = key; this->_keyless = false;
       };
       ArrowLinkSequence& operator=(const arrow_link_sequence_type& seq) {
         copy(seq,*this); return *this;
       };
-      const value_type value(rec_type const* _rec) {return _vex(*_rec);};
+      inline const value_type value(rec_type const* _rec) {return _vex(*_rec);};
       //
       // Extended interface
       //
-      const xsifter_type&       xsifter()                    const {return *this->_xsifter;};
-      const index_type&         index()                      const {return *this->_index;};
-      const bool&               keyless()                    const {return this->_keyless;};
-      const key_type&           key()                        const {return this->_key;};
-      const value_type&         value(const rec_type*& rec)  const {this->_vex(*rec);};
+      inline const xsifter_type&       xsifter()                    const {return *this->_xsifter;};
+      inline const index_type&         index()                      const {return *this->_index;};
+      inline const bool&               keyless()                    const {return this->_keyless;};
+      inline const key_type&           key()                        const {return this->_key;};
+      inline const value_type&         value(const rec_type*& rec)  const {this->_vex(*rec);};
     protected:
       // aux
       inline rec_type* itor_to_rec_ptr(const itor_type& itor) {
@@ -843,7 +849,7 @@ namespace ALE {
       #define __FUNCT__ "begin"
       #undef  __ALE_XDEBUG__
       #define __ALE_XDEBUG__ 6
-      virtual iterator begin() {
+      inline iterator begin() {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << std::endl;
@@ -897,7 +903,7 @@ namespace ALE {
       #define __FUNCT__ "next"
       #undef  __ALE_XDEBUG__
       #define __ALE_XDEBUG__ 6
-      virtual void next(rec_type*& _rec, rec_type*& _seg) {
+      inline void next(rec_type*& _rec, rec_type*& _seg) {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << "\n";
@@ -941,7 +947,7 @@ namespace ALE {
       #define __FUNCT__ "end"
       #undef  __ALE_XDEBUG__
       #define __ALE_XDEBUG__ 6
-      virtual iterator end() {
+      inline iterator end() {
 #ifdef ALE_USE_DEBUGGING
         if(ALE_XDEBUG) {
           std::cout << __CLASS__ << "::" << __FUNCT__ << ":>>>" << "\n";
@@ -977,6 +983,16 @@ namespace ALE {
       };// end()
       //
       template<typename ostream_type>
+      friend ostream_type& operator<<(ostream_type& os, const ArrowLinkSequence& seq){
+        os << "[[";
+        for(iterator i = seq.begin(); i != seq.end(); i++) {
+          os << " (" << *i << ")";
+        }
+        os << " ]]";
+        return os;
+      };
+      //
+      template<typename ostream_type>
       void view(ostream_type& os, const char* label = NULL){
         if(label != NULL) {
           os << "Viewing " << label << " sequence: ";
@@ -986,13 +1002,9 @@ namespace ALE {
           else {
             os << "(key = " << this->key()<<")";
           }
-          os << "\n";
+          os << ": ";
         } 
-        os << "[";
-        for(iterator i = this->begin(); i != this->end(); i++) {
-          os << " (" << *i << ")";
-        }
-        os << " ]" << "\n";
+        os << (*this) << "\n";
       };
       void addArrow(const arrow_type& a) {
         this->_xsifter->addArrow(a);
@@ -1001,485 +1013,144 @@ namespace ALE {
     };// class ArrowLinkSequence  
 
 
-    //
-    // Slicing
-    //
-    //
-    // NoSlices exception is thrown where no new slice can be allocated
-    //
-    struct NoSlices : public ::ALE::XException {
-      NoSlices() : ALE::XException("No slices left"){};
+    struct NoSlices : public ALE::XException {
+      NoSlices() : ALE::XException("No slices available for allocation"){};
     };
-    namespace Slicing {  
+
+    //
+    // Slicer allocates slices, up to MAX_SLICE_DEPTH
+    //
+    template <typename Arrow_, typename Marker_, int MAX_SLICE_DEPTH>
+    struct Slicer {
       //
-      // A Slice Rec<n> encodes n levels of pointers and markers above the base Arrow_ type
-      // 
-      template <typename Arrow_, typename Marker_, int n>
-      struct Rec : public Rec<Arrow_,Marker_,n-1> {
-        typedef Arrow_                                  arrow_type;
-        typedef Marker_                                 marker_type;
-        typedef Rec<Arrow_,Marker_,n-1>                 pre_rec_type;
-        // Slice pointer
-        Rec         * next;
-        // Marker stored alongside the arrow data
-        marker_type marker;
-      public:
-        // Basic interface
-        Rec(const Rec& rec)        : pre_rec_type(rec), next(NULL), marker(marker_type()) {};
-        Rec(const arrow_type& arr) : pre_rec_type(arr), next(NULL), marker(marker_type()) {};
-        Rec(const arrow_type& arr, const marker_type& m) : pre_rec_type(arr), next(NULL), marker(marker_type()){};
-        // Printing
-        friend std::ostream& operator<<(std::ostream& os, const Rec& r) {
-          os << "<" << r.marker << ">" << "[" << (pre_rec_type)r << "]";
-          return os;
-        }
-      };// struct Rec
-      //
-      // A Slice Rec<0> inherits from Arrow_ but doesn't extend it: the base case of the Rec<n> type hierarchy.
-      // It must have construction interface expected by the descendant Rec<1> type.
-      template <typename Arrow_, typename Marker_>
-      struct Rec<Arrow_, Marker_, 0> : public Arrow_ {
-        typedef Arrow_                                  arrow_type;
-        typedef Marker_                                 marker_type;
+      struct Rec : public Arrow_ {
+        typedef Arrow_ arrow_type;
+        typedef Marker_ marker_type;
         //
-        Rec(const Rec& rec)        : arrow_type(rec) {};
-        Rec(const arrow_type& arr) : arrow_type(arr) {};
-        Rec(const arrow_type& arr, const marker_type& m) : arrow_type(arr) {};
+        Rec*        nexts[MAX_SLICE_DEPTH];
+        marker_type markers[MAX_SLICE_DEPTH];
+        Rec(){for(int i = 0; i<MAX_SLICE_DEPTH;++i) {nexts[i] = NULL; markers[i] = marker_type();}};
+        Rec(const arrow_type& rec) : arrow_type(rec) {for(int i = 0; i<MAX_SLICE_DEPTH;++i) {nexts[i] = NULL; markers[0] = marker_type();}};
       };
-
+      // encapsulated types
+      typedef Rec                               rec_type;
+      typedef Marker_                           marker_type;
+      typedef typename rec_type::arrow_type     arrow_type;
       //
-      //   Slicer<n> is capabale of allocating n slices, wrapped up in Rec_, which must extend Rec<n>.
-      // Marker_ is essentially anything and n > 0.
-      //   The presentation of the interface is done in terms of two canonical types: 
-      // the_rec_type and the_slice_type: the_slice_type objects contain the_rec_type records.
-      // While the_rec_type == Rec_ descends from the 'top', the_slice_type comes up from the 'bottom' by being 
-      // inherited from the ancestral pre_slicer_type.
-      //   Rationale: the easiest way to construct a record with several levels of data -- markers
-      // and sequence pointers -- is via a class hierarchy, each adding the required extra data members.
-      // Hence, the hierarchy of record classes topped by the canonical or universal record type -- the_rec_type.
-      // Each slice is defined by the sequence pointers at a given level, hence, a separate slice type that 
-      // operates on the data members at the correct level by casting the_rec_type objects to an ancestor rec_type,
-      // which defines a single (incremental) level of data members only.
-      //   Since the user wants just an unused slice at any level, without having to worry about the different 
-      // types that go with different levels.  Thus, the slices returned to the user must be of some canonical 
-      // type -- the_slice_type.  The same applies to the iterator type that the_slice_presents presents.
-      // The easiest way to construct a dispatch mechanism, which traverses the hierarchy in search of any free
-      // slice, is via a corresponding hierarchy of slicers, which either hold a free slice that can be returned,
-      // or forward the call down the hierarchy.  The top-level slicer class is presented to the user and initiates
-      // the forwarding sequence;  the hierarchy bottoms out at the dummy slicer that returns nothing and throws
-      // an exception.
-      //   Note that objects of the_slice_type are RETURNED by a slicer, hence, each particular slice_type
-      // object must be castable to the_slice_type.  At the same time, the_rec_objects are ACCEPTED by 
-      // slice_type objects, hence, must be castable to each particular rec_type.  This explains the direction
-      // of inheritance: from the_slicer_type and to the_rec_type.
-      //   Note finally that slice destruction must be virtualized, since the slice must be released in the appropriate
-      // slicer, while the user only has a reference to an object of the_slice_type.
-      //   Also see the construction of the_slice_type in Slicer<0>
-      //
-      template <typename Rec_, typename Marker_, int n>
-      struct Slicer : public Slicer<Rec_, Marker_,n-1> {
+      struct Slice {
+        typedef Slicer slicer_type;
+        typedef Slice   slice_type;
+        typedef Rec     rec_type;
         //
-      public:
-        // ancestor
-        typedef Slicer<Rec_, Marker_,n-1>                 pre_slicer_type;
-        // canonical types
-        typedef typename pre_slicer_type::the_slice_type  the_slice_type;
-        typedef Rec_                                      the_rec_type;
-        typedef Marker_                                   marker_type;
-        // local types
-        typedef Rec<typename the_rec_type::arrow_type, Marker_,n>  rec_type;
-        //
-        // Slice extends the canonical the_slicer_type; 
-        // Slice is essentially a Sequence, in particular, it defines an iterator
-        struct Slice : public the_slice_type {
-          // canonical types
-          typedef Rec_                                    the_rec_type;
-          typedef Marker_                                 marker_type;
-          typedef typename the_slice_type::iterator       iterator;
-          // local types
-          typedef Slicer                                  slicer_type;
-          typedef typename slicer_type::rec_type          rec_type;
+        class iterator {
+          // Standard iterator typedefs
+          typedef arrow_type                                     value_type;
+          typedef std::input_iterator_tag                        iterator_category;
+          typedef int                                            difference_type;
+          typedef value_type*                                    pointer;
+          typedef value_type&                                    reference;
         protected:
-          slicer_type& _slicer;
-          rec_type* _head;
-          rec_type* _tail;
+          slice_type  *_slice;
+          rec_type    *_rec;
         public:
-          // 
-          // Basic interface
-          //
-          Slice(slicer_type& slicer) : _slicer(slicer), _head(NULL), _tail(NULL){};
-          virtual ~Slice() { this->_slicer.give_back(this);};
-          //
-          // Main interface
-          //
-          virtual iterator begin(){ return iterator(this, this->_head);}; 
-          virtual iterator end(){ return iterator(this, NULL);}; 
-          virtual void add(the_rec_type& therec, marker_type marker) {
-            rec_type& rec = therec; // cast to rec_type
-            // add &rec at the tail of the slice linked list
-            // we assume that rec is not transient;
-            // set the current slice tail to point to rec 
-            //   CAUTION: hoping for no cycles; can check itor's slice_marker, but will hurt performance
-            //   However, the caller should really be checking that rec is not in the slice yet; otherwise the 'set' semantics are violated.
-            // Also, this in principle violates multi_index record update rules, 
-            //   since we are directly manipulating the record, but that's okay, since 
-            //   slice data that we are updating is not used in the container ordering.
-            rec.next = NULL;
-            rec.marker = marker;
-            if(this->_tail != NULL) { // slice already has recs in it
-              this->_tail->next = &rec;
-            }
-            else { // first rec in the slice
-              this->_head = &rec;
-            }
-            this->_tail = &rec;
-            
+          iterator() :_slice(NULL), _rec(NULL) {};
+          iterator(slice_type* _slice, rec_type* _rec)     : _slice(_slice), _rec(_rec){};
+          iterator(const iterator& iter)                   : _slice(iter._slice), _rec(iter._rec){};
+        public:
+          iterator   operator=(const  iterator& iter) {
+            this->_slice = iter._slice;
+            this->_rec   = iter._rec; 
+            return *this;
           };
-          virtual marker_type marker(const the_rec_type& therec) {
-            const rec_type& rec = therec; // cast to rec_type 
-            return rec.marker;
+          inline bool       operator==(const iterator& iter) const {return this->_slice == iter._slice && this->_rec == iter._rec;};
+          inline bool       operator!=(const iterator& iter) const {return this->_slice != iter._slice || this->_rec != iter._rec;};
+          inline iterator   operator++() {
+            this->_rec = this->_rec->nexts[this->_slice->rank()];
+            return *this;
           };
-          virtual marker_type marker(const iterator& iter) {
-            rec_type& rec = the_slice_type::rec(iter); // cast to rec_type
-            return rec.marker;
-          };
-          virtual void next(iterator& iter) {
-            rec_type& rec = the_slice_type::rec(iter); // cast to rec_type
-            the_slice_type::reset_rec(iter,*(rec.next)); // make pointer point to the next rec
-          };
-          virtual void clean() {
-            iterator iter = this->begin(); 
-            iterator end = this->end();
-            for(;iter != end;) {
-              iterator tmp = iter; 
-              ++iter;
-              rec_type& rec = the_slice_type::rec(tmp);
-              rec.marker = marker_type();
-              /*rec.next   = NULL;*/ // FIX: this is, in principle, unnecessary, as long as the head and tail are wiped out
-            }
-            this->_head = NULL; this->_tail = NULL;
-          };//clean()
-          };// struct Slice
-        typedef Slice slice_type;
-      public:
-        //
-        // Basic interface
-        //
-        Slicer() : _taken(false) {};
-       ~Slicer() {};
-        //
-        // Main
-        //
-        // take() must return Obj<the_slice_type> rather than the_slice_type*,
-        // since the latter need not be automatically destroyed and cleaned.
-        // It would be unnatural (and possibly unallowed by the Obj interface)
-        // to return a the_slice_type* to be wrapped as Obj later.
-        inline Obj<the_slice_type> take() { 
-          if(!this->_taken) {
-            this->_taken = true;
-            return Obj<the_slice_type>(new slice_type(*this));
-          }
-          else {
-            return this->pre_slicer_type::take();
-          }
-        };// take()
-        //
-        // give_back() cannot accept Obj<the_slice_type>, since it is intended
-        // to be called from the_slice_type's destructor, which has no Obj.
-        inline void give_back(the_slice_type* slice) {
-          slice->clean();
-          this->_taken = false;
-        };// give_back()
-      protected:
-        bool _taken;
-      };// struct Slicing::Slicer<n>
-      
-      
-      //
-      // Slicer<0> allocates no Slices, throws a NoSlices exception,
-      // when a slice is being 'taken' or 'returned'.
-      // However, it defines the base calsses for the Slice and iterator
-      // hierarchy that are used by more sophisticated Slicers.
-      // Slicer/Slice is a hierarchical construction that dispatches further
-      // along the hierarchy, if a slice cannot be allocated locally.
-      // Still, we need to return a common iterator class, which is defined
-      // in Slicer<0>.  Slicer<0> also terminates the forwarding hierarchy.
-      //
-      template <typename Rec_, typename Marker_>
-      struct Slicer<Rec_, Marker_, 0> {
-        // canonical types
-        typedef Rec_                              the_rec_type;
-        typedef Marker_                           marker_type;
-        typedef typename the_rec_type::arrow_type arrow_type;
-        // local types
-        typedef Rec_                              rec_type;
-        //
-        struct Slice {
-          // canonical types
-          typedef Slice the_slice_type;
-          typedef Rec_  the_rec_type;
-          // local types
-          typedef Slice slice_type;
-          typedef Rec_  rec_type;
+          inline iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
           //
-          // iterator dispatches to Slice for the fundamental 'next' operation.
-          // That method is virtual in Slice and is overloaded by Slice's descendants.
-          //
-          class iterator {
-            friend class Slice;
-          public:
-            // Standard iterator typedefs
-            typedef arrow_type                                     value_type;
-            typedef std::input_iterator_tag                        iterator_category;
-            typedef int                                            difference_type;
-            typedef value_type*                                    pointer;
-            typedef value_type&                                    reference;
-          protected:
-            the_slice_type  *_slice;
-            the_rec_type    *_rec;
-          public:
-            iterator() :_slice(NULL), _rec(NULL) {};
-            iterator(the_slice_type *_slice, the_rec_type* _rec) : _slice(_slice), _rec(_rec) {};
-            iterator(const iterator& iter)             : _slice(iter._slice), _rec(iter._rec) {};
-          public:
-            iterator   operator=(const  iterator& iter) {
-              this->_slice = iter._slice;
-              this->_rec   = iter._rec; 
-              return *this;
-            };
-            //   Can equality comparison be done across different slices?  
-            // In principle, same rec pointer can be used by several different slices at different levels.
-            // Is it the right idea to say that two iterators from different slices pointing to these two
-            // different recs are equal?  For the moment, we treat them as different for safety
-            bool       operator==(const iterator& iter) const {return this->_slice == iter._slice && this->_rec == iter._rec;};
-            bool       operator!=(const iterator& iter) const {return this->_slice != iter._slice || this->_rec != iter._rec;};
-            iterator   operator++() {
-              // We don't want to make the increment operator virtual, since this entails
-              // carrying of a vtable point around with each iterator object.
-              // instead, we shift the indirection (of a vtable lookup) to the Slice object.
-              this->_slice->next(*this);
-              return *this;
-            };
-            iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
-            //
-            const arrow_type& arrow()     const {return *(this->_rec);}; // we assume Rec_ implements the Arrow concept.
-            const arrow_type& operator*() const {return this->arrow();};            
-          };// iterator
+          inline const arrow_type& arrow()     const {return *(this->_rec);}; // we assume Rec_ implements the Arrow concept.
+          inline const arrow_type& operator*() const {return this->arrow();};            
+          inline       marker_type marker()    const {return this->_slice->marker(*(this->_rec));};
+        };// iterator
           //
           // Basic
           //
-          Slice(){};
-          Slice(const Slice& slice){};
-          virtual ~Slice(){};
-          //
-          // Main (an abstract interface that never gets invoked, but defines the interface for descendants).
-          // 
-          virtual iterator    begin()=0; 
-          virtual iterator    end()=0; 
-          virtual void        next(iterator& iter)=0;
-          //
-          virtual void        add(the_rec_type& rec, marker_type marker)=0;
-          virtual marker_type marker(const the_rec_type& rec)=0;
-          virtual marker_type marker(const iterator& iter)=0;
-          virtual void        clean()=0;
-        protected:
-          the_rec_type& rec(const iterator& iter) const {return *(iter._rec);};
-          void          reset_rec(iterator& iter, the_rec_type& rec) const {iter._rec = &rec;};
-        };// Slice
-        // canonical slice type
-        typedef Slice    the_slice_type;
-        // local slice type
-        typedef Slice slice_type;
-      public:
+        Slice(slicer_type* slicer, int rank) : _slicer(slicer), _head(NULL), _tail(NULL), _rank(rank) {};
+        virtual ~Slice() {this->_slicer->give_back(this);};
         //
-        // Basic
+        // Main interface
         //
-        Slicer(){};
-        virtual ~Slicer(){};
-        //
-        // Main
-        //
-        Obj<the_slice_type> take()                          {ALE::XSifterDef::NoSlices e; throw e; return Obj<the_slice_type>();};
-        void                give_back(the_slice_type* slice){ALE::XSifterDef::NoSlices e; throw e;};
-      };// class Slicing::Slicer<0>
-
-      //
-      //
-      template <typename PreRec_, typename Marker_, int MAX_SLICE_DEPTH>
-      struct nSlicer {
-        //
-        struct Rec : public PreRec_ {
-          typedef PreRec_ pre_rec_type;
-          typedef Marker_ marker_type;
-          //
-          Rec*        nexts[MAX_SLICE_DEPTH];
-          marker_type markers[MAX_SLICE_DEPTH];
-          Rec(){for(int i = 0; i<MAX_SLICE_DEPTH;++i) {nexts[i] = NULL; markers[i] = marker_type();}};
-          Rec(const pre_rec_type& rec) : pre_rec_type(rec) {for(int i = 0; i<MAX_SLICE_DEPTH;++i) {nexts[i] = NULL; markers[0] = marker_type();}};
+        inline iterator begin(){ return iterator(this, this->_head);}; 
+        inline iterator end(){ return iterator(this, NULL);}; 
+        inline void add(rec_type& rec, marker_type marker) {
+          // Add &rec at the tail of the slice linked list; assume that rec is not transient.
+          // Direct manipulation of rec in principle violates multi_index record update rules, 
+          //   since we are directly manipulating the record, but that's okay, since 
+          //   slice data that we are updating is not used in the container ordering.
+          rec.nexts[this->_rank] = NULL;
+          rec.markers[this->_rank] = marker;
+          if(this->_tail != NULL) { // slice already has recs in it
+            this->_tail->nexts[this->_rank] = &rec;
+          }
+          else { // first rec in the slice
+            this->_head = &rec;
+          }
+          this->_tail = &rec;
+          
         };
-        // encapsulated types
-        typedef Rec                               rec_type;
-        typedef Marker_                           marker_type;
-        typedef typename rec_type::arrow_type     arrow_type;
-        //
-        struct Slice {
-          typedef nSlicer slicer_type;
-          typedef Slice   slice_type;
-          typedef Rec     rec_type;
-          //
-          class iterator {
-            // Standard iterator typedefs
-            typedef arrow_type                                     value_type;
-            typedef std::input_iterator_tag                        iterator_category;
-            typedef int                                            difference_type;
-            typedef value_type*                                    pointer;
-            typedef value_type&                                    reference;
-          protected:
-            slice_type  *_slice;
-            rec_type    *_rec;
-          public:
-            iterator() :_slice(NULL), _rec(NULL) {};
-            iterator(slice_type* _slice, rec_type* _rec)     : _slice(_slice), _rec(_rec){};
-            iterator(const iterator& iter)                   : _slice(iter._slice), _rec(iter._rec){};
-          public:
-            iterator   operator=(const  iterator& iter) {
-              this->_slice = iter._slice;
-              this->_rec   = iter._rec; 
-              return *this;
-            };
-            inline bool       operator==(const iterator& iter) const {return this->_slice == iter._slice && this->_rec == iter._rec;};
-            inline bool       operator!=(const iterator& iter) const {return this->_slice != iter._slice || this->_rec != iter._rec;};
-            inline iterator   operator++() {
-              this->_rec = this->_rec->nexts[this->_slice->rank()];
-              return *this;
-            };
-            inline iterator   operator++(int n) {iterator tmp(*this); ++(*this); return tmp;};
-            //
-            inline const arrow_type& arrow()     const {return *(this->_rec);}; // we assume Rec_ implements the Arrow concept.
-            inline const arrow_type& operator*() const {return this->arrow();};            
-            inline       marker_type marker()    const {return this->_slice->marker(*(this->_rec));};
-          };// iterator
-          //
-          // Basic
-          //
-          Slice(slicer_type* slicer, int rank) : _slicer(slicer), _head(NULL), _tail(NULL), _rank(rank) {};
-          virtual ~Slice() {this->_slicer->give_back(this);};
-          //
-          // Main interface
-          //
-          inline iterator begin(){ return iterator(this, this->_head);}; 
-          inline iterator end(){ return iterator(this, NULL);}; 
-          inline void add(rec_type& rec, marker_type marker) {
-            // Add &rec at the tail of the slice linked list; assume that rec is not transient.
-            // Direct manipulation of rec in principle violates multi_index record update rules, 
-            //   since we are directly manipulating the record, but that's okay, since 
-            //   slice data that we are updating is not used in the container ordering.
-            rec.nexts[this->_rank] = NULL;
-            rec.markers[this->_rank] = marker;
-            if(this->_tail != NULL) { // slice already has recs in it
-              this->_tail->nexts[this->_rank] = &rec;
-            }
-            else { // first rec in the slice
-              this->_head = &rec;
-            }
-            this->_tail = &rec;
-            
-          };
-          inline marker_type marker(const rec_type& rec) {
-            return rec.markers[this->_rank];
-          };
-          inline void clean() {
-            for(rec_type *_rec = this->_head; _rec != NULL; ) {
-              rec_type* tmp = _rec; 
-              _rec = _rec->nexts[this->_rank];
-              tmp->markers[this->_rank] = marker_type();
-              /*tmp.nexts[this->_rank] = NULL;*/ // FIX: this is, in principle, unnecessary, as long as the head and tail are wiped out
-            }
-            this->_head = NULL; this->_tail = NULL;
-          };//clean()
-          //      
-          template <typename Op_>
-          inline void traverse(const Op_& op) {
-            for(rec_type *_rec = this->_head; _rec != NULL; _rec = _rec->nexts[this->_rank]) {
-              op(*_rec);
-            }
-          };// traverse()
-          //
-          template <typename Op_>
-          inline void traverseAndClean(const Op_& op) {
-            for(rec_type *_rec = this->_head; _rec != NULL; ) {
-              rec_type* tmp = _rec;
-              _rec = _rec->nexts[this->_rank];
-              op(*tmp);
-              tmp->markers[this->rank] = marker_type();
-            }
-          };// traverseAndClean()
-          //
-          inline int rank() {return this->_rank;};
-        protected:
-          slicer_type* _slicer;
-          rec_type  *_head, *_tail;
-          int       _rank;
-        protected:
-          inline rec_type& rec(const iterator& iter) const {return *(iter._rec);};
-          inline void      reset_rec(iterator& iter, rec_type& rec) const {iter._rec = &rec;};
-        };// Slice
-        typedef Slice slice_type;
-      public:
-        //
-        // Basic
-        //
-        nSlicer(){};
-        virtual ~nSlicer(){};
-        //
-        // Main
-        //
-        // take() must return Obj<the_slice_type> rather than the_slice_type*,
-        // since the latter need not be automatically destroyed and cleaned.
-        // It would be unnatural (and possibly unallowed by the Obj interface)
-        // to return a the_slice_type* to be wrapped as Obj later.
-        inline Obj<slice_type> take() { 
-          for(int i = 0; i < MAX_SLICE_DEPTH; ++i) {
-            if(!this->_taken[i]) {
-              this->_taken[i] = true;
-              return Obj<slice_type>(new slice_type(this, i));
-            }
+        inline marker_type marker(const rec_type& rec) {
+          return rec.markers[this->_rank];
+        };
+        inline void clean() {
+          for(rec_type *_rec = this->_head; _rec != NULL; ) {
+            rec_type* tmp = _rec; 
+            _rec = _rec->nexts[this->_rank];
+            tmp->markers[this->_rank] = marker_type();
+            /*tmp.nexts[this->_rank] = NULL;*/ // FIX: this is, in principle, unnecessary, as long as the head and tail are wiped out
           }
-          throw NoSlices();
-        };// take()
-        //
-        // give_back() cannot accept Obj<the_slice_type>, since it is intended
-        // to be called from the_slice_type's destructor, which has no Obj.
-        inline void give_back(slice_type* slice) {
-          slice->clean();
-          this->_taken[slice->rank()] = false;
-        };// give_back()
+          this->_head = NULL; this->_tail = NULL;
+        };//clean()
+          //      
+        template <typename Op_>
+        inline void traverse(const Op_& op) {
+          for(rec_type *_rec = this->_head; _rec != NULL; _rec = _rec->nexts[this->_rank]) {
+            op(*_rec);
+          }
+        };// traverse()
+          //
+        template <typename Op_>
+        inline void traverseAndClean(const Op_& op) {
+          for(rec_type *_rec = this->_head; _rec != NULL; ) {
+            rec_type* tmp = _rec;
+            _rec = _rec->nexts[this->_rank];
+            op(*tmp);
+            tmp->markers[this->rank] = marker_type();
+          }
+        };// traverseAndClean()
+          //
+        inline int rank() {return this->_rank;};
       protected:
-        bool _taken[MAX_SLICE_DEPTH];
-      };// class Slicing::nSlicer
+        slicer_type* _slicer;
+        rec_type  *_head, *_tail;
+        int       _rank;
+      protected:
+        inline rec_type& rec(const iterator& iter) const {return *(iter._rec);};
+        inline void      reset_rec(iterator& iter, rec_type& rec) const {iter._rec = &rec;};
+      };// Slice
+      typedef Slice slice_type;
       //
-    }//namespace Slicing
-
-    //
-    //
-    //
-    template<typename Arrow_, typename Marker_, int MAX_SLICE_DEPTH>
-    class Slicer : public Slicing::nSlicer<Arrow_, Marker_, MAX_SLICE_DEPTH> {
-    public:
-      typedef Slicing::nSlicer<Arrow_, Marker_, MAX_SLICE_DEPTH> super;
       //
-      typedef typename super::rec_type                  rec_type;
-      typedef typename super::slice_type                slice_type;
-      typedef Marker_                                   marker_type;
       //
       template <typename Extractor_>
       class SliceSequence : public Obj<slice_type> {
       public:
-        typedef typename super::slice_type::rec_type  rec_type;
+        typedef typename slice_type::rec_type         rec_type;
         typedef typename rec_type::marker_type        marker_type;
         typedef typename rec_type::arrow_type         arrow_type;
         //
-        class iterator : public super::slice_type::iterator {
+        class iterator : public slice_type::iterator {
         public:
           typedef Extractor_                                     extractor_type;
           typedef typename slice_type::iterator                  the_iterator;
@@ -1523,7 +1194,7 @@ namespace ALE {
         template<typename ostream_type>
         friend ostream_type& operator<<(ostream_type& os, const SliceSequence& slice){
           // FIX: avoiding iterators might make it faster, although it hardly matters when viewing.
-          os << ":\n[[ ";
+          os << "[[ ";
           iterator sbegin = slice.begin();
           iterator send = slice.end();
           iterator iter;
@@ -1533,17 +1204,51 @@ namespace ALE {
           os << "]]";
           return os;
         };//operator<<()
-        //
+          //
         template<typename ostream_type>
         void view(ostream_type& os, const char* label = NULL){
           os << "Viewing SliceSequence";
           if(label != NULL) {
             os << " " << label;
           } 
+          os << ": ";
           os << (*this) << "\n";
         };//view()
       };//SliceSequence()
-    }; // class Slicer
+    public:
+      //
+      // Basic
+      //
+      Slicer(){};
+      virtual ~Slicer(){};
+      //
+      // Main
+      //
+      // take() must return Obj<the_slice_type> rather than the_slice_type*,
+      // since the latter need not be automatically destroyed and cleaned.
+      // It would be unnatural (and possibly unallowed by the Obj interface)
+      // to return a the_slice_type* to be wrapped as Obj later.
+      inline Obj<slice_type> take() { 
+        for(int i = 0; i < MAX_SLICE_DEPTH; ++i) {
+          if(!this->_taken[i]) {
+            this->_taken[i] = true;
+            return Obj<slice_type>(new slice_type(this, i));
+          }
+        }
+        throw NoSlices();
+      };// take()
+        //
+        // give_back() cannot accept Obj<the_slice_type>, since it is intended
+        // to be called from the_slice_type's destructor, which has no Obj.
+      inline void give_back(slice_type* slice) {
+        slice->clean();
+        this->_taken[slice->rank()] = false;
+      };// give_back()
+    protected:
+      bool _taken[MAX_SLICE_DEPTH];
+    };// class Slicer
+    
+
 
 
     // Definitions of typical XSifter usage of records, orderings, etc.
@@ -1560,16 +1265,16 @@ namespace ALE {
       >
     {};
 
-  }; // namespace XSifterDef
+  }; // namespace XSifting
 
   
   //
   // XSifter definition
   //
   template<typename Arrow_, 
-           typename TailOrder_  = XSifterDef::SourceColorOrder<Arrow_>,
+           typename TailOrder_  = XSifting::SourceColorOrder<Arrow_>,
            int SliceDepth = 1>
-  struct XSifter : XObject { // struct XSifter
+  struct XSifter : XParallelObject { // struct XSifter
     //
     typedef XSifter xsifter_type;
     //
@@ -1579,10 +1284,6 @@ namespace ALE {
     typedef Arrow_                                                 arrow_type;
     typedef typename arrow_type::source_type                       source_type;
     typedef typename arrow_type::target_type                       target_type;
-    // Right now we assume that arrows have color;  this allows for splitting cones on color.
-    // It is not necessary in general, but it will require two different XSfiter types: with and without color.
-    // This is because an XSifter with color has a wider interface: retrieve the subcone with a given color.
-    typedef typename arrow_type::color_type                        color_type;
 
     
     // 
@@ -1597,14 +1298,13 @@ namespace ALE {
     //
     typedef ALE_CONST_MEM_FUN(arrow_type, source_type&,    &arrow_type::source)    source_extractor_type;
     typedef ALE_CONST_MEM_FUN(arrow_type, target_type&,    &arrow_type::target)    target_extractor_type;
-    typedef ALE_CONST_MEM_FUN(arrow_type, color_type&,     &arrow_type::color)     color_extractor_type;
     typedef ALE_CONST_MEM_FUN(arrow_type, arrow_type&,     &arrow_type::arrow)     arrow_extractor_type;
 
     //
     // Slicing
     //
-    typedef ::ALE::XSifterDef::Slicer<arrow_type, int, SliceDepth>       slicer_type;
-    typedef typename slicer_type::slice_type                             slice_type;
+    typedef ::ALE::XSifting::Slicer<arrow_type, int, SliceDepth>        slicer_type;
+    typedef typename slicer_type::slice_type                            slice_type;
 
 #ifdef ALE_XSIFTER_USE_ARROW_LINKS
     // 
@@ -1615,7 +1315,6 @@ namespace ALE {
       typedef typename xsifter_type::arrow_type arrow_type;
       typedef typename arrow_type::source_type  source_type;
       typedef typename arrow_type::target_type  target_type;
-      typedef typename arrow_type::color_type   color_type;
       proto_rec_type* cone_next;
       //proto_rec_type* support_next;
       proto_rec_type(const arrow_type& a) : slicer_type::rec_type(a){};
@@ -1629,7 +1328,6 @@ namespace ALE {
     // Pre-defined SliceSequences
     typedef typename slicer_type::template SliceSequence<source_extractor_type>   SourceSlice;
     typedef typename slicer_type::template SliceSequence<target_extractor_type>   TargetSlice;
-    typedef typename slicer_type::template SliceSequence<color_extractor_type>    ColorSlice;
     typedef typename slicer_type::template SliceSequence<arrow_extractor_type>    ArrowSlice;
 
     //
@@ -1640,9 +1338,9 @@ namespace ALE {
     //
     // Rec 'Cone' order type: first order by target then using a custom tail_order
     typedef 
-    XSifterDef::RecKeyXXXOrder<rec_type, 
+    XSifting::RecKeyXXXOrder<rec_type, 
                                target_extractor_type, target_order_type,
-                               XSifterDef::RecKeyOrder<rec_type, arrow_extractor_type, tail_order_type> >
+                               XSifting::RecKeyOrder<rec_type, arrow_extractor_type, tail_order_type> >
     cone_order_type;
     //
     // Index tags
@@ -1669,21 +1367,21 @@ namespace ALE {
     // Sequence types
     //
 #ifdef ALE_XSIFTER_USE_ARROW_LINKS
-    typedef ALE::XSifterDef::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, target_extractor_type>   BaseSequence;
-    typedef ALE::XSifterDef::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, source_extractor_type>   ConeSequence;
-    typedef ALE::XSifterDef::ArrowLinkSequence<xsifter_type, cone_index_type, arrow_extractor_type,  cone_next_extractor_type, source_extractor_type>   ColorConeSequence;
+    typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, target_extractor_type>   BaseSequence;
+    typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, source_extractor_type>   ConeSequence;
+    typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, arrow_extractor_type,  cone_next_extractor_type, source_extractor_type>   ConeSwitchSequence;
 #else
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, target_extractor_type>   BaseSequence;
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, source_extractor_type>   ConeSequence;
-    typedef ALE::XSifterDef::ArrowSequence<xsifter_type, cone_index_type, arrow_extractor_type,  source_extractor_type>   ColorConeSequence;
+    typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, target_extractor_type>   BaseSequence;
+    typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, source_extractor_type>   ConeSequence;
+    typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, arrow_extractor_type,  source_extractor_type>   ConeSwitchSequence;
 #endif
     //
     //
     // Basic interface
     //
     //
-    XSifter(const MPI_Comm comm, int debug = 0) : // FIX: Should really inherit from XParallelObject
-      XObject(debug), _rec_set(), 
+    XSifter(const MPI_Comm comm) : 
+      XParallelObject(comm), _rec_set(), 
       _cone_index(::boost::multi_index::get<ConeTag>(this->_rec_set))
     {};
     //
@@ -1739,15 +1437,17 @@ namespace ALE {
       return cseq;
     };
     //
-    void cone(const target_type& t, const color_type& c, ColorConeSequence& ccseq) {
-      static ALE::pair<target_type, color_type> comb_key;
-      comb_key.first = t; comb_key.second = c;
+    template <typename Switch_>
+    void cone(const target_type& t, const Switch_& s, ConeSwitchSequence& ccseq) {
+      static ALE::pair<target_type, Switch_> comb_key;
+      comb_key.first = t; comb_key.second = s;
       ccseq.reset(this, &_cone_index, comb_key);
     };
     //
-    ColorConeSequence& cone(const target_type& t, const color_type& c) {
-      static ColorConeSequence ccseq;
-      this->cone(t,c,ccseq);
+    template <typename Switch_>
+    ConeSwitchSequence& cone(const target_type& t, const Switch_& s) {
+      static ConeSwitchSequence ccseq;
+      this->cone(t,s,ccseq);
       return ccseq;
     };
     //
@@ -1763,18 +1463,24 @@ namespace ALE {
     slice_type slice(){return this->_slicer.take();};
     //
     template<typename ostream_type>
-    void view(ostream_type& os, const char* label = NULL){
-      if(label != NULL) {
-        os << "Viewing " << label << " XSifter (debug: " << this->debug() << "): " << "\n";
-      } 
-      else {
-        os << "Viewing a XSifter (debug: " << this->debug() << "): " << "\n";
-      } 
+    friend ostream_type& operator<<(ostream_type& os, const XSifter& xsifter){
       os << "Cone index: [[ ";
-        for(typename cone_index_type::iterator itor = this->_cone_index.begin(); itor != this->_cone_index.end(); ++itor) {
+        for(typename cone_index_type::iterator itor = xsifter._cone_index.begin(); itor != xsifter._cone_index.end(); ++itor) {
           os << *itor << " ";
         }
-      os << "]]" << "\n";
+      os << "]]";
+      return os;
+    };
+    //
+    template<typename ostream_type>
+    void view(ostream_type& os, const char* label = NULL){
+      if(label != NULL) {
+        os << "Viewing " << label << " XSifter:\n";
+      } 
+      else {
+        os << "Viewing an XSifter:\n";
+      } 
+      os << (*this) << "\n";
     };
     //
     // Direct access (a kind of hack)

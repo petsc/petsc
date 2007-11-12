@@ -13,7 +13,7 @@ namespace ALE {
   #undef  __CLASS__
   #define __CLASS__ "XSieve"
   template<typename Arrow_, 
-    typename TailOrder_  = XSifterDef::SourceColorOrder<Arrow_>,
+    typename TailOrder_  = XSifting::SourceColorOrder<Arrow_>,
     int SliceDepth = 1>
   struct XSieve : public XSifter<Arrow_,TailOrder_,SliceDepth> { // struct XSieve
     //
@@ -48,7 +48,7 @@ namespace ALE {
     // Basic interface
     //
     //
-    XSieve(const MPI_Comm comm, int debug = 0) : xsifter_type(comm, debug) {};
+    XSieve(const MPI_Comm comm) : xsifter_type(comm) {};
     //
     // Main interface
     //
@@ -200,12 +200,11 @@ namespace ALE {
     //
     template <typename Stream_>
     friend Stream_& operator<<(Stream_& os, const XSieve& xsieve) {
-      os << "\n";
-      os << "Cone index: (";
+      os << "Cone index: [[";
       for(typename xsifter_type::cone_index_type::iterator itor = xsieve._cone_index.begin(); itor != xsieve._cone_index.end(); ++itor) {
         os << *itor << " ";
       }
-      os << ")";
+      os << "]]";
       os << "\n";
       return os;
     };
@@ -213,17 +212,16 @@ namespace ALE {
     template<typename Stream_>
     void view(Stream_& os, const char* label = NULL){
       if(label != NULL) {
-        os << "Viewing " << label << " XSieve (debug: " << this->debug() << "): " << "\n";
+        os << "Viewing " << label << " XSieve:\n";
       } 
       else {
-        os << "Viewing a XSieve (debug: " << this->debug() << "): " << "\n";
+        os << "Viewing an XSieve:\n";
       } 
       os << *this;
     };// view()
 
   }; // struct XSieve
-
-  
+  //
 } // namespace ALE
 
 #endif

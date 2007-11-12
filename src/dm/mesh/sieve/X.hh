@@ -24,17 +24,11 @@ using namespace ::boost::lambda;
 namespace ALE { 
   //
   class XObject {
-  protected:
-    int      _debug;
-    int      _codebug;
   public:
-    XObject(const int debug = 0, const int codebug = 0)    : _debug(debug), _codebug(codebug){};
-    XObject(const XObject& xobject) : _debug(xobject._debug), _codebug(xobject._codebug) {};
-    //
-    inline int      debug(const int debug = -1)   {if(debug >= 0) {this->_debug = debug;} return this->_debug;};
-    inline int      codebug(const int codebug = -1) {if(codebug >= 0) {this->_codebug = codebug;} return this->_codebug;};
+    XObject() {};
+    XObject(const XObject& xobject) {};
   };// class XObject
-
+  //
   class XParallelObject : public XObject {
   protected:
     MPI_Comm _comm;
@@ -47,7 +41,6 @@ namespace ALE {
       ierr = MPI_Comm_rank(this->_comm, &this->_commRank); CHKERROR(ierr, "Error in MPI_Comm_rank");
     }
   public:
-    XParallelObject(const MPI_Comm& comm, const int debug = 0, const int codebug = 0)   : XObject(debug, codebug) {this->__setupComm(comm);};
     XParallelObject(const MPI_Comm& comm = PETSC_COMM_WORLD) : XObject()      {this->__setupComm(comm);};
     XParallelObject(const XParallelObject& xpobject)         : XObject(xpobject), _comm(xpobject._comm) {};
     //
