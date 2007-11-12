@@ -73,7 +73,7 @@ namespace ALE {
           if(!silent){std::cout << "\nXSieve Boundary Test: iter: " << i << "\n";}
           // Boundary Slice
           {
-            std::cout << "Slice version\n";
+            if(!silent) {std::cout << "Slice version\n";}
             static ALE::NoOp<arrow_type> noop;
             ALE::LogStage stage = ALE::LogStageRegister("Boundary Slice Test");
             ALE::LogStagePush(stage);
@@ -102,7 +102,7 @@ namespace ALE {
           }
           // Boundary Set
           {
-            std::cout << "Set version\n";
+            if(!silent){std::cout << "Set version\n";}
             static ALE::NoOp<typename arrow_type::source_type> noop;
             ALE::LogStage stage = ALE::LogStageRegister("Boundary Set Test");
             ALE::LogStagePush(stage);

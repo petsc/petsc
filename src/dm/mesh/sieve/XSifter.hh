@@ -1369,11 +1369,11 @@ namespace ALE {
 #ifdef ALE_XSIFTER_USE_ARROW_LINKS
     typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, target_extractor_type>   BaseSequence;
     typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, target_extractor_type, cone_next_extractor_type, source_extractor_type>   ConeSequence;
-    typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, arrow_extractor_type,  cone_next_extractor_type, source_extractor_type>   ConeSwitchSequence;
+    typedef ALE::XSifting::ArrowLinkSequence<xsifter_type, cone_index_type, arrow_extractor_type,  cone_next_extractor_type, source_extractor_type>   ConeSelectorSequence;
 #else
     typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, target_extractor_type>   BaseSequence;
     typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, target_extractor_type, source_extractor_type>   ConeSequence;
-    typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, arrow_extractor_type,  source_extractor_type>   ConeSwitchSequence;
+    typedef ALE::XSifting::ArrowSequence<xsifter_type, cone_index_type, arrow_extractor_type,  source_extractor_type>   ConeSelectorSequence;
 #endif
     //
     //
@@ -1437,18 +1437,18 @@ namespace ALE {
       return cseq;
     };
     //
-    template <typename Switch_>
-    void cone(const target_type& t, const Switch_& s, ConeSwitchSequence& ccseq) {
-      static ALE::pair<target_type, Switch_> comb_key;
+    template <typename Selector_>
+    void cone(const target_type& t, const Selector_& s, ConeSelectorSequence& csseq) {
+      static ALE::pair<target_type, Selector_> comb_key;
       comb_key.first = t; comb_key.second = s;
-      ccseq.reset(this, &_cone_index, comb_key);
+      csseq.reset(this, &_cone_index, comb_key);
     };
     //
-    template <typename Switch_>
-    ConeSwitchSequence& cone(const target_type& t, const Switch_& s) {
-      static ConeSwitchSequence ccseq;
-      this->cone(t,s,ccseq);
-      return ccseq;
+    template <typename Selector_>
+    ConeSelectorSequence& cone(const target_type& t, const Selector_& s) {
+      static ConeSelectorSequence csseq;
+      this->cone(t,s,csseq);
+      return csseq;
     };
     //
     void base(BaseSequence& seq) {
