@@ -467,30 +467,28 @@ namespace ALE {
         int     numVertices = out.numberofpoints;
         double *coords      = out.pointlist;
 
-        ALE::SieveBuilder<Mesh>::buildTopology(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, refMesh->getArrowSection("orientation"));
+        ALE::SieveBuilder<Mesh>::buildTopologyMultiple(newSieve, dim, numCells, cells, numVertices, interpolate, numCorners, -1, refMesh->getArrowSection("orientation"));
         refMesh->setSieve(newSieve);
         refMesh->stratify();
-        ALE::SieveBuilder<Mesh>::buildCoordinates(refMesh, dim, coords);
+        ALE::SieveBuilder<Mesh>::buildCoordinatesMultiple(refMesh, dim, coords);
         const Obj<Mesh::label_type>& newMarkers = refMesh->createLabel("marker");
 
-        if (refMesh->commRank() == 0) {
-          for(int v = 0; v < out.numberofpoints; v++) {
-            if (out.pointmarkerlist[v]) {
-              refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
-            }
-          }
-          if (interpolate) {
-            for(int e = 0; e < out.numberofedges; e++) {
-              if (out.edgemarkerlist[e]) {
-                const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
-                const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
-                const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
+	for(int v = 0; v < out.numberofpoints; v++) {
+	  if (out.pointmarkerlist[v]) {
+	    refMesh->setValue(newMarkers, v+out.numberoftriangles, out.pointmarkerlist[v]);
+	  }
+	}
+	if (interpolate) {
+	  for(int e = 0; e < out.numberofedges; e++) {
+	    if (out.edgemarkerlist[e]) {
+	      const Mesh::point_type vertexA(out.edgelist[e*2+0]+out.numberoftriangles);
+	      const Mesh::point_type vertexB(out.edgelist[e*2+1]+out.numberoftriangles);
+	      const Obj<Mesh::sieve_type::supportSet> edge = newSieve->nJoin(vertexA, vertexB, 1);
 
-                refMesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
-              }
-            }
-          }
-        }
+	      refMesh->setValue(newMarkers, *(edge->begin()), out.edgemarkerlist[e]);
+	    }
+	  }
+	}
 
         Generator::finiOutput(&out);
         return refMesh;

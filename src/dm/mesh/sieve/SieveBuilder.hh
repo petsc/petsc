@@ -382,6 +382,109 @@ namespace ALE {
         }
       }
     };
+    #undef __FUNCT__
+    #define __FUNCT__ "buildTopologyMultiple"
+    // Build a topology from a connectivity description
+    //   (0, 0)        ... (0, numCells-1):  dim-dimensional cells
+    //   (0, numCells) ... (0, numVertices): vertices
+    // The other cells are numbered as they are requested
+    static void buildTopologyMultiple(Obj<sieve_type> sieve, int dim, int numCells, int cells[], int numVertices, bool interpolate = true, int corners = -1, int firstVertex = -1, Obj<arrow_section_type> orientation = NULL) {
+      int debug = sieve->debug();
+
+      ALE_LOG_EVENT_BEGIN;
+      int *cellOffset = new int[sieve->commSize()+1];
+      cellOffset[0] = 0;
+      MPI_Allgather(&numCells, 1, MPI_INT, &cellOffset[1], 1, MPI_INT, sieve->comm());
+      for(int p = 1; p <= sieve->commSize(); ++p) cellOffset[p] += cellOffset[p-1];
+      int *vertexOffset = new int[sieve->commSize()+1];
+      vertexOffset[0] = 0;
+      MPI_Allgather(&numVertices, 1, MPI_INT, &vertexOffset[1], 1, MPI_INT, sieve->comm());
+      for(int p = 1; p <= sieve->commSize(); ++p) vertexOffset[p] += vertexOffset[p-1];
+      if (firstVertex < 0) firstVertex = cellOffset[sieve->commSize()] + vertexOffset[sieve->commRank()];
+      // Estimate the number of intermediates as (V+C)*(dim-1)
+      //   Should include a check for running over the namespace
+      // Create a map from dimension to the current element number for that dimension
+      std::map<int,int*>       curElement;
+      std::map<int,PointArray> bdVertices;
+      std::map<int,PointArray> faces;
+      std::map<int,oPointArray> oFaces;
+      int                      curCell    = cellOffset[sieve->commRank()];
+      int                      curVertex  = firstVertex;
+      int                      newElement = firstVertex+vertexOffset[sieve->commSize()] + (cellOffset[sieve->commRank()] + vertexOffset[sieve->commRank()])*(dim-1);
+      int                      o          = 1;
+
+      if (corners < 0) corners = dim+1;
+      curElement[0]   = &curVertex;
+      curElement[dim] = &curCell;
+      for(int d = 1; d < dim; d++) {
+        curElement[d] = &newElement;
+      }
+      for(int c = 0; c < numCells; c++) {
+        typename sieve_type::point_type cell(c);
+
+        // Build the cell
+        if (interpolate) {
+          bdVertices[dim].clear();
+          for(int b = 0; b < corners; b++) {
+            // This ordering produces the same vertex order as the uninterpolated mesh
+            //typename sieve_type::point_type vertex(cells[c*corners+(b+corners-1)%corners]+firstVertex);
+            typename sieve_type::point_type vertex(cells[c*corners+b]+firstVertex);
+
+            if (debug > 1) {std::cout << "Adding boundary vertex " << vertex << std::endl;}
+            bdVertices[dim].push_back(vertex);
+          }
+          if (debug) {std::cout << "cell " << cell << " num boundary vertices " << bdVertices[dim].size() << std::endl;}
+
+          if (corners != dim+1) {
+            buildHexFaces(sieve, dim, curElement, bdVertices, faces, cell);
+          } else {
+            buildFaces(sieve, orientation, dim, curElement, bdVertices, oFaces, cell, o);
+          }
+        } else {
+          for(int b = 0; b < corners; b++) {
+            sieve->addArrow(typename sieve_type::point_type(cells[c*corners+b]+firstVertex), cell, b);
+          }
+          if (debug) {
+            if (debug > 1) {
+              for(int b = 0; b < corners; b++) {
+                std::cout << "  Adding vertex " << typename sieve_type::point_type(cells[c*corners+b]+firstVertex) << std::endl;
+              }
+            }
+            if ((numCells < 10000) || (c%1000 == 0)) {
+              std::cout << "Adding cell " << cell << " dim " << dim << std::endl;
+            }
+          }
+        }
+      }
+
+      if (newElement >= firstVertex+vertexOffset[sieve->commSize()] + (cellOffset[sieve->commRank()+1] + vertexOffset[sieve->commRank()+1])*(dim-1)) {
+	throw ALE::Exception("Namespace violation during intermediate element construction");
+      }
+      delete [] cellOffset;
+      delete [] vertexOffset;
+      ALE_LOG_EVENT_END;
+    };
+    static void buildCoordinatesMultiple(const Obj<Bundle_>& bundle, const int embedDim, const double coords[]) {
+      const Obj<typename Bundle_::real_section_type>& coordinates = bundle->getRealSection("coordinates");
+      const Obj<typename Bundle_::label_sequence>&    vertices    = bundle->depthStratum(0);
+      const int numCells = bundle->heightStratum(0)->size(), numVertices = vertices->size();
+      const int debug    = bundle->debug();
+      int       numGlobalCells, offset;
+
+      MPI_Allreduce((void *) &numCells, &numGlobalCells, 1, MPI_INT, MPI_SUM, bundle->comm());
+      MPI_Scan((void *) &numVertices, &offset, 1, MPI_INT, MPI_SUM, bundle->comm());
+      offset += numGlobalCells - numVertices;
+      coordinates->setFiberDimension(vertices, embedDim);
+      bundle->allocate(coordinates);
+      for(typename Bundle_::label_sequence::iterator v_iter = vertices->begin(); v_iter != vertices->end(); ++v_iter) {
+        coordinates->updatePoint(*v_iter, &(coords[(*v_iter - offset)*embedDim]));
+        if (debug) {
+          if ((numCells < 10000) || ((*v_iter)%1000 == 0)) {
+            std::cout << "Adding coordinates for vertex " << *v_iter << std::endl;
+          }
+        }
+      }
+    };
   };
 }
 
