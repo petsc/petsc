@@ -122,7 +122,10 @@ tree: ${ACTION}
 		PKGFLG=`echo $$r | cut -d \' -f2`;\
                 grep -w "#define $${PKGFLG}" ${PETSC_DIR}/${PETSC_ARCH}/include/petscconf.h > /dev/null; \
                 if [ "$$?" = 1 ]; then \
-                  continue; \
+                  echo ${PCONF} | sed s/-D//g | grep -w "$${PKGFLG}" > /dev/null; \
+                  if [ "$$?" = 1 ]; then \
+                    continue; \
+                  fi; \
                 fi; \
               fi; \
               r=`grep -w requireslanguage $$dir/makefile`; \
