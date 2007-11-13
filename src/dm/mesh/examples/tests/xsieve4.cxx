@@ -19,9 +19,11 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
   {
     ALE::Component::ArgDB argDB(ALE::Test::XSieveTester().argDB, argc, argv);
+#ifdef ALE_USE_DEBUGGING
     // Set debugging options
     ALE::Xdebug   = argDB["debug"];
     ALE::Xcodebug = argDB["codebug"];
+#endif
     //
     ALE::Obj<xsieve_type> xsieveTree = ALE::Test::XSieveTester::createTreeXSieve(PETSC_COMM_SELF, argDB);
     ierr = ALE::Test::XSieveTester::BoundaryTest<xsieve_type>(xsieveTree, argDB, "Tree"); CHKERRQ(ierr);

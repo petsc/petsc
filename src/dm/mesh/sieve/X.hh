@@ -89,6 +89,8 @@ namespace ALE {
     }
   };// struct const_const_mem_fun
 #define ALE_CONST_MEM_FUN(CLASS, RESULT_TYPE, FUN) ::ALE::const_const_mem_fun<CLASS, RESULT_TYPE, const RESULT_TYPE, FUN>
+
+#ifdef ALE_USE_DEBUGGING
   //   Xdebug and Xcodebug might have confusing interpretations, but the usage should be relatively transparent.
   // X sets the number of debugging layers laid so far -- ALE_XDEBUG_HEIGHT -- laid chronologically -- 
   // with the oldest layers laid first and having the lowest numbers: 1,2,etc.
@@ -104,6 +106,8 @@ namespace ALE {
   // Thus, the functions with the n heighest __ALE_DEBUG__ markers will produce debugging output.
   // Co-debugging works from the bottom: setting ALE::XSifterDef::codebug to n will 'uncover' the *first* (oldest) n layers of debugging.
   // Thus, the functions with the n lowest __ALE_DEBUG__ markers will produce debugging output.
+#endif 
+
 #define ALE_XDEBUG_HEIGHT 7
 #define ALE_XDEBUG_LEVEL(n)  ((ALE::Xcodebug >= n) || (n > ALE_XDEBUG_HEIGHT - ALE::Xdebug))
 #define ALE_XDEBUG           (ALE_XDEBUG_LEVEL(__ALE_XDEBUG__))

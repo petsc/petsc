@@ -413,7 +413,7 @@ namespace ALE {
       //
       struct cookie_type {
         itor_type        segment_end;
-        cookie_type(){};
+        cookie_type() : segment_end(NULL) {};
         // Printing
         friend std::ostream& operator<<(std::ostream& os, const cookie_type& cookie) {
           os << "[...," << *(cookie.segment_end) << "]";
@@ -1219,7 +1219,7 @@ namespace ALE {
       //
       // Basic
       //
-      Slicer(){};
+      Slicer() : _taken(MAX_SLICE_DEPTH, false){};
       virtual ~Slicer(){};
       //
       // Main
@@ -1230,22 +1230,23 @@ namespace ALE {
       // to return a the_slice_type* to be wrapped as Obj later.
       inline Obj<slice_type> take() { 
         for(int i = 0; i < MAX_SLICE_DEPTH; ++i) {
-          if(!this->_taken[i]) {
+          if(!(this->_taken[i])) {
             this->_taken[i] = true;
             return Obj<slice_type>(new slice_type(this, i));
           }
         }
-        throw NoSlices();
+        static NoSlices e;
+        throw e;
       };// take()
-        //
-        // give_back() cannot accept Obj<the_slice_type>, since it is intended
-        // to be called from the_slice_type's destructor, which has no Obj.
+      //
+      // give_back() cannot accept Obj<the_slice_type>, since it is intended
+      // to be called from the_slice_type's destructor, which has no Obj.
       inline void give_back(slice_type* slice) {
         slice->clean();
         this->_taken[slice->rank()] = false;
       };// give_back()
     protected:
-      bool _taken[MAX_SLICE_DEPTH];
+      std::vector<bool> _taken;
     };// class Slicer
     
 
@@ -1271,9 +1272,8 @@ namespace ALE {
   //
   // XSifter definition
   //
-  template<typename Arrow_, 
-           typename TailOrder_  = XSifting::SourceColorOrder<Arrow_>,
-           int SliceDepth = 1>
+  template<typename Arrow_, int SliceDepth = 1,
+           typename TailOrder_  = XSifting::SourceColorOrder<Arrow_> >
   struct XSifter : XParallelObject { // struct XSifter
     //
     typedef XSifter xsifter_type;
@@ -1460,7 +1460,7 @@ namespace ALE {
       return bseq;
     };
     // 
-    slice_type slice(){return this->_slicer.take();};
+    Obj<slice_type> slice(){return this->_slicer.take();};
     //
     template<typename ostream_type>
     friend ostream_type& operator<<(ostream_type& os, const XSifter& xsifter){

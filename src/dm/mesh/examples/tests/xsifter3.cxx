@@ -17,6 +17,11 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
   {
     ALE::Component::ArgDB argDB(ALE::Test::XSifterTester().argDB, argc, argv);
+#ifdef ALE_USE_DEBUGGING
+    // Set debugging options
+    ALE::Xdebug   = argDB["debug"];
+    ALE::Xcodebug = argDB["codebug"];
+#endif
     ALE::Obj<xsifter_type> xsifterFork = ALE::Test::XSifterTester::createForkXSifter(PETSC_COMM_SELF, argDB);
     ierr = ALE::Test::XSifterTester::SliceBasicTest1<xsifter_type>(xsifterFork, argDB, "Fork XSifter"); CHKERRQ(ierr);
     ALE::Obj<xsifter_type> xsifterHat = ALE::Test::XSifterTester::createHatXSifter(PETSC_COMM_SELF, argDB);

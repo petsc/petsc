@@ -12,12 +12,11 @@ namespace ALE {
   //
   #undef  __CLASS__
   #define __CLASS__ "XSieve"
-  template<typename Arrow_, 
-    typename TailOrder_  = XSifting::SourceColorOrder<Arrow_>,
-    int SliceDepth = 1>
-  struct XSieve : public XSifter<Arrow_,TailOrder_,SliceDepth> { // struct XSieve
+  template<typename Arrow_, int SliceDepth = 1,
+    typename TailOrder_  = XSifting::SourceColorOrder<Arrow_> >
+  struct XSieve : public XSifter<Arrow_,SliceDepth,TailOrder_> { // struct XSieve
     //
-    typedef XSifter<Arrow_,TailOrder_,SliceDepth> xsifter_type;
+    typedef XSifter<Arrow_,SliceDepth,TailOrder_> xsifter_type;
     typedef XSieve                                xsieve_type;
     //
     // Encapsulated types: re-export types and/or bind parameterized types

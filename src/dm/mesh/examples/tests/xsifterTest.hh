@@ -7,7 +7,7 @@ namespace ALE {
   namespace Test {
     struct XSifterTester {
       typedef ALE::XSifting::Arrow<double,int,char>    default_arrow_type;
-      typedef ALE::XSifter<default_arrow_type>           default_xsifter_type;
+      typedef ALE::XSifter<default_arrow_type,1>       default_xsifter_type;
       //
       ALE::Component::ArgDB argDB;
       XSifterTester() : argDB("XSifter basic test options"){
@@ -242,7 +242,7 @@ namespace ALE {
             if(xsifterName != NULL) {sliceName = sliceName + string(xsifterName) + string(" ");};
             string label;
             std::cout << "Attempting to allocate an ArrowSlice " << sliceName << "\n";
-            typename xsifter_type::ArrowSlice slice(xsifter->slice());
+            typename xsifter_type::ArrowSlice slice = xsifter->slice();
             std::cout << "No problem!\n";
             //
             label = sliceName + string(" unpopulated");
@@ -263,14 +263,9 @@ namespace ALE {
             std::cout << "xsifter state:\n";
             xsifter->view(std::cout);
             //
-            try {
-              std::cout << "Attempting to allocate another slice:\n";
-              xsifter->slice();
-              std::cout << "No problem!\n";
-            }
-            catch(ALE::XSifting::NoSlices e) {
-              std::cout << "Caught a 'NoSlices' exception\n";
-            }
+            std::cout << "Attempting to allocate another slice:\n";
+            xsifter->slice();
+            std::cout << "No problem!\n";
           } catch(ALE::XSifting::NoSlices e) {
             std::cout << "Caught a 'NoSlices' exception\n";
           }
@@ -286,14 +281,9 @@ namespace ALE {
             std::cout << "No problem!\n";
             label = sliceName + string(" unpopulated");
             slice.view(std::cout, label.c_str());
-            try {
-              std::cout << "Attempting to allocate another slice:\n";
-              xsifter->slice();
-              std::cout << "No problem!\n";
-            }
-            catch(ALE::XSifting::NoSlices e) {
-              std::cout << "Caught a 'NoSlices' exception\n";
-            }
+            std::cout << "Attempting to allocate another slice:\n";
+            xsifter->slice();
+            std::cout << "No problem!\n";
           }
           catch(ALE::XSifting::NoSlices e) {
             std::cout << "Caught a 'NoSlices' exception\n";
