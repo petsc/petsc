@@ -127,7 +127,6 @@ acfindx:
     libraryDir   = ''
     # Guess X location
     (includeDirGuess, libraryDirGuess) = self.checkXMake()
-    self.logPrint('*** Guess include,library: '+str(includeDirGuess)+','+str(libraryDirGuess))
     # Check for X11 includes
     if self.framework.argDB.has_key('with-x-include'):
       if not os.path.isdir(self.framework.argDB['with-x-include']):
@@ -147,7 +146,6 @@ acfindx:
           # Check default compiler paths
         if not foundInclude and self.checkPreprocess('#include <'+testInclude+'>\n'):
           foundInclude = 1
-        self.logPrint('*** includeGess: '+str(foundInclude)+','+str(includeDir))
         # Check standard paths
         if not foundInclude:
           for dir in includeDirs:
@@ -156,8 +154,6 @@ acfindx:
               includeDir   = dir
         if not foundInclude:
           break
-        self.logPrint('*** includeStd: '+str(foundInclude)+','+str(includeDir))
-
     # Check for X11 libraries
     if self.framework.argDB.has_key('with-x-lib'):
       if not os.path.isfile(self.framework.argDB['with-x-lib']):
@@ -177,7 +173,6 @@ acfindx:
               foundLibrary = 1
               libraryDir   = libraryDirGuess
               break
-        self.logPrint('*** libraryGuess: '+str(foundLibrary)+','+str(libraryDir))
         # Check default compiler libraries
         if not foundLibrary:
           oldLibs = self.compilers.LIBS
@@ -187,7 +182,6 @@ acfindx:
             foundLibrary = 1
           self.compilers.LIBS = oldLibs
           self.popLanguage()
-        self.logPrint('*** libraryCompiler: '+str(foundLibrary)+','+str(libraryDir))
         # Check standard paths
         if not foundLibrary:
           for dir in libraryDirs:
@@ -197,8 +191,6 @@ acfindx:
                 libraryDir   = dir
         if not foundLibrary:
           break
-        self.logPrint('*** libraryStd: '+str(foundLibrary)+','+str(libraryDir))
-        
       # Verify that library can be linked with
       if foundLibrary:
         oldLibs = self.compilers.LIBS
