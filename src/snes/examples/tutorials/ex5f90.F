@@ -142,11 +142,12 @@
 
       module f90moduleinterfaces
         use f90module
+ 
       Interface SNESSetApplicationContext
         Subroutine SNESSetApplicationContext(snes,ctx,ierr)
         use f90module
           SNES snes
-          type(userctx), pointer :: ctx
+          type(userctx) ctx
           PetscErrorCode ierr
         End Subroutine
       End Interface SNESSetApplicationContext
@@ -199,7 +200,7 @@
       PetscTruth flg,matrix_free
       PetscInt ione,nfour
       double precision       lambda_max,lambda_min
-      type (userctx), pointer ::         user
+      type (userctx)         user
       type(userctx), pointer:: puser
 
 
@@ -212,7 +213,6 @@
 !  Initialize program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-      allocate(user)
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
@@ -333,36 +333,8 @@
       user%xe = 10
       call SNESSetApplicationContext(snes,user,ierr)
       call SNESGetApplicationContext(snes,puser,ierr)
-      write(*,*) user%xe
-      write(*,*) user%xe,puser%xe
-     
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Evaluate initial guess; then solve nonlinear system.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-!  Note: The user should initialize the vector, x, with the initial guess
-!  for the nonlinear solver prior to calling SNESSolve().  In particular,
-!  to employ an initial guess of zero, the user should explicitly set
-!  this vector to zero by calling VecSet().
-
-      call FormInitialGuess(user,x,ierr)
-      call SNESSolve(snes,PETSC_NULL_OBJECT,x,ierr) 
-      call SNESGetIterationNumber(snes,its,ierr);
-      if (user%rank .eq. 0) then
-         write(6,100) its
-      endif
-  100 format('Number of Newton iterations = ',i5)
-
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-!  Free work space.  All PETSc objects should be destroyed when they
-!  are no longer needed.
-! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-      if (matrix_free .eq. 0) call MatDestroy(J,ierr)
-      call VecDestroy(x,ierr)
-      call VecDestroy(r,ierr)
-      call SNESDestroy(snes,ierr)
-      call DADestroy(user%da,ierr)
+      write(*,*) user
+      write(*,*) puser
       call PetscFinalize(ierr)
       end
 
