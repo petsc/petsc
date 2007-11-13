@@ -1,11 +1,11 @@
-static char help[] = "Sieve Boundary Test.\n\n";
+static char help[] = "XSieve Boundary Test.\n\n";
 
 #include <petsc.h>
 #include "xsieveTest.hh"
 
 
 
-typedef ALE::Test::XSieveTester::default_xsieve_type     xsieve_type;
+typedef ALE::Test::XSieveTester::symmetric_xsieve_type     xsieve_type;
 
 
 
