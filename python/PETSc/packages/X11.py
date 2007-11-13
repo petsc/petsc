@@ -71,10 +71,8 @@ acfindx:
         if not ('X_INCLUDE_ROOT' in results and 'X_USR_LIB_DIR' in results and 'X_LIB_DIR' in results):
           raise RuntimeError('Invalid output: '+str(output))
         # Open Windows xmkmf reportedly sets LIBDIR instead of USRLIBDIR.
-        for ext in ['.a', '.so', '.sl']:
-          if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
-            results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
-            break
+        if not os.path.isfile(os.path.join(results['X_USR_LIB_DIR'])) and os.path.isfile(os.path.join(results['X_LIB_DIR'])):
+          results['X_USR_LIB_DIR'] = results['X_LIB_DIR']
         # Screen out bogus values from the imake configuration.  They are
         # bogus both because they are the default anyway, and because
         # using them would break gcc on systems where it needs fixed includes.
@@ -129,6 +127,7 @@ acfindx:
     libraryDir   = ''
     # Guess X location
     (includeDirGuess, libraryDirGuess) = self.checkXMake()
+    self.logPrint('*** Guess include,library: '+str(includeDirGuess)+','+str(libraryDirGuess))
     # Check for X11 includes
     if self.framework.argDB.has_key('with-x-include'):
       if not os.path.isdir(self.framework.argDB['with-x-include']):
@@ -148,6 +147,7 @@ acfindx:
           # Check default compiler paths
         if not foundInclude and self.checkPreprocess('#include <'+testInclude+'>\n'):
           foundInclude = 1
+        self.logPrint('*** includeGess: '+str(foundInclude)+','+str(includeDir))
         # Check standard paths
         if not foundInclude:
           for dir in includeDirs:
@@ -156,6 +156,8 @@ acfindx:
               includeDir   = dir
         if not foundInclude:
           break
+        self.logPrint('*** includeStd: '+str(foundInclude)+','+str(includeDir))
+
     # Check for X11 libraries
     if self.framework.argDB.has_key('with-x-lib'):
       if not os.path.isfile(self.framework.argDB['with-x-lib']):
@@ -175,6 +177,7 @@ acfindx:
               foundLibrary = 1
               libraryDir   = libraryDirGuess
               break
+        self.logPrint('*** libraryGuess: '+str(foundLibrary)+','+str(libraryDir))
         # Check default compiler libraries
         if not foundLibrary:
           oldLibs = self.compilers.LIBS
@@ -184,6 +187,7 @@ acfindx:
             foundLibrary = 1
           self.compilers.LIBS = oldLibs
           self.popLanguage()
+        self.logPrint('*** libraryCompiler: '+str(foundLibrary)+','+str(libraryDir))
         # Check standard paths
         if not foundLibrary:
           for dir in libraryDirs:
@@ -193,6 +197,8 @@ acfindx:
                 libraryDir   = dir
         if not foundLibrary:
           break
+        self.logPrint('*** libraryStd: '+str(foundLibrary)+','+str(libraryDir))
+        
       # Verify that library can be linked with
       if foundLibrary:
         oldLibs = self.compilers.LIBS
