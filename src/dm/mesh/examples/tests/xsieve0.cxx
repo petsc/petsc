@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   PetscFunctionBegin;
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
   {
-    ALE::Component::ArgDB argDB(ALE::Test::XSieveTester().argDB, argc, argv);
+    ALE::ArgDB argDB(ALE::Test::XSieveTester().argDB, argc, argv);
 #ifdef ALE_USE_DEBUGGING
     // Set debugging options
     ALE::Xdebug   = argDB["debug"];

@@ -15,8 +15,8 @@
 #ifndef  included_ALE_containers_hh
 #include <ALE_containers.hh>
 #endif
-#ifndef  included_ALE_component_hh
-#include <ALE_component.hh>
+#ifndef  included_ALE_args_hh
+#include <ALE_args.hh>
 #endif
 
 
