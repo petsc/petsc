@@ -1,4 +1,4 @@
-static char help[] = "Sieve Basic Tests: Sifter functionality.\n\n";
+static char help[] = "XSieve Basic Ordering Tests.\n\n";
 
 #include <petsc.h>
 #include "xsieveTest.hh"
@@ -19,10 +19,15 @@ int main(int argc, char *argv[])
   ierr = PetscInitialize(&argc, &argv, (char *) 0, help); CHKERRQ(ierr);
   {
     ALE::Component::ArgDB argDB(ALE::Test::XSieveTester().argDB, argc, argv);
-    ALE::Obj<xsieve_type> xsieveTree = ALE::Test::XSieveTester::createTreeXSieve(PETSC_COMM_SELF, argDB);
-    ierr = ALE::Test::XSifterTester::BasicTest<xsieve_type>(xsieveTree, argDB, "Tree"); CHKERRQ(ierr);
-    ierr = ALE::Test::XSifterTester::BaseTest<xsieve_type>(xsieveTree, argDB, "Tree"); CHKERRQ(ierr);
-    ierr = ALE::Test::XSifterTester::ConeTest<xsieve_type>(xsieveTree, argDB, "Tree"); CHKERRQ(ierr);
+#ifdef ALE_USE_DEBUGGING
+    // Set debugging options
+    ALE::Xdebug   = argDB["debug"];
+    ALE::Xcodebug = argDB["codebug"];
+#endif
+    ALE::Obj<xsieve_type> xsieveFork = ALE::Test::XSieveTester::createForkXSieve(PETSC_COMM_SELF, argDB);
+    ierr = ALE::Test::XSieveTester::BasicTest<xsieve_type>(xsieveFork, argDB, "Fork"); CHKERRQ(ierr);
+    ALE::Obj<xsieve_type> xsieveHat = ALE::Test::XSieveTester::createHatXSieve(PETSC_COMM_SELF, argDB);
+    ierr = ALE::Test::XSieveTester::BasicTest<xsieve_type>(xsieveHat, argDB, "Hat"); CHKERRQ(ierr);
   }
   ierr = PetscFinalize();CHKERRQ(ierr);
   PetscFunctionReturn(0);

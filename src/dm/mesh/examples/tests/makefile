@@ -183,6 +183,42 @@ debugxsieve1:
 valgrindxsieve1:
 	-@${MPIEXEC} -np ${NP} valgrind ./xsieve1 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
 
+#-----------------------------------------------------------------
+xsieve2: xsieve2.o chkopts
+	-${CLINKER} -o xsieve2 xsieve2.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsieve2.o
+NP = 1
+runxsieve2:
+	-@${MPIEXEC} -np ${NP} ./xsieve2 ${EXTRA_ARGS}
+debugxsieve2:
+	-@${MPIEXEC} -np ${NP} ./xsieve2 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsieve2:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsieve2 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
+#-----------------------------------------------------------------
+xsieve3: xsieve3.o chkopts
+	-${CLINKER} -o xsieve3 xsieve3.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsieve3.o
+NP = 1
+runxsieve3:
+	-@${MPIEXEC} -np ${NP} ./xsieve3 ${EXTRA_ARGS}
+debugxsieve3:
+	-@${MPIEXEC} -np ${NP} ./xsieve3 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsieve3:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsieve3 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
+#-----------------------------------------------------------------
+xsieve4: xsieve4.o chkopts
+	-${CLINKER} -o xsieve4 xsieve4.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f xsieve4.o
+NP = 1
+runxsieve4:
+	-@${MPIEXEC} -np ${NP} ./xsieve4 ${EXTRA_ARGS}
+debugxsieve4:
+	-@${MPIEXEC} -np ${NP} ./xsieve4 ${EXTRA_ARGS} -log_summary -start_in_debugger -display ${DISPLAY} 
+valgrindxsieve4:
+	-@${MPIEXEC} -np ${NP} valgrind ./xsieve4 ${EXTRA_ARGS} -on_error_attach_debugger -display ${DISPLAY} 
+
 
 #-----------------------------------------------------------------
 runex00:
