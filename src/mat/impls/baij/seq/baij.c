@@ -786,8 +786,8 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
 {
   Mat_SeqBAIJ    *a = (Mat_SeqBAIJ*)A->data;
   PetscErrorCode ierr;
-  PetscInt     i,j,n = a->mbs,nz = a->i[n],bs = A->rmap.bs,nbs = 1;
-  PetscInt     *tia, *tja;
+  PetscInt       i,j,n = a->mbs,nz = a->i[n],bs = A->rmap.bs,nbs = 1,k,l,cnt;
+  PetscInt       *tia, *tja;
 
   PetscFunctionBegin;
   *nn = n;
@@ -803,9 +803,11 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
     nbs    = bs;
     /* malloc & create the natural set of indices */
     ierr = PetscMalloc((n+1)*bs*sizeof(PetscInt),ia);CHKERRQ(ierr);
-    (*ia)[0] = 0;
-    for (j=1; j<bs; j++) {
-      (*ia)[j] = (tia[1]-tia[0])*bs+(*ia)[j-1];
+    if (n) {
+      (*ia)[0] = 0;
+      for (j=1; j<bs; j++) {
+        (*ia)[j] = (tia[1]-tia[0])*bs+(*ia)[j-1];
+      }
     }
 
     for (i=1; i<n; i++) {
@@ -814,10 +816,24 @@ static PetscErrorCode MatGetRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth symme
         (*ia)[i*bs+j] = (tia[i+1]-tia[i])*bs + (*ia)[i*bs+j-1];
       }
     }
+    if (n) {
+      (*ia)[n*bs] = (tia[n]-tia[n-1])*bs + (*ia)[n*bs-1];
+    }
 
-    (*ia)[n*bs] = (tia[n]-tia[n-1])*bs + (*ia)[n*bs-1];
+    if (ja) {
+      ierr = PetscMalloc(nz*bs*bs*sizeof(PetscInt),ja);CHKERRQ(ierr);
+      cnt = 0;
+      for (i=0; i<n; i++) {
+        for (j=0; j<bs; j++) {
+          for (k=tia[i]; k<tia[i+1]; k++) {
+            for (l=0; l<bs; l++) {
+              (*ja)[cnt++] = bs*tja[k] + l;
+	    }
+          }
+        }
+      }
+    }
 
-    if (ja) SETERRQ(PETSC_ERR_SUP,"Cannot provide uncompressed row indices");
     n     *= bs;
     nz *= bs*bs;
     if (symmetric) { /* deallocate memory allocated in MatToSymmetricIJ_SeqAIJ() */
@@ -847,12 +863,13 @@ static PetscErrorCode MatRestoreRowIJ_SeqBAIJ(Mat A,PetscInt oshift,PetscTruth s
   if (!ia) PetscFunctionReturn(0);
   if (!blockcompressed && A->rmap.bs > 1) {
     ierr = PetscFree(*ia);CHKERRQ(ierr);
+    if (ja) {ierr = PetscFree(*ja);CHKERRQ(ierr);}
   } else if (symmetric) {
     ierr = PetscFree(*ia);CHKERRQ(ierr);
-    ierr = PetscFree(*ja);CHKERRQ(ierr);
+    if (ja) {ierr = PetscFree(*ja);CHKERRQ(ierr);}
   } else if (oshift == 1) { /* blockcompressed */
-    for (i=0; i<nz; i++) a->j[i]--;
     for (i=0; i<n+1; i++) a->i[i]--;
+    if (ja) {for (i=0; i<nz; i++) a->j[i]--;}
   }
   PetscFunctionReturn(0); 
 }

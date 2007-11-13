@@ -49,6 +49,8 @@
         PetscMPIInt rank
         double precision lambda
       end type userctx
+
+
       contains
 ! ---------------------------------------------------------------------
 !
@@ -138,10 +140,30 @@
       end subroutine formfunction
       end module f90module
 
+      module f90moduleinterfaces
+        use f90module
+      Interface SNESSetApplicationContext
+        Subroutine SNESSetApplicationContext(snes,ctx,ierr)
+        use f90module
+          SNES snes
+          type(userctx), pointer :: ctx
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface SNESSetApplicationContext
 
+      Interface SNESGetApplicationContext
+        Subroutine SNESGetApplicationContext(snes,ctx,ierr)
+        use f90module
+          SNES snes
+          type(userctx), pointer :: ctx
+          PetscErrorCode ierr
+        End Subroutine
+      End Interface SNESGetApplicationContext
+      end module f90moduleinterfaces
 
       program main
       use f90module
+      use f90moduleinterfaces
       implicit none
 !
 !
@@ -177,8 +199,9 @@
       PetscTruth flg,matrix_free
       PetscInt ione,nfour
       double precision       lambda_max,lambda_min
-      type (userctx)         user
+      type (userctx), pointer ::         user
       type(userctx), pointer:: puser
+
 
 !  Note: Any user-defined Fortran routines (such as FormJacobian)
 !  MUST be declared as external.
@@ -189,6 +212,7 @@
 !  Initialize program
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+      allocate(user)
       call PetscInitialize(PETSC_NULL_CHARACTER,ierr)
       call MPI_Comm_rank(PETSC_COMM_WORLD,user%rank,ierr)
 
@@ -306,9 +330,11 @@
 !  Set runtime options (e.g., -snes_monitor -snes_rtol <rtol> -ksp_type <type>)
       call SNESSetFromOptions(snes,ierr)
 
+      user%xe = 10
       call SNESSetApplicationContext(snes,user,ierr)
       call SNESGetApplicationContext(snes,puser,ierr)
-!      write(*,*) puser%xs  - crash!
+      write(*,*) user%xe
+      write(*,*) user%xe,puser%xe
      
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !  Evaluate initial guess; then solve nonlinear system.
