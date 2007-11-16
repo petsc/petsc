@@ -316,8 +316,11 @@
       if (flg .eq. 1) then
         call SNESSetApplicationContext(snes,user,ierr)
         call SNESGetApplicationContext(snes,puser,ierr)
-        write(*,*) "uesr: ", user
-        write(*,*) "puesr: ", puser
+        if (user%da .ne. puser%da) then
+          write(*,*) "Error: uesr != puesr"
+          write(*,*) "user: ", user
+          write(*,*) "puesr: ", puser
+        endif
       endif
 
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
