@@ -88,7 +88,11 @@ info_h:
 	-@$(RM) -f ${MINFO} MINFO
 	-@echo  "static const char *petscmachineinfo = \"\__n__\"" >> MINFO
 	-@echo  "\"-----------------------------------------\__n__\"" >> MINFO
-	-@echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO
+	-@if [ -f /usr/bin/cygcheck.exe ]; then \
+	  echo  "\"Libraries compiled on `date` on `hostname|/usr/bin/dos2unix` \__n__\"" >> MINFO; \
+          else \
+	  echo  "\"Libraries compiled on `date` on `hostname` \__n__\"" >> MINFO; \
+          fi
 	-@echo  "\"Machine characteristics: `uname -a` \__n__\"" >> MINFO
 	-@echo  "\"Using PETSc directory: ${PETSC_DIR}\__n__\"" >> MINFO
 	-@echo  "\"Using PETSc arch: ${PETSC_ARCH}\__n__\"" >> MINFO
