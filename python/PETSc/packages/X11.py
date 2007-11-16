@@ -187,7 +187,7 @@ acfindx:
         # Check standard paths
         if not foundLibrary:
           for dir in libraryDirs:
-            for ext in ['.a', '.so', '.sl']:
+            for ext in ['.a', '.so', '.sl', '.dll.a','.dylib']:
               if os.path.isfile(os.path.join(dir, 'lib'+testLibrary+ext)):
                 foundLibrary = 1
                 libraryDir   = dir

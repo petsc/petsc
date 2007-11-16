@@ -87,7 +87,11 @@ PetscErrorCode VecScatterView_MPI(VecScatter ctx,PetscViewer viewer)
 /*
       The next routine determines what part of  the local part of the scatter is an
   exact copy of values into their current location. We check this here and
-  then know that we need not perform that portion of the scatter.
+  then know that we need not perform that portion of the scatter when the vector is
+  scattering to itself with INSERT_VALUES.
+
+     This is currently not used but would speed up, for example DALocalToLocalBegin/End()
+
 */
 #undef __FUNCT__  
 #define __FUNCT__ "VecScatterLocalOptimize_Private"
