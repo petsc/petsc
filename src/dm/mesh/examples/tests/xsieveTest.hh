@@ -11,24 +11,24 @@ namespace ALE {
       typedef ALE::XSieve<default_arrow_type,1>         default_xsieve_type;
       typedef ALE::XSieve<symmetric_arrow_type>         symmetric_xsieve_type;
       //
-      ALE::Component::ArgDB argDB;
+      ALE::ArgDB argDB;
       XSieveTester() : argDB("XSieve basic test options"){
-        argDB("debug", ALE::Component::Arg<int>().DEFAULT(0));
-        argDB("codebug", "codebug level", ALE::Component::Arg<int>().DEFAULT(0));
-        argDB("capSize", "The size of Fork xsieve cap", ALE::Component::Arg<int>().DEFAULT(3));
-        argDB("baseSize", "The size of Fork xsieve base", ALE::Component::Arg<int>().DEFAULT(10));
-        argDB("iterations", "The number of test repetitions", ALE::Component::Arg<int>().DEFAULT(1));
-        argDB("marker", "The marker to apply to slice members", ALE::Component::Arg<int>().DEFAULT(0));
-        argDB("silent", "Whether to generate output during test; useful for timing with iterations > 1", ALE::Component::Arg<bool>().DEFAULT(false));
-        argDB("treeDepth", "The depth of the tree XSieve", ALE::Component::Arg<int>().DEFAULT(3));
-        argDB("treeFanout", "The fanout factor of the tree XSieve: number of children", ALE::Component::Arg<int>().DEFAULT(3));
-        argDB("pt", "The point to compute the boundary of", ALE::Component::Arg<int>().DEFAULT(1));
-        argDB("traversals", "The number of times to traverse the boundary", ALE::Component::Arg<int>().DEFAULT(1));
+        argDB("debug", ALE::Arg<int>().DEFAULT(0));
+        argDB("codebug", "codebug level", ALE::Arg<int>().DEFAULT(0));
+        argDB("capSize", "The size of Fork xsieve cap", ALE::Arg<int>().DEFAULT(3));
+        argDB("baseSize", "The size of Fork xsieve base", ALE::Arg<int>().DEFAULT(10));
+        argDB("iterations", "The number of test repetitions", ALE::Arg<int>().DEFAULT(1));
+        argDB("marker", "The marker to apply to slice members", ALE::Arg<int>().DEFAULT(0));
+        argDB("silent", "Whether to generate output during test; useful for timing with iterations > 1", ALE::Arg<bool>().DEFAULT(false));
+        argDB("treeDepth", "The depth of the tree XSieve", ALE::Arg<int>().DEFAULT(3));
+        argDB("treeFanout", "The fanout factor of the tree XSieve: number of children", ALE::Arg<int>().DEFAULT(3));
+        argDB("pt", "The point to compute the boundary of", ALE::Arg<int>().DEFAULT(1));
+        argDB("traversals", "The number of times to traverse the boundary", ALE::Arg<int>().DEFAULT(1));
       };// XSieveTester()
       //
       #undef __FUNCT__
       #define __FUNCT__ "createForkXSieve"
-      static ALE::Obj<default_xsieve_type> createForkXSieve(const MPI_Comm& comm, const ALE::Component::ArgDB& argDB) {
+      static ALE::Obj<default_xsieve_type> createForkXSieve(const MPI_Comm& comm, const ALE::ArgDB& argDB) {
         typedef default_xsieve_type              xsieve_type;
         typedef xsieve_type::arrow_type          arrow_type;
         typedef std::set<arrow_type::target_type> RealBase;
@@ -43,7 +43,7 @@ namespace ALE {
       //
       #undef __FUNCT__
       #define __FUNCT__ "createHatXSieve"
-      static ALE::Obj<default_xsieve_type> createHatXSieve(const MPI_Comm& comm, const ALE::Component::ArgDB& argDB) {
+      static ALE::Obj<default_xsieve_type> createHatXSieve(const MPI_Comm& comm, const ALE::ArgDB& argDB) {
         typedef default_xsieve_type                      xsieve_type;
         typedef xsieve_type::arrow_type                  arrow_type;
         typedef std::set<arrow_type::target_type>         RealBase;
@@ -58,7 +58,7 @@ namespace ALE {
       //
       #undef __FUNCT__
       #define __FUNCT__ "createTreeXSieve"
-      static ALE::Obj<symmetric_xsieve_type> createTreeXSieve(const MPI_Comm& comm, const ALE::Component::ArgDB& argDB) {
+      static ALE::Obj<symmetric_xsieve_type> createTreeXSieve(const MPI_Comm& comm, const ALE::ArgDB& argDB) {
         typedef symmetric_xsieve_type             xsieve_type;
         typedef xsieve_type::arrow_type           arrow_type;
         typedef std::set<arrow_type::target_type> RealBase;
@@ -89,7 +89,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "BasicTest"
       template <typename XSieve_>
-      static PetscErrorCode BasicTest(const ALE::Obj<XSieve_>& xsieve, const ALE::Component::ArgDB& argDB, const char* xsieveName = NULL)
+      static PetscErrorCode BasicTest(const ALE::Obj<XSieve_>& xsieve, const ALE::ArgDB& argDB, const char* xsieveName = NULL)
       {
         typedef XSieve_                                   xsieve_type;
         typedef typename xsieve_type::arrow_type          arrow_type;
@@ -110,7 +110,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "BaseRangeTest"
       template <typename XSieve_>
-      static PetscErrorCode BaseRangeTest(const ALE::Obj<XSieve_>& xsieve, const ALE::Component::ArgDB& argDB, const char* xsieveName = NULL)
+      static PetscErrorCode BaseRangeTest(const ALE::Obj<XSieve_>& xsieve, const ALE::ArgDB& argDB, const char* xsieveName = NULL)
       {
         typedef XSieve_                                   xsieve_type;
         typedef typename xsieve_type::arrow_type          arrow_type;
@@ -139,7 +139,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "BaseTest"
       template <typename XSieve_>
-      static PetscErrorCode BaseTest(const ALE::Obj<XSieve_>& xsieve, ALE::Component::ArgDB argDB, const char* xsieveName = NULL)
+      static PetscErrorCode BaseTest(const ALE::Obj<XSieve_>& xsieve, ALE::ArgDB argDB, const char* xsieveName = NULL)
       {        
         typedef XSieve_                                   xsieve_type;
         typedef typename xsieve_type::arrow_type          arrow_type;
@@ -191,7 +191,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "ConeTest"
       template <typename XSieve_>
-      static PetscErrorCode ConeTest(const ALE::Obj<XSieve_>& xsieve, const ALE::Component::ArgDB& argDB, const char* xsieveName = NULL)
+      static PetscErrorCode ConeTest(const ALE::Obj<XSieve_>& xsieve, const ALE::ArgDB& argDB, const char* xsieveName = NULL)
       {
         typedef XSieve_                                   xsieve_type;
         typedef typename xsieve_type::arrow_type          arrow_type;
@@ -258,7 +258,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "SliceBasicTest"
       template <typename XSieve_>
-      static PetscErrorCode SliceBasicTest(const ALE::Obj<XSieve_>& xsieve, const ALE::Component::ArgDB& argDB, const char* xsieveName = NULL)
+      static PetscErrorCode SliceBasicTest(const ALE::Obj<XSieve_>& xsieve, const ALE::ArgDB& argDB, const char* xsieveName = NULL)
       {
         typedef XSieve_                                   xsieve_type;
         typedef typename xsieve_type::arrow_type          arrow_type;
@@ -332,7 +332,7 @@ namespace ALE {
       #undef __FUNCT__
       #define __FUNCT__ "BoundaryTest"
       template <typename XSieve_>
-      static PetscErrorCode BoundaryTest(const ALE::Obj<XSieve_>& xsieve, ALE::Component::ArgDB argDB, const char* xsieveName = NULL)
+      static PetscErrorCode BoundaryTest(const ALE::Obj<XSieve_>& xsieve, ALE::ArgDB argDB, const char* xsieveName = NULL)
       {        
         typedef XSieve_                                    xsieve_type;
         typedef typename xsieve_type::arrow_type           arrow_type;

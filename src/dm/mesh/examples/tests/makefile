@@ -97,18 +97,18 @@ memoryTests: memoryTests.o chkopts
 	${RM} -f memoryTests.o
 #-----------------------------------------------------------------
 BOOST_LIBS = -Wl,-rpath,${BOOST_DIR}/lib -L${BOOST_DIR}/lib -lboost_program_options-gcc41
-component0: component0.o chkopts
-	-${CLINKER} -o component0 component0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
-	${RM} -f component0.o
+args0: args0.o chkopts
+	-${CLINKER} -o args0 args0.o ${PETSC_DM_LIB} ${BOOST_LIBS}
+	${RM} -f args0.o
 
-ppcomponent0: chkopts
-	-${CXCPP} component0.cxx
+ppargs0: chkopts
+	-${CXCPP} args0.cxx
 
-runcomponent0:
-	-@${MPIEXEC} -np ${NP} ./component0 ${EXTRA_ARGS}
+runargs0:
+	-@${MPIEXEC} -np ${NP} ./args0 ${EXTRA_ARGS}
 
-debugcomponent0:
-	-@${MPIEXEC} -np ${NP} ./component0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
+debugargs0:
+	-@${MPIEXEC} -np ${NP} ./args0 -log_summary -start_in_debugger -display ${DISPLAY} ${EXTRA_ARGS}
 
 #-----------------------------------------------------------------
 xsifter0: xsifter0.o chkopts
