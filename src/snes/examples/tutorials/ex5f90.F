@@ -101,7 +101,7 @@
 !  be done while messages are in transition.
       call DAGetLocalVector(user%da,localX,ierr)
       call DAGlobalToLocalBegin(user%da,X,INSERT_VALUES,                &
-     &     localX,ierr)
+     &     localX,ierr)                
       call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data.
@@ -296,7 +296,7 @@
 !     Note: Here we only approximately preallocate storage space for the
 !     Jacobian.  See the users manual for a discussion of better techniques
 !     for preallocating matrix memory.
-
+      
       call PetscOptionsHasName(PETSC_NULL_CHARACTER,'-snes_mf',         &
      &     matrix_free,ierr)
       if (matrix_free .eq. 0) then
@@ -628,12 +628,10 @@
       call DAGlobalToLocalEnd(user%da,X,INSERT_VALUES,localX,ierr)
 
 !  Get a pointer to vector data
-
       call VecGetArrayF90(localX,lx_v,ierr)
 
-!  Compute entries for the locally owned part of the Jacobian.
-
-      call FormJacobianLocal(lx_v,jac,jac_prec,user,ierr)
+!  Compute entries for the locally owned part of the Jacobian preconditioner.
+      call FormJacobianLocal(lx_v,jac_prec,user,ierr)
 
 !  Assemble matrix, using the 2-step process:
 !     MatAssemblyBegin(), MatAssemblyEnd()
@@ -641,10 +639,16 @@
 !  by placing code between these two statements.
 
       call MatAssemblyBegin(jac,MAT_FINAL_ASSEMBLY,ierr)
+      if (jac .ne. jac_prec) then
+         call MatAssemblyBegin(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      endif
       call VecRestoreArrayF90(localX,lx_v,ierr)
       call DARestoreLocalVector(user%da,localX,ierr)
       call MatAssemblyEnd(jac,MAT_FINAL_ASSEMBLY,ierr)
-
+      if (jac .ne. jac_prec) then
+        call MatAssemblyEnd(jac_prec,MAT_FINAL_ASSEMBLY,ierr)
+      endif
+        
 !  Set flag to indicate that the Jacobian matrix retains an identical
 !  nonzero structure throughout all nonlinear iterations (although the
 !  values of the entries change). Thus, we can save some work in setting
@@ -674,15 +678,14 @@
 
 ! ---------------------------------------------------------------------
 !
-!  FormJacobianLocal - Computes Jacobian matrix, called by
-!  the higher level routine FormJacobian().
+!  FormJacobianLocal - Computes Jacobian preconditioner matrix, 
+!  called by the higher level routine FormJacobian().
 !
 !  Input Parameters:
 !  x        - local vector data
 !
 !  Output Parameters:
-!  jac      - Jacobian matrix
-!  jac_prec - optionally different preconditioning matrix (not used here)
+!  jac_prec - Jacobian preconditioner matrix
 !  ierr     - error code 
 !
 !  Notes:
@@ -712,7 +715,7 @@
 !  Option (A) seems cleaner/easier in many cases, and is the procedure
 !  used in this example.
 !
-      subroutine FormJacobianLocal(x,jac,jac_prec,user,ierr)
+      subroutine FormJacobianLocal(x,jac_prec,user,ierr)
       use f90module
       implicit none
 
@@ -727,14 +730,14 @@
 
 !  Input/output variables:
       type (userctx) user
-      PetscScalar  x(user%gxs:user%gxe,                                         &
-     &              user%gys:user%gye)
-      Mat      jac,jac_prec
+      PetscScalar    x(user%gxs:user%gxe,                                      &
+     &               user%gys:user%gye)
+      Mat            jac_prec
       PetscErrorCode ierr
 
 !  Local variables:
-      PetscInt row,col(5),i,j
-      PetscInt ione,ifive
+      PetscInt      row,col(5),i,j
+      PetscInt      ione,ifive
       PetscScalar   two,one,hx,hy,hxdhy
       PetscScalar   hydhx,sc,v(5)
 
@@ -770,7 +773,7 @@
      &             .or. i .eq. user%mx .or. j .eq. user%my) then
                col(1) = row
                v(1)   = one
-               call MatSetValuesLocal(jac,ione,row,ione,col,v,          &
+               call MatSetValuesLocal(jac_prec,ione,row,ione,col,v,          &
      &                           INSERT_VALUES,ierr)
 !           interior grid points
             else
@@ -785,7 +788,7 @@
                col(3) = row
                col(4) = row + 1
                col(5) = row + user%gxm
-               call MatSetValuesLocal(jac,ione,row,ifive,col,v,         &
+               call MatSetValuesLocal(jac_prec,ione,row,ifive,col,v,         &
      &                                INSERT_VALUES,ierr)
             endif
  10      continue
