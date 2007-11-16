@@ -25,7 +25,7 @@ class Configure(config.package.Package):
                              ['libmpich.a','libssl.a','libuuid.a','libpthread.a','librt.a','libdl.a'],
                              ['libmpich.a','libnsl.a','libsocket.a','librt.a','libnsl.a','libsocket.a'],
                              ['fmpich2.lib','mpich2.lib'],
-                             ['mpich2.lib'],
+                             ['mpich2.lib'],['mpi.lib'],
                              ['libmpich.a','libgm.a','libpthread.a'],
                              ['mpich.lib'],[os.path.join('amd64','msmpi.lib')],[os.path.join('i386','msmpi.lib')]]
     self.liblist_lam      = [['liblamf77mpi.a','libmpi++.a','libmpi.a','liblam.a'],
