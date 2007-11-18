@@ -1152,6 +1152,30 @@ PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Ob
 }
 
 #undef __FUNCT__
+#define __FUNCT__ "updateOperator"
+PetscErrorCode updateOperator(Mat A, const ALE::Obj<ALE::Mesh>& m, const ALE::Obj<ALE::Mesh::real_section_type>& section, const ALE::Obj<ALE::Mesh::order_type>& globalOrder, int tag, int p, PetscScalar array[], InsertMode mode)
+{
+  const int *offsets, *indices;
+  PetscErrorCode ierr;
+
+  PetscFunctionBegin;
+  section->getCustomRestrictAtlas(tag, &offsets, &indices);
+  const int& numIndices = offsets[p+1] - offsets[p];
+
+  ierr = PetscLogEventBegin(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  ierr = MatSetValues(A, numIndices, indices, numIndices, indices, array, mode);
+  if (ierr) {
+    printf("[%d]ERROR in updateOperator: tag %d point num %d\n", section->commRank(), tag, p);
+    for(int i = 0; i < numIndices; i++) {
+      printf("[%d]mat indices[%d] = %d\n", section->commRank(), i, indices[i]);
+    }
+    CHKERRQ(ierr);
+  }
+  ierr = PetscLogEventEnd(Mesh_updateOperator,0,0,0,0);CHKERRQ(ierr);
+  PetscFunctionReturn(0);
+}
+
+#undef __FUNCT__
 #define __FUNCT__ "updateOperatorGeneral"
 PetscErrorCode updateOperatorGeneral(Mat A, const ALE::Obj<ALE::Mesh>& rowM, const ALE::Obj<ALE::Mesh::real_section_type>& rowSection, const ALE::Obj<ALE::Mesh::order_type>& rowGlobalOrder, const ALE::Mesh::point_type& rowE, const ALE::Obj<ALE::Mesh>& colM, const ALE::Obj<ALE::Mesh::real_section_type>& colSection, const ALE::Obj<ALE::Mesh::order_type>& colGlobalOrder, const ALE::Mesh::point_type& colE, PetscScalar array[], InsertMode mode)
 {

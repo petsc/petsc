@@ -485,6 +485,9 @@ namespace ALE {
       template<class InputSequence> 
       Obj<supportSet> nJoin(const Obj<InputSequence>& chain0, const Obj<InputSequence>& chain1, int n, const Color_& color, bool useColor = true);
 
+      template<class InputSequence> 
+      Obj<supportSet> nJoin(const Obj<InputSequence>& chain, const int depth);
+
     public:
       Obj<typename traits::depthSequence> roots() {
         return this->depthStratum(0);
@@ -921,6 +924,40 @@ namespace ALE {
       for(typename InputSequence::iterator p_iter = chain->begin(); p_iter != chain->end(); ++p_iter) {
         //std::cout << "  point " << *p_iter << std::endl;
         const Obj<typename traits::supportSequence>& support = this->support(*p_iter);
+
+        join->insert(support->begin(), support->end());
+        if (p == 0) {
+          intersectB.insert(support->begin(), support->end());
+          p++;
+        } else {
+          std::set_intersection(intersectA.begin(), intersectA.end(), join->begin(), join->end(), std::insert_iterator<std::set<point_type> >(intersectB, intersectB.begin()));
+        }
+        intersectA.clear();
+        intersectA.insert(intersectB.begin(), intersectB.end());
+        intersectB.clear();
+        join->clear();
+        //std::cout << "  intersection:" << std::endl;
+        //for(typename std::set<point_type>::iterator i_iter = intersectA.begin(); i_iter != intersectA.end(); ++i_iter) {
+        //  std::cout << "    " << *i_iter << std::endl;
+        //}
+      }
+      join->insert(intersectA.begin(), intersectA.end());
+      return join;
+    };
+
+    // Warning: I think this can be much more efficient by eliminating copies
+    template <typename Point_, typename Marker_, typename Color_> 
+    template<class InputSequence> 
+    Obj<typename Sieve<Point_,Marker_,Color_>::supportSet> Sieve<Point_,Marker_,Color_>::nJoin(const Obj<InputSequence>& chain, const int depth) {
+      Obj<supportSet> join = new supportSet(); 
+      std::set<point_type> intersectA;
+      std::set<point_type> intersectB;
+      int p = 0;
+
+      //std::cout << "Doing nJoin1:" << std::endl;
+      for(typename InputSequence::iterator p_iter = chain->begin(); p_iter != chain->end(); ++p_iter) {
+        //std::cout << "  point " << *p_iter << std::endl;
+        const Obj<supportArray> support = this->nSupport(*p_iter, depth);
 
         join->insert(support->begin(), support->end());
         if (p == 0) {

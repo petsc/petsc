@@ -53,7 +53,7 @@ PetscErrorCode ProcessOptions(MPI_Comm comm, Options *options)
       if (numLimits == 1) {
 	for(int p = 1; p < size; ++p) options->refinementLimit[p] = options->refinementLimit[0];
       } else if (numLimits != size) {
-	SETERRQ1(PETSC_ERR_ARG_WRONG, "Cannot specify refinement limits on a subset (%d) of processes", numLimits);
+        SETERRQ1(PETSC_ERR_ARG_WRONG, "Cannot specify refinement limits on a subset (%d) of processes", numLimits);
       }
     }
     filename << "data/refinement_" << options->dim <<"d";
